@@ -1,0 +1,13 @@
+/* Sidebar.css */
+.submenu {
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.submenu.open {
+  max-height: 384px; /* Adjust based on content */
+}
+
+.submenu.closed {
+  max-height: 0;
+}
