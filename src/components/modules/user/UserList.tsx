@@ -6,7 +6,6 @@ import { getUser } from './userSlice';
 import Loader from '../../../common/Loader';
 import { FiBook, FiEdit, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Pagination from '../../utils/utils-functions/Pagination';
-import { Helmet } from 'react-helmet';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import { useNavigate } from 'react-router-dom';

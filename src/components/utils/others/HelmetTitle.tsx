@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet';
 
 interface HelmetParam {
   title: string | null;
@@ -17,9 +16,9 @@ const HelmetTitle: React.FC<HelmetParam> = ({ title = '' }) => {
         </div>)
       }
 
-      <Helmet>
+      <span>
         <title>{title}</title>
-      </Helmet>
+      </span>
     </div>
   );
 };
