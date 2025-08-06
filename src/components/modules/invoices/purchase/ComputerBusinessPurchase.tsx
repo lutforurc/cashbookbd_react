@@ -24,11 +24,6 @@ import {
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator.tsx';
 import dayjs from 'dayjs';
-import {
-  purchaseStore,
-  purchaseUpdate,
-  tradingPurchaseEdit,
-} from './tradingPurchaseSlice.tsx';
 import { validateForm } from '../../../utils/utils-functions/validationUtils.ts';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage.ts';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler.ts';

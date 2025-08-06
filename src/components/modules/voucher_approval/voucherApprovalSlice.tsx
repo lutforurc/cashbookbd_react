@@ -3,36 +3,43 @@ import { API_VOUCHER_APPROVAL_STORE_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 
 
-export const storeVoucherApproval = (data: any, callback?: (message: string) => void) => (dispatch: any) => {
+export const storeVoucherApproval = (data: any, callback?: (message: string, success?: boolean) => void) => (dispatch: any) => {
   dispatch({ type: VOUCHER_APPROVAL_STORE_PENDING });
+
   httpService.post(API_VOUCHER_APPROVAL_STORE_URL, data)
     .then((res) => {
-      const _data = res.data; 
+      const _data = res.data;
+
       if (_data.success) {
         dispatch({
           type: VOUCHER_APPROVAL_STORE_SUCCESS,
-          payload: _data.data.data,
+          payload: _data.data?.data ?? null,
         });
-        if ('function' == typeof callback) {
-          callback(_data.data.data);
+
+        if (typeof callback === 'function') {
+          callback(_data.message, true); // ✅ success = true
         }
       } else {
         dispatch({
           type: VOUCHER_APPROVAL_STORE_ERROR,
-          payload: _data.error.message,
+          payload: _data.error?.message ?? 'Unexpected error.',
         });
-        if ('function' == typeof callback) {
-          callback(_data.message);
+
+        if (typeof callback === 'function') {
+          callback(_data.message ?? 'Unexpected error.', false); // ✅ success = false
         }
       }
     })
     .catch((err) => {
+      const errorMessage = err?.response?.data?.message || 'Something went wrong.';
+      
       dispatch({
         type: VOUCHER_APPROVAL_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: errorMessage,
       });
-      if ('function' == typeof callback) {
-        callback(err.message);
+
+      if (typeof callback === 'function') {
+        callback(errorMessage, false); // ✅ pass real error message
       }
     });
 };
