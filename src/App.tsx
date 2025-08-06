@@ -73,6 +73,7 @@ import ReportComponent from './components/modules/reports/test/ReportComponent';
 import StaffWiseDueInstallment from './components/modules/installment/StaffWiseDueInstallment';
 import LabourLedger from './components/modules/reports/ledger-labour/LabourLedger';
 import ConstructionLabourInvoice from './components/modules/invoices/labour/ConstructionLabourInvoice';
+import RemoveApproval from './components/modules/voucher_approval/RemoveApproval';
 
 function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
@@ -239,6 +240,12 @@ function App() {
             <Route
               path={routes.admin_voucher_approval}
               element={<VoucherApproval />}
+            />
+
+ 
+            <Route
+              path={routes.admin_remove_approval}
+              element={<RemoveApproval />}
             />
             <Route
               path={routes.admin_change_voucher_type}

@@ -104,6 +104,7 @@ const ROUTES = {
 
   // Voucher Approval
   admin_voucher_approval: '/admin/voucher-approval',
+  admin_remove_approval: '/admin/remove-approval',
   admin_change_voucher_type: '/admin/voucher/type-change',
   admin_change_date: '/admin/voucher/date-change',
 
