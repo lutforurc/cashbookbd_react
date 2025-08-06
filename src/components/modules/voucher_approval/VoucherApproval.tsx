@@ -102,7 +102,6 @@ const VoucherApproval = () => {
     setEndDate(e);
   };
 
-  const buttonLoading = true;
   return (
     <>
       <HelmetTitle title="Voucher Approval" />

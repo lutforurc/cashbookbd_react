@@ -12,7 +12,7 @@ import { FaArrowLeft } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { formatDateBdToUsd } from '../../utils/utils-functions/formatDate';
-import { storeVoucherApproval } from './voucherApprovalSlice';
+import { removeVoucherApproval, storeVoucherApproval } from './voucherApprovalSlice';
 import { setTime } from 'react-datepicker/dist/date_utils';
 import InputElement from '../../utils/fields/InputElement';
 
@@ -82,7 +82,7 @@ const RemoveApproval = () => {
   const handleSave = async () => {
     setSaveButtonLoading(true);
     await dispatch(
-      storeVoucherApproval(formData, (message, success) => {
+      removeVoucherApproval(formData, (message, success) => {
         if (success) {
             toast.success(message);
         } else {
@@ -101,6 +101,20 @@ const RemoveApproval = () => {
   const handleEndDate = (e: any) => {
     setEndDate(e);
   };
+
+    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, type, value, checked } = e.target;
+  
+      // If the input is a checkbox, use the 'checked' property, otherwise use 'value'
+      const inputValue = type === 'checkbox' ? checked : value;
+  
+      // Update formData with the new value
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: inputValue,
+      }));
+    };
+  
  
   return (
     <>
@@ -116,7 +130,7 @@ const RemoveApproval = () => {
                 placeholder={'Enter Voucher Number'}
                  label={'Enter voucher number for remove approval.'}
                 className={''}
-                onChange={handleEndDate}
+                onChange={handleOnChange}
               />
           
         </div>

@@ -197,6 +197,8 @@ export const API_UPDATE_ROLE_PERMISSIONS_URL = API_BASE_URL + '/role/role-permis
 
 // Voucher Approval Routes
 export const API_VOUCHER_APPROVAL_STORE_URL = API_BASE_URL + '/admin/voucher/voucher-approval-all';
+
+export const API_VOUCHER_APPROVAL_REMOVE_URL = API_BASE_URL + '/admin/voucher/remove-approval';
 export const API_VOUCHER_TYPE_CHANGE_STORE_URL = API_BASE_URL + '/admin/voucher/voucher-type-change';
 export const API_VOUCHER_TYPE_URL = API_BASE_URL + '/settings/voucher-types';
 
