@@ -84,10 +84,8 @@ const VoucherApproval = () => {
     await dispatch(
       storeVoucherApproval(formData, (message, success) => {
         if (success) {
-            console.log('Voucher approval successful:', message);
-            toast.success(message?.message);
+            toast.success(message);
         } else {
-            console.log('Voucher approval failed:', message);
             toast.info(message?.message);
         }
       }),
