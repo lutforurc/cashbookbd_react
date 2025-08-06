@@ -26,6 +26,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const { pathname } = location;
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
+  const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
 
@@ -216,7 +217,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </NavLink>
                           </li>
                         )}
-                        <li>
+                        {currentBranch?.business_type_id == 4 && (
+                          <li>
                           <NavLink
                             to="/admin/installment-details"
                             className={({ isActive }) =>
@@ -227,6 +229,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             Installments
                           </NavLink>
                         </li>
+                        )}
+                        
                         {hasPermission(permissions, 'cash.payment.create') && (
                           <li>
                             <NavLink
@@ -592,7 +596,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                         )}
                         {/* {hasPermission(permissions, 'cashbook.view') && ( */}
-                        <li>
+                        {currentBranch?.business_type_id == 4 && (
+                          <li>
                           <NavLink
                             to="/reports/due-installments"
                             className={({ isActive }) =>
@@ -603,17 +608,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             Due Installments
                           </NavLink>
                         </li>
-                        <li>
-                          <NavLink
-                            to="/reports/employee-installment"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                              (isActive && '!text-white')
-                            }
-                          >
-                            Employee Installments
-                          </NavLink>
-                        </li> 
+                        )}
+                        
+
+                        {currentBranch?.business_type_id == 4 && (
+                          <li>
+                            <NavLink
+                              to="/reports/employee-installment"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Employee Installments
+                            </NavLink>
+                          </li>
+                        )}
+
                         {hasPermission(permissions, 'ledger.view') && (
                           <li>
                             <NavLink
@@ -627,19 +638,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </NavLink>
                           </li>
                         )}
-                        
-                          <li>
-                            <NavLink
-                              to="/reports/labour/ledger"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Labour Ledger
-                            </NavLink>
-                          </li>
-                       
+
+                        <li>
+                          <NavLink
+                            to="/reports/labour/ledger"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Labour Ledger
+                          </NavLink>
+                        </li>
+
                         {hasPermission(permissions, 'due.list.view') && (
                           <li>
                             <NavLink

@@ -78,7 +78,7 @@ function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
 }
 
-console.log(React.version); 
+console.log("React Version", React.version); 
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -91,6 +91,9 @@ function App() {
     setTimeout(() => setLoading(false), 1000);
     dispatch(authCheck());
   }, []);
+
+  console.log("currentBranch", currentBranch?.business_type_id); 
+
 
   return (
     <>
