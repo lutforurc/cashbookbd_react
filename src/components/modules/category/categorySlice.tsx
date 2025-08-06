@@ -86,34 +86,48 @@ export const getCategoryDdl = () => async (dispatch: Dispatch<any>) => {
   }
 };
 
-export const storeCategory = (data: any, callback: any) => (dispatch: any) => {
+export const storeCategory = (data: any, callback?: (message: string, success?: boolean) => void) => (dispatch: any) => {
   dispatch({ type: CATEGORY_STORE_PENDING });
+
   httpService
     .post(API_CATEGORY_STORE_URL, data)
     .then((res) => {
-      let _data = res.data;
+      const _data = res.data;
+
       if (_data.success) {
         dispatch({
           type: CATEGORY_STORE_SUCCESS,
-          payload: _data.data.data,
+          payload: _data.data?.data ?? null,
         });
+
+        if (typeof callback === 'function') {
+          callback(_data.message ?? 'Category created successfully.', true);
+        }
       } else {
         dispatch({
           type: CATEGORY_STORE_ERROR,
-          payload: _data.error.message,
+          payload: _data.error?.message ?? 'Unexpected error.',
         });
-      }
-      if ('function' === typeof callback) {
-        callback(_data);
+
+        if (typeof callback === 'function') {
+          callback(_data.message ?? 'Unexpected error.', false);
+        }
       }
     })
-    .catch((er) => {
+    .catch((err) => {
+      const errorMessage = err?.response?.data?.message || 'Something went wrong.';
+
       dispatch({
         type: CATEGORY_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: errorMessage,
       });
+
+      if (typeof callback === 'function') {
+        callback(errorMessage, false);
+      }
     });
 };
+
 
 const initialState = {
   isLoading: false,

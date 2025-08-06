@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -10,6 +10,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { storeDayClose } from '../settings/settingsSlice'; // ✅ Make sure this path is correct
 import { storeCategory } from './categorySlice';
+import { setTime } from 'react-datepicker/dist/date_utils';
 
 interface CategoryFormValues {
   category_name: string;
@@ -19,6 +20,7 @@ interface CategoryFormValues {
 const AddCategory: React.FC = () => {
   const dispatch = useDispatch();
   const { isLoading } = useSelector((state: any) => state.settings); // Adjust typing as needed
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
 
   const validationSchema = Yup.object({
     category_name: Yup.string().required('Category name is required'),
@@ -33,12 +35,22 @@ const AddCategory: React.FC = () => {
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
+        setSaveButtonLoading(true);
         await dispatch(
-          storeCategory(values, (message: string) => {
-            toast.success(`${message} saved successfully.`);
+          storeCategory(values, (message, success) => {
+            if (success) {
+              toast.success(message);
+              setTimeout(() => {
+                resetForm();
+              }, 1000); // Simulate a delay for the loading state
+            } else {
+              toast.info(message?.message);
+            }
           }),
         );
-        resetForm();
+        setTimeout(() => {
+          setSaveButtonLoading(false);
+        }, 1000); // Simulate a delay for the loading state
       } catch (error) {
         toast.error('Something went wrong');
       }
@@ -85,8 +97,8 @@ const AddCategory: React.FC = () => {
         <div className="grid grid-cols-1 gap-x-1 gap-y-1 md:grid-cols-2">
           <ButtonLoading
             type="submit"
-            buttonLoading={isSubmitting || isLoading}
-            disabled={isSubmitting || isLoading}
+            buttonLoading={saveButtonLoading}
+            disabled={saveButtonLoading}
             label="Save"
             className="whitespace-nowrap text-center mr-0 h-8"
             icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
