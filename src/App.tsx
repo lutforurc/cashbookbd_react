@@ -1,4 +1,4 @@
-import React,  { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
@@ -74,12 +74,11 @@ import StaffWiseDueInstallment from './components/modules/installment/StaffWiseD
 import LabourLedger from './components/modules/reports/ledger-labour/LabourLedger';
 import ConstructionLabourInvoice from './components/modules/invoices/labour/ConstructionLabourInvoice';
 import RemoveApproval from './components/modules/voucher_approval/RemoveApproval';
+import FaviconUpdater from './components/utils/components/FaviconUpdater';
 
 function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
 }
-
-
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -87,61 +86,60 @@ function App() {
 
   const { isLoggedIn, isLoading, me } = useSelector((s: any) => s.auth);
   const currentBranch = useSelector((s: any) => s.branchList);
-
-
+  const companyName = currentBranch?.currentBranch?.company?.name;
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
     dispatch(authCheck());
   }, []);
 
-useEffect(() => {
-  if (!currentBranch || !currentBranch?.currentBranch?.company) return;
-  const name = currentBranch?.currentBranch?.company?.name;
+  // useEffect(() => {
+  //   if (!currentBranch || !currentBranch?.currentBranch?.company) return;
+  //   const name = currentBranch?.currentBranch?.company?.name;
 
-  const slugify = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-');
-  };
+  //   const slugify = (text: string) => {
+  //     return text
+  //       .toLowerCase()
+  //       .replace(/[^\w\s-]/g, '')
+  //       .trim()
+  //       .replace(/\s+/g, '-');
+  //   };
 
-  const sluggedName = slugify(name);
-  const dynamicFaviconUrl = `https://nibirnirman.cashbookbd.com/public/backend/${sluggedName}.png`;
-  const fallbackFaviconUrl = 'https://nibirnirman.cashbookbd.com/public/backend/nibir-nirman.png';
+  //   const sluggedName = slugify(name);
+  //   const dynamicFaviconUrl = `https://nibirnirman.cashbookbd.com/public/backend/${sluggedName}.png`;
+  //   const fallbackFaviconUrl = 'https://nibirnirman.cashbookbd.com/public/backend/nibir-nirman.png';
 
-  const updateFavicon = (url: string) => {
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.head.appendChild(link);
-    }
-    link.href = url;
-  };
+  //   const updateFavicon = (url: string) => {
+  //     let link = document.querySelector("link[rel~='icon']");
+  //     if (!link) {
+  //       link = document.createElement('link');
+  //       link.rel = 'icon';
+  //       document.head.appendChild(link);
+  //     }
+  //     link.href = url;
+  //   };
 
-  // Try loading the dynamic favicon first
-  const img = new Image();
-  img.src = dynamicFaviconUrl;
+  //   // Try loading the dynamic favicon first
+  //   const img = new Image();
+  //   img.src = dynamicFaviconUrl;
 
-  img.onload = () => {
-    console.log('Dynamic favicon loaded successfully.');
-    updateFavicon(dynamicFaviconUrl);
-  };
+  //   img.onload = () => {
+  //     console.log('Dynamic favicon loaded successfully.');
+  //     updateFavicon(dynamicFaviconUrl);
+  //   };
 
-  img.onerror = () => {
-    console.warn('Dynamic favicon failed to load. Falling back to default.');
-    updateFavicon(fallbackFaviconUrl);
-  };
-}, [currentBranch]);
-
+  //   img.onerror = () => {
+  //     console.warn('Dynamic favicon failed to load. Falling back to default.');
+  //     updateFavicon(fallbackFaviconUrl);
+  //   };
+  // }, [currentBranch]);
 
   return (
     <>
       <BrowserRouter>
         {/* You can show loader if needed: */}
         {/* {currentBranch.loading && <Loader />} */}
+         <FaviconUpdater companyName={companyName} />
         <Routes>
           {/* Customer Section */}
           {/* <Route path="/customer" element={<CustomerLayout isLoggedIn={isLoggedIn} isLoading={isLoading} />}> */}
@@ -243,7 +241,10 @@ useEffect(() => {
               element={<DueList user={me} />}
             />
             <Route path={routes.report_ledger} element={<Ledger user={me} />} />
-            <Route path={routes.report_labour_ledger} element={<LabourLedger user={me} />} />
+            <Route
+              path={routes.report_labour_ledger}
+              element={<LabourLedger user={me} />}
+            />
             <Route
               path={routes.purchase_ledger}
               element={<PurchaseLedger user={me} />}
@@ -283,7 +284,6 @@ useEffect(() => {
               element={<VoucherApproval />}
             />
 
- 
             <Route
               path={routes.admin_remove_approval}
               element={<RemoveApproval />}
@@ -301,7 +301,10 @@ useEffect(() => {
             {/* Invoices */}
             <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
             <Route path={routes.inv_sales} element={<SalesIndex />} />
-            <Route path={routes.inv_labour} element={<ConstructionLabourInvoice />} />
+            <Route
+              path={routes.inv_labour}
+              element={<ConstructionLabourInvoice />}
+            />
 
             {/* Also show customer dashboard if admin wants */}
             <Route
