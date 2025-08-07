@@ -140,7 +140,7 @@ const VoucherApproval = () => {
             icon={<FaCheckDouble className="text-white text-lg ml-2  mr-2" />}
           />
           <Link
-            to="/admin/dayclose"
+            to="/admin/remove-approval"
             className="text-nowrap justify-center mr-0 h-8"
           >
             <FaArrowLeft className="text-white text-lg ml-2  mr-2" />

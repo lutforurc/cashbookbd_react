@@ -6,7 +6,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCashBook } from './cashBookSlice';
-import { FiBook, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheckCircle, FiEdit, FiTrash2, FiX } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs'; 
@@ -169,15 +169,16 @@ const CashBook = (user: any) => {
           <>
             {row?.vr_no ? (
               <>
-                <button onClick={() => handleCheckBtnClick()} className="text-blue-500">
+              <button onClick={() => handleCheckBtnClick()} className="cursor-pointer">
+                  { row?.is_approved ? (<FiCheckCircle className="text-green-500 font-bold" />) : (<FiTrash2 className="text-red-500" />)}
+                </button>
+                <button onClick={() => handleCheckBtnClick()} className="text-blue-500 ml-2">
                   <FiBook className="cursor-pointer" />
                 </button>
                 <button onClick={() => handleCheckBtnClick()} className="text-blue-500 ml-2">
                   <FiEdit className="cursor-pointer" />
                 </button>
-                <button onClick={() => handleCheckBtnClick()} className="cursor-pointer">
-                  <FiTrash2 className="text-red-500 ml-2" />
-                </button>
+                
               </>
             ) : (
               ''

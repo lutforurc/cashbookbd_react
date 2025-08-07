@@ -52,13 +52,12 @@ export const removeVoucherApproval = (data: any, callback?: (message: string, su
   httpService.post(API_VOUCHER_APPROVAL_REMOVE_URL, data)
     .then((res) => {
       const _data = res.data;
-
       if (_data.success) {
         dispatch({
           type: VOUCHER_APPROVAL_REMOVE_SUCCESS,
           payload: _data.data?.data ?? null,
         });
-
+        
         if (typeof callback === 'function') {
           callback(_data.message, true); // ✅ success = true
         }
@@ -67,8 +66,9 @@ export const removeVoucherApproval = (data: any, callback?: (message: string, su
           type: VOUCHER_APPROVAL_REMOVE_ERROR,
           payload: _data.error?.message ?? 'Unexpected error.',
         });
-
+        
         if (typeof callback === 'function') {
+          // console.log('Remove Approval Response:', _data);
           callback(_data.message ?? 'Unexpected error.', false); // ✅ success = false
         }
       }

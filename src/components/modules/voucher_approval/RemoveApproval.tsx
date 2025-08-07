@@ -22,54 +22,52 @@ interface Props {
 }
 
 const RemoveApproval = () => {
-  const settings = useSelector((s: any) => s.settings);
-  const dayclose = useSelector((state: any) => state.dayclose);
-  const voucherApprove = useSelector((state: any) => state.voucherApproval);
-  const navigate = useNavigate();
-  const [currentDate, setCurrentDate] = useState<string>('');
-  const [nextDate, setNextDate] = useState<string>('');
+  // const settings = useSelector((s: any) => s.settings);
+  // const dayclose = useSelector((state: any) => state.dayclose);
+  // const voucherApprove = useSelector((state: any) => state.voucherApproval);
+  // const [currentDate, setCurrentDate] = useState<string>('');
+  // const [nextDate, setNextDate] = useState<string>('');
   const dispatch = useDispatch();
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  // const [startDate, setStartDate] = useState<Date | null>(null);
+  // const [endDate, setEndDate] = useState<Date | null>(null);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [formData, setFormData] = useState({
-    start_date: '',
-    end_date: '',
+    remove_for_approval: '',
   });
 
-  useEffect(() => {
-    if (currentDate) {
-      setStartDate(formatDateBdToUsd(currentDate));
-      setEndDate(formatDateBdToUsd(currentDate));
-    }
-  }, [currentDate]);
+  // useEffect(() => {
+  //   if (currentDate) {
+  //     setStartDate(formatDateBdToUsd(currentDate));
+  //     setEndDate(formatDateBdToUsd(currentDate));
+  //   }
+  // }, [currentDate]);
 
-  useEffect(() => {
-    setFormData({
-      start_date: startDate ? startDate.toISOString().split('T')[0] : '',
-      end_date: endDate ? endDate.toISOString().split('T')[0] : '',
-    });
-  }, [startDate, endDate]);
+  // useEffect(() => {
+  //   setFormData({
+  //     start_date: startDate ? startDate.toISOString().split('T')[0] : '',
+  //     end_date: endDate ? endDate.toISOString().split('T')[0] : '',
+  //   });
+  // }, [startDate, endDate]);
 
   // Update localStorage when settings change
-  useEffect(() => {
-    if (settings?.data?.trx_dt) {
-      setFormData({
-        start_date: settings?.data?.trx_dt,
-        end_date: addDayInDate(settings?.data?.trx_dt, 1),
-      });
-      setCurrentDate(settings.data.trx_dt);
-      setNextDate(settings.data.trx_dt);
-      setNextDate(addDayInDate(settings.data.trx_dt, 1));
-    }
-    dispatch(getSettings());
-  }, [settings.data.trx_dt, dayclose?.data?.trx_date]);
+  // useEffect(() => {
+  //   if (settings?.data?.trx_dt) {
+  //     setFormData({
+  //       start_date: settings?.data?.trx_dt,
+  //       end_date: addDayInDate(settings?.data?.trx_dt, 1),
+  //     });
+  //     setCurrentDate(settings.data.trx_dt);
+  //     setNextDate(settings.data.trx_dt);
+  //     setNextDate(addDayInDate(settings.data.trx_dt, 1));
+  //   }
+  //   // dispatch(getSettings());
+  // }, [settings.data.trx_dt, dayclose?.data?.trx_date]);
 
   // Listen for changes in other tabs
   useEffect(() => {
     const handleStorageChange = (event) => {
       if (event.key === 'settings_updated') {
-        dispatch(getSettings());
+        // dispatch(getSettings());
       }
     };
 
@@ -84,9 +82,11 @@ const RemoveApproval = () => {
     await dispatch(
       removeVoucherApproval(formData, (message, success) => {
         if (success) {
-            toast.success(message);
+          console.log('Remove Approval Response:', message);
+          toast.success(message);
         } else {
-            toast.info(message?.message);
+          console.log('Remove Approval Response else:', message);
+            toast.info(message);
         }
       }),
     );
@@ -95,12 +95,8 @@ const RemoveApproval = () => {
       setSaveButtonLoading(false);
     }, 1000);
   };
-  const handleStartDate = (e: any) => {
-    setStartDate(e);
-  };
-  const handleEndDate = (e: any) => {
-    setEndDate(e);
-  };
+
+
 
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, type, value, checked } = e.target;
@@ -118,15 +114,15 @@ const RemoveApproval = () => {
  
   return (
     <>
-      <HelmetTitle title="Voucher Remove Approval " />
+      <HelmetTitle title="Remove Voucher Approval " />
       <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 justify-center mx-auto mt-5 ">
        
         {/* endDate, setEndDate */}
         <div className="w-full mb-1">
           <InputElement
-                id="name"
-                value={formData.name || ''}
-                name="name"
+                id="remove_for_approval"
+                value={formData.remove_for_approval || ''}
+                name="remove_for_approval"
                 placeholder={'Enter Voucher Number'}
                  label={'Enter voucher number for remove approval.'}
                 className={''}
@@ -144,7 +140,7 @@ const RemoveApproval = () => {
             icon={<FaRegSquareMinus className="text-white text-lg ml-2  mr-2" />}
           />
           <Link
-            to="/admin/dayclose"
+            to="/admin/voucher-approval"
             className="text-nowrap justify-center mr-0 h-8"
           >
             <FaArrowLeft className="text-white text-lg ml-2  mr-2" /> 
