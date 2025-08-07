@@ -79,21 +79,62 @@ function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
 }
 
-console.log("React Version", React.version); 
+
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const dispatch = useDispatch();
 
   const { isLoggedIn, isLoading, me } = useSelector((s: any) => s.auth);
-  const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
+  const currentBranch = useSelector((s: any) => s.branchList);
+
+
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
     dispatch(authCheck());
   }, []);
 
-  console.log("currentBranch", currentBranch?.business_type_id); 
+useEffect(() => {
+  if (!currentBranch || !currentBranch?.currentBranch?.company) return;
+  const name = currentBranch?.currentBranch?.company?.name;
+
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+  };
+
+  const sluggedName = slugify(name);
+  const dynamicFaviconUrl = `https://nibirnirman.cashbookbd.com/public/backend/${sluggedName}.png`;
+  const fallbackFaviconUrl = 'https://nibirnirman.cashbookbd.com/public/backend/nibir-nirman.png';
+
+  const updateFavicon = (url: string) => {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = url;
+  };
+
+  // Try loading the dynamic favicon first
+  const img = new Image();
+  img.src = dynamicFaviconUrl;
+
+  img.onload = () => {
+    console.log('Dynamic favicon loaded successfully.');
+    updateFavicon(dynamicFaviconUrl);
+  };
+
+  img.onerror = () => {
+    console.warn('Dynamic favicon failed to load. Falling back to default.');
+    updateFavicon(fallbackFaviconUrl);
+  };
+}, [currentBranch]);
 
 
   return (

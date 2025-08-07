@@ -16,8 +16,7 @@ const CashReceivedIndex = () => {
     dispatch(userCurrentBranch());
   }
 }, [currentBranch, dispatch]);
-
-console.log('Loading current branch...', currentBranch);
+ 
 if (!currentBranch || !currentBranch.business_type_id) {
   return <Loader />;
 }
