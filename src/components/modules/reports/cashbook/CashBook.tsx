@@ -9,7 +9,7 @@ import { getCashBook } from './cashBookSlice';
 import { FiBook, FiCheckCircle, FiEdit, FiTrash2, FiX } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import dayjs from 'dayjs'; 
+import dayjs from 'dayjs';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from './../../../utils/utils-functions/thousandSeparator';
 
@@ -33,7 +33,6 @@ const CashBook = (user: any) => {
     additionalDetails: string;
   }
 
-
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setIsSelected(user.user.branch_id);
@@ -45,7 +44,6 @@ const CashBook = (user: any) => {
     setTableData(cashBookData?.data);
   }, [cashBookData]);
 
-
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
   };
@@ -56,7 +54,7 @@ const CashBook = (user: any) => {
     setEndDate(e);
   };
   const handleActionButtonClick = (e: any) => {
-    console.log( user.user.branch_id); 
+    console.log(user.user.branch_id);
 
     const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
@@ -66,7 +64,10 @@ const CashBook = (user: any) => {
   };
 
   useEffect(() => {
-    if (branchDdlData?.protectedData?.data && branchDdlData?.protectedData?.transactionDate) {
+    if (
+      branchDdlData?.protectedData?.data &&
+      branchDdlData?.protectedData?.transactionDate
+    ) {
       setDropdownData(branchDdlData?.protectedData?.data);
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
@@ -78,84 +79,97 @@ const CashBook = (user: any) => {
     }
   }, [branchDdlData?.protectedData?.data]);
 
-  const handleCheckBtnClick = () => {
-  };
+  const handleCheckBtnClick = () => {};
 
   const columns = [
     {
       key: 'sl_number',
-      header: 'Sl. No', 
-      width: '100px',
+      header: 'Sl. No',
+      width: '80px',
       headerClass: 'text-center',
       cellClass: 'text-center',
-      render: (row:any) => <div className="w-25">{ row?.sl_number ? row.sl_number : '-'}</div>,
+      render: (row: any) => <div>{row?.sl_number ? row.sl_number : '-'}</div>,
     },
-    
     {
       key: 'vr_date',
-      header: 'Vr Date', 
+      header: 'Vr Date',
+      width: '80px',
+      headerClass: 'text-center',
+      cellClass: 'text-center !px-1',
     },
     {
       key: 'vr_no',
-      header: 'Vr No', 
+      header: 'Vr No',
+      width: '80px',
+      headerClass: 'text-center',
+      cellClass: 'text-center !px-2',
     },
     {
       key: 'nam',
       header: 'Description',
-      render: (row:any) => (
-        <>
-          <p>
-            <a href={"http://localhost:5173/reports/ledger"} target='_blank'>
-            <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
-            {row.somity ? <span className="text-sm"> ({row?.somity?.idfr_code})</span> : ''}
-            {row.somity ? (
-            <>
-              <p className="text-sm text-gray-500 dark:text-gray-500">
-                {row?.somity?.somity_name && row?.somity?.somity_id ? `${row.somity.somity_name} (${row.somity.somity_id})` : ''} 
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-500">{row?.somity?.mobile}</p>
-            </>
-          ) : (
-            ''
-          )}
+      render: (row: any) => (
+        <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
+          <div className="truncate">
+            <a href="http://localhost:5173/reports/ledger" target="_blank">
+              <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
+              {row.somity ? (
+                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
+              ) : (
+                ''
+              )}
+              {row.somity && (
+                <>
+                  <p className="text-sm text-gray-500">
+                    {row?.somity?.somity_name && row?.somity?.somity_id
+                      ? `${row.somity.somity_name} (${row.somity.somity_id})`
+                      : ''}
+                  </p>
+                  <p className="text-sm text-gray-500">{row?.somity?.mobile}</p>
+                </>
+              )}
             </a>
-          </p>
-          
-          <p className="text-sm text-gray-500 break-words whitespace-normal">{row?.remarks}</p>
-        </>
+          </div>
+          <div className="text-sm text-gray-500 break-words whitespace-normal">
+            {row?.remarks}
+          </div>
+        </div>
       ),
     },
     {
       key: 'credit',
-      header: 'Received', 
+      header: 'Received',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
-          <p className="">{ row.credit > 0 ? thousandSeparator(row.credit, 0) : '-'}</p>
+          <p className="">
+            {row.credit > 0 ? thousandSeparator(row.credit, 0) : '-'}
+          </p>
         </>
       ),
     },
     {
       key: 'debit',
-      header: 'Payment', 
+      header: 'Payment',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
-          <p className="">{ row.debit > 0 ? thousandSeparator(row.debit, 0) : '-'}</p>
+          <p className="">
+            {row.debit > 0 ? thousandSeparator(row.debit, 0) : '-'}
+          </p>
         </>
       ),
     },
     {
       key: 'voucher_image',
       header: 'Voucher',
-      render: (row:any) => {
+      render: (row: any) => {
         return (
           <ImagePopup
             title={row?.remarks || ''}
-            branchPad={row?.branchPad || ''}  
-            voucher_image={row?.voucher_image || ''}  
+            branchPad={row?.branchPad || ''}
+            voucher_image={row?.voucher_image || ''}
           />
         );
       },
@@ -163,22 +177,37 @@ const CashBook = (user: any) => {
     {
       key: 'action',
       header: 'Action',
-      render: (row:any) => {
-        const isNumber = row?.sl_number && !isNaN(Number(row.sl_number)) && Number(row.sl_number) > 0;
+      render: (row: any) => {
+        const isNumber =
+          row?.sl_number &&
+          !isNaN(Number(row.sl_number)) &&
+          Number(row.sl_number) > 0;
         return (
           <>
             {row?.vr_no ? (
               <>
-              <button onClick={() => handleCheckBtnClick()} className="cursor-pointer">
-                  { row?.is_approved ? (<FiCheckCircle className="text-green-500 font-bold" />) : (<FiTrash2 className="text-red-500" />)}
+                <button
+                  onClick={() => handleCheckBtnClick()}
+                  className="cursor-pointer"
+                >
+                  {row?.is_approved ? (
+                    <FiCheckCircle className="text-green-500 font-bold" />
+                  ) : (
+                    <FiTrash2 className="text-red-500" />
+                  )}
                 </button>
-                <button onClick={() => handleCheckBtnClick()} className="text-blue-500 ml-2">
+                <button
+                  onClick={() => handleCheckBtnClick()}
+                  className="text-blue-500 ml-2"
+                >
                   <FiBook className="cursor-pointer" />
                 </button>
-                <button onClick={() => handleCheckBtnClick()} className="text-blue-500 ml-2">
+                <button
+                  onClick={() => handleCheckBtnClick()}
+                  className="text-blue-500 ml-2"
+                >
                   <FiEdit className="cursor-pointer" />
                 </button>
-                
               </>
             ) : (
               ''
@@ -205,17 +234,17 @@ const CashBook = (user: any) => {
               {' '}
               <label htmlFor="">Select Branch</label>
             </div>
-            <div className='w-full'>
+            <div className="w-full">
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
-                defaultValue={ user?.user?.branch_id }
+                defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
                 className="w-60 font-medium text-sm p-1.5 "
                 branchDdl={dropdownData}
               />
             </div>
           </div>
-          <div className='w-full'>
+          <div className="w-full">
             <label htmlFor="">Start Date</label>
             <InputDatePicker
               setCurrentDate={handleStartDate}
@@ -224,7 +253,7 @@ const CashBook = (user: any) => {
               setSelectedDate={setStartDate}
             />
           </div>
-          <div className='w-full'>
+          <div className="w-full">
             <label htmlFor="">End Date</label>
             <InputDatePicker
               setCurrentDate={handleEndDate}
@@ -233,7 +262,7 @@ const CashBook = (user: any) => {
               setSelectedDate={setEndDate}
             />
           </div>
-          <div className='w-full'>
+          <div className="w-full">
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
@@ -243,7 +272,7 @@ const CashBook = (user: any) => {
           </div>
         </div>
       </div>
-      <div className='overflow-y-auto'>
+      <div className="overflow-y-auto">
         {cashBookData.isLoading ? <Loader /> : ''}
         <Table columns={columns} data={tableData || []} />
       </div>
