@@ -73,6 +73,7 @@ const TradingBusinessPurchase = () => {
   const [productData, setProductData] = useState<any>({});
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateId, setUpdateId] = useState<any>(null);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
 
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
@@ -371,15 +372,17 @@ const TradingBusinessPurchase = () => {
   }, [purchase.isUpdated]);
 
   const handlePurchaseInvoiceSave = async () => {
-    // Check Required fields are not empty
+    setSaveButtonLoading(true);
     const validationMessages = validateForm(formData, invoiceMessage);
     if (validationMessages) {
       toast.info(validationMessages);
+      setSaveButtonLoading(false);
       return;
     }
 
     if (!formData.account || formData.products.length === 0) {
       toast.error('Please add products information!');
+      setSaveButtonLoading(false);
       return;
     }
 
@@ -388,6 +391,21 @@ const TradingBusinessPurchase = () => {
         if (message) {
           toast.error(message);
         }
+        setTimeout(() => {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            paymentAmt: '',
+            discountAmt: 0,
+            notes: '',
+            invoice_no: '',
+            invoice_date: '',
+            vehicleNumber: '',
+            purchaseOrderNumber: '',
+            purchaseOrderText: '',
+            products: [],
+          }));
+          setSaveButtonLoading(false);
+        }, 1000);
       }),
     );
   };

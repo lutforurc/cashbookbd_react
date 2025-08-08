@@ -258,7 +258,7 @@ const ConstructionBusinessPurchase = () => {
       warehouse: productData.warehouse || '',
     };
     products[updateId] = newItem;
-    // Add the product to the formData.products array
+  
     setFormData((prevFormData) => ({
       ...prevFormData,
       products: products,
@@ -344,6 +344,12 @@ const ConstructionBusinessPurchase = () => {
           // resetProducts();
           setFormData((prevFormData) => ({
             ...prevFormData,
+            paymentAmt: '',
+            discountAmt: 0,
+            notes: '',
+            invoice_no: '',
+            invoice_date: '',
+            vehicleNumber: '',
             products: [],
           }));
         }, 1000);
@@ -415,6 +421,7 @@ const ConstructionBusinessPurchase = () => {
     setVoucherType(e.target.value);
   };
   useEffect(() => {
+
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty) || 0;
       const price = parseFloat(product.price) || 0;
@@ -426,8 +433,10 @@ const ConstructionBusinessPurchase = () => {
 
     setFormData((prev) => ({
       ...prev,
-      paymentAmt: netTotal.toFixed(2), // Keep as string
+      paymentAmt: netTotal.toFixed(0), // Keep as string
     }));
+
+    console.log( formData.discountAmt ); 
   }, [formData.account, formData.products, formData.discountAmt]);
 
   useCtrlS(handlePurchaseInvoiceSave);
@@ -534,7 +543,7 @@ const ConstructionBusinessPurchase = () => {
               />
               <InputElement
                 id="paymentAmt"
-                value={formData.paymentAmt}
+                value={formData.paymentAmt.toString()}
                 name="paymentAmt"
                 placeholder={'Payment Amount'}
                 disabled={Number(formData.account) === 17}
