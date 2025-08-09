@@ -109,6 +109,7 @@ const ROUTES = {
   admin_change_date: '/admin/voucher/date-change',
 
   image_upload: '/admin/image-upload',
+  bulk_upload: '/admin/bulk-upload',
 
   // Invoices
   // Purchase

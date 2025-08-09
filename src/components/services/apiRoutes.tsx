@@ -11,6 +11,22 @@ export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
+
+let API_REMOTE_URLs = window.location.origin;
+console.log("Test Url", API_REMOTE_URLs ); 
+
+// // লোকাল ডোমেইন চেক
+// const localHosts = ['localhost', '127.0.0.1', 'cashbook_api.test'];
+
+// if (localHosts.includes(window.location.hostname)) {
+//   API_REMOTE_URL = 'http://cashbook_api.test';
+// }
+
+// // ==================== API Routes ==================== //
+// export { API_REMOTE_URL };
+
+
+
 export const API_CSRF_COOKIES = API_REMOTE_URL + '/sanctum/csrf-cookie';
 export const API_BASE_URL = API_REMOTE_URL + '/api';
 export const API_LOGIN_URL = API_BASE_URL + '/login';

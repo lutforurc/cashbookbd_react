@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import Loader from './common/Loader';
-import PageTitle from './components/PageTitle';
-import SignIn from './pages/Authentication/SignIn';
-import SignUp from './pages/Authentication/SignUp';
-import Calendar from './pages/Calendar';
-import Chart from './pages/Chart';
-import ECommerce from './pages/dashboard/ECommerce';
+import SignIn from './pages/Authentication/SignIn'; 
+import Calendar from './pages/Calendar'; 
 import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
-import Profile from './pages/Profile';
-import Settings from './pages/Settings';
-import Tables from './pages/Tables';
+import Profile from './pages/Profile';  
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
-import DefaultLayout from './layout/DefaultLayout';
-import LoginLayout from './layout/LoginLayout';
+import DefaultLayout from './layout/DefaultLayout'; 
 import { authCheck } from './features/authReducer';
 import Dashboard from './components/modules/dashboard/Dashboard';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,8 +19,7 @@ import DateWiseData from './components/modules/reports/datewisedata/DateWiseData
 import AddProduct from './components/modules/product/AddProduct';
 import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
-import EditCategory from './components/modules/category/EditCategory';
-import EditProduct from './components/modules/product/EditProduct';
+import EditCategory from './components/modules/category/EditCategory'; 
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import Ledger from './components/modules/reports/ledger/Ledger';
 import CoaL4 from './components/modules/chartofaccounts/levelfour/CoaL4';
@@ -57,8 +48,7 @@ import VoucherApproval from './components/modules/voucher_approval/VoucherApprov
 import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
 import CashReceivedIndex from './components/modules/transactions/cashreceived/CashReceivedIndex';
-import CashPaymentIndex from './components/modules/transactions/cashpayment/CashPaymentIndex';
-import LabourIndex from './components/modules/invoices/labour/LabourIndex';
+import CashPaymentIndex from './components/modules/transactions/cashpayment/CashPaymentIndex'; 
 import ChangeVoucherType from './components/modules/change_voucher_type/ChangeVoucherType';
 import CustomerSupplier from './components/modules/customer-supplier/CustomerSupplier';
 import MultipleImageUpload from './components/modules/image-upload/MultipleImageUpload';
@@ -75,6 +65,7 @@ import LabourLedger from './components/modules/reports/ledger-labour/LabourLedge
 import ConstructionLabourInvoice from './components/modules/invoices/labour/ConstructionLabourInvoice';
 import RemoveApproval from './components/modules/voucher_approval/RemoveApproval';
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
+import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 
 function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
@@ -238,6 +229,10 @@ function App() {
             <Route
               path={routes.image_upload}
               element={<MultipleImageUpload user={me} />}
+            />
+            <Route
+              path={routes.bulk_upload}
+              element={<BulkImageUpload user={me} />}
             />
             <Route
               path={routes.admin_voucher_approval}
