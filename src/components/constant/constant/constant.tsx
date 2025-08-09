@@ -402,6 +402,12 @@ export const IMAGE_UPLOAD_PENDING = 'IMAGE/UPLOAD/pending';
 export const IMAGE_UPLOAD_SUCCESS = 'IMAGE/UPLOAD/success';
 export const IMAGE_UPLOAD_ERROR = 'IMAGE/UPLOAD/error';
 
+
+// Bulk Image Upload Constants
+export const BULK_IMAGE_UPLOAD_PENDING = 'BULK/IMAGE/UPLOAD/pending';
+export const BULK_IMAGE_UPLOAD_SUCCESS = 'BULK/IMAGE/UPLOAD/success';
+export const BULK_IMAGE_UPLOAD_ERROR = 'BULK/IMAGE/UPLOAD/error';
+
 // Voucher For Image List
 export const GET_VOUCHER_FOR_IMAGE_LIST_PENDING =
   'VOUCHER/FOR/IMAGE/list/pending';

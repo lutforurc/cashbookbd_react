@@ -12,8 +12,8 @@ export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
 
-let API_REMOTE_URLs = window.location.origin;
-console.log("Test Url", API_REMOTE_URLs ); 
+// let API_REMOTE_URLs = window.location.origin;
+// console.log("Test Url", API_REMOTE_URLs ); 
 
 // // লোকাল ডোমেইন চেক
 // const localHosts = ['localhost', '127.0.0.1', 'cashbook_api.test'];
@@ -203,6 +203,7 @@ export const API_DDL_AREA_LIST_URL = API_BASE_URL + '/area/ddl-list';
 // /admin/voucher/upload/{id}
 
 export const API_IMAGE_UPLOAD_URL = API_BASE_URL + '/admin/voucher/upload/';
+export const API_BULK_IMAGE_UPLOAD_URL = API_BASE_URL + '/admin/bulk-image/upload';
 
 // User management Routes
 export const API_GET_ROLES_URL = API_BASE_URL + '/role/role-list';

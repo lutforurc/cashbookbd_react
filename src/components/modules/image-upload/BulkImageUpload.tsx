@@ -7,9 +7,12 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
 import { Attachment, ImageVoucherType } from '../../utils/fields/DataConstant';
 import { toast } from 'react-toastify';
-import { uploadImage } from './imageUploadSlice';
+import { bulkUploadImages } from './imageUploadSlice';
+import dayjs from 'dayjs'; 
+import { setTime } from 'react-datepicker/dist/date_utils';
+import SelectOption from '../../utils/utils-functions/SelectOption';
 
-const BulkImageUpload: React.FC = (user: any) => {
+export default function BulkImageUpload(user: any): JSX.Element { 
   const [files, setFiles] = useState<File[] | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
@@ -26,6 +29,14 @@ const BulkImageUpload: React.FC = (user: any) => {
     }
   };
 
+  const [voucherImageFormData, setVoucherImageFormData] = useState({
+    branch_id: user.user.branch_id,
+    voucher_type: '',
+    image_type: '',
+    start_date: settings?.data?.trx_dt,
+    end_date: settings?.data?.trx_dt,
+    vouchers: [], // Initialize with an empty array
+  });
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
     setVoucherImageFormData((prev) => ({
@@ -35,18 +46,22 @@ const BulkImageUpload: React.FC = (user: any) => {
   };
   const handleStartDate = (date: Date) => {
     setStartDate(date);
+    setVoucherImageFormData((prev) => ({
+      ...prev,
+      start_date: dayjs(date).format('YYYY-MM-DD'),
+    }));
   };
+
+  
+
+  // console.log( "Settings:", settings?.data?.trx_dt)
 
   const handleEndDate = (date: Date) => {
     setEndDate(date);
-  };
-
-  const handleUpload = () => {
-    setButtonLoading(true);
-    setTimeout(() => {
-      setButtonLoading(false);
-      alert('Images uploaded successfully!');
-    }, 2000);
+    setVoucherImageFormData((prev) => ({
+      ...prev,
+      end_date: dayjs(date).format('YYYY-MM-DD'),
+    }));
   };
 
   useEffect(() => {
@@ -65,60 +80,56 @@ const BulkImageUpload: React.FC = (user: any) => {
     }
   }, [branchDdlData?.protectedData?.data]);
 
-  const handleActionButtonClick = async () => {
-    if (!files || files.length === 0) {
-      toast.warning('Please select files first!');
-      return;
-    }
+const handleUploadBulkImage = async () => {
+  setButtonLoading(true);
 
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('images[]', file); // append all selected images
-    });
+  if (!files || files.length === 0) {
+    toast.warning('Please select files first!');
+    setButtonLoading(false);  // Stop loading immediately
+    return;
+  }
 
-    // Logging FormData entries
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value); // Will log the key and value pairs
-    }
-
-    // Continue with appending other fields to FormData
-    formData.append('branch_id', voucherImageFormData.branch_id.toString());
-    formData.append('voucher_type', voucherImageFormData.voucher_type);
-    formData.append('image_type', voucherImageFormData.image_type);
-    formData.append('start_date', voucherImageFormData.start_date);
-    formData.append('end_date', voucherImageFormData.end_date);
-
-    // Attach updated vouchers data (for sending updated data)
-    formData.append('vouchers', JSON.stringify(voucherImageFormData.vouchers));
-
-    setButtonLoading(true);
-
-    try {
-      // Assuming your backend endpoint for uploading is '/upload-voucher-images'
-      // const response = await axios.post('/upload-voucher-images', formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //   },
-      // });
-      await dispatch(uploadImage(formData, id));
-
-      // Handle successful response
-      toast.success('Voucher uploaded successfully!');
-      setButtonLoading(false);
-    } catch (error) {
-      toast.error('Failed to upload data');
-      setButtonLoading(false);
-    }
-  };
-
-  const [voucherImageFormData, setVoucherImageFormData] = useState({
-    branch_id: user.user.branch_id,
-    voucher_type: '',
-    image_type: '',
-    start_date: settings?.data?.trx_dt,
-    end_date: settings?.data?.trx_dt,
-    vouchers: [], // Initialize with an empty array
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append('images[]', file); // append all selected images
   });
+
+  // Logging FormData entries
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value); // Will log the key and value pairs
+  }
+
+  // Continue with appending other fields to FormData
+  formData.append('branch_id', voucherImageFormData.branch_id.toString());
+  formData.append('voucher_type', voucherImageFormData.voucher_type);
+  formData.append('image_type', voucherImageFormData.image_type);
+  formData.append('start_date', voucherImageFormData.start_date);
+  formData.append('end_date', voucherImageFormData.end_date);
+
+  try {
+    await dispatch(
+      bulkUploadImages(formData, (message, success) => {
+        if (success) {
+          console.log('Success Message:', message);
+          toast.success(message);
+
+          // Clear the files state after successful upload
+          setFiles([]);  // This should be fine now, as the upload is successful
+        } else {
+          console.log('Error Message:', message);
+          toast.info(message);
+        }
+      })
+    );
+
+    // After uploading, stop the loading button
+    setButtonLoading(false);
+  } catch (error) {
+    toast.error('Failed to upload data');
+    setButtonLoading(false);  // Stop loading immediately on error
+  }
+};
+
 
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -193,7 +204,7 @@ const BulkImageUpload: React.FC = (user: any) => {
         {/* 6. Run Button (narrow) */}
         <div className="lg:col-span-1 w-full">
           <ButtonLoading
-            onClick={handleActionButtonClick}
+            onClick={handleUploadBulkImage}
             buttonLoading={buttonLoading}
             label="Run"
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
@@ -213,7 +224,7 @@ const BulkImageUpload: React.FC = (user: any) => {
             />
             <label
               htmlFor="file-upload"
-              className="cursor-pointer text-blue-600 underline"
+              className="cursor-pointer text-black dark:text-white underline font-bold"
             >
               Choose Voucher
             </label>
@@ -223,12 +234,12 @@ const BulkImageUpload: React.FC = (user: any) => {
               </span>
             )}
           </div>
-          <ButtonLoading
+          {/* <ButtonLoading
             onClick={handleUpload}
             buttonLoading={buttonLoading}
             label="Upload"
             className="bg-green-600 text-white px-6 py-2 rounded-md"
-          />
+          /> */}
         </div>
       </div>
 
@@ -254,4 +265,4 @@ const BulkImageUpload: React.FC = (user: any) => {
   );
 };
 
-export default BulkImageUpload;
+// export default BulkImageUpload;

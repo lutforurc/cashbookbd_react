@@ -9,23 +9,13 @@ import Loader from '../../../common/Loader';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { getCashBook } from '../reports/cashbook/cashBookSlice';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import {
   Attachment,
-  image_type,
   ImageVoucherType,
-  status,
 } from '../../utils/fields/DataConstant';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import ImagePopup from '../../utils/others/ImagePopup';
-
-// type Voucher = {
-//   id: number;
-//   serial_no: number;
-//   name: string;
-//   amount: number;
-// };
 
 type FileMap = { [voucherId: number]: File[] };
 type PreviewMap = { [voucherId: number]: string[] };
@@ -160,10 +150,6 @@ export default function VoucherUpload(user: any): JSX.Element {
     try {
       const formData = new FormData();
 
-      // selectedFiles.forEach((file, index) => {
-      //   formData.append(`images[${index}]`, file);
-      // });
-
       selectedFiles.forEach((file) => {
         formData.append('images[]', file); // ✅ correct way to send multiple files
       });
@@ -174,8 +160,7 @@ export default function VoucherUpload(user: any): JSX.Element {
       for (let [key, value] of formData.entries()) {
         console.log(key, value);
       }
-
-      // await dispatch(uploadImage({ formData, id }));
+ 
       await dispatch(uploadImage(formData, id));
 
       toast.success('Files uploaded successfully!');
