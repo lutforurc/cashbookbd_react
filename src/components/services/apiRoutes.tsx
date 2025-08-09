@@ -3,11 +3,11 @@
 // export const API_REMOTE_URL = 'https://krf.cashbookbd.com';
 // export const API_REMOTE_URL = 'http://127.0.0.1:8000';
 // export const API_REMOTE_URL = 'https://staging.cashbookbd.com';
-export const API_REMOTE_URL = 'http://cashbook_api.test';
+// export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL = 'https://mikdad.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://kpsnew.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
-// export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
+export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
@@ -15,14 +15,12 @@ export const API_REMOTE_URL = 'http://cashbook_api.test';
 // let API_REMOTE_URLs = window.location.origin;
 // console.log("Test Url", API_REMOTE_URLs ); 
 
-// // লোকাল ডোমেইন চেক
 // const localHosts = ['localhost', '127.0.0.1', 'cashbook_api.test'];
 
 // if (localHosts.includes(window.location.hostname)) {
 //   API_REMOTE_URL = 'http://cashbook_api.test';
 // }
 
-// // ==================== API Routes ==================== //
 // export { API_REMOTE_URL };
 
 

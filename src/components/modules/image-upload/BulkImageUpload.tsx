@@ -8,12 +8,12 @@ import Loader from '../../../common/Loader';
 import { Attachment, ImageVoucherType } from '../../utils/fields/DataConstant';
 import { toast } from 'react-toastify';
 import { bulkUploadImages } from './imageUploadSlice';
-import dayjs from 'dayjs'; 
-import { setTime } from 'react-datepicker/dist/date_utils';
-import SelectOption from '../../utils/utils-functions/SelectOption';
+import dayjs from 'dayjs';
+import { FiX } from 'react-icons/fi';
+import HelmetTitle from '../../utils/others/HelmetTitle';
 
-export default function BulkImageUpload(user: any): JSX.Element { 
-  const [files, setFiles] = useState<File[] | null>(null);
+export default function BulkImageUpload(user: any): JSX.Element {
+  const [files, setFiles] = useState<File[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -23,9 +23,16 @@ export default function BulkImageUpload(user: any): JSX.Element {
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
   const dispatch = useDispatch();
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files));
+      const selectedFiles = Array.from(e.target.files).filter(
+        (file) => file.size <= 5 * 1024 * 1024,
+      ); // 5MB size limit
+      if (selectedFiles.length !== e.target.files.length) {
+        toast.warning('Some files are too large and were not added.');
+      }
+      setFiles(selectedFiles);
     }
   };
 
@@ -52,8 +59,6 @@ export default function BulkImageUpload(user: any): JSX.Element {
     }));
   };
 
-  
-
   // console.log( "Settings:", settings?.data?.trx_dt)
 
   const handleEndDate = (date: Date) => {
@@ -63,6 +68,13 @@ export default function BulkImageUpload(user: any): JSX.Element {
       end_date: dayjs(date).format('YYYY-MM-DD'),
     }));
   };
+
+  useEffect(() => {
+    return () => {
+      // Cleanup object URLs when component unmounts
+      files.forEach((file) => URL.revokeObjectURL(file));
+    };
+  }, [files]);
 
   useEffect(() => {
     if (
@@ -80,66 +92,71 @@ export default function BulkImageUpload(user: any): JSX.Element {
     }
   }, [branchDdlData?.protectedData?.data]);
 
-const handleUploadBulkImage = async () => {
-  setButtonLoading(true);
+  const handleUploadBulkImage = async () => {
+    setButtonLoading(true);
 
-  if (!files || files.length === 0) {
-    toast.warning('Please select files first!');
-    setButtonLoading(false);  // Stop loading immediately
-    return;
-  }
+    if (!files || files.length === 0) {
+      toast.warning('Please select files first!');
+      setButtonLoading(false); // Stop loading immediately
+      return;
+    }
 
-  const formData = new FormData();
-  files.forEach((file) => {
-    formData.append('images[]', file); // append all selected images
-  });
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('images[]', file); // append all selected images
+    });
 
-  // Logging FormData entries
-  for (let [key, value] of formData.entries()) {
-    console.log(key, value); // Will log the key and value pairs
-  }
+    // Logging FormData entries
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value); // Will log the key and value pairs
+    }
 
-  // Continue with appending other fields to FormData
-  formData.append('branch_id', voucherImageFormData.branch_id.toString());
-  formData.append('voucher_type', voucherImageFormData.voucher_type);
-  formData.append('image_type', voucherImageFormData.image_type);
-  formData.append('start_date', voucherImageFormData.start_date);
-  formData.append('end_date', voucherImageFormData.end_date);
+    // Continue with appending other fields to FormData
+    formData.append('branch_id', voucherImageFormData.branch_id.toString());
+    formData.append('voucher_type', voucherImageFormData.voucher_type);
+    formData.append('image_type', voucherImageFormData.image_type);
+    formData.append('start_date', voucherImageFormData.start_date);
+    formData.append('end_date', voucherImageFormData.end_date);
 
-  try {
-    await dispatch(
-      bulkUploadImages(formData, (message, success) => {
-        if (success) {
-          console.log('Success Message:', message);
-          toast.success(message);
+    try {
+      await dispatch(
+        bulkUploadImages(formData, (message, success) => {
+          if (success) {
+            console.log('Success Message:', message);
+            toast.success(message);
 
-          // Clear the files state after successful upload
-          setFiles([]);  // This should be fine now, as the upload is successful
-        } else {
-          console.log('Error Message:', message);
-          toast.info(message);
-        }
-      })
-    );
+            // Clear the files state after successful upload
+            setFiles([]); // This should be fine now, as the upload is successful
+          } else {
+            console.log('Error Message:', message);
+            toast.info(message);
+          }
+        }),
+      );
 
-    // After uploading, stop the loading button
-    setButtonLoading(false);
-  } catch (error) {
-    toast.error('Failed to upload data');
-    setButtonLoading(false);  // Stop loading immediately on error
-  }
-};
-
+      // After uploading, stop the loading button
+      setButtonLoading(false);
+    } catch (error) {
+      toast.error('Failed to upload data');
+      setButtonLoading(false); // Stop loading immediately on error
+    }
+  };
 
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setVoucherImageFormData({ ...voucherImageFormData, [name]: value });
+  };
 
-    console.log('Selected value:', voucherImageFormData);
+  const handleRemoveFile = (index: number) => {
+    if (window.confirm('Are you sure you want to remove this file?')) {
+      const updatedFiles = files.filter((_, i) => i !== index);
+      setFiles(updatedFiles);
+    }
   };
 
   return (
     <div className="max-w-screen-lg mx-auto p-4">
+      <HelmetTitle title={'Bulk Voucher Upload'} />
       <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-9 w-full gap-2">
         {/* 1. Branch Dropdown (wide) */}
         <div className="col-span-1 lg:col-span-2">
@@ -234,12 +251,6 @@ const handleUploadBulkImage = async () => {
               </span>
             )}
           </div>
-          {/* <ButtonLoading
-            onClick={handleUpload}
-            buttonLoading={buttonLoading}
-            label="Upload"
-            className="bg-green-600 text-white px-6 py-2 rounded-md"
-          /> */}
         </div>
       </div>
 
@@ -249,13 +260,20 @@ const handleUploadBulkImage = async () => {
           {/* <h3 className="text-xl font-medium mb-4">Voucher Viewer</h3> */}
           <div className="grid grid-cols-3 gap-4">
             {files.map((file, index) => (
-              <div key={index} className="border p-2 rounded-md">
+              <div key={index} className="border p-2 rounded-md relative">
                 <img
                   src={URL.createObjectURL(file)}
                   alt={file.name}
                   className="w-full h-auto object-cover"
                 />
                 <p className="mt-2 text-sm">{file.name}</p>
+                {/* Remove button */}
+                <button
+                  className="mt-2 text-red-500 text-3xl absolute top-2 right-4 bg-gray-100 border border-gray-300"
+                  onClick={() => handleRemoveFile(index)}
+                >
+                  <FiX />
+                </button>
               </div>
             ))}
           </div>
@@ -263,6 +281,6 @@ const handleUploadBulkImage = async () => {
       )}
     </div>
   );
-};
+}
 
 // export default BulkImageUpload;
