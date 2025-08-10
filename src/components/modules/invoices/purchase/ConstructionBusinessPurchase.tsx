@@ -268,7 +268,7 @@ const ConstructionBusinessPurchase = () => {
   };
 
   const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price),
+    (sum, row) => sum + Math.floor(Number(row.qty) * Number(row.price)),
     0,
   );
 
@@ -425,7 +425,7 @@ const ConstructionBusinessPurchase = () => {
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty) || 0;
       const price = parseFloat(product.price) || 0;
-      return acc + qty * price;
+      return acc + Math.floor(qty * price);
     }, 0);
 
     const discount = formData.discountAmt || 0;
@@ -543,7 +543,7 @@ const ConstructionBusinessPurchase = () => {
               />
               <InputElement
                 id="paymentAmt"
-                value={formData.paymentAmt.toString()}
+                value={totalAmount.toString()}
                 name="paymentAmt"
                 placeholder={'Payment Amount'}
                 disabled={Number(formData.account) === 17}
@@ -855,7 +855,7 @@ const ConstructionBusinessPurchase = () => {
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.price) * Number(row.qty), 2)}
+                    {thousandSeparator(Math.floor(Number(row.price) * Number(row.qty)), 2)}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}
