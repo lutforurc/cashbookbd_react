@@ -9,7 +9,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { VOUCHER_TYPES } from '../../../constant/constant/variables';
+import { TRANSACTION_VOUCHER_TYPES, VOUCHER_TYPES } from '../../../constant/constant/variables';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
@@ -74,7 +74,7 @@ const GroupPurchaseSales = (user:any) => {
 
   return (
     <>
-      <HelmetTitle title="Voucher Change Date" />
+      <HelmetTitle title="Group Report" />
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -82,7 +82,7 @@ const GroupPurchaseSales = (user:any) => {
       >
         {({ isSubmitting, setFieldValue, values, errors, touched }) => (
           <Form>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-1">
               <div>
                 <label>Select Branch</label>
                 {branchDdlData.isLoading && <Loader />}
@@ -103,13 +103,13 @@ const GroupPurchaseSales = (user:any) => {
                 <DropdownCommon
                   id="voucher_type"
                   name="voucher_type"
-                  label="Select voucher_type"
+                  label="Select Transaction Type"
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setFieldValue('voucher_type', e.target.value)
                   }
                   defaultValue={values.voucher_type}
                   className="w-60 font-medium text-sm p-1.5"
-                  data={VOUCHER_TYPES}
+                  data={TRANSACTION_VOUCHER_TYPES}
                 />
                 {touched.voucher_type && errors.voucher_type && (
                   <div className="text-red-500 text-sm">
@@ -118,12 +118,12 @@ const GroupPurchaseSales = (user:any) => {
                 )}
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-2">
               <div className="w-full">
-                <label htmlFor="present_date">Enter Current Date</label>
+                {/* <label htmlFor="present_date">Enter Start Date</label> */}
                 <InputDatePicker
                   setCurrentDate={handleStartDate}
+                  label='Enter Start Date'
                   className="font-medium text-sm w-full h-8"
                   selectedDate={
                     values.present_date ? new Date(values.present_date) : null
@@ -140,9 +140,10 @@ const GroupPurchaseSales = (user:any) => {
                 )}
               </div>
               <div className="w-full">
-                <label htmlFor="change_date">Enter Change Date</label>
+                {/* <label htmlFor="change_date">Enter End Date</label> */}
                 <InputDatePicker
                   setCurrentDate={handleStartDate}
+                  label='Enter End Date'
                   className="font-medium text-sm w-full h-8"
                   selectedDate={
                     values.change_date ? new Date(values.change_date) : null
@@ -158,8 +159,7 @@ const GroupPurchaseSales = (user:any) => {
                 )}
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-5">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-2">
               <div className="flex flex-col">
                 <InputElement
                   id="start_voucher"
@@ -194,9 +194,8 @@ const GroupPurchaseSales = (user:any) => {
                   </div>
                 )}
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-5">
+            </div> */}
+            <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-2">
               <div className="grid grid-cols-1 gap-1 md:grid-cols-3">
                 <ButtonLoading
                   type="submit"

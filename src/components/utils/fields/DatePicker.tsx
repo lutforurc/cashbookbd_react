@@ -33,7 +33,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         onChange={handleDateChange} // Update state when a new date is selected
         dateFormat="dd/MM/yyyy" // Format for the date
         peekNextMonth
-        placeholderText='Valid date'
+        placeholderText={label ? label : 'Enter Valid date'}
         wrapperClassName="w-full"
         dropdownMode="select"
         onKeyDown={onKeyDown ?? (() => {})} // Pass it to the input
