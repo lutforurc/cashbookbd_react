@@ -219,18 +219,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         )}
                         {currentBranch?.business_type_id == 4 && (
                           <li>
-                          <NavLink
-                            to="/admin/installment-details"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                              (isActive && '!text-white')
-                            }
-                          >
-                            Installments
-                          </NavLink>
-                        </li>
+                            <NavLink
+                              to="/admin/installment-details"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Installments
+                            </NavLink>
+                          </li>
                         )}
-                        
+
                         {hasPermission(permissions, 'cash.payment.create') && (
                           <li>
                             <NavLink
@@ -305,6 +305,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
                         (pathname === '/invoice/purchase' ||
                           pathname === '/invoice/sales' ||
+                          pathname === '/invoice/labour-invoice' ||
                           pathname.includes('/invoice/sales')) &&
                         'bg-graydark dark:bg-meta-4'
                       }`}
@@ -371,6 +372,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <SidebarLinkGroup
                 activeCondition={
                   pathname === '/branch/branch-list' ||
+                  pathname === '/user/user-list' ||
+                  pathname === '/admin/dayclose' ||
+                  pathname === '/order/order-list' ||
                   pathname.includes('forms')
                 }
                 menuId="admin"
@@ -386,6 +390,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/user/user-list' ||
                           pathname === '/admin/dayclose' ||
                           pathname === '/order/order-list' ||
+                          pathname === '/admin/voucher-approval' ||
+                          pathname === '/admin/remove-approval' ||
+                          pathname === '/admin/voucher/type-change' ||
+                          pathname === '/admin/image-upload' ||
+                          pathname === '/admin/bulk-upload' ||
+                          pathname === '/admin/jumpdate' ||
+                          pathname === '/admin/voucher/date-change' ||
+                          pathname === '/orders/avg-price' ||
                           pathname.includes('/branch/branch-list')) &&
                         'bg-graydark dark:bg-meta-4'
                       }`}
@@ -564,6 +576,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   pathname === '/reports/due-list' ||
                   pathname === '/reports/purchase-ledger' ||
                   pathname === '/reports/sales-ledger' ||
+                  pathname === '/reports/group-report' ||
                   pathname === '/reports/mitch-match' ||
                   pathname.includes('forms')
                 }
@@ -584,6 +597,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname.includes('/reports/cat-wise/in-out') ||
                           pathname.includes('/reports/purchase-ledger') ||
                           pathname.includes('/reports/sales-ledger') ||
+                          pathname.includes('/reports/group-report') ||
+                          pathname.includes('/reports/labour/ledger') ||
                           pathname.includes('/reports/mitch-match') ||
                           pathname.includes('reports/ledger')) &&
                         'bg-graydark dark:bg-meta-4'
@@ -620,18 +635,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         {/* {hasPermission(permissions, 'cashbook.view') && ( */}
                         {currentBranch?.business_type_id == 4 && (
                           <li>
-                          <NavLink
-                            to="/reports/due-installments"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                              (isActive && '!text-white')
-                            }
-                          >
-                            Due Installments
-                          </NavLink>
-                        </li>
+                            <NavLink
+                              to="/reports/due-installments"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Due Installments
+                            </NavLink>
+                          </li>
                         )}
-                        
 
                         {currentBranch?.business_type_id == 4 && (
                           <li>
@@ -739,6 +753,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             }
                           >
                             Sales Ledger
+                          </NavLink>
+                        </li>
+                        <li>
+                          <NavLink
+                            to="/reports/group-report"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Group Report
                           </NavLink>
                         </li>
                         <li>

@@ -66,6 +66,7 @@ import ConstructionLabourInvoice from './components/modules/invoices/labour/Cons
 import RemoveApproval from './components/modules/voucher_approval/RemoveApproval';
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
+import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
 
 function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
@@ -204,10 +205,8 @@ function App() {
               path={routes.sales_ledger}
               element={<SalesLedger user={me} />}
             />
-            <Route
-              path={routes.mitch_match}
-              element={<MitchMatch user={me} />}
-            />
+            <Route path={routes.mitch_match} element={<MitchMatch user={me} />} />
+            <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
             <Route
               path={routes.report_product_stock}
               element={<ProductStock user={me} />}

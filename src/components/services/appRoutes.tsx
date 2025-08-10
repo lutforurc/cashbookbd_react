@@ -82,6 +82,7 @@ const ROUTES = {
   sales_ledger          : '/reports/sales-ledger',
   mitch_match           : '/reports/mitch-match',
   report_labour_ledger  : '/reports/labour/ledger',
+  group_report          : '/reports/group-report',
 
   // Cash Received',
   cash_received: '/accounts/cash/receive',
