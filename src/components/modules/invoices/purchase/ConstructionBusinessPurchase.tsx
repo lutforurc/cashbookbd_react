@@ -548,7 +548,7 @@ const ConstructionBusinessPurchase = () => {
                 placeholder={'Payment Amount'}
                 disabled={Number(formData.account) === 17}
                 label={'Payment Amount'}
-                className={'py-1'}
+                className={'py-1 text-right'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -562,10 +562,11 @@ const ConstructionBusinessPurchase = () => {
                   }
                 }}
               />
-              <div className="flex items-end mb-2">
-                <p className="text-xs font-bold dark:text-white">
-                  Total Tk. {thousandSeparator(totalAmount, 0)}
-                </p>
+              <div className="grid grid-cols-1 md:gap-x-1 -mb-1">
+                <span>Total Tk. </span>
+                <span className="text-xs font-bold dark:text-white">
+                  {thousandSeparator(totalAmount, 0)}
+                </span>
               </div>
               {/* {hasPermission(permissions, 'purchase.edit') && (
                                 <div className='relative col-span-2 '>
