@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { FaHouse, FaArrowLeft, FaArrowsTurnToDots } from 'react-icons/fa6';
@@ -9,12 +9,8 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import {
-  TRANSACTION_VOUCHER_TYPES,
-  VOUCHER_TYPES,
-} from '../../../constant/constant/variables';
+import { TRANSACTION_VOUCHER_TYPES } from '../../../constant/constant/variables';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import { changeVoucherDate } from './groupPurchaseSalesSlice';

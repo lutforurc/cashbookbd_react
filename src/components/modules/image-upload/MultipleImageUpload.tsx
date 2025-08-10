@@ -201,13 +201,7 @@ export default function VoucherUpload(user: any): JSX.Element {
   };
 
   const handleActionButtonClick = (e: any) => {
-    console.log(voucherImageFormData);
-    const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
-    const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-
     dispatch(getVoucherForImage(voucherImageFormData));
-    // await dispatch(getVoucherForImage(formData, id));
-    // setTableData(cashBookData?.data);
   };
 
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
