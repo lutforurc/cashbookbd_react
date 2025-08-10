@@ -155,12 +155,12 @@ export default function BulkImageUpload(user: any): JSX.Element {
   };
 
   return (
-    <div className="max-w-screen-lg mx-auto p-4">
+    <div className="mx-auto p-4">
       <HelmetTitle title={'Bulk Voucher Upload'} />
       <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-9 w-full gap-2">
         {/* 1. Branch Dropdown (wide) */}
         <div className="col-span-1 lg:col-span-2">
-          <label htmlFor="">Select Branch</label>
+          <label className='font-sm text-gray-900 dark:text-gray-100' htmlFor="">Select Branch</label>
           <div className="w-full">
             {branchDdlData.isLoading === true ? <Loader /> : ''}
             <BranchDropdown
@@ -198,7 +198,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
 
         {/* 4. Start Date (narrow) */}
         <div className="lg:col-span-1 w-full">
-          <label htmlFor="">Start Date</label>
+          <label className='text-sm text-gray-900 dark:text-gray-100' htmlFor="">Start Date</label>
           <InputDatePicker
             setCurrentDate={handleStartDate}
             className="font-medium text-sm w-full h-8"
@@ -209,7 +209,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
 
         {/* 5. End Date (narrow) */}
         <div className="lg:col-span-1 w-full">
-          <label htmlFor="">End Date</label>
+          <label className='text-sm text-gray-900 dark:text-gray-100' htmlFor="">End Date</label>
           <InputDatePicker
             setCurrentDate={handleEndDate}
             className="font-medium text-sm w-full h-8"
@@ -241,12 +241,12 @@ export default function BulkImageUpload(user: any): JSX.Element {
             />
             <label
               htmlFor="file-upload"
-              className="cursor-pointer text-black dark:text-white underline font-bold"
+              className="cursor-pointer text-black dark:text-white underline font-bold text-xl"
             >
               Choose Voucher
             </label>
             {files && files.length > 0 && (
-              <span className="ml-2 text-sm text-gray-500">
+              <span className="ml-2 text-sm text-black dark:text-white">
                 {files.length} file(s) selected
               </span>
             )}
