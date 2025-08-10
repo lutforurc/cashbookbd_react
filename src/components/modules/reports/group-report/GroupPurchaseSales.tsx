@@ -104,7 +104,7 @@ const GroupPurchaseSales = (user: any) => {
 
   return (
     <>
-      <HelmetTitle title="Group Report" />
+      <HelmetTitle title="Category wise purchase & sales" />
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
