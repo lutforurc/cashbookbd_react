@@ -25,7 +25,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
 
   return (
     <div className='w-full'>
-      <label htmlFor="">{label}</label>
+      <label className='text-gray-900 dark:text-white text-sm' htmlFor="">{label}</label>
       <DatePicker
         id={id}
         name={name || id}

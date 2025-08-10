@@ -9,21 +9,28 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { TRANSACTION_VOUCHER_TYPES, VOUCHER_TYPES } from '../../../constant/constant/variables';
+import {
+  TRANSACTION_VOUCHER_TYPES,
+  VOUCHER_TYPES,
+} from '../../../constant/constant/variables';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import { changeVoucherDate } from './groupPurchaseSalesSlice';
+import { getCategoryDdl } from '../../category/categorySlice';
 
-
-
-const GroupPurchaseSales = (user:any) => {
+const GroupPurchaseSales = (user: any) => {
   const dispatch = useDispatch();
   const { me } = useSelector((state: any) => state.auth);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
-
+  const category = useSelector((state) => state.category);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    dispatch(getCategoryDdl({ search }));
+  }, []);
 
   useEffect(() => {
     // dispatch(getVoucherTypes());
@@ -33,7 +40,6 @@ const GroupPurchaseSales = (user:any) => {
   useEffect(() => {
     setDropdownData(branchDdlData?.protectedData?.data || []);
   }, [branchDdlData]);
-
 
   const validationSchema = Yup.object().shape({
     branch_id: Yup.string().required('Branch is required'),
@@ -53,6 +59,30 @@ const GroupPurchaseSales = (user:any) => {
     end_voucher: '',
   };
 
+  const handleOnChange = (e: any) => {
+    // const { value, type, name } = e.target;
+    // if (name === 'warranty_type') {
+    //   setFormData({
+    //     ...formData,
+    //     warranty_type: value,
+    //     warranty_days: '', // নতুন type হলে দিন আবার দিতে হবে
+    //   });
+    //   return;
+    // }
+    // switch (type) {
+    //   case 'checkbox':
+    //     setFormData({
+    //       ...formData,
+    //       [name]: e.target.checked,
+    //     });
+    //     break;
+    //   default:
+    //     setFormData({
+    //       ...formData,
+    //       [name]: value,
+    //     });
+    // }
+  };
   const handleSubmit = async (values: any, { setSubmitting }: any) => {
     const payload = {
       ...values,
@@ -84,7 +114,7 @@ const GroupPurchaseSales = (user:any) => {
           <Form>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-1">
               <div>
-                <label>Select Branch</label>
+                <label className='text-gray-900 dark:text-white text-sm'>Select Branch</label>
                 {branchDdlData.isLoading && <Loader />}
                 <BranchDropdown
                   defaultValue={values.branch_id}
@@ -118,13 +148,25 @@ const GroupPurchaseSales = (user:any) => {
                 )}
               </div>
             </div>
+            <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-2">
+              {category.isLoading == true ? <Loader /> : ''}
+              <DropdownCommon
+                id="category_id"
+                name={'category_id'}
+                label="Select Category"
+                onChange={handleOnChange}
+                className="h-[2.20rem]"
+                data={category?.data?.category}
+                // defaultValue={formData?.category_id?.toString() ?? ''}
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-2">
               <div className="w-full">
                 {/* <label htmlFor="present_date">Enter Start Date</label> */}
                 <InputDatePicker
                   setCurrentDate={handleStartDate}
-                  label='Enter Start Date'
-                  className="font-medium text-sm w-full h-8"
+                  label="Enter Start Date"
+                  className="font-medium w-full h-8 text-sm"
                   selectedDate={
                     values.present_date ? new Date(values.present_date) : null
                   }
@@ -143,7 +185,7 @@ const GroupPurchaseSales = (user:any) => {
                 {/* <label htmlFor="change_date">Enter End Date</label> */}
                 <InputDatePicker
                   setCurrentDate={handleStartDate}
-                  label='Enter End Date'
+                  label="Enter End Date"
                   className="font-medium text-sm w-full h-8"
                   selectedDate={
                     values.change_date ? new Date(values.change_date) : null
@@ -159,42 +201,7 @@ const GroupPurchaseSales = (user:any) => {
                 )}
               </div>
             </div>
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-2">
-              <div className="flex flex-col">
-                <InputElement
-                  id="start_voucher"
-                  name="start_voucher"
-                  value={values.start_voucher}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setFieldValue('start_voucher', e.target.value)
-                  }
-                  label="Start Voucher Number"
-                  placeholder="Start Voucher Number"
-                />
-                {touched.start_voucher && errors.start_voucher && (
-                  <div className="text-red-500 text-sm">
-                    {errors.start_voucher}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col">
-                <InputElement
-                  id="end_voucher"
-                  name="end_voucher"
-                  value={values.end_voucher}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setFieldValue('end_voucher', e.target.value)
-                  }
-                  label="End Voucher Number"
-                  placeholder="End Voucher Number"
-                />
-                {touched.end_voucher && errors.end_voucher && (
-                  <div className="text-red-500 text-sm">
-                    {errors.end_voucher}
-                  </div>
-                )}
-              </div>
-            </div> */}
+            
             <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-2">
               <div className="grid grid-cols-1 gap-1 md:grid-cols-3">
                 <ButtonLoading
