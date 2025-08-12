@@ -62,20 +62,3 @@ export const handleSelectKeyDown = (
     }, 100);
   }
 };
-
-// export const handleSelectKeyDown: HandleSelectKeyDownType = (event, wrapperSelector) => {
-//     if (event.key === 'Enter') {
-//         event.preventDefault();
-//         setTimeout(() => {
-//             const wrapper = document.querySelector(wrapperSelector);
-//             const input = wrapper?.querySelector('input');
-//             if (input instanceof HTMLElement) {
-//                 input.focus();
-
-//                 if ('select' in input && typeof (input as HTMLInputElement).select === 'function') {
-//                     (input as HTMLInputElement).select();
-//                 }
-//             }
-//         }, 100); // Allow dropdown selection or other DOM updates
-//     }
-// };

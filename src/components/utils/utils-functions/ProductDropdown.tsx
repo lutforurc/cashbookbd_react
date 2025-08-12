@@ -33,7 +33,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   onKeyDown,
   className,
 }) => {
-  const selectRef = useRef(null); // রেফ তৈরি
+  const selectRef = useRef(null); 
   const [isSelected, setIsSelected] = React.useState(false);
   const dispatch = useDispatch();
   const themeMode = useLocalStorage('color-theme', 'light');
