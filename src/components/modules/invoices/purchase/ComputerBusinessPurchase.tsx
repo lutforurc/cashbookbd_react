@@ -40,6 +40,7 @@ interface Product {
   id: number;
   product: number;
   product_name: string;
+  serial_no: string;
   unit: string;
   qty: string;
   price: string;
@@ -184,8 +185,9 @@ const ComputerBusinessPurchase = () => {
         (product: any) => ({
           id: product.id,
           product: product.product,
-          product_name: product.product_name, // Replace with actual logic if available
-          unit: product.unit, // Replace with actual logic if available
+          product_name: product.product_name,
+          serial_no: product.serial_no,
+          unit: product.unit,
           qty: product.quantity,
           price: product.price,
           warehouse: product.warehouse ? product.warehouse.toString() : '',
@@ -222,6 +224,7 @@ const ComputerBusinessPurchase = () => {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      serial_no: productData.serial_no || '',
       unit: productData.unit || '',
       qty: productData.qty || '',
       price: productData.price || '',
@@ -237,7 +240,6 @@ const ComputerBusinessPurchase = () => {
   const editProduct = () => {
     const isValid = validateProductData(productData);
     if (!isValid) {
-      // Proceed with form submission or API call
       return;
     }
     let products = formData.products;
@@ -245,6 +247,7 @@ const ComputerBusinessPurchase = () => {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      serial_no: productData.serial_no || '',
       unit: productData.unit || '',
       qty: productData.qty || '',
       price: productData.price || '',
@@ -276,6 +279,18 @@ const ComputerBusinessPurchase = () => {
       ...prevFormData,
       products: updatedProducts,
     }));
+  };
+
+  const handleProductSerialNumberChange = (e) => {
+    const { name, value } = e.target;
+    const updatedProduct = { ...productData, [name]: value };
+
+    if (name === 'serial_no') {
+      const barcodes = value.trim().split(/\s+/).filter(Boolean);
+      updatedProduct.qty = barcodes.length;
+    }
+
+    setProductData(updatedProduct);
   };
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -401,8 +416,7 @@ const ComputerBusinessPurchase = () => {
     setIsResetOrder(false);
   };
 
-
-useEffect(() => {
+  useEffect(() => {
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty) || 0;
       const price = parseFloat(product.price) || 0;
@@ -420,7 +434,7 @@ useEffect(() => {
 
   return (
     <>
-      <HelmetTitle title="Purchase Invoice" />
+      <HelmetTitle title="Electronics Purchase Invoice" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {purchase.isLoading ? <Loader /> : null}
         <div className="self-start md:self-auto">
@@ -605,6 +619,29 @@ useEffect(() => {
                   defaultValue={productData?.warehouse || ''}
                 />
               </div>
+              </div>
+              <div className="grid grid-cols-1">
+                <div className="block relative">
+                  <label
+                    htmlFor="serial_no"
+                    className="block text-sm font-medium text-black dark:text-white mb-1"
+                  >
+                    Enter Serial Number
+                  </label>
+                  <textarea
+                    id="serial_no"
+                    name="serial_no"
+                    placeholder="Enter Serial Number"
+                    className={`w-full px-3 py-1 text-gray-600 bg-white border rounded-xs 
+                                            outline-none dark:bg-transparent dark:border-gray-600 dark:text-white 
+                                            dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
+                                            dark:focus:ring-blue-400 dark:focus:border-blue-400`}
+                    value={productData.serial_no}
+                    onChange={handleProductSerialNumberChange}
+                    rows={1}
+                  />
+                </div>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="block relative">
@@ -695,7 +732,6 @@ useEffect(() => {
                 <span className="hidden md:block">{'Home'}</span>
               </Link>
             </div>
-          </div>
         </div>
       </div>
       <div className="mt-6 col-span-2 overflow-x-auto ">

@@ -945,7 +945,7 @@ const ElectronicsBusinessSales = () => {
                   value={productData.qty}
                   name="qty"
                   placeholder="Enter Quantity"
-                  label="Enter Quantity"
+                  label="Quantity"
                   type="number"
                   className="py-1"
                   onChange={handleProductChange}
