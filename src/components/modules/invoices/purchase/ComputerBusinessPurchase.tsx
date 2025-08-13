@@ -435,6 +435,9 @@ const ComputerBusinessPurchase = () => {
   return (
     <>
       <HelmetTitle title="Electronics Purchase Invoice" />
+      <div className='text-center font-bold'>
+        <span className="block text-red-500">(Not Ready)</span>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {purchase.isLoading ? <Loader /> : null}
         <div className="self-start md:self-auto">
@@ -619,119 +622,117 @@ const ComputerBusinessPurchase = () => {
                   defaultValue={productData?.warehouse || ''}
                 />
               </div>
-              </div>
-              <div className="grid grid-cols-1">
-                <div className="block relative">
-                  <label
-                    htmlFor="serial_no"
-                    className="block text-sm font-medium text-black dark:text-white mb-1"
-                  >
-                    Enter Serial Number
-                  </label>
-                  <textarea
-                    id="serial_no"
-                    name="serial_no"
-                    placeholder="Enter Serial Number"
-                    className={`w-full px-3 py-1 text-gray-600 bg-white border rounded-xs 
+            </div>
+            <div className="grid grid-cols-1">
+              <div className="block relative">
+                <label
+                  htmlFor="serial_no"
+                  className="block text-sm font-medium text-black dark:text-white mb-1"
+                >
+                  Enter Serial Number
+                </label>
+                <textarea
+                  id="serial_no"
+                  name="serial_no"
+                  placeholder="Enter Serial Number"
+                  className={`w-full px-3 py-1 text-gray-600 bg-white border rounded-xs 
                                             outline-none dark:bg-transparent dark:border-gray-600 dark:text-white 
                                             dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
                                             dark:focus:ring-blue-400 dark:focus:border-blue-400`}
-                    value={productData.serial_no}
-                    onChange={handleProductSerialNumberChange}
-                    rows={1}
-                  />
-                </div>
+                  value={productData.serial_no}
+                  onChange={handleProductSerialNumberChange}
+                  rows={1}
+                />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div className="block relative">
-                <InputElement
-                  id="qty"
-                  value={productData.qty}
-                  name="qty"
-                  placeholder={'Enter Quantity'}
-                  label={'Quantity'}
-                  className={'py-1'}
-                  type="number"
-                  onChange={handleProductChange}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'price')} // Pass the next field's ID
-                />
-                <span className="absolute top-7 right-3 z-50">{unit}</span>
-              </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="block relative">
               <InputElement
-                id="price"
-                value={productData.price}
-                name="price"
-                placeholder={'Enter Price'}
-                label={'Price'}
+                id="qty"
+                value={productData.qty}
+                name="qty"
+                placeholder={'Enter Quantity'}
+                label={'Quantity'}
                 className={'py-1'}
                 type="number"
                 onChange={handleProductChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')} // Pass the next field's ID
+                onKeyDown={(e) => handleInputKeyDown(e, 'price')} // Pass the next field's ID
               />
-              <div></div>
+              <span className="absolute top-7 right-3 z-50">{unit}</span>
             </div>
-            <div className="grid grid-cols-4 gap-x-1 gap-y-1">
-              {isUpdating ? (
-                <ButtonLoading
-                  onClick={editProduct}
-                  buttonLoading={buttonLoading}
-                  label="Update"
-                  className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
-                />
-              ) : (
-                <ButtonLoading
-                  id="addProduct"
-                  onClick={addProduct}
-                  buttonLoading={buttonLoading}
-                  label="Add New"
-                  className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addProduct();
-                      setTimeout(() => {
-                        const product = document.getElementById('product');
-                        product?.focus();
-                      }, 100);
-                    }
-                  }}
-                />
-              )}
-              {purchase.isEdit ? (
-                <ButtonLoading
-                  onClick={handleInvoiceUpdate}
-                  buttonLoading={buttonLoading}
-                  label="Update"
-                  className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
-                />
-              ) : (
-                <ButtonLoading
-                  onClick={handlePurchaseInvoiceSave}
-                  buttonLoading={buttonLoading}
-                  label="Save"
-                  className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
-                />
-              )}
-
+            <InputElement
+              id="price"
+              value={productData.price}
+              name="price"
+              placeholder={'Enter Price'}
+              label={'Price'}
+              className={'py-1'}
+              type="number"
+              onChange={handleProductChange}
+              onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')} // Pass the next field's ID
+            />
+            <div></div>
+          </div>
+          <div className="grid grid-cols-4 gap-x-1 gap-y-1">
+            {isUpdating ? (
               <ButtonLoading
-                onClick={resetProducts}
+                onClick={editProduct}
                 buttonLoading={buttonLoading}
-                label="Reset"
-                className="whitespace-nowrap text-center mr-0"
-                icon={
-                  <FiRefreshCcw className="text-white text-lg ml-2  mr-2" />
-                }
+                label="Update"
+                className="whitespace-nowrap text-center mr-0 py-1.5"
+                icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
               />
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
-              </Link>
-            </div>
+            ) : (
+              <ButtonLoading
+                id="addProduct"
+                onClick={addProduct}
+                buttonLoading={buttonLoading}
+                label="Add New"
+                className="whitespace-nowrap text-center mr-0 py-1.5"
+                icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addProduct();
+                    setTimeout(() => {
+                      const product = document.getElementById('product');
+                      product?.focus();
+                    }, 100);
+                  }
+                }}
+              />
+            )}
+            {purchase.isEdit ? (
+              <ButtonLoading
+                onClick={handleInvoiceUpdate}
+                buttonLoading={buttonLoading}
+                label="Update"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+              />
+            ) : (
+              <ButtonLoading
+                onClick={handlePurchaseInvoiceSave}
+                buttonLoading={buttonLoading}
+                label="Save"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+              />
+            )}
+
+            <ButtonLoading
+              onClick={resetProducts}
+              buttonLoading={buttonLoading}
+              label="Reset"
+              className="whitespace-nowrap text-center mr-0"
+              icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
+            />
+            <Link to="/dashboard" className="text-nowrap justify-center mr-0">
+              <FiHome className="text-white text-lg ml-2  mr-2" />
+              <span className="hidden md:block">{'Home'}</span>
+            </Link>
+          </div>
         </div>
       </div>
       <div className="mt-6 col-span-2 overflow-x-auto ">

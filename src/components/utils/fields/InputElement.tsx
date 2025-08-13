@@ -33,7 +33,7 @@ const InputElement: React.FC<InputElementProps> = ({
 }) => {
   return (
     <div className="text-left flex flex-col">
-      <label htmlFor={id || name} className="text-black dark:text-white mb-1">
+      <label htmlFor={id || name} className="text-black dark:text-white">
         {label}
       </label>
       <input
