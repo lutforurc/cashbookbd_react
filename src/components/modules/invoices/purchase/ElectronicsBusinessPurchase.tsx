@@ -47,7 +47,7 @@ interface Product {
   warehouse: string;
 }
 
-const ComputerBusinessPurchase = () => {
+const ElectronicsBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const purchase = useSelector((s: any) => s.constructionPurchase);
   const settings = useSelector((s: any) => s.settings);
@@ -824,4 +824,4 @@ const ComputerBusinessPurchase = () => {
   );
 };
 
-export default ComputerBusinessPurchase;
+export default ElectronicsBusinessPurchase;

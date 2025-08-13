@@ -154,15 +154,20 @@ export const API_CATEGORY_EDIT_URL = API_BASE_URL + '/category/edit/';
 export const API_CATEGORY_UPDATE_URL =API_BASE_URL + '/category/category-update';
 export const API_CATEGORY_CHECK = API_BASE_URL + '/category/category-check';
 
-// Purchase Route
+// Trading Purchase Route
 export const API_TRADING_PURCHASE_STORE_URL =API_BASE_URL + '/trading/purchase/api-store';
 export const API_TRADING_PURCHASE_EDIT_URL =API_BASE_URL + '/trading/purchase/api-edit';
 export const API_TRADING_PURCHASE_UPDATE_URL =API_BASE_URL + '/trading/purchase/api-update';
 
-// Purchase Route
+// Construction Purchase Route
 export const API_CONSTRUCTION_PURCHASE_STORE_URL =API_BASE_URL + '/construction/purchase/api-store';
 export const API_CONSTRUCTION_PURCHASE_EDIT_URL =API_BASE_URL + '/construction/purchase/api-edit';
 export const API_CONSTRUCTION_PURCHASE_UPDATE_URL =API_BASE_URL + '/construction/purchase/api-update';
+
+// Electronics Purchase Route
+export const API_ELECTRONICS_PURCHASE_STORE_URL =API_BASE_URL + '/electronics/purchase/api-store';
+export const API_ELECTRONICS_PURCHASE_EDIT_URL =API_BASE_URL + '/electronics/purchase/api-edit';
+export const API_ELECTRONICS_PURCHASE_UPDATE_URL =API_BASE_URL + '/electronics/purchase/api-update';
 
 // Trading Sales Route
 export const API_TRADING_SALES_STORE_URL =  API_BASE_URL + '/trading/sales/api-store';
