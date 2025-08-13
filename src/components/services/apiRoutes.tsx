@@ -164,10 +164,12 @@ export const API_CONSTRUCTION_PURCHASE_STORE_URL =API_BASE_URL + '/construction/
 export const API_CONSTRUCTION_PURCHASE_EDIT_URL =API_BASE_URL + '/construction/purchase/api-edit';
 export const API_CONSTRUCTION_PURCHASE_UPDATE_URL =API_BASE_URL + '/construction/purchase/api-update';
 
+
+        
 // Electronics Purchase Route
-export const API_ELECTRONICS_PURCHASE_STORE_URL =API_BASE_URL + '/electronics/purchase/api-store';
-export const API_ELECTRONICS_PURCHASE_EDIT_URL =API_BASE_URL + '/electronics/purchase/api-edit';
-export const API_ELECTRONICS_PURCHASE_UPDATE_URL =API_BASE_URL + '/electronics/purchase/api-update';
+export const API_ELECTRONICS_PURCHASE_STORE_URL =API_BASE_URL + '/electronics/purchase/store';
+export const API_ELECTRONICS_PURCHASE_EDIT_URL =API_BASE_URL + '/electronics/purchase/edit';
+export const API_ELECTRONICS_PURCHASE_UPDATE_URL =API_BASE_URL + '/electronics/purchase/update';
 
 // Trading Sales Route
 export const API_TRADING_SALES_STORE_URL =  API_BASE_URL + '/trading/sales/api-store';
