@@ -401,15 +401,6 @@ const ComputerBusinessPurchase = () => {
     setIsResetOrder(false);
   };
 
-  useEffect(() => {
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty) || 0;
-      const price = parseFloat(product.price) || 0;
-      return acc + qty * price;
-    }, 0);
-
-    const discount = formData.discountAmt || 0;
-    const netTotal = total - discount;
 
 useEffect(() => {
     const total = formData.products.reduce((acc, product) => {

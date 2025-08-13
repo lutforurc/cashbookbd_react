@@ -75,6 +75,7 @@ const TradingBusinessSales = () => {
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
+  const [lineTotal, setLineTotal] = useState<number>(0);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -160,6 +161,7 @@ const TradingBusinessSales = () => {
     const key = 'product'; // Set the desired key dynamically
     const accountName = 'product_name'; // Set the desired key dynamically
     const unit = 'unit'; // Set the desired key dynamically
+    const price = 'price'; // Set the desired key dynamically
     setUnit(option.label_5);
 
     setProductData({
@@ -167,7 +169,16 @@ const TradingBusinessSales = () => {
       [key]: option.value,
       [accountName]: option.label,
       [unit]: option.label_5,
+      [price]: Number(option.label_3),
     });
+
+    // After setting product data, recalculate line total
+    const qty = parseFloat(productData.qty) || 0; // Use the latest qty
+    const priceValue = Number(option.label_3) || 0; // Use the price from the selected product
+    const newLineTotal = qty * priceValue;
+
+    // Update the lineTotal state with the new value
+    setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
   };
 
   const resetProducts = () => {
@@ -334,10 +345,24 @@ const TradingBusinessSales = () => {
 
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setProductData((prevState) => ({
+    const newValue = value ? parseFloat(value) : 0;
+    setProductData((prevState: any) => ({
       ...prevState,
       [name]: value,
     }));
+
+    // Update product data state
+    setProductData((prevState: any) => {
+      const updatedProductData = { ...prevState, [name]: newValue };
+
+      // Calculate line total after updating product data
+      const qty = parseFloat(updatedProductData.qty) || 0;
+      const price = parseFloat(updatedProductData.price) || 0;
+      const newLineTotal = qty * price;
+
+      setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
+      return updatedProductData;
+    });
   };
 
   useEffect(() => {
@@ -829,17 +854,20 @@ const TradingBusinessSales = () => {
                 />
                 <span className="absolute top-7 right-3 z-50">{unit}</span>
               </div>
-              <InputElement
-                id="price"
-                value={productData.price}
-                name="price"
-                type="number"
-                placeholder={'Enter Price'}
-                label={'Enter Price'}
-                className={'py-1'}
-                onChange={handleProductChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
-              />
+              <div className="block relative">
+                <InputElement
+                  id="price"
+                  value={productData.price}
+                  name="price"
+                  type="number"
+                  placeholder={'Enter Price'}
+                  label={'Enter Price'}
+                  className={'py-1'}
+                  onChange={handleProductChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
+                />
+                <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
+              </div>
             </div>
             <div className="grid grid-cols-4 gap-x-1 gap-y-1">
               {isUpdating ? (

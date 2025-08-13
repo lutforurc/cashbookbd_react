@@ -185,7 +185,7 @@ const TradingBusinessPurchase = () => {
     const newLineTotal = qty * priceValue;
 
     // Update the lineTotal state with the new value
-    setLineTotal(newLineTotal);
+    setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
   };
 
   const resetProducts = () => {
@@ -372,9 +372,8 @@ const TradingBusinessPurchase = () => {
       const qty = parseFloat(updatedProductData.qty) || 0;
       const price = parseFloat(updatedProductData.price) || 0;
       const newLineTotal = qty * price;
-
-      setLineTotal(newLineTotal); // Update lineTotal state here
-
+ 
+      setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
       return updatedProductData;
     });
   };

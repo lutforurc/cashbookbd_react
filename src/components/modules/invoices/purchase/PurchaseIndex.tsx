@@ -4,6 +4,7 @@ import ConstructionBusinessPurchase from './ConstructionBusinessPurchase';
 import { useEffect } from 'react';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import Loader from '../../../../common/Loader';
+import ComputerBusinessPurchase from './ComputerBusinessPurchase';
 
 const PurchaseIndex = () => {
   const dispatch = useDispatch();
@@ -22,7 +23,7 @@ const PurchaseIndex = () => {
   }
 
   const components: { [key: number]: JSX.Element } = {
-    // 4: <TradingBusinessPurchase />,
+    4: <ComputerBusinessPurchase />,
     7: <ConstructionBusinessPurchase />,
     8: <TradingBusinessPurchase />,
   };
