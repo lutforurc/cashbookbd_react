@@ -104,20 +104,7 @@ const ConstructionBusinessPurchase = () => {
     products: [],
   };
 
-  const [formData, setFormData] = useState<FormData>({
-    mtmId: '',
-    account: '',
-    accountName: '',
-    invoice_no: '',
-    invoice_date: '',
-    paymentAmt: '',
-    discountAmt: 0,
-    vehicleNumber: '',
-    notes: '',
-    currentProduct: null, // Initialize `currentProduct` as null
-    searchInvoice: '',
-    products: [],
-  });
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
   useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {

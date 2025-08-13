@@ -90,9 +90,8 @@ const ElectronicsBusinessSales = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [isInstallment, setIsInstallment] = useState(false);
   const [isEarlyPayment, setIsEarlyPayment] = useState(false);
-  const [showInstallmentPopup, setShowInstallmentPopup] = useState(false);
-  const [showEarlyPaymentProps, setShowEarlyPaymentProps] = useState(false);
-  const topRef = useRef<HTMLDivElement | null>(null);
+  const [showInstallmentPopup, setShowInstallmentPopup] = useState(false); 
+    const [lineTotal, setLineTotal] = useState<number>(0);
   const [editedInstallments, setEditedInstallments] = useState<
     editInstallmentData[]
   >([]);
@@ -159,13 +158,24 @@ const ElectronicsBusinessSales = () => {
     const key = 'product';
     const accountName = 'product_name';
     const unit = 'unit';
+    const price = 'price'; // Set the desired key dynamically
     setUnit(option.label_5);
     setProductData({
       ...productData,
       [key]: option.value,
       [accountName]: option.label,
       [unit]: option.label_5,
+      [price]: Number(option.label_3),
     });
+
+    // After setting product data, recalculate line total
+    const qty = parseFloat(productData.qty) || 0; 
+    const priceValue = Number(option.label_3) || 0; 
+    const newLineTotal = qty * priceValue;
+
+    // Update the lineTotal state with the new value
+    setLineTotal(newLineTotal);
+
   };
 
   const resetProducts = () => {
@@ -224,10 +234,10 @@ const ElectronicsBusinessSales = () => {
 
               setTimeout(() => {
                 window.scrollTo({
-                  top: 0, // উপরের দিকে স্ক্রল করানো হবে
+                  top: 0,
                   behavior: 'smooth',
                 });
-              }, 200); // ✅ render এর পর scroll
+              }, 200); 
             }
           }
         },
@@ -331,10 +341,22 @@ const ElectronicsBusinessSales = () => {
 
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setProductData((prevState) => ({
+    const newValue = value ? parseFloat(value) : 0;
+    setProductData((prevState:any) => ({
       ...prevState,
       [name]: value,
     }));
+    // Update product data state
+    setProductData((prevState: any) => {
+      const updatedProductData = { ...prevState, [name]: newValue };
+
+      // Calculate line total after updating product data
+      const qty = parseFloat(updatedProductData.qty) || 0;
+      const price = parseFloat(updatedProductData.price) || 0;
+      const newLineTotal = qty * price;
+      setLineTotal(newLineTotal); // Update lineTotal state here
+      return updatedProductData;
+    });
   };
 
   useEffect(() => {
@@ -374,7 +396,10 @@ const ElectronicsBusinessSales = () => {
       return;
     }
 
-    if (isInstallment && (!installmentData.amount || !installmentData.numberOfInstallments)) {
+    if (
+      isInstallment &&
+      (!installmentData.amount || !installmentData.numberOfInstallments)
+    ) {
       toast.info('Please fill all installment details.');
       return;
     }
@@ -404,7 +429,7 @@ const ElectronicsBusinessSales = () => {
 
   const handleInvoiceUpdate = async () => {
     // setUpdateButtonLoading(true);
-    
+
     const validationMessages = validateForm(formData, invoiceMessage);
     if (validationMessages) {
       toast.info(validationMessages);
@@ -608,7 +633,6 @@ const ElectronicsBusinessSales = () => {
       paymentAmt: netTotal.toFixed(2), // Keep as string
     }));
   }, [formData.account, formData.products, formData.discountAmt]);
-
 
   return (
     <>
@@ -927,18 +951,21 @@ const ElectronicsBusinessSales = () => {
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'price')}
                 />
-                <span className="absolute top-7 right-3 z-50">{unit}</span>
+                <span className="absolute top-8 right-3 z-50">{unit}</span>
               </div>
-              <InputElement
-                id="price"
-                value={productData.price}
-                name="price"
-                placeholder="Enter Price"
-                label="Enter Price"
-                className="py-1"
-                onChange={handleProductChange}
-                // onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
-              />
+              <div className="block relative">
+                <InputElement
+                  id="price"
+                  value={productData.price}
+                  name="price"
+                  placeholder="Enter Price"
+                  label="Enter Price"
+                  className="py-1"
+                  onChange={handleProductChange}
+                  // onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
+                />
+                <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
+              </div>
             </div>
             <div className="grid grid-cols-4 gap-x-1 gap-y-1">
               {isUpdating ? (
@@ -973,7 +1000,7 @@ const ElectronicsBusinessSales = () => {
                 <ButtonLoading
                   onClick={handleInvoiceUpdate}
                   buttonLoading={updateButtonLoading}
-                  label={updateButtonLoading ? "Updating..." : "Update"}
+                  label={updateButtonLoading ? 'Updating...' : 'Update'}
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-white text-lg ml-2 mr-2" />}
                   disabled={updateButtonLoading}
@@ -982,13 +1009,13 @@ const ElectronicsBusinessSales = () => {
                 <ButtonLoading
                   onClick={handleInvoiceSave}
                   buttonLoading={saveButtonLoading}
-                  label={saveButtonLoading ? "Saving..." : "Save"}
+                  label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
                 />
               )}
-              
+
               <ButtonLoading
                 onClick={resetProducts}
                 buttonLoading={buttonLoading}
