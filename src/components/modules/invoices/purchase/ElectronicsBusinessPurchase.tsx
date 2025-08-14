@@ -35,6 +35,7 @@ import {
   constructionPurchaseStore,
   constructionPurchaseUpdate,
 } from './constructionPurchaseSlice.tsx';
+import { electronicsPurchaseStore } from './electronicsPurchaseSlice.tsx';
 
 interface Product {
   id: number;
@@ -341,7 +342,7 @@ const ElectronicsBusinessPurchase = () => {
     }
 
     dispatch(
-      constructionPurchaseStore(formData, function (message) {
+      electronicsPurchaseStore(formData, function (message) {
         if (message) {
           toast.error(message);
         }

@@ -165,7 +165,7 @@ export const API_CONSTRUCTION_PURCHASE_EDIT_URL =API_BASE_URL + '/construction/p
 export const API_CONSTRUCTION_PURCHASE_UPDATE_URL =API_BASE_URL + '/construction/purchase/api-update';
 
 
-        
+
 // Electronics Purchase Route
 export const API_ELECTRONICS_PURCHASE_STORE_URL =API_BASE_URL + '/electronics/purchase/store';
 export const API_ELECTRONICS_PURCHASE_EDIT_URL =API_BASE_URL + '/electronics/purchase/edit';
