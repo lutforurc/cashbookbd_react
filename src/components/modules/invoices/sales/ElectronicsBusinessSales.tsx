@@ -85,7 +85,6 @@ const ElectronicsBusinessSales = () => {
   const [productData, setProductData] = useState<any>({});
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateId, setUpdateId] = useState<any>(null);
-  const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [permissions, setPermissions] = useState<any>([]);
   const [isInstallment, setIsInstallment] = useState(false);
@@ -109,6 +108,14 @@ const ElectronicsBusinessSales = () => {
     dispatch(getDdlWarehouse());
     setPermissions(settings.data.permissions);
   }, []);
+
+  useEffect(() => {
+    if (productData.qty) {
+      const qty = parseFloat(productData.qty) || 0;
+      const price = parseFloat(productData.price) || 0;
+      setLineTotal(qty * price);
+    }
+  }, [productData.qty]);
 
   interface FormData {
     mtmId: string;
