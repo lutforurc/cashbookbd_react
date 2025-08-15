@@ -270,11 +270,7 @@ const TradingBusinessPurchase = () => {
   }, [purchase?.data]);
 
   const addProduct = () => {
-    const isValid = validateProductData(productData);
-    if (!isValid) {
-      // Proceed with form submission or API call
-      return;
-    }
+ if (!validateProductData(productData)) return;
 
     // Generate a unique ID for the product
     const newProduct: Product = {

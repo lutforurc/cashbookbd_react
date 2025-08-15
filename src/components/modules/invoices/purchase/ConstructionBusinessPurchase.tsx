@@ -170,6 +170,11 @@ const ConstructionBusinessPurchase = () => {
     setIsInvoiceUpdate(true);
   };
 
+  const totalAmount = formData.products.reduce(
+    (sum, row) => sum + Number(row.qty) * Number(row.price),
+    0,
+  );
+
   // Process `purchase.data` when it updates
   useEffect(() => {
     if (purchase?.data?.invoice_date) {
@@ -217,11 +222,7 @@ const ConstructionBusinessPurchase = () => {
   }, [purchase?.data]);
 
   const addProduct = () => {
-    const isValid = validateProductData(productData);
-    if (!isValid) {
-      // Proceed with form submission or API call
-      return;
-    }
+    if (!validateProductData(productData)) return;
 
     // Generate a unique ID for the product
     const newProduct: Product = {
@@ -243,11 +244,8 @@ const ConstructionBusinessPurchase = () => {
 
   const editProduct = () => {
     const isValid = validateProductData(productData);
-    if (!isValid) {
-      // Proceed with form submission or API call
-      return;
-    }
-    let products = formData.products;
+    if (!isValid) return;
+
     let newItem: Product = {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
@@ -257,20 +255,16 @@ const ConstructionBusinessPurchase = () => {
       price: productData.price || '',
       warehouse: productData.warehouse || '',
     };
-    products[updateId] = newItem;
 
     setFormData((prevFormData) => ({
       ...prevFormData,
-      products: products,
+      products: prevFormData.products.map((item, index) =>
+        index === updateId ? newItem : item,
+      ),
     }));
     setIsUpdating(false);
     setUpdateId(null);
   };
-
-  const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Math.floor(Number(row.qty) * Number(row.price)),
-    0,
-  );
 
   const handleDelete = (id: number) => {
     // Filter out the product with the matching id
@@ -289,7 +283,12 @@ const ConstructionBusinessPurchase = () => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value,
+      [name]:
+        name === 'discountAmt'
+          ? isNaN(parseFloat(value))
+            ? 0
+            : parseFloat(value)
+          : value,
     }));
   };
 
@@ -344,6 +343,11 @@ const ConstructionBusinessPurchase = () => {
 
     if (!formData.account || formData.products.length === 0) {
       toast.error('Please add products information!');
+      setSaveButtonLoading(false);
+      return;
+    }
+    if (formData.paymentAmt == '') {
+      toast.error('Please add payment amount!');
       setSaveButtonLoading(false);
       return;
     }
@@ -434,23 +438,49 @@ const ConstructionBusinessPurchase = () => {
   const handleChangeVoucherType = (e: any) => {
     setVoucherType(e.target.value);
   };
+  
+
+    useEffect(() => {
+      if (formData.account == '17') {
+        setFormData((prevState) => ({
+          ...prevState,
+          paymentAmt: 
+            totalAmount > 0
+              ? (totalAmount - prevState.discountAmt).toString()
+              : '0',
+        }));
+      } else {
+        setFormData((prevState) => ({
+          ...prevState,
+          paymentAmt: '',
+        }));
+      }
+    }, [formData.account]);
+
+
   useEffect(() => {
+    // Calculate total from products
     const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty) || 0;
-      const price = parseFloat(product.price) || 0;
-      return acc + Math.floor(qty * price);
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
     }, 0);
 
-    const discount = formData.discountAmt || 0;
-    const netTotal = total - discount;
+    // Parse discountAmt, default to 0 if invalid
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
 
+    // Calculate net total
+    let netTotal = 0;
+    if (total > 0) {
+      netTotal = total - discount;
+    }
+
+    // Update paymentAmt based on account condition
     setFormData((prev) => ({
       ...prev,
-      paymentAmt: netTotal.toFixed(0), // Keep as string
+      paymentAmt: netTotal.toString(),
     }));
-
-    console.log(formData.discountAmt);
-  }, [formData.account, formData.products, formData.discountAmt]);
+  }, [formData.products, formData.discountAmt]);
 
   useCtrlS(handlePurchaseInvoiceSave);
 
@@ -556,7 +586,7 @@ const ConstructionBusinessPurchase = () => {
               />
               <InputElement
                 id="paymentAmt"
-                value={totalAmount.toString()}
+                value={formData.paymentAmt.toString()}
                 name="paymentAmt"
                 placeholder={'Payment Amount'}
                 disabled={Number(formData.account) === 17}
@@ -722,11 +752,11 @@ const ConstructionBusinessPurchase = () => {
                   placeholder={'Enter Quantity'}
                   label={'Quantity'}
                   type="number"
-                  className={'py-1'}
+                  className={''}
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'price')} // Pass the next field's ID
                 />
-                <span className="absolute top-8 right-3 z-50">{unit}</span>
+                <span className="absolute top-7 right-3 z-50">{unit}</span>
               </div>
 
               <div className="block relative">
@@ -737,13 +767,12 @@ const ConstructionBusinessPurchase = () => {
                   type="number"
                   placeholder={'Enter Price'}
                   label={'Price'}
-                  className={'py-1'}
+                  className={''}
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')} // Pass the next field's ID
                 />
-                <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
+                <span className="absolute top-7 right-3 z-50">{lineTotal}</span>
               </div>
-              {/* <div></div> */}
             </div>
             <div className="grid grid-cols-4 gap-x-1 gap-y-1">
               {isUpdating ? (

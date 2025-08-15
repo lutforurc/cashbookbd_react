@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import Link from '../../../utils/others/Link';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
-import { userCurrentBranch } from '../../branch/branchSlice';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import WarehouseDropdown from '../../../utils/utils-functions/WarehouseDropdown';
 import Loader from '../../../../common/Loader';
@@ -154,6 +153,11 @@ const GeneralBusinessSales = () => {
     setIsInvoiceUpdate(true);
   };
 
+  const totalAmount = formData.products.reduce(
+    (sum, row) => sum + Number(row.qty) * Number(row.price),
+    0,
+  );
+
   // Process `purchase.data` when it updates
   useEffect(() => {
     if (sales?.data?.invoice_date) {
@@ -198,11 +202,7 @@ const GeneralBusinessSales = () => {
   }, [sales?.data]);
 
   const addProduct = () => {
-    const isValid = validateProductData(productData);
-    if (!isValid) {
-      // Proceed with form submission or API call
-      return;
-    }
+    if (!validateProductData(productData)) return;
 
     // Generate a unique ID for the product
     const newProduct: Product = {
@@ -224,11 +224,8 @@ const GeneralBusinessSales = () => {
 
   const editProduct = () => {
     const isValid = validateProductData(productData);
-    if (!isValid) {
-      // Proceed with form submission or API call
-      return;
-    }
-    let products = formData.products;
+    if (!isValid) return;
+
     let newItem: Product = {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
@@ -239,20 +236,17 @@ const GeneralBusinessSales = () => {
       bag: productData.bag || '',
       warehouse: productData.warehouse || '',
     };
-    products[updateId] = newItem;
+
     // Add the product to the formData.products array
     setFormData((prevFormData) => ({
       ...prevFormData,
-      products: products,
+      products: prevFormData.products.map((item, index) =>
+        index === updateId ? newItem : item,
+      ),
     }));
     setIsUpdating(false);
     setUpdateId(null);
   };
-
-  const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price),
-    0,
-  );
 
   const handleDelete = (id: number) => {
     // Filter out the product with the matching id
@@ -412,20 +406,42 @@ const GeneralBusinessSales = () => {
   };
 
   useEffect(() => {
+        if (formData.account == '17') {
+          setFormData((prevState) => ({
+            ...prevState,
+            receivedAmt: 
+              totalAmount > 0
+                ? (totalAmount - prevState.discountAmt).toString()
+                : '0',
+          }));
+        } else {
+          setFormData((prevState) => ({
+            ...prevState,
+            receivedAmt: '',
+          }));
+        }
+      }, [formData.account]);
+
+
+  useEffect(() => {
     const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty) || 0;
-      const price = parseFloat(product.price) || 0;
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
       return acc + qty * price;
     }, 0);
 
-    const discount = formData.discountAmt || 0;
-    const netTotal = total - discount;
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+
+    let netTotal = 0;
+    if (total > 0) {
+      netTotal = total - discount;
+    }
 
     setFormData((prev) => ({
       ...prev,
-      paymentAmt: netTotal.toFixed(2), // Keep as string
+      receivedAmt: netTotal.toFixed(2), // Keep as string
     }));
-  }, [formData.account, formData.products, formData.discountAmt]);
+  }, [formData.products, formData.discountAmt]);
 
   return (
     <>

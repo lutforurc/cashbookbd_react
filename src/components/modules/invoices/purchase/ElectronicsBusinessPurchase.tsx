@@ -36,6 +36,7 @@ import {
   constructionPurchaseUpdate,
 } from './constructionPurchaseSlice.tsx';
 import { electronicsPurchaseStore } from './electronicsPurchaseSlice.tsx';
+import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
 
 interface Product {
   id: number;
@@ -476,7 +477,7 @@ useEffect(() => {
       setLineTotal(qty * price);
     }
   }, [productData.qty]);
-
+  useCtrlS(handlePurchaseInvoiceSave);
   return (
     <>
       <HelmetTitle title="Electronics Purchase Invoice" />
