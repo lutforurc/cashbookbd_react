@@ -89,8 +89,8 @@ const ElectronicsBusinessSales = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [isInstallment, setIsInstallment] = useState(false);
   const [isEarlyPayment, setIsEarlyPayment] = useState(false);
-  const [showInstallmentPopup, setShowInstallmentPopup] = useState(false); 
-    const [lineTotal, setLineTotal] = useState<number>(0);
+  const [showInstallmentPopup, setShowInstallmentPopup] = useState(false);
+  const [lineTotal, setLineTotal] = useState<number>(0);
   const [editedInstallments, setEditedInstallments] = useState<
     editInstallmentData[]
   >([]);
@@ -176,13 +176,12 @@ const ElectronicsBusinessSales = () => {
     });
 
     // After setting product data, recalculate line total
-    const qty = parseFloat(productData.qty) || 0; 
-    const priceValue = Number(option.label_3) || 0; 
+    const qty = parseFloat(productData.qty) || 0;
+    const priceValue = Number(option.label_3) || 0;
     const newLineTotal = qty * priceValue;
 
     // Update the lineTotal state with the new value
     setLineTotal(newLineTotal);
-
   };
 
   const resetProducts = () => {
@@ -244,7 +243,7 @@ const ElectronicsBusinessSales = () => {
                   top: 0,
                   behavior: 'smooth',
                 });
-              }, 200); 
+              }, 200);
             }
           }
         },
@@ -282,6 +281,28 @@ const ElectronicsBusinessSales = () => {
     }
   }, [sales?.data]);
 
+  const totalAmount = formData.products.reduce(
+    (sum, row) => sum + Number(row.qty) * Number(row.price),
+    0,
+  );
+
+  useEffect(() => {
+    if (formData.account == '17') {
+      setFormData((prevState) => ({
+        ...prevState,
+        receivedAmt:
+          totalAmount > 0
+            ? (totalAmount - prevState.discountAmt).toString()
+            : '0',
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        receivedAmt: '',
+      }));
+    }
+  }, [formData.account, formData.products]);
+
   const addProduct = () => {
     const isValid = validateProductData(productData);
     if (!isValid) return;
@@ -304,30 +325,28 @@ const ElectronicsBusinessSales = () => {
   const editProduct = () => {
     const isValid = validateProductData(productData);
     if (!isValid) return;
-    let products = formData.products;
-    let newItem: Product = {
+
+    const newItem: Product = {
       id: Date.now(),
       product: productData.product || 0,
       product_name: productData.product_name || '',
       serial_no: productData.serial_no || '',
       unit: productData.unit || '',
-      qty: productData.qty || '',
-      price: productData.price || '',
+      qty: Number(productData.qty) || 0,
+      price: Number(productData.price) || 0,
       warehouse: productData.warehouse || '',
     };
-    products[updateId] = newItem;
+
     setFormData((prevFormData) => ({
       ...prevFormData,
-      products,
+      products: prevFormData.products.map((item, index) =>
+        index === updateId ? newItem : item,
+      ),
     }));
+
     setIsUpdating(false);
     setUpdateId(null);
   };
-
-  const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price),
-    0,
-  );
 
   const handleDelete = (id: number) => {
     setFormData((prevFormData) => ({
@@ -349,7 +368,7 @@ const ElectronicsBusinessSales = () => {
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const newValue = value ? parseFloat(value) : 0;
-    setProductData((prevState:any) => ({
+    setProductData((prevState: any) => ({
       ...prevState,
       [name]: value,
     }));
@@ -625,21 +644,26 @@ const ElectronicsBusinessSales = () => {
     setProductData(updatedProduct);
   };
 
-  useEffect(() => {
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty) || 0;
-      const price = parseFloat(product.price) || 0;
-      return acc + qty * price;
-    }, 0);
+useEffect(() => {
+  const total = formData.products.reduce((acc, product) => {
+    const qty = parseFloat(product.qty?.toString() || '0') || 0;
+    const price = parseFloat(product.price?.toString() || '0') || 0;
+    return acc + qty * price;
+  }, 0);
 
-    const discount = formData.discountAmt || 0;
-    const netTotal = total - discount;
+  const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+  let netTotal = 0;
+  if( total > 0){
+    netTotal = total - discount;
+  } 
 
-    setFormData((prev) => ({
-      ...prev,
-      paymentAmt: netTotal.toFixed(2), // Keep as string
-    }));
-  }, [formData.account, formData.products, formData.discountAmt]);
+  setFormData((prev) => ({
+    ...prev,
+    receivedAmt: netTotal.toFixed(2),
+  }));
+}, [formData.products, formData.discountAmt]);
+
+
 
   return (
     <>
@@ -653,6 +677,7 @@ const ElectronicsBusinessSales = () => {
                 <label htmlFor="">Select Customer</label>
                 <DdlMultiline
                   onSelect={customerAccountHandler}
+                  placeholder="Select Customer"
                   defaultValue={
                     formData.account
                       ? { value: formData.account, label: formData.accountName }

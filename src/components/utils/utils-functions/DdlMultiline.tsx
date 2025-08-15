@@ -23,6 +23,7 @@ interface DropdownProps {
   value?: { value: any; label: any } | null;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
+  placeholder?: string;
 }
 
 const DdlMultiline: React.FC<DropdownProps> = ({
@@ -34,6 +35,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   value,
   onKeyDown,
   className,
+  placeholder,
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
   const dispatch = useDispatch();
@@ -158,7 +160,6 @@ const DdlMultiline: React.FC<DropdownProps> = ({
               <div className="additional-info">
                 {option.label_5 && (
                   <div className="text-gray-600 dark:text-white text-sm">
-                    {/* {option.label_5 !== '0' ? 'C/O: ' : ''} { option.label_5 !== '0' ? option.label_5 : ''}  */}
                     {option.label_5 &&
                       option.label_5.trim() !== '' &&
                       option.label_5.trim() !== '0' && (
@@ -181,7 +182,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
           </div>
         )}
         getOptionValue={(option) => option.value}
-        placeholder="Select an account..."
+        placeholder={placeholder || 'Select an account'}
         styles={customStyles}
         defaultValue={defaultValue}
         value={value}

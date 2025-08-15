@@ -294,7 +294,7 @@ const TradingBusinessSales = () => {
       // Proceed with form submission or API call
       return;
     }
-    let products = formData.products;
+    // let products = formData.products;
     let newItem: Product = {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
@@ -307,11 +307,13 @@ const TradingBusinessSales = () => {
       variance: productData.variance || '',
       variance_type: productData.variance_type || '',
     };
-    products[updateId] = newItem;
+    // products[updateId] = newItem;
     // Add the product to the formData.products array
     setFormData((prevFormData) => ({
       ...prevFormData,
-      products: products,
+      products: prevFormData.products.map((item, index) =>
+        index === updateId ? newItem : item,
+      ),
     }));
     setIsUpdating(false);
     setUpdateId(null);
@@ -321,6 +323,42 @@ const TradingBusinessSales = () => {
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
   );
+
+  useEffect(() => {
+    if (formData.account == '17') {
+      setFormData((prevState) => ({
+        ...prevState,
+        receivedAmt:
+          totalAmount > 0
+            ? (totalAmount - prevState.discountAmt).toString()
+            : '0',
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        receivedAmt: '',
+      }));
+    }
+  }, [formData.account]);
+
+  useEffect(() => {
+    const total = formData.products.reduce((acc, product) => {
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
+    }, 0);
+  
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    let netTotal = 0;
+    if( total > 0){
+      netTotal = total - discount;
+    } 
+  
+    setFormData((prev) => ({
+      ...prev,
+      receivedAmt: netTotal.toFixed(2),
+    }));
+  }, [formData.products, formData.discountAmt]);
 
   const handleDelete = (id: number) => {
     // Filter out the product with the matching id
@@ -464,13 +502,11 @@ const TradingBusinessSales = () => {
     // Retrieve the specific product
     const product = formData.products[productIndex];
 
-    // Populate the form with product details for editing
     setFormData((prevState) => ({
       ...prevState,
       currentProduct: { ...product, index: productIndex }, // Store index to identify the product during save
     }));
 
-    //setWarehouseDdlData(productData.warehouse);
     setProductData(product);
     setIsUpdating(true);
     setUpdateId(productIndex);
@@ -493,23 +529,19 @@ const TradingBusinessSales = () => {
     setIsResetOrder(false);
   };
 
-  // const handleStartDate = (e: any) => {
-  //     setInvoiceDate(e);
-  //     salesType, setSalesType
-  // };
   useEffect(() => {
     const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty) || 0;
-      const price = parseFloat(product.price) || 0;
+      const qty = parseFloat(product.qty.toString()) || 0;
+      const price = parseFloat(product.price.toString()) || 0;
       return acc + qty * price;
     }, 0);
 
-    const discount = formData.discountAmt || 0;
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
     const netTotal = total - discount;
 
     setFormData((prev) => ({
       ...prev,
-      paymentAmt: netTotal.toFixed(2), // Keep as string
+      paymentAmt: netTotal.toFixed(2),
     }));
   }, [formData.account, formData.products, formData.discountAmt]);
 
@@ -835,7 +867,7 @@ const TradingBusinessSales = () => {
                   value={productData.variance_type}
                   onChange={weightVarianceType}
                   defaultValue={productData?.variance_type || ''}
-                  className="w-full h-8.5 mt-1"
+                  className="w-full h-8.5"
                 />
               </div>
             </div>

@@ -226,10 +226,7 @@ const ElectronicsBusinessPurchase = () => {
 
   const addProduct = () => {
     const isValid = validateProductData(productData);
-    if (!isValid) {
-      // Proceed with form submission or API call
-      return;
-    }
+    if (!isValid) return;
 
     // Generate a unique ID for the product
     const newProduct: Product = {
@@ -252,10 +249,9 @@ const ElectronicsBusinessPurchase = () => {
 
   const editProduct = () => {
     const isValid = validateProductData(productData);
-    if (!isValid) {
-      return;
-    }
-    let products = formData.products;
+    if (!isValid) return;
+
+ 
     let newItem: Product = {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
@@ -266,11 +262,13 @@ const ElectronicsBusinessPurchase = () => {
       price: productData.price || '',
       warehouse: productData.warehouse || '',
     };
-    products[updateId] = newItem;
+ 
     // Add the product to the formData.products array
     setFormData((prevFormData) => ({
       ...prevFormData,
-      products: products,
+      products: prevFormData.products.map((item, index) =>
+        index === updateId ? newItem : item,
+      ),
     }));
     setIsUpdating(false);
     setUpdateId(null);
@@ -280,6 +278,23 @@ const ElectronicsBusinessPurchase = () => {
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
   );
+
+  useEffect(() => {
+    if (formData.account == '17') {
+      setFormData((prevState) => ({
+        ...prevState,
+        paymentAmt: 
+          totalAmount > 0
+            ? (totalAmount - prevState.discountAmt).toString()
+            : '0',
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        paymentAmt: '',
+      }));
+    }
+  }, [formData.account]);
 
   const handleDelete = (id: number) => {
     // Filter out the product with the matching id
@@ -435,28 +450,24 @@ const ElectronicsBusinessPurchase = () => {
     setUpdateId(productIndex);
   };
 
-  const handleOrderReset = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-    }));
-    setIsResetOrder(false);
-  };
+useEffect(() => {
+  const total = formData.products.reduce((acc, product) => {
+    const qty = parseFloat(product.qty?.toString() || '0') || 0;
+    const price = parseFloat(product.price?.toString() || '0') || 0;
+    return acc + qty * price;
+  }, 0);
 
-  useEffect(() => {
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty) || 0;
-      const price = parseFloat(product.price) || 0;
-      return acc + qty * price;
-    }, 0);
+  const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+  let netTotal = 0;
+  if( total > 0){
+    netTotal = total - discount;
+  } 
 
-    const discount = formData.discountAmt || 0;
-    const netTotal = total - discount;
-
-    setFormData((prev) => ({
-      ...prev,
-      paymentAmt: netTotal.toFixed(2), // Keep as string
-    }));
-  }, [formData.account, formData.products, formData.discountAmt]);
+  setFormData((prev) => ({
+    ...prev,
+    paymentAmt: netTotal.toFixed(2),
+  }));
+}, [formData.products, formData.discountAmt]);
 
   useEffect(() => {
     if (productData.qty) {
@@ -483,6 +494,7 @@ const ElectronicsBusinessPurchase = () => {
                 </label>
                 <DdlMultiline
                   onSelect={supplierAccountHandler}
+                  placeholder="Select Supplier"
                   defaultValue={
                     formData.account
                       ? {

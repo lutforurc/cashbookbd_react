@@ -303,11 +303,9 @@ const TradingBusinessPurchase = () => {
 
   const editProduct = () => {
     const isValid = validateProductData(productData);
-    if (!isValid) {
-      // Proceed with form submission or API call
-      return;
-    }
-    let products = formData.products;
+    if (!isValid) return;
+
+    // let products = formData.products;
     let newItem: Product = {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
@@ -320,11 +318,13 @@ const TradingBusinessPurchase = () => {
       variance: productData.variance || '',
       variance_type: productData.variance_type || '',
     };
-    products[updateId] = newItem;
+    // products[updateId] = newItem;
     // Add the product to the formData.products array
     setFormData((prevFormData) => ({
       ...prevFormData,
-      products: products,
+      products: prevFormData.products.map((item, index) =>
+        index === updateId ? newItem : item,
+      ),
     }));
     setIsUpdating(false);
     setUpdateId(null);
@@ -372,7 +372,7 @@ const TradingBusinessPurchase = () => {
       const qty = parseFloat(updatedProductData.qty) || 0;
       const price = parseFloat(updatedProductData.price) || 0;
       const newLineTotal = qty * price;
- 
+
       setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
       return updatedProductData;
     });
@@ -407,6 +407,11 @@ const TradingBusinessPurchase = () => {
 
     if (!formData.account || formData.products.length === 0) {
       toast.error('Please add products information!');
+      setSaveButtonLoading(false);
+      return;
+    }
+    if (formData.paymentAmt.toString() == '') {
+      toast.error('Please add payment amount!');
       setSaveButtonLoading(false);
       return;
     }
@@ -492,13 +497,11 @@ const TradingBusinessPurchase = () => {
     // Retrieve the specific product
     const product = formData.products[productIndex];
 
-    // Populate the form with product details for editing
     setFormData((prevState) => ({
       ...prevState,
       currentProduct: { ...product, index: productIndex }, // Store index to identify the product during save
     }));
 
-    //setWarehouseDdlData(productData.warehouse);
     setProductData(product);
     setIsUpdating(true);
     setUpdateId(productIndex);
@@ -507,8 +510,8 @@ const TradingBusinessPurchase = () => {
   const handleOrderReset = () => {
     setFormData((prevState) => ({
       ...prevState,
-      purchaseOrderNumber: '', // Clear this field
-      purchaseOrderText: '', // Clear this field
+      purchaseOrderNumber: '', 
+      purchaseOrderText: '', 
     }));
     setIsResetOrder(false);
   };
@@ -519,25 +522,45 @@ const TradingBusinessPurchase = () => {
 
   useCtrlS(handlePurchaseInvoiceSave);
 
-  const handleChangeVoucherType = (e: any) => {
-    setVoucherType(e.target.value);
-  };
+  // const handleChangeVoucherType = (e: any) => {
+  //   setVoucherType(e.target.value);
+  // };
+
+  useEffect(() => {
+    if (formData.account == '17') {
+      setFormData((prevState) => ({
+        ...prevState,
+        paymentAmt: 
+          totalAmount > 0
+            ? (totalAmount - prevState.discountAmt).toString()
+            : '0',
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        paymentAmt: '',
+      }));
+    }
+  }, [formData.account]);
 
   useEffect(() => {
     const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty) || 0;
-      const price = parseFloat(product.price) || 0;
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
       return acc + qty * price;
     }, 0);
-
-    const discount = formData.discountAmt || 0;
-    const netTotal = total - discount;
-
+  
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    let netTotal = 0;
+    if( total > 0){
+      netTotal = total - discount;
+    } 
+  
     setFormData((prev) => ({
       ...prev,
-      paymentAmt: netTotal.toFixed(2), // Keep as string
+      paymentAmt: netTotal.toFixed(2),
     }));
-  }, [formData.account, formData.products, formData.discountAmt]);
+  }, [formData.products, formData.discountAmt]);
 
   return (
     <>
