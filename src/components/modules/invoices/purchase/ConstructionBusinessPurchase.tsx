@@ -532,7 +532,7 @@ const ConstructionBusinessPurchase = () => {
                 name="notes"
                 placeholder={'Notes'}
                 label={'Notes'}
-                className={'py-1.5 -mt-1'}
+                className={'py-1.5'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Dynamically pass the next element's ID
               />
@@ -544,7 +544,7 @@ const ConstructionBusinessPurchase = () => {
                 name="invoice_no"
                 placeholder={'Invoice Number'}
                 label={'Invoice Number'}
-                className={'-mt-1'}
+                className={''}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'invoice_date')} // Pass the next field's ID
               />
@@ -556,7 +556,7 @@ const ConstructionBusinessPurchase = () => {
                   id="invoice_date"
                   name="invoice_date"
                   setCurrentDate={handleStartDate}
-                  className="w-full p-1"
+                  className="w-full p-1 "
                   selectedDate={startDate}
                   setSelectedDate={setStartDate}
                   onKeyDown={(e) => handleInputKeyDown(e, 'vehicleNumber')} // Pass the next field's ID
@@ -568,7 +568,7 @@ const ConstructionBusinessPurchase = () => {
                 name="vehicleNumber"
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
-                className={'-mt-1'}
+                className={''}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')} // Pass the next field's ID
               />

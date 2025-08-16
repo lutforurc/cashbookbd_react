@@ -8,7 +8,7 @@ interface InputElementProps {
   placeholder: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void; // Optional onKeyDown prop
-  className: string;
+  className?: string;
   type?: string; // Optional type prop (e.g., 'number')
 }
 
