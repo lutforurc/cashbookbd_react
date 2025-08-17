@@ -28,6 +28,13 @@ export const DASHBOARD_DATA_PENDING = 'DASHBOARD/data/pending';
 export const DASHBOARD_DATA_SUCCESS = 'DASHBOARD/data/success';
 export const DASHBOARD_DATA_ERROR = 'DASHBOARD/data/error';
 
+
+
+// Received Remittance
+export const RECEIVED_REMITTANCE_DATA_PENDING = 'RECEIVED/REMITTANCE/data/pending';
+export const RECEIVED_REMITTANCE_DATA_SUCCESS = 'RECEIVED/REMITTANCE/data/success';
+export const RECEIVED_REMITTANCE_DATA_ERROR = 'RECEIVED/REMITTANCE/data/error';
+
 // Branch Constrain
 // Branch List
 export const BRANCH_LIST_PENDING = 'BRANCH/list/pending';

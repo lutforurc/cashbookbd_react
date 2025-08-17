@@ -34,6 +34,41 @@ export const getDashboard = () => (dispatch: any) => {
     });
 };
 
+
+// export const RECEIVED_REMITTANCE_DATA_PENDING = 'RECEIVED/REMITTANCE/data/pending';
+// export const RECEIVED_REMITTANCE_DATA_SUCCESS = 'RECEIVED/REMITTANCE/data/success';
+// export const RECEIVED_REMITTANCE_DATA_ERROR = 'RECEIVED/REMITTANCE/data/error';
+
+export const receivedRemittance = (data: any, callback: any) => (dispatch: any) => {
+  dispatch({ type: BRANCH_STORE_PENDING });
+  httpService
+    .post(API_BRANCH_STORE_URL, data)
+    .then((res) => {
+      let _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: BRANCH_STORE_SUCCESS,
+          payload: _data.data.data,
+        });
+      } else {
+        dispatch({
+          type: BRANCH_STORE_ERROR,
+          payload: _data.error.message,
+        });
+      }
+      if ('function' === typeof callback) {
+        callback(_data);
+      }
+    })
+    .catch((er) => {
+      dispatch({
+        type: BRANCH_STORE_ERROR,
+        payload: 'Something went wrong.',
+      });
+    });
+};
+
+
 const dashboardData = {
   isLoading: false,
   errors: null,

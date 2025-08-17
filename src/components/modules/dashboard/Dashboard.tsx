@@ -172,10 +172,7 @@ const Dashboard = () => {
               </span>
             </div>
 
-            {!dashboard.isLoading &&
-              dashboard?.data?.receiveDetails?.receivedDetails[
-                dashboard?.data?.branch?.id
-              ].map((item: any, index: number) => (
+            {!dashboard.isLoading && dashboard?.data?.receiveDetails?.receivedDetails && dashboard?.data?.receiveDetails?.receivedDetails[dashboard?.data?.branch?.id]?.map((item: any, index: number) => (
                 <div className="p-2 flex items-center" key={index}>
                   <div className="text-xs ml-6 w-6">{++index}</div>
                   <div className="text-xs w-24">
