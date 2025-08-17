@@ -1,8 +1,12 @@
 import React from 'react';
 import {
+  BRANCH_STORE_ERROR,
   DASHBOARD_DATA_ERROR,
   DASHBOARD_DATA_PENDING,
   DASHBOARD_DATA_SUCCESS,
+  RECEIVED_REMITTANCE_DATA_ERROR,
+  RECEIVED_REMITTANCE_DATA_PENDING,
+  RECEIVED_REMITTANCE_DATA_SUCCESS,
 } from '../../constant/constant/constant';
 import httpService from '../../services/httpService';
 import { API_DASHBOARD_URL } from '../../services/apiRoutes';
@@ -40,19 +44,19 @@ export const getDashboard = () => (dispatch: any) => {
 // export const RECEIVED_REMITTANCE_DATA_ERROR = 'RECEIVED/REMITTANCE/data/error';
 
 export const receivedRemittance = (data: any, callback: any) => (dispatch: any) => {
-  dispatch({ type: BRANCH_STORE_PENDING });
+  dispatch({ type: RECEIVED_REMITTANCE_DATA_PENDING });
   httpService
-    .post(API_BRANCH_STORE_URL, data)
+    .post(API_RECEIVED_REMITTANCE_URL, data)
     .then((res) => {
       let _data = res.data;
       if (_data.success) {
         dispatch({
-          type: BRANCH_STORE_SUCCESS,
+          type: RECEIVED_REMITTANCE_DATA_SUCCESS,
           payload: _data.data.data,
         });
       } else {
         dispatch({
-          type: BRANCH_STORE_ERROR,
+          type: RECEIVED_REMITTANCE_DATA_ERROR,
           payload: _data.error.message,
         });
       }
@@ -62,7 +66,7 @@ export const receivedRemittance = (data: any, callback: any) => (dispatch: any) 
     })
     .catch((er) => {
       dispatch({
-        type: BRANCH_STORE_ERROR,
+        type: RECEIVED_REMITTANCE_DATA_ERROR,
         payload: 'Something went wrong.',
       });
     });

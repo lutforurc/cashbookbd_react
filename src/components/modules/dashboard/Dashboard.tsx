@@ -193,8 +193,8 @@ const Dashboard = () => {
                     ) : (
                       <span className="text-xs w-20 mr-4 text-right">
                         <FaCheckCircle
-                          onClick={() => handleCheckCircleClick(item)}
-                          className="inline-block cursor-pointer text-green-500 text-sm"
+                          // onClick={() => handleCheckCircleClick(item)}
+                          className="inline-block text-green-500 text-sm"
                         />
                       </span>
                     )}
