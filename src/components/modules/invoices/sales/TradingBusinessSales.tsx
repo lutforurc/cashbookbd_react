@@ -541,7 +541,7 @@ const TradingBusinessSales = () => {
 
     setFormData((prev) => ({
       ...prev,
-      paymentAmt: netTotal.toFixed(2),
+      receivedAmt: netTotal.toFixed(2),
     }));
   }, [formData.account, formData.products, formData.discountAmt]);
 
