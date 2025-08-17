@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDashboard } from './dashboardSlice';
-
+import { FiHome, FiSave } from 'react-icons/fi';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import TransactionChart from './TransactionChart';
+import { FaCheckCircle } from "react-icons/fa";
+
 import {
   getBranchChart,
   getHeadOfficePaymentChart,
@@ -17,6 +19,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import Loader from '../../../common/Loader';
+import { FaRightToBracket } from 'react-icons/fa6';
 
 const Dashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
@@ -36,7 +39,7 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const handleStorageChange = (event) => {
+    const handleStorageChange = (event:any) => {
       // Check if the 'settings_updated' key was updated
       if (event.key === 'settings_updated') {
         //dispatch(getSettings()); // Fetch updated settings in the current tab
@@ -71,6 +74,16 @@ const Dashboard = () => {
     dispatch(getBranchChart(params));
     // dispatch(getHeadOfficePaymentChart(params));
     // dispatch(getHeadOfficeReceivedChart(params));
+  };
+
+  const handleCheckCircleClick = (item:any) => {
+    console.log('Check Circle Clicked', item);
+    const params = {
+      mtm_id: 62184,
+      branch_id: 2,
+      remarks: 'RTGS',
+      amount: 15000,
+    };
   };
 
   console.log('Current Branch', dashboard?.data?.branch?.id);
@@ -168,7 +181,19 @@ const Dashboard = () => {
                     <p>{item.vr_date}</p> 
                   </div>
                   <div className="text-sm font-medium flex-1">{item.vr_no}</div>
-                  <div className="text-xs w-20 mr-4 text-right">{item.debit}</div>
+                  <div className="text-xs w-20 text-right">{ thousandSeparator(item.debit,0) }</div>
+                  <div className="text-xs w-20 mr-4 text-right">{
+                  item.remittance == '0' ? (
+                    <span className="text-xs w-20 mr-4 text-right">
+                      <FaRightToBracket onClick={() => handleCheckCircleClick(item)}  className="inline-block cursor-pointer text-red-500 text-sm" />
+                    </span>
+                  ) : (
+                    <span className="text-xs w-20 mr-4 text-right">
+                      <FaCheckCircle  onClick={() => handleCheckCircleClick(item)}  className="inline-block cursor-pointer text-green-500 text-sm" /> 
+                    </span>
+                    
+                  )
+                  }</div>
                 </div>
               ))}
           </div>
@@ -223,7 +248,7 @@ const Dashboard = () => {
                   <HeadOfficePaymentChart />
                 </div>
                 <div>
-                  <HeadOfficeReceivedChart />
+                  {/* <HeadOfficeReceivedChart /> */}
                 </div>
               </div>
             ) : (
