@@ -5,7 +5,7 @@ import { FiHome, FiSave } from 'react-icons/fi';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import TransactionChart from './TransactionChart';
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle } from 'react-icons/fa';
 
 import {
   getBranchChart,
@@ -39,7 +39,7 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const handleStorageChange = (event:any) => {
+    const handleStorageChange = (event: any) => {
       // Check if the 'settings_updated' key was updated
       if (event.key === 'settings_updated') {
         //dispatch(getSettings()); // Fetch updated settings in the current tab
@@ -76,14 +76,15 @@ const Dashboard = () => {
     // dispatch(getHeadOfficeReceivedChart(params));
   };
 
-  const handleCheckCircleClick = (item:any) => {
-    console.log('Check Circle Clicked', item);
+  const handleCheckCircleClick = (item: any) => {
     const params = {
-      mtm_id: 62184,
-      branch_id: 2,
-      remarks: 'RTGS',
-      amount: 15000,
+      mtm_id: item.mtm_id,
+      branch_id: item.branch_id,
+      remarks: item.remarks,
+      amount: item.debit,
     };
+
+    console.log('Check Circle Clicked', params);
   };
 
   console.log('Current Branch', dashboard?.data?.branch?.id);
@@ -178,22 +179,29 @@ const Dashboard = () => {
                 <div className="p-2 flex items-center" key={index}>
                   <div className="text-xs ml-6 w-6">{++index}</div>
                   <div className="text-xs w-24">
-                    <p>{item.vr_date}</p> 
+                    <p>{item.vr_date}</p>
                   </div>
                   <div className="text-sm font-medium flex-1">{item.vr_no}</div>
-                  <div className="text-xs w-20 text-right">{ thousandSeparator(item.debit,0) }</div>
-                  <div className="text-xs w-20 mr-4 text-right">{
-                  item.remittance == '0' ? (
-                    <span className="text-xs w-20 mr-4 text-right">
-                      <FaRightToBracket onClick={() => handleCheckCircleClick(item)}  className="inline-block cursor-pointer text-red-500 text-sm" />
-                    </span>
-                  ) : (
-                    <span className="text-xs w-20 mr-4 text-right">
-                      <FaCheckCircle  onClick={() => handleCheckCircleClick(item)}  className="inline-block cursor-pointer text-green-500 text-sm" /> 
-                    </span>
-                    
-                  )
-                  }</div>
+                  <div className="text-xs w-20 text-right">
+                    {thousandSeparator(item.debit, 0)}
+                  </div>
+                  <div className="text-xs w-20 mr-4 text-right">
+                    {item.remittance == '0' ? (
+                      <span className="text-xs w-20 mr-4 text-right">
+                        <FaRightToBracket
+                          onClick={() => handleCheckCircleClick(item)}
+                          className="inline-block cursor-pointer text-red-500 text-sm"
+                        />
+                      </span>
+                    ) : (
+                      <span className="text-xs w-20 mr-4 text-right">
+                        <FaCheckCircle
+                          onClick={() => handleCheckCircleClick(item)}
+                          className="inline-block cursor-pointer text-green-500 text-sm"
+                        />
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
           </div>
@@ -247,9 +255,7 @@ const Dashboard = () => {
                 <div>
                   <HeadOfficePaymentChart />
                 </div>
-                <div>
-                  {/* <HeadOfficeReceivedChart /> */}
-                </div>
+                <div>{/* <HeadOfficeReceivedChart /> */}</div>
               </div>
             ) : (
               <TransactionChart />
