@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getDashboard } from './dashboardSlice';
+import { dispatchRemittance, getDashboard } from './dashboardSlice';
 import { FiHome, FiSave } from 'react-icons/fi';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import TransactionChart from './TransactionChart';
 import { FaCheckCircle } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 import {
   getBranchChart,
@@ -20,6 +21,7 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import Loader from '../../../common/Loader';
 import { FaRightToBracket } from 'react-icons/fa6';
+import formatDate from '../../utils/utils-functions/formatDate';
 
 const Dashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
@@ -30,6 +32,8 @@ const Dashboard = () => {
   const [displayMonth, setDisplayMonth] = useState<number | ''>('');
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
+    const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     dispatch(getDashboard());
@@ -53,11 +57,6 @@ const Dashboard = () => {
     };
   }, [dispatch]);
 
-  console.log(
-    'Dashboard Data',
-    dashboard?.data?.receiveDetails?.receivedDetails,
-  );
-
   const handleDisplayMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDisplayMonth(Number(e.target.value));
   };
@@ -77,17 +76,57 @@ const Dashboard = () => {
   };
 
   const handleCheckCircleClick = (item: any) => {
+        setLoading(true);  // Start loading
+    setIsSuccess(false);  // Reset success before API call
     const params = {
       mtm_id: item.mtm_id,
       branch_id: item.branch_id,
       remarks: item.remarks,
       amount: item.debit,
     };
-
-    console.log('Check Circle Clicked', params);
+    dispatch(
+          dispatchRemittance(params, function (message, success) {
+            if (success) { 
+              toast.success(message);
+              setLoading(false);
+              setIsSuccess(true);
+            } else { 
+              toast.error(message);
+            } 
+          }),
+        ); 
   };
 
-  console.log('Current Branch', dashboard?.data?.branch?.id);
+// The handleCheckCircleClick function
+// const handleCheckCircleClick = async (item: any) => {
+//   setLoading(true);  // Start loading
+//   setIsSuccess(false);  // Reset success before API call
+
+//   try {
+//     // Dispatch the remittance and wait for the response
+//     const response = await dispatchRemittance(item, (message, success) => {
+//       if (success) {
+//         setIsSuccess(true);  // If successful, set success state
+//         toast.success(message);  // Show success toast
+//       } else {
+//         setIsSuccess(false);  // If failure, retain the current state
+//         toast.error(message);  // Show error toast
+//       }
+//     });
+
+//     // Optionally handle the response if you need to use it further
+//     if (response.success) {
+//       setIsSuccess(true);
+//     } else {
+//       setIsSuccess(false);
+//     }
+//   } catch (error) {
+//     toast.error(error.message);
+//     setIsSuccess(false);  // In case of an error, retain the current state
+//   } finally {
+//     setLoading(false);  // Stop loading after the operation finishes
+//   }
+// };
 
   return (
     <>
@@ -95,7 +134,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:text-xs xl:grid-cols-4 gap-10 flex-wrap">
         {dashboard.isLoading == false ? (
           <>
-            <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white  rounded-lg">
+            <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
               <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
                 <span className="text-sm font-bold">
                   {dashboard?.data &&
@@ -162,8 +201,8 @@ const Dashboard = () => {
       </div>
 
       {dashboard.isLoading == false ? (
-        <div className="grid grid-cols-2 mt-6">
-          <div className="bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white rounded-lg">
+        <div className="grid grid-cols-1 xl:grid-cols-2 mt-6">
+          <div className="bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
             <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
               <span className="text-sm font-bold">
                 {dashboard?.data &&
@@ -175,25 +214,28 @@ const Dashboard = () => {
             {!dashboard.isLoading && dashboard?.data?.receiveDetails?.receivedDetails && dashboard?.data?.receiveDetails?.receivedDetails[dashboard?.data?.branch?.id]?.map((item: any, index: number) => (
                 <div className="p-2 flex items-center" key={index}>
                   <div className="text-xs ml-6 w-6">{++index}</div>
-                  <div className="text-xs w-24">
-                    <p>{item.vr_date}</p>
+                  <div className="text-sm font-medium w-24">
+                    {formatDate(item.vr_date)}
                   </div>
-                  <div className="text-sm font-medium flex-1">{item.vr_no}</div>
+                  <div className="text-xs font-medium flex-1">{item.vr_no}</div>
                   <div className="text-xs w-20 text-right">
                     {thousandSeparator(item.debit, 0)}
                   </div>
                   <div className="text-xs w-20 mr-4 text-right">
                     {item.remittance == '0' ? (
                       <span className="text-xs w-20 mr-4 text-right">
-                        <FaRightToBracket
-                          onClick={() => handleCheckCircleClick(item)}
-                          className="inline-block cursor-pointer text-red-500 text-sm"
-                        />
+                        <div
+                        onClick={() => handleCheckCircleClick(item)}                        
+                        className='inline-block cursor-pointer'
+                        >
+                          <FaRightToBracket
+                            className="text-red-500 text-sm"
+                          />
+                          </div>
                       </span>
                     ) : (
                       <span className="text-xs w-20 mr-4 text-right">
-                        <FaCheckCircle
-                          // onClick={() => handleCheckCircleClick(item)}
+                        <FaCheckCircle 
                           className="inline-block text-green-500 text-sm"
                         />
                       </span>
@@ -204,7 +246,7 @@ const Dashboard = () => {
           </div>
         </div>
       ) : (
-        'No Remittance Found'
+        ''
       )}
 
       <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-2">
