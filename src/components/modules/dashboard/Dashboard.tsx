@@ -5,7 +5,7 @@ import { FiHome, FiSave } from 'react-icons/fi';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import TransactionChart from './TransactionChart';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 import {
@@ -20,8 +20,8 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import Loader from '../../../common/Loader';
-import { FaRightToBracket } from 'react-icons/fa6';
 import formatDate from '../../utils/utils-functions/formatDate';
+import { FaRightToBracket } from 'react-icons/fa6';
 
 const Dashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
@@ -32,8 +32,16 @@ const Dashboard = () => {
   const [displayMonth, setDisplayMonth] = useState<number | ''>('');
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [loadingItems, setLoadingItems] = useState<{ [key: string]: boolean }>(
+    {},
+  ); // Track loading state per item
+  const [successItems, setSuccessItems] = useState<{ [key: string]: boolean }>(
+    {},
+  ); // Track success state per item
+    const [totalDebit, setTotalDebit] = useState(0); // State to store the total sum of debits
+
 
   useEffect(() => {
     dispatch(getDashboard());
@@ -41,6 +49,16 @@ const Dashboard = () => {
     dispatch(getHeadOfficeReceivedChart());
     dispatch(getDdlProtectedBranch());
   }, []);
+
+    useEffect(() => {
+    // Calculate the total sum of debits whenever the data is loaded
+    if (dashboard?.data?.receiveDetails?.receivedDetails) {
+      const total = dashboard?.data?.receiveDetails?.receivedDetails[
+        dashboard?.data?.branch?.id
+      ]?.reduce((sum: number, item: any) => sum + Number(item.debit), 0);
+      setTotalDebit(total); // Set the total sum of debits
+    }
+  }, [dashboard?.data?.receiveDetails?.receivedDetails]);
 
   useEffect(() => {
     const handleStorageChange = (event: any) => {
@@ -76,57 +94,58 @@ const Dashboard = () => {
   };
 
   const handleCheckCircleClick = (item: any) => {
-        setLoading(true);  // Start loading
-    setIsSuccess(false);  // Reset success before API call
+    setLoadingItems((prev) => ({ ...prev, [item.vr_no]: true })); // Set loading for clicked item
+
     const params = {
       mtm_id: item.mtm_id,
       branch_id: item.branch_id,
       remarks: item.remarks,
       amount: item.debit,
     };
+
     dispatch(
-          dispatchRemittance(params, function (message, success) {
-            if (success) { 
-              toast.success(message);
-              setLoading(false);
-              setIsSuccess(true);
-            } else { 
-              toast.error(message);
-            } 
-          }),
-        ); 
+      dispatchRemittance(params, function (message, success) {
+        if (success) {
+          toast.success(message);
+          setSuccessItems((prev) => ({ ...prev, [item.vr_no]: true })); // Mark item as success
+        } else {
+          toast.error(message);
+        }
+        setLoadingItems((prev) => ({ ...prev, [item.vr_no]: false })); // Stop loading after API call
+      }),
+    );
   };
 
-// The handleCheckCircleClick function
-// const handleCheckCircleClick = async (item: any) => {
-//   setLoading(true);  // Start loading
-//   setIsSuccess(false);  // Reset success before API call
+  // The handleCheckCircleClick function
+  // const handleCheckCircleClick = async (item: any) => {
+  //   setLoading(true);  // Start loading
+  //   setIsSuccess(false);  // Reset success before API call
 
-//   try {
-//     // Dispatch the remittance and wait for the response
-//     const response = await dispatchRemittance(item, (message, success) => {
-//       if (success) {
-//         setIsSuccess(true);  // If successful, set success state
-//         toast.success(message);  // Show success toast
-//       } else {
-//         setIsSuccess(false);  // If failure, retain the current state
-//         toast.error(message);  // Show error toast
-//       }
-//     });
+  //   try {
+  //     // Dispatch the remittance and wait for the response
+  //     const response = await dispatchRemittance(item, (message, success) => {
+  //       if (success) {
+  //         setIsSuccess(true);  // If successful, set success state
+  //         toast.success(message);  // Show success toast
+  //       } else {
+  //         setIsSuccess(false);  // If failure, retain the current state
+  //         toast.error(message);  // Show error toast
+  //       }
+  //     });
 
-//     // Optionally handle the response if you need to use it further
-//     if (response.success) {
-//       setIsSuccess(true);
-//     } else {
-//       setIsSuccess(false);
-//     }
-//   } catch (error) {
-//     toast.error(error.message);
-//     setIsSuccess(false);  // In case of an error, retain the current state
-//   } finally {
-//     setLoading(false);  // Stop loading after the operation finishes
-//   }
-// };
+  //     // Optionally handle the response if you need to use it further
+  //     if (response.success) {
+  //       setIsSuccess(true);
+  //     } else {
+  //       setIsSuccess(false);
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.message);
+  //     setIsSuccess(false);  // In case of an error, retain the current state
+  //   } finally {
+  //     setLoading(false);  // Stop loading after the operation finishes
+  //   }
+  // };
 
   return (
     <>
@@ -199,50 +218,61 @@ const Dashboard = () => {
           ''
         )}
       </div>
-
       {dashboard.isLoading == false ? (
-        <div className="grid grid-cols-1 xl:grid-cols-2 mt-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 mt-6 ">
           <div className="bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
-            <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
+            <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 flex justify-between">
               <span className="text-sm font-bold">
                 {dashboard?.data &&
                   !dashboard.isLoading &&
                   dashboard?.data?.transactionText}
               </span>
+              <span>
+                  Tk. { thousandSeparator (totalDebit,0)}
+              </span>
             </div>
-
-            {!dashboard.isLoading && dashboard?.data?.receiveDetails?.receivedDetails && dashboard?.data?.receiveDetails?.receivedDetails[dashboard?.data?.branch?.id]?.map((item: any, index: number) => (
-                <div className="p-2 flex items-center" key={index}>
-                  <div className="text-xs ml-6 w-6">{++index}</div>
-                  <div className="text-sm font-medium w-24">
-                    {formatDate(item.vr_date)}
-                  </div>
-                  <div className="text-xs font-medium flex-1">{item.vr_no}</div>
-                  <div className="text-xs w-20 text-right">
-                    {thousandSeparator(item.debit, 0)}
-                  </div>
-                  <div className="text-xs w-20 mr-4 text-right">
-                    {item.remittance == '0' ? (
-                      <span className="text-xs w-20 mr-4 text-right">
+            <div className="max-h-96 overflow-y-auto">
+              {' '}
+              {!dashboard.isLoading &&
+                dashboard?.data?.receiveDetails?.receivedDetails &&
+                dashboard?.data?.receiveDetails?.receivedDetails[
+                  dashboard?.data?.branch?.id
+                ]?.map((item: any, index: number) => (
+                  <div className="p-2 flex items-center" key={item.vr_no}>
+                    <div className="text-sm ml-6 w-6">{++index}</div>
+                    <div className="text-sm font-medium w-24">
+                      {formatDate(item.vr_date)}
+                    </div>
+                    <div className="text-sm font-medium flex-1">
+                      {item.vr_no}
+                    </div>
+                    <div className="text-sm w-20 text-right">
+                      {thousandSeparator(item.debit, 0)}
+                    </div>
+                    <div className="text-sm w-20 mr-4 text-right">
+                      {item.remittance === '0' ? (
                         <div
-                        onClick={() => handleCheckCircleClick(item)}                        
-                        className='inline-block cursor-pointer'
+                          onClick={() =>
+                            !loadingItems[item.vr_no] &&
+                            handleCheckCircleClick(item)
+                          } // Disable click when loading
+                          className="inline-block cursor-pointer"
                         >
-                          <FaRightToBracket
-                            className="text-red-500 text-sm"
-                          />
-                          </div>
-                      </span>
-                    ) : (
-                      <span className="text-xs w-20 mr-4 text-right">
-                        <FaCheckCircle 
-                          className="inline-block text-green-500 text-sm"
-                        />
-                      </span>
-                    )}
+                          {loadingItems[item.vr_no] ? (
+                            <FaSpinner className="text-red-500 text-sm animate-spin" />
+                          ) : successItems[item.vr_no] ? (
+                            <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                          ) : (
+                            <FaRightToBracket className="text-red-500 text-sm" />
+                          )}
+                        </div>
+                      ) : (
+                        <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+            </div>
           </div>
         </div>
       ) : (
