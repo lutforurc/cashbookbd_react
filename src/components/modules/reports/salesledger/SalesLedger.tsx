@@ -99,14 +99,17 @@ const SalesLedger = (user: any) => {
       key: 'product_name',
       header: 'Description',
       is_serial: false,
-      render: (row: any) => 
-      <div className="min-w-52">
-        {row.product_name}
-        <div>
-          {row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]?.remarks}
+      render: (row: any) => (
+        <div className="min-w-52">
+          {row.product_name}
+          <div>
+            {
+              row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]
+                ?.remarks
+            }
+          </div>
         </div>
-         
-      </div>,
+      ),
     },
     {
       key: 'challan_no',
@@ -137,19 +140,19 @@ const SalesLedger = (user: any) => {
       width: '120px',
     },
     {
-  key: 'acc_transaction_master',
-  header: 'Received',
-  headerClass: 'text-right',
-  cellClass: 'text-right',
-  render: (row: any) => (
-    <>
-      <div className='text-right'>
-          { row?.acc_transaction_master?.[1]?.acc_transaction_details[0]?.debit ? thousandSeparator (row?.acc_transaction_master?.[1]?.acc_transaction_details[0]?.debit, 0) : '-' }
-        </div>
-    </>
-  ),
-  width: '120px',
-},
+      key: 'acc_transaction_master',
+      header: 'Received',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        const transaction = row?.acc_transaction_master?.find(
+        (tm: { acc_transaction_details?: { coa4_id?: number; debit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
+      );
+        const debitValue = transaction?.acc_transaction_details?.[0]?.debit ? thousandSeparator(transaction.acc_transaction_details[0].debit, 0) : '-';
+        return <div className="text-right">{debitValue}</div>;
+      },
+      width: '120px',
+    },
     {
       key: 'rate',
       header: 'Rate',
@@ -158,7 +161,7 @@ const SalesLedger = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => (
         <>
-          <span>{thousandSeparator(row.rate, 0)}</span>
+          <span>{thousandSeparator(row.rate, 2)}</span>
         </>
       ),
     },
