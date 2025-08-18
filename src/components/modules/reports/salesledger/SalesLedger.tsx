@@ -13,7 +13,6 @@ import { getSalesLedger } from './salesLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
-
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -28,12 +27,10 @@ const SalesLedger = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
-
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
   }, []);
-
 
   useEffect(() => {
     if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
@@ -57,7 +54,15 @@ const SalesLedger = (user: any) => {
   const handleActionButtonClick = () => {
     const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-    dispatch(getSalesLedger({ branchId, ledgerId, productId, startDate: startD, endDate: endD }))
+    dispatch(
+      getSalesLedger({
+        branchId,
+        ledgerId,
+        productId,
+        startDate: startD,
+        endDate: endD,
+      }),
+    );
   };
 
   useEffect(() => {
@@ -66,7 +71,8 @@ const SalesLedger = (user: any) => {
       branchDdlData?.protectedData?.transactionDate
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
-      const [day, month, year] = branchDdlData?.protectedData?.transactionDate.split('/');
+      const [day, month, year] =
+        branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
       setStartDate(parsedDate);
       setEndDate(parsedDate);
@@ -84,7 +90,7 @@ const SalesLedger = (user: any) => {
   const columns = [
     {
       key: 'sl_number',
-      header: 'Sl. No',  
+      header: 'Sl. No',
       width: '100px',
       headerClass: 'text-center',
       cellClass: 'text-center',
@@ -93,18 +99,25 @@ const SalesLedger = (user: any) => {
       key: 'product_name',
       header: 'Description',
       is_serial: false,
-      render: (row:any) => <div className="min-w-52">{row.product_name}</div>,
+      render: (row: any) => 
+      <div className="min-w-52">
+        {row.product_name}
+        <div>
+          {row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]?.remarks}
+        </div>
+         
+      </div>,
     },
     {
       key: 'challan_no',
-      header: 'Chal. No.',   
+      header: 'Chal. No.',
       width: '120px',
       headerClass: 'text-center',
       cellClass: 'text-center',
     },
     {
       key: 'challan_date',
-      header: 'Chal. No.', 
+      header: 'Chal. No.',
       width: '120px',
       headerClass: 'text-center',
       cellClass: 'text-center',
@@ -114,36 +127,52 @@ const SalesLedger = (user: any) => {
       header: 'Quantity',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
-          <span>{row.quantity} {row.unit}</span>
+          <span>
+            {row.quantity} {row.unit}
+          </span>
         </>
       ),
       width: '120px',
     },
     {
+  key: 'acc_transaction_master',
+  header: 'Received',
+  headerClass: 'text-right',
+  cellClass: 'text-right',
+  render: (row: any) => (
+    <>
+      <div className='text-right'>
+          { row?.acc_transaction_master?.[1]?.acc_transaction_details[0]?.debit ? thousandSeparator (row?.acc_transaction_master?.[1]?.acc_transaction_details[0]?.debit, 0) : '-' }
+        </div>
+    </>
+  ),
+  width: '120px',
+},
+    {
       key: 'rate',
-      header: 'Rate', 
+      header: 'Rate',
       width: '120px',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
-          <span>{ thousandSeparator (row.rate,0)}</span>
+          <span>{thousandSeparator(row.rate, 0)}</span>
         </>
-      )
+      ),
     },
     {
       key: 'total',
-      header: 'total', 
+      header: 'total',
       width: '130px',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
-          <span>{ thousandSeparator (row.total,0)}</span>
+          <span>{thousandSeparator(row.total, 0)}</span>
         </>
-      )
+      ),
     },
   ];
 
@@ -152,7 +181,7 @@ const SalesLedger = (user: any) => {
       <HelmetTitle title={'Sales Ledger'} />
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-4 gap-y-2 mb-2">
-          <div className=''>
+          <div className="">
             <div>
               {' '}
               <label htmlFor="">Select Branch</label>
@@ -166,17 +195,17 @@ const SalesLedger = (user: any) => {
               />
             </div>
           </div>
-          <div className=''>
+          <div className="">
             <label htmlFor="">Select Account</label>
             <DdlMultiline acType={''} onSelect={selectedLedgerOptionHandler} />
           </div>
-          <div className=''>
+          <div className="">
             <label htmlFor="">Select Product</label>
 
             <ProductDropdown onSelect={selectedProduct} />
           </div>
-          <div className='sm:grid md:flex gap-x-3 '>
-            <div className='w-full'>
+          <div className="sm:grid md:flex gap-x-3 ">
+            <div className="w-full">
               <label htmlFor="">Start Date</label>
               <InputDatePicker
                 setCurrentDate={handleStartDate}
@@ -185,7 +214,7 @@ const SalesLedger = (user: any) => {
                 setSelectedDate={setStartDate}
               />
             </div>
-            <div className='w-full'>
+            <div className="w-full">
               <label htmlFor="">End Date</label>
               <InputDatePicker
                 setCurrentDate={handleEndDate}
@@ -194,7 +223,7 @@ const SalesLedger = (user: any) => {
                 setSelectedDate={setEndDate}
               />
             </div>
-            <div className='mt-1 md:mt-6 w-full'>
+            <div className="mt-1 md:mt-6 w-full">
               <ButtonLoading
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
@@ -205,7 +234,7 @@ const SalesLedger = (user: any) => {
           </div>
         </div>
       </div>
-      <div className='overflow-y-auto'>
+      <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />
       </div>
