@@ -96,6 +96,20 @@ const SalesLedger = (user: any) => {
       cellClass: 'text-center',
     },
     {
+      key: 'challan_no',
+      header: 'Chal. No. & Date',
+      width: '120px',
+      headerClass: 'text-left',
+      cellClass: 'text-left',
+      render: (row: any) => (
+        <>
+          <div>{row.challan_no}</div>
+          <div>{dayjs(row.challan_date).format('DD/MM/YYYY')}</div>
+        </>
+      ),
+    },
+    
+    {
       key: 'product_name',
       header: 'Description',
       is_serial: false,
@@ -112,20 +126,6 @@ const SalesLedger = (user: any) => {
       ),
     },
     {
-      key: 'challan_no',
-      header: 'Chal. No.',
-      width: '120px',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-    },
-    {
-      key: 'challan_date',
-      header: 'Chal. No.',
-      width: '120px',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-    },
-    {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
@@ -137,20 +137,6 @@ const SalesLedger = (user: any) => {
           </span>
         </>
       ),
-      width: '120px',
-    },
-    {
-      key: 'acc_transaction_master',
-      header: 'Received',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: any) => {
-        const transaction = row?.acc_transaction_master?.find(
-        (tm: { acc_transaction_details?: { coa4_id?: number; debit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
-      );
-        const debitValue = transaction?.acc_transaction_details?.[0]?.debit ? thousandSeparator(transaction.acc_transaction_details[0].debit, 0) : '-';
-        return <div className="text-right">{debitValue}</div>;
-      },
       width: '120px',
     },
     {
@@ -176,6 +162,20 @@ const SalesLedger = (user: any) => {
           <span>{thousandSeparator(row.total, 0)}</span>
         </>
       ),
+    },
+    {
+      key: 'acc_transaction_master',
+      header: 'Received',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        const transaction = row?.acc_transaction_master?.find(
+        (tm: { acc_transaction_details?: { coa4_id?: number; debit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
+      );
+        const debitValue = transaction?.acc_transaction_details?.[0]?.debit ? thousandSeparator(transaction.acc_transaction_details[0].debit, 0) : '-';
+        return <div className="text-right">{debitValue}</div>;
+      },
+      width: '120px',
     },
   ];
 
