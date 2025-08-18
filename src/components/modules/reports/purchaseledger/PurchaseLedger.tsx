@@ -13,7 +13,6 @@ import { getPurchaseLedger } from './purchaseLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
-
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
@@ -28,12 +27,10 @@ const PurchaseLedger = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
-
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
   }, []);
-
 
   useEffect(() => {
     if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
@@ -56,7 +53,15 @@ const PurchaseLedger = (user: any) => {
   const handleActionButtonClick = () => {
     const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-    dispatch(getPurchaseLedger({ branchId, ledgerId, productId, startDate: startD, endDate: endD }))
+    dispatch(
+      getPurchaseLedger({
+        branchId,
+        ledgerId,
+        productId,
+        startDate: startD,
+        endDate: endD,
+      }),
+    );
   };
 
   useEffect(() => {
@@ -65,7 +70,8 @@ const PurchaseLedger = (user: any) => {
       branchDdlData?.protectedData?.transactionDate
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
-      const [day, month, year] = branchDdlData?.protectedData?.transactionDate.split('/');
+      const [day, month, year] =
+        branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
       setStartDate(parsedDate);
       setEndDate(parsedDate);
@@ -90,58 +96,141 @@ const PurchaseLedger = (user: any) => {
     },
     {
       key: 'challan_no',
-      header: 'Chal. No.', 
+      header: 'Chal. No. & Date',
       width: '120px',
+      render: (row: any) => (
+        <div>
+         <div>
+          { row?.challan_no }
+         </div>
+         <div>
+          { row?.challan_date }
+         </div>
+        </div>
+      )
     },
-    {
-      key: 'challan_date',
-      header: 'Chal. No.', 
-      width: '120px',
-    },
-    {
-      key: 'product_name',
-      header: 'Description', 
-      render: (row: any) => <div className="min-w-52">{row.product_name}</div>,
-    },
+  
     {
       key: 'vehicle_no',
-      header: 'Vehicle Number', 
+      header: 'Vehicle Number',
+      width: '120px',
+      render: (row: any) => {
+        const transaction = row?.acc_transaction_master?.find(
+        (tm: { acc_transaction_details?: { coa4_id?: number; credit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
+      );
+        const creditValue = transaction?.acc_transaction_details?.[0]?.credit ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0) : '-';
+        return <div className="text-right">
+          <div>{row?.purchase_master?.[0]?.vehicle_no}</div>
+          {/* <div>{creditValue}</div> */}
+        </div>;
+      },
+    },
+    //   {
+    //   key: 'acc_transaction_master',
+    //   header: 'Payment',
+    //   headerClass: 'text-right',
+    //   cellClass: 'text-right',
+    //   render: (row: any) => {
+    //     const transaction = row?.acc_transaction_master?.find(
+    //     (tm: { acc_transaction_details?: { coa4_id?: number; credit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
+    //   );
+    //     const creditValue = transaction?.acc_transaction_details?.[0]?.credit ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0) : '-';
+    //     return <div className="text-right">{creditValue}</div>;
+    //   },
+    //   width: '120px',
+    // },
+    {
+      key: 'product_name',
+      header: 'Description',
+      width: '100px',
+      render: (row: any) => {
+        return (
+          <div className="min-w-52 break-words">
+            {/* Loop through the details array to display all product names */}
+            {row?.purchase_master?.[0]?.details?.map(
+              (detail: any, index: number) => (
+                <div key={index}>
+                  <div>{detail?.product?.name}</div>{' '}
+                  {/* Display product name */}
+                </div>
+              ),
+            )}
+            <div>{row?.purchase_master?.[0]?.notes}</div> {/* Display notes */}
+          </div>
+        );
+      },
     },
     {
       key: 'quantity',
-      header: 'Quantity', 
+      header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: any) => (
-        <>
-          <span>{row.quantity} {row.unit}</span>
-        </>
-      ),
+      cellClass: 'text-right', 
+      render: (row: any) => {
+        return (
+          <div>
+            {row?.purchase_master?.[0]?.details?.map(
+              (detail: any, index: number) => (
+                <div key={index}>
+                  <span>
+                    { thousandSeparator(detail?.quantity,0)} {detail?.product?.unit?.name}
+                  </span>
+                </div>
+              ),
+            )}
+          </div>
+        );
+      },
       width: '120px',
     },
     {
       key: 'rate',
-      header: 'Rate', 
+      header: 'Rate',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => (
-        <>
-          <span>{ thousandSeparator (row.rate,2)} </span>
-        </>
+      render: (row: any) => ( 
+        <div>
+          {row?.purchase_master?.[0]?.details.map(
+            (detail: any, index: number) => (
+              <div key={index}>
+                <span>{thousandSeparator(detail?.purchase_price,0)}</span>
+              </div>
+            ),
+          )}
+        </div>
       ),
-      width: '120px',
+      width: '100px',
     },
     {
       key: 'total',
-      header: 'Total', 
+      header: 'Total',
       render: (row: any) => (
-        <>
-          <span>{thousandSeparator(row.total,2)}</span>
-        </>
+        <div>
+          {row?.purchase_master?.[0]?.details.map(
+            (detail: any, index: number) => (
+              <div key={index}>
+                <span>{thousandSeparator(detail?.purchase_price * detail?.quantity, 0)}</span>
+              </div>
+            ),
+          )}
+        </div>
       ),
       headerClass: 'text-right',
       cellClass: 'text-right',
-      width: '130px',
+      width: '100px',
+    },
+      {
+      key: 'acc_transaction_master',
+      header: 'Payment',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        const transaction = row?.acc_transaction_master?.find(
+        (tm: { acc_transaction_details?: { coa4_id?: number; credit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
+      );
+        const creditValue = transaction?.acc_transaction_details?.[0]?.credit ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0) : '-';
+        return <div className="text-right">{creditValue}</div>;
+      },
+      width: '120px',
     },
   ];
 
@@ -150,7 +239,7 @@ const PurchaseLedger = (user: any) => {
       <HelmetTitle title={'Purchase Ledger'} />
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-4 gap-y-2 mb-2">
-          <div className=''>
+          <div className="">
             <div>
               {' '}
               <label htmlFor="">Select Branch</label>
@@ -164,16 +253,16 @@ const PurchaseLedger = (user: any) => {
               />
             </div>
           </div>
-          <div className=''>
+          <div className="">
             <label htmlFor="">Select Account</label>
             <DdlMultiline acType={''} onSelect={selectedLedgerOptionHandler} />
           </div>
-          <div className=''>
+          <div className="">
             <label htmlFor="">Select Product</label>
             <ProductDropdown onSelect={selectedProduct} />
           </div>
-          <div className='sm:grid md:flex gap-x-3 '>
-            <div className='w-full'>
+          <div className="sm:grid md:flex gap-x-3 ">
+            <div className="w-full">
               <label htmlFor="">Start Date</label>
               <InputDatePicker
                 setCurrentDate={handleStartDate}
@@ -182,7 +271,7 @@ const PurchaseLedger = (user: any) => {
                 setSelectedDate={setStartDate}
               />
             </div>
-            <div className='w-full'>
+            <div className="w-full">
               <label htmlFor="">End Date</label>
               <InputDatePicker
                 setCurrentDate={handleEndDate}
@@ -191,7 +280,7 @@ const PurchaseLedger = (user: any) => {
                 setSelectedDate={setEndDate}
               />
             </div>
-            <div className='mt-1 md:mt-6 w-full'>
+            <div className="mt-1 md:mt-6 w-full">
               <ButtonLoading
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
@@ -202,7 +291,7 @@ const PurchaseLedger = (user: any) => {
           </div>
         </div>
       </div>
-      <div className='overflow-y-auto'>
+      <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />
       </div>
