@@ -37,7 +37,6 @@ const FaviconUpdater = ({ companyName }: Props) => {
     img.src = dynamicFaviconUrl;
 
     img.onload = () => {
-      console.log('✅ Dynamic favicon loaded.');
       updateFavicon(dynamicFaviconUrl);
     };
 
