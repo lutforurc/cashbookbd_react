@@ -15,6 +15,7 @@ import Loader from '../../../common/Loader';
 import Table from '../../utils/others/Table';
 import PaymentDetailsModal from './PaymentDetailsModal';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { toast } from 'react-toastify'; 
 
 type Installment = {
   sl_number: number;
@@ -47,7 +48,6 @@ const InstallmentDetails = () => {
 
   useEffect(() => {
     const installmentData = installment?.customerInstallment?.data?.data;
-
     if (Array.isArray(installmentData) && installmentData.length > 0) {
       setInstallments(installmentData);
     } else {
@@ -64,20 +64,28 @@ const InstallmentDetails = () => {
   };
 
   const handleSave = () => {
+
     let payload = {
       installment_id: selectedInstallmentId,
       amount,
-      remarks,
+      remarks
     };
     // API call this section
     dispatch(installmentReceived(payload))
       .unwrap()
-      .then(() => {
+      .then((response:any) => {
+        const message = response.message || 'Installment received successfully!';
         dispatch(getInstallmentDetails({ customerId: ledgerId }));
-        console.log('Installment received and details refreshed.');
+        setTimeout(() => { 
+          if (response.success) {
+            toast.success(message);
+          }else{
+            toast.info(message);
+          }
+        }, 100);
       })
       .catch((error) => {
-        console.error('Error receiving installment:', error);
+        toast.error(error.message || 'Failed to receive installment');
       });
 
     setShowModal(false);

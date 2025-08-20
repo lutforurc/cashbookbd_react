@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import httpService from '../../services/httpService';
 import {API_EMPLOYEES_INSTALLMENT_LIST_URL,API_FILTER_INSTALLMENT_LIST_URL,API_INSTALLMENT_DETAILS_BY_ID_URL,API_INSTALLMENT_LIST_URL,API_INSTALLMENT_RECEIVED_URL,} from '../../services/apiRoutes';
+import { set } from 'react-datepicker/dist/date_utils';
 
 // Types
 type InstallmentRequestPayload = {
@@ -30,6 +31,7 @@ type InstallmentReceivePayload = {
   installmentId: string;
   amount: number;
   remarks: string;
+  message?: string; // Optional message for success notification
 };
 
 // Types
@@ -77,6 +79,7 @@ interface InstallmentState {
   customerInstallment: InstallmentDetails[];
   installmentPayment: {};
   loading: boolean;
+  message: string | null;
   error: string | null;
 }
 
@@ -87,6 +90,7 @@ const initialState: InstallmentState = {
   customerInstallment: [],
   installmentPayment: [],
   loading: false,
+  message: null,
   error: null,
 };
 
@@ -128,11 +132,7 @@ export const getEmployeeWiseInstallment = createAsyncThunk<FilterDetails[], Empl
   }
 });
 
-export const getInstallmentDetails = createAsyncThunk<
-  InstallmentDetails[],
-  InstallmentRequestDetailsPayload,
-  { rejectValue: ErrorResponse }
->('getInstallmentDetails/fetch', async (payload, { rejectWithValue }) => {
+export const getInstallmentDetails = createAsyncThunk<InstallmentDetails[],InstallmentRequestDetailsPayload,{ rejectValue: ErrorResponse }>('getInstallmentDetails/fetch', async (payload, { rejectWithValue }) => {
   try {
     const { customerId, report = false } = payload;
     const response = await httpService.get<InstallmentDetails[]>(
@@ -166,6 +166,9 @@ const installmentSlice = createSlice({
   reducers: {
     setLoading: (state, action) => {
       state.loading = action.payload;
+    },
+    setMessage: (state, action) => {
+      state.message = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -216,18 +219,20 @@ const installmentSlice = createSlice({
       .addCase(installmentReceived.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.message = null;  // Reset success message
       })
       .addCase(installmentReceived.fulfilled, (state, action) => {
         state.loading = false;
         state.installmentPayment = action.payload;
+        // Dispatch success message after successful response
+        if (action.payload.success) {
+          state.message = action.payload.message;
+        }
       })
       .addCase(installmentReceived.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Something went wrong!';
       })
-
-
-
 
       .addCase(getInstallmentDetails.pending, (state) => {
         state.loading = true;
@@ -244,5 +249,5 @@ const installmentSlice = createSlice({
   },
 });
 
-export const { setLoading } = installmentSlice.actions;
+export const { setLoading, setMessage } = installmentSlice.actions;
 export default installmentSlice.reducer;

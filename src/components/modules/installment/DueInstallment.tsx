@@ -21,6 +21,7 @@ import { Tooltip } from 'antd';
 import { Popover } from '@headlessui/react';
 import PaymentDetailsModal from './PaymentDetailsModal';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { toast } from 'react-toastify'; 
 
 const DueInstallment = (user: any) => {
   const dispatch = useDispatch();
@@ -111,11 +112,19 @@ const DueInstallment = (user: any) => {
     // API call this section
     dispatch(installmentReceived(payload))
       .unwrap()
-      .then(() => {
+      .then((response:any) => {
+        const message = response.message || 'Installment received successfully!';
         dispatch(getFilterInstallment(payloads));
+        setTimeout(() => {
+          if (response.success) {
+            toast.success(message);
+          }else{
+            toast.info(message);
+          }
+        }, 100);
       })
       .catch((error) => {
-        console.error('Error receiving installment:', error);
+        toast.error(error.message || 'Failed to receive installment');
       });
     setShowModal(false);
   };
