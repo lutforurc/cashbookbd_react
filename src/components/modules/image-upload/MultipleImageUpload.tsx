@@ -213,12 +213,24 @@ export default function VoucherUpload(user: any): JSX.Element {
 
   const columns = [
     {
-      key: 'sl_number',
+      key: 'serial_no',
       header: 'SL No.',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      width: '80px',
     },
     {
       key: 'vr_no',
       header: 'Voucher No.',
+      width: '150px',
+      render: (row: any) => {
+        return (
+          <div className="flex flex-col">
+            <span className="px-4 py-0">{row.vr_no}</span>
+            <span className="px-4 py-0">{row.vr_date}</span>
+          </div>
+        )
+      }
     },
     {
       key: 'nam',
@@ -234,7 +246,7 @@ export default function VoucherUpload(user: any): JSX.Element {
       },
     },
     {
-      key: 'debit',
+      key: 'voucher_image',
       header: 'Voucher Images',
       render: (row: any) => {
         return (
