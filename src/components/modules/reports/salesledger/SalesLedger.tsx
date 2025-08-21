@@ -104,19 +104,25 @@ const SalesLedger = (user: any) => {
       render: (row: any) => (
         <>
           <div>{row.challan_no}</div>
-          <div>{dayjs(row.challan_date).format('DD/MM/YYYY')}</div>
+          <div>{row.challan_date}</div>
         </>
       ),
     },
-    
     {
       key: 'product_name',
       header: 'Description',
-      is_serial: false,
+      cellClass: 'align-top',
       render: (row: any) => (
-        <div className="min-w-52">
-          {row.product_name}
-          <div>
+        <div className="min-w-52 break-words align-top">
+          {(row?.sales_master?.details ?? []).map(
+            (detail: any, index: number) => (
+              <div key={index}>
+                <div>{detail?.product?.name}</div>
+              </div>
+            ),
+          )}
+          {/* {row.product_name} */}
+          <div className="font-semibold">
             {
               row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]
                 ?.remarks
@@ -129,25 +135,39 @@ const SalesLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right',
+      cellClass: 'text-right align-top',
+      width: '120px',
       render: (row: any) => (
         <>
-          <span>
-            {row.quantity} {row.unit}
-          </span>
+          {(row?.sales_master?.details ?? []).map(
+            (detail: any, index: number) => (
+              <div key={index}>
+                <div>
+                  { thousandSeparator (detail?.quantity, 0)} {detail?.product?.unit?.name}
+                </div>
+              </div>
+            ),
+          )}
         </>
       ),
-      width: '120px',
     },
     {
       key: 'rate',
       header: 'Rate',
       width: '120px',
       headerClass: 'text-right',
-      cellClass: 'text-right',
+      cellClass: 'text-right align-top',
       render: (row: any) => (
         <>
-          <span>{thousandSeparator(row.rate, 2)}</span>
+          {(row?.sales_master?.details ?? []).map(
+            (detail: any, index: number) => (
+              <div key={index}>
+                <div>
+                  { thousandSeparator (detail?.sales_price, 2)}
+                </div>
+              </div>
+            ),
+          )}
         </>
       ),
     },
@@ -156,10 +176,21 @@ const SalesLedger = (user: any) => {
       header: 'total',
       width: '130px',
       headerClass: 'text-right',
-      cellClass: 'text-right',
+      cellClass: 'text-right align-top',
       render: (row: any) => (
+
+
+     
         <>
-          <span>{thousandSeparator(row.total, 0)}</span>
+          {(row?.sales_master?.details ?? []).map(
+            (detail: any, index: number) => (
+              <div key={index}>
+                <div>
+                  { thousandSeparator (detail?.quantity * detail?.sales_price, 0)}
+                </div>
+              </div>
+            ),
+          )}
         </>
       ),
     },
@@ -170,9 +201,20 @@ const SalesLedger = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         const transaction = row?.acc_transaction_master?.find(
-        (tm: { acc_transaction_details?: { coa4_id?: number; debit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
-      );
-        const debitValue = transaction?.acc_transaction_details?.[0]?.debit ? thousandSeparator(transaction.acc_transaction_details[0].debit, 0) : '-';
+          (
+            tm:
+              | {
+                  acc_transaction_details?: {
+                    coa4_id?: number;
+                    debit?: string;
+                  }[];
+                }
+              | undefined,
+          ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
+        );
+        const debitValue = transaction?.acc_transaction_details?.[0]?.debit
+          ? thousandSeparator(transaction.acc_transaction_details[0].debit, 0)
+          : '-';
         return <div className="text-right">{debitValue}</div>;
       },
       width: '120px',
@@ -204,7 +246,6 @@ const SalesLedger = (user: any) => {
           </div>
           <div className="">
             <label htmlFor="">Select Product</label>
-
             <ProductDropdown onSelect={selectedProduct} />
           </div>
           <div className="sm:grid md:flex gap-x-3 ">

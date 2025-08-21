@@ -113,49 +113,33 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'vehicle_no',
       header: 'Vehicle Number',
-      width: '120px',
+      width: '120px', 
       render: (row: any) => {
         const transaction = row?.acc_transaction_master?.find(
         (tm: { acc_transaction_details?: { coa4_id?: number; credit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
       );
         const creditValue = transaction?.acc_transaction_details?.[0]?.credit ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0) : '-';
-        return <div className="text-right">
-          <div>{row?.purchase_master?.[0]?.vehicle_no}</div>
-          {/* <div>{creditValue}</div> */}
+        return <div className="text-left">
+          <div>{row?.purchase_master?.[0]?.vehicle_no}</div> 
         </div>;
       },
     },
-    //   {
-    //   key: 'acc_transaction_master',
-    //   header: 'Payment',
-    //   headerClass: 'text-right',
-    //   cellClass: 'text-right',
-    //   render: (row: any) => {
-    //     const transaction = row?.acc_transaction_master?.find(
-    //     (tm: { acc_transaction_details?: { coa4_id?: number; credit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
-    //   );
-    //     const creditValue = transaction?.acc_transaction_details?.[0]?.credit ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0) : '-';
-    //     return <div className="text-right">{creditValue}</div>;
-    //   },
-    //   width: '120px',
-    // },
     {
       key: 'product_name',
       header: 'Description',
       width: '100px',
+      cellClass: 'align-top',
       render: (row: any) => {
         return (
-          <div className="min-w-52 break-words">
-            {/* Loop through the details array to display all product names */}
+          <div className="min-w-52 break-words align-top">
             {row?.purchase_master?.[0]?.details?.map(
               (detail: any, index: number) => (
                 <div key={index}>
-                  <div>{detail?.product?.name}</div>{' '}
-                  {/* Display product name */}
+                  <div>{detail?.product?.name}</div>
                 </div>
               ),
             )}
-            <div>{row?.purchase_master?.[0]?.notes}</div> {/* Display notes */}
+            <div className='font-semibold'>{row?.purchase_master?.[0]?.notes}</div>
           </div>
         );
       },
@@ -164,7 +148,7 @@ const PurchaseLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right', 
+      cellClass: 'text-right align-top', 
       render: (row: any) => {
         return (
           <div>
@@ -185,14 +169,14 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'rate',
       header: 'Rate',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      headerClass: 'text-right', 
+      cellClass: 'text-right align-top', 
       render: (row: any) => ( 
         <div>
           {row?.purchase_master?.[0]?.details.map(
             (detail: any, index: number) => (
               <div key={index}>
-                <span>{thousandSeparator(detail?.purchase_price,0)}</span>
+                <span>{thousandSeparator(detail?.purchase_price,2)}</span>
               </div>
             ),
           )}
@@ -203,6 +187,8 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'total',
       header: 'Total',
+      headerClass: 'text-right', 
+      cellClass: 'text-right align-top', 
       render: (row: any) => (
         <div>
           {row?.purchase_master?.[0]?.details.map(
@@ -214,15 +200,13 @@ const PurchaseLedger = (user: any) => {
           )}
         </div>
       ),
-      headerClass: 'text-right',
-      cellClass: 'text-right',
       width: '100px',
     },
       {
       key: 'acc_transaction_master',
       header: 'Payment',
       headerClass: 'text-right',
-      cellClass: 'text-right',
+      cellClass: 'text-right align-top', 
       render: (row: any) => {
         const transaction = row?.acc_transaction_master?.find(
         (tm: { acc_transaction_details?: { coa4_id?: number; credit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
