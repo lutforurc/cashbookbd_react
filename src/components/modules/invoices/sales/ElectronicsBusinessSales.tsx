@@ -66,6 +66,7 @@ interface editInstallmentData {
   installment_no: number;
   due_date: Date | null;
   amount: number;
+  payments: [];
 }
 
 const ElectronicsBusinessSales = () => {
@@ -91,9 +92,7 @@ const ElectronicsBusinessSales = () => {
   const [isEarlyPayment, setIsEarlyPayment] = useState(false);
   const [showInstallmentPopup, setShowInstallmentPopup] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
-  const [editedInstallments, setEditedInstallments] = useState<
-    editInstallmentData[]
-  >([]);
+  const [editedInstallments, setEditedInstallments] = useState<editInstallmentData[]>([]);
   const [installmentData, setInstallmentData] = useState<InstallmentData>({
     amount: 0,
     startDate: null,
@@ -209,42 +208,7 @@ const ElectronicsBusinessSales = () => {
           if (message) {
             toast.error(message);
           } else {
-            // Check for installment data
-            const data = sales?.data?.data;
-            if (data) {
-              const editInstallments: editInstallmentData[] = (
-                data.installments || []
-              ).map((item: any) => ({
-                id: item.id,
-                customer_id: item.customer_id,
-                main_trx_id: item.main_trx_id,
-                installment_no: item.installment_no,
-                due_date: item.due_date ? new Date(item.due_date) : null,
-                amount: parseFloat(item.amount),
-              }));
-
-              setFormData({
-                ...formData,
-                mtmId: data.mtmId,
-                account: data.account,
-                accountName: data.accountName,
-                receivedAmt: data.receivedAmt,
-                discountAmt: parseFloat(data.discountAmt),
-                notes: data.notes,
-                searchInvoice: search,
-                products,
-                editInstallmentData: editInstallments,
-              });
-
-              setEditedInstallments(editInstallments); // ✅ state set
-
-              setTimeout(() => {
-                window.scrollTo({
-                  top: 0,
-                  behavior: 'smooth',
-                });
-              }, 200);
-            }
+            toast.success('Invoice loaded successfully');
           }
         },
       ),
@@ -252,56 +216,75 @@ const ElectronicsBusinessSales = () => {
   };
 
   useEffect(() => {
-    setEditedInstallments(formData.editInstallmentData || []);
-  }, [formData.editInstallmentData]);
+  if (sales.data.transaction) {
+    const products = sales.data.transaction?.sales_master.details.map(
+      (detail: any) => ({
+        id: detail.id,
+        product: detail.product.id,
+        product_name: detail.product.name,
+        serial_no: detail.serial_no,
+        unit: detail.product.unit.name,
+        qty: detail.quantity,
+        price: detail.sales_price,
+        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+      }),
+    );
+
+    // Find accountName
+    let accountName = "-";
+    if (sales?.data?.transaction.acc_transaction_master?.length > 0) {
+      for (const trxMaster of sales?.data?.transaction.acc_transaction_master) {
+        for (const detail of trxMaster.acc_transaction_details) {
+          if (detail.coa_l4?.id === sales?.data?.transaction?.sales_master?.customer_id) {
+            accountName = detail.coa_l4.name;
+            break;
+          }
+        }
+        if (accountName !== "-") break;
+      }
+    }
+    
+    // Update formData using previous state to maintain integrity
+    const updatedFormData = {
+      ...formData,
+      mtmId: sales.data.mtmId,
+      account: sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
+      accountName,
+      receivedAmt: sales.data.transaction.sales_master.netpayment.toString() || '',
+      discountAmt: parseFloat(sales.data.transaction.sales_master.discount) || 0,
+      notes: sales.data.transaction.sales_master.notes || '',
+      products: products || [],
+      editInstallmentData: sales.data.transaction.installments.map(
+        (installment: any) => ({
+          id: installment.id,
+          customer_id: installment.customer_id,
+          main_trx_id: installment.main_trx_id,
+          installment_no: installment.installment_no,
+          due_date: installment.due_date
+            ? new Date(installment.due_date.split('/').reverse().join('-'))
+            : null,
+          amount: parseFloat(installment.amount) || 0,
+          payments: installment.payments || [],
+        }),
+      ),
+    };
+
+    setFormData(updatedFormData);
+    setEditedInstallments(updatedFormData.editInstallmentData); 
+  }
+}, [sales.data.transaction]);
+
+
+
+
 
   useEffect(() => {
-    if (sales?.data?.products) {
-      const products: Product[] = sales.data.products.map((product: any) => ({
-        id: product.id,
-        product: product.product,
-        product_name: product.product_name,
-        serial_no: product.serial_no,
-        unit: product.unit,
-        qty: product.quantity,
-        price: product.price,
-        warehouse: product.warehouse ? product.warehouse.toString() : '',
-      }));
-
-      setFormData(
-        products && products.length > 0
-          ? { ...sales.data, products }
-          : { ...sales.data, products: [] },
-      );
-    }
-
-    // ✅ Add this block for installments
-    if (sales?.data?.installments) {
-      setEditedInstallments(sales.data.installments);
-    }
-  }, [sales?.data]);
-
+    console.log('Updated formData:', formData);
+  }, [formData]);
   const totalAmount = formData.products.reduce(
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
   );
-
-  useEffect(() => {
-    if (formData.account == '17') {
-      setFormData((prevState) => ({
-        ...prevState,
-        receivedAmt:
-          totalAmount > 0
-            ? (totalAmount - prevState.discountAmt).toString()
-            : '0',
-      }));
-    } else {
-      setFormData((prevState) => ({
-        ...prevState,
-        receivedAmt: '',
-      }));
-    }
-  }, [formData.account, formData.products]);
 
   const addProduct = () => {
     const isValid = validateProductData(productData);
@@ -448,7 +431,6 @@ const ElectronicsBusinessSales = () => {
         resetProducts();
       }, 2000);
     } catch (error) {
-      console.log(error);
       toast.error('Failed to save invoice!');
     }
   };
@@ -644,26 +626,28 @@ const ElectronicsBusinessSales = () => {
     setProductData(updatedProduct);
   };
 
-useEffect(() => {
-  const total = formData.products.reduce((acc, product) => {
-    const qty = parseFloat(product.qty?.toString() || '0') || 0;
-    const price = parseFloat(product.price?.toString() || '0') || 0;
-    return acc + qty * price;
-  }, 0);
+ 
 
-  const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-  let netTotal = 0;
-  if( total > 0){
-    netTotal = total - discount;
-  } 
+  // useEffect(() => {
+  //   const total = formData.products.reduce((acc, product) => {
+  //     const qty = parseFloat(product.qty?.toString() || '0') || 0;
+  //     const price = parseFloat(product.price?.toString() || '0') || 0;
+  //     return acc + qty * price;
+  //   }, 0);
 
-  setFormData((prev) => ({
-    ...prev,
-    receivedAmt: netTotal.toFixed(2),
-  }));
-}, [formData.products, formData.discountAmt]);
+  //   const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+  //   let netTotal = 0;
+  //   if( total > 0){
+  //     netTotal = total - discount;
+  //   }
 
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     receivedAmt: netTotal.toFixed(2),
+  //   }));
+  // }, [formData.products, formData.discountAmt]);
 
+  console.log('formData?.editInstallmentData', formData?.editInstallmentData);
 
   return (
     <>
@@ -843,7 +827,7 @@ useEffect(() => {
               />
               <InputElement
                 id="discountAmt"
-                value={formData.discountAmt.toString()}
+                value={formData.discountAmt.toString()} 
                 name="discountAmt"
                 placeholder="Discount Amount"
                 label="Discount Amount"
@@ -1189,78 +1173,79 @@ useEffect(() => {
 
           {/* Render Installment Details */}
           {sales.isLoading && <Loader />}
-          {editedInstallments &&
-            editedInstallments.map((installment, index) => (
-              <div
-                key={installment.id}
-                className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-1 items-center shadow-sm"
-              >
-                <div className="flex justify-center">
-                  <input
-                    value={installment.installment_no}
-                    readOnly
-                    className={`form-input text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
+          {editedInstallments.length > 0 && editedInstallments.map((installment, index) => {
+              return (
+                <div
+                  key={installment.id}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-1 items-center shadow-sm"
+                >
+                  <div className="flex justify-center">
+                    <input
+                      value={installment.installment_no}
+                      readOnly
+                      className={`form-input text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
                     dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 
                     dark:focus:ring-blue-400 dark:focus:border-blue-400 mt-1 block w-10 h-8.5 text-center`}
-                    style={{
-                      appearance: 'textfield', // for Firefox
-                      MozAppearance: 'textfield', // for older Firefox
-                      WebkitAppearance: 'none', // for Chrome/Safari
-                    }}
-                  />
-                </div>
+                      style={{
+                        appearance: 'textfield', // for Firefox
+                        MozAppearance: 'textfield', // for older Firefox
+                        WebkitAppearance: 'none', // for Chrome/Safari
+                      }}
+                    />
+                  </div>
 
-                <div>
-                  <input
-                    type="number"
-                    value={installment.amount}
-                    onChange={(e) => {
-                      const updated = [...editedInstallments];
-                      updated[index].amount = parseFloat(e.target.value);
-                      setEditedInstallments(updated);
-                    }}
-                    className={`form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
-                    dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none  focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 mt-1 block w-26 text-right`}
-                    style={{
-                      appearance: 'textfield', // for Firefox
-                      MozAppearance: 'textfield', // for older Firefox
-                      WebkitAppearance: 'none', // for Chrome/Safari
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <InputDatePicker
-                    selectedDate={installment.due_date ?? null}
-                    setSelectedDate={(date) => {
-                      const updated = [...editedInstallments];
-                      updated[index].due_date = date;
-                      setEditedInstallments(updated);
-                    }}
-                    className="font-medium text-sm h-[34px] mt-1 w-26 ml-5"
-                    placeholderText="Select Due Date"
-                  />
-                </div>
-
-                <div className="pt-2 w-10 ml-10">
-                  {installment?.payments?.length <= 0 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = editedInstallments.filter(
-                          (_, i) => i !== index,
-                        );
+                  <div>
+                    <input
+                      type="number"
+                      value={Number(installment.amount)}
+                      onChange={(e) => {
+                        const updated = [...editedInstallments];
+                        updated[index].amount = parseFloat(e.target.value);
                         setEditedInstallments(updated);
                       }}
-                      className="text-red-500 hover:underline"
-                    >
-                      {/* Remove */}
-                      <FiTrash2 className="text-red-500 text-lg mr-2" />
-                    </button>
-                  )}
+                      className={`form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
+                    dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none  focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 mt-1 block w-26 text-right`}
+                      style={{
+                        appearance: 'textfield', // for Firefox
+                        MozAppearance: 'textfield', // for older Firefox
+                        WebkitAppearance: 'none', // for Chrome/Safari
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <InputDatePicker
+                      selectedDate={installment.due_date ?? null}
+                      setSelectedDate={(date) => {
+                        const updated = [...editedInstallments];
+                        updated[index].due_date = date;
+                        setEditedInstallments(updated);
+                      }}
+                      className="font-medium text-sm h-[34px] mt-1 w-26 ml-5"
+                      placeholderText="Select Due Date"
+                    />
+                  </div>
+
+                  <div className="pt-2 w-10 ml-10">
+                    {installment?.payments?.length <= 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = editedInstallments.filter(
+                            (_, i) => i !== index,
+                          );
+                          setEditedInstallments(updated);
+                        }}
+                        className="text-red-500 hover:underline"
+                      >
+                        {/* Remove */}
+                        <FiTrash2 className="text-red-500 text-lg mr-2" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </div>
       )}
     </>
