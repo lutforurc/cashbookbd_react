@@ -11,6 +11,8 @@ import { userCurrentBranch } from '../../branch/branchSlice';
 import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import WarehouseDropdown from '../../../utils/utils-functions/WarehouseDropdown';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import Loader from '../../../../common/Loader';
 import {
   FiEdit,
@@ -92,7 +94,9 @@ const ElectronicsBusinessSales = () => {
   const [isEarlyPayment, setIsEarlyPayment] = useState(false);
   const [showInstallmentPopup, setShowInstallmentPopup] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
-  const [editedInstallments, setEditedInstallments] = useState<editInstallmentData[]>([]);
+  const [editedInstallments, setEditedInstallments] = useState<
+    editInstallmentData[]
+  >([]);
   const [installmentData, setInstallmentData] = useState<InstallmentData>({
     amount: 0,
     startDate: null,
@@ -101,6 +105,9 @@ const ElectronicsBusinessSales = () => {
     earlyPaymentDate: null,
     earlyDiscount: 0,
   });
+
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -216,67 +223,70 @@ const ElectronicsBusinessSales = () => {
   };
 
   useEffect(() => {
-  if (sales.data.transaction) {
-    const products = sales.data.transaction?.sales_master.details.map(
-      (detail: any) => ({
-        id: detail.id,
-        product: detail.product.id,
-        product_name: detail.product.name,
-        serial_no: detail.serial_no,
-        unit: detail.product.unit.name,
-        qty: detail.quantity,
-        price: detail.sales_price,
-        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-      }),
-    );
-
-    // Find accountName
-    let accountName = "-";
-    if (sales?.data?.transaction.acc_transaction_master?.length > 0) {
-      for (const trxMaster of sales?.data?.transaction.acc_transaction_master) {
-        for (const detail of trxMaster.acc_transaction_details) {
-          if (detail.coa_l4?.id === sales?.data?.transaction?.sales_master?.customer_id) {
-            accountName = detail.coa_l4.name;
-            break;
-          }
-        }
-        if (accountName !== "-") break;
-      }
-    }
-    
-    // Update formData using previous state to maintain integrity
-    const updatedFormData = {
-      ...formData,
-      mtmId: sales.data.mtmId,
-      account: sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
-      accountName,
-      receivedAmt: sales.data.transaction.sales_master.netpayment.toString() || '',
-      discountAmt: parseFloat(sales.data.transaction.sales_master.discount) || 0,
-      notes: sales.data.transaction.sales_master.notes || '',
-      products: products || [],
-      editInstallmentData: sales.data.transaction.installments.map(
-        (installment: any) => ({
-          id: installment.id,
-          customer_id: installment.customer_id,
-          main_trx_id: installment.main_trx_id,
-          installment_no: installment.installment_no,
-          due_date: installment.due_date
-            ? new Date(installment.due_date.split('/').reverse().join('-'))
-            : null,
-          amount: parseFloat(installment.amount) || 0,
-          payments: installment.payments || [],
+    if (sales.data.transaction) {
+      const products = sales.data.transaction?.sales_master.details.map(
+        (detail: any) => ({
+          id: detail.id,
+          product: detail.product.id,
+          product_name: detail.product.name,
+          serial_no: detail.serial_no,
+          unit: detail.product.unit.name,
+          qty: detail.quantity,
+          price: detail.sales_price,
+          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
         }),
-      ),
-    };
+      );
 
-    setFormData(updatedFormData);
-    setEditedInstallments(updatedFormData.editInstallmentData); 
-  }
-}, [sales.data.transaction]);
+      // Find accountName
+      let accountName = '-';
+      if (sales?.data?.transaction.acc_transaction_master?.length > 0) {
+        for (const trxMaster of sales?.data?.transaction
+          .acc_transaction_master) {
+          for (const detail of trxMaster.acc_transaction_details) {
+            if (
+              detail.coa_l4?.id ===
+              sales?.data?.transaction?.sales_master?.customer_id
+            ) {
+              accountName = detail.coa_l4.name;
+              break;
+            }
+          }
+          if (accountName !== '-') break;
+        }
+      }
 
+      // Update formData using previous state to maintain integrity
+      const updatedFormData = {
+        ...formData,
+        mtmId: sales.data.mtmId,
+        account:
+          sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
+        accountName,
+        receivedAmt:
+          sales.data.transaction.sales_master.netpayment.toString() || '',
+        discountAmt:
+          parseFloat(sales.data.transaction.sales_master.discount) || 0,
+        notes: sales.data.transaction.sales_master.notes || '',
+        products: products || [],
+        editInstallmentData: sales.data.transaction.installments.map(
+          (installment: any) => ({
+            id: installment.id,
+            customer_id: installment.customer_id,
+            main_trx_id: installment.main_trx_id,
+            installment_no: installment.installment_no,
+            due_date: installment.due_date
+              ? new Date(installment.due_date.split('/').reverse().join('-'))
+              : null,
+            amount: parseFloat(installment.amount) || 0,
+            payments: installment.payments || [],
+          }),
+        ),
+      };
 
-
-
+      setFormData(updatedFormData);
+      setEditedInstallments(updatedFormData.editInstallmentData);
+    }
+  }, [sales.data.transaction]);
 
   useEffect(() => {
     console.log('Updated formData:', formData);
@@ -413,10 +423,18 @@ const ElectronicsBusinessSales = () => {
       return;
     }
 
+    const formattedInstallmentData = isInstallment
+      ? {
+          ...installmentData,
+          startDate: installmentData.startDate? dayjs(installmentData.startDate).tz('Asia/Dhaka').format('YYYY-MM-DD'): null,
+          earlyPaymentDate: installmentData.earlyPaymentDate? dayjs(installmentData.earlyPaymentDate).tz('Asia/Dhaka').format('YYYY-MM-DD'): null,
+        }
+      : null;
+
     const payload = {
       ...formData,
       isInstallment,
-      installmentData: isInstallment ? installmentData : null,
+      installmentData: formattedInstallmentData,
     };
 
     try {
@@ -429,6 +447,7 @@ const ElectronicsBusinessSales = () => {
       setTimeout(() => {
         setSaveButtonLoading(false);
         resetProducts();
+        setIsEarlyPayment(false);
       }, 2000);
     } catch (error) {
       toast.error('Failed to save invoice!');
@@ -576,22 +595,35 @@ const ElectronicsBusinessSales = () => {
   // Handle date change for installment start date
 
   const handleInstallmentDateChange = (date: Date | null) => {
-    // console.log('Installment Start Date:', date);
     if (date) {
-      const selectedDate = dayjs(date).startOf('day');
+      const selectedDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+      );
       const newEarlyPaymentDate = isEarlyPayment
-        ? selectedDate.add(90, 'day').toDate()
+        ? new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate() + 90,
+          )
         : null;
 
-      setStartDate(selectedDate.toDate());
+      //  এখানে সঠিক তারিখ পাচ্ছি।
+      console.log('Selected Date (Input):', date);
+      console.log('Selected Date (Processed):', selectedDate);
+      console.log('Early Payment Date:', newEarlyPaymentDate);
+
+      setStartDate(selectedDate);
       setEarlyPaymentDate(newEarlyPaymentDate);
 
       setInstallmentData((prev) => ({
         ...prev,
-        startDate: selectedDate.toDate(),
+        startDate: selectedDate,
         earlyPaymentDate: newEarlyPaymentDate,
       }));
     } else {
+      console.log('Installment Data:', installmentData);
       setStartDate(null);
       setEarlyPaymentDate(null);
       setInstallmentData((prev) => ({
@@ -601,12 +633,14 @@ const ElectronicsBusinessSales = () => {
       }));
     }
   };
+
   const handleEarlyPaymentDateChange = (date: Date | null) => {
-    setEarlyPaymentDate(date);
-    // console.log('Early Payment Date:', date);
+    const selectedDate = dayjs(date).tz('Asia/Dhaka').startOf('day');
+    setEarlyPaymentDate(selectedDate.toDate());
+    console.log('Early Payment Date:', selectedDate.toDate());
     setInstallmentData((prev) => ({
       ...prev,
-      earlyPaymentDate: earlyPaymentDate,
+      earlyPaymentDate: selectedDate.toDate(),
     }));
   };
 
@@ -625,8 +659,6 @@ const ElectronicsBusinessSales = () => {
 
     setProductData(updatedProduct);
   };
-
- 
 
   // useEffect(() => {
   //   const total = formData.products.reduce((acc, product) => {
@@ -802,7 +834,7 @@ const ElectronicsBusinessSales = () => {
                         onClick={handleCloseInstallmentPopup}
                         buttonLoading={buttonLoading}
                         label="Close"
-                        className="whitespace-nowrap text-center mr-0 mt-5"
+                        className="whitespace-nowrap text-center mr-0 mt-5 py-2"
                         icon={
                           <FiShare className="text-white text-lg ml-2 mr-2" />
                         }
@@ -827,7 +859,7 @@ const ElectronicsBusinessSales = () => {
               />
               <InputElement
                 id="discountAmt"
-                value={formData.discountAmt.toString()} 
+                value={formData.discountAmt.toString()}
                 name="discountAmt"
                 placeholder="Discount Amount"
                 label="Discount Amount"
@@ -1173,7 +1205,8 @@ const ElectronicsBusinessSales = () => {
 
           {/* Render Installment Details */}
           {sales.isLoading && <Loader />}
-          {editedInstallments.length > 0 && editedInstallments.map((installment, index) => {
+          {editedInstallments.length > 0 &&
+            editedInstallments.map((installment, index) => {
               return (
                 <div
                   key={installment.id}
