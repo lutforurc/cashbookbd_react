@@ -491,6 +491,7 @@ const ElectronicsBusinessSales = () => {
     );
     setTimeout(() => {
       resetProducts();
+      setEditedInstallments([]);
       setUpdateButtonLoading(false);
       setIsUpdateButton(false);
     }, 2000);
@@ -609,10 +610,6 @@ const ElectronicsBusinessSales = () => {
           )
         : null;
 
-      //  এখানে সঠিক তারিখ পাচ্ছি।
-      console.log('Selected Date (Input):', date);
-      console.log('Selected Date (Processed):', selectedDate);
-      console.log('Early Payment Date:', newEarlyPaymentDate);
 
       setStartDate(selectedDate);
       setEarlyPaymentDate(newEarlyPaymentDate);
@@ -623,7 +620,6 @@ const ElectronicsBusinessSales = () => {
         earlyPaymentDate: newEarlyPaymentDate,
       }));
     } else {
-      console.log('Installment Data:', installmentData);
       setStartDate(null);
       setEarlyPaymentDate(null);
       setInstallmentData((prev) => ({
@@ -679,7 +675,7 @@ const ElectronicsBusinessSales = () => {
   //   }));
   // }, [formData.products, formData.discountAmt]);
 
-  console.log('formData?.editInstallmentData', formData?.editInstallmentData);
+  // console.log('formData?.editInstallmentData', formData?.editInstallmentData);
 
   return (
     <>
