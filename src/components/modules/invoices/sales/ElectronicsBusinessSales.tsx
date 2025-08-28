@@ -178,7 +178,7 @@ const ElectronicsBusinessSales = () => {
       [key]: option.value,
       [accountName]: option.label,
       [unit]: option.label_5,
-      [price]: Number(option.label_3),
+      [price]: Number(option.label_4),
     });
 
     // After setting product data, recalculate line total
@@ -426,8 +426,16 @@ const ElectronicsBusinessSales = () => {
     const formattedInstallmentData = isInstallment
       ? {
           ...installmentData,
-          startDate: installmentData.startDate? dayjs(installmentData.startDate).tz('Asia/Dhaka').format('YYYY-MM-DD'): null,
-          earlyPaymentDate: installmentData.earlyPaymentDate? dayjs(installmentData.earlyPaymentDate).tz('Asia/Dhaka').format('YYYY-MM-DD'): null,
+          startDate: installmentData.startDate
+            ? dayjs(installmentData.startDate)
+                .tz('Asia/Dhaka')
+                .format('YYYY-MM-DD')
+            : null,
+          earlyPaymentDate: installmentData.earlyPaymentDate
+            ? dayjs(installmentData.earlyPaymentDate)
+                .tz('Asia/Dhaka')
+                .format('YYYY-MM-DD')
+            : null,
         }
       : null;
 
@@ -610,7 +618,6 @@ const ElectronicsBusinessSales = () => {
           )
         : null;
 
-
       setStartDate(selectedDate);
       setEarlyPaymentDate(newEarlyPaymentDate);
 
@@ -656,26 +663,30 @@ const ElectronicsBusinessSales = () => {
     setProductData(updatedProduct);
   };
 
-  // useEffect(() => {
-  //   const total = formData.products.reduce((acc, product) => {
-  //     const qty = parseFloat(product.qty?.toString() || '0') || 0;
-  //     const price = parseFloat(product.price?.toString() || '0') || 0;
-  //     return acc + qty * price;
-  //   }, 0);
+  useEffect(() => {
+    const total = formData.products.reduce((acc, product) => {
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
+    }, 0);
 
-  //   const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-  //   let netTotal = 0;
-  //   if( total > 0){
-  //     netTotal = total - discount;
-  //   }
-
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     receivedAmt: netTotal.toFixed(2),
-  //   }));
-  // }, [formData.products, formData.discountAmt]);
-
-  // console.log('formData?.editInstallmentData', formData?.editInstallmentData);
+    if (!formData.mtmId) {
+      if (Number(formData.account) === 17) {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: Math.max(
+            0,
+            total - parseFloat(prev.discountAmt?.toString() || '0'),
+          ).toFixed(0),
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: '0',
+        }));
+      }
+    }
+  }, [formData.account, formData.discountAmt, formData.products]);
 
   return (
     <>

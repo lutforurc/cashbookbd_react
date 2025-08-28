@@ -43,9 +43,7 @@ const CustomerDashboard: React.FC = () => {
   // Theme state: true = dark, false = light
   const [isDark, setIsDark] = useState<boolean>(false);
   // Active tab: 'overview' | 'installments' | 'payments'
-  const [activeTab, setActiveTab] = useState<
-    'overview' | 'installments' | 'payments' | 'others'
-  >('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'installments' | 'payments' | 'others'>('overview');
   const [installments, setInstallments] = useState(null);
   const [payment, setPayments] = useState<any[]>([]); // Make it an array from the start
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
@@ -118,6 +116,23 @@ const CustomerDashboard: React.FC = () => {
     if (isDark) document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
   }, [isDark]);
+
+
+const paymentList = customer?.me?.data?.payments?.original?.data?.data?.payments || [];
+
+const allPayments = paymentList.map((pay: any) => ({
+  id: pay.id,
+  vr_no: pay.main_transaction?.vr_no || pay.main_trx_id, // main_transaction থেকে vr_no
+  paid_at: pay.paid_at,
+  amount: pay.amount,
+  installment_no: pay.installment?.installment_no,       // installment relation থেকে
+  due_date: pay.installment?.due_date,
+  status: pay.installment?.status,
+  invoice_no: pay.installment?.invoice_no ?? null,       // future-proof
+}));
+
+console.log("All Payments: ", allPayments);
+
 
   // console.log( customer?.me.data?.installments?.original?.data?.data )
   const columns = [
@@ -292,8 +307,7 @@ const CustomerDashboard: React.FC = () => {
                         <span className="text-green-600 text-sm dark:text-green-400 mt-0">
                           ৳{' '}
                           {thousandSeparator(
-                            summary.total[0]?.total_debit,
-                            0,
+                            summary.total[0]?.total_debit,0,
                           ) || 0}
                         </span>
                       </div>
@@ -386,7 +400,7 @@ const CustomerDashboard: React.FC = () => {
                               shadow rounded p-4 transition-colors"
               >
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                  Installment List
+                  Installment Information
                 </h2>
                 <div className="overflow-x-auto">
                   <Table columns={columns} data={installments || []} />
@@ -404,7 +418,7 @@ const CustomerDashboard: React.FC = () => {
                   Payment History
                 </h2>
                 <div className="overflow-x-auto">
-                  <Table columns={paymentsColumns} data={paymentHistory || []} />
+                  <Table columns={paymentsColumns} data={allPayments || []} />
                 </div>
               </div>
             )}
@@ -419,7 +433,7 @@ const CustomerDashboard: React.FC = () => {
                   Payment History
                 </h2>
                 <div className="overflow-x-auto">
-                  <Table columns={paymentsColumns} data={payment || []} />
+                  <Table columns={paymentsColumns} data={allPayments || []} />
                 </div>
               </div>
             )}
