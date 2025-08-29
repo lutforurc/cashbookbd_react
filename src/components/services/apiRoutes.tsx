@@ -6,8 +6,8 @@
 // export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL = 'https://mikdad.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://kpsnew.cashbookbd.com';
-export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
-// export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
+// export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
+export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
@@ -90,7 +90,7 @@ export const API_COAL4_DDL_URL = API_BASE_URL + '/chart_of_accounts/ddl/l4-list'
 
 // Reports
 // Ledger url
-export const API_REPORT_LEDGER_URL = API_BASE_URL + '/reports/ledger';
+export const API_REPORT_LEDGER_URL = API_BASE_URL + '/reports/api-ledger';
 
 // Purchase Ledger url
 export const API_REPORT_PURCHASE_LEDGER_URL = API_BASE_URL + '/reports/purchase/ledger';

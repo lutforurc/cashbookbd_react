@@ -14,6 +14,7 @@ import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../../services/apiRoutes';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { generateTableData } from '../../../utils/utils-functions/generateTableData';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
@@ -36,11 +37,134 @@ const Ledger = (user: any) => {
   }, []);
 
   useEffect(() => {
-    // Update table data only when ledgerData is valid
-    if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
-      setTableData(ledgerData?.data);
-    }
-  }, [ledgerData]);
+  if (!ledgerData.isLoading && ledgerData?.data) {
+    const tableRows = generateTableData(ledgerData.data);
+    setTableData(tableRows);
+  }
+}, [ledgerData]);
+
+  // useEffect(() => {
+  //   // console.log(ledgerData);
+  //   // Update table data only when ledgerData is valid
+  //   if (!ledgerData.isLoading && ledgerData?.data) {
+  //     // setTableData(ledgerData?.data);
+  //     const data = ledgerData.data;
+  //     // Flatten opening_balance
+  //     // Flatten opening_balance with net balance calculation
+  //     let totalDebit = 0;
+  //     let totalCredit = 0;
+  //     let branchId = null;
+
+  //     // সমস্ত opening_balance traverse
+  //     data.opening_balance.forEach((trx: any) => {
+  //       branchId = trx.branch_id;
+  //       trx.acc_transaction_master.forEach((master: any) => {
+  //         master.acc_transaction_details.forEach((detail: any) => {
+  //           totalDebit += parseFloat(detail.debit || 0);
+  //           totalCredit += parseFloat(detail.credit || 0);
+  //         });
+  //       });
+  //     });
+
+  //     // Net balance নির্ধারণ
+  //     let debit = 0;
+  //     let credit = 0;
+  //     if (totalDebit > totalCredit) {
+  //       debit = totalDebit - totalCredit;
+  //     } else if (totalCredit > totalDebit) {
+  //       credit = totalCredit - totalDebit;
+  //     }
+
+  //     const openingRow = {
+  //       sl_number: '',
+  //       vr_date: '',
+  //       vr_no: '',
+  //       name: 'Opening',
+  //       remarks: '',
+  //       branch_id: branchId,
+  //       debit,
+  //       credit,
+  //     };
+
+  //     // }
+
+  //     const detailsRows = data.details.flatMap((trx: any) =>
+  //       trx.acc_transaction_master.flatMap((master: any) =>
+  //         master.acc_transaction_details.map((detail: any) => ({
+  //           ...detail,
+  //           vr_date: trx.vr_date,
+  //           vr_no: trx.vr_no,
+  //           name: detail.coa_l4?.name || '-',
+  //           remarks: detail.remarks,
+  //           branch_id: trx.branch_id,
+  //         })),
+  //       ),
+  //     );
+  //     // তারপর global sequential sl_number Assign করুন
+  //     const numberedDetails = detailsRows.map((row: any, idx: number) => ({
+  //       ...row,
+  //       sl_number: idx + 1,
+  //     }));
+
+  //     // Combine opening + details (optional: opening first)
+  //     const tableRows = [openingRow, ...numberedDetails];
+
+  //     const totalRow = {
+  //       sl_number: '',
+  //       vr_date: '',
+  //       vr_no: '',
+  //       name: 'Total',
+  //       remarks: '',
+  //       branch_id: branchId,
+  //       debit: tableRows.reduce(
+  //         (sum, row) => sum + (parseFloat(row.debit) || 0),
+  //         0,
+  //       ),
+  //       credit: tableRows.reduce(
+  //         (sum, row) => sum + (parseFloat(row.credit) || 0),
+  //         0,
+  //       ),
+  //     };
+  //     const allRows = [...tableRows, totalRow];
+
+  //     const balanceRow = {
+  //       sl_number: '',
+  //       vr_date: '',
+  //       vr_no: '',
+  //       name: 'Balance',
+  //       remarks: '',
+  //       branch_id: branchId,
+  //       debit: Math.max(
+  //         tableRows.reduce(
+  //           (sum, row) => sum + (parseFloat(row.debit) || 0),
+  //           0,
+  //         ) -
+  //           tableRows.reduce(
+  //             (sum, row) => sum + (parseFloat(row.credit) || 0),
+  //             0,
+  //           ),
+  //         0,
+  //       ),
+  //       credit: Math.max(
+  //         tableRows.reduce(
+  //           (sum, row) => sum + (parseFloat(row.credit) || 0),
+  //           0,
+  //         ) -
+  //           tableRows.reduce(
+  //             (sum, row) => sum + (parseFloat(row.debit) || 0),
+  //             0,
+  //           ),
+  //         0,
+  //       ),
+  //     };
+
+  //     const allRowsWithBalance = [...allRows, balanceRow];
+
+  //     setTableData(allRowsWithBalance);
+
+  //     console.log(tableData);
+  //   }
+  // }, [ledgerData]);
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
@@ -61,7 +185,9 @@ const Ledger = (user: any) => {
       toast.info('Please select ledger account.');
       return;
     }
-    dispatch(getLedger({ branchId, ledgerId, startDate: startD, endDate: endD }))
+    dispatch(
+      getLedger({ branchId, ledgerId, startDate: startD, endDate: endD }),
+    );
   };
 
   useEffect(() => {
@@ -70,7 +196,8 @@ const Ledger = (user: any) => {
       branchDdlData?.protectedData?.transactionDate
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
-      const [day, month, year] = branchDdlData?.protectedData?.transactionDate.split('/');
+      const [day, month, year] =
+        branchDdlData?.protectedData?.transactionDate.split('/');
       const startDate = new Date(Number(year), Number(month) - 1, Number('01'));
       const endDate = new Date(Number(year), Number(month) - 1, Number(day));
       setStartDate(startDate);
@@ -87,33 +214,35 @@ const Ledger = (user: any) => {
   const columns = [
     {
       key: 'sl_number',
-      header: 'Sl. No', 
+      header: 'Sl. No',
       width: '100px',
       hederClass: 'text-center',
       cellClass: 'text-center',
-      render: (row:any) => <div className="w-25">{ row.sl_number ? row.sl_number : '-'}</div>,
+      render: (row: any) => (
+        <div className="w-25">{row.sl_number ? row.sl_number : '-'}</div>
+      ),
     },
     {
       key: 'vr_date',
       header: 'Vr Date',
-      render: (row:any) => <div className="w-25">{row.vr_date}</div>,
+      render: (row: any) => <div className="w-25">{row.vr_date}</div>,
       width: '100px',
     },
     {
       key: 'vr_no',
       header: 'Vr No',
-      render: (row:any) => <div className="w-25">{row.vr_no}</div>,
+      render: (row: any) => <div className="w-25">{row.vr_no}</div>,
       width: '100px',
     },
     {
       key: 'name',
       header: 'Description',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
-           <p>{row.name}</p> 
+          <p>{row.name}</p>
           <div className="text-sm text-gray-500">{row.remarks}</div>
         </>
-    ), 
+      ),
     },
     {
       key: 'credit',
@@ -121,11 +250,11 @@ const Ledger = (user: any) => {
       width: '120px',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => {
+      render: (row: any) => {
         return (
           <span>{row.credit > 0 ? thousandSeparator(row.credit, 2) : '-'}</span>
         );
-      }
+      },
     },
     {
       key: 'debit',
@@ -133,23 +262,23 @@ const Ledger = (user: any) => {
       width: '120px',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => {
+      render: (row: any) => {
         return (
           <span>{row.debit > 0 ? thousandSeparator(row.debit, 2) : '-'}</span>
         );
-      }
+      },
     },
     {
       key: 'voucher_image',
       header: 'Voucher',
-      render: (row:any) => {
+      render: (row: any) => {
         return (
           <ImagePopup
             branchPad={row?.branchPad || ''} // Ensure row is defined before accessing branchPad
             voucher_image={row?.voucher_image || ''} // Ensure voucher_image is defined
             title={row?.remarks || ''} // Ensure title is defined
           />
-        );  
+        );
       },
     },
   ];
@@ -159,7 +288,7 @@ const Ledger = (user: any) => {
       <HelmetTitle title={'Ledger'} />
       <div className="mb-2">
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
-          <div className=''>
+          <div className="">
             <div>
               {' '}
               <label htmlFor="">Select Branch</label>
@@ -174,12 +303,12 @@ const Ledger = (user: any) => {
             </div>
           </div>
 
-          <div className=''>
+          <div className="">
             <label htmlFor="">Select Account</label>
             <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} />
           </div>
 
-          <div className='w-full'>
+          <div className="w-full">
             <label htmlFor="">Start Date</label>
             <InputDatePicker
               setCurrentDate={handleStartDate}
@@ -189,7 +318,7 @@ const Ledger = (user: any) => {
             />
           </div>
 
-          <div >
+          <div>
             <label htmlFor="">End Date</label>
             <InputDatePicker
               setCurrentDate={handleEndDate}
@@ -199,7 +328,7 @@ const Ledger = (user: any) => {
             />
           </div>
 
-          <div className='mt-2 md:mt-0'>
+          <div className="mt-2 md:mt-0">
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
@@ -209,9 +338,10 @@ const Ledger = (user: any) => {
           </div>
         </div>
       </div>
-      <div className='overflow-y-auto'>
+      <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} /> {/* Ensure data is always an array */}
+        <Table columns={columns} data={tableData || []} />{' '}
+        {/* Ensure data is always an array */}
       </div>
     </div>
   );

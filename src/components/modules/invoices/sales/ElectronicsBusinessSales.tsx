@@ -685,6 +685,21 @@ const ElectronicsBusinessSales = () => {
           receivedAmt: '0',
         }));
       }
+    } else if (formData.mtmId) {
+      if (Number(formData.account) === 17) {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: Math.max(
+            0,
+            total - parseFloat(prev.discountAmt?.toString() || '0'),
+          ).toFixed(0),
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: sales.data.transaction.sales_master.netpayment.toString(),
+        }));
+      }
     }
   }, [formData.account, formData.discountAmt, formData.products]);
 
