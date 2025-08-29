@@ -63,11 +63,11 @@ const ImagePopup = ({ branchPad, voucher_image, title }: Props) => {
 
   const isPDF = (img: string) => img.toLowerCase().endsWith('.pdf');
 
-  let imageUrl = `${API_REMOTE_URL}/public/project_voucher/${branchPad}/`; // ডিফল্ট পাথ
+  let imageUrl = `${API_REMOTE_URL}/public/project_voucher/${branchPad}`; // ডিফল্ট পাথ
 
 // যদি লোকাল পরিবেশে থাকে
 if (environment === "local") {
-    imageUrl = `${API_REMOTE_URL}/project_voucher/${branchPad}/`; // লোকাল পাথ
+    imageUrl = `${API_REMOTE_URL}/project_voucher/${branchPad}`; // লোকাল পাথ
 }
 
 

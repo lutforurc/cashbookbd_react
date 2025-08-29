@@ -37,134 +37,18 @@ const Ledger = (user: any) => {
   }, []);
 
   useEffect(() => {
-  if (!ledgerData.isLoading && ledgerData?.data) {
-    const tableRows = generateTableData(ledgerData.data);
-    setTableData(tableRows);
-  }
-}, [ledgerData]);
+    if (!ledgerData.isLoading && ledgerData?.data) {
+      const tableRows = generateTableData(ledgerData.data);
+      setTableData(tableRows);
+    }
+  }, [ledgerData]);
 
-  // useEffect(() => {
-  //   // console.log(ledgerData);
-  //   // Update table data only when ledgerData is valid
-  //   if (!ledgerData.isLoading && ledgerData?.data) {
-  //     // setTableData(ledgerData?.data);
-  //     const data = ledgerData.data;
-  //     // Flatten opening_balance
-  //     // Flatten opening_balance with net balance calculation
-  //     let totalDebit = 0;
-  //     let totalCredit = 0;
-  //     let branchId = null;
-
-  //     // সমস্ত opening_balance traverse
-  //     data.opening_balance.forEach((trx: any) => {
-  //       branchId = trx.branch_id;
-  //       trx.acc_transaction_master.forEach((master: any) => {
-  //         master.acc_transaction_details.forEach((detail: any) => {
-  //           totalDebit += parseFloat(detail.debit || 0);
-  //           totalCredit += parseFloat(detail.credit || 0);
-  //         });
-  //       });
-  //     });
-
-  //     // Net balance নির্ধারণ
-  //     let debit = 0;
-  //     let credit = 0;
-  //     if (totalDebit > totalCredit) {
-  //       debit = totalDebit - totalCredit;
-  //     } else if (totalCredit > totalDebit) {
-  //       credit = totalCredit - totalDebit;
-  //     }
-
-  //     const openingRow = {
-  //       sl_number: '',
-  //       vr_date: '',
-  //       vr_no: '',
-  //       name: 'Opening',
-  //       remarks: '',
-  //       branch_id: branchId,
-  //       debit,
-  //       credit,
-  //     };
-
-  //     // }
-
-  //     const detailsRows = data.details.flatMap((trx: any) =>
-  //       trx.acc_transaction_master.flatMap((master: any) =>
-  //         master.acc_transaction_details.map((detail: any) => ({
-  //           ...detail,
-  //           vr_date: trx.vr_date,
-  //           vr_no: trx.vr_no,
-  //           name: detail.coa_l4?.name || '-',
-  //           remarks: detail.remarks,
-  //           branch_id: trx.branch_id,
-  //         })),
-  //       ),
-  //     );
-  //     // তারপর global sequential sl_number Assign করুন
-  //     const numberedDetails = detailsRows.map((row: any, idx: number) => ({
-  //       ...row,
-  //       sl_number: idx + 1,
-  //     }));
-
-  //     // Combine opening + details (optional: opening first)
-  //     const tableRows = [openingRow, ...numberedDetails];
-
-  //     const totalRow = {
-  //       sl_number: '',
-  //       vr_date: '',
-  //       vr_no: '',
-  //       name: 'Total',
-  //       remarks: '',
-  //       branch_id: branchId,
-  //       debit: tableRows.reduce(
-  //         (sum, row) => sum + (parseFloat(row.debit) || 0),
-  //         0,
-  //       ),
-  //       credit: tableRows.reduce(
-  //         (sum, row) => sum + (parseFloat(row.credit) || 0),
-  //         0,
-  //       ),
-  //     };
-  //     const allRows = [...tableRows, totalRow];
-
-  //     const balanceRow = {
-  //       sl_number: '',
-  //       vr_date: '',
-  //       vr_no: '',
-  //       name: 'Balance',
-  //       remarks: '',
-  //       branch_id: branchId,
-  //       debit: Math.max(
-  //         tableRows.reduce(
-  //           (sum, row) => sum + (parseFloat(row.debit) || 0),
-  //           0,
-  //         ) -
-  //           tableRows.reduce(
-  //             (sum, row) => sum + (parseFloat(row.credit) || 0),
-  //             0,
-  //           ),
-  //         0,
-  //       ),
-  //       credit: Math.max(
-  //         tableRows.reduce(
-  //           (sum, row) => sum + (parseFloat(row.credit) || 0),
-  //           0,
-  //         ) -
-  //           tableRows.reduce(
-  //             (sum, row) => sum + (parseFloat(row.debit) || 0),
-  //             0,
-  //           ),
-  //         0,
-  //       ),
-  //     };
-
-  //     const allRowsWithBalance = [...allRows, balanceRow];
-
-  //     setTableData(allRowsWithBalance);
-
-  //     console.log(tableData);
-  //   }
-  // }, [ledgerData]);
+  // Update table data only when ledgerData is valid
+  useEffect(() => {
+    if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
+      setTableData(ledgerData?.data);
+    }
+  }, [ledgerData]);
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
@@ -252,7 +136,7 @@ const Ledger = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         return (
-          <span>{row.credit > 0 ? thousandSeparator(row.credit, 2) : '-'}</span>
+          <span>{row.debit > 0 ? thousandSeparator( Number(row.debit), 0) : '-'}</span>
         );
       },
     },
@@ -264,7 +148,7 @@ const Ledger = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         return (
-          <span>{row.debit > 0 ? thousandSeparator(row.debit, 2) : '-'}</span>
+          <span>{row.credit > 0 ? thousandSeparator(Number(row.credit), 0) : '-'}</span>
         );
       },
     },
@@ -274,7 +158,7 @@ const Ledger = (user: any) => {
       render: (row: any) => {
         return (
           <ImagePopup
-            branchPad={row?.branchPad || ''} // Ensure row is defined before accessing branchPad
+            branchPad={row?.branch_id || ''} // Ensure row is defined before accessing branchPad
             voucher_image={row?.voucher_image || ''} // Ensure voucher_image is defined
             title={row?.remarks || ''} // Ensure title is defined
           />

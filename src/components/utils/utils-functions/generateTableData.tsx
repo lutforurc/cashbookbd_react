@@ -11,6 +11,8 @@ export interface TableRow {
 }
 
 export const generateTableData = (data: any): TableRow[] => {
+
+    console.log(data);
   if (!data) return []; // safeguard if data is undefined
 
   const openingBalance = data.opening_balance || [];
@@ -70,10 +72,10 @@ export const generateTableData = (data: any): TableRow[] => {
         vr_no: trx.vr_no,
         name: detail.coa_l4?.name || '-',
         remarks: detail.remarks,
-        branch_id: trx.branch_id,
+        branch_id: String(trx.branch_id).padStart(4, '0'), // Ensure branch_id is a 3-digit string
         debit: parseFloat(detail.debit || 0),
         credit: parseFloat(detail.credit || 0),
-        voucher_image: detail.voucher_image || null,
+        voucher_image: trx.voucher_image || null,
       }))
     )
   );

@@ -116,7 +116,7 @@ const DateWiseData = (user: any) => {
       header: 'debit', 
       render: (row: any) => (
         <div>
-          <span>{ row?.debit > 0 ? thousandSeparator (row?.debit,2) : '-'}</span>
+          <span>{ row?.debit > 0 ? thousandSeparator (row?.debit,0) : '-'}</span>
         </div>
       ),
       headerClass: 'text-right',
@@ -127,7 +127,7 @@ const DateWiseData = (user: any) => {
       header: 'credit', 
       render: (row: any) => (
         <div>
-          <span>{ row?.credit > 0 ? thousandSeparator (row?.credit,2) : '-'}</span>
+          <span>{ row?.credit > 0 ? thousandSeparator (row?.credit,0) : '-'}</span>
         </div>
       ),
       headerClass: 'text-right',
@@ -138,7 +138,7 @@ const DateWiseData = (user: any) => {
       header: 'Cum. Received', 
       render: (row: any) => (
         <div>
-          <span>{ row?.cumulative_debit > 0 ? thousandSeparator (row?.cumulative_debit,2) : '-'}</span>
+          <span>{ row?.cumulative_debit > 0 ? thousandSeparator (row?.cumulative_debit,0) : '-'}</span>
         </div>
       ),
       headerClass: 'text-right',
@@ -149,7 +149,7 @@ const DateWiseData = (user: any) => {
       header: 'Cum. Payment', 
       render: (row: any) => (
         <div>
-          <span>{ row?.cumulative_credit > 0 ? thousandSeparator (row?.cumulative_credit,2) : '-'}</span>
+          <span>{ row?.cumulative_credit > 0 ? thousandSeparator (row?.cumulative_credit,0) : '-'}</span>
         </div>
       ),
       headerClass: 'text-right',
@@ -160,7 +160,7 @@ const DateWiseData = (user: any) => {
       header: 'Balance', 
       render: (row: any) => (
         <div>
-          <span>{ thousandSeparator (row?.balance,2)}</span>
+          <span>{ thousandSeparator (row?.balance,0)}</span>
         </div>
       ),
       headerClass: 'text-right',
