@@ -409,12 +409,13 @@ const TradingBusinessSales = () => {
       dispatch(
         tradingSalesStore(formData, function (message) {
           if (message) {
-            toast.error(message);
+            toast.success(message);
+          } else {
+            toast.info(message);
           }
         }),
       );
     } catch (error) {
-      console.log(error);
       toast.error('Failed to save invoice!');
     }
   };
