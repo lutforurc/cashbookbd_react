@@ -44,6 +44,7 @@ import {
   handleInputKeyDown,
   handleSelectKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
+import { set } from 'react-datepicker/dist/date_utils';
 
 interface Product {
   id: number;
@@ -438,6 +439,11 @@ const TradingBusinessSales = () => {
       tradingSalesUpdate(formData, function (message) {
         if (message) {
           toast.info(message);
+          setFormData((prevState) => ({
+            ...prevState,
+            discountAmt: 0,
+            products: [],
+          }));
         }
       }),
     );
