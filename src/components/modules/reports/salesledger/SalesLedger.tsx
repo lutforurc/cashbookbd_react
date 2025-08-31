@@ -111,9 +111,9 @@ const SalesLedger = (user: any) => {
     {
       key: 'product_name',
       header: 'Description',
-      cellClass: 'align-top',
+      cellClass: 'align-center',
       render: (row: any) => (
-        <div className="min-w-52 break-words align-top">
+        <div className="min-w-52 break-words align-center">
           {(row?.sales_master?.details ?? []).map(
             (detail: any, index: number) => (
               <div key={index}>
@@ -135,7 +135,7 @@ const SalesLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       width: '120px',
       render: (row: any) => (
         <>
@@ -156,7 +156,7 @@ const SalesLedger = (user: any) => {
       header: 'Rate',
       width: '120px',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       render: (row: any) => (
         <>
           {(row?.sales_master?.details ?? []).map(
@@ -176,7 +176,7 @@ const SalesLedger = (user: any) => {
       header: 'total',
       width: '130px',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       render: (row: any) => (
 
 

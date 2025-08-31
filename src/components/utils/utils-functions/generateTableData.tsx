@@ -1,3 +1,5 @@
+import { number } from 'yup';
+
 export interface TableRow {
   sl_number: number | '';
   vr_date: string;
@@ -11,8 +13,7 @@ export interface TableRow {
 }
 
 export const generateTableData = (data: any): TableRow[] => {
-
-    console.log(data);
+  console.log(data);
   if (!data) return []; // safeguard if data is undefined
 
   const openingBalance = data.opening_balance || [];
@@ -29,7 +30,7 @@ export const generateTableData = (data: any): TableRow[] => {
           mSum +
           (master.acc_transaction_details || []).reduce(
             (dSum: number, detail: any) => dSum + parseFloat(detail.debit || 0),
-            0
+            0,
           )
         );
       }, 0)
@@ -43,8 +44,9 @@ export const generateTableData = (data: any): TableRow[] => {
         return (
           mSum +
           (master.acc_transaction_details || []).reduce(
-            (dSum: number, detail: any) => dSum + parseFloat(detail.credit || 0),
-            0
+            (dSum: number, detail: any) =>
+              dSum + parseFloat(detail.credit || 0),
+            0,
           )
         );
       }, 0)
@@ -76,12 +78,34 @@ export const generateTableData = (data: any): TableRow[] => {
         debit: parseFloat(detail.debit || 0),
         credit: parseFloat(detail.credit || 0),
         voucher_image: trx.voucher_image || null,
-      }))
-    )
+      })),
+    ),
   );
 
   // Assign sequential sl_number
   detailsRows.forEach((row, idx) => (row.sl_number = idx + 1));
+
+  // Sum all debit
+  const rangeDebit = detailsRows.reduce(
+    (sum, row) => sum + (Number(row.debit) || 0),
+    0,
+  );
+
+  const rangeCredit = detailsRows.reduce(
+    (sum, row) => sum + (Number(row.credit) || 0),
+    0,
+  );
+  const rangeRow: TableRow = {
+    sl_number: '',
+    vr_date: '',
+    vr_no: '',
+    name: 'Range Total',
+    remarks: '',
+    branch_id: '',
+    debit: Math.max(rangeDebit, 0),
+    credit: Math.max(rangeCredit, 0),
+    voucher_image: '',
+  };
 
   // Total & Balance
   const allRows = [openingRow, ...detailsRows];
@@ -112,5 +136,5 @@ export const generateTableData = (data: any): TableRow[] => {
     voucher_image: '',
   };
 
-  return [...allRows, totalRow, balanceRow];
+  return [...allRows, rangeRow, totalRow, balanceRow];
 };

@@ -37,7 +37,9 @@ import InputOnly from '../../../utils/fields/InputOnly';
 import { hasPermission } from '../../../utils/permissionChecker';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { SalesType } from '../../../../common/dropdownData';
+import { SalesType } from '../../../../common/dropdownData'; 
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import {
   handleInputKeyDown,
   handleSelectKeyDown,
@@ -53,8 +55,7 @@ interface Product {
   bag?: string;
   warehouse: string;
   variance?: string;
-  variance_type?: string;
-  // sales_type?: string;
+  variance_type?: string; 
 }
 
 const TradingBusinessSales = () => {
@@ -76,6 +77,9 @@ const TradingBusinessSales = () => {
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
+    dayjs.extend(utc);
+  // dayjs.extend(timezone);
+
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -112,7 +116,7 @@ const TradingBusinessSales = () => {
     purchaseOrderText: '',
     vehicleNumber: '',
     notes: '',
-    currentProduct: null, // Initialize `currentProduct` as null
+    currentProduct: null,
     searchInvoice: '',
     products: [],
   };
@@ -135,29 +139,7 @@ const TradingBusinessSales = () => {
     });
   };
 
-  const salesOrderNumberHandler = (option: any) => {
-    const salesOrderNumber = 'salesOrderNumber'; // This is the sales order number
-    const salesOrderText = 'salesOrderText'; // This is the sales order Text+
-    setFormData({
-      ...formData,
-      [salesOrderNumber]: option.value,
-      [salesOrderText]: option.label,
-    });
-  };
-
-  const purchaseOrderNumberHandler = (option: any) => {
-    console.log(option.value);
-    const purchaseOrderNumber = 'purchaseOrderNumber'; // Key for sales order number
-    const purchaseOrderText = 'purchaseOrderText'; // Key for sales order text
-
-    setFormData({
-      ...formData,
-      [purchaseOrderNumber]: option.value,
-      [purchaseOrderText]: option.label,
-    });
-  };
-
-  const productSelectHandler = (option: any) => {
+    const productSelectHandler = (option: any) => {
     const key = 'product'; // Set the desired key dynamically
     const accountName = 'product_name'; // Set the desired key dynamically
     const unit = 'unit'; // Set the desired key dynamically
@@ -178,23 +160,19 @@ const TradingBusinessSales = () => {
     const newLineTotal = qty * priceValue;
 
     // Update the lineTotal state with the new value
-    setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
+    setLineTotal(Number(newLineTotal.toFixed(0))); // Keep it as a string for display
   };
-
-  const resetProducts = () => {
+    const resetProducts = () => {
     setFormData(initialFormData); // Reset to the initial state
     setIsUpdateButton(false);
     isUpdating && setIsUpdating(false);
   };
 
-  const weightVarianceType = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const variance_type = 'variance_type'; // Set the desired key dynamically
-    setProductData({ ...productData, [variance_type]: e.target.value });
-  };
-
   const handleSalesType = (e: any) => {
     setSalesType(e.target.value);
   };
+
+  
 
   const searchInvoice = () => {
     if (!search) {
@@ -220,48 +198,60 @@ const TradingBusinessSales = () => {
 
   // Process `purchase.data` when it updates
   useEffect(() => {
-    if (sales?.data?.invoice_date) {
-      const parsedDate = new Date(sales.data.invoice_date);
-      if (!isNaN(parsedDate.getTime())) {
-        setStartDate(parsedDate);
-      } else {
-        console.warn(
-          'Invalid date format in invoice_date:',
-          sales.data.invoice_date,
-        );
-        setStartDate(null);
-      }
-    } else {
-      setStartDate(null);
-    }
-    if (sales?.data?.products) {
-      const products: Product[] = sales.data.products.map((product: any) => ({
-        id: product.id,
-        product: product.product,
-        product_name: product.product_name, // Replace with actual logic if available
-        unit: product.unit, // Replace with actual logic if available
-        qty: product.quantity,
-        price: product.price,
-        bag: product.bag,
-        warehouse: product.warehouse ? product.warehouse.toString() : '',
-        variance: product.weight_variance,
-        variance_type: product.variance_type,
-      }));
+    if (sales.data.transaction) {
+      const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
+          id: detail.id,
+          product: detail.product.id,
+          product_name: detail.product.name,
+          serial_no: detail.serial_no,
+          unit: detail.product.unit.name,
+          qty: detail.quantity,
+          price: detail.sales_price,
+          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+        }),
+      );
 
-      if (products && products.length > 0) {
-        setFormData({
-          ...sales.data,
-          products,
-        });
-      } else {
-        setFormData({
-          ...sales.data,
-          products: [],
-        });
-        toast.success('Something went wrong!');
+      // Find accountName
+      let accountName = '-';
+      if (sales?.data?.transaction.acc_transaction_master?.length > 0) {
+        for (const trxMaster of sales?.data?.transaction
+          .acc_transaction_master) {
+          for (const detail of trxMaster.acc_transaction_details) {
+            if (
+              detail.coa_l4?.id ===
+              sales?.data?.transaction?.sales_master?.customer_id
+            ) {
+              accountName = detail.coa_l4.name;
+              break;
+            }
+          }
+          if (accountName !== '-') break;
+        }
       }
+
+      // Update formData using previous state to maintain integrity
+      const updatedFormData = {
+        ...formData,
+        mtmId: sales.data.mtmId,
+        account:
+          sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
+        accountName,
+        receivedAmt:
+          sales.data.transaction.sales_master.netpayment.toString() || '',
+        discountAmt:
+          parseFloat(sales.data.transaction.sales_master.discount) || 0,
+        notes: sales.data.transaction.sales_master.notes || '',
+        products: products || [],
+      };
+
+      setFormData(updatedFormData); 
     }
-  }, [sales?.data]);
+  }, [sales.data.transaction]);
+
+  const totalAmount = formData.products.reduce(
+    (sum, row) => sum + Number(row.qty) * Number(row.price),
+    0,
+  );
 
   const addProduct = () => {
     const isValid = validateProductData(productData);
@@ -319,27 +309,6 @@ const TradingBusinessSales = () => {
     setUpdateId(null);
   };
 
-  const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price),
-    0,
-  );
-
-  useEffect(() => {
-    if (formData.account == '17') {
-      setFormData((prevState) => ({
-        ...prevState,
-        receivedAmt:
-          totalAmount > 0
-            ? (totalAmount - prevState.discountAmt).toString()
-            : '0',
-      }));
-    } else {
-      setFormData((prevState) => ({
-        ...prevState,
-        receivedAmt: '',
-      }));
-    }
-  }, [formData.account]);
 
   // useEffect(() => {
   //   const total = formData.products.reduce((acc, product) => {
@@ -403,16 +372,16 @@ const TradingBusinessSales = () => {
     });
   };
 
-  useEffect(() => {
-    const voucherNo = sales?.data?.vr_no || '';
-    if (voucherNo !== '') {
-      toast.success(`Voucher No.: ${voucherNo}`);
-      setFormData((prevState) => ({
-        ...prevState, // Spread the previous state to retain all other properties
-        products: [], // Reset only the `products` array
-      }));
-    }
-  }, [sales?.data?.vr_no]);
+  // useEffect(() => {
+  //   const voucherNo = sales?.data?.vr_no || '';
+  //   if (voucherNo !== '') {
+  //     toast.success(`Voucher No.: ${voucherNo}`);
+  //     setFormData((prevState) => ({
+  //       ...prevState, // Spread the previous state to retain all other properties
+  //       products: [], // Reset only the `products` array
+  //     }));
+  //   }
+  // }, [sales?.data?.vr_no]);
 
   useEffect(() => {
     setFormData((prevState) => ({
@@ -590,7 +559,7 @@ const TradingBusinessSales = () => {
         purchaseOrderNumber: sales.data.transaction.sales_master?.purchase_order?.id.toString() || '',
         purchaseOrderText: sales.data.transaction.sales_master?.purchase_order?.order_number,
         receivedAmt:
-          sales.data.transaction.sales_master.netpayment.toString() || '',
+          sales.data.transaction.sales_master?.netpayment?.toString() || '',
         discountAmt:
           parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
@@ -601,6 +570,74 @@ const TradingBusinessSales = () => {
     }
   }, [sales.data.transaction]);
 
+  const salesOrderNumberHandler = (option: any) => {
+    const salesOrderNumber = 'salesOrderNumber'; // This is the sales order number
+    const salesOrderText = 'salesOrderText'; // This is the sales order Text+
+    setFormData({
+      ...formData,
+      [salesOrderNumber]: option.value,
+      [salesOrderText]: option.label,
+    });
+  };
+
+
+  useEffect(() => {
+    const total = formData.products.reduce((acc, product) => {
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
+    }, 0);
+
+    if (!formData.mtmId) {
+      if (Number(formData.account) === 17) {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: Math.max(
+            0,
+            total - parseFloat(prev.discountAmt?.toString() || '0'),
+          ).toFixed(0),
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: '0',
+        }));
+      }
+    } else if (formData.mtmId) {
+      if (Number(formData.account) === 17) {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: Math.max(
+            0,
+            total - parseFloat(prev.discountAmt?.toString() || '0'),
+          ).toFixed(0),
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: sales.data.transaction?.sales_master?.netpayment?.toString(),
+        }));
+      }
+    }
+  }, [formData.account, formData.discountAmt, formData.products]);
+
+
+  const purchaseOrderNumberHandler = (option: any) => {
+    console.log(option.value);
+    const purchaseOrderNumber = 'purchaseOrderNumber'; // Key for sales order number
+    const purchaseOrderText = 'purchaseOrderText'; // Key for sales order text
+
+    setFormData({
+      ...formData,
+      [purchaseOrderNumber]: option.value,
+      [purchaseOrderText]: option.label,
+    });
+  };
+
+  const weightVarianceType = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const variance_type = 'variance_type'; // Set the desired key dynamically
+    setProductData({ ...productData, [variance_type]: e.target.value });
+  };
   return (
     <>
       <HelmetTitle title="Sales Invoice" />

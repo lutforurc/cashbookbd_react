@@ -290,6 +290,8 @@ const ElectronicsBusinessSales = () => {
   useEffect(() => {
     console.log('Updated formData:', formData);
   }, [formData]);
+
+
   const totalAmount = formData.products.reduce(
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
