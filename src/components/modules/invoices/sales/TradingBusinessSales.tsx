@@ -56,6 +56,16 @@ interface Product {
   variance_type?: string;
   // sales_type?: string;
 }
+interface editInstallmentData {
+  id: number;
+  customer_id: number;
+  main_trx_id: number;
+  installment_no: number;
+  due_date: Date | null;
+  amount: number;
+  payments: [];
+}
+
 
 const TradingBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -76,6 +86,9 @@ const TradingBusinessSales = () => {
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
+    const [editedInstallments, setEditedInstallments] = useState<
+      editInstallmentData[]
+    >([]);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -511,6 +524,70 @@ const TradingBusinessSales = () => {
     setIsUpdating(true);
     setUpdateId(productIndex);
   };
+
+    useEffect(() => {
+      if (sales.data.transaction) {
+        const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
+            id: detail.id,
+            product: detail.product.id,
+            product_name: detail.product.name,
+            serial_no: detail.serial_no,
+            unit: detail.product.unit.name,
+            qty: detail.quantity,
+            price: detail.sales_price,
+            warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+          }),
+        );
+  
+        // Find accountName
+        let accountName = '-';
+        if (sales?.data?.transaction.acc_transaction_master?.length > 0) {
+          for (const trxMaster of sales?.data?.transaction
+            .acc_transaction_master) {
+            for (const detail of trxMaster.acc_transaction_details) {
+              if (
+                detail.coa_l4?.id ===
+                sales?.data?.transaction?.sales_master?.customer_id
+              ) {
+                accountName = detail.coa_l4.name;
+                break;
+              }
+            }
+            if (accountName !== '-') break;
+          }
+        }
+  
+        // Update formData using previous state to maintain integrity
+        const updatedFormData = {
+          ...formData,
+          mtmId: sales.data.mtmId,
+          account:
+            sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
+          accountName,
+          receivedAmt:
+            sales.data.transaction.sales_master.netpayment.toString() || '',
+          discountAmt:
+            parseFloat(sales.data.transaction.sales_master.discount) || 0,
+          notes: sales.data.transaction.sales_master.notes || '',
+          products: products || [],
+          // editInstallmentData: sales.data.transaction.installments.map(
+          //   (installment: any) => ({
+          //     id: installment.id,
+          //     customer_id: installment.customer_id,
+          //     main_trx_id: installment.main_trx_id,
+          //     installment_no: installment.installment_no,
+          //     due_date: installment.due_date
+          //       ? new Date(installment.due_date.split('/').reverse().join('-'))
+          //       : null,
+          //     amount: parseFloat(installment.amount) || 0,
+          //     payments: installment.payments || [],
+          //   }),
+          // ),
+        };
+  
+        setFormData(updatedFormData); 
+      }
+    }, [sales.data.transaction]);
 
   const handlePurchaseOrderReset = () => {
     setFormData((prevState) => ({

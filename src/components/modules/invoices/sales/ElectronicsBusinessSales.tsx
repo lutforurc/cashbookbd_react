@@ -224,8 +224,7 @@ const ElectronicsBusinessSales = () => {
 
   useEffect(() => {
     if (sales.data.transaction) {
-      const products = sales.data.transaction?.sales_master.details.map(
-        (detail: any) => ({
+      const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
           id: detail.id,
           product: detail.product.id,
           product_name: detail.product.name,
