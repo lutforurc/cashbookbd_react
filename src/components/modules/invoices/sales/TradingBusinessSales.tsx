@@ -56,16 +56,6 @@ interface Product {
   variance_type?: string;
   // sales_type?: string;
 }
-interface editInstallmentData {
-  id: number;
-  customer_id: number;
-  main_trx_id: number;
-  installment_no: number;
-  due_date: Date | null;
-  amount: number;
-  payments: [];
-}
-
 
 const TradingBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -86,9 +76,6 @@ const TradingBusinessSales = () => {
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
-    const [editedInstallments, setEditedInstallments] = useState<
-      editInstallmentData[]
-    >([]);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -354,24 +341,24 @@ const TradingBusinessSales = () => {
     }
   }, [formData.account]);
 
-  useEffect(() => {
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty?.toString() || '0') || 0;
-      const price = parseFloat(product.price?.toString() || '0') || 0;
-      return acc + qty * price;
-    }, 0);
+  // useEffect(() => {
+  //   const total = formData.products.reduce((acc, product) => {
+  //     const qty = parseFloat(product.qty?.toString() || '0') || 0;
+  //     const price = parseFloat(product.price?.toString() || '0') || 0;
+  //     return acc + qty * price;
+  //   }, 0);
   
-    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-    let netTotal = 0;
-    if( total > 0){
-      netTotal = total - discount;
-    } 
+  //   const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+  //   let netTotal = 0;
+  //   if( total > 0){
+  //     netTotal = total - discount;
+  //   } 
   
-    setFormData((prev) => ({
-      ...prev,
-      receivedAmt: netTotal.toFixed(2),
-    }));
-  }, [formData.products, formData.discountAmt]);
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     receivedAmt: netTotal.toFixed(2),
+  //   }));
+  // }, [formData.products, formData.discountAmt]);
 
   const handleDelete = (id: number) => {
     // Filter out the product with the matching id
@@ -525,6 +512,41 @@ const TradingBusinessSales = () => {
     setUpdateId(productIndex);
   };
 
+  const handlePurchaseOrderReset = () => {
+    setFormData((prevState) => ({
+      ...prevState,
+      purchaseOrderNumber: '', // Clear this field
+      purchaseOrderText: '', // Clear this field
+    }));
+    setIsResetOrder(false);
+  };
+  const handleSalesOrderReset = () => {
+    setFormData((prevState) => ({
+      ...prevState,
+      salesOrderNumber: '', // Clear this field
+      salesOrderText: '', // Clear this field
+    }));
+    setIsResetOrder(false);
+  };
+
+  // useEffect(() => {
+  //   const total = formData.products.reduce((acc, product) => {
+  //     const qty = parseFloat(product.qty.toString()) || 0;
+  //     const price = parseFloat(product.price.toString()) || 0;
+  //     return acc + qty * price;
+  //   }, 0);
+
+  //   const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+  //   const netTotal = total - discount;
+
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     receivedAmt: netTotal.toFixed(2),
+  //   }));
+  // }, [formData.account, formData.products, formData.discountAmt]);
+
+
+
     useEffect(() => {
       if (sales.data.transaction) {
         const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
@@ -570,57 +592,12 @@ const TradingBusinessSales = () => {
             parseFloat(sales.data.transaction.sales_master.discount) || 0,
           notes: sales.data.transaction.sales_master.notes || '',
           products: products || [],
-          // editInstallmentData: sales.data.transaction.installments.map(
-          //   (installment: any) => ({
-          //     id: installment.id,
-          //     customer_id: installment.customer_id,
-          //     main_trx_id: installment.main_trx_id,
-          //     installment_no: installment.installment_no,
-          //     due_date: installment.due_date
-          //       ? new Date(installment.due_date.split('/').reverse().join('-'))
-          //       : null,
-          //     amount: parseFloat(installment.amount) || 0,
-          //     payments: installment.payments || [],
-          //   }),
-          // ),
         };
   
         setFormData(updatedFormData); 
       }
     }, [sales.data.transaction]);
 
-  const handlePurchaseOrderReset = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      purchaseOrderNumber: '', // Clear this field
-      purchaseOrderText: '', // Clear this field
-    }));
-    setIsResetOrder(false);
-  };
-  const handleSalesOrderReset = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      salesOrderNumber: '', // Clear this field
-      salesOrderText: '', // Clear this field
-    }));
-    setIsResetOrder(false);
-  };
-
-  useEffect(() => {
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty.toString()) || 0;
-      const price = parseFloat(product.price.toString()) || 0;
-      return acc + qty * price;
-    }, 0);
-
-    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-    const netTotal = total - discount;
-
-    setFormData((prev) => ({
-      ...prev,
-      receivedAmt: netTotal.toFixed(2),
-    }));
-  }, [formData.account, formData.products, formData.discountAmt]);
 
   return (
     <>
