@@ -582,13 +582,13 @@ const TradingBusinessSales = () => {
       const updatedFormData = {
         ...formData,
         mtmId: sales.data.mtmId,
-        account:
-          sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
+        account: sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
         accountName,
-        salesOrderNumber: sales.data.transaction.sales_master.sales_order.id.toString() || '',
-        salesOrderText: sales.data.transaction.sales_master.sales_order.order_number,
-        purchaseOrderNumber: '',
-        purchaseOrderText: '',
+        vehicleNumber: sales.data.transaction.sales_master?.vehicle_no || '',
+        salesOrderNumber: sales.data.transaction.sales_master?.sales_order?.id.toString() || '',
+        salesOrderText: sales.data.transaction.sales_master?.sales_order?.order_number,
+        purchaseOrderNumber: sales.data.transaction.sales_master?.purchase_order?.id.toString() || '',
+        purchaseOrderText: sales.data.transaction.sales_master?.purchase_order?.order_number,
         receivedAmt:
           sales.data.transaction.sales_master.netpayment.toString() || '',
         discountAmt:
