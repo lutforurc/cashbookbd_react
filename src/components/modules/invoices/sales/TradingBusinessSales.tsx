@@ -347,13 +347,13 @@ const TradingBusinessSales = () => {
   //     const price = parseFloat(product.price?.toString() || '0') || 0;
   //     return acc + qty * price;
   //   }, 0);
-  
+
   //   const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
   //   let netTotal = 0;
   //   if( total > 0){
   //     netTotal = total - discount;
-  //   } 
-  
+  //   }
+
   //   setFormData((prev) => ({
   //     ...prev,
   //     receivedAmt: netTotal.toFixed(2),
@@ -545,59 +545,61 @@ const TradingBusinessSales = () => {
   //   }));
   // }, [formData.account, formData.products, formData.discountAmt]);
 
+  useEffect(() => {
+    if (sales.data.transaction) {
+      const products = sales.data.transaction?.sales_master.details.map(
+        (detail: any) => ({
+          id: detail.id,
+          product: detail.product.id,
+          product_name: detail.product.name,
+          serial_no: detail.serial_no,
+          unit: detail.product.unit.name,
+          qty: detail.quantity,
+          price: detail.sales_price,
+          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+        }),
+      );
 
-
-    useEffect(() => {
-      if (sales.data.transaction) {
-        const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
-            id: detail.id,
-            product: detail.product.id,
-            product_name: detail.product.name,
-            serial_no: detail.serial_no,
-            unit: detail.product.unit.name,
-            qty: detail.quantity,
-            price: detail.sales_price,
-            warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-          }),
-        );
-  
-        // Find accountName
-        let accountName = '-';
-        if (sales?.data?.transaction.acc_transaction_master?.length > 0) {
-          for (const trxMaster of sales?.data?.transaction
-            .acc_transaction_master) {
-            for (const detail of trxMaster.acc_transaction_details) {
-              if (
-                detail.coa_l4?.id ===
-                sales?.data?.transaction?.sales_master?.customer_id
-              ) {
-                accountName = detail.coa_l4.name;
-                break;
-              }
+      // Find accountName
+      let accountName = '-';
+      if (sales?.data?.transaction.acc_transaction_master?.length > 0) {
+        for (const trxMaster of sales?.data?.transaction
+          .acc_transaction_master) {
+          for (const detail of trxMaster.acc_transaction_details) {
+            if (
+              detail.coa_l4?.id ===
+              sales?.data?.transaction?.sales_master?.customer_id
+            ) {
+              accountName = detail.coa_l4.name;
+              break;
             }
-            if (accountName !== '-') break;
           }
+          if (accountName !== '-') break;
         }
-  
-        // Update formData using previous state to maintain integrity
-        const updatedFormData = {
-          ...formData,
-          mtmId: sales.data.mtmId,
-          account:
-            sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
-          accountName,
-          receivedAmt:
-            sales.data.transaction.sales_master.netpayment.toString() || '',
-          discountAmt:
-            parseFloat(sales.data.transaction.sales_master.discount) || 0,
-          notes: sales.data.transaction.sales_master.notes || '',
-          products: products || [],
-        };
-  
-        setFormData(updatedFormData); 
       }
-    }, [sales.data.transaction]);
 
+      // Update formData using previous state to maintain integrity
+      const updatedFormData = {
+        ...formData,
+        mtmId: sales.data.mtmId,
+        account:
+          sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
+        accountName,
+        salesOrderNumber: sales.data.transaction.sales_master.sales_order.id.toString() || '',
+        salesOrderText: sales.data.transaction.sales_master.sales_order.order_number,
+        purchaseOrderNumber: '',
+        purchaseOrderText: '',
+        receivedAmt:
+          sales.data.transaction.sales_master.netpayment.toString() || '',
+        discountAmt:
+          parseFloat(sales.data.transaction.sales_master.discount) || 0,
+        notes: sales.data.transaction.sales_master.notes || '',
+        products: products || [],
+      };
+
+      setFormData(updatedFormData);
+    }
+  }, [sales.data.transaction]);
 
   return (
     <>
