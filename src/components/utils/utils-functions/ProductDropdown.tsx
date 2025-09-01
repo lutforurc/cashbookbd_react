@@ -19,7 +19,7 @@ interface DropdownProps {
   name?: string;
   onSelect: (selected: OptionType | null) => void;
   defaultValue?: { value: any; label: any } | null;
-  value: { value: any; label: any } | null;
+  value?: { value: any; label: any } | null;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string; 
 }
@@ -167,12 +167,14 @@ const ProductDropdown: React.FC<DropdownProps> = ({
           </div>
         )}
         getOptionValue={(option) => option.value}
+        
         placeholder="Select product"
         styles={customStyles}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body}
         ref={selectRef} // রেফ যোগ করুন
+        // components={{ DropdownIndicator: () => null }}
       />
     </div>
   );

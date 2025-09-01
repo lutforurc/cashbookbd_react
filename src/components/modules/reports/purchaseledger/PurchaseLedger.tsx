@@ -13,6 +13,7 @@ import { getPurchaseLedger } from './purchaseLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ImagePopup from '../../../utils/others/ImagePopup';
+import { FaRotateRight } from 'react-icons/fa6';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -27,6 +28,7 @@ const PurchaseLedger = (user: any) => {
   const [productId, setProductId] = useState<number | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [hideIcon, setHideIcon] = useState<boolean>(true);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -287,9 +289,12 @@ const PurchaseLedger = (user: any) => {
             <label htmlFor="">Select Account</label>
             <DdlMultiline acType={''} onSelect={selectedLedgerOptionHandler} />
           </div>
-          <div className="">
+          <div className="relative">
             <label htmlFor="">Select Product</label>
-            <ProductDropdown onSelect={selectedProduct} />
+            <div className={`w-[37.6px] h-[37.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-l-[0.5px] absolute top-6 right-0 text-white flex items-center justify-center text-xs z-99 cursor-pointer bg-[#d2d6dc] dark:bg-[#1f212a]`}>
+              <FaRotateRight size={20} className="absolute text-white cursor-pointer" />
+            </div>
+            <ProductDropdown onSelect={selectedProduct} className='appearance-none'  />
           </div>
           <div className="sm:grid md:flex gap-x-3 ">
             <div className="w-full">
