@@ -27,7 +27,7 @@ interface Props {
 
 const ImagePopup = ({ branchPad, voucher_image, title }: Props) => {
    const environment = useSelector((state) => state.settings?.data?.env);
- 
+   console.log( branchPad );
   useEffect(() => {
     
     const timeout = setTimeout(() => { 
@@ -60,6 +60,7 @@ const ImagePopup = ({ branchPad, voucher_image, title }: Props) => {
   if (!branchPad || !voucher_image) return null;
 
   const images = voucher_image.split('|');
+
 
   const isPDF = (img: string) => img.toLowerCase().endsWith('.pdf');
 

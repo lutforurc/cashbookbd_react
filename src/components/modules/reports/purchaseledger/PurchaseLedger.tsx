@@ -12,6 +12,7 @@ import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { getPurchaseLedger } from './purchaseLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ImagePopup from '../../../utils/others/ImagePopup';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -100,35 +101,44 @@ const PurchaseLedger = (user: any) => {
       width: '120px',
       render: (row: any) => (
         <div>
-         <div>
-          { row?.challan_no }
-         </div>
-         <div>
-          { row?.challan_date }
-         </div>
+          <div>{row?.challan_no}</div>
+          <div>{row?.challan_date}</div>
         </div>
-      )
+      ),
     },
-  
+
     {
       key: 'vehicle_no',
       header: 'Vehicle Number',
-      width: '120px', 
+      width: '120px',
       render: (row: any) => {
         const transaction = row?.acc_transaction_master?.find(
-        (tm: { acc_transaction_details?: { coa4_id?: number; credit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
-      );
-        const creditValue = transaction?.acc_transaction_details?.[0]?.credit ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0) : '-';
-        return <div className="text-left">
-          <div>{row?.purchase_master?.[0]?.vehicle_no}</div> 
-        </div>;
+          (
+            tm:
+              | {
+                  acc_transaction_details?: {
+                    coa4_id?: number;
+                    credit?: string;
+                  }[];
+                }
+              | undefined,
+          ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
+        );
+        const creditValue = transaction?.acc_transaction_details?.[0]?.credit
+          ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0)
+          : '-';
+        return (
+          <div className="text-left">
+            <div>{row?.purchase_master?.[0]?.vehicle_no}</div>
+          </div>
+        );
       },
     },
     {
       key: 'product_name',
       header: 'Description',
       width: '100px',
-      cellClass: 'align-top',
+      cellClass: 'align-center',
       render: (row: any) => {
         return (
           <div className="min-w-52 break-words align-top">
@@ -139,7 +149,9 @@ const PurchaseLedger = (user: any) => {
                 </div>
               ),
             )}
-            <div className='font-semibold'>{row?.purchase_master?.[0]?.notes}</div>
+            <div className="font-semibold">
+              {row?.purchase_master?.[0]?.notes}
+            </div>
           </div>
         );
       },
@@ -148,7 +160,7 @@ const PurchaseLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top', 
+      cellClass: 'text-right align-center',
       render: (row: any) => {
         return (
           <div>
@@ -156,7 +168,8 @@ const PurchaseLedger = (user: any) => {
               (detail: any, index: number) => (
                 <div key={index}>
                   <span>
-                    { thousandSeparator(detail?.quantity,0)} {detail?.product?.unit?.name}
+                    {thousandSeparator(detail?.quantity, 0)}{' '}
+                    {detail?.product?.unit?.name}
                   </span>
                 </div>
               ),
@@ -169,14 +182,14 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'rate',
       header: 'Rate',
-      headerClass: 'text-right', 
-      cellClass: 'text-right align-top', 
-      render: (row: any) => ( 
+      headerClass: 'text-right',
+      cellClass: 'text-right align-center',
+      render: (row: any) => (
         <div>
           {row?.purchase_master?.[0]?.details.map(
             (detail: any, index: number) => (
               <div key={index}>
-                <span>{thousandSeparator(detail?.purchase_price,2)}</span>
+                <span>{thousandSeparator(detail?.purchase_price, 2)}</span>
               </div>
             ),
           )}
@@ -187,14 +200,19 @@ const PurchaseLedger = (user: any) => {
     {
       key: 'total',
       header: 'Total',
-      headerClass: 'text-right', 
-      cellClass: 'text-right align-top', 
+      headerClass: 'text-right',
+      cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
           {row?.purchase_master?.[0]?.details.map(
             (detail: any, index: number) => (
               <div key={index}>
-                <span>{thousandSeparator(detail?.purchase_price * detail?.quantity, 0)}</span>
+                <span>
+                  {thousandSeparator(
+                    detail?.purchase_price * detail?.quantity,
+                    0,
+                  )}
+                </span>
               </div>
             ),
           )}
@@ -202,19 +220,47 @@ const PurchaseLedger = (user: any) => {
       ),
       width: '100px',
     },
-      {
+    {
       key: 'acc_transaction_master',
       header: 'Payment',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top', 
+      cellClass: 'text-right align-center',
       render: (row: any) => {
         const transaction = row?.acc_transaction_master?.find(
-        (tm: { acc_transaction_details?: { coa4_id?: number; credit?: string }[] } | undefined) => tm?.acc_transaction_details?.[0]?.coa4_id === 17
-      );
-        const creditValue = transaction?.acc_transaction_details?.[0]?.credit ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0) : '-';
+          (
+            tm:
+              | {
+                  acc_transaction_details?: {
+                    coa4_id?: number;
+                    credit?: string;
+                  }[];
+                }
+              | undefined,
+          ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
+        );
+        const creditValue = transaction?.acc_transaction_details?.[0]?.credit
+          ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0)
+          : '-';
         return <div className="text-right">{creditValue}</div>;
       },
       width: '120px',
+    },
+    {
+      key: 'voucher_image',
+      header: 'Voucher',
+      width: '120px',
+      headerClass: 'text-center',
+      cellClass: 'flex justify-center',
+      render: (row: any) => {
+        console.log( row )
+        return (
+          <ImagePopup
+            title={ row?.remarks || ''}
+            branchPad={row?.branch_id?.toString().padStart(4, '0') || ''} // 👈 here
+            voucher_image={row?.voucher_image || ''}
+          />
+        );
+      },
     },
   ];
 
