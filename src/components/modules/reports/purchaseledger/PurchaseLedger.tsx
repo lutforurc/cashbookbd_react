@@ -85,9 +85,13 @@ const PurchaseLedger = (user: any) => {
   const selectedLedgerOptionHandler = (option: any) => {
     setLedgerAccount(option.value);
   };
-  const selectedProduct = (option: any) => {
-    setProductId(option.value);
-  };
+const selectedProduct = (option: any) => {
+  if (option === null) {
+    setProductId(null); // Reset value
+  } else {
+    setProductId(option.value); // Normal select
+  }
+};
 
   const columns = [
     {
@@ -292,12 +296,11 @@ const PurchaseLedger = (user: any) => {
           <div className="relative">
             <label htmlFor="">Select Product</label>
             <div className={`w-[37.6px] h-[37.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-l-[0.5px] absolute top-6 right-0 dark:text-white text-black flex items-center justify-center text-xs z-99 cursor-pointer bg-[#fff] dark:bg-[#24303F]`}
-            onClick={ () =>  setProductId(null)}
-            
+            onClick={() => selectedProduct(null)}
             >
               <FaRotateRight size={20} className="absolute dark:text-white  cursor-pointer" />
             </div>
-            <ProductDropdown  onSelect={selectedProduct} className='appearance-none'  />
+            <ProductDropdown onSelect={selectedProduct} className='appearance-none'  />
           </div>
           <div className="sm:grid md:flex gap-x-3 ">
             <div className="w-full">

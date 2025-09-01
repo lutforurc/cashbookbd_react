@@ -167,7 +167,6 @@ const ProductDropdown: React.FC<DropdownProps> = ({
           </div>
         )}
         getOptionValue={(option) => option.value}
-        
         placeholder="Select product"
         styles={customStyles}
         defaultValue={defaultValue}
