@@ -133,6 +133,20 @@ const SalesLedger = (user: any) => {
     },
     {
       key: 'quantity',
+      header: 'Vhicle No.',
+      headerClass: 'text-right',
+      cellClass: 'text-right align-center',
+      width: '120px',
+      render: (row: any) => (
+        <>
+          <div>
+            {row?.sales_master?.vehicle_no}
+          </div> 
+        </>
+      ),
+    },
+    {
+      key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
@@ -178,15 +192,12 @@ const SalesLedger = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
       render: (row: any) => (
-
-
-     
         <>
           {(row?.sales_master?.details ?? []).map(
             (detail: any, index: number) => (
               <div key={index}>
                 <div>
-                  { thousandSeparator (detail?.quantity * detail?.sales_price, 0)}
+                  { thousandSeparator (  Math.floor (detail?.quantity * detail?.sales_price), 0)}
                 </div>
               </div>
             ),
@@ -218,6 +229,20 @@ const SalesLedger = (user: any) => {
         return <div className="text-right">{debitValue}</div>;
       },
       width: '120px',
+    },
+    {
+      key: 'quantity',
+      header: 'Vhicle No.',
+      headerClass: 'text-right',
+      cellClass: 'text-right align-center',
+      width: '120px',
+      render: (row: any) => (
+        <>
+          <div>
+            { Math.floor (row?.sales_master?.total)}
+          </div> 
+        </>
+      ),
     },
   ];
 

@@ -224,9 +224,7 @@ const selectedProduct = (option: any) => {
     );
 
     // acc_transaction_details থেকে coa4_id = 17 এর credit বের করা
-    const creditValue = transaction?.acc_transaction_details?.find(
-      (detail: any) => detail?.coa4_id === 17
-    )?.credit;
+    const creditValue = transaction?.acc_transaction_details?.find((detail: any) => detail?.coa4_id === 17)?.credit;
 
     // value format করা এবং default
     const displayValue = creditValue ? thousandSeparator(creditValue, 0) : '-';
