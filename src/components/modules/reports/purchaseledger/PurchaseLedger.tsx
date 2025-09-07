@@ -118,24 +118,9 @@ const selectedProduct = (option: any) => {
       header: 'Vehicle Number',
       width: '120px',
       render: (row: any) => {
-        const transaction = row?.acc_transaction_master?.find(
-          (
-            tm:
-              | {
-                  acc_transaction_details?: {
-                    coa4_id?: number;
-                    credit?: string;
-                  }[];
-                }
-              | undefined,
-          ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
-        );
-        const creditValue = transaction?.acc_transaction_details?.[0]?.credit
-          ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0)
-          : '-';
         return (
           <div className="text-left">
-            <div>{row?.purchase_master?.[0]?.vehicle_no}</div>
+            <div>{row?.purchase_master?.vehicle_no}</div>
           </div>
         );
       },
@@ -148,7 +133,7 @@ const selectedProduct = (option: any) => {
       render: (row: any) => {
         return (
           <div className="min-w-52 break-words align-top">
-            {row?.purchase_master?.[0]?.details?.map(
+            {row?.purchase_master?.details?.map(
               (detail: any, index: number) => (
                 <div key={index}>
                   <div>{detail?.product?.name}</div>
@@ -156,7 +141,7 @@ const selectedProduct = (option: any) => {
               ),
             )}
             <div className="font-semibold">
-              {row?.purchase_master?.[0]?.notes}
+              {row?.purchase_master?.notes}
             </div>
           </div>
         );
@@ -170,7 +155,7 @@ const selectedProduct = (option: any) => {
       render: (row: any) => {
         return (
           <div>
-            {row?.purchase_master?.[0]?.details?.map(
+            {row?.purchase_master?.details?.map(
               (detail: any, index: number) => (
                 <div key={index}>
                   <span>
@@ -192,7 +177,7 @@ const selectedProduct = (option: any) => {
       cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
-          {row?.purchase_master?.[0]?.details.map(
+          {row?.purchase_master?.details.map(
             (detail: any, index: number) => (
               <div key={index}>
                 <span>{thousandSeparator(detail?.purchase_price, 2)}</span>
@@ -210,7 +195,7 @@ const selectedProduct = (option: any) => {
       cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
-          {row?.purchase_master?.[0]?.details.map(
+          {row?.purchase_master?.details.map(
             (detail: any, index: number) => (
               <div key={index}>
                 <span>
@@ -227,30 +212,29 @@ const selectedProduct = (option: any) => {
       width: '100px',
     },
     {
-      key: 'acc_transaction_master',
-      header: 'Payment',
-      headerClass: 'text-right',
-      cellClass: 'text-right align-center',
-      render: (row: any) => {
-        const transaction = row?.acc_transaction_master?.find(
-          (
-            tm:
-              | {
-                  acc_transaction_details?: {
-                    coa4_id?: number;
-                    credit?: string;
-                  }[];
-                }
-              | undefined,
-          ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
-        );
-        const creditValue = transaction?.acc_transaction_details?.[0]?.credit
-          ? thousandSeparator(transaction.acc_transaction_details[0].credit, 0)
-          : '-';
-        return <div className="text-right">{creditValue}</div>;
-      },
-      width: '120px',
-    },
+  key: 'acc_transaction_master',
+  header: 'Payment',
+  headerClass: 'text-right',
+  cellClass: 'text-right align-center',
+  render: (row: any) => {
+    // acc_transaction_master থেকে প্রথম transaction যেখানে coa4_id = 17 আছে
+    const transaction = row?.acc_transaction_master?.find(
+      (tm: any) =>
+        tm?.acc_transaction_details?.some((detail: any) => detail?.coa4_id === 17)
+    );
+
+    // acc_transaction_details থেকে coa4_id = 17 এর credit বের করা
+    const creditValue = transaction?.acc_transaction_details?.find(
+      (detail: any) => detail?.coa4_id === 17
+    )?.credit;
+
+    // value format করা এবং default
+    const displayValue = creditValue ? thousandSeparator(creditValue, 0) : '-';
+
+    return <div className="text-right">{displayValue}</div>;
+  },
+  width: '120px',
+},
     {
       key: 'voucher_image',
       header: 'Voucher',
