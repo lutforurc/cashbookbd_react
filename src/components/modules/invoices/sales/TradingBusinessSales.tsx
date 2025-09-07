@@ -77,6 +77,7 @@ const TradingBusinessSales = () => {
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
     dayjs.extend(utc);
   // dayjs.extend(timezone);
@@ -392,17 +393,21 @@ const TradingBusinessSales = () => {
   }, [sales.isUpdated]);
 
   const handleInvoiceSave = async () => {
+    setSaveButtonLoading(true);
     const validationMessages = validateForm(formData, invoiceMessage);
     if (validationMessages) {
       toast.info(validationMessages);
+      setSaveButtonLoading(false);
       return;
     }
     if (formData.receivedAmt == '') {
       toast.info('Please enter received amount');
+      setSaveButtonLoading(false);
       return;
     }
     if (formData.products.length == 0) {
       toast.info('Please add some products.');
+      setSaveButtonLoading(false);
       return;
     }
 
@@ -411,6 +416,19 @@ const TradingBusinessSales = () => {
         tradingSalesStore(formData, function (message) {
           if (message) {
             toast.success(message);
+                    setTimeout(() => {
+                      setSaveButtonLoading(false);
+                      setFormData((prevFormData) => ({
+                        ...prevFormData,
+                        paymentAmt: '',
+                        discountAmt: 0,
+                        notes: '',
+                        invoice_no: '',
+                        invoice_date: '',   
+                        products: [],
+                      }));
+                      setSaveButtonLoading(false);
+                    }, 1000);
           } else {
             toast.info(message);
           }
@@ -1042,10 +1060,12 @@ const TradingBusinessSales = () => {
               ) : (
                 <ButtonLoading
                   onClick={handleInvoiceSave}
-                  buttonLoading={buttonLoading}
-                  label="Save"
+                  buttonLoading={saveButtonLoading}
+                  label={saveButtonLoading ? 'Saving...' : 'Save'}
+                  
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                  disabled={saveButtonLoading}
                 />
               )}
 
