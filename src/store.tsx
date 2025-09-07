@@ -45,6 +45,7 @@ import customerAuthReducer from './features/customerAuthReducer';
 import employeeSlice from './components/modules/employee/employeeSlice';
 import electronicsSalesSlice from './components/modules/invoices/sales/electronicsSalesSlice';
 import labourLedgerSlice from './components/modules/reports/ledger-labour/labourLedgerSlice';
+import requisitionSlice from './components/modules/Requisition/requisitionSlice';
 
 const store = configureStore({
   reducer: {
@@ -94,6 +95,7 @@ const store = configureStore({
     installment: installmentSlice,
     changeDate: changeVoucherDateSlice,
     employees: employeeSlice,
+    requisition: requisitionSlice,
   },
 });
 

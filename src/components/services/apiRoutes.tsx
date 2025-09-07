@@ -3,12 +3,12 @@
 // export const API_REMOTE_URL = 'https://krf.cashbookbd.com';
 // export const API_REMOTE_URL = 'http://127.0.0.1:8000';
 // export const API_REMOTE_URL = 'https://staging.cashbookbd.com';
-// export const API_REMOTE_URL = 'http://cashbook_api.test';
+export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL = 'https://mikdad.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://kpsnew.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
-export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
+// export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
 
@@ -243,3 +243,7 @@ export const API_EMPLOYEE_DDL_LIST_URL = API_BASE_URL + '/hrms/employee/ddl-list
 // Labour Ledger Routes
 export const API_LABOUR_LEDGER_URL = API_BASE_URL + '/reports/labour/ledger';
 export const API_LABOUR_ITEMS_URL = API_BASE_URL + '/labour/items';
+
+
+// Requisition Routes
+export const API_REQUISITION_COMPARISONS_URL = API_BASE_URL + '/requisition/comparison';

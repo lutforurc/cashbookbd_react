@@ -428,3 +428,9 @@ export const BULK_IMAGE_UPLOAD_ERROR = 'BULK/IMAGE/UPLOAD/error';
 export const GET_VOUCHER_FOR_IMAGE_LIST_PENDING ='VOUCHER/FOR/IMAGE/list/pending';
 export const GET_VOUCHER_FOR_IMAGE_LIST_SUCCESS ='VOUCHER/FOR/IMAGE/list/success';
 export const GET_VOUCHER_FOR_IMAGE_LIST_ERROR ='VOUCHER/FOR/IMAGE/list/error';
+
+
+// Ledger constant
+export const REQUISITION_DATA_LIST_PENDING = 'REQUISITION/DATA/list/pending';
+export const REQUISITION_DATA_LIST_SUCCESS = 'REQUISITION/DATA/list/success';
+export const REQUISITION_DATA_LIST_ERROR = 'REQUISITION/DATA/list/error';

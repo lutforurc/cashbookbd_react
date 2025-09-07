@@ -144,6 +144,11 @@ const ROUTES = {
 
   customer_dashboard: '/customer-dashboard',
 
+
+
+  // Requisition
+  requisition: '/requisition/comparison',
+
   notFound: '*',
 };
 

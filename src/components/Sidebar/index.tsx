@@ -938,6 +938,60 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 )}
               </SidebarLinkGroup>
 
+
+              {/* Requisition */}
+              <SidebarLinkGroup
+                activeCondition={
+                  pathname === '/requisition/comparison' || pathname.includes('forms')
+                }
+                menuId="requisition"
+                open={openMenu === 'requisition'}
+                handleClick={() => handleMenuClick('requisition')}
+              >
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    <NavLink
+                      to="#"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        (pathname === '/requisition/comparison' ||
+                          pathname === '/requisition/comparison' || 
+                          pathname.includes('/requisition/comparison')) &&
+                        'bg-graydark dark:bg-meta-4'
+                      }`}
+                        
+                      onClick={(e) => {
+                        e.preventDefault();
+                        sidebarExpanded
+                          ? handleClick()
+                          : setSidebarExpanded(true);
+                      }}
+                    >
+                      <FiServer />
+                      Requisition
+                    </NavLink>
+                    <div
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
+                        open ? 'max-h-96' : 'max-h-0'
+                      }`}
+                    >
+                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <li>
+                          <NavLink
+                            to="/requisition/comparison"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Comparison
+                          </NavLink>
+                        </li>
+                      </ul>
+                    </div>
+                  </React.Fragment>
+                )}
+              </SidebarLinkGroup>
+
               {/* User Management */}
               <SidebarLinkGroup
                 activeCondition={

@@ -67,6 +67,7 @@ import RemoveApproval from './components/modules/voucher_approval/RemoveApproval
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
+import Requisition from './components/modules/Requisition/Requisition';
 
 function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
@@ -251,6 +252,12 @@ function App() {
             {/* Roles & Permissions */}
             <Route path={routes.roles} element={<Roles />} />
             <Route path={routes.add_role} element={<AddRole />} />
+
+
+
+
+
+            <Route path={routes.requisition} element={<Requisition user={me} />} />
 
             {/* Invoices */}
             <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
