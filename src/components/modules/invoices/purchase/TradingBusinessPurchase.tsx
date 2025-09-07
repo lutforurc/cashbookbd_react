@@ -110,13 +110,13 @@ const TradingBusinessPurchase = () => {
     mtmId: '',
     account: '',
     accountName: '',
-    invoice_no: '',
-    invoice_date: '',
     paymentAmt: '',
     discountAmt: 0,
-    vehicleNumber: '',
     purchaseOrderNumber: '',
     purchaseOrderText: '',
+    invoice_no: '',
+    invoice_date: '',
+    vehicleNumber: '',
     notes: '',
     currentProduct: null, // Initialize `currentProduct` as null
     searchInvoice: '',
@@ -276,13 +276,9 @@ const TradingBusinessPurchase = () => {
         // Find accountName
         let accountName = '-';
         if (purchase?.data?.transaction.acc_transaction_master?.length > 0) {
-          for (const trxMaster of purchase?.data?.transaction
-            .acc_transaction_master) {
+          for (const trxMaster of purchase?.data?.transaction.acc_transaction_master) {
             for (const detail of trxMaster.acc_transaction_details) {
-              if (
-                detail.coa_l4?.id ===
-                purchase?.data?.transaction?.purchase_master?.supplier_id
-              ) {
+              if (detail.coa_l4?.id === purchase?.data?.transaction?.purchase_master?.supplier_id) {
                 accountName = detail.coa_l4.name;
                 break;
               }
@@ -295,13 +291,14 @@ const TradingBusinessPurchase = () => {
         const updatedFormData = {
           ...formData,
           mtmId: purchase.data.mtmId,
-          account:
-            purchase?.data?.transaction?.purchase_master?.supplier_id.toString() ?? '',
-          accountName,
-          receivedAmt:
-            purchase.data.transaction.purchase_master.netpayment.toString() || '',
-          discountAmt:
-            parseFloat(purchase.data.transaction.purchase_master.discount) || 0,
+          account: purchase?.data?.transaction?.purchase_master?.supplier_id.toString() ?? '', accountName,
+          vehicleNumber: purchase.data.transaction.purchase_master?.vehicle_no || '',
+          purchaseOrderNumber: purchase.data.transaction.purchase_master?.purchase_order?.id.toString() || '',
+          purchaseOrderText: purchase.data.transaction.purchase_master?.purchase_order?.order_number,
+          invoice_no: purchase.data.transaction.purchase_master?.invoice_no || '',
+          invoice_date: purchase.data.transaction.purchase_master?.invoice_date || '',
+          paymentAmt: purchase.data.transaction.purchase_master.netpayment.toString() || '',
+          discountAmt: parseFloat(purchase.data.transaction.purchase_master.discount) || 0,
           notes: purchase.data.transaction.purchase_master.notes || '',
           products: products || [],
         };
@@ -419,16 +416,16 @@ const TradingBusinessPurchase = () => {
     });
   };
 
-  useEffect(() => {
-    const voucherNo = purchase?.data?.vr_no || '';
-    if (voucherNo !== '') {
-      toast.success(`Voucher No.: ${voucherNo}`);
-      setFormData((prevState) => ({
-        ...prevState, // Spread the previous state to retain all other properties
-        products: [], // Reset only the `products` array
-      }));
-    }
-  }, [purchase?.data?.vr_no, purchase?.isUpdated]);
+  // useEffect(() => {
+  //   const voucherNo = purchase?.data?.vr_no || '';
+  //   if (voucherNo !== '') {
+  //     toast.success(`Voucher No.: ${voucherNo}`);
+  //     setFormData((prevState) => ({
+  //       ...prevState, // Spread the previous state to retain all other properties
+  //       products: [], // Reset only the `products` array
+  //     }));
+  //   }
+  // }, [purchase?.data?.vr_no, purchase?.isUpdated]);
 
   useEffect(() => {
     setFormData((prevState) => ({
@@ -514,12 +511,6 @@ const TradingBusinessPurchase = () => {
     }
   }, [purchase.isEdit]);
 
-  const handleStartDate = (e: any) => {
-    const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
-    const key = 'invoice_date'; // Set the desired key dynamically
-    setFormData({ ...formData, [key]: startD });
-  };
-
   const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setProductData({ ...productData, [e.target.name]: e.target.value });
   };
@@ -548,6 +539,13 @@ const TradingBusinessPurchase = () => {
     setUpdateId(productIndex);
   };
 
+  const handleStartDate = (e: any) => {
+    const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
+    const key = 'invoice_date'; // Set the desired key dynamically
+    setFormData({ ...formData, [key]: startD });
+  };
+
+
   const handleOrderReset = () => {
     setFormData((prevState) => ({
       ...prevState,
@@ -567,41 +565,61 @@ const TradingBusinessPurchase = () => {
   //   setVoucherType(e.target.value);
   // };
 
-  useEffect(() => {
-    if (formData.account == '17') {
-      setFormData((prevState) => ({
-        ...prevState,
-        paymentAmt: 
-          totalAmount > 0
-            ? (totalAmount - prevState.discountAmt).toString()
-            : '0',
-      }));
-    } else {
-      setFormData((prevState) => ({
-        ...prevState,
-        paymentAmt: '',
-      }));
-    }
-  }, [formData.account]);
+  // useEffect(() => {
+  //   if (formData.account == '17') {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       paymentAmt: 
+  //         totalAmount > 0
+  //           ? (totalAmount - prevState.discountAmt).toString()
+  //           : '0',
+  //     }));
+  //   } else {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       paymentAmt: '',
+  //     }));
+  //   }
+  // }, [formData.account]);
 
-  useEffect(() => {
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty?.toString() || '0') || 0;
-      const price = parseFloat(product.price?.toString() || '0') || 0;
-      return acc + qty * price;
-    }, 0);
+
   
-    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-    let netTotal = 0;
-    if( total > 0){
-      netTotal = total - discount;
-    } 
+    useEffect(() => {
+      const total = formData.products.reduce((acc, product) => {
+        const qty = parseFloat(product.qty?.toString() || '0') || 0;
+        const price = parseFloat(product.price?.toString() || '0') || 0;
+        return acc + qty * price;
+      }, 0);
   
-    setFormData((prev) => ({
-      ...prev,
-      paymentAmt: netTotal.toFixed(2),
-    }));
-  }, [formData.products, formData.discountAmt]);
+      if (!formData.mtmId) {
+        if (Number(formData.account) === 17) {
+          setFormData((prev) => ({
+            ...prev,
+            paymentAmt: Math.max(0, total - parseFloat(prev.discountAmt?.toString() || '0')).toFixed(0),
+          }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            paymentAmt: '0',
+          }));
+        }
+      } else if (formData.mtmId) {
+        if (Number(formData.account) === 17) {
+          setFormData((prev) => ({
+            ...prev,
+            paymentAmt: Math.max(
+              0,
+              total - parseFloat(prev.discountAmt?.toString() || '0'),
+            ).toFixed(0),
+          }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            paymentAmt: purchase.data.transaction?.purchase_master?.netpayment?.toString(),
+          }));
+        }
+      }
+    }, [formData.account, formData.discountAmt, formData.products]);
 
   return (
     <>

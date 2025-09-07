@@ -1,6 +1,20 @@
-import { PURCHASE_TRADING_EDIT_ERROR, PURCHASE_TRADING_EDIT_PENDING, PURCHASE_TRADING_EDIT_SUCCESS, PURCHASE_TRADING_STORE_ERROR, PURCHASE_TRADING_STORE_PENDING, PURCHASE_TRADING_STORE_SUCCESS, PURCHASE_TRADING_UPDATE_ERROR, PURCHASE_TRADING_UPDATE_PENDING, PURCHASE_TRADING_UPDATE_SUCCESS } from '../../../constant/constant/constant';
+import {
+  PURCHASE_TRADING_EDIT_ERROR,
+  PURCHASE_TRADING_EDIT_PENDING,
+  PURCHASE_TRADING_EDIT_SUCCESS,
+  PURCHASE_TRADING_STORE_ERROR,
+  PURCHASE_TRADING_STORE_PENDING,
+  PURCHASE_TRADING_STORE_SUCCESS,
+  PURCHASE_TRADING_UPDATE_ERROR,
+  PURCHASE_TRADING_UPDATE_PENDING,
+  PURCHASE_TRADING_UPDATE_SUCCESS,
+} from '../../../constant/constant/constant';
 import httpService from '../../../services/httpService';
-import { API_TRADING_PURCHASE_EDIT_URL, API_TRADING_PURCHASE_STORE_URL, API_TRADING_PURCHASE_UPDATE_URL } from '../../../services/apiRoutes';
+import {
+  API_TRADING_PURCHASE_EDIT_URL,
+  API_TRADING_PURCHASE_STORE_URL,
+  API_TRADING_PURCHASE_UPDATE_URL,
+} from '../../../services/apiRoutes';
 
 interface Product {
   id: number;
@@ -22,8 +36,8 @@ interface formData {
   invoice_date: string;
   paymentAmt: string;
   discountAmt: number;
-  orderNumber: string;
-  orderText: string;
+  purchaseOrderNumber: string;
+  purchaseOrderText: string;
   vehicleNumber: string;
   notes: string;
   products: Product[];
@@ -31,112 +45,116 @@ interface formData {
 
 
 export const purchaseStore = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
-  dispatch({ type: PURCHASE_TRADING_STORE_PENDING });
-  httpService.post(API_TRADING_PURCHASE_STORE_URL, data)
-    .then((res) => {
-      const _data = res.data;
-      if (_data.success) {
-        dispatch({
-          type: PURCHASE_TRADING_STORE_SUCCESS,
-          payload: _data.data.data,
-        });
-        if ('function' == typeof callback) {
-          callback(_data.message);
+    dispatch({ type: PURCHASE_TRADING_STORE_PENDING });
+    httpService
+      .post(API_TRADING_PURCHASE_STORE_URL, data)
+      .then((res) => {
+        const _data = res.data;
+        if (_data.success) {
+          dispatch({
+            type: PURCHASE_TRADING_STORE_SUCCESS,
+            payload: _data.data.data,
+          });
+          if ('function' == typeof callback) {
+            callback(_data.message);
+          }
+        } else {
+          dispatch({
+            type: PURCHASE_TRADING_STORE_ERROR,
+            payload: _data.message,
+          });
+          if ('function' == typeof callback) {
+            callback(_data.message);
+          }
         }
-      } else {
+      })
+      .catch((err) => {
         dispatch({
           type: PURCHASE_TRADING_STORE_ERROR,
-          payload: _data.message,
+          payload: err.message,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(err.message);
         }
-      }
-    })
-    .catch((err) => {
-      dispatch({
-        type: PURCHASE_TRADING_STORE_ERROR,
-        payload: err.message,
       });
-      if ('function' == typeof callback) {
-        callback(err.message);
-      }
-    });
-};
+  };
 
-export const purchaseUpdate = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
-  dispatch({ type: PURCHASE_TRADING_UPDATE_PENDING });
-  httpService.post(API_TRADING_PURCHASE_UPDATE_URL, data)
-    .then((res) => {
-      const _data = res.data;
-      if (_data.success) {
-        dispatch({
-          type: PURCHASE_TRADING_UPDATE_SUCCESS,
-          payload: _data.data.data,
-        });
-        if ('function' == typeof callback) {
-          callback(_data.message);
+export const purchaseUpdate =
+  (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+    dispatch({ type: PURCHASE_TRADING_UPDATE_PENDING });
+    httpService
+      .post(API_TRADING_PURCHASE_UPDATE_URL, data)
+      .then((res) => {
+        const _data = res.data;
+        if (_data.success) {
+          dispatch({
+            type: PURCHASE_TRADING_UPDATE_SUCCESS,
+            payload: _data.data.data,
+          });
+          if ('function' == typeof callback) {
+            callback(_data.message);
+          }
+        } else {
+          dispatch({
+            type: PURCHASE_TRADING_UPDATE_ERROR,
+            payload: _data.message,
+          });
+          if ('function' == typeof callback) {
+            callback(_data.message);
+          }
         }
-      } else {
+      })
+      .catch((err) => {
         dispatch({
           type: PURCHASE_TRADING_UPDATE_ERROR,
-          payload: _data.message,
+          payload: err.message,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(err.message);
         }
-      }
-    })
-    .catch((err) => {
-      dispatch({
-        type: PURCHASE_TRADING_UPDATE_ERROR,
-        payload: err.message,
       });
-      if ('function' == typeof callback) {
-        callback(err.message);
-      }
-    });
-};
+  };
 
 interface editData {
   invoiceNo: string;
   purchaseType: string;
 }
 
-export const tradingPurchaseEdit = (data: editData,callback?: (message: string) => void) => (dispatch: any) => {
-  dispatch({ type: PURCHASE_TRADING_EDIT_PENDING });
-  httpService.post(API_TRADING_PURCHASE_EDIT_URL, data)
-    .then((res) => {
-      const _data = res.data;
-      if (_data.success) {
-        dispatch({
-          type: PURCHASE_TRADING_EDIT_SUCCESS,
-          payload: _data.data.data,
-        });
-        if ('function' == typeof callback) {
-          callback(_data.message);
+export const tradingPurchaseEdit =
+  (data: editData, callback?: (message: string) => void) => (dispatch: any) => {
+    dispatch({ type: PURCHASE_TRADING_EDIT_PENDING });
+    httpService
+      .post(API_TRADING_PURCHASE_EDIT_URL, data)
+      .then((res) => {
+        const _data = res.data;
+        if (_data.success) {
+          dispatch({
+            type: PURCHASE_TRADING_EDIT_SUCCESS,
+            payload: _data.data.data,
+          });
+          if ('function' == typeof callback) {
+            callback(_data.message);
+          }
+        } else {
+          dispatch({
+            type: PURCHASE_TRADING_EDIT_ERROR,
+            payload: _data.message,
+          });
+          if ('function' == typeof callback) {
+            callback(_data.message);
+          }
         }
-      } else {
+      })
+      .catch((err) => {
         dispatch({
           type: PURCHASE_TRADING_EDIT_ERROR,
-          payload: _data.message,
+          payload: err.message,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(err.message);
         }
-      }
-    })
-    .catch((err) => {
-      dispatch({
-        type: PURCHASE_TRADING_EDIT_ERROR,
-        payload: err.message,
       });
-      if ('function' == typeof callback) {
-        callback(err.message);
-      }
-    });
-};
-
+  };
 
 const initialState = {
   isLoading: false,
@@ -146,7 +164,6 @@ const initialState = {
   data: {},
   errors: null,
 };
-
 
 const tradingPurchaseReducer = (state = initialState, action: any) => {
   switch (action.type) {
@@ -202,7 +219,7 @@ const tradingPurchaseReducer = (state = initialState, action: any) => {
         isSave: false,
         isEdit: false,
         isUpdated: false,
-        errors: action.payload // || action.error || {}, // Expecting error details here
+        errors: action.payload, // || action.error || {}, // Expecting error details here
       };
     default:
       return state;
