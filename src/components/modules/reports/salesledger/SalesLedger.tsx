@@ -134,8 +134,8 @@ const SalesLedger = (user: any) => {
     {
       key: 'quantity',
       header: 'Vhicle No.',
-      headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      headerClass: 'text-left',
+      cellClass: 'text-left align-center',
       width: '120px',
       render: (row: any) => (
         <>
@@ -231,18 +231,29 @@ const SalesLedger = (user: any) => {
       width: '120px',
     },
     {
-      key: 'quantity',
-      header: 'Vhicle No.',
+      key: 'balance',
+      header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
       width: '120px',
-      render: (row: any) => (
-        <>
-          <div>
-            { Math.floor (row?.sales_master?.total)}
-          </div> 
-        </>
-      ),
+      render: (row: any) => {
+        const transaction = row?.acc_transaction_master?.find(
+          (
+            tm:
+              | {
+                  acc_transaction_details?: {
+                    coa4_id?: number;
+                    debit?: string;
+                  }[];
+                }
+              | undefined,
+          ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
+        );
+        const debitValue = transaction?.acc_transaction_details?.[0]?.debit
+          ? transaction.acc_transaction_details[0].debit
+          : 0;
+        return <div className="text-right">{ thousandSeparator (Math.floor (row?.sales_master?.total) - Math.floor(debitValue), 0)}</div>;
+      }
     },
   ];
 
