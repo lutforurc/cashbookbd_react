@@ -37,15 +37,14 @@ import { validateProductData } from '../../../utils/utils-functions/productValid
 import InputOnly from '../../../utils/fields/InputOnly';
 
 import { hasPermission } from '../../../utils/permissionChecker';
-import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { voucherTypes } from '../../../utils/fields/DataConstant';
-import { PurchaseType, SalesType } from '../../../../common/dropdownData';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon'; 
+import { PurchaseType } from '../../../../common/dropdownData';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import {
   handleInputKeyDown,
   handleSelectKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
-
+import utc from 'dayjs/plugin/utc';
 interface Product {
   id: number;
   product: number;
@@ -82,6 +81,8 @@ const TradingBusinessPurchase = () => {
   const [voucherType, setVoucherType] = useState('');
   const [lineTotal, setLineTotal] = useState<number>(0);
 
+  dayjs.extend(utc); 
+      
   useEffect(() => {
     dispatch(userCurrentBranch());
     dispatch(getDdlWarehouse());
@@ -92,12 +93,12 @@ const TradingBusinessPurchase = () => {
     mtmId: string;
     account: string;
     accountName: string;
-    invoice_no: string;
-    invoice_date: string;
     paymentAmt: string;
     discountAmt: number;
     purchaseOrderNumber: string;
     purchaseOrderText: string;
+    invoice_no: string;
+    invoice_date: string;
     vehicleNumber: string;
     notes: string;
     currentProduct: { index?: number } | null; // Initialize `currentProduct` with optional index
@@ -122,22 +123,7 @@ const TradingBusinessPurchase = () => {
     products: [],
   };
 
-  const [formData, setFormData] = useState<FormData>({
-    mtmId: '',
-    account: '',
-    accountName: '',
-    invoice_no: '',
-    invoice_date: '',
-    paymentAmt: '',
-    discountAmt: 0,
-    vehicleNumber: '',
-    purchaseOrderNumber: '',
-    purchaseOrderText: '',
-    notes: '',
-    currentProduct: null, // Initialize `currentProduct` as null
-    searchInvoice: '',
-    products: [],
-  });
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
   useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
@@ -155,15 +141,6 @@ const TradingBusinessPurchase = () => {
     });
   };
 
-  const orderHandler = (option: any) => {
-    const key = 'purchaseOrderNumber'; // Set the desired key dynamically
-    const purchaseOrderText = 'purchaseOrderText'; // Set the desired key dynamically
-    setFormData({
-      ...formData,
-      [key]: option.value,
-      [purchaseOrderText]: option.label,
-    });
-  };
 
   const productSelectHandler = (option: any) => {
     const key = 'product'; // Set the desired key dynamically
@@ -185,7 +162,18 @@ const TradingBusinessPurchase = () => {
     const newLineTotal = qty * priceValue;
 
     // Update the lineTotal state with the new value
-    setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
+    setLineTotal(Number(newLineTotal.toFixed(0))); // Keep it as a string for display
+  };
+
+  // Move this method
+  const orderHandler = (option: any) => {
+    const key = 'purchaseOrderNumber'; // Set the desired key dynamically
+    const purchaseOrderText = 'purchaseOrderText'; // Set the desired key dynamically
+    setFormData({
+      ...formData,
+      [key]: option.value,
+      [purchaseOrderText]: option.label,
+    });
   };
 
   const resetProducts = () => {
@@ -193,6 +181,7 @@ const TradingBusinessPurchase = () => {
     setIsUpdateButton(false);
     isUpdating && setIsUpdating(false);
   };
+
 
   const weightVarianceType = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const variance_type = 'variance_type'; // Set the desired key dynamically
@@ -222,52 +211,113 @@ const TradingBusinessPurchase = () => {
   };
 
   // Process `purchase.data` when it updates
-  useEffect(() => {
-    if (purchase?.data?.invoice_date) {
-      const parsedDate = new Date(purchase.data.invoice_date);
-      if (!isNaN(parsedDate.getTime())) {
-        setStartDate(parsedDate);
-      } else {
-        console.warn(
-          'Invalid date format in invoice_date:',
-          purchase.data.invoice_date,
-        );
-        setStartDate(null);
-      }
-    } else {
-      setStartDate(null);
-    }
-    if (purchase?.data?.products) {
-      const products: Product[] = purchase.data.products.map(
-        (product: any) => ({
-          id: product.id,
-          product: product.product,
-          product_name: product.product_name, // Replace with actual logic if available
-          unit: product.unit, // Replace with actual logic if available
-          qty: product.quantity,
-          price: product.price,
-          bag: product.bag,
-          warehouse: product.warehouse ? product.warehouse.toString() : '',
-          variance: product.weight_variance,
-          variance_type: product.variance_type,
-        }),
-      );
+  // useEffect(() => {
+  //   if (purchase?.data?.invoice_date) {
+  //     const parsedDate = new Date(purchase.data.invoice_date);
+  //     if (!isNaN(parsedDate.getTime())) {
+  //       setStartDate(parsedDate);
+  //     } else {
+  //       console.warn(
+  //         'Invalid date format in invoice_date:',
+  //         purchase.data.invoice_date,
+  //       );
+  //       setStartDate(null);
+  //     }
+  //   } else {
+  //     setStartDate(null);
+  //   }
+  //   if (purchase?.data?.products) {
+  //     const products: Product[] = purchase.data.products.map(
+  //       (product: any) => ({
+  //         id: product.id,
+  //         product: product.product,
+  //         product_name: product.product_name, // Replace with actual logic if available
+  //         unit: product.unit, // Replace with actual logic if available
+  //         qty: product.quantity,
+  //         price: product.price,
+  //         bag: product.bag,
+  //         warehouse: product.warehouse ? product.warehouse.toString() : '',
+  //         variance: product.weight_variance,
+  //         variance_type: product.variance_type,
+  //       }),
+  //     );
 
-      if (products && products.length > 0) {
-        setFormData({
-          ...purchase.data,
-          products,
-        });
-        toast.success('Thank you for finding the invoice!');
-      } else {
-        setFormData({
-          ...purchase.data,
-          products: [],
-        });
-        toast.success('Something went wrong!');
+  //     if (products && products.length > 0) {
+  //       setFormData({
+  //         ...purchase.data,
+  //         products,
+  //       });
+  //       toast.success('Thank you for finding the invoice!');
+  //     } else {
+  //       setFormData({
+  //         ...purchase.data,
+  //         products: [],
+  //       });
+  //       toast.success('Something went wrong!');
+  //     }
+  //   }
+  // }, [purchase?.data]);
+
+
+    useEffect(() => {
+      if (purchase.data.transaction) {
+        const products = purchase.data.transaction?.purchase_master.details.map((detail: any) => ({
+            id: detail.id,
+            product: detail.product.id,
+            product_name: detail.product.name,
+            serial_no: detail.serial_no,
+            unit: detail.product.unit.name,
+            qty: detail.quantity,
+            price: detail.purchase_price,
+            warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+          }),
+        );
+  
+        // Find accountName
+        let accountName = '-';
+        if (purchase?.data?.transaction.acc_transaction_master?.length > 0) {
+          for (const trxMaster of purchase?.data?.transaction
+            .acc_transaction_master) {
+            for (const detail of trxMaster.acc_transaction_details) {
+              if (
+                detail.coa_l4?.id ===
+                purchase?.data?.transaction?.purchase_master?.supplier_id
+              ) {
+                accountName = detail.coa_l4.name;
+                break;
+              }
+            }
+            if (accountName !== '-') break;
+          }
+        }
+  
+        // Update formData using previous state to maintain integrity
+        const updatedFormData = {
+          ...formData,
+          mtmId: purchase.data.mtmId,
+          account:
+            purchase?.data?.transaction?.purchase_master?.supplier_id.toString() ?? '',
+          accountName,
+          receivedAmt:
+            purchase.data.transaction.purchase_master.netpayment.toString() || '',
+          discountAmt:
+            parseFloat(purchase.data.transaction.purchase_master.discount) || 0,
+          notes: purchase.data.transaction.purchase_master.notes || '',
+          products: products || [],
+        };
+  
+        setFormData(updatedFormData); 
       }
-    }
-  }, [purchase?.data]);
+    }, [purchase.data.transaction]);
+
+
+
+  
+  const totalAmount = formData.products.reduce(
+    (sum, row) => sum + Number(row.qty) * Number(row.price),
+    0,
+  );
+
 
   const addProduct = () => {
  if (!validateProductData(productData)) return;
@@ -279,8 +329,8 @@ const TradingBusinessPurchase = () => {
       product: productData.product || 0,
       product_name: productData.product_name || '',
       unit: productData.unit || '',
-      qty: productData.qty || '',
-      price: productData.price || '',
+      qty: Number(productData.qty) || 0,
+      price: Number(productData.price) || 0,
     };
 
     // Add the product to the formData.products array
@@ -325,11 +375,6 @@ const TradingBusinessPurchase = () => {
     setIsUpdating(false);
     setUpdateId(null);
   };
-
-  const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price),
-    0,
-  );
 
   const handleDelete = (id: number) => {
     // Filter out the product with the matching id
@@ -671,10 +716,10 @@ const TradingBusinessPurchase = () => {
                 id="paymentAmt"
                 value={formData.paymentAmt}
                 name="paymentAmt"
-                placeholder={'Payment Amount'}
-                disabled={Number(formData.account) === 17}
-                label={'Payment Amount'}
                 type="number"
+                placeholder={'Payment Amount'}
+                label={'Payment Amount'}
+                disabled={Number(formData.account) === 17}
                 className={'py-1'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')} // Pass the next field's ID

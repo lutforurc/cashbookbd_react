@@ -34,17 +34,14 @@ import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import dayjs from 'dayjs';
 import InputOnly from '../../../utils/fields/InputOnly';
-import { hasPermission } from '../../../utils/permissionChecker';
-import InputDatePicker from '../../../utils/fields/DatePicker';
+import { hasPermission } from '../../../utils/permissionChecker'; 
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { SalesType } from '../../../../common/dropdownData'; 
-import timezone from 'dayjs/plugin/timezone';
+import { SalesType } from '../../../../common/dropdownData';  
 import utc from 'dayjs/plugin/utc';
 import {
   handleInputKeyDown,
   handleSelectKeyDown,
-} from '../../../utils/utils-functions/handleKeyDown';
-import { set } from 'react-datepicker/dist/date_utils';
+} from '../../../utils/utils-functions/handleKeyDown'; 
 
 interface Product {
   id: number;
@@ -79,8 +76,7 @@ const TradingBusinessSales = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
-    dayjs.extend(utc);
-  // dayjs.extend(timezone);
+    dayjs.extend(utc); 
 
 
   useEffect(() => {
