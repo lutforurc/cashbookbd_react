@@ -69,6 +69,7 @@ const ledgerReducer = (
       return {
         ...state,
         isLoading: false,
+        data: {},
         errors: action.payload,
       };
 

@@ -36,22 +36,19 @@ const Requisition = (user: any) => {
   }, []);
 
   useEffect(() => {
-    if (!requisition.isLoading && requisition?.data) {
-      const tableRows = generateTableData(requisition.data);
-      setTableData(tableRows);
-    }
-  }, [requisition]);
-
-  // Update table data only when requisition is valid
-  useEffect(() => {
-    if (!requisition.isLoading && requisition?.data) {
-      // Flatten the object into an array
-      const flatArray = Object.values(requisition.data);
-
-      // Update state
+    if (!requisition.isLoading) {
+      const flatArray = requisition.data ? Object.values(requisition.data) : [];
       setTableData(flatArray);
     }
-  }, [requisition]);
+  }, [requisition.data]);
+
+  // // Update table data only when requisition is valid
+  // useEffect(() => {
+  //   if (!requisition.isLoading && requisition?.data) {
+  //     const flatArray = Object.values(requisition.data);
+  //     setTableData(flatArray);
+  //   }
+  // }, [requisition]);
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
@@ -93,13 +90,13 @@ const Requisition = (user: any) => {
 
   const columns = [
     {
-      key: 'product_id',
+      key: 'serial_no',
       header: 'Sl. No',
       width: '100px',
-      hederClass: 'text-center',
+      headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => (
-        <div className="w-25">{row.product_id ? row.product_id : '-'}</div>
+        <div className="">{row.serial_no ? row.serial_no : '-'}</div>
       ),
     },
     {
@@ -113,45 +110,80 @@ const Requisition = (user: any) => {
       header: 'Requisition Qty',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{thousandSeparator(row.requisition_qty,0)}</div>,
+      render: (row: any) => (
+        <div className="w-25">{thousandSeparator(row.requisition_qty, 0)}</div>
+      ),
       width: '100px',
     },
     {
       key: 'purchase_qty',
       header: 'Purchase Qty',
-      headerClass: 'text-center',
+      headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{thousandSeparator(row.purchase_qty,0)}</div>,
+      render: (row: any) => (
+        <div className="">{thousandSeparator(Number(row.purchase_qty), 0)}</div>
+      ),
       width: '100px',
     },
+
     {
       key: 'requisition_total',
       header: 'Requisition',
-      headerClass: 'text-center',
+      headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{thousandSeparator(row.requisition_total,0)}</div>,
+      render: (row: any) => (
+        <div className="">{thousandSeparator(row.requisition_total, 0)}</div>
+      ),
       width: '100px',
     },
     {
       key: 'approved_amt',
       header: 'Approved Amount',
-      headerClass: 'text-center',
+      headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{thousandSeparator(row.approved_amt,0)}</div>,
+      render: (row: any) => (
+        <div className="">{thousandSeparator(row.approved_amt, 0)}</div>
+      ),
+      width: '100px',
+    },
+    {
+      key: 'purchase_total',
+      header: 'Total Expense',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => (
+        <div className="">
+          {thousandSeparator(Number(row.purchase_total), 0)}
+        </div>
+      ),
       width: '100px',
     },
     {
       key: 'difference',
-      header: 'Difference',
-      headerClass: 'text-center',
+      header: 'Balance',
+      headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{row.difference}</div>,
+      render: (row: any) => <div className="">{Math.abs(row.difference)}</div>,
       width: '100px',
     },
     {
       key: 'status',
       header: 'Status',
-      render: (row: any) => <div className="w-25">{row.status}</div>,
+      render: (row: any) => (
+        <div
+          className={`w-25 ${
+            row.requisition_total === 0
+              ? 'text-red-500'
+              : row.difference < 0
+                ? 'text-green-500'
+                : row.difference > 0
+                  ? 'text-yellow-500'
+                  : 'text-gray-500' // Default case when difference === 0
+          }`}
+        >
+          {row.status}
+        </div>
+      ),
       width: '100px',
     },
   ];
@@ -208,8 +240,7 @@ const Requisition = (user: any) => {
       </div>
       <div className="overflow-y-auto">
         {requisition.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} />{' '}
-        {/* Ensure data is always an array */}
+        <Table columns={columns} data={tableData} />
       </div>
     </div>
   );
