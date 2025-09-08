@@ -113,7 +113,7 @@ const Requisition = (user: any) => {
       header: 'Requisition Qty',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{row.requisition_qty}</div>,
+      render: (row: any) => <div className="w-25">{thousandSeparator(row.requisition_qty,0)}</div>,
       width: '100px',
     },
     {
@@ -121,7 +121,7 @@ const Requisition = (user: any) => {
       header: 'Purchase Qty',
       headerClass: 'text-center',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{row.purchase_qty}</div>,
+      render: (row: any) => <div className="w-25">{thousandSeparator(row.purchase_qty,0)}</div>,
       width: '100px',
     },
     {
@@ -129,7 +129,7 @@ const Requisition = (user: any) => {
       header: 'Requisition',
       headerClass: 'text-center',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{row.requisition_total}</div>,
+      render: (row: any) => <div className="w-25">{thousandSeparator(row.requisition_total,0)}</div>,
       width: '100px',
     },
     {
@@ -137,7 +137,7 @@ const Requisition = (user: any) => {
       header: 'Approved Amount',
       headerClass: 'text-center',
       cellClass: 'text-right',
-      render: (row: any) => <div className="w-25">{row.approved_amt}</div>,
+      render: (row: any) => <div className="w-25">{thousandSeparator(row.approved_amt,0)}</div>,
       width: '100px',
     },
     {
@@ -158,7 +158,7 @@ const Requisition = (user: any) => {
 
   return (
     <div className="">
-      <HelmetTitle title={'Requisition Comparison'} />
+      <HelmetTitle title={'Requisition Analysis'} />
       <div className="mb-2">
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
           <div className="">
