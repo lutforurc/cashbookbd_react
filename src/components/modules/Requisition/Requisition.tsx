@@ -163,7 +163,7 @@ const Requisition = (user: any) => {
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="">{Math.abs(row.difference)}</div>,
+      render: (row: any) => <div className="">{thousandSeparator(Math.abs(row.difference), 0)}</div>,
       width: '100px',
     },
     {
