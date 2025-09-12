@@ -194,17 +194,12 @@ const Requisition = (user: any) => {
       <div className="mb-2">
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
           <div className="">
-            <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
+            <div>{' '}<label htmlFor="">Select Branch</label>
             </div>
             <div>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
-              <BranchDropdown
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-2"
-                branchDdl={dropdownData}
-              />
+              <BranchDropdown onChange={handleBranchChange} className="w-full font-medium text-sm p-2" branchDdl={dropdownData} />
+              
             </div>
           </div>
 
@@ -233,6 +228,14 @@ const Requisition = (user: any) => {
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
+              className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
+            />
+          </div>
+          <div className="mt-2 md:mt-0">
+            <ButtonLoading
+              onClick={handleActionButtonClick}
+              buttonLoading={buttonLoading}
+              label="New Requisition"
               className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
             />
           </div>

@@ -148,6 +148,7 @@ const ROUTES = {
 
   // Requisition
   requisition: '/requisition/comparison',
+  requisition_create: '/requisition/create',
 
   notFound: '*',
 };

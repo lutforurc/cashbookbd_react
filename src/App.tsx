@@ -68,6 +68,7 @@ import FaviconUpdater from './components/utils/components/FaviconUpdater';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
 import Requisition from './components/modules/Requisition/Requisition';
+import RequisitionForm from './components/modules/Requisition/RequisitionForm';
 
 function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
@@ -254,9 +255,7 @@ function App() {
             <Route path={routes.add_role} element={<AddRole />} />
 
 
-
-
-
+            <Route path={routes.requisition_create} element={<RequisitionForm/>} />
             <Route path={routes.requisition} element={<Requisition user={me} />} />
 
             {/* Invoices */}
