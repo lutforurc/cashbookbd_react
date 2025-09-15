@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getBranch } from './branchSlice';
+import { branchStatus, getBranch } from './branchSlice';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
@@ -66,11 +66,11 @@ const BranchList = () => {
 
 
   const handleToggle = (id: number, enabled: boolean) => {
-    console.log(`Toggled row with ID ${id} to ${enabled ? 'enabled' : 'disabled'}`);
-    // Implement your toggle logic here, e.g., make an API call to update the status
+    dispatch(branchStatus(id, enabled));
+    dispatch(getBranch({ page, perPage, searchValue }));
+    console.log(`Toggled row with ID ${id} to ${enabled ? 'enabled' : 'disabled'}`); 
   }
 
- 
   const columns = [
     {
       key: 'serial',
@@ -110,12 +110,16 @@ const BranchList = () => {
           showEdit={true}
           handleEdit={handleBranchEdit}
 
-          showDelete={true}
+          showDelete={false}
           handleDelete={handleBranchDelete} 
+
+
           showToggle={true}
           handleToggle={handleToggle}
-          showConfirmId={showConfirmId}
-          setShowConfirmId={setShowConfirmId} 
+
+
+          // showConfirmId={showConfirmId}
+          // setShowConfirmId={setShowConfirmId} 
         />
         </div>
       ),

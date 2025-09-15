@@ -6,6 +6,9 @@ import {
   BRANCH_LIST_ERROR,
   BRANCH_LIST_PENDING,
   BRANCH_LIST_SUCCESS,
+  BRANCH_STATUS_ERROR,
+  BRANCH_STATUS_PENDING,
+  BRANCH_STATUS_SUCCESS,
   BRANCH_STORE_ERROR,
   BRANCH_STORE_PENDING,
   BRANCH_STORE_SUCCESS,
@@ -20,6 +23,7 @@ import httpService from '../../services/httpService';
 import {
   API_BRANCH_EDIT_URL,
   API_BRANCH_LIST_URL,
+  API_BRANCH_STATUS_URL,
   API_BRANCH_STORE_URL,
   API_BRANCH_UPDATE_URL,
   API_USER_CURRENT_BRANCH_URL,
@@ -136,6 +140,41 @@ export const editBranch = (id: number) => (dispatch: any) => {
       });
     });
 };
+
+ 
+
+export const branchStatus = (id: number, enabled: boolean) => async (dispatch: any) => {
+  dispatch({ type: BRANCH_STATUS_PENDING });
+
+  try {
+    const res = await httpService.post(`${API_BRANCH_STATUS_URL}`, {
+      id: id,
+      status: enabled, // Laravel expects `status` in request body
+    });
+
+    const _data = res.data;
+
+    if (_data.success) {
+      const updatedData = { ..._data.data.branch, status: enabled };
+
+      dispatch({
+        type: BRANCH_STATUS_SUCCESS,
+        payload: updatedData,
+      });
+    } else {
+      dispatch({
+        type: BRANCH_STATUS_ERROR,
+        payload: _data.error?.message || 'Something went wrong',
+      });
+    }
+  } catch (err) {
+    dispatch({
+      type: BRANCH_STATUS_ERROR,
+      payload: 'Something went wrong',
+    });
+  }
+};
+
 
 export const storeBranch = (data: any, callback: any) => (dispatch: any) => {
   dispatch({ type: BRANCH_STORE_PENDING });

@@ -66,6 +66,11 @@ export const ALL_BRANCH_LIST_PENDING = 'ALL/BRANCH/all/list/pending';
 export const ALL_BRANCH_LIST_SUCCESS = 'ALL/BRANCH/all/list/success';
 export const ALL_BRANCH_LIST_ERROR = 'ALL/BRANCH/all/list/error';
 
+// Branch Status Toggle
+export const BRANCH_STATUS_PENDING = 'BRANCH/status/pending';
+export const BRANCH_STATUS_SUCCESS = 'BRANCH/status/success';
+export const BRANCH_STATUS_ERROR = 'BRANCH/status/error';
+
 // Protected Branch DDL
 // export const DDL_PROTECT_BRANCH_LIST_PENDING = 'DDL/BRANCH/protect/list/pending';
 // export const DDL_PROTECT_BRANCH_LIST_SUCCESS = 'DDL/BRANCH/protect/list/success';

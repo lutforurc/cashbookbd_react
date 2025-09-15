@@ -3,11 +3,11 @@
 // export const API_REMOTE_URL = 'https://krf.cashbookbd.com';
 // export const API_REMOTE_URL = 'http://127.0.0.1:8000';
 // export const API_REMOTE_URL = 'https://staging.cashbookbd.com';
-export const API_REMOTE_URL = 'http://cashbook_api.test';
+// export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL = 'https://mikdad.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://kpsnew.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
-// export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
+export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
@@ -67,6 +67,7 @@ export const API_BRANCH_LIST_URL = API_BASE_URL + '/branch/branch-list';
 export const API_BRANCH_EDIT_URL = API_BASE_URL + '/branch/branch-edit/';
 export const API_BRANCH_UPDATE_URL = API_BASE_URL + '/branch/branch-update';
 export const API_BRANCH_STORE_URL = API_BASE_URL + '/branch/branch-store';
+export const API_BRANCH_STATUS_URL = API_BASE_URL + '/branch/branch-status';
 
 export const API_ALL_DDL_BRANCH_URL = API_BASE_URL + '/branch/ddl/all-branch';
 export const API_ALL_DDL_PROTECTED_BRANCH_URL = API_BASE_URL + '/branch/ddl/protected-branch';
