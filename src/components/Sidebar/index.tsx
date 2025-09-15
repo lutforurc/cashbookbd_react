@@ -547,7 +547,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             Voucher Date Change
                           </NavLink>
                         </li>
-
                         {/* <Route path={'hello-bangladesh'} element={<ReportComponent />} /> */}
                         <li>
                           <NavLink
@@ -560,6 +559,63 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             Print
                           </NavLink>
                         </li>
+                      </ul>
+                    </div>
+                  </React.Fragment>
+                )}
+              </SidebarLinkGroup>
+
+              {/* VR Settings */}
+              <SidebarLinkGroup
+                activeCondition={
+                  pathname === '/branch/branch-list' ||
+                  pathname === '/user/user-list' ||
+                  pathname === '/admin/dayclose' ||
+                  pathname === '/order/order-list' ||
+                  pathname.includes('forms')
+                }
+                menuId="admin"
+                open={openMenu === 'admin'}
+                handleClick={() => handleMenuClick('admin')}
+              >
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    <NavLink
+                      to="#"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        (pathname === '/branch/branch-list' || 
+                          pathname.includes('/branch/branch-list')) &&
+                        'bg-graydark dark:bg-meta-4'
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        sidebarExpanded
+                          ? handleClick()
+                          : setSidebarExpanded(true);
+                      }}
+                    >
+                      <FaGear />
+                      VR Settings
+                    </NavLink>
+                    <div
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
+                        open ? 'max-h-96' : 'max-h-0'
+                      }`}
+                    >
+                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        {hasPermission(permissions, 'dayclose.all.view') && (
+                          <li>
+                            <NavLink
+                              to="/admin/dayclose"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Day Close
+                            </NavLink>
+                          </li>
+                        )} 
                       </ul>
                     </div>
                   </React.Fragment>

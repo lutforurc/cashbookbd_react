@@ -1,75 +1,110 @@
-import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { useRef, useState, useEffect } from "react";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FaToggleOn, FaToggleOff } from "react-icons/fa"; // <-- এখানে থেকে Toggle icon আসবে
 
 type ActionButtonsProps = {
-  row: {
-    id: number;
-    [key: string]: any;
-  };
-  handleEdit: (id: number) => void;
-  handleDelete: (id: number) => void;
+  row: { id: number; [key: string]: any };
+  showEdit?: boolean;
+  showDelete?: boolean;
+  showToggle?: boolean;
+  handleEdit?: (id: number) => void;
+  handleDelete?: (id: number) => void;
+  handleToggle?: (id: number, enabled: boolean) => void;
   showConfirmId: number | null;
-  setShowConfirmId: (id: number | null) => void;
+  setShowConfirmId: React.Dispatch<React.SetStateAction<number | null>>;
+  initialEnabled?: boolean;
 };
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   row,
+  showEdit = false,
+  showDelete = false,
+  showToggle = false,
   handleEdit,
   handleDelete,
+  handleToggle,
   showConfirmId,
   setShowConfirmId,
+  initialEnabled = false,
 }) => {
+  const btnRef = useRef<HTMLDivElement | null>(null);
+  const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
+  const [enabled, setEnabled] = useState(initialEnabled);
+
+  useEffect(() => {
+    if (showConfirmId === row.id && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPopupPos({
+        top: rect.bottom + window.scrollY + 15,
+        left: rect.left + window.scrollX - 100,
+      });
+    }
+  }, [showConfirmId, row.id]);
+
+  const handleToggleClick = () => {
+    const newState = !enabled;
+    setEnabled(newState);
+    handleToggle && handleToggle(row.id, newState);
+  };
+
   return (
-    <div className="relative flex gap-2 justify-center">
+    <div className="relative flex gap-2 justify-center items-center">
       {/* Edit Button */}
-      <div
-        className="btn btn-sm btn-outline"
-        onClick={() => handleEdit(row.id)}
-      >
-        <span className="rounded">
-          <FiEdit2 className="cursor-pointer" />
-        </span>
-      </div>
+      {showEdit && handleEdit && (
+        <div
+          className="btn btn-sm btn-outline cursor-pointer w-5 h-5 flex items-center justify-center"
+          onClick={() => handleEdit(row.id)}
+        >
+          <FiEdit2 className="text-blue-600" />
+        </div>
+      )}
 
       {/* Delete Button */}
-      <div
-        className="btn btn-sm btn-outline"
-        onClick={() => setShowConfirmId(row.id)}
-      >
-        <span className="rounded">
-          <FiTrash2 className="cursor-pointer" />
-          {/* <KeenIcon icon="trash" className="text-red-600" /> */}
-        </span>
-      </div>
+      {showDelete && handleDelete && (
+        <div
+          ref={btnRef}
+          className="btn btn-sm btn-outline cursor-pointer w-5 h-5 flex items-center justify-center"
+          onClick={() => setShowConfirmId(row.id)}
+        >
+          <FiTrash2 className="text-red-600" />
+        </div>
+      )}
 
-      {/* Confirmation Popup */}
-      {showConfirmId === row.id && (
-        <div className="absolute top-12 right-0 z-50">
-          {/* Arrow */}
-          <div className="absolute -top-2 right-4 w-4 h-4 rotate-45 bg-white dark:bg-gray-300 border-t border-l border-gray-300 dark:border-gray-800"></div>
-
-          {/* Popup Box */}
-          <div className="bg-white dark:bg-gray-300 border border-gray-300 dark:border-gray-800 shadow-md rounded-md px-4 py-3">
-            <p className="text-sm text-gray-800 dark:text-white mb-3">
-              Are you sure?
-            </p>
-            <div className="flex justify-end gap-2">
+      {/* Delete Confirmation Popup */}
+      {showDelete && showConfirmId === row.id && popupPos && (
+        <div className="fixed z-50" style={{ top: popupPos.top, left: popupPos.left }}>
+          <div className="relative bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-md rounded-md px-4 py-3">
+            <div className="absolute -top-2 right-8 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-gray-300 dark:border-gray-700 rotate-45"></div>
+            <p className="text-sm text-black-900 dark:text-gray-200 mb-3 text-center">Are you sure?</p>
+            <div className="flex justify-center gap-3">
               <button
                 onClick={() => {
                   handleDelete(row.id);
                   setShowConfirmId(null);
                 }}
-                className="px-3 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded"
+                className="px-4 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded"
               >
                 Yes
               </button>
               <button
                 onClick={() => setShowConfirmId(null)}
-                className="px-3 py-1 text-sm bg-gray-600 hover:bg-gray-300 text-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white rounded"
+                className="px-4 py-1.5 text-sm bg-gray-500 hover:bg-gray-600 text-white rounded"
               >
                 No
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Enable/Disable Toggle */}
+      {showToggle && handleToggle && (
+        <div style={{ cursor: "pointer", fontSize: "1.3rem" }} onClick={handleToggleClick}>
+          {enabled ? (
+            <FaToggleOn className="text-green-600" title="Enabled" />
+          ) : (
+            <FaToggleOff className="text-gray-500" title="Disabled" />
+          )}
         </div>
       )}
     </div>

@@ -2,11 +2,8 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getBranch } from './branchSlice';
 import Loader from '../../../common/Loader';
-import {
-  ButtonLoading,
-  ButtonSuccess,
-} from '../../../pages/UiElements/CustomButtons';
-import { FiBook, FiEdit, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -23,7 +20,7 @@ const BranchList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [showConfirmId, setShowConfirmId] = useState(null);
+  const [showConfirmId, setShowConfirmId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,6 +64,13 @@ const BranchList = () => {
     setTotalPages(Math.ceil(branchList.data.total / page.target.value));
   };
 
+
+  const handleToggle = (id: number, enabled: boolean) => {
+    console.log(`Toggled row with ID ${id} to ${enabled ? 'enabled' : 'disabled'}`);
+    // Implement your toggle logic here, e.g., make an API call to update the status
+  }
+
+ 
   const columns = [
     {
       key: 'serial',
@@ -100,53 +104,22 @@ const BranchList = () => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => (
-        // <ActionButtons
-        //   row={row}
-        //   handleEdit={handleBranchEdit}
-        //   handleDelete={handleBranchDelete}
-        //   showConfirmId={showConfirmId}
-        //   setShowConfirmId={setShowConfirmId}
-        // />
+        <div>
+          <ActionButtons
+          row={row}
+          showEdit={true}
+          handleEdit={handleBranchEdit}
 
-        <div className="flex justify-center items-center">
-          <button
-            onClick={() => handleBranchView(row)}
-            className="text-blue-500"
-          >
-            <FiBook className="cursor-pointer" />
-          </button>
-          <button
-            onClick={() => handleBranchEdit(row)}
-            className="text-blue-500 ml-2"
-          >
-            <FiEdit2 className="cursor-pointer" />
-          </button>
-          <button
-            onClick={() => handleBranchDelete(row)}
-            className="text-red-500 ml-2"
-          >
-            <FiTrash2 className="cursor-pointer" />
-          </button>
+          showDelete={true}
+          handleDelete={handleBranchDelete} 
+          showToggle={true}
+          handleToggle={handleToggle}
+          showConfirmId={showConfirmId}
+          setShowConfirmId={setShowConfirmId} 
+        />
         </div>
       ),
     },
-
-    // {
-    //   key: 'action',
-    //   header: 'Action',
-    //   headerClass: 'text-center',
-    //   cellClass: 'text-center',
-    //   width: '120px',
-    //   render: (created_at, row) => (
-    // <ActionButtons
-    //   row={row}
-    //   handleEdit={handleEdit}
-    //   handleDelete={handleDelete}
-    //   showConfirmId={showConfirmId}
-    //   setShowConfirmId={setShowConfirmId}
-    // />
-    //   ),
-    // },
   ];
   const handleBranchView = (row: any) => {
     console.log('View =>' + row);
@@ -155,10 +128,11 @@ const BranchList = () => {
     navigate(`/branch/edit/${row.branch_id}`);
   };
   const handleBranchDelete = (row: any) => {
+    console.log('Delete =>' + row);
     navigate('/branch/branch-list');
   };
 
-  console.log('Branch List =>', branchList?.data?.data);
+  
 
   return (
     <div>
