@@ -15,6 +15,7 @@ import { API_REMOTE_URL } from '../../../services/apiRoutes';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { generateTableData } from '../../../utils/utils-functions/generateTableData';
+import { formatDate } from '../../../utils/utils-functions/formatDate';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
@@ -36,19 +37,27 @@ const Ledger = (user: any) => {
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
   }, []);
 
-  useEffect(() => {
-    if (!ledgerData.isLoading && ledgerData?.data) {
-      const tableRows = generateTableData(ledgerData.data);
-      setTableData(tableRows);
-    }
-  }, [ledgerData]);
+
+  
+
+useEffect(() => {
+  if (ledgerData && !ledgerData.isLoading && !(ledgerData.data?.data)) {
+    console.log('If show');
+    
+    const tableRows = generateTableData(ledgerData.data);
+    setTableData(tableRows);
+  } else {
+        console.log('else  show');
+    setTableData([]); // safety fallback
+  }
+}, [ledgerData]);
 
   // Update table data only when ledgerData is valid
-  useEffect(() => {
-    if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
-      setTableData(ledgerData?.data);
-    }
-  }, [ledgerData]);
+  // useEffect(() => {
+  //   if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
+  //     setTableData(ledgerData?.data);
+  //   }
+  // }, [ledgerData]);
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
@@ -109,7 +118,7 @@ const Ledger = (user: any) => {
     {
       key: 'vr_date',
       header: 'Vr Date',
-      render: (row: any) => <div className="w-25">{row.vr_date}</div>,
+      render: (row: any) => <div className="w-25">{ row.vr_date && formatDate(row.vr_date)}</div>,
       width: '100px',
     },
     {
@@ -124,7 +133,7 @@ const Ledger = (user: any) => {
       render: (row: any) => (
         <>
           <p>{row.name}</p>
-          <div className="text-sm text-gray-500">{row.remarks}</div>
+          <div className="text-sm text-gray-500   lg:max-w-150 break-words whitespace-normal">{row.remarks}</div>
         </>
       ),
     },

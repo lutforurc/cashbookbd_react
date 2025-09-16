@@ -13,45 +13,18 @@ export interface TableRow {
 }
 
 export const generateTableData = (data: any): TableRow[] => {
-  console.log(data);
+
+    // console.log(data);
   if (!data) return []; // safeguard if data is undefined
 
-  const openingBalance = data.opening_balance || [];
+  
   const details = data.details || [];
   let branchId: number | null = null;
 
   // Opening balance calculation
-  const totalDebit = openingBalance.reduce((sum: number, trx: any) => {
-    branchId = trx.branch_id;
-    return (
-      sum +
-      (trx.acc_transaction_master || []).reduce((mSum: number, master: any) => {
-        return (
-          mSum +
-          (master.acc_transaction_details || []).reduce(
-            (dSum: number, detail: any) => dSum + parseFloat(detail.debit || 0),
-            0,
-          )
-        );
-      }, 0)
-    );
-  }, 0);
-
-  const totalCredit = openingBalance.reduce((sum: number, trx: any) => {
-    return (
-      sum +
-      (trx.acc_transaction_master || []).reduce((mSum: number, master: any) => {
-        return (
-          mSum +
-          (master.acc_transaction_details || []).reduce(
-            (dSum: number, detail: any) =>
-              dSum + parseFloat(detail.credit || 0),
-            0,
-          )
-        );
-      }, 0)
-    );
-  }, 0);
+  const totalDebit = data.opening_balance.total_debit;
+  const totalCredit = data.opening_balance.total_credit;
+     
 
   const openingRow: TableRow = {
     sl_number: '',
@@ -66,21 +39,17 @@ export const generateTableData = (data: any): TableRow[] => {
   };
 
   // Flatten details safely
-  const detailsRows: TableRow[] = details.flatMap((trx: any) =>
-    (trx.acc_transaction_master || []).flatMap((master: any) =>
-      (master.acc_transaction_details || []).map((detail: any) => ({
-        sl_number: 0, // will assign next
-        vr_date: trx.vr_date,
-        vr_no: trx.vr_no,
-        name: detail.coa_l4?.name || '-',
-        remarks: detail.remarks,
-        branch_id: String(trx.branch_id).padStart(4, '0'), // Ensure branch_id is a 3-digit string
-        debit: parseFloat(detail.debit || 0),
-        credit: parseFloat(detail.credit || 0),
-        voucher_image: trx.voucher_image || null,
-      })),
-    ),
-  );
+  const detailsRows: TableRow[] = details.map((trx: any, index: number) => ({
+  sl_number: index + 1,
+  vr_date: trx.vr_date,
+  vr_no: trx.vr_no,
+  name: trx.name, // এখন coa_l4 relation লোড হচ্ছে না, তাই placeholder
+  remarks: trx.remarks || '-',
+  branch_id: String(trx.branch_id).padStart(4, '0'), // 4-digit format
+  debit: parseFloat(trx.debit || 0),
+  credit: parseFloat(trx.credit || 0),
+  voucher_image: trx.voucher_image || null,
+}));
 
   // Assign sequential sl_number
   detailsRows.forEach((row, idx) => (row.sl_number = idx + 1));

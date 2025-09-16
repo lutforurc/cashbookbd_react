@@ -9,7 +9,7 @@ function formatDate(dateString: string) {
     )
 }
 
-export default formatDate
+export { formatDate }
 
 function formatDateBdToUsd(dateString: string) {
     if (dateString) {
