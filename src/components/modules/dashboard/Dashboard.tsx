@@ -20,7 +20,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import Loader from '../../../common/Loader';
-import formatDate from '../../utils/utils-functions/formatDate';
+import {formatDate} from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
 
 const Dashboard = () => {

@@ -22,8 +22,8 @@ export const generateTableData = (data: any): TableRow[] => {
   let branchId: number | null = null;
 
   // Opening balance calculation
-  const totalDebit = data.opening_balance.total_debit;
-  const totalCredit = data.opening_balance.total_credit;
+  const totalDebit = data?.opening_balance?.total_debit;
+  const totalCredit = data?.opening_balance?.total_credit;
      
 
   const openingRow: TableRow = {
@@ -61,7 +61,7 @@ export const generateTableData = (data: any): TableRow[] => {
   );
 
   const rangeCredit = detailsRows.reduce(
-    (sum, row) => sum + (Number(row.credit) || 0),
+    (sum, row) => sum + (Number(row?.credit) || 0),
     0,
   );
   const rangeRow: TableRow = {

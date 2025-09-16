@@ -14,7 +14,7 @@ import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import { getLedger } from '../ledger/ledgerSlice';
 import { getMitchMatch } from './mitchMatchSlice';
-import formatDate from '../../../utils/utils-functions/formatDate';
+import {formatDate} from '../../../utils/utils-functions/formatDate';
 import { render } from 'react-dom';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 

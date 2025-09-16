@@ -3,7 +3,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import AsyncSelect from 'react-select/async';
 import { getDdlOrders } from '../../modules/orders/ordersSlice';
-import formatDate from './formatDate';
+import {formatDate} from './formatDate';
 
 interface OptionType {
     value: string;

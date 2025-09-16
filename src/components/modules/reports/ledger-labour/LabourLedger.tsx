@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getLabourItems, getLabourLedger } from './labourLedgerSlice';
 import LabourDropdown from '../../../utils/utils-functions/LabourDropdown';
-import formatDate from '../../../utils/utils-functions/formatDate';
+import {formatDate} from '../../../utils/utils-functions/formatDate';
 import { FiRotateCcw, FiSave } from 'react-icons/fi';
 
 const LabourLedger = (user: any) => {

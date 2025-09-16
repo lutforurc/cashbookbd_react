@@ -109,22 +109,22 @@ useEffect(() => {
       key: 'sl_number',
       header: 'Sl. No',
       width: '100px',
-      hederClass: 'text-center',
-      cellClass: 'text-center',
+      headerClass: 'items-center text-center',
+      cellClass: 'items-center text-center',
       render: (row: any) => (
-        <div className="w-25">{row.sl_number ? row.sl_number : '-'}</div>
+        <div className="">{row.sl_number ? row.sl_number : '-'}</div>
       ),
     },
     {
       key: 'vr_date',
       header: 'Vr Date',
-      render: (row: any) => <div className="w-25">{ row.vr_date && formatDate(row.vr_date)}</div>,
-      width: '100px',
+      render: (row: any) => <div className="">{ row.vr_date && formatDate(row.vr_date)}</div>,
+      width: '80px',
     },
     {
       key: 'vr_no',
       header: 'Vr No',
-      render: (row: any) => <div className="w-25">{row.vr_no}</div>,
+      render: (row: any) => <div className="">{row.vr_no}</div>,
       width: '100px',
     },
     {
