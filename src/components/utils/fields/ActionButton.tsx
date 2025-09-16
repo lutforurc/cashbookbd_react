@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { FiEdit2, FiTrash2 } from 'react-icons/fi'; 
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 type ActionButtonsProps = {
   row: { id: number; [key: string]: any };
@@ -23,7 +23,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   handleDelete,
   handleToggle,
   showConfirmId,
-  setShowConfirmId, 
+  setShowConfirmId,
 }) => {
   const btnRef = useRef<HTMLDivElement | null>(null);
   const [popupPos, setPopupPos] = useState<{
@@ -31,9 +31,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     left: number;
   } | null>(null);
   const [enabled, setEnabled] = useState(row.status === 1);
-
-
-  console.log(row.status == 1 ? 'enabled' : 'disabled');
 
   useEffect(() => {
     if (showConfirmId === row.id && btnRef.current) {
@@ -44,6 +41,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       });
     }
   }, [showConfirmId, row.id]);
+
+  useEffect(() => {
+    setEnabled(row.status === 1);
+  }, [row.status]);
 
   const handleToggleClick = () => {
     const newState = !enabled;
@@ -114,7 +115,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         >
           <div
             className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
-              (row.status === 1 || enabled) ? 'translate-x-5 duration-300 !bg-blue-600' : 'translate-x-0'
+              row.status === 1 || enabled
+                ? 'translate-x-5 duration-300 !bg-blue-600'
+                : 'translate-x-0'
             }`}
           ></div>
         </div>

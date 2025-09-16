@@ -20,7 +20,6 @@ const BranchList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [showConfirmId, setShowConfirmId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,11 +64,18 @@ const BranchList = () => {
   };
 
 
-  const handleToggle = (id: number, enabled: boolean) => {
-    dispatch(branchStatus(id, enabled));
-    dispatch(getBranch({ page, perPage, searchValue }));
-    console.log(`Toggled row with ID ${id} to ${enabled ? 'enabled' : 'disabled'}`); 
-  }
+const handleToggle = (row: any) => {
+  // status যদি 1 থাকে তাহলে inactive করব, নাহলে active করব
+  const newStatus = row.status === 1 ? 0 : 1;
+
+  dispatch(branchStatus(row.id, newStatus))
+    .then(() => {
+      // API হিট করার পর আবার branch লিস্ট রিফ্রেশ করা
+      dispatch(getBranch({ page, perPage, searchValue }));
+    });
+
+  console.log(`Toggled row with ID ${row.id} to ${newStatus ? 'enabled' : 'disabled'}`); 
+};
 
   const columns = [
     {
@@ -115,7 +121,7 @@ const BranchList = () => {
 
 
           showToggle={true}
-          handleToggle={handleToggle}
+          handleToggle={() => handleToggle(row)} // এখন row পাঠাচ্ছে
 
 
           // showConfirmId={showConfirmId}
