@@ -565,63 +565,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 )}
               </SidebarLinkGroup>
 
-              {/* VR Settings */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/branch/branch-list' ||
-                  pathname === '/user/user-list' ||
-                  pathname === '/admin/dayclose' ||
-                  pathname === '/order/order-list' ||
-                  pathname.includes('forms')
-                }
-                menuId="admin"
-                open={openMenu === 'admin'}
-                handleClick={() => handleMenuClick('admin')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/branch/branch-list' || 
-                          pathname.includes('/branch/branch-list')) &&
-                        'bg-graydark dark:bg-meta-4'
-                      }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FaGear />
-                      VR Settings
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        {hasPermission(permissions, 'dayclose.all.view') && (
-                          <li>
-                            <NavLink
-                              to="/admin/dayclose"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Day Close
-                            </NavLink>
-                          </li>
-                        )} 
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
-
               {/* Reports */}
               <SidebarLinkGroup
                 activeCondition={
@@ -907,94 +850,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 )}
               </SidebarLinkGroup>
 
-              {/* Chart of Accounts */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/coal4/coal4-list' || pathname.includes('forms')
-                }
-                menuId="chart-of-accounts"
-                open={openMenu === 'chart-of-accounts'}
-                handleClick={() => handleMenuClick('chart-of-accounts')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/coal1/coal1-list' ||
-                          pathname === '/coal2/coal2-list' ||
-                          pathname === '/coal3/coal3-list' ||
-                          pathname === '/coal4/coal4-list' ||
-                          pathname.includes('/coal4/coal4-list')) &&
-                        'bg-graydark dark:bg-meta-4'
-                      }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiServer />
-                      Chart of Accounts
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/coal1/coal1-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                              (isActive && '!text-white')
-                            }
-                          >
-                            Coa L1
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/coal2/coal2-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                              (isActive && '!text-white')
-                            }
-                          >
-                            Coa L2
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/coal3/coal3-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                              (isActive && '!text-white')
-                            }
-                          >
-                            Coa L3
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/coal4/coal4-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                              (isActive && '!text-white')
-                            }
-                          >
-                            Coa L4
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
- 
-
               {/* Requisition */}
               <SidebarLinkGroup
                 activeCondition={
@@ -1041,7 +896,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && '!text-white')
                             }
                           >
-                            Create Requisition
+                            Requisitions
                           </NavLink>
                         </li>
                         <li>
@@ -1060,6 +915,61 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   </React.Fragment>
                 )}
               </SidebarLinkGroup>
+
+              {/* VR Settings */}
+              <SidebarLinkGroup
+                activeCondition={
+                  pathname === '/vr-settings/voucher-delete' || 
+                  pathname.includes('forms')
+                }
+                menuId="vr_settings"
+                open={openMenu === 'vr_settings'}
+                handleClick={() => handleMenuClick('vr_settings')}
+              >
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    <NavLink
+                      to="#"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        (pathname === '/vr-settings/voucher-delete' || 
+                          pathname.includes('/vr-settings/voucher-delete')) &&
+                        'bg-graydark dark:bg-meta-4'
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        sidebarExpanded
+                          ? handleClick()
+                          : setSidebarExpanded(true);
+                      }}
+                    >
+                      <FaGear />
+                      VR Settings
+                    </NavLink>
+                    <div
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
+                        open ? 'max-h-96' : 'max-h-0'
+                      }`}
+                    >
+                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        {hasPermission(permissions, 'dayclose.all.view') && (
+                          <li>
+                            <NavLink
+                              to="/vr-settings/voucher-delete"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Voucher Delete
+                            </NavLink>
+                          </li>
+                        )} 
+                      </ul>
+                    </div>
+                  </React.Fragment>
+                )}
+              </SidebarLinkGroup>
+
 
               {/* User Management */}
               <SidebarLinkGroup
@@ -1177,6 +1087,94 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 )}
               </SidebarLinkGroup>
 
+
+              {/* Chart of Accounts */}
+              <SidebarLinkGroup
+                activeCondition={
+                  pathname === '/coal4/coal4-list' || pathname.includes('forms')
+                }
+                menuId="chart-of-accounts"
+                open={openMenu === 'chart-of-accounts'}
+                handleClick={() => handleMenuClick('chart-of-accounts')}
+              >
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    <NavLink
+                      to="#"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        (pathname === '/coal1/coal1-list' ||
+                          pathname === '/coal2/coal2-list' ||
+                          pathname === '/coal3/coal3-list' ||
+                          pathname === '/coal4/coal4-list' ||
+                          pathname.includes('/coal4/coal4-list')) &&
+                        'bg-graydark dark:bg-meta-4'
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        sidebarExpanded
+                          ? handleClick()
+                          : setSidebarExpanded(true);
+                      }}
+                    >
+                      <FiServer />
+                      Chart of Accounts
+                    </NavLink>
+                    <div
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
+                        open ? 'max-h-96' : 'max-h-0'
+                      }`}
+                    >
+                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <li>
+                          <NavLink
+                            to="/coal1/coal1-list"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Coa L1
+                          </NavLink>
+                        </li>
+                        <li>
+                          <NavLink
+                            to="/coal2/coal2-list"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Coa L2
+                          </NavLink>
+                        </li>
+                        <li>
+                          <NavLink
+                            to="/coal3/coal3-list"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Coa L3
+                          </NavLink>
+                        </li>
+                        <li>
+                          <NavLink
+                            to="/coal4/coal4-list"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Coa L4
+                          </NavLink>
+                        </li>
+                      </ul>
+                    </div>
+                  </React.Fragment>
+                )}
+              </SidebarLinkGroup>
+ 
               {/* Chart */}
               <li>
                 <NavLink

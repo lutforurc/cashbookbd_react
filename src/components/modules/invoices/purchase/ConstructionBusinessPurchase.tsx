@@ -667,7 +667,7 @@ const ConstructionBusinessPurchase = () => {
                         id="search"
                         value={search}
                         name="search"
-                        placeholder={'Search Labour Invoice'}
+                        placeholder={'Search Invoice'}
                         label={''}
                         className={'py-1 w-full'}
                         onChange={(e) => setSearch(e.target.value)}

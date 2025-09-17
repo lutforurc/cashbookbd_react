@@ -150,6 +150,11 @@ const ROUTES = {
   requisition: '/requisition/comparison',
   requisition_create: '/requisition/create',
 
+
+  // VR Settings
+  voucher_delete: '/vr-settings/voucher-delete', 
+
+
   notFound: '*',
 };
 

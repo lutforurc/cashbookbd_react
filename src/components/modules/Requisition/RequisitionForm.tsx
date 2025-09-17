@@ -542,14 +542,14 @@ const RequisitionForm = () => {
               />
               <div className="relative">
                     <label className="text-black dark:text-white" htmlFor="">
-                      Search Invoice
+                      Search Requisition
                     </label>
                     <div className="w-full ">
                       <InputOnly
                         id="search"
                         value={search}
                         name="search"
-                        placeholder={'Search Labour Invoice'}
+                        placeholder={'Search Requisition'}
                         label={''}
                         className={'py-1 w-full'}
                         onChange={(e) => setSearch(e.target.value)}

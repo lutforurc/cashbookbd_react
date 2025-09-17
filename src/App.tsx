@@ -69,6 +69,7 @@ import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
 import Requisition from './components/modules/Requisition/Requisition';
 import RequisitionForm from './components/modules/Requisition/RequisitionForm';
+import VoucherDelete from './components/modules/vr_settings/VoucherDelete';
 
 function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
@@ -257,6 +258,11 @@ function App() {
 
             <Route path={routes.requisition_create} element={<RequisitionForm/>} />
             <Route path={routes.requisition} element={<Requisition user={me} />} />
+
+
+            {/* Voucher Delete */}
+            <Route path={routes.voucher_delete} element={<VoucherDelete />} />
+
 
             {/* Invoices */}
             <Route path={routes.inv_purchase} element={<PurchaseIndex />} />

@@ -5,7 +5,6 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FiHome, FiSave } from 'react-icons/fi';
 import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
-import { storeDayClose } from './daycloseSlice';
 import { toast } from 'react-toastify';
 import { addDayInDate } from '../../utils/utils-functions/addDayInDate';
 import { getSettings } from '../settings/settingsSlice';
@@ -13,8 +12,9 @@ import { FaPersonSkating } from "react-icons/fa6";
 import { hasPermission } from '../../utils/permissionChecker';
 import { useNavigate } from 'react-router-dom';
 
+ 
 
-const Dayclose = () => {
+const VoucherDelete = () => {
     const settings = useSelector((s: any) => s.settings);
     const dayclose = useSelector((state: any) => state.dayclose);
     const navigate = useNavigate();
@@ -87,10 +87,9 @@ const Dayclose = () => {
         }, 1000);
     }
  
-    const buttonLoading = true;
     return (
         <>
-            <HelmetTitle title="Day Close" />
+            <HelmetTitle title="Voucher Delete" />
             <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 justify-center mx-auto mt-5 "> 
                 <InputElement
                     id="current_date"
@@ -141,4 +140,4 @@ const Dayclose = () => {
     )
 }
 
-export default Dayclose
+export default VoucherDelete
