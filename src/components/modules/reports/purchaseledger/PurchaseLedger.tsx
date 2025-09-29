@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import { FaRotateRight } from 'react-icons/fa6';
+import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -183,6 +184,7 @@ const PurchaseLedger = (user: any) => {
       ),
       width: '100px',
     },
+   
     {
       key: 'total',
       header: 'Total',
@@ -203,6 +205,30 @@ const PurchaseLedger = (user: any) => {
         </div>
       ),
       width: '100px',
+    },
+    {
+      key: 'discount',
+      header: 'Discount',
+      headerClass: 'text-right',
+      cellClass: 'text-right align-center',
+      render: (row: any) => {
+        const transaction = row?.acc_transaction_master?.find((tm: any) =>
+          tm?.acc_transaction_details?.some(
+            (detail: any) => detail?.coa4_id === 40,
+          ),
+        );
+        const creditValue = transaction?.acc_transaction_details?.find(
+          (detail: any) => detail?.coa4_id === 40,
+        )?.credit;
+
+        // value format করা এবং default
+        const displayValue = creditValue
+          ? thousandSeparator(creditValue, 0)
+          : '-';
+
+        return <div className="text-right">{displayValue}</div>;
+      },
+      width: '120px',
     },
     {
       key: 'acc_transaction_master',
@@ -247,43 +273,12 @@ const PurchaseLedger = (user: any) => {
     },
   ];
 
-  // Total Quantity
-  const totalQuantity = tableData?.reduce(
-    (sum, row) =>
-      sum +
-      (row?.purchase_master?.details?.reduce(
-        (subSum: number, detail: any) =>
-          subSum + (Number(detail?.quantity) || 0), // 👉 এখানে fix
-        0,
-      ) || 0),
-    0,
-  );
+const purchaseCalc = new PurchaseLedgerCalculator(tableData || []);
 
-  // Grand Total
-  const grandTotal = tableData?.reduce((sum, row) => {
-    const transaction = row?.acc_transaction_master?.find((tm: any) =>
-      tm?.acc_transaction_details?.some(
-        (detail: any) => detail?.coa4_id === 17,
-      ),
-    );
-    const creditValue =
-      transaction?.acc_transaction_details?.find(
-        (detail: any) => detail?.coa4_id === 17,
-      )?.credit || 0;
-    return sum + Number(creditValue);
-  }, 0);
-
-  // Total Payment
-  const totalPayment = tableData?.reduce(
-    (sum, row) =>
-      sum +
-      (row?.purchase_master?.details?.reduce(
-        (subSum: number, detail: any) =>
-          subSum + (detail?.purchase_price || 0) * (detail?.quantity || 0),
-        0,
-      ) || 0),
-    0,
-  );
+const totalQuantity = purchaseCalc.getTotalQuantity();
+const totalPayment = purchaseCalc.getTotalPayment();
+const grandTotal = purchaseCalc.getGrandTotal();
+const discountTotal = purchaseCalc.getDiscountTotal();
 
   return (
     <div className="">
@@ -363,6 +358,7 @@ const PurchaseLedger = (user: any) => {
             <div className="flex justify-end space-x-8 p-2">
               <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
               <div>Total: {thousandSeparator(totalPayment, 0)}</div>
+              <div>Discount: {thousandSeparator(discountTotal, 0)}</div>
               <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
             </div>
           </div>

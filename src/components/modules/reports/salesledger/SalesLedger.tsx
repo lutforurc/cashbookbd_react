@@ -12,6 +12,7 @@ import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { getSalesLedger } from './salesLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import SalesLedgerCalculator from '../../../utils/calculators/SalesLedgerCalculator';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -132,16 +133,14 @@ const SalesLedger = (user: any) => {
       ),
     },
     {
-      key: 'quantity',
+      key: 'vhicle',
       header: 'Vhicle No.',
       headerClass: 'text-left',
       cellClass: 'text-left align-center',
       width: '120px',
       render: (row: any) => (
         <>
-          <div>
-            {row?.sales_master?.vehicle_no}
-          </div> 
+          <div>{row?.sales_master?.vehicle_no}</div>
         </>
       ),
     },
@@ -157,7 +156,8 @@ const SalesLedger = (user: any) => {
             (detail: any, index: number) => (
               <div key={index}>
                 <div>
-                  { thousandSeparator (detail?.quantity, 0)} {detail?.product?.unit?.name}
+                  {thousandSeparator(detail?.quantity, 0)}{' '}
+                  {detail?.product?.unit?.name}
                 </div>
               </div>
             ),
@@ -176,9 +176,7 @@ const SalesLedger = (user: any) => {
           {(row?.sales_master?.details ?? []).map(
             (detail: any, index: number) => (
               <div key={index}>
-                <div>
-                  { thousandSeparator (detail?.sales_price, 2)}
-                </div>
+                <div>{thousandSeparator(detail?.sales_price, 2)}</div>
               </div>
             ),
           )}
@@ -197,7 +195,10 @@ const SalesLedger = (user: any) => {
             (detail: any, index: number) => (
               <div key={index}>
                 <div>
-                  { thousandSeparator (  Math.floor (detail?.quantity * detail?.sales_price), 0)}
+                  {thousandSeparator(
+                    Math.floor(detail?.quantity * detail?.sales_price),
+                    0,
+                  )}
                 </div>
               </div>
             ),
@@ -205,6 +206,42 @@ const SalesLedger = (user: any) => {
         </>
       ),
     },
+    {
+  key: 'discount',
+  header: 'Discount',
+  headerClass: 'text-right',
+  cellClass: 'text-right',
+  render: (row: any) => {
+    const masters = Array.isArray(row?.acc_transaction_master)
+      ? row.acc_transaction_master
+      : row?.acc_transaction_master
+      ? [row.acc_transaction_master]
+      : [];
+
+    // collect all details (works without flatMap)
+    const allDetails = masters.reduce((acc: any[], m: any) => {
+      if (Array.isArray(m?.acc_transaction_details)) {
+        acc.push(...m.acc_transaction_details);
+      }
+      return acc;
+    }, []);
+
+    const parseNumber = (v: any) => {
+      if (v == null) return NaN;
+      if (typeof v === 'number') return v;
+      const cleaned = String(v).replace(/[^\d.-]/g, '');
+      const n = Number(cleaned);
+      return Number.isFinite(n) ? n : NaN;
+    };
+
+    const discountDetail = allDetails.find((d: any) => d?.coa4_id === 23);
+    const value = parseNumber(discountDetail?.debit);
+
+    const display = Number.isFinite(value) ? thousandSeparator(value, 0) : '-';
+    return <div className="text-right">{display}</div>;
+  },
+  width: '120px',
+},
     {
       key: 'acc_transaction_master',
       header: 'Received',
@@ -252,10 +289,24 @@ const SalesLedger = (user: any) => {
         const debitValue = transaction?.acc_transaction_details?.[0]?.debit
           ? transaction.acc_transaction_details[0].debit
           : 0;
-        return <div className="text-right">{ thousandSeparator (Math.floor (row?.sales_master?.total) - Math.floor(debitValue), 0)}</div>;
-      }
+        return (
+          <div className="text-right">
+            {thousandSeparator(
+              Math.floor(row?.sales_master?.total) - Math.floor(debitValue),
+              0,
+            )}
+          </div>
+        );
+      },
     },
   ];
+
+  const ledgerCalc = new SalesLedgerCalculator(tableData || []);
+  const totalQuantity = ledgerCalc.getTotalQuantity();
+  const totalPayment = ledgerCalc.getTotalPayment();
+  const grandTotal = ledgerCalc.getGrandTotal();
+  const totalBalance = ledgerCalc.getTotalBalance();
+  const totalDiscount = ledgerCalc.getDiscountTotal();
 
   return (
     <div className="">
@@ -317,6 +368,18 @@ const SalesLedger = (user: any) => {
       <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />
+
+        {tableData.length > 0 && (
+          <div className="mt-2 border-t font-bold">
+            <div className="flex justify-end space-x-8 p-2">
+              <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
+              <div>Total: {thousandSeparator(totalPayment, 0)}</div>
+              <div>Received: {thousandSeparator(grandTotal, 0)}</div>
+              <div>Discount: {thousandSeparator(totalDiscount, 0)}</div>
+              <div>Due: {thousandSeparator(totalBalance, 0)}</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
