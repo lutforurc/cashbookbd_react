@@ -6,8 +6,8 @@
 // export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL = 'https://mikdad.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://kpsnew.cashbookbd.com';
-export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
-// export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
+// export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
+export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 

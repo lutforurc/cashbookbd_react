@@ -207,41 +207,43 @@ const SalesLedger = (user: any) => {
       ),
     },
     {
-  key: 'discount',
-  header: 'Discount',
-  headerClass: 'text-right',
-  cellClass: 'text-right',
-  render: (row: any) => {
-    const masters = Array.isArray(row?.acc_transaction_master)
-      ? row.acc_transaction_master
-      : row?.acc_transaction_master
-      ? [row.acc_transaction_master]
-      : [];
+      key: 'discount',
+      header: 'Discount',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        const masters = Array.isArray(row?.acc_transaction_master)
+          ? row.acc_transaction_master
+          : row?.acc_transaction_master
+            ? [row.acc_transaction_master]
+            : [];
 
-    // collect all details (works without flatMap)
-    const allDetails = masters.reduce((acc: any[], m: any) => {
-      if (Array.isArray(m?.acc_transaction_details)) {
-        acc.push(...m.acc_transaction_details);
-      }
-      return acc;
-    }, []);
+        // collect all details (works without flatMap)
+        const allDetails = masters.reduce((acc: any[], m: any) => {
+          if (Array.isArray(m?.acc_transaction_details)) {
+            acc.push(...m.acc_transaction_details);
+          }
+          return acc;
+        }, []);
 
-    const parseNumber = (v: any) => {
-      if (v == null) return NaN;
-      if (typeof v === 'number') return v;
-      const cleaned = String(v).replace(/[^\d.-]/g, '');
-      const n = Number(cleaned);
-      return Number.isFinite(n) ? n : NaN;
-    };
+        const parseNumber = (v: any) => {
+          if (v == null) return NaN;
+          if (typeof v === 'number') return v;
+          const cleaned = String(v).replace(/[^\d.-]/g, '');
+          const n = Number(cleaned);
+          return Number.isFinite(n) ? n : NaN;
+        };
 
-    const discountDetail = allDetails.find((d: any) => d?.coa4_id === 23);
-    const value = parseNumber(discountDetail?.debit);
+        const discountDetail = allDetails.find((d: any) => d?.coa4_id === 23);
+        const value = parseNumber(discountDetail?.debit);
 
-    const display = Number.isFinite(value) ? thousandSeparator(value, 0) : '-';
-    return <div className="text-right">{display}</div>;
-  },
-  width: '120px',
-},
+        const display = Number.isFinite(value)
+          ? thousandSeparator(value, 0)
+          : '-';
+        return <div className="text-right">{display}</div>;
+      },
+      width: '120px',
+    },
     {
       key: 'acc_transaction_master',
       header: 'Received',
@@ -274,28 +276,42 @@ const SalesLedger = (user: any) => {
       cellClass: 'text-right align-center',
       width: '120px',
       render: (row: any) => {
-        const transaction = row?.acc_transaction_master?.find(
-          (
-            tm:
-              | {
-                  acc_transaction_details?: {
-                    coa4_id?: number;
-                    debit?: string;
-                  }[];
-                }
-              | undefined,
-          ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
-        );
-        const debitValue = transaction?.acc_transaction_details?.[0]?.debit
-          ? transaction.acc_transaction_details[0].debit
-          : 0;
+        const masters = Array.isArray(row?.acc_transaction_master)
+          ? row.acc_transaction_master
+          : row?.acc_transaction_master
+            ? [row.acc_transaction_master]
+            : [];
+
+        const allDetails = masters.reduce((acc: any[], m: any) => {
+          if (Array.isArray(m?.acc_transaction_details)) {
+            acc.push(...m.acc_transaction_details);
+          }
+          return acc;
+        }, []);
+
+        const parseNumber = (v: any) => {
+          if (v == null) return 0;
+          if (typeof v === 'number') return v;
+          const cleaned = String(v).replace(/[^\d.-]/g, '');
+          const n = Number(cleaned);
+          return Number.isFinite(n) ? n : 0;
+        };
+
+        // payment (coa4_id = 17)
+        const payment = allDetails
+          .filter((d: any) => d?.coa4_id === 17)
+          .reduce((s: number, d: any) => s + parseNumber(d.debit), 0);
+
+        // discount (coa4_id = 23)
+        const discount = allDetails
+          .filter((d: any) => d?.coa4_id === 23)
+          .reduce((s: number, d: any) => s + parseNumber(d.debit), 0);
+
+        const total = parseNumber(row?.sales_master?.total);
+        const balance = total - payment - discount;
+
         return (
-          <div className="text-right">
-            {thousandSeparator(
-              Math.floor(row?.sales_master?.total) - Math.floor(debitValue),
-              0,
-            )}
-          </div>
+          <div className="text-right">{thousandSeparator(balance, 0)}</div>
         );
       },
     },

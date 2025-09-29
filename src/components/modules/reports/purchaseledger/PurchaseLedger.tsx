@@ -175,7 +175,7 @@ const PurchaseLedger = (user: any) => {
       cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
-          {row?.purchase_master?.details.map((detail: any, index: number) => (
+          {row?.purchase_master?.details?.map((detail: any, index: number) => (
             <div key={index}>
               <span>{thousandSeparator(detail?.purchase_price, 2)}</span>
             </div>
@@ -192,7 +192,7 @@ const PurchaseLedger = (user: any) => {
       cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
-          {row?.purchase_master?.details.map((detail: any, index: number) => (
+          {row?.purchase_master?.details?.map((detail: any, index: number) => (
             <div key={index}>
               <span>
                 {thousandSeparator(
@@ -254,6 +254,9 @@ const PurchaseLedger = (user: any) => {
       },
       width: '120px',
     },
+
+
+    
     {
       key: 'voucher_image',
       header: 'Voucher',
@@ -274,7 +277,6 @@ const PurchaseLedger = (user: any) => {
   ];
 
 const purchaseCalc = new PurchaseLedgerCalculator(tableData || []);
-
 const totalQuantity = purchaseCalc.getTotalQuantity();
 const totalPayment = purchaseCalc.getTotalPayment();
 const grandTotal = purchaseCalc.getGrandTotal();
