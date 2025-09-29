@@ -85,13 +85,13 @@ const PurchaseLedger = (user: any) => {
   const selectedLedgerOptionHandler = (option: any) => {
     setLedgerAccount(option.value);
   };
-const selectedProduct = (option: any) => {
-  if (option === null) {
-    setProductId(null); // Reset value
-  } else {
-    setProductId(option.value); // Normal select
-  }
-};
+  const selectedProduct = (option: any) => {
+    if (option === null) {
+      setProductId(null); // Reset value
+    } else {
+      setProductId(option.value); // Normal select
+    }
+  };
 
   const columns = [
     {
@@ -112,7 +112,6 @@ const selectedProduct = (option: any) => {
         </div>
       ),
     },
-
     {
       key: 'vehicle_no',
       header: 'Vehicle Number',
@@ -140,9 +139,7 @@ const selectedProduct = (option: any) => {
                 </div>
               ),
             )}
-            <div className="font-semibold">
-              {row?.purchase_master?.notes}
-            </div>
+            <div className="">{row?.purchase_master?.notes}</div>
           </div>
         );
       },
@@ -177,13 +174,11 @@ const selectedProduct = (option: any) => {
       cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
-          {row?.purchase_master?.details.map(
-            (detail: any, index: number) => (
-              <div key={index}>
-                <span>{thousandSeparator(detail?.purchase_price, 2)}</span>
-              </div>
-            ),
-          )}
+          {row?.purchase_master?.details.map((detail: any, index: number) => (
+            <div key={index}>
+              <span>{thousandSeparator(detail?.purchase_price, 2)}</span>
+            </div>
+          ))}
         </div>
       ),
       width: '100px',
@@ -195,44 +190,44 @@ const selectedProduct = (option: any) => {
       cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
-          {row?.purchase_master?.details.map(
-            (detail: any, index: number) => (
-              <div key={index}>
-                <span>
-                  {thousandSeparator(
-                    detail?.purchase_price * detail?.quantity,
-                    0,
-                  )}
-                </span>
-              </div>
-            ),
-          )}
+          {row?.purchase_master?.details.map((detail: any, index: number) => (
+            <div key={index}>
+              <span>
+                {thousandSeparator(
+                  detail?.purchase_price * detail?.quantity,
+                  0,
+                )}
+              </span>
+            </div>
+          ))}
         </div>
       ),
       width: '100px',
     },
     {
-  key: 'acc_transaction_master',
-  header: 'Payment',
-  headerClass: 'text-right',
-  cellClass: 'text-right align-center',
-  render: (row: any) => {
-    // acc_transaction_master থেকে প্রথম transaction যেখানে coa4_id = 17 আছে
-    const transaction = row?.acc_transaction_master?.find(
-      (tm: any) =>
-        tm?.acc_transaction_details?.some((detail: any) => detail?.coa4_id === 17)
-    );
+      key: 'acc_transaction_master',
+      header: 'Payment',
+      headerClass: 'text-right',
+      cellClass: 'text-right align-center',
+      render: (row: any) => {
+        const transaction = row?.acc_transaction_master?.find((tm: any) =>
+          tm?.acc_transaction_details?.some(
+            (detail: any) => detail?.coa4_id === 17,
+          ),
+        );
+        const creditValue = transaction?.acc_transaction_details?.find(
+          (detail: any) => detail?.coa4_id === 17,
+        )?.credit;
 
-    // acc_transaction_details থেকে coa4_id = 17 এর credit বের করা
-    const creditValue = transaction?.acc_transaction_details?.find((detail: any) => detail?.coa4_id === 17)?.credit;
+        // value format করা এবং default
+        const displayValue = creditValue
+          ? thousandSeparator(creditValue, 0)
+          : '-';
 
-    // value format করা এবং default
-    const displayValue = creditValue ? thousandSeparator(creditValue, 0) : '-';
-
-    return <div className="text-right">{displayValue}</div>;
-  },
-  width: '120px',
-},
+        return <div className="text-right">{displayValue}</div>;
+      },
+      width: '120px',
+    },
     {
       key: 'voucher_image',
       header: 'Voucher',
@@ -240,10 +235,10 @@ const selectedProduct = (option: any) => {
       headerClass: 'text-center',
       cellClass: 'flex justify-center',
       render: (row: any) => {
-        console.log( row )
+        console.log(row);
         return (
           <ImagePopup
-            title={ row?.remarks || ''}
+            title={row?.remarks || ''}
             branchPad={row?.branch_id?.toString().padStart(4, '0') || ''} // 👈 here
             voucher_image={row?.voucher_image || ''}
           />
@@ -251,6 +246,44 @@ const selectedProduct = (option: any) => {
       },
     },
   ];
+
+  // Total Quantity
+  const totalQuantity = tableData?.reduce(
+    (sum, row) =>
+      sum +
+      (row?.purchase_master?.details?.reduce(
+        (subSum: number, detail: any) =>
+          subSum + (Number(detail?.quantity) || 0), // 👉 এখানে fix
+        0,
+      ) || 0),
+    0,
+  );
+
+  // Grand Total
+  const grandTotal = tableData?.reduce((sum, row) => {
+    const transaction = row?.acc_transaction_master?.find((tm: any) =>
+      tm?.acc_transaction_details?.some(
+        (detail: any) => detail?.coa4_id === 17,
+      ),
+    );
+    const creditValue =
+      transaction?.acc_transaction_details?.find(
+        (detail: any) => detail?.coa4_id === 17,
+      )?.credit || 0;
+    return sum + Number(creditValue);
+  }, 0);
+
+  // Total Payment
+  const totalPayment = tableData?.reduce(
+    (sum, row) =>
+      sum +
+      (row?.purchase_master?.details?.reduce(
+        (subSum: number, detail: any) =>
+          subSum + (detail?.purchase_price || 0) * (detail?.quantity || 0),
+        0,
+      ) || 0),
+    0,
+  );
 
   return (
     <div className="">
@@ -277,12 +310,19 @@ const selectedProduct = (option: any) => {
           </div>
           <div className="relative">
             <label htmlFor="">Select Product</label>
-            <div className={`w-[37.6px] h-[37.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-l-[0.5px] absolute top-6 right-0 dark:text-white text-black flex items-center justify-center text-xs z-99 cursor-pointer bg-[#fff] dark:bg-[#24303F]`}
-            onClick={() => selectedProduct(null)}
+            <div
+              className={`w-[37.6px] h-[37.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-l-[0.5px] absolute top-6 right-0 dark:text-white text-black flex items-center justify-center text-xs z-99 cursor-pointer bg-[#fff] dark:bg-[#24303F]`}
+              onClick={() => selectedProduct(null)}
             >
-              <FaRotateRight size={20} className="absolute dark:text-white  cursor-pointer" />
+              <FaRotateRight
+                size={20}
+                className="absolute dark:text-white  cursor-pointer"
+              />
             </div>
-            <ProductDropdown onSelect={selectedProduct} className='appearance-none'  />
+            <ProductDropdown
+              onSelect={selectedProduct}
+              className="appearance-none"
+            />
           </div>
           <div className="sm:grid md:flex gap-x-3 ">
             <div className="w-full">
@@ -317,6 +357,16 @@ const selectedProduct = (option: any) => {
       <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />
+        {/* Summary row */}
+        {tableData.length > 0 && (
+          <div className="mt-2 border-t font-bold">
+            <div className="flex justify-end space-x-8 p-2">
+              <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
+              <div>Total: {thousandSeparator(totalPayment, 0)}</div>
+              <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
