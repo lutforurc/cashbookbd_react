@@ -416,8 +416,9 @@ const TradingBusinessSales = () => {
                       setSaveButtonLoading(false);
                       setFormData((prevFormData) => ({
                         ...prevFormData,
-                        paymentAmt: '',
+                        receivedAmt: '',
                         discountAmt: 0,
+                        vehicleNumber: '',
                         notes: '',
                         invoice_no: '',
                         invoice_date: '',   
@@ -434,6 +435,24 @@ const TradingBusinessSales = () => {
       toast.error('Failed to save invoice!');
     }
   };
+
+
+  //   const initialFormData = {
+  //   mtmId: '',
+  //   account: '',
+  //   accountName: '',
+  //   receivedAmt: '',
+  //   discountAmt: 0,
+  //   salesOrderNumber: '',
+  //   salesOrderText: '',
+  //   purchaseOrderNumber: '',
+  //   purchaseOrderText: '',
+  //   vehicleNumber: '',
+  //   notes: '',
+  //   currentProduct: null,
+  //   searchInvoice: '',
+  //   products: [],
+  // };
 
   const handleInvoiceUpdate = async () => {
     // Check Required fields are not empty
@@ -702,7 +721,7 @@ const TradingBusinessSales = () => {
                 name="vehicleNumber"
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
-                className={'py-1.5 -mt-1'}
+                className={'py-1.5'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {

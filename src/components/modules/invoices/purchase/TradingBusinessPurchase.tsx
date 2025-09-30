@@ -467,11 +467,10 @@ const TradingBusinessPurchase = () => {
             notes: '',
             invoice_no: '',
             invoice_date: '',
-            vehicleNumber: '',
-            purchaseOrderNumber: '',
-            purchaseOrderText: '',
+            vehicleNumber: '',  
             products: [],
           }));
+            setStartDate(null); // <-- UI DatePicker reset
           setSaveButtonLoading(false);
         }, 1000);
       }),
@@ -693,16 +692,18 @@ const TradingBusinessPurchase = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <InputElement
+              <div>
+                <InputElement
                 id="invoice_no"
                 value={formData.invoice_no}
                 name="invoice_no"
                 placeholder={'Enter Invoice Number'}
                 label={'Invoice Number'}
-                className={'py-1 -mt-1'}
+                className={'py-1 '}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'invoice_date')} // Pass the next field's ID
               />
+              </div>
               <div className="w-full">
                 <label className="text-black dark:text-white" htmlFor="">
                   Invoice Date
@@ -723,7 +724,7 @@ const TradingBusinessPurchase = () => {
                 name="vehicleNumber"
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
-                className={'py-1 -mt-1'}
+                className={'py-1'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'paymentAmt')} // Pass the next field's ID
               />
