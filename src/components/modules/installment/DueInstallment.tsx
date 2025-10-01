@@ -24,14 +24,12 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import DueInstallmentsPrint, { InstallmentRow } from './DueInstallmentsPrint';
+import { set } from 'react-datepicker/dist/date_utils';
 
 const DueInstallment = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const installment = useSelector((state: any) => state.installment);
-
-
-  
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -42,6 +40,7 @@ const DueInstallment = (user: any) => {
   const [dueOnly, setDueOnly] = useState<boolean>(true);
   const [status, setStatus] = useState<string | null>(null);
   const [upComingDays, setUpComingDays] = useState<number | null>(7);
+  const [pageSize, setPageSize] = useState<number | null>(10);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
   const [amount, setAmount] = useState<number | string>('');
@@ -50,7 +49,6 @@ const DueInstallment = (user: any) => {
   const [selectedInstallmentId, setSelectedInstallmentId] = useState(null);
   const printRef = useRef<HTMLDivElement>(null);
 
-      
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
@@ -177,6 +175,15 @@ const DueInstallment = (user: any) => {
       setUpComingDays(parsedValue);
     } else {
       setUpComingDays(null); // Reset if input is invalid
+    }
+  };
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const parsedValue = parseInt(value, 10);
+    if (!isNaN(parsedValue)) {
+      setPageSize(parsedValue);
+    } else {
+      setPageSize(10); // Reset if input is invalid
     }
   };
 
@@ -306,12 +313,6 @@ const DueInstallment = (user: any) => {
 
   return (
     <>
-      <button
-        onClick={handlePrint}
-        className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
-      >
-        🖨️ Print Report
-      </button>
       <div>
         <HelmetTitle title="Due Installments" />
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-2 mb-3">
@@ -343,15 +344,27 @@ const DueInstallment = (user: any) => {
               setSelectedDate={setEndDate}
             />
           </div>
-          <InputElement
-            id="upcoming_days"
-            value={upComingDays?.toString() || ''}
-            name="upcoming_days"
-            placeholder={'Upcoming Days'}
-            label={'Upcoming Days'}
-            className={'h-[2.0rem] bg-transparent'}
-            onChange={handleUpcomingChange}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputElement
+              id="upcoming_days"
+              value={upComingDays?.toString() || ''}
+              name="upcoming_days"
+              placeholder="Upcoming Days"
+              label="Upcoming"
+              className="h-8 bg-transparent w-full"
+              onChange={handleUpcomingChange}
+            />
+            <InputElement
+              id="page_size"
+              value={pageSize?.toString() || ''}  // ensure string
+              name="page_size"
+              placeholder="Page Size"
+              label="Page Size"
+              className="h-8 bg-transparent w-full"
+              onChange={handlePageSizeChange}
+            />
+          </div>
+
           <div>
             <DropdownCommon
               id="business_type_id"
@@ -397,18 +410,11 @@ const DueInstallment = (user: any) => {
                 <DueInstallmentsPrint
                   ref={printRef}
                   rows={(tableData as InstallmentRow[]) || []}
-                  branchName={
-                    dropdownData?.find?.((b) => b.id === user?.user?.branch_id)
-                      ?.name
-                  }
-                  startDate={
-                    startDate ? dayjs(startDate).format('DD/MM/YYYY') : ''
-                  }
+                  startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : ''}
                   endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : ''}
                   statusLabel={dueOnly ? 'Due Only' : 'All'}
                   showAll={!dueOnly}
-                  rowsPerPage={5}
-                  user={user}
+                  rowsPerPage={ Number(pageSize)}
                 />
               </div>
             </div>

@@ -18,6 +18,13 @@ const BranchPad = () => {
         </div>
       </div>
       <div className='border-t-2 border-gray-900 -mt-4'></div>
+      <div className='flex justify-between'>
+       <div></div>
+        <div >
+          <span className="font-semibold text-xs">Printed At:</span>{' '}
+          {new Date().toLocaleString()}
+        </div>
+      </div>
     </div>
   );
 };

@@ -26,8 +26,7 @@ export type InstallmentRow = {
 };
 
 type Props = {
-  rows: InstallmentRow[];
-  branchName?: string;
+  rows: InstallmentRow[]; 
   startDate?: string; // e.g. '2025-09-01'
   endDate?: string; // e.g. '2025-09-30'
   statusLabel?: string; // e.g. 'All' / 'Due Only'
@@ -53,8 +52,7 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
   (
     {
-      rows,
-      branchName,
+      rows, 
       startDate,
       endDate,
       statusLabel,
@@ -98,28 +96,6 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
           `}
         </style>
 
-        {/* Screen-only Header (kept for screen, hidden in print) */}
-        {/* <div className="mb-6 no-print">
-          <h1 className="text-2xl font-bold text-center">{title}</h1>
-          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
-            <div>
-              <span className="font-semibold">Branch:</span> {branchName || '-'}
-            </div>
-            <div>
-              <span className="font-semibold">Status:</span>{' '}
-              {statusLabel ?? (showAll ? 'All' : 'Due Only')}
-            </div>
-            <div>
-              <span className="font-semibold">Date Range:</span>{' '}
-              {startDate || '-'} — {endDate || '-'}
-            </div>
-            <div>
-              <span className="font-semibold">Printed At:</span>{' '}
-              {new Date().toLocaleString()}
-            </div>
-          </div>
-        </div> */}
-
         {/* Pages */}
         {pages.map((pageRows, pIdx) => {
           const pageTotal = pageRows.reduce(
@@ -137,15 +113,17 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
               {/* Header repeated per page (prints on every page) */}
               <div className="">
                 <PadPrinting />
-                <h1 className="text-xl font-bold text-center">{title}</h1>
-                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
-                  <div>
-                    <span className="font-semibold">Date Range:</span>{' '}
-                    {startDate || '-'} — {endDate || '-'}
-                  </div>
-                  <div className='text-right'>
-                    <span className="font-semibold">Status:</span>{' '}
-                    {statusLabel ?? (showAll ? 'All' : 'Due Only')}
+                <div>
+                  <h1 className="text-xl font-bold text-center">{title}</h1>
+                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                    <div>
+                      <span className="font-semibold">Date Range:</span>{' '}
+                      {startDate || '-'} — {endDate || '-'}
+                    </div>
+                    <div className="text-right">
+                      <span className="font-semibold">Status:</span>{' '}
+                      {statusLabel ?? (showAll ? 'All' : 'Due Only')}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -154,14 +132,17 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                 <table className="w-full table-fixed border-collapse">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="border border-gray-900 px-2 py-2 w-20">
+                      <th className="border border-gray-900 px-2 py-2 w-12">
                         Sl. No
                       </th>
-                      <th className="border border-gray-900 px-2 py-2">
+                      <th className="text-left border border-gray-900 px-2 py-2">
                         Customer Details
                       </th>
                       <th className="border border-gray-900 px-2 py-2 w-24">
-                        Inst No
+                        <span className="block">Inst. No</span>
+                        <span className="block border-t border-gray-900">
+                          Inst. Date
+                        </span>
                       </th>
                       <th className="border border-gray-900 px-2 py-2 w-40">
                         <div className="text-right">
