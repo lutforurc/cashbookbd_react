@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import dayjs from 'dayjs';
@@ -21,12 +21,17 @@ import { Tooltip } from 'antd';
 import { Popover } from '@headlessui/react';
 import PaymentDetailsModal from './PaymentDetailsModal';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
+import { useReactToPrint } from 'react-to-print';
+import DueInstallmentsPrint, { InstallmentRow } from './DueInstallmentsPrint';
 
 const DueInstallment = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const installment = useSelector((state: any) => state.installment);
+
+
+  
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -43,11 +48,26 @@ const DueInstallment = (user: any) => {
   const [paymentInstallments, setPaymentInstallments] = useState([]);
   const [remarks, setRemarks] = useState('');
   const [selectedInstallmentId, setSelectedInstallmentId] = useState(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
+      
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
   }, []);
+
+  const handlePrint = useReactToPrint({
+    content: () => {
+      if (!printRef.current) {
+        // alert("Nothing to print: Ref not ready");
+        return null;
+      }
+      return printRef.current;
+    },
+    documentTitle: 'Due Report',
+    // onAfterPrint: () => alert('Printed successfully!'),
+    removeAfterPrint: true,
+  });
 
   useEffect(() => {
     if (
@@ -112,13 +132,14 @@ const DueInstallment = (user: any) => {
     // API call this section
     dispatch(installmentReceived(payload))
       .unwrap()
-      .then((response:any) => {
-        const message = response.message || 'Installment received successfully!';
+      .then((response: any) => {
+        const message =
+          response.message || 'Installment received successfully!';
         dispatch(getFilterInstallment(payloads));
         setTimeout(() => {
           if (response.success) {
             toast.success(message);
-          }else{
+          } else {
             toast.info(message);
           }
         }, 100);
@@ -284,94 +305,131 @@ const DueInstallment = (user: any) => {
   }, 0);
 
   return (
-    <div>
-      <HelmetTitle title="Due Installments" />
-      <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-2 mb-3">
-        <div>
-          <label>Select Branch</label>
-          {branchDdlData.isLoading && <Loader />}
-          <BranchDropdown
-            defaultValue={user?.user?.branch_id}
-            onChange={handleBranchChange}
-            className="w-full font-medium text-sm p-1.5"
-            branchDdl={dropdownData}
+    <>
+      <button
+        onClick={handlePrint}
+        className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
+      >
+        🖨️ Print Report
+      </button>
+      <div>
+        <HelmetTitle title="Due Installments" />
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-2 mb-3">
+          <div>
+            <label>Select Branch</label>
+            {branchDdlData.isLoading && <Loader />}
+            <BranchDropdown
+              defaultValue={user?.user?.branch_id}
+              onChange={handleBranchChange}
+              className="w-full font-medium text-sm p-1.5"
+              branchDdl={dropdownData}
+            />
+          </div>
+          <div>
+            <label>Start Date</label>
+            <InputDatePicker
+              setCurrentDate={setStartDate}
+              className="font-medium text-sm w-full h-8"
+              selectedDate={startDate}
+              setSelectedDate={setStartDate}
+            />
+          </div>
+          <div>
+            <label>End Date</label>
+            <InputDatePicker
+              setCurrentDate={setEndDate}
+              className="font-medium text-sm w-full h-8"
+              selectedDate={endDate}
+              setSelectedDate={setEndDate}
+            />
+          </div>
+          <InputElement
+            id="upcoming_days"
+            value={upComingDays?.toString() || ''}
+            name="upcoming_days"
+            placeholder={'Upcoming Days'}
+            label={'Upcoming Days'}
+            className={'h-[2.0rem] bg-transparent'}
+            onChange={handleUpcomingChange}
           />
-        </div>
-        <div>
-          <label>Start Date</label>
-          <InputDatePicker
-            setCurrentDate={setStartDate}
-            className="font-medium text-sm w-full h-8"
-            selectedDate={startDate}
-            setSelectedDate={setStartDate}
-          />
-        </div>
-        <div>
-          <label>End Date</label>
-          <InputDatePicker
-            setCurrentDate={setEndDate}
-            className="font-medium text-sm w-full h-8"
-            selectedDate={endDate}
-            setSelectedDate={setEndDate}
-          />
-        </div>
-        <InputElement
-          id="upcoming_days"
-          value={upComingDays?.toString() || ''}
-          name="upcoming_days"
-          placeholder={'Upcoming Days'}
-          label={'Upcoming Days'}
-          className={'h-[2.0rem] bg-transparent'}
-          onChange={handleUpcomingChange}
-        />
-        <div>
-          <DropdownCommon
-            id="business_type_id"
-            name={'business_type_id'}
-            label="Select Status"
-            onChange={handleOnStatusChange}
-            defaultValue={''}
-            className="h-[2.0rem] bg-transparent"
-            data={InstallmentStatus}
-          />
-        </div>
-
-        <div className="flex flex-col justify-center md:mt-6">
-          <ToggleSwitch
-            label="Show All"
-            checked={!dueOnly}
-            onChange={handleDueToggle}
-          />
-        </div>
-      </div>
-      <div className="overflow-y-auto">
-        {installment.isLoading ? (
-          <Loader />
-        ) : (
-          <>
-            <Table columns={columns} data={tableData || []} />
-            <div className="text-right font-semibold mt-2">
-              Total {columnToSum.replace(/_/g, ' ')}:{' '}
-              {totalSum ? thousandSeparator(totalSum, 0) : 0}
+          <div>
+            <DropdownCommon
+              id="business_type_id"
+              name={'business_type_id'}
+              label="Select Status"
+              onChange={handleOnStatusChange}
+              defaultValue={''}
+              className="h-[2.0rem] bg-transparent"
+              data={InstallmentStatus}
+            />
+          </div>
+          <div className="flex flex-row items-center justify-center md:mt-6">
+            <div className="-ml-14 mr-3">
+              <button
+                onClick={handlePrint}
+                className="border border-blue-600 text-white px-3 py-1 rounded mb-4"
+              >
+                🖨️
+              </button>
             </div>
-          </>
-        )}
-        <InstallmentModal
-          open={showModal}
-          onClose={() => setShowModal(false)}
-          onSave={handleSave}
-          amount={amount}
-          setAmount={setAmount}
-          remarks={remarks}
-          setRemarks={setRemarks}
-        />
-        <PaymentDetailsModal
-          open={showPaymentsModal}
-          onClose={() => setShowPaymentsModal(false)}
-          installments={paymentInstallments}
-        />
+            <div className="-mt-4">
+              <ToggleSwitch
+                label="Show All"
+                checked={!dueOnly}
+                onChange={handleDueToggle}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="overflow-y-auto">
+          {installment.isLoading ? (
+            <Loader />
+          ) : (
+            <div>
+              <Table columns={columns} data={tableData || []} />
+              <div className="text-right font-semibold mt-2">
+                Total {columnToSum.replace(/_/g, ' ')}:{' '}
+                {totalSum ? thousandSeparator(totalSum, 0) : 0}
+              </div>
+
+              {/* === Hidden Print Component === */}
+              <div className="hidden">
+                <DueInstallmentsPrint
+                  ref={printRef}
+                  rows={(tableData as InstallmentRow[]) || []}
+                  branchName={
+                    dropdownData?.find?.((b) => b.id === user?.user?.branch_id)
+                      ?.name
+                  }
+                  startDate={
+                    startDate ? dayjs(startDate).format('DD/MM/YYYY') : ''
+                  }
+                  endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : ''}
+                  statusLabel={dueOnly ? 'Due Only' : 'All'}
+                  showAll={!dueOnly}
+                  rowsPerPage={5}
+                  user={user}
+                />
+              </div>
+            </div>
+          )}
+          <InstallmentModal
+            open={showModal}
+            onClose={() => setShowModal(false)}
+            onSave={handleSave}
+            amount={amount}
+            setAmount={setAmount}
+            remarks={remarks}
+            setRemarks={setRemarks}
+          />
+          <PaymentDetailsModal
+            open={showPaymentsModal}
+            onClose={() => setShowPaymentsModal(false)}
+            installments={paymentInstallments}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

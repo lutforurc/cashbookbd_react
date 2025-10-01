@@ -11,6 +11,26 @@ function formatDate(dateString: string) {
 
 export { formatDate }
 
+
+function formatBdShortDate(dateString: string): string {
+  if (!dateString) return "-";
+
+  try {
+    const [day, month, year] = dateString.split("/");
+    if (!day || !month || !year) return dateString;
+
+    // Only last two digits of year
+    const shortYear = year.slice(-2);
+
+    return `${day}/${month}/${shortYear}`;
+  } catch {
+    return dateString;
+  }
+}
+
+export { formatBdShortDate };
+
+
 function formatDateBdToUsd(dateString: string) {
     if (dateString) {
         const [day, month, year] = dateString.split('/');
@@ -21,3 +41,4 @@ function formatDateBdToUsd(dateString: string) {
 }
 
 export { formatDateBdToUsd }
+

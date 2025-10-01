@@ -103,16 +103,7 @@ function App() {
           </Route>
 
           {/* Admin + Authenticated User Section */}
-          <Route
-            path="/"
-            element={
-              <DefaultLayout
-                isLoggedIn={isLoggedIn}
-                isLoading={isLoading}
-                user={me}
-              />
-            }
-          >
+          <Route path="/" element={<DefaultLayout isLoggedIn={isLoggedIn} isLoading={isLoading} user={me} />}>
             <Route path={routes.main} element={<Dashboard />} />
             <Route path={routes.dashboard} element={<Dashboard />} />
             <Route path={routes.calendar} element={<Calendar />} />
@@ -126,14 +117,8 @@ function App() {
             <Route path={routes.coal2_list} element={<CoaL2 />} />
             <Route path={routes.coal3_list} element={<CoaL3 />} />
             <Route path={routes.coal4_list} element={<CoaL4 />} />
-            <Route
-              path={routes.supplier_customer_list}
-              element={<CustomerSupplier />}
-            />
-            <Route
-              path={routes.supplier_customer_add}
-              element={<AddCustomerSupplier />}
-            />
+            <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
+            <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
 
             {/* UI */}
             <Route path={routes.buttons} element={<Buttons />} />
@@ -145,10 +130,7 @@ function App() {
             <Route path={routes.branch_edit} element={<AddBranch />} />
             <Route path={routes.user_list} element={<UserList />} />
             <Route path={routes.user_edit} element={<EditUser user={me} />} />
-            <Route
-              path={routes.installment_list}
-              element={<InstallmentDetails />}
-            />
+            <Route path={routes.installment_list} element={<InstallmentDetails />} />
 
             {/* Day Close */}
             <Route path={routes.day_close} element={<Dayclose />} />
@@ -160,10 +142,7 @@ function App() {
             <Route path={routes.category_edit} element={<EditCategory />} />
 
             {/* Transactions */}
-            <Route
-              path={routes.cash_received}
-              element={<CashReceivedIndex />}
-            />
+            <Route path={routes.cash_received} element={<CashReceivedIndex />} />
             <Route path={routes.cash_payment} element={<CashPaymentIndex />} />
             <Route path={routes.bank_receive} element={<BankReceived />} />
             <Route path={routes.bank_payment} element={<BankPayment />} />
@@ -175,80 +154,33 @@ function App() {
             <Route path={routes.product_edit} element={<AddProduct />} />
 
             {/* Reports */}
-            <Route
-              path={routes.report_date_wise_total}
-              element={<DateWiseData user={me} />}
-            />
-            <Route
-              path={routes.report_cashbook}
-              element={<CashBook user={me} />}
-            />
-            <Route
-              path={routes.due_installment_list}
-              element={<DueInstallment user={me} />}
-            />
-            <Route
-              path={routes.employee_wise_installment}
-              element={<StaffWiseDueInstallment user={me} />}
-            />
-            <Route
-              path={routes.report_due_list}
-              element={<DueList user={me} />}
-            />
+            <Route path={routes.report_date_wise_total} element={<DateWiseData user={me} />} />
+            <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
+            <Route path={routes.due_installment_list} element={<DueInstallment user={me} />} />
+            <Route path={routes.employee_wise_installment} element={<StaffWiseDueInstallment user={me} />} />
+            <Route path={routes.report_due_list} element={<DueList user={me} />} />
             <Route path={routes.report_ledger} element={<Ledger user={me} />} />
-            <Route
-              path={routes.report_labour_ledger}
-              element={<LabourLedger user={me} />}
-            />
-            <Route
-              path={routes.purchase_ledger}
-              element={<PurchaseLedger user={me} />}
-            />
-            <Route
-              path={routes.sales_ledger}
-              element={<SalesLedger user={me} />}
-            />
+            <Route path={routes.report_labour_ledger} element={<LabourLedger user={me} />} />
+            <Route path={routes.purchase_ledger} element={<PurchaseLedger user={me} />} />
+            <Route path={routes.sales_ledger} element={<SalesLedger user={me} />} />
             <Route path={routes.mitch_match} element={<MitchMatch user={me} />} />
             <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
-            <Route
-              path={routes.report_product_stock}
-              element={<ProductStock user={me} />}
-            />
-            <Route
-              path={routes.cat_wise_in_out}
-              element={<CatWiseInOut user={me} />}
-            />
+            <Route path={routes.report_product_stock} element={<ProductStock user={me} />} />
+            <Route path={routes.cat_wise_in_out} element={<CatWiseInOut user={me} />} />
 
             {/* Orders */}
             <Route path={routes.order_list} element={<Orders />} />
             <Route path={routes.order_add} element={<AddOrder user={me} />} />
-            <Route
-              path={routes.order_avg_price}
-              element={<AveragePrice user={me} />}
-            />
+            <Route path={routes.order_avg_price} element={<AveragePrice user={me} />} />
 
             {/* Utilities */}
-            <Route
-              path={routes.image_upload}
-              element={<MultipleImageUpload user={me} />}
-            />
-            <Route
-              path={routes.bulk_upload}
-              element={<BulkImageUpload user={me} />}
-            />
-            <Route
-              path={routes.admin_voucher_approval}
-              element={<VoucherApproval />}
-            />
+            <Route path={routes.image_upload} element={<MultipleImageUpload user={me} />} />
+            <Route path={routes.bulk_upload} element={<BulkImageUpload user={me} />} />
+            <Route path={routes.admin_voucher_approval} element={<VoucherApproval />} />
+         
 
-            <Route
-              path={routes.admin_remove_approval}
-              element={<RemoveApproval />}
-            />
-            <Route
-              path={routes.admin_change_voucher_type}
-              element={<ChangeVoucherType />}
-            />
+            <Route path={routes.admin_remove_approval} element={<RemoveApproval />} />
+            <Route path={routes.admin_change_voucher_type} element={<ChangeVoucherType />} />
             <Route path={routes.admin_change_date} element={<ChangeDate />} />
 
             {/* Roles & Permissions */}
@@ -267,16 +199,10 @@ function App() {
             {/* Invoices */}
             <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
             <Route path={routes.inv_sales} element={<SalesIndex />} />
-            <Route
-              path={routes.inv_labour}
-              element={<ConstructionLabourInvoice />}
-            />
+            <Route path={routes.inv_labour} element={<ConstructionLabourInvoice />} />
 
             {/* Also show customer dashboard if admin wants */}
-            <Route
-              path={routes.customer_dashboard}
-              element={<CustomerDashboard />}
-            />
+            <Route path={routes.customer_dashboard} element={<CustomerDashboard />} />
           </Route>
 
           {/* Public Routes */}
