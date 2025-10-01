@@ -1,10 +1,6 @@
 import React from 'react';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import {
-  formatBdShortDate,
-  formatDate,
-} from '../../utils/utils-functions/formatDate';
-import { useSelector } from 'react-redux';
+import {formatBdShortDate} from '../../utils/utils-functions/formatDate';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 
 export type InstallmentRow = {
@@ -26,7 +22,7 @@ export type InstallmentRow = {
 };
 
 type Props = {
-  rows: InstallmentRow[]; 
+  rows: InstallmentRow[];
   startDate?: string; // e.g. '2025-09-01'
   endDate?: string; // e.g. '2025-09-30'
   statusLabel?: string; // e.g. 'All' / 'Due Only'
@@ -52,7 +48,7 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
   (
     {
-      rows, 
+      rows,
       startDate,
       endDate,
       statusLabel,
@@ -128,7 +124,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div>
               </div>
 
-              <div className="w-full overflow-hidden border border-gray-900 rounded">
+              <div className="w-full overflow-hidden border border-gray-900 rounded rounded-bl-none rounded-br-none">
                 <table className="w-full table-fixed border-collapse">
                   <thead className="bg-gray-100">
                     <tr>
@@ -173,9 +169,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                               {row?.father && <div>{row.father}</div>}
                               <div>{row?.customer_address ?? '-'}</div>
                               <div>{row?.customer_mobile ?? '-'}</div>
-                              {row?.employee && (
-                                <div className="">{row.employee}</div>
-                              )}
+                              {row?.employee && (<div className="">{row.employee}</div>)}
                             </div>
                           </td>
                           <td className="border border-gray-900 px-2 py-1 text-center">
@@ -224,7 +218,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                       >
                         Page {pIdx + 1} Total:
                       </td>
-                      <td className="border border-gray-900 px-2 py-2">
+                      <td className="border border-gray-900 px-2 py-2 ">
                         <div className="text-right">
                           <span className="block">
                             {thousandSeparator(Number(pageTotal.amount), 0)}
@@ -249,15 +243,19 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
         })}
 
         {/* Grand Total (after all pages) */}
-        <div className="mt-4 w-full sm:w-auto ml-auto">
-          <div className="border border-gray-900 rounded overflow-hidden sm:ml-auto">
+        <div className="w-full sm:w-auto ml-auto">
+          <div className="border border-gray-900 overflow-hidden sm:ml-auto">
             <table className="w-full table-fixed border-collapse">
-              <tbody>
-                <tr className="font-semibold">
-                  <td className="border border-gray-900 px-2 py-2 text-right">
-                    Total:
+              <thead className="bg-gray-100">
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="border-l border-r border-b border-gray-900 px-2 py-2 text-right font-semibold"
+                  >
+                    Grand Total:
                   </td>
-                  <td className="border border-gray-900 px-2 py-2">
+
+                  <td className="border-l border-r border-b border-gray-900 px-2 py-2 w-40">
                     <div className="text-right">
                       <span className="block">
                         {thousandSeparator(Number(grand.amount), 0)}
@@ -271,7 +269,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                     </div>
                   </td>
                 </tr>
-              </tbody>
+              </thead>
             </table>
           </div>
         </div>
