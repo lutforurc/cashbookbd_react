@@ -378,12 +378,6 @@ const DueInstallment = (user: any) => {
           </div>
           <div className="flex flex-row items-center justify-center md:mt-6">
             <div className="-ml-14 mr-3">
-              {/* <button
-                onClick={handlePrint}
-                className="border border-blue-600 text-white px-3 py-1 rounded mb-4"
-              >
-              🖨️
-              </button> */}
               <PrintButton onClick={handlePrint} className='ml-4 mt-0 md:top-6 text-white bg-gray-700 h-8' />
             </div>
             <div className="">

@@ -80,9 +80,9 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
             @media print {
               @page {
                 size: A4 portrait;
-                margin-top: 10mm;   /* top margin */
+                margin-top: 6mm;   /* top margin */
                 margin-right: 6mm; /* right margin */
-                margin-bottom: 10mm;/* bottom margin */
+                margin-bottom: 8mm;/* bottom margin */
                 margin-left: 10mm;  /* left margin */
               }
               .no-print { display: none !important; }

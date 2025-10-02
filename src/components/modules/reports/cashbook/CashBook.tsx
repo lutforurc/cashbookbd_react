@@ -1,17 +1,24 @@
-import { useEffect, useState } from 'react';
-import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ButtonLoading,
+  PrintButton,
+} from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCashBook } from './cashBookSlice';
-import { FiBook, FiCheckCircle, FiEdit, FiTrash2, FiX } from 'react-icons/fi';
+import { FiBook, FiCheckCircle, FiEdit, FiTrash2 } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from './../../../utils/utils-functions/thousandSeparator';
+import DueInstallmentsPrint from '../../installment/DueInstallmentsPrint';
+import CashBooPrint from './CashBooPrint';
+import { useReactToPrint } from 'react-to-print';
+import InputElement from '../../../utils/fields/InputElement';
 
 const CashBook = (user: any) => {
   const dispatch = useDispatch();
@@ -24,8 +31,11 @@ const CashBook = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
+  const [perPage, setPerPage] = useState<number>(8);
+  const [fontSize, setFontSize] = useState<number>(8);
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   interface OptionType {
     value: string;
@@ -80,6 +90,37 @@ const CashBook = (user: any) => {
   }, [branchDdlData?.protectedData?.data]);
 
   const handleCheckBtnClick = () => {};
+  const handlePrint = useReactToPrint({
+    content: () => {
+      if (!printRef.current) {
+        // alert("Nothing to print: Ref not ready");
+        return null;
+      }
+      return printRef.current;
+    },
+    documentTitle: 'Due Report',
+    // onAfterPrint: () => alert('Printed successfully!'),
+    removeAfterPrint: true,
+  });
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setPerPage(value);
+    } else {
+      setPerPage(10); // Reset if input is invalid
+    }
+  };
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setFontSize(value);
+    } else {
+      setFontSize(10); // Reset if input is invalid
+    }
+  };
+
+
 
   const columns = [
     {
@@ -93,7 +134,7 @@ const CashBook = (user: any) => {
     {
       key: 'vr_date',
       header: 'Vr Date',
-      width: '80px',
+      width: '90px',
       headerClass: 'text-center',
       cellClass: 'text-center !px-1',
     },
@@ -262,20 +303,62 @@ const CashBook = (user: any) => {
               setSelectedDate={setEndDate}
             />
           </div>
-          <div className="flex w-full items-end">
+          <div className="flex w-full">
+            <div className="mr-2"> 
+              <InputElement
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type='text'
+                className="font-medium text-sm h-9 w-12"
+              />
+            </div>
+            <div className="mr-2"> 
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type='text'
+                className="font-medium text-sm h-9 w-12"
+              />
+            </div>
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
               className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem]"
             />
-            <PrintButton onClick={() => window.print()} label="Print" className="ml-2 mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem]" />
+            <PrintButton
+              // onClick={() => window.print()}
+              onClick={handlePrint}
+              label="Print"
+              className="ml-2 mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem]"
+            />
           </div>
         </div>
       </div>
       <div className="overflow-y-auto">
         {cashBookData.isLoading ? <Loader /> : ''}
         <Table columns={columns} data={tableData || []} />
+
+        {/* === Hidden Print Component === */}
+        <div className="hidden">
+          <CashBooPrint
+            ref={printRef}
+            rows={tableData || []} // আপনার data
+            startDate={
+              startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined
+            }
+            endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
+            title="Cash Book"
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
+          />
+        </div>
       </div>
     </div>
   );

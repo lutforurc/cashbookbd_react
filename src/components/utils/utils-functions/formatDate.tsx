@@ -12,7 +12,7 @@ function formatDate(dateString: string) {
 export { formatDate }
 
 
-function formatBdShortDate(dateString: string): string {
+function formatBdShortDate(dateString?: string): string {
   if (!dateString) return "-";
 
   try {
