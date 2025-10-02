@@ -1,6 +1,6 @@
 import React from 'react';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import {formatBdShortDate} from '../../utils/utils-functions/formatDate';
+import { formatBdShortDate } from '../../utils/utils-functions/formatDate';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 
 export type InstallmentRow = {
@@ -131,19 +131,31 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                 <table className="w-full table-fixed border-collapse">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-12">
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-12"
+                      >
                         #
                       </th>
-                      <th style={{ fontSize: fs }} className="text-left border border-gray-900 px-2 py-2">
+                      <th
+                        style={{ fontSize: fs }}
+                        className="text-left border border-gray-900 px-2 py-2"
+                      >
                         Customer Details
                       </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-24">
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-24"
+                      >
                         <span className="block">Inst. No</span>
                         <span className="block border-t border-gray-900">
                           Inst. Date
                         </span>
                       </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-40">
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-40"
+                      >
                         <div className="text-right">
                           <span className="block">Inst. Amount</span>
                           <span className="block border-t border-gray-900">
@@ -161,21 +173,32 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                     {pageRows.length ? (
                       pageRows.map((row, idx) => (
                         <tr key={idx} className="avoid-break align-top">
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1 text-center"
+                          >
                             {idx + 1 + pIdx * rowsPerPage}
                           </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                              <div className="leading-normal">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1"
+                          >
+                            <div className="leading-normal">
                               <div className="font-medium">
-                                {row?.customer_name ?? '-'}
+                                {row?.customer_name ?? ''}
                               </div>
                               {row?.father && <div>{row.father}</div>}
-                              <div>{row?.customer_address ?? '-'}</div>
-                              <div>{row?.customer_mobile ?? '-'}</div>
-                              {row?.employee && (<div className="">{row.employee}</div>)}
+                              <div>{row?.customer_address ?? ''}</div>
+                              <div>{row?.customer_mobile ?? ''}</div>
+                              {row?.employee && (
+                                <div className="">{row.employee}</div>
+                              )}
                             </div>
                           </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1 text-center"
+                          >
                             <div className="text-right">
                               <span className="block">
                                 {row?.installment_no ?? '-'}
@@ -185,7 +208,10 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                               </span>
                             </div>
                           </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1"
+                          >
                             <div className="text-right">
                               <span className="block">
                                 {thousandSeparator(Number(row?.amount), 0)}
@@ -214,7 +240,10 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
 
                   {/* Per-page subtotal */}
                   <tfoot>
-                    <tr style={{ fontSize: fs }}  className="bg-gray-50 font-semibold">
+                    <tr
+                      style={{ fontSize: fs }}
+                      className="bg-gray-50 font-semibold"
+                    >
                       <td
                         className="border border-gray-900 px-2 py-2 text-right"
                         colSpan={3}

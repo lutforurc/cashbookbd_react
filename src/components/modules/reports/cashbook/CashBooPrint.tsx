@@ -156,7 +156,7 @@ const CashBooPrint = React.forwardRef<HTMLDivElement, Props>(
                             {row?.sl_number == 0 ? '' : row?.sl_number}
                           </td>
 
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
+                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center leading-normal">
                             <div className={`text-[${fs}px]`}>
                               {row?.vr_no ? "#" + Number(row.vr_no.toString().split("-")[1].slice(-5)) : ""}
                             </div>
@@ -165,8 +165,9 @@ const CashBooPrint = React.forwardRef<HTMLDivElement, Props>(
                             </div>
                           </td>
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                            <div className="w-full max-w-4xl">
-                              <div className="truncate">
+                            <div className="w-full max-w-4xl leading-normal">
+                               
+                              <div className="truncate leading-normal">
                                 <span
                                   className={`text-[${fs}px]`}
                                   dangerouslySetInnerHTML={{
