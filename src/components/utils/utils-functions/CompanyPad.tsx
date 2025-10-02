@@ -27,7 +27,7 @@ const CompanyPad = () => {
           {new Date().toLocaleString()}
         </div>
       </div>
-      <div className="">Branch: {settings?.branch?.address}</div>
+      <div className="">Address: {settings?.branch?.address}</div>
     </div>
   );
 };
