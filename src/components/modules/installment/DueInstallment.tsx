@@ -8,7 +8,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
 import InputDatePicker from '../../utils/fields/DatePicker';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, ButtonPrint, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Table from '../../utils/others/Table';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { InstallmentStatus } from '../../utils/fields/DataConstant';
@@ -40,7 +40,7 @@ const DueInstallment = (user: any) => {
   const [dueOnly, setDueOnly] = useState<boolean>(true);
   const [status, setStatus] = useState<string | null>(null);
   const [upComingDays, setUpComingDays] = useState<number | null>(7);
-  const [pageSize, setPageSize] = useState<number | null>(10);
+  const [pageSize, setPageSize] = useState<number | null>(5);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
   const [amount, setAmount] = useState<number | string>('');
@@ -378,14 +378,15 @@ const DueInstallment = (user: any) => {
           </div>
           <div className="flex flex-row items-center justify-center md:mt-6">
             <div className="-ml-14 mr-3">
-              <button
+              {/* <button
                 onClick={handlePrint}
                 className="border border-blue-600 text-white px-3 py-1 rounded mb-4"
               >
-                🖨️
-              </button>
+              🖨️
+              </button> */}
+              <PrintButton onClick={handlePrint} className='ml-4 mt-0 md:top-6 text-white bg-gray-700 h-8' />
             </div>
-            <div className="-mt-4">
+            <div className="">
               <ToggleSwitch
                 label="Show All"
                 checked={!dueOnly}

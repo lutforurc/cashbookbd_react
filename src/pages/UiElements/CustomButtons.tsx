@@ -79,6 +79,35 @@ export const ButtonSuccess: React.FC<ButtonProps> = ({
 };
 
 
+type PrintButtonProps = {
+  label?: string;  // optional
+  onClick?: (() => void) | React.MouseEventHandler<HTMLButtonElement>; // flexible
+  className?: string; // optional
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+};
+
+
+export const PrintButton: React.FC<PrintButtonProps> = ({
+  label = '',
+  onClick = () => {},
+  className = '',
+  type = 'button',
+}) => {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm px-5 text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center
+                  ${className}`}
+    >
+      🖨️ {label}
+    </button>
+  );
+};
+
+
+
 const Spinner = () => (
   <svg
   className="h-5 w-5 animate-spin text-white mr-2"

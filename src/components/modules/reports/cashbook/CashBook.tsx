@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -248,7 +248,7 @@ const CashBook = (user: any) => {
             <label htmlFor="">Start Date</label>
             <InputDatePicker
               setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full h-8"
+              className="font-medium text-sm w-full h-9"
               selectedDate={startDate}
               setSelectedDate={setStartDate}
             />
@@ -257,18 +257,19 @@ const CashBook = (user: any) => {
             <label htmlFor="">End Date</label>
             <InputDatePicker
               setCurrentDate={handleEndDate}
-              className="font-medium text-sm w-full h-8"
+              className="font-medium text-sm w-full h-9"
               selectedDate={endDate}
               setSelectedDate={setEndDate}
             />
           </div>
-          <div className="w-full">
+          <div className="flex w-full items-end">
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
-              className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
+              className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem]"
             />
+            <PrintButton onClick={() => window.print()} label="Print" className="ml-2 mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem]" />
           </div>
         </div>
       </div>
