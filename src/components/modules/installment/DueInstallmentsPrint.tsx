@@ -30,6 +30,7 @@ type Props = {
 
   /** How many data rows per printed page (header + subtotal included). */
   rowsPerPage?: number; // default 20
+  fontSize?: number; // default 8
 
   /** Optional custom titles */
   title?: string; // default 'Due Installments Report'
@@ -54,12 +55,14 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
       statusLabel,
       showAll,
       rowsPerPage = 2,
+      fontSize = 8,
       title = 'Due Installments Report',
     },
     ref,
   ) => {
     // Split into pages
     const pages = chunkRows(rows || [], rowsPerPage);
+    const fs = Number.isFinite(fontSize) ? fontSize! : 9;
 
     // Grand totals
     const grand = rows.reduce(
@@ -128,19 +131,19 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                 <table className="w-full table-fixed border-collapse">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="border border-gray-900 px-2 py-2 w-12">
-                        Sl. No
+                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-12">
+                        #
                       </th>
-                      <th className="text-left border border-gray-900 px-2 py-2">
+                      <th style={{ fontSize: fs }} className="text-left border border-gray-900 px-2 py-2">
                         Customer Details
                       </th>
-                      <th className="border border-gray-900 px-2 py-2 w-24">
+                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-24">
                         <span className="block">Inst. No</span>
                         <span className="block border-t border-gray-900">
                           Inst. Date
                         </span>
                       </th>
-                      <th className="border border-gray-900 px-2 py-2 w-40">
+                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-40">
                         <div className="text-right">
                           <span className="block">Inst. Amount</span>
                           <span className="block border-t border-gray-900">
@@ -158,11 +161,11 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                     {pageRows.length ? (
                       pageRows.map((row, idx) => (
                         <tr key={idx} className="avoid-break align-top">
-                          <td className="border border-gray-900 px-2 py-1 text-center">
-                            {row?.sl_number ?? '-'}
+                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
+                            {idx + 1 + pIdx * rowsPerPage}
                           </td>
-                          <td className="border border-gray-900 px-2 py-1">
-                            <div className="space-y-0.5">
+                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                              <div className="leading-normal">
                               <div className="font-medium">
                                 {row?.customer_name ?? '-'}
                               </div>
@@ -172,7 +175,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                               {row?.employee && (<div className="">{row.employee}</div>)}
                             </div>
                           </td>
-                          <td className="border border-gray-900 px-2 py-1 text-center">
+                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
                             <div className="text-right">
                               <span className="block">
                                 {row?.installment_no ?? '-'}
@@ -182,7 +185,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                               </span>
                             </div>
                           </td>
-                          <td className="border border-gray-900 px-2 py-1">
+                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                             <div className="text-right">
                               <span className="block">
                                 {thousandSeparator(Number(row?.amount), 0)}
@@ -211,7 +214,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
 
                   {/* Per-page subtotal */}
                   <tfoot>
-                    <tr className="bg-gray-50 font-semibold">
+                    <tr style={{ fontSize: fs }}  className="bg-gray-50 font-semibold">
                       <td
                         className="border border-gray-900 px-2 py-2 text-right"
                         colSpan={3}
@@ -245,9 +248,9 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
         {/* Grand Total (after all pages) */}
         <div className="w-full sm:w-auto ml-auto">
           <div className="border border-gray-900 overflow-hidden sm:ml-auto">
-            <table className="w-full table-fixed border-collapse">
+            <table className="w-full table-fixed border-collapse border-top-0">
               <thead className="bg-gray-100">
-                <tr>
+                <tr style={{ fontSize: fs }} className="font-semibold">
                   <td
                     colSpan={3}
                     className="border-l border-r border-b border-gray-900 px-2 py-2 text-right font-semibold"
@@ -275,7 +278,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
         </div>
 
         {/* Optional note */}
-        <div className="mt-4 text-xs text-gray-900">
+        <div style={{ fontSize: fs }} className="mt-4 text-xs text-gray-900">
           * This document is system generated.
         </div>
       </div>

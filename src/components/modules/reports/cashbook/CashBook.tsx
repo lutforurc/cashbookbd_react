@@ -113,6 +113,7 @@ const CashBook = (user: any) => {
   };
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
+
     if (!isNaN(value)) {
       setFontSize(value);
     } else {
@@ -332,8 +333,7 @@ const CashBook = (user: any) => {
               label="Run"
               className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem]"
             />
-            <PrintButton
-              // onClick={() => window.print()}
+            <PrintButton 
               onClick={handlePrint}
               label="Print"
               className="ml-2 mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem]"

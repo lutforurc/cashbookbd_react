@@ -41,6 +41,7 @@ const DueInstallment = (user: any) => {
   const [status, setStatus] = useState<string | null>(null);
   const [upComingDays, setUpComingDays] = useState<number | null>(7);
   const [pageSize, setPageSize] = useState<number | null>(5);
+    const [fontSize, setFontSize] = useState<number>(10);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
   const [amount, setAmount] = useState<number | string>('');
@@ -186,6 +187,17 @@ const DueInstallment = (user: any) => {
       setPageSize(10); // Reset if input is invalid
     }
   };
+
+    const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+
+    if (!isNaN(value)) {
+      setFontSize(value);
+    } else {
+      setFontSize(10); // Reset if input is invalid
+    }
+  };
+
 
   const columns = [
     {
@@ -344,28 +356,7 @@ const DueInstallment = (user: any) => {
               setSelectedDate={setEndDate}
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputElement
-              id="upcoming_days"
-              value={upComingDays?.toString() || ''}
-              name="upcoming_days"
-              placeholder="Upcoming Days"
-              label="Upcoming"
-              className="h-8 bg-transparent w-full"
-              onChange={handleUpcomingChange}
-            />
-            <InputElement
-              id="page_size"
-              value={pageSize?.toString() || ''}  // ensure string
-              name="page_size"
-              placeholder="Page Size"
-              label="Page Size"
-              className="h-8 bg-transparent w-full"
-              onChange={handlePageSizeChange}
-            />
-          </div>
-
-          <div>
+           <div>
             <DropdownCommon
               id="business_type_id"
               name={'business_type_id'}
@@ -375,6 +366,36 @@ const DueInstallment = (user: any) => {
               className="h-[2.0rem] bg-transparent"
               data={InstallmentStatus}
             />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <InputElement
+              id="upcoming_days"
+              value={upComingDays?.toString() || ''}
+              name="upcoming_days"
+              placeholder="Upcoming"
+              label="Soon"
+              className="h-8 bg-transparent w-14"
+              onChange={handleUpcomingChange}
+            />
+            <InputElement
+              id="page_size"
+              value={pageSize?.toString() || ''}  // ensure string
+              name="page_size"
+              placeholder="Rows"
+              label="Rows"
+              className="h-8 bg-transparent w-full"
+              onChange={handlePageSizeChange}
+            />
+            <InputElement
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type='text'
+                className="font-medium text-sm h-8 w-12"
+              />
           </div>
           <div className="flex flex-row items-center justify-center md:mt-6">
             <div className="-ml-14 mr-3">
@@ -410,6 +431,7 @@ const DueInstallment = (user: any) => {
                   statusLabel={dueOnly ? 'Due Only' : 'All'}
                   showAll={!dueOnly}
                   rowsPerPage={ Number(pageSize)}
+                  fontSize={Number(fontSize)}
                 />
               </div>
             </div>
