@@ -8,7 +8,6 @@ interface ledgerParam {
   startDate: string;
   endDate: string;
 }
-   
 
 
 export const requisitionComparison = ({ branchId, startDate, endDate }: ledgerParam) => (dispatch: any) => {
@@ -56,21 +55,18 @@ export const requisitionItem = (search = '') => async (dispatch: any) => {
   }
 };
 
-interface LedgerState {
+interface RequisitionState {
   isLoading: boolean;
   errors: string | null;
   data: any;
 }
 
-const initialState: LedgerState = {
+const initialState: RequisitionState = {
   isLoading: false,
   errors: null,
   data: {},
 };
-const ledgerReducer = (
-  state: LedgerState = initialState,
-  action: any
-): LedgerState => {
+const requisitionReducer = (state: RequisitionState = initialState, action: any): RequisitionState => {
   switch (action.type) {
     case REQUISITION_DATA_LIST_PENDING:
       return {
@@ -100,4 +96,4 @@ const ledgerReducer = (
   }
 };
 
-export default ledgerReducer;
+export default requisitionReducer;

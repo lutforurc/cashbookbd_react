@@ -69,14 +69,8 @@ const RequisitionForm = () => {
   }, []);
 
   interface FormData {
-    mtmId: string;
-    account: string;
-    accountName: string;
-    invoice_no: string;
-    invoice_date: string;
-    paymentAmt: string;
-    discountAmt: number;
-    vehicleNumber: string;
+    mtmId: string;  
+    requisitionAmt: string;  
     notes: string;
     currentProduct: { index?: number } | null; // Initialize `currentProduct` with optional index
     searchInvoice: string;
@@ -84,14 +78,8 @@ const RequisitionForm = () => {
   }
 
   const initialFormData = {
-    mtmId: '',
-    account: '',
-    accountName: '',
-    invoice_no: '',
-    invoice_date: '',
-    paymentAmt: '',
-    discountAmt: 0,
-    vehicleNumber: '',
+    mtmId: '',  
+    requisitionAmt: '',  
     notes: '',
     currentProduct: null, // Initialize `currentProduct` as null
     searchInvoice: '',
@@ -118,9 +106,10 @@ const RequisitionForm = () => {
     });
 
     // After setting product data, recalculate line total
+    const days = parseFloat(productData.day) || 0; // Use the latest day
     const qty = parseFloat(productData.qty) || 0; // Use the latest qty
     const priceValue = Number(option.label_3) || 0; // Use the price from the selected product
-    const newLineTotal = qty * priceValue;
+    const newLineTotal = days * qty * priceValue;
 
     // Update the lineTotal state with the new value
     setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
@@ -150,7 +139,7 @@ const RequisitionForm = () => {
   };
 
   const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price),
+    (sum, row) => sum + Number(row.qty) * Number(row.price) * Number(row.day),
     0,
   );
 
@@ -210,6 +199,7 @@ const RequisitionForm = () => {
       product: productData.product || 0,
       product_name: productData.product_name || '',
       unit: productData.unit || '',
+      day: productData.day || '',
       qty: productData.qty || '',
       price: productData.price || '',
     };
@@ -314,82 +304,12 @@ const RequisitionForm = () => {
 
   const handlePurchaseInvoiceSave = async () => {}
 
-  // const handlePurchaseInvoiceSave = async () => {
-  //   setSaveButtonLoading(true);
-  //   const validationMessages = validateForm(formData, invoiceMessage);
-  //   if (validationMessages) {
-  //     toast.info(validationMessages);
-  //     setSaveButtonLoading(false);
-  //     return;
-  //   }
-
-  //   if (!formData.account || formData.products.length === 0) {
-  //     toast.error('Please add products information!');
-  //     setSaveButtonLoading(false);
-  //     return;
-  //   }
-  //   if (formData.paymentAmt == '') {
-  //     toast.error('Please add payment amount!');
-  //     setSaveButtonLoading(false);
-  //     return;
-  //   }
-
-  //   dispatch(
-  //     constructionPurchaseStore(formData, function (message) {
-  //       if (message) {
-  //         toast.error(message);
-  //       }
-  //       setTimeout(() => {
-  //         setSaveButtonLoading(false);
-  //         // resetProducts();
-  //         setFormData((prevFormData) => ({
-  //           ...prevFormData,
-  //           paymentAmt: '',
-  //           discountAmt: 0,
-  //           notes: '',
-  //           invoice_no: '',
-  //           invoice_date: '',
-  //           vehicleNumber: '',
-  //           products: [],
-  //         }));
-  //       }, 1000);
-  //     }),
-  //   );
-  // };
-
-  // const handleInvoiceUpdate = async () => {
-  //   // Check Required fields are not empty
-  //   const validationMessages = validateForm(formData, invoiceMessage);
-  //   if (validationMessages) {
-  //     toast.info(validationMessages);
-  //     return;
-  //   }
-
-  //   if (!formData.account || formData.products.length === 0) {
-  //     toast.error('Please add products information!');
-  //     return;
-  //   }
-
-  //   // Save Invoice
-  //   dispatch(
-  //     constructionPurchaseUpdate(formData, function (message) {
-  //       if (message) {
-  //         toast.info(message);
-  //       }
-  //     }),
-  //   );
-  //   setIsUpdating(false);
-  // };
-
   const handleStartDate = (e: any) => {
     const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
     const key = 'invoice_date'; // Set the desired key dynamically
     setFormData({ ...formData, [key]: startD });
   };
 
-  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setProductData({ ...productData, [e.target.name]: e.target.value });
-  };
 
   const editProductItem = (productId: number) => {
     // Find the product by its unique id
@@ -417,52 +337,22 @@ const RequisitionForm = () => {
     setUpdateId(productIndex);
   };
 
-  const handleChangeVoucherType = (e: any) => {
-    setVoucherType(e.target.value);
-  };
+
   
-
     useEffect(() => {
-      if (formData.account == '17') {
-        setFormData((prevState) => ({
-          ...prevState,
-          paymentAmt: 
-            totalAmount > 0
-              ? (totalAmount - prevState.discountAmt).toString()
-              : '0',
-        }));
-      } else {
-        setFormData((prevState) => ({
-          ...prevState,
-          paymentAmt: '',
-        }));
-      }
-    }, [formData.account]);
-
-
-  useEffect(() => {
-    // Calculate total from products
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty?.toString() || '0') || 0;
-      const price = parseFloat(product.price?.toString() || '0') || 0;
-      return acc + qty * price;
-    }, 0);
-
-    // Parse discountAmt, default to 0 if invalid
-    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-
-    // Calculate net total
-    let netTotal = 0;
-    if (total > 0) {
-      netTotal = total - discount;
-    }
-
-    // Update paymentAmt based on account condition
-    setFormData((prev) => ({
-      ...prev,
-      paymentAmt: netTotal.toString(),
-    }));
-  }, [formData.products, formData.discountAmt]);
+      const total = formData.products.reduce((acc, product) => {
+        const day = parseFloat(product.day) || 0;
+        const qty = parseFloat(product.qty) || 0;
+        const price = parseFloat(product.price) || 0;
+        return acc + qty * price * day;
+      }, 0);
+  
+  
+      setFormData((prev) => ({
+        ...prev,
+        requisitionAmt: total.toFixed(0), // Keep as string
+      }));
+    }, [formData.products]);
 
   useCtrlS(handlePurchaseInvoiceSave);
 
@@ -483,7 +373,7 @@ const RequisitionForm = () => {
                 label={'Notes'}
                 className={'py-1.5'}
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Dynamically pass the next element's ID
+                onKeyDown={(e) => handleInputKeyDown(e, 'requisition_start_date')} // Dynamically pass the next element's ID
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -499,11 +389,9 @@ const RequisitionForm = () => {
                   className="w-full p-1 "
                   selectedDate={startDate}
                   setSelectedDate={setStartDate}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'vehicleNumber')} // Pass the next field's ID
+                  onKeyDown={(e) => handleInputKeyDown(e, 'requisition_end_date')} // Pass the next field's ID
                 />
               </div>
-               
-              
               <div className="w-full">
                 <label className="text-black dark:text-white" htmlFor="">
                   Requisition End Date
@@ -515,18 +403,17 @@ const RequisitionForm = () => {
                   className="w-full p-1 "
                   selectedDate={startDate}
                   setSelectedDate={setStartDate}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'vehicleNumber')} // Pass the next field's ID
+                  onKeyDown={(e) => handleInputKeyDown(e, 'requisition_end_date')} // Pass the next field's ID
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <InputElement
-                id="totalAmount"
-                name="totalAmount"
-                value={formData.paymentAmt.toString()}
-                placeholder={'Total Requisition Amount'}
-                disabled={Number(formData.account) === 17}
-                label={'Total Requisition Amount'}
+                id="requisitionAmt"
+                name="requisitionAmt"
+                value={ thousandSeparator (Number(formData.requisitionAmt),0)}
+                placeholder={'Requisition Amount'} 
+                label={'Requisition Amount'}
                 className={'py-1 text-right'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
@@ -604,7 +491,7 @@ const RequisitionForm = () => {
                       // Delay to allow react-select to complete selection
                       setTimeout(() => {
                         const input = document.querySelector(
-                          '#qty',
+                          '#day',
                         ) as HTMLInputElement | null;
                         if (input) input.focus();
                         if (input) input.select();
@@ -613,7 +500,6 @@ const RequisitionForm = () => {
                   }}
                 />
               </div>
-               
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div className="block relative">
@@ -626,7 +512,7 @@ const RequisitionForm = () => {
                   type="number"
                   className={''}
                   onChange={handleProductChange}
-                  onKeyDown={(e) => handleInputKeyDown(e, 'price')} // Pass the next field's ID
+                  onKeyDown={(e) => handleInputKeyDown(e, 'qty')} // Pass the next field's ID
                 />
                 <span className="absolute top-7 right-3 z-50">{unit}</span>
               </div>
@@ -742,6 +628,10 @@ const RequisitionForm = () => {
               </th>
               <th scope="col" className={`px-2 py-2 text-right`}>
                 {' '}
+                Days{' '}
+              </th>
+              <th scope="col" className={`px-2 py-2 text-right`}>
+                {' '}
                 Quantity{' '}
               </th>
               <th scope="col" className={`px-2 py-2 text-right`}>
@@ -774,21 +664,23 @@ const RequisitionForm = () => {
                   >
                     {row.product_name}
                   </td>
+                  <td className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}>
+                    {thousandSeparator(Number(row.day), 2)}
+                  </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
                     {thousandSeparator(Number(row.qty), 2)} {row.unit}
                   </td>
-                  <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
-                  >
+                  <td className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}>
                     {thousandSeparator(Number(row.price), 2)}
                   </td>
+                  
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
                     {thousandSeparator(
-                      Math.floor(Number(row.price) * Number(row.qty)),
+                      Math.floor(Number(row.price) * Number(row.day) * Number(row.qty)),
                       2,
                     )}
                   </td>

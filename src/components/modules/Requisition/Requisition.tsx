@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import dayjs from 'dayjs';
-import { toast } from 'react-toastify';
+import dayjs from 'dayjs'; 
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
-import { getLedger, requisitionComparison } from './requisitionSlice';
+import { requisitionComparison } from './requisitionSlice';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
@@ -39,13 +38,6 @@ const Requisition = (user: any) => {
     }
   }, [requisition.data]);
 
-  // // Update table data only when requisition is valid
-  // useEffect(() => {
-  //   if (!requisition.isLoading && requisition?.data) {
-  //     const flatArray = Object.values(requisition.data);
-  //     setTableData(flatArray);
-  //   }
-  // }, [requisition]);
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
