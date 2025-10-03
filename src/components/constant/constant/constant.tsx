@@ -435,7 +435,12 @@ export const GET_VOUCHER_FOR_IMAGE_LIST_SUCCESS ='VOUCHER/FOR/IMAGE/list/success
 export const GET_VOUCHER_FOR_IMAGE_LIST_ERROR ='VOUCHER/FOR/IMAGE/list/error';
 
 
-// Ledger constant
+// Requisition constant
 export const REQUISITION_DATA_LIST_PENDING = 'REQUISITION/DATA/list/pending';
 export const REQUISITION_DATA_LIST_SUCCESS = 'REQUISITION/DATA/list/success';
 export const REQUISITION_DATA_LIST_ERROR = 'REQUISITION/DATA/list/error';
+
+// Requisition Store constant
+export const REQUISITION_DATA_STORE_PENDING = 'REQUISITION/DATA/store/pending';
+export const REQUISITION_DATA_STORE_SUCCESS = 'REQUISITION/DATA/store/success';
+export const REQUISITION_DATA_STORE_ERROR = 'REQUISITION/DATA/store/error';

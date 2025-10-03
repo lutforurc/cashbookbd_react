@@ -249,3 +249,4 @@ export const API_LABOUR_ITEMS_URL = API_BASE_URL + '/labour/items';
 // Requisition Routes
 export const API_REQUISITION_COMPARISONS_URL = API_BASE_URL + '/requisition/comparison';
 export const API_REQUISITION_ITEMS_URL = API_BASE_URL + '/requisition/items';
+export const API_REQUISITION_STORE_URL = API_BASE_URL + '/requisition/store';

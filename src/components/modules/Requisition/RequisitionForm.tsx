@@ -15,25 +15,18 @@ import {
 import { userCurrentBranch } from '../branch/branchSlice';
 import { constructionPurchaseEdit, constructionPurchaseStore } from '../invoices/purchase/constructionPurchaseSlice';
 import { validateProductData } from '../../utils/utils-functions/productValidationHandler';
-import { validateForm } from '../../utils/utils-functions/validationUtils';
 import useCtrlS from '../../utils/hooks/useCtrlS';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Loader from '../../../common/Loader';
-import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../utils/utils-functions/handleKeyDown';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { hasPermission } from '../../utils/permissionChecker';
-import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
-import { voucherTypes } from '../../utils/fields/DataConstant';
 import InputOnly from '../../utils/fields/InputOnly';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
-import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import Link from '../../utils/others/Link';
 import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
-import { invoiceMessage } from '../../utils/utils-functions/invoiceMessage';
+import { requisitionStore } from './requisitionSlice';
 
 
 
@@ -41,6 +34,7 @@ interface Product {
   id: number;
   product: number;
   product_name: string;
+  remarks?: string;
   unit: string;
   day: string;
   qty: string;
@@ -53,6 +47,7 @@ const RequisitionForm = () => {
   const dispatch = useDispatch<any>();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(null); // Define state with type
+  const [endDate, setEndDate] = useState<Date | null>(null); // Define state with type
   const [unit, setUnit] = useState<string | null>(null); // Define state with type
   const [search, setSearch] = useState(''); // State to store the search value
   const [productData, setProductData] = useState<any>({});
@@ -72,20 +67,24 @@ const RequisitionForm = () => {
   interface FormData {
     mtmId: string;
     requisitionAmt: string;
+    startDate: string;
+    endDate: string;
     notes: string;
     currentProduct: { index?: number } | null; // Initialize `currentProduct` with optional index
     searchInvoice: string;
     products: Product[];
   }
 
-  const initialFormData = {
-    mtmId: '',
-    requisitionAmt: '',
-    notes: '',
-    currentProduct: null, // Initialize `currentProduct` as null
-    searchInvoice: '',
-    products: [],
-  };
+  const initialFormData: FormData = {
+  mtmId: '',
+  requisitionAmt: '',
+  notes: '',
+  startDate: '',
+  endDate: '',
+  currentProduct: null,
+  searchInvoice: '',
+  products: [],
+};
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
@@ -166,10 +165,11 @@ const RequisitionForm = () => {
           id: product.id,
           product: product.product,
           product_name: product.product_name, // Replace with actual logic if available
+          remarks: product.remarks || '',
           unit: product.unit, // Replace with actual logic if available
+          day: product.day, // Replace with actual logic if available
           qty: product.quantity,
-          price: product.price,
-          warehouse: product.warehouse ? product.warehouse.toString() : '',
+          price: product.price, 
         }),
       );
 
@@ -186,8 +186,7 @@ const RequisitionForm = () => {
         });
         toast.success('Something went wrong!');
       }
-    }
-    console.log(purchase.data);
+    } 
   }, [purchase?.data]);
 
   const addProduct = () => {
@@ -220,6 +219,7 @@ const RequisitionForm = () => {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
       product_name: productData.product_name || '',
+      remarks: productData.remarks || '',
       unit: productData.unit || '',
       qty: productData.qty || '',
       day: productData.day || '',
@@ -306,14 +306,7 @@ const RequisitionForm = () => {
   const handlePurchaseInvoiceSave = async () => {
 
     
-    setSaveButtonLoading(true);
-    // const validationMessages = validateForm(formData, invoiceMessage);
-    // if (validationMessages) {
-    //   toast.info(validationMessages);
-    //   setSaveButtonLoading(false);
-    //   return;
-    // }
-
+    setSaveButtonLoading(true); 
     
     if (formData.requisitionAmt == '') {
       toast.error('Please add requisition amount!');
@@ -322,7 +315,7 @@ const RequisitionForm = () => {
     }
     console.log('Ready');
     dispatch(
-      constructionPurchaseStore(formData, function (message) {
+      requisitionStore(formData, function (message) {
         if (message) {
           toast.error(message);
         }
@@ -331,12 +324,8 @@ const RequisitionForm = () => {
           // resetProducts();
           setFormData((prevFormData) => ({
             ...prevFormData,
-            paymentAmt: '',
-            discountAmt: 0,
+            requisitionAmt: '',
             notes: '',
-            invoice_no: '',
-            invoice_date: '',
-            vehicleNumber: '',
             products: [],
           }));
         }, 1000);
@@ -346,7 +335,13 @@ const RequisitionForm = () => {
 
   const handleStartDate = (e: any) => {
     const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
-    const key = 'invoice_date'; // Set the desired key dynamically
+    const key = 'startDate'; // Set the desired key dynamically
+    setFormData({ ...formData, [key]: startD });
+  };
+
+  const handleEndDate = (e: any) => {
+    const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
+    const key = 'endDate'; // Set the desired key dynamically
     setFormData({ ...formData, [key]: startD });
   };
 
@@ -439,10 +434,10 @@ const RequisitionForm = () => {
                 <InputDatePicker
                   id="requisition_end_date"
                   name="requisition_end_date"
-                  setCurrentDate={handleStartDate}
+                  setCurrentDate={handleEndDate}
                   className="w-full p-1 "
-                  selectedDate={startDate}
-                  setSelectedDate={setStartDate}
+                  selectedDate={endDate}
+                  setSelectedDate={setEndDate}
                   onKeyDown={(e) => handleInputKeyDown(e, 'requisition_end_date')} // Pass the next field's ID
                 />
               </div>
