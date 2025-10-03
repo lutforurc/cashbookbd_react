@@ -33,6 +33,7 @@ import { requisitionStore } from './requisitionSlice';
 interface Product {
   id: number;
   product: number;
+  type: string;
   product_name: string;
   remarks?: string;
   unit: string;
@@ -76,43 +77,36 @@ const RequisitionForm = () => {
   }
 
   const initialFormData: FormData = {
-  mtmId: '',
-  requisitionAmt: '',
-  notes: '',
-  startDate: '',
-  endDate: '',
-  currentProduct: null,
-  searchInvoice: '',
-  products: [],
-};
+    mtmId: '',
+    requisitionAmt: '',
+    notes: '',
+    startDate: '',
+    endDate: '',
+    currentProduct: null,
+    searchInvoice: '',
+    products: [],
+  };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
 
   const productSelectHandler = (option: any) => {
-    const key = 'product'; // Set the desired key dynamically
-    const accountName = 'product_name'; // Set the desired key dynamically
-    const unit = 'unit'; // Set the desired key dynamically
-    const price = 'price'; // Set the desired key dynamically
+    setUnit(option.label_3); // unit
 
-    setUnit(option.label_3);
+    setProductData((prev: any) => ({
+      ...prev,
+      product: option.value,
+      type: option.label_2,               // type
+      product_name: option.label,
+      unit: option.label_3,                 // unit
+      price: Number(option.label_4).toFixed(2), // price
+    }));
 
-    setProductData({
-      ...productData,
-      [key]: option.value,
-      [accountName]: option.label,
-      [unit]: option.label_3,
-      [price]: Number(option.label_4).toFixed(2),
-    });
-
-    // After setting product data, recalculate line total
-    const days = parseFloat(productData.day) || 0; // Use the latest day
-    const qty = parseFloat(productData.qty) || 0; // Use the latest qty
-    const priceValue = Number(option.label_3) || 0; // Use the price from the selected product
-    const newLineTotal = days * qty * priceValue;
-
-    // Update the lineTotal state with the new value
-    setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
+    // Recalculate with latest known values
+    const days = parseFloat(productData.day) || 0;
+    const qty = parseFloat(productData.qty) || 0;
+    const priceValue = Number(option.label_4) || 0; // <-- use label_4 for price
+    setLineTotal(Number((days * qty * priceValue).toFixed(2)));
   };
 
   const resetProducts = () => {
@@ -137,11 +131,6 @@ const RequisitionForm = () => {
     setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
-
-  const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price) * Number(row.day),
-    0,
-  );
 
   // Process `purchase.data` when it updates
   useEffect(() => {
@@ -169,7 +158,7 @@ const RequisitionForm = () => {
           unit: product.unit, // Replace with actual logic if available
           day: product.day, // Replace with actual logic if available
           qty: product.quantity,
-          price: product.price, 
+          price: product.price,
         }),
       );
 
@@ -186,7 +175,7 @@ const RequisitionForm = () => {
         });
         toast.success('Something went wrong!');
       }
-    } 
+    }
   }, [purchase?.data]);
 
   const addProduct = () => {
@@ -250,6 +239,8 @@ const RequisitionForm = () => {
   };
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.name, e.target.value);
+
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
@@ -262,26 +253,25 @@ const RequisitionForm = () => {
     }));
   };
 
+  const numericFields = new Set(['day', 'qty', 'price']);
+
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const newValue = value ? parseFloat(value) : 0;
-    setProductData((prevState: any) => ({
-      ...prevState,
-      [name]: value,
-    }));
 
-    // Update product data state
-    setProductData((prevState: any) => {
-      const updatedProductData = { ...prevState, [name]: newValue };
+    // Store raw value for non-numeric fields
+    setProductData((prev: any) => {
+      const updated = {
+        ...prev,
+        [name]: numericFields.has(name) ? (value === '' ? '' : value) : value,
+      };
 
-      // Calculate line total after updating product data
-      const day = parseFloat(updatedProductData.day) || 0;
-      const qty = parseFloat(updatedProductData.qty) || 0;
-      const price = parseFloat(updatedProductData.price) || 0;
-      const newLineTotal = day * qty * price;
+      // Recalculate line total using numeric fallbacks
+      const day = parseFloat(updated.day as string) || 0;
+      const qty = parseFloat(updated.qty as string) || 0;
+      const price = parseFloat(updated.price as string) || 0;
+      setLineTotal(Number((day * qty * price).toFixed(2)));
 
-      setLineTotal(Number(newLineTotal.toFixed(2))); // Keep it as a string for display
-      return updatedProductData;
+      return updated;
     });
   };
 
@@ -305,9 +295,9 @@ const RequisitionForm = () => {
 
   const handlePurchaseInvoiceSave = async () => {
 
-    
-    setSaveButtonLoading(true); 
-    
+
+    setSaveButtonLoading(true);
+
     if (formData.requisitionAmt == '') {
       toast.error('Please add requisition amount!');
       setSaveButtonLoading(false);
@@ -418,8 +408,8 @@ const RequisitionForm = () => {
                   Requisition Start Date
                 </label>
                 <InputDatePicker
-                  id="requisition_start_date"
-                  name="requisition_start_date"
+                  id="startDate"
+                  name="startDate"
                   setCurrentDate={handleStartDate}
                   className="w-full p-1 "
                   selectedDate={startDate}
@@ -496,7 +486,7 @@ const RequisitionForm = () => {
         </div>
         <div className="">
           <div className="grid grid-cols-1 gap-y-1">
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label className="text-black dark:text-white" htmlFor="">
                   Select Product
@@ -533,6 +523,21 @@ const RequisitionForm = () => {
                       }, 150);
                     }
                   }}
+                />
+              </div>
+              <div>
+
+
+                <InputElement
+                  id="remarks"
+                  name="remarks"
+                  label="Remarks"
+                  placeholder="Remarks"
+                  type="text"
+                  className="py-1.5"
+                  value={productData.remarks ?? ""}     // keep controlled with a safe default
+                  onChange={handleProductChange}        // <-- point to product change handler
+                  onKeyDown={(e) => handleInputKeyDown(e, 'day')}
                 />
               </div>
             </div>

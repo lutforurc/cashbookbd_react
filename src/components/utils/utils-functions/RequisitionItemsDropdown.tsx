@@ -147,11 +147,6 @@ const RequisitionItemsDropdown: React.FC<DropdownProps> = ({
             </div>
             {isSelected && (
               <div className="additional-info">
-                {option.label_2 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
-                    Category: {option.label_2}
-                  </div>
-                )}
                 {option.label_3 && (
                   <div className="text-gray-600 dark:text-white text-sm">
                     Unit: {option.label_3}
@@ -159,7 +154,12 @@ const RequisitionItemsDropdown: React.FC<DropdownProps> = ({
                 )}
                 {option.label_4 && (
                   <div className="text-gray-600 dark:text-white text-sm">
-                    Unit Rate: {option.label_4}
+                    Rate: {option.label_4}
+                  </div>
+                )}
+                {option.label_2 && (
+                  <div className="text-gray-600 dark:text-white text-sm">
+                    Type: {option.label_2}
                   </div>
                 )}
               </div>

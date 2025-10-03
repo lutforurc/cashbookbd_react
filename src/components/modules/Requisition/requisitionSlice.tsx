@@ -73,8 +73,11 @@ interface formData {
   account: string;     
   requisitionAmt: string;  
   notes: string;
+  startDate: string;
+  endDate: string;
   products: Product[];
 }
+
 
 
 export const requisitionStore = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
