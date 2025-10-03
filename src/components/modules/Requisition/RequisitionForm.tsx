@@ -13,7 +13,7 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 import { userCurrentBranch } from '../branch/branchSlice';
-import { constructionPurchaseEdit } from '../invoices/purchase/constructionPurchaseSlice';
+import { constructionPurchaseEdit, constructionPurchaseStore } from '../invoices/purchase/constructionPurchaseSlice';
 import { validateProductData } from '../../utils/utils-functions/productValidationHandler';
 import { validateForm } from '../../utils/utils-functions/validationUtils';
 import useCtrlS from '../../utils/hooks/useCtrlS';
@@ -33,6 +33,7 @@ import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import Link from '../../utils/others/Link';
 import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
+import { invoiceMessage } from '../../utils/utils-functions/invoiceMessage';
 
 
 
@@ -43,7 +44,7 @@ interface Product {
   unit: string;
   day: string;
   qty: string;
-  price: string; 
+  price: string;
 }
 
 const RequisitionForm = () => {
@@ -64,13 +65,13 @@ const RequisitionForm = () => {
   const [lineTotal, setLineTotal] = useState<number>(0);
 
   useEffect(() => {
-    dispatch(userCurrentBranch()); 
+    dispatch(userCurrentBranch());
     setPermissions(settings.data.permissions);
   }, []);
 
   interface FormData {
-    mtmId: string;  
-    requisitionAmt: string;  
+    mtmId: string;
+    requisitionAmt: string;
     notes: string;
     currentProduct: { index?: number } | null; // Initialize `currentProduct` with optional index
     searchInvoice: string;
@@ -78,8 +79,8 @@ const RequisitionForm = () => {
   }
 
   const initialFormData = {
-    mtmId: '',  
-    requisitionAmt: '',  
+    mtmId: '',
+    requisitionAmt: '',
     notes: '',
     currentProduct: null, // Initialize `currentProduct` as null
     searchInvoice: '',
@@ -95,14 +96,14 @@ const RequisitionForm = () => {
     const unit = 'unit'; // Set the desired key dynamically
     const price = 'price'; // Set the desired key dynamically
 
-    setUnit(option.label_5);
+    setUnit(option.label_3);
 
     setProductData({
       ...productData,
       [key]: option.value,
       [accountName]: option.label,
-      [unit]: option.label_5,
-      [price]: Number(option.label_3),
+      [unit]: option.label_3,
+      [price]: Number(option.label_4).toFixed(2),
     });
 
     // After setting product data, recalculate line total
@@ -222,7 +223,7 @@ const RequisitionForm = () => {
       unit: productData.unit || '',
       qty: productData.qty || '',
       day: productData.day || '',
-      price: productData.price || '', 
+      price: productData.price || '',
     };
 
     setFormData((prevFormData) => ({
@@ -302,7 +303,46 @@ const RequisitionForm = () => {
     }));
   }, [purchase.isUpdated]);
 
-  const handlePurchaseInvoiceSave = async () => {}
+  const handlePurchaseInvoiceSave = async () => {
+
+    
+    setSaveButtonLoading(true);
+    // const validationMessages = validateForm(formData, invoiceMessage);
+    // if (validationMessages) {
+    //   toast.info(validationMessages);
+    //   setSaveButtonLoading(false);
+    //   return;
+    // }
+
+    
+    if (formData.requisitionAmt == '') {
+      toast.error('Please add requisition amount!');
+      setSaveButtonLoading(false);
+      return;
+    }
+    console.log('Ready');
+    dispatch(
+      constructionPurchaseStore(formData, function (message) {
+        if (message) {
+          toast.error(message);
+        }
+        setTimeout(() => {
+          setSaveButtonLoading(false);
+          // resetProducts();
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            paymentAmt: '',
+            discountAmt: 0,
+            notes: '',
+            invoice_no: '',
+            invoice_date: '',
+            vehicleNumber: '',
+            products: [],
+          }));
+        }, 1000);
+      }),
+    );
+  }
 
   const handleStartDate = (e: any) => {
     const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
@@ -319,6 +359,7 @@ const RequisitionForm = () => {
 
     if (productIndex === -1) {
       // console.error("Product not found");
+      toast.info('Product not found');
       return;
     }
 
@@ -338,21 +379,20 @@ const RequisitionForm = () => {
   };
 
 
-  
-    useEffect(() => {
-      const total = formData.products.reduce((acc, product) => {
-        const day = parseFloat(product.day) || 0;
-        const qty = parseFloat(product.qty) || 0;
-        const price = parseFloat(product.price) || 0;
-        return acc + qty * price * day;
-      }, 0);
-  
-  
-      setFormData((prev) => ({
-        ...prev,
-        requisitionAmt: total.toFixed(0), // Keep as string
-      }));
-    }, [formData.products]);
+
+  useEffect(() => {
+    const total = formData.products.reduce((acc, product) => {
+      const day = parseFloat(product.day) || 0;
+      const qty = parseFloat(product.qty) || 0;
+      const price = parseFloat(product.price) || 0;
+      return acc + qty * price * day;
+    }, 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      requisitionAmt: total.toFixed(0), // Keep as string
+    }));
+  }, [formData.products]);
 
   useCtrlS(handlePurchaseInvoiceSave);
 
@@ -364,7 +404,7 @@ const RequisitionForm = () => {
         <div className="self-start md:self-auto">
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
-              
+
               <InputElement
                 id="notes"
                 value={formData.notes}
@@ -377,7 +417,7 @@ const RequisitionForm = () => {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              
+
               <div className="w-full">
                 <label className="text-black dark:text-white" htmlFor="">
                   Requisition Start Date
@@ -411,8 +451,8 @@ const RequisitionForm = () => {
               <InputElement
                 id="requisitionAmt"
                 name="requisitionAmt"
-                value={ thousandSeparator (Number(formData.requisitionAmt),0)}
-                placeholder={'Requisition Amount'} 
+                value={thousandSeparator(Number(formData.requisitionAmt), 0)}
+                placeholder={'Requisition Amount'}
                 label={'Requisition Amount'}
                 className={'py-1 text-right'}
                 onChange={handleOnChange}
@@ -429,38 +469,38 @@ const RequisitionForm = () => {
                 }}
               />
               <div className="relative">
-                    <label className="text-black dark:text-white" htmlFor="">
-                      Search Requisition
-                    </label>
-                    <div className="w-full ">
-                      <InputOnly
-                        id="search"
-                        value={search}
-                        name="search"
-                        placeholder={'Search Requisition'}
-                        label={''}
-                        className={'py-1 w-full'}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => handleInputKeyDown(e, 'btnSearch')} // Pass the next field's ID
-                      />
-                    </div>
-                    <ButtonLoading
-                      id="btnSearch"
-                      name="btnSearch"
-                      onClick={searchInvoice}
-                      buttonLoading={buttonLoading}
-                      label=""
-                      className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute -right-1 top-6 background-red-500 !pr-2 !pl-2"
-                      icon={
-                        <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
-                      }
-                    />
-                  </div>
+                <label className="text-black dark:text-white" htmlFor="">
+                  Search Requisition
+                </label>
+                <div className="w-full ">
+                  <InputOnly
+                    id="search"
+                    value={search}
+                    name="search"
+                    placeholder={'Search Requisition'}
+                    label={''}
+                    className={'py-1 w-full'}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => handleInputKeyDown(e, 'btnSearch')} // Pass the next field's ID
+                  />
+                </div>
+                <ButtonLoading
+                  id="btnSearch"
+                  name="btnSearch"
+                  onClick={searchInvoice}
+                  buttonLoading={buttonLoading}
+                  label=""
+                  className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute -right-1 top-6 background-red-500 !pr-2 !pl-2"
+                  icon={
+                    <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
         <div className="">
-          <div className="grid grid-cols-1 gap-y-1"> 
+          <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
               <div>
                 <label className="text-black dark:text-white" htmlFor="">
@@ -473,17 +513,17 @@ const RequisitionForm = () => {
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   onKeyDown={(e) => {
@@ -514,7 +554,7 @@ const RequisitionForm = () => {
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'qty')} // Pass the next field's ID
                 />
-                <span className="absolute top-7 right-3 z-50">{unit}</span>
+                <span className="absolute top-7 right-3 z-1">{unit}</span>
               </div>
               <div className="block relative">
                 <InputElement
@@ -528,7 +568,7 @@ const RequisitionForm = () => {
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'price')} // Pass the next field's ID
                 />
-                <span className="absolute top-7 right-3 z-50">{unit}</span>
+                <span className="absolute top-7 right-3 z-1">{unit}</span>
               </div>
 
               <div className="block relative">
@@ -543,7 +583,7 @@ const RequisitionForm = () => {
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')} // Pass the next field's ID
                 />
-                <span className="absolute top-7 right-3 z-50">{lineTotal}</span>
+                <span className="absolute top-7 right-3 z-1">{thousandSeparator(lineTotal, 0)}</span>
               </div>
             </div>
             <div className="grid grid-cols-4 gap-x-1 gap-y-1">
@@ -585,7 +625,7 @@ const RequisitionForm = () => {
                 />
               ) : (
                 <ButtonLoading
-                  // onClick={handlePurchaseInvoiceSave}
+                  onClick={handlePurchaseInvoiceSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
@@ -675,7 +715,7 @@ const RequisitionForm = () => {
                   <td className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}>
                     {thousandSeparator(Number(row.price), 2)}
                   </td>
-                  
+
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
