@@ -79,11 +79,9 @@ export const purchaseStore = (data: formData, callback?: (message: string) => vo
       });
   };
 
-export const purchaseUpdate =
-  (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+export const purchaseUpdate = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
     dispatch({ type: PURCHASE_TRADING_UPDATE_PENDING });
-    httpService
-      .post(API_TRADING_PURCHASE_UPDATE_URL, data)
+    httpService.post(API_TRADING_PURCHASE_UPDATE_URL, data)
       .then((res) => {
         const _data = res.data;
         if (_data.success) {

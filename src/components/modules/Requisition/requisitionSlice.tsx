@@ -1,5 +1,6 @@
+import { getToken } from "../../../features/authReducer";
 import { REQUISITION_DATA_LIST_ERROR, REQUISITION_DATA_LIST_PENDING, REQUISITION_DATA_LIST_SUCCESS } from "../../constant/constant/constant";
-import { API_REQUISITION_COMPARISONS_URL } from "../../services/apiRoutes";
+import { API_REQUISITION_COMPARISONS_URL, API_REQUISITION_ITEMS_URL } from "../../services/apiRoutes";
 import httpService from "../../services/httpService";
 
 interface ledgerParam {
@@ -34,6 +35,27 @@ export const requisitionComparison = ({ branchId, startDate, endDate }: ledgerPa
       });
     });
 };
+
+
+export const requisitionItem = (search = '') => async (dispatch: any) => {
+  try {
+    const token = getToken(); 
+    const response = await fetch(API_REQUISITION_ITEMS_URL + `?q=${search}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+    const data = await response.json();
+    dispatch({ type: 'REQUISITION_ITEMS_DROPDOWN', payload: data });
+    return { payload: data.data.data };
+  } catch (error) { 
+    throw error;
+  }
+};
+
 interface LedgerState {
   isLoading: boolean;
   errors: string | null;

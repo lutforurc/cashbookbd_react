@@ -5,6 +5,7 @@ import { getDdlProduct } from '../../modules/product/productSlice';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { getDdlLabourItem } from '../../modules/labour-item/labourItemSlice';
+import { requisitionItem } from '../../modules/Requisition/requisitionSlice';
 
 interface OptionType {
   value: string;
@@ -24,7 +25,7 @@ interface DropdownProps {
   className?: string; // Added className prop for custom styling
 }
 
-const LabourDropdown: React.FC<DropdownProps> = ({
+const RequisitionItemsDropdown: React.FC<DropdownProps> = ({
   id,
   name,
   onSelect,
@@ -40,13 +41,10 @@ const LabourDropdown: React.FC<DropdownProps> = ({
   const darkMode = themeMode[0] === 'dark';
 
   // Load options function
-  const loadOptions = async (
-    inputValue: string,
-    callback: (options: OptionType[]) => void,
-  ) => {
+  const loadOptions = async (inputValue: string, callback: (options: OptionType[]) => void) => {
     if (inputValue.length >= 3) {
       try {
-        const response: any = await dispatch(getDdlLabourItem(inputValue));
+        const response: any = await dispatch(requisitionItem(inputValue));
         if (Array.isArray(response.payload)) {
           const formattedOptions: OptionType[] = response.payload.map(
             (item: any) => ({
@@ -169,7 +167,7 @@ const LabourDropdown: React.FC<DropdownProps> = ({
           </div>
         )}
         getOptionValue={(option) => option.value}
-        placeholder="Select Labour Item"
+        placeholder="Select product"
         styles={customStyles}
         defaultValue={defaultValue}
         value={value}
@@ -179,4 +177,4 @@ const LabourDropdown: React.FC<DropdownProps> = ({
   );
 };
 
-export default LabourDropdown;
+export default RequisitionItemsDropdown;

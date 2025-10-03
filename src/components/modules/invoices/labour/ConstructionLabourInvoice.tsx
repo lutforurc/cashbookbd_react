@@ -620,7 +620,7 @@ function ConstructionLabourInvoice() {
             <div className="grid grid-cols-12 gap-x-2">
               <div className="col-span-12 md:col-span-6">
                 <label className="text-black dark:text-white" htmlFor="">
-                  Select Product
+                  Select Labour Item
                 </label>
                 <LabourDropdown
                   id="product"

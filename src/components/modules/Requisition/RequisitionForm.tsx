@@ -32,6 +32,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import Link from '../../utils/others/Link';
+import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
 
 
 
@@ -578,7 +579,7 @@ const RequisitionForm = () => {
                 <label className="text-black dark:text-white" htmlFor="">
                   Select Product
                 </label>
-                <ProductDropdown
+                <RequisitionItemsDropdown
                   id="product"
                   name="product"
                   onSelect={productSelectHandler}
