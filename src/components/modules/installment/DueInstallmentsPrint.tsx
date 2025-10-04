@@ -127,7 +127,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div>
               </div>
 
-              <div className="w-full overflow-hidden border border-gray-900 rounded rounded-bl-none rounded-br-none">
+              <div className="w-full overflow-hidden">
                 <table className="w-full table-fixed border-collapse">
                   <thead className="bg-gray-100">
                     <tr>
@@ -154,7 +154,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-40"
+                        className="border border-gray-900 px-2 py-2 w-39"
                       >
                         <div className="text-right">
                           <span className="block">Inst. Amount</span>
@@ -242,7 +242,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tfoot>
                     <tr
                       style={{ fontSize: fs }}
-                      className="bg-gray-50 font-semibold"
+                      className=" font-semibold"
                     >
                       <td
                         className="border border-gray-900 px-2 py-2 text-right"
@@ -276,9 +276,9 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
 
         {/* Grand Total (after all pages) */}
         <div className="w-full sm:w-auto ml-auto">
-          <div className="border border-gray-900 overflow-hidden sm:ml-auto">
+          <div className="overflow-hidden sm:ml-auto">
             <table className="w-full table-fixed border-collapse border-top-0">
-              <thead className="bg-gray-100">
+              <thead className="">
                 <tr style={{ fontSize: fs }} className="font-semibold">
                   <td
                     colSpan={3}
@@ -287,7 +287,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                     Grand Total:
                   </td>
 
-                  <td className="border-l border-r border-b border-gray-900 px-2 py-2 w-40">
+                  <td className="border-l border-r border-b border-gray-900 px-2 py-2 w-39">
                     <div className="text-right">
                       <span className="block">
                         {thousandSeparator(Number(grand.amount), 0)}

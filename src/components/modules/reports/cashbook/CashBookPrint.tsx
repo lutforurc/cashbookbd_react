@@ -1,7 +1,7 @@
 import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
+import { formatBdShortDate, formatLongDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 
 type Somity = {
   idfr_code?: string;
@@ -19,7 +19,7 @@ export type CashRow = {
   remarks?: string;
   credit?: number; // Received
   debit?: number; // Payment
-  branchPad?: string; 
+  branchPad?: string;
   is_approved?: boolean;
 };
 
@@ -39,7 +39,7 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
-const CashBooPrint = React.forwardRef<HTMLDivElement, Props>(
+const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
   (
     {
       rows,
@@ -107,36 +107,36 @@ const CashBooPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div>
               </div>
 
-              <div className="w-full overflow-hidden border border-gray-900">
+              <div className="w-full overflow-hidden">
                 <table className="w-full table-fixed border-collapse">
                   <thead className="bg-gray-100">
                     <tr>
                       <th
-                      style={{ fontSize: fs }}
+                        style={{ fontSize: fs }}
                         className={`border border-gray-900 px-2 py-2 w-8 text-center`}
                       >
                         #
                       </th>
                       <th
-                      style={{ fontSize: fs }}
-                        className={`border border-gray-900 px-2 py-2 w-20 text-center`}
+                        style={{ fontSize: fs }}
+                        className={`border border-gray-900 px-2 py-2 w-25 text-center`}
                       >
                         Vr No
                       </th>
                       <th
-                      style={{ fontSize: fs }}
+                        style={{ fontSize: fs }}
                         className={`border border-gray-900 px-2 py-2`}
                       >
                         Description
                       </th>
                       <th
-                      style={{ fontSize: fs }}
+                        style={{ fontSize: fs }}
                         className={`border border-gray-900 px-2 py-2 w-28 text-right`}
                       >
                         Received
                       </th>
                       <th
-                      style={{ fontSize: fs }}
+                        style={{ fontSize: fs }}
                         className={`border border-gray-900 px-2 py-2 w-28 text-right`}
                       >
                         Payment
@@ -145,73 +145,72 @@ const CashBooPrint = React.forwardRef<HTMLDivElement, Props>(
                   </thead>
 
                   <tbody>
-                    {pageRows.length ? (
-                      pageRows.map((row, idx) => (
-                        <tr key={idx} className="avoid-break align-top">
-                          <td
+                    {pageRows.length ? (pageRows.map((row, idx) => (
+                      <tr key={idx} className="avoid-break align-top">
+                        <td
                           style={{ fontSize: fs }}
-                            className={`border border-gray-900 px-2 py-1 text-center`}
-                          >
-                            {row?.sl_number == 0 ? '' : row?.sl_number}
-                          </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center leading-normal">
-                            <div className={`text-[${fs}px]`}>
-                              {row?.vr_no ? "#" + Number(row.vr_no.toString().split("-")[1].slice(-5)) : ""}
+                          className={`border border-gray-900 px-2 py-1 text-center`}
+                        >
+                          {row?.sl_number == 0 ? '' : row?.sl_number}
+                        </td>
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center leading-normal">
+                          <div className={`text-[${fs - 3}px]`}>
+                            {row?.vr_no}
+                          </div>
+                          <div className={`text-[${fs}px]`}>
+                            {row?.vr_date}
+                          </div>
+                        </td>
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                          <div className="w-full max-w-4xl leading-normal">
+                            <div className="truncate leading-normal">
+                              <span
+                                className={`text-[${fs}px]`}
+                                dangerouslySetInnerHTML={{
+                                  __html: row?.nam || '',
+                                }}
+                              ></span>
+                              {row?.somity?.idfr_code && (
+                                <span className={`text-[${fs}px]`}>
+                                  {' '}
+                                  ({row.somity.idfr_code})
+                                </span>
+                              )}
                             </div>
-                            <div className={`text-[${fs}px]`}>
-                              { formatBdShortDate(row?.vr_date ) }
-                            </div>
-                          </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                            <div className="w-full max-w-4xl leading-normal">
-                              <div className="truncate leading-normal">
-                                <span
-                                  className={`text-[${fs}px]`}
-                                  dangerouslySetInnerHTML={{
-                                    __html: row?.nam || '',
-                                  }}
-                                ></span>
-                                {row?.somity?.idfr_code && (
-                                  <span className={`text-[${fs}px]`}>
-                                    {' '}
-                                    ({row.somity.idfr_code})
-                                  </span>
+                            {row?.somity && (
+                              <div className={`text-[${fs}px]`}>
+                                {row.somity.somity_name &&
+                                  row.somity.somity_id && (
+                                    <div>
+                                      {row.somity.somity_name} (
+                                      {row.somity.somity_id})
+                                    </div>
+                                  )}
+                                {row.somity.mobile && (
+                                  <div>{row.somity.mobile}</div>
                                 )}
                               </div>
-                              {row?.somity && (
-                                <div className={`text-[${fs}px]`}>
-                                  {row.somity.somity_name &&
-                                    row.somity.somity_id && (
-                                      <div>
-                                        {row.somity.somity_name} (
-                                        {row.somity.somity_id})
-                                      </div>
-                                    )}
-                                  {row.somity.mobile && (
-                                    <div>{row.somity.mobile}</div>
-                                  )}
-                                </div>
-                              )}
-                              {row?.remarks && (
-                                <div
-                                  className={`break-words whitespace-normal`}
-                                >
-                                  {row.remarks}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 py-1 text-right align-middle`}>
-                            <span>{thousandSeparator(Number(row?.credit), 0)}</span>
-                          </td>
-                          <td
+                            )}
+                            {row?.remarks && (
+                              <div
+                                className={`break-words whitespace-normal`}
+                              >
+                                {row.remarks}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 py-1 text-right align-middle`}>
+                          <span>{thousandSeparator(Number(row?.credit), 0)}</span>
+                        </td>
+                        <td
                           style={{ fontSize: fs }}
-                            className={`border border-gray-900 px-2 py-1 text-right align-middle`}
-                          >
-                            {thousandSeparator(Number(row?.debit), 0)}
-                          </td>
-                        </tr>
-                      ))
+                          className={`border border-gray-900 px-2 py-1 text-right align-middle`}
+                        >
+                          {thousandSeparator(Number(row?.debit), 0)}
+                        </td>
+                      </tr>
+                    ))
                     ) : (
                       <tr>
                         <td
@@ -232,9 +231,9 @@ const CashBooPrint = React.forwardRef<HTMLDivElement, Props>(
               </div>
 
               {/* Page break between pages */}
-          
+
               {pIdx !== pages.length - 1 && <div className="page-break" />}
-    
+
             </div>
           );
         })}
@@ -248,5 +247,5 @@ const CashBooPrint = React.forwardRef<HTMLDivElement, Props>(
   },
 );
 
-CashBooPrint.displayName = 'CashBooPrint';
-export default CashBooPrint;
+CashBookPrint.displayName = 'CashBooPrint';
+export default CashBookPrint;

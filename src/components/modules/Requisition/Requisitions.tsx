@@ -36,10 +36,10 @@ const Requisitions = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null); // Define state with type
 
   useEffect(() => {
-    dispatch(getRequisitions({ page, perPage, search, requisitionType }));
+    dispatch(getRequisitions({ page, perPage, search, requisitionType, branchId, startDate, endDate}));
     setTotalPages(Math.ceil(orders?.data?.total / perPage));
     setTableData(orders?.data?.data);
-  }, [page, perPage, requisitionType, orders?.data?.total]);
+  }, [page, perPage, branchId, requisitionType, orders?.data?.total]);
 
   useEffect(() => {
     if (branchDdlData?.protectedData?.data && branchDdlData?.protectedData?.transactionDate) {

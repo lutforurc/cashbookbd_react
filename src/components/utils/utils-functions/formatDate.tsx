@@ -1,6 +1,7 @@
 import React from 'react'
 
 function formatDate(dateString: string) {
+    if (!dateString) return "";
     const [year, month, day] = dateString.split('-');
     return (
         <>
@@ -41,4 +42,31 @@ function formatDateBdToUsd(dateString: string) {
 }
 
 export { formatDateBdToUsd }
+
+
+function formatDateUsdToBd(dateString: string) {
+  if (!dateString) return "";
+    const [year, month, day] = dateString.split('-');
+        const shortYear = year.slice(-2);
+    return (
+        <>
+            {day}/{month}/{shortYear}
+        </>
+    )
+}
+
+export { formatDateUsdToBd }
+
+
+function formatLongDateUsdToBd(dateString: string) {
+  if (!dateString) return "";
+    const [year, month, day] = dateString.split('-');
+    return (
+        <>
+            {day}/{month}/{year}
+        </>
+    )
+}
+
+export { formatLongDateUsdToBd }
 

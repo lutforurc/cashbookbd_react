@@ -16,9 +16,10 @@ import dayjs from 'dayjs';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from './../../../utils/utils-functions/thousandSeparator';
 import DueInstallmentsPrint from '../../installment/DueInstallmentsPrint';
-import CashBooPrint from './CashBooPrint';
+import CashBooPrint from './CashBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
+import CashBookPrint from './CashBookPrint';
 
 const CashBook = (user: any) => {
   const dispatch = useDispatch();
@@ -347,12 +348,10 @@ const CashBook = (user: any) => {
 
         {/* === Hidden Print Component === */}
         <div className="hidden">
-          <CashBooPrint
+          <CashBookPrint
             ref={printRef}
             rows={tableData || []} // আপনার data
-            startDate={
-              startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined
-            }
+            startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Cash Book"
             rowsPerPage={Number(perPage)}

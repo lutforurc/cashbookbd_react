@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import React, { useEffect, useRef, useState } from 'react';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -16,6 +16,9 @@ import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { generateTableData } from '../../../utils/utils-functions/generateTableData';
 import { formatDate } from '../../../utils/utils-functions/formatDate';
+import { useReactToPrint } from 'react-to-print';
+import LedgerPrint from './LedgerPrint';
+import InputElement from '../../../utils/fields/InputElement';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
@@ -30,6 +33,9 @@ const Ledger = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
+    const printRef = useRef<HTMLDivElement>(null);
+      const [perPage, setPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -38,26 +44,16 @@ const Ledger = (user: any) => {
   }, []);
 
 
-  
 
-useEffect(() => {
-  if (ledgerData && !ledgerData.isLoading && !(ledgerData.data?.data)) {
-    console.log('If show');
-    
-    const tableRows = generateTableData(ledgerData.data);
-    setTableData(tableRows);
-  } else {
-        console.log('else  show');
-    setTableData([]); // safety fallback
-  }
-}, [ledgerData]);
 
-  // Update table data only when ledgerData is valid
-  // useEffect(() => {
-  //   if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
-  //     setTableData(ledgerData?.data);
-  //   }
-  // }, [ledgerData]);
+  useEffect(() => {
+    if (ledgerData && !ledgerData.isLoading && !(ledgerData.data?.data)) {
+      const tableRows = generateTableData(ledgerData.data);
+      setTableData(tableRows);
+    } else {
+      setTableData([]); // safety fallback
+    }
+  }, [ledgerData]);
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
@@ -118,7 +114,7 @@ useEffect(() => {
     {
       key: 'vr_date',
       header: 'Vr Date',
-      render: (row: any) => <div className="">{ row.vr_date && formatDate(row.vr_date)}</div>,
+      render: (row: any) => <div className="">{row.vr_date && formatDate(row.vr_date)}</div>,
       width: '80px',
     },
     {
@@ -145,7 +141,7 @@ useEffect(() => {
       cellClass: 'text-right',
       render: (row: any) => {
         return (
-          <span>{row.debit > 0 ? thousandSeparator( Number(row.debit), 0) : '-'}</span>
+          <span>{row.debit > 0 ? thousandSeparator(Number(row.debit), 0) : '-'}</span>
         );
       },
     },
@@ -175,6 +171,40 @@ useEffect(() => {
       },
     },
   ];
+
+
+
+
+    const handlePrint = useReactToPrint({
+      content: () => {
+        if (!printRef.current) {
+          // alert("Nothing to print: Ref not ready");
+          return null;
+        }
+        return printRef.current;
+      },
+      documentTitle: 'Due Report',
+      // onAfterPrint: () => alert('Printed successfully!'),
+      removeAfterPrint: true,
+    });
+
+      const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setPerPage(value);
+    } else {
+      setPerPage(10); // Reset if input is invalid
+    }
+  };
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+
+    if (!isNaN(value)) {
+      setFontSize(value);
+    } else {
+      setFontSize(10); // Reset if input is invalid
+    }
+  };
 
   return (
     <div className="">
@@ -221,12 +251,39 @@ useEffect(() => {
             />
           </div>
 
-          <div className="mt-2 md:mt-0">
+          <div className="mt-2 md:mt-0 flex">
+            <div className="mr-2"> 
+              <InputElement
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type='text'
+                className="font-medium text-sm h-9 w-12"
+              />
+            </div>
+            <div className="mr-2"> 
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type='text'
+                className="font-medium text-sm h-9 w-12"
+              />
+            </div>
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
-              className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
+              className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
+            />
+            <PrintButton
+              onClick={handlePrint}
+              label="Print"
+              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
             />
           </div>
         </div>
@@ -235,6 +292,18 @@ useEffect(() => {
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />{' '}
         {/* Ensure data is always an array */}
+
+        <div className="hidden">
+          <LedgerPrint
+            ref={printRef}
+            rows={tableData || []} // আপনার data
+            startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
+            endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
+            title="Ledger"
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
+          />
+        </div>
       </div>
     </div>
   );
