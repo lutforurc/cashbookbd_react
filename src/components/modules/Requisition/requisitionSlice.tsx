@@ -1,6 +1,6 @@
 import { getToken } from "../../../features/authReducer";
-import { REQUISITION_DATA_LIST_ERROR, REQUISITION_DATA_LIST_PENDING, REQUISITION_DATA_LIST_SUCCESS, REQUISITION_DATA_STORE_ERROR, REQUISITION_DATA_STORE_PENDING, REQUISITION_DATA_STORE_SUCCESS } from "../../constant/constant/constant";
-import { API_REQUISITION_COMPARISONS_URL, API_REQUISITION_ITEMS_URL, API_REQUISITION_STORE_URL } from "../../services/apiRoutes";
+import { REQUISITION_COMPARISON_LIST_ERROR, REQUISITION_COMPARISON_LIST_PENDING, REQUISITION_COMPARISON_LIST_SUCCESS, REQUISITION_DATA_LIST_ERROR, REQUISITION_DATA_LIST_PENDING, REQUISITION_DATA_LIST_SUCCESS, REQUISITION_DATA_STORE_ERROR, REQUISITION_DATA_STORE_PENDING, REQUISITION_DATA_STORE_SUCCESS } from "../../constant/constant/constant";
+import { API_REQUISITION_COMPARISONS_URL, API_REQUISITION_ITEMS_URL, API_REQUISITION_LIST_URL, API_REQUISITION_STORE_URL } from "../../services/apiRoutes";
 import httpService from "../../services/httpService";
 
 interface ledgerParam {
@@ -8,53 +8,6 @@ interface ledgerParam {
   startDate: string;
   endDate: string;
 }
-
-
-export const requisitionComparison = ({ branchId, startDate, endDate }: ledgerParam) => (dispatch: any) => {
-  dispatch({ type: REQUISITION_DATA_LIST_PENDING });
-  httpService.get(API_REQUISITION_COMPARISONS_URL +`?branch_id=${branchId}&start_date=${startDate}&end_date=${endDate}&delay=1`)
-    .then((res) => {
-      let _data = res.data;
-      if (_data.success) {
-        dispatch({
-          type: REQUISITION_DATA_LIST_SUCCESS,
-          payload: _data.data.data,
-        });
-      } else {
-        dispatch({
-          type: REQUISITION_DATA_LIST_ERROR,
-          payload: _data.error.message,
-        });
-      }
-    })
-    .catch(() => {
-      dispatch({
-        type: REQUISITION_DATA_LIST_ERROR,
-        payload: 'Something went wrong',
-      });
-    });
-};
-
-
-export const requisitionItem = (search = '') => async (dispatch: any) => {
-  try {
-    const token = getToken(); 
-    const response = await fetch(API_REQUISITION_ITEMS_URL + `?q=${search}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-    const data = await response.json();
-    dispatch({ type: 'REQUISITION_ITEMS_DROPDOWN', payload: data });
-    return { payload: data.data.data };
-  } catch (error) { 
-    throw error;
-  }
-};
-
 
 
 interface Product {
@@ -77,7 +30,63 @@ interface formData {
   endDate: string;
   products: Product[];
 }
+interface RequisitionState {
+  isLoading: boolean;
+  errors: string | null;
+  data: any;
+  storeData?: any;
+}
 
+const initialState: RequisitionState = {
+  isLoading: false,
+  errors: null,
+  data: {},
+  storeData: {},
+};
+
+export const requisitionComparison = ({ branchId, startDate, endDate }: ledgerParam) => (dispatch: any) => {
+  dispatch({ type: REQUISITION_COMPARISON_LIST_PENDING });
+  httpService.get(API_REQUISITION_COMPARISONS_URL +`?branch_id=${branchId}&start_date=${startDate}&end_date=${endDate}&delay=1`)
+    .then((res) => {
+      let _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: REQUISITION_COMPARISON_LIST_SUCCESS,
+          payload: _data.data.data,
+        });
+      } else {
+        dispatch({
+          type: REQUISITION_COMPARISON_LIST_ERROR,
+          payload: _data.error.message,
+        });
+      }
+    })
+    .catch(() => {
+      dispatch({
+        type: REQUISITION_COMPARISON_LIST_ERROR,
+        payload: 'Something went wrong',
+      });
+    });
+};
+
+export const requisitionItem = (search = '') => async (dispatch: any) => {
+  try {
+    const token = getToken(); 
+    const response = await fetch(API_REQUISITION_ITEMS_URL + `?q=${search}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+    const data = await response.json();
+    dispatch({ type: 'REQUISITION_ITEMS_DROPDOWN', payload: data });
+    return { payload: data.data.data };
+  } catch (error) { 
+    throw error;
+  }
+};
 
 
 export const requisitionStore = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
@@ -114,20 +123,33 @@ export const requisitionStore = (data: formData, callback?: (message: string) =>
     });
 };
 
+export const getRequisitions = (params: any) => (dispatch: any) => {
+  dispatch({ type: REQUISITION_DATA_LIST_PENDING });
 
-interface RequisitionState {
-  isLoading: boolean;
-  errors: string | null;
-  data: any;
-  storeData?: any;
-}
-
-const initialState: RequisitionState = {
-  isLoading: false,
-  errors: null,
-  data: {},
-  storeData: {},
+  httpService
+    .post(API_REQUISITION_LIST_URL, params)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: REQUISITION_DATA_LIST_SUCCESS,
+          payload: _data.data.data,
+        });
+      } else {
+        dispatch({
+          type: REQUISITION_DATA_LIST_ERROR,
+          payload: _data.error.message,
+        });
+      }
+    })
+    .catch(() => {
+      dispatch({
+        type: REQUISITION_DATA_LIST_ERROR,
+        payload: 'Something went wrong!',
+      });
+    });
 };
+
 
 const requisitionReducer = (state: RequisitionState = initialState, action: any): RequisitionState => {
   switch (action.type) {

@@ -516,7 +516,7 @@ const RequisitionForm = () => {
                       // Delay to allow react-select to complete selection
                       setTimeout(() => {
                         const input = document.querySelector(
-                          '#day',
+                          '#remarks',
                         ) as HTMLInputElement | null;
                         if (input) input.focus();
                         if (input) input.select();

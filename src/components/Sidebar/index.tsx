@@ -866,7 +866,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <NavLink
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/requisition/create' ||
+                        (
+                          pathname === '/requisitions' ||
+                          pathname === '/requisition/create' ||
                           pathname === '/requisition/comparison' || 
                           pathname.includes('/requisition/comparison')) &&
                         'bg-graydark dark:bg-meta-4'
@@ -890,7 +892,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
                           <NavLink
-                            to="/requisition/create"
+                            to="/requisitions"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
                               (isActive && '!text-white')
@@ -899,6 +901,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             Requisitions
                           </NavLink>
                         </li>
+                        {/* <li>
+                          <NavLink
+                            to="/requisition/create"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Create
+                          </NavLink>
+                        </li> */}
                         <li>
                           <NavLink
                             to="/requisition/comparison"

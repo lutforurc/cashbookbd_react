@@ -11,9 +11,10 @@ interface DatePickerProps {
   className?: string; // Additional class name for the date picker component (optional)
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void; // Optional onKeyDown prop
   label?: string; // Label for the date picker component
+  placeholder?: string; // Placeholder text for the date picker input
 }
 
-const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label }) => {
+const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder }) => {
   const handleDateChange = (date: Date | null) => {
     // Update the startDate with the selected date
     if (date) {
@@ -33,7 +34,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         onChange={handleDateChange} // Update state when a new date is selected
         dateFormat="dd/MM/yyyy" // Format for the date
         peekNextMonth
-        placeholderText={label ? label : 'Enter Valid date'}
+        placeholderText={placeholder ? placeholder : 'Enter Valid date'}
         wrapperClassName="w-full"
         dropdownMode="select"
         onKeyDown={onKeyDown ?? (() => {})} // Pass it to the input

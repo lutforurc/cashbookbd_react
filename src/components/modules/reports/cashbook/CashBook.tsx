@@ -31,8 +31,8 @@ const CashBook = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
-  const [perPage, setPerPage] = useState<number>(8);
-  const [fontSize, setFontSize] = useState<number>(8);
+  const [perPage, setPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import dayjs from 'dayjs'; 
+import dayjs from 'dayjs';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { requisitionComparison } from './requisitionSlice';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -10,6 +10,7 @@ import Loader from '../../../common/Loader';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Table from '../../utils/others/Table';
+import Link from '../../utils/others/Link';
 
 const Requisition = (user: any) => {
   const dispatch = useDispatch();
@@ -160,15 +161,14 @@ const Requisition = (user: any) => {
       header: 'Status',
       render: (row: any) => (
         <div
-          className={`w-25 ${
-            row.requisition_total === 0
+          className={`w-25 ${row.requisition_total === 0
               ? 'text-red-500'
               : row.difference < 0
                 ? 'text-green-500'
                 : row.difference > 0
                   ? 'text-yellow-500'
                   : 'text-gray-500' // Default case when difference === 0
-          }`}
+            }`}
         >
           {row.status}
         </div>
@@ -188,7 +188,7 @@ const Requisition = (user: any) => {
             <div>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown onChange={handleBranchChange} className="w-full font-medium text-sm p-2" branchDdl={dropdownData} />
-              
+
             </div>
           </div>
 
@@ -220,13 +220,10 @@ const Requisition = (user: any) => {
               className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
             />
           </div>
-          <div className="mt-2 md:mt-0">
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
-              label="New Requisition"
-              className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
-            />
+          <div className="mt-2 md:mt-6">
+            <Link to="/requisition/create" className="text-nowrap h-8 w-full flex justify-center">
+              <span>New Requisition</span>
+            </Link>
           </div>
         </div>
       </div>

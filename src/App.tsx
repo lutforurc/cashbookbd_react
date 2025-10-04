@@ -67,9 +67,12 @@ import RemoveApproval from './components/modules/voucher_approval/RemoveApproval
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
-import Requisition from './components/modules/Requisition/Requisition';
+import Requisition from './components/modules/Requisition/Comparison';
 import RequisitionForm from './components/modules/Requisition/RequisitionForm';
 import VoucherDelete from './components/modules/vr_settings/VoucherDelete';
+import Comparison from './components/modules/Requisition/Comparison';
+import RequisitionList from './components/modules/Requisition/Requisitions';
+import Requisitions from './components/modules/Requisition/Requisitions';
 
 function ProtectedRoute({ condition, children }) {
   return condition ? children : <Navigate to="/" replace />;
@@ -188,8 +191,9 @@ function App() {
             <Route path={routes.add_role} element={<AddRole />} />
 
 
-            <Route path={routes.requisition_create} element={<RequisitionForm/>} />
-            <Route path={routes.requisition} element={<Requisition user={me} />} />
+            <Route path={routes.requisition} element={<Requisitions user={me} />} />
+            <Route path={routes.requisition_create} element={<RequisitionForm />} />
+            <Route path={routes.requisition_comparison} element={<Comparison user={me} />} />
 
 
             {/* Voucher Delete */}

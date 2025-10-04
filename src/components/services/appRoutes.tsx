@@ -147,7 +147,8 @@ const ROUTES = {
 
 
   // Requisition
-  requisition: '/requisition/comparison',
+  requisition: '/requisitions',
+  requisition_comparison: '/requisition/comparison',
   requisition_create: '/requisition/create',
 
 

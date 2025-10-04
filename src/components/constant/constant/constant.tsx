@@ -28,8 +28,6 @@ export const DASHBOARD_DATA_PENDING = 'DASHBOARD/data/pending';
 export const DASHBOARD_DATA_SUCCESS = 'DASHBOARD/data/success';
 export const DASHBOARD_DATA_ERROR = 'DASHBOARD/data/error';
 
-
-
 // Received Remittance
 export const RECEIVED_REMITTANCE_DATA_PENDING = 'RECEIVED/REMITTANCE/data/pending';
 export const RECEIVED_REMITTANCE_DATA_SUCCESS = 'RECEIVED/REMITTANCE/data/success';
@@ -72,10 +70,6 @@ export const BRANCH_STATUS_SUCCESS = 'BRANCH/status/success';
 export const BRANCH_STATUS_ERROR = 'BRANCH/status/error';
 
 // Protected Branch DDL
-// export const DDL_PROTECT_BRANCH_LIST_PENDING = 'DDL/BRANCH/protect/list/pending';
-// export const DDL_PROTECT_BRANCH_LIST_SUCCESS = 'DDL/BRANCH/protect/list/success';
-// export const DDL_PROTECT_BRANCH_LIST_ERROR = 'DDL/BRANCH/protect/list/error';
-
 // All Branch DDL
 export const ACTIVE_WAREHOUSE_DDL_PENDING = 'ACTIVE/WAREHOUSE/ddl/pending';
 export const ACTIVE_WAREHOUSE_DDL_SUCCESS = 'ACTIVE/WAREHOUSE/ddl/success';
@@ -156,17 +150,6 @@ export const PURCHASE_CONSTRUCTION_UPDATE_PENDING = 'CONSTRUCTION/PURCHASE/updat
 export const PURCHASE_CONSTRUCTION_UPDATE_SUCCESS = 'CONSTRUCTION/PURCHASE/update/success';
 export const PURCHASE_CONSTRUCTION_UPDATE_ERROR = 'CONSTRUCTION/PURCHASE/update/error';
 
-
-
-
-
-
-
-
-
-
-
-
 // Electronics Purchase Store
 export const PURCHASE_ELECTRONICS_STORE_PENDING = 'ELECTRONICS/PURCHASE/store/pending';
 export const PURCHASE_ELECTRONICS_STORE_SUCCESS = 'ELECTRONICS/PURCHASE/store/success';
@@ -181,11 +164,6 @@ export const PURCHASE_ELECTRONICS_EDIT_ERROR ='ELECTRONICS/PURCHASE/edit/error';
 export const PURCHASE_ELECTRONICS_UPDATE_PENDING = 'ELECTRONICS/PURCHASE/update/pending';
 export const PURCHASE_ELECTRONICS_UPDATE_SUCCESS = 'ELECTRONICS/PURCHASE/update/success';
 export const PURCHASE_ELECTRONICS_UPDATE_ERROR = 'ELECTRONICS/PURCHASE/update/error';
-
-
-
-
-
   
 // Electronics Sales Store
 export const SALES_ELECTRONICS_STORE_PENDING = 'ELECTRONICS/SALES/store/pending';
@@ -202,13 +180,10 @@ export const SALES_ELECTRONICS_UPDATE_PENDING = 'ELECTRONICS/SALES/update/pendin
 export const SALES_ELECTRONICS_UPDATE_SUCCESS = 'ELECTRONICS/SALES/update/success';
 export const SALES_ELECTRONICS_UPDATE_ERROR = 'ELECTRONICS/SALES/update/error';
 
-
-
 // Trading Sales Store
 export const SALES_TRADING_STORE_PENDING = 'TRADING/SALES/store/pending';
 export const SALES_TRADING_STORE_SUCCESS = 'TRADING/SALES/store/success';
 export const SALES_TRADING_STORE_ERROR = 'TRADING/SALES/store/error';
-
 
 // Trading Sales Edit
 export const SALES_TRADING_EDIT_PENDING = 'TRADING/SALES/edit/pending';
@@ -294,12 +269,9 @@ export const MITCH_MATCH_DATA_LIST_SUCCESS = 'MITCH/MATCH/DATA/list/success';
 export const MITCH_MATCH_DATA_LIST_ERROR = 'MITCH/MATCH/DATA/list/error';
 
 // Purchase Ledger constant
-export const PURCHASE_LEDGER_DATA_LIST_PENDING =
-  'PURCHASE/LEDGER/DATA/list/pending';
-export const PURCHASE_LEDGER_DATA_LIST_SUCCESS =
-  'PURCHASE/LEDGER/DATA/list/success';
-export const PURCHASE_LEDGER_DATA_LIST_ERROR =
-  'PURCHASE/LEDGER/DATA/list/error';
+export const PURCHASE_LEDGER_DATA_LIST_PENDING = 'PURCHASE/LEDGER/DATA/list/pending';
+export const PURCHASE_LEDGER_DATA_LIST_SUCCESS = 'PURCHASE/LEDGER/DATA/list/success';
+export const PURCHASE_LEDGER_DATA_LIST_ERROR = 'PURCHASE/LEDGER/DATA/list/error';
 
 // Sales Ledger constant
 export const SALES_LEDGER_DATA_LIST_PENDING = 'SALES/LEDGER/DATA/list/pending';
@@ -322,7 +294,6 @@ export const DATE_WISE_TOTAL_SUCCESS = 'DATE/WISE/DATA/success';
 export const DATE_WISE_TOTAL_ERROR = 'DATE/WISE/DATA/error';
 
 // Chart of accounts
-
 // Level 1
 export const COAL1_DDL_LIST_PENDING = 'COAL1/DDL/list/pending';
 export const COAL1_DDL_LIST_SUCCESS = 'COAL1/DDL/list/success';
@@ -423,7 +394,6 @@ export const IMAGE_UPLOAD_PENDING = 'IMAGE/UPLOAD/pending';
 export const IMAGE_UPLOAD_SUCCESS = 'IMAGE/UPLOAD/success';
 export const IMAGE_UPLOAD_ERROR = 'IMAGE/UPLOAD/error';
 
-
 // Bulk Image Upload Constants
 export const BULK_IMAGE_UPLOAD_PENDING = 'BULK/IMAGE/UPLOAD/pending';
 export const BULK_IMAGE_UPLOAD_SUCCESS = 'BULK/IMAGE/UPLOAD/success';
@@ -434,13 +404,17 @@ export const GET_VOUCHER_FOR_IMAGE_LIST_PENDING ='VOUCHER/FOR/IMAGE/list/pending
 export const GET_VOUCHER_FOR_IMAGE_LIST_SUCCESS ='VOUCHER/FOR/IMAGE/list/success';
 export const GET_VOUCHER_FOR_IMAGE_LIST_ERROR ='VOUCHER/FOR/IMAGE/list/error';
 
-
-// Requisition constant
-export const REQUISITION_DATA_LIST_PENDING = 'REQUISITION/DATA/list/pending';
-export const REQUISITION_DATA_LIST_SUCCESS = 'REQUISITION/DATA/list/success';
-export const REQUISITION_DATA_LIST_ERROR = 'REQUISITION/DATA/list/error';
+// Requisition comparison constant
+export const REQUISITION_COMPARISON_LIST_PENDING = 'REQUISITION/COMPARISON/list/pending';
+export const REQUISITION_COMPARISON_LIST_SUCCESS = 'REQUISITION/COMPARISON/list/success';
+export const REQUISITION_COMPARISON_LIST_ERROR = 'REQUISITION/COMPARISON/list/error';
 
 // Requisition Store constant
 export const REQUISITION_DATA_STORE_PENDING = 'REQUISITION/DATA/store/pending';
 export const REQUISITION_DATA_STORE_SUCCESS = 'REQUISITION/DATA/store/success';
 export const REQUISITION_DATA_STORE_ERROR = 'REQUISITION/DATA/store/error';
+
+// Requisition List constant
+export const REQUISITION_DATA_LIST_PENDING = 'REQUISITION/DATA/list/pending';
+export const REQUISITION_DATA_LIST_SUCCESS = 'REQUISITION/DATA/list/success';
+export const REQUISITION_DATA_LIST_ERROR = 'REQUISITION/DATA/list/error';
