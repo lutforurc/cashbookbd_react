@@ -66,7 +66,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
           @media print {
             @page {
               size: A4 portrait;
-              margin: 6mm 8mm 8mm 10mm;
+              margin: 5mm 4mm 8mm 8mm;
             }
             .no-print { display: none !important; }
             .page-break { page-break-after: always; }
@@ -77,7 +77,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
             .print-page {
               display: flex;
               flex-direction: column;
-              min-height: calc(297mm - 6mm - 8mm - 8mm - 8mm);
+              min-height: calc(297mm - 5mm - 4mm - 8mm - 8mm);
             }
 
             h1, h2, h3 { margin-top: 0; }
