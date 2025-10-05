@@ -102,9 +102,14 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                     <span className="block font-semibold">
                       {coal4?.name || '-'}
                     </span>
-                    {coal4?.cust_party_infos?.manual_address && (
-                      <span>
-                        {coal4?.cust_party_infos?.manual_address}
+                    {coal4?.cust_party_infos?.address || coal4?.cust_party_infos?.manual_address && (
+                      <span className='block'>
+                        {coal4?.cust_party_infos?.address ?? coal4?.cust_party_infos?.manual_address}
+                      </span>
+                    )}
+                    {coal4?.cust_party_infos?.mobile && (
+                      <span className='block'>
+                        {coal4?.cust_party_infos?.mobile}
                       </span>
                     )}
                   </div>
@@ -171,7 +176,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                               {row?.vr_no ? row.vr_no : ''}
                             </div>
                             <div className={`text-[${fs}px]`}>
-                              { formatDateUsdToBd(dayjs(row?.vr_date).format('YYYY-MM-DD')) }
+                              {formatDateUsdToBd(dayjs(row?.vr_date).format('YYYY-MM-DD'))}
                               {/* { row?.vr_date } */}
                             </div>
                           </td>

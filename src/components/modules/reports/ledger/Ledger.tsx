@@ -84,7 +84,7 @@ const Ledger = (user: any) => {
 
 
   console.log('====================================');
-  console.log('Table Data', tableData);
+  console.log('Table Data', coal4);
   console.log('====================================');
 
 
