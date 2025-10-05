@@ -19,6 +19,7 @@ export type Props = {
   startDate?: string; // e.g. '01/10/2025'
   endDate?: string; // e.g. '31/10/2025'
   title?: string; // default 'Ledger'
+  ledgerId?: number | string; // new prop for ledger ID
   rowsPerPage?: number; // default 8 (fits the provided layout)
   fontSize?: number; // default 9 (px)
 };
@@ -33,11 +34,7 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 
 const sum = (arr: number[]) => arr.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
 
-const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
-  (
-    { rows, startDate, endDate, title = 'Ledger', rowsPerPage = 8, fontSize },
-    ref,
-  ) => {
+const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, endDate, title = 'Ledger', ledgerId, rowsPerPage = 8, fontSize }, ref,) => {
     // Safety: normalize rows
     const rowsArr: LedgerRow[] = Array.isArray(rows) ? rows : [];
 

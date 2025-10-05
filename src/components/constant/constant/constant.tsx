@@ -333,6 +333,11 @@ export const COAL4_LIST_PENDING = 'COAL4/list/pending';
 export const COAL4_LIST_SUCCESS = 'COAL4/list/success';
 export const COAL4_LIST_ERROR = 'COAL4/list/error';
 
+// Level 4 GET only by id
+export const COAL4_BY_ID_PENDING = 'COAL4/by/id/pending';
+export const COAL4_BY_ID_SUCCESS = 'COAL4/by/id/success';
+export const COAL4_BY_ID_ERROR = 'COAL4/by/id/error';
+
 // Day Close Constants
 export const DAYCLOSE_STORE_PENDING = 'DAYCLOSE/STORE/pending';
 export const DAYCLOSE_STORE_SUCCESS = 'DAYCLOSE/STORE/success';

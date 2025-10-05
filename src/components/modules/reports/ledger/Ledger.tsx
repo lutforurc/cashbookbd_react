@@ -172,9 +172,6 @@ const Ledger = (user: any) => {
     },
   ];
 
-
-
-
     const handlePrint = useReactToPrint({
       content: () => {
         if (!printRef.current) {
@@ -205,6 +202,10 @@ const Ledger = (user: any) => {
       setFontSize(10); // Reset if input is invalid
     }
   };
+
+  console.log('====================================');
+  console.log(tableData);
+  console.log('====================================');
 
   return (
     <div className="">
@@ -294,12 +295,13 @@ const Ledger = (user: any) => {
         {/* Ensure data is always an array */}
 
         <div className="hidden">
-          <LedgerPrint
+          <LedgerPPrint
             ref={printRef}
             rows={tableData || []} // আপনার data
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Ledger"
+            ledgerId={ledgerId}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
           />

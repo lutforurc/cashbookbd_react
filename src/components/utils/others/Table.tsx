@@ -16,6 +16,7 @@ interface TableProps {
 }
 
 const Table: React.FC<TableProps> = ({ columns, data, className }) => {
+
   return (
     <div className={`overflow-x-auto rounded-sm shadow-sm  ${className}`}>
       <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">

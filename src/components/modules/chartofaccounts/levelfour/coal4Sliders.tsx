@@ -1,10 +1,13 @@
 import {
+  COAL4_BY_ID_ERROR,
+  COAL4_BY_ID_PENDING,
+  COAL4_BY_ID_SUCCESS,
   COAL4_DDL_LIST_ERROR,
   COAL4_DDL_LIST_PENDING, COAL4_DDL_LIST_SUCCESS,
   COAL4_LIST_ERROR, COAL4_LIST_PENDING,
   COAL4_LIST_SUCCESS,
 } from '../../../constant/constant/constant';
-import { API_CHART_OF_ACCOUNTS_DDL_L4_URL, API_CHART_OF_ACCOUNTS_L4_URL } from '../../../services/apiRoutes';
+import { API_CHART_OF_ACCOUNTS_BY_ID_L4_URL, API_CHART_OF_ACCOUNTS_DDL_L4_URL, API_CHART_OF_ACCOUNTS_L4_URL } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
 
@@ -13,6 +16,18 @@ interface coal4Param {
   perPage: number;
   search: string;
 }
+
+const initialState = {
+  isLoading: false,
+  errors: null,
+  data: { label: 'Select Ledger', value: 'null' },
+  coal4ById: {  },
+};
+
+interface coal4Param {
+  name: string | null;
+}
+
 
 export const getCoal4 = ({ page, perPage, search = '' }: coal4Param) => (dispatch: any) => {
   dispatch({ type: COAL4_LIST_PENDING });
@@ -39,9 +54,6 @@ export const getCoal4 = ({ page, perPage, search = '' }: coal4Param) => (dispatc
     });
 };
 
-interface coal4Param {
-  name: string | null;
-}
 
 export const getCoal4Ddl = (searchName: string | null) => async (dispatch: any) => {
   dispatch({ type: COAL4_DDL_LIST_PENDING });
@@ -68,16 +80,38 @@ export const getCoal4Ddl = (searchName: string | null) => async (dispatch: any) 
     });
 };
 
-const initialState = {
-  isLoading: false,
-  errors: null,
-  data: { label: 'Select Ledger', value: 'null' },
+
+
+export const getCoal4ById = (id: number | null) => async (dispatch: any) => {
+  dispatch({ type: COAL4_BY_ID_PENDING });
+  await httpService.get(API_CHART_OF_ACCOUNTS_BY_ID_L4_URL + `${id}&delay=0`)
+    .then((res) => {
+      let _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: COAL4_BY_ID_SUCCESS,
+          payload: _data.data.data,
+        });
+      } else {
+        dispatch({
+          type: COAL4_BY_ID_ERROR,
+          payload: _data.error.message,
+        });
+      }
+    })
+    .catch((err) => {
+      dispatch({
+        type: COAL4_BY_ID_ERROR,
+        payload: 'Something went wrong',
+      });
+    });
 };
 
 const coal4Reducer = (state = initialState, action: any) => {
   switch (action.type) {
     case COAL4_DDL_LIST_PENDING:
     case COAL4_LIST_PENDING:
+    case COAL4_BY_ID_PENDING:
       return {
         ...state,
         isLoading: true,
@@ -90,12 +124,24 @@ const coal4Reducer = (state = initialState, action: any) => {
         isLoading: false,
         data: action.payload,
       };
+
+
+    case COAL4_BY_ID_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        data: {},
+        coal4ById: action.payload,
+      };
     case COAL4_DDL_LIST_ERROR:
     case COAL4_LIST_ERROR:
+    case COAL4_BY_ID_ERROR:
       return {
         ...state,
         isLoading: false,
         errors: action.payload,
+        data: {},
+        coal4ById: {},
       };
     default:
       return state;

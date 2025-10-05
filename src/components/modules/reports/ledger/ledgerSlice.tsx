@@ -14,13 +14,22 @@ interface ledgerParam {
   endDate: string;
 }
 
+
+interface LedgerState {
+  isLoading: boolean;
+  errors: string | null;
+  data: any;
+}
+
+const initialState: LedgerState = {
+  isLoading: false,
+  errors: null,
+  data: {},
+};
+
 export const getLedger = ({ branchId, ledgerId, startDate, endDate }: ledgerParam) => (dispatch: any) => {
   dispatch({ type: LEDGER_DATA_LIST_PENDING });
-  httpService
-    .get(
-      API_REPORT_LEDGER_URL +
-      `?branch_id=${branchId}&ledger_id=${ledgerId}&start_date=${startDate}&end_date=${endDate}&delay=1`,
-    )
+  httpService.get(API_REPORT_LEDGER_URL +`?branch_id=${branchId}&ledger_id=${ledgerId}&start_date=${startDate}&end_date=${endDate}&delay=1`)
     .then((res) => {
       let _data = res.data;
       if (_data.success) {
@@ -42,17 +51,8 @@ export const getLedger = ({ branchId, ledgerId, startDate, endDate }: ledgerPara
       });
     });
 };
-interface LedgerState {
-  isLoading: boolean;
-  errors: string | null;
-  data: any;
-}
 
-const initialState: LedgerState = {
-  isLoading: false,
-  errors: null,
-  data: {},
-};
+
 const ledgerReducer = (
   state: LedgerState = initialState,
   action: any

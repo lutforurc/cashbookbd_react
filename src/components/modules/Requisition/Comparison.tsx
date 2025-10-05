@@ -34,10 +34,10 @@ const Requisition = (user: any) => {
 
   useEffect(() => {
     if (!requisition.isLoading) {
-      const flatArray = requisition.data ? Object.values(requisition.data) : [];
+      const flatArray = requisition.comparisonData ? Object.values(requisition.comparisonData) : [];
       setTableData(flatArray);
     }
-  }, [requisition.data]);
+  }, [requisition.comparisonData]);
 
 
   const handleBranchChange = (e: any) => {
@@ -86,13 +86,13 @@ const Requisition = (user: any) => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => (
-        <div className="">{row.serial_no ? row.serial_no : '-'}</div>
+        <div className="">{row?.serial_no ? row.serial_no : '-'}</div>
       ),
     },
     {
       key: 'product_name',
       header: 'Product Name',
-      render: (row: any) => <div className="w-25">{row.product_name}</div>,
+      render: (row: any) => <div className="w-25">{row?.product_name || '-'}</div>,
       width: '100px',
     },
     {
@@ -101,7 +101,7 @@ const Requisition = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <div className="w-25">{thousandSeparator(row.requisition_qty, 0)}</div>
+        <div className="w-25">{row?.requisition_qty ? thousandSeparator(row.requisition_qty, 0) : '-'}</div>
       ),
       width: '100px',
     },
@@ -111,7 +111,7 @@ const Requisition = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <div className="">{thousandSeparator(Number(row.purchase_qty), 0)}</div>
+        <div className="">{row?.purchase_qty ? thousandSeparator(Number(row.purchase_qty), 0) : '-'}</div>
       ),
       width: '100px',
     },
@@ -122,7 +122,7 @@ const Requisition = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <div className="">{thousandSeparator(row.requisition_total, 0)}</div>
+        <div className="">{row?.requisition_total ? thousandSeparator(row.requisition_total, 0) : '-'}</div>
       ),
       width: '100px',
     },
@@ -132,7 +132,7 @@ const Requisition = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <div className="">{thousandSeparator(row.approved_amt, 0)}</div>
+        <div className="">{ row?.approved_amt ? thousandSeparator(row.approved_amt, 0) : '-'}</div>
       ),
       width: '100px',
     },
@@ -143,7 +143,7 @@ const Requisition = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => (
         <div className="">
-          {thousandSeparator(Number(row.purchase_total), 0)}
+          {row?.purchase_total ? thousandSeparator(Number(row.purchase_total), 0) : '-'}
         </div>
       ),
       width: '100px',
@@ -153,7 +153,7 @@ const Requisition = (user: any) => {
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="">{thousandSeparator(Math.abs(row.difference), 0)}</div>,
+      render: (row: any) => <div className="">{row?.difference ? thousandSeparator(Math.abs(row.difference), 0) : '-'}</div>,
       width: '100px',
     },
     {
@@ -161,21 +161,25 @@ const Requisition = (user: any) => {
       header: 'Status',
       render: (row: any) => (
         <div
-          className={`w-25 ${row.requisition_total === 0
+          className={`w-25 ${row?.requisition_total === 0
               ? 'text-red-500'
-              : row.difference < 0
+              : row?.difference < 0
                 ? 'text-green-500'
-                : row.difference > 0
+                : row?.difference > 0
                   ? 'text-yellow-500'
                   : 'text-gray-500' // Default case when difference === 0
             }`}
         >
-          {row.status}
+          {row?.status}
         </div>
       ),
       width: '100px',
     },
   ];
+
+  console.log('====================================');
+  console.log('requisition.comparisonData', requisition.comparisonData);
+  console.log('====================================');
 
   return (
     <div className="">

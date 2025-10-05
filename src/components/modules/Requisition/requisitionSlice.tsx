@@ -35,6 +35,7 @@ interface RequisitionState {
   errors: string | null;
   data: any;
   storeData?: any;
+  comparisonData?: any;
 }
 
 const initialState: RequisitionState = {
@@ -42,6 +43,7 @@ const initialState: RequisitionState = {
   errors: null,
   data: {},
   storeData: {},
+  comparisonData: {},
 };
 
 export const requisitionComparison = ({ branchId, startDate, endDate }: ledgerParam) => (dispatch: any) => {
@@ -155,10 +157,14 @@ const requisitionReducer = (state: RequisitionState = initialState, action: any)
   switch (action.type) {
     case REQUISITION_DATA_LIST_PENDING:
       case REQUISITION_DATA_STORE_PENDING:
+      case REQUISITION_COMPARISON_LIST_PENDING:
       return {
         ...state,
         isLoading: true,
         errors: null, // Optionally reset errors on request start
+        data: {},
+        storeData: {},
+        comparisonData: {},
       };
 
     case REQUISITION_DATA_LIST_SUCCESS:
@@ -175,14 +181,23 @@ const requisitionReducer = (state: RequisitionState = initialState, action: any)
         storeData: action.payload,
         errors: null, // Clear errors on success
       };
+    case REQUISITION_COMPARISON_LIST_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        comparisonData: action.payload, 
+        errors: null, // Clear errors on success
+      };
 
     case REQUISITION_DATA_LIST_ERROR:
     case REQUISITION_DATA_STORE_ERROR:
+    case REQUISITION_COMPARISON_LIST_ERROR:
       return {
         ...state,
         isLoading: false,
         data: {},
         storeData: {},
+        comparisonData: {},
         errors: action.payload,
       };
 
