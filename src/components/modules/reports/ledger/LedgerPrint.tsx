@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
+import { useDispatch, useSelector } from 'react-redux';
 
 export type LedgerRow = {
   sl_number?: string | number;
@@ -36,14 +38,23 @@ const sum = (arr: number[]) => arr.reduce((a, b) => a + (Number.isFinite(b) ? b 
 
 const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, endDate, title = 'Ledger', ledgerId, rowsPerPage = 8, fontSize }, ref,) => {
     // Safety: normalize rows
+    const dispatch = useDispatch();
+    const coal4 = useSelector((state) => state.coal4);
     const rowsArr: LedgerRow[] = Array.isArray(rows) ? rows : [];
-
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
 
     // Grand totals (for all rows)
     const grandDebit = sum(rowsArr.map((r) => Number(r.debit || 0)));
     const grandCredit = sum(rowsArr.map((r) => Number(r.credit || 0)));
+
+      useEffect(() => {
+        dispatch(getCoal4ById(Number(ledgerId))); 
+      }, []);
+
+      console.log('====================================');
+      console.log('coal4 from ledger print', coal4);
+      console.log('====================================');
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">

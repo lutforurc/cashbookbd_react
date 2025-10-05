@@ -295,13 +295,13 @@ const Ledger = (user: any) => {
         {/* Ensure data is always an array */}
 
         <div className="hidden">
-          <LedgerPPrint
+          <LedgerPrint
             ref={printRef}
             rows={tableData || []} // আপনার data
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Ledger"
-            ledgerId={ledgerId}
+            ledgerId={ledgerId || undefined}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
           />

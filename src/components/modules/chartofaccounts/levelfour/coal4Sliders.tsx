@@ -99,10 +99,10 @@ export const getCoal4ById = (id: number | null) => async (dispatch: any) => {
         });
       }
     })
-    .catch((err) => {
+    .catch((error) => {
       dispatch({
         type: COAL4_BY_ID_ERROR,
-        payload: 'Something went wrong',
+        payload: error.message || 'Something went wrong',
       });
     });
 };
