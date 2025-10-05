@@ -84,7 +84,7 @@ export const getCoal4Ddl = (searchName: string | null) => async (dispatch: any) 
 
 export const getCoal4ById = (id: number | null) => async (dispatch: any) => {
   dispatch({ type: COAL4_BY_ID_PENDING });
-  await httpService.get(API_CHART_OF_ACCOUNTS_BY_ID_L4_URL + `${id}&delay=0`)
+  await httpService.get(`${API_CHART_OF_ACCOUNTS_BY_ID_L4_URL}${id}`)
     .then((res) => {
       let _data = res.data;
       if (_data.success) {
@@ -102,7 +102,7 @@ export const getCoal4ById = (id: number | null) => async (dispatch: any) => {
     .catch((error) => {
       dispatch({
         type: COAL4_BY_ID_ERROR,
-        payload: error.message || 'Something went wrong',
+        payload: error || 'Something went wrong',
       });
     });
 };

@@ -4,11 +4,11 @@
 // export const API_REMOTE_URL = 'https://krf.cashbookbd.com';
 // export const API_REMOTE_URL = 'http://127.0.0.1:8000';
 // export const API_REMOTE_URL = 'https://staging.cashbookbd.com';
-// export const API_REMOTE_URL = 'http://cashbook_api.test';
+export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL = 'https://mikdad.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://kpsnew.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
-export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
+// export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
@@ -121,7 +121,7 @@ export const API_CHART_OF_ACCOUNTS_L2_URL = API_BASE_URL + '/coal2/coal2-list';
 export const API_CHART_OF_ACCOUNTS_L3_URL = API_BASE_URL + '/coal3/coal3-list';
 export const API_CHART_OF_ACCOUNTS_L4_URL = API_BASE_URL + '/coal4/coal4-list';
 export const API_CHART_OF_ACCOUNTS_DDL_L4_URL =  API_BASE_URL + '/chart_of_accounts/ddl/l4-list';
-export const API_CHART_OF_ACCOUNTS_BY_ID_L4_URL =  API_BASE_URL + '/coal4/coal4/';
+export const API_CHART_OF_ACCOUNTS_BY_ID_L4_URL =  API_BASE_URL + '/coal4/';
 
 // Cash Received url
 export const API_CASH_RECEIVED_URL = API_BASE_URL + '/trading/cash/received';

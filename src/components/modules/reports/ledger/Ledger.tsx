@@ -19,11 +19,13 @@ import { formatDate } from '../../../utils/utils-functions/formatDate';
 import { useReactToPrint } from 'react-to-print';
 import LedgerPrint from './LedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
+import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.ledger);
+  const coal4 = useSelector((state) => state.coal4);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
@@ -77,7 +79,15 @@ const Ledger = (user: any) => {
     dispatch(
       getLedger({ branchId, ledgerId, startDate: startD, endDate: endD }),
     );
+    dispatch(getCoal4ById(Number(ledgerId))); 
   };
+
+
+  console.log('====================================');
+  console.log('coal4 from ledger', coal4, ledgerId);
+  console.log('====================================');
+
+
 
   useEffect(() => {
     if (
@@ -204,7 +214,7 @@ const Ledger = (user: any) => {
   };
 
   console.log('====================================');
-  console.log(tableData);
+  console.log(ledgerId);
   console.log('====================================');
 
   return (
