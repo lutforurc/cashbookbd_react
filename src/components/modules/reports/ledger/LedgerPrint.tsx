@@ -1,8 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
-import { useDispatch, useSelector } from 'react-redux';
 
 export type LedgerRow = {
   sl_number?: string | number;
@@ -21,7 +19,7 @@ export type Props = {
   startDate?: string; // e.g. '01/10/2025'
   endDate?: string; // e.g. '31/10/2025'
   title?: string; // default 'Ledger'
-  ledgerId?: number | string; // new prop for ledger ID
+  coal4?: any; // new prop for coal4 data
   rowsPerPage?: number; // default 8 (fits the provided layout)
   fontSize?: number; // default 9 (px)
 };
@@ -34,11 +32,23 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
-const sum = (arr: number[]) => arr.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
+const sum = (arr: number[]) =>
+  arr.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
 
-const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, endDate, title = 'Ledger', ledgerId, rowsPerPage = 8, fontSize }, ref,) => {
+const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
+  (
+    {
+      rows,
+      startDate,
+      endDate,
+      title = 'Ledger',
+      coal4,
+      rowsPerPage = 8,
+      fontSize,
+    },
+    ref,
+  ) => {
     // Safety: normalize rows
-    const dispatch = useDispatch();
 
     const rowsArr: LedgerRow[] = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
@@ -47,8 +57,6 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, 
     // Grand totals (for all rows)
     const grandDebit = sum(rowsArr.map((r) => Number(r.debit || 0)));
     const grandCredit = sum(rowsArr.map((r) => Number(r.credit || 0)));
-
- 
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -86,8 +94,21 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, 
               {/* Header */}
               <div className="mb-4">
                 <h1 className="text-2xl font-bold text-center">{title}</h1>
-                <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
+                <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
+                  {/* বাম পাশ */}
                   <div>
+                    <span className="block font-semibold">
+                      {coal4?.name || '-'}
+                    </span>
+                    {coal4?.cust_party_infos?.manual_address && (
+                      <span>
+                        {coal4?.cust_party_infos?.manual_address}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* ডান পাশ */}
+                  <div className="text-right">
                     <span className="font-semibold">Report Date:</span>{' '}
                     {startDate || '-'} — {endDate || '-'}
                   </div>
@@ -98,21 +119,52 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, 
                 <table className="w-full table-fixed border-collapse">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-8 text-center">#</th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-30 text-center">Vr No</th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">Description</th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-28 text-right">Debit</th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-28 text-right">Credit</th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-8 text-center"
+                      >
+                        #
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-30 text-center"
+                      >
+                        Vr No
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2"
+                      >
+                        Description
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-28 text-right"
+                      >
+                        Debit
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-28 text-right"
+                      >
+                        Credit
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {pageRows.length ? (
                       pageRows.map((row, idx) => (
                         <tr key={idx} className="avoid-break align-top">
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1 text-center"
+                          >
                             {row?.sl_number == 0 ? '' : row?.sl_number}
                           </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center leading-normal">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1 text-center leading-normal"
+                          >
                             <div className={`text-[${fs}px]`}>
                               {row?.vr_no ? row.vr_no : ''}
                             </div>
@@ -120,29 +172,45 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, 
                               {row?.vr_date}
                             </div>
                           </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1"
+                          >
                             <div className="w-full max-w-4xl leading-normal">
                               <div className="leading-normal break-words whitespace-normal">
-                                <span className={`text-[${fs}px]`}>{row?.name || ''}</span>
+                                <span className={`text-[${fs}px]`}>
+                                  {row?.name || ''}
+                                </span>
                               </div>
                               {row?.remarks && (
-                                <div className={`text-[${fs}px] break-words whitespace-normal text-gray-700`}>
+                                <div
+                                  className={`text-[${fs}px] break-words whitespace-normal text-gray-700`}
+                                >
                                   {row.remarks}
                                 </div>
                               )}
                             </div>
                           </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right align-middle">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1 text-right align-middle"
+                          >
                             {thousandSeparator(Number(row?.debit || 0), 0)}
                           </td>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right align-middle">
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1 text-right align-middle"
+                          >
                             {thousandSeparator(Number(row?.credit || 0), 0)}
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={5} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
+                        <td
+                          colSpan={5}
+                          className="border border-gray-900 px-3 py-6 text-center text-gray-500"
+                        >
                           No data found
                         </td>
                       </tr>
@@ -151,13 +219,23 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, 
                     {/* Page subtotal row */}
                     {pageRows.length > 0 && pIdx !== pages.length - 1 && (
                       <tr className="font-semibold">
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right" colSpan={3}>
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-1 text-right"
+                          colSpan={3}
+                        >
                           Subtotal (Page {pIdx + 1})
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-1 text-right"
+                        >
                           {thousandSeparator(pageDebit, 0)}
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-1 text-right"
+                        >
                           {thousandSeparator(pageCredit, 0)}
                         </td>
                       </tr>
@@ -196,7 +274,9 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(({ rows, startDate, 
         </div> */}
 
         {/* Note */}
-        <div className="mt-2 text-xs text-gray-900">* This document is system generated.</div>
+        <div className="mt-2 text-xs text-gray-900">
+          * This document is system generated.
+        </div>
       </div>
     );
   },

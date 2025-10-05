@@ -84,7 +84,7 @@ const Ledger = (user: any) => {
 
 
   console.log('====================================');
-  console.log('coal4 from ledger', coal4, ledgerId);
+  console.log('coal4 from ledger', coal4?.coal4ById, ledgerId);
   console.log('====================================');
 
 
@@ -212,10 +212,7 @@ const Ledger = (user: any) => {
       setFontSize(10); // Reset if input is invalid
     }
   };
-
-  console.log('====================================');
-  console.log(ledgerId);
-  console.log('====================================');
+ 
 
   return (
     <div className="">
@@ -311,7 +308,7 @@ const Ledger = (user: any) => {
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Ledger"
-            ledgerId={ledgerId || undefined}
+            coal4={coal4.coal4ById || undefined}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
           />
