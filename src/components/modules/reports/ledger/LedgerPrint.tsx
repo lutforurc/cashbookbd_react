@@ -177,7 +177,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                           </td>
                           <td
                             style={{ fontSize: fs }}
-                            className="border border-gray-900 px-2 py-1"
+                            className="border border-gray-900 px-2 py-1 align-middle"
                           >
                             <div className="w-full max-w-4xl leading-normal">
                               <div className="leading-normal break-words whitespace-normal">
@@ -185,7 +185,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                                   {row?.name || ''}
                                 </span>
                               </div>
-                              {row?.remarks && (
+                              {row?.remarks != "-" && (
                                 <div
                                   className={`text-[${fs}px] break-words whitespace-normal text-gray-700`}
                                 >

@@ -84,7 +84,7 @@ const Ledger = (user: any) => {
 
 
   console.log('====================================');
-  console.log('coal4 from ledger', coal4?.coal4ById, ledgerId);
+  console.log('Table Data', tableData);
   console.log('====================================');
 
 
@@ -139,7 +139,7 @@ const Ledger = (user: any) => {
       render: (row: any) => (
         <>
           <p>{row.name}</p>
-          <div className="text-sm text-gray-500   lg:max-w-150 break-words whitespace-normal">{row.remarks}</div>
+          <div className="text-sm text-gray-500   lg:max-w-150 break-words whitespace-normal">{row.remarks === "-" ? "" : row.remarks}</div>
         </>
       ),
     },
