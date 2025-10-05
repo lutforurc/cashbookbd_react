@@ -1,4 +1,5 @@
 import React from 'react'
+import dayjs from 'dayjs';
 
 function formatDate(dateString: string) {
     if (!dateString) return "";
@@ -44,28 +45,31 @@ function formatDateBdToUsd(dateString: string) {
 export { formatDateBdToUsd }
 
 
-function formatDateUsdToBd(dateString: string) {
-  if (!dateString) return "";
-    const [year, month, day] = dateString.split('-');
-        const shortYear = year.slice(-2);
-    return (
-        <>
-            {day}/{month}/{shortYear}
-        </>
-    )
+function formatDateUsdToBd(dateString?: string | null) {
+  if (!dateString || !dayjs(dateString).isValid()) return ""; // ফাঁকা বা invalid date handle
+
+  const [year, month, day] = dateString.split('-');
+  const shortYear = year.slice(-2);
+
+  return `${day}/${month}/${shortYear}`;
 }
 
-export { formatDateUsdToBd }
+export { formatDateUsdToBd };
 
 
 function formatLongDateUsdToBd(dateString: string) {
-  if (!dateString) return "";
-    const [year, month, day] = dateString.split('-');
-    return (
-        <>
-            {day}/{month}/{year}
-        </>
-    )
+  if (!dateString) return "-";
+
+  try {
+    const [day, month, year] = dateString.split("/");
+    if (!day || !month || !year) return dateString;
+
+    // Only last two digits of ye
+
+    return `${day}/${month}/${year}`;
+  } catch {
+    return dateString;
+  }
 }
 
 export { formatLongDateUsdToBd }

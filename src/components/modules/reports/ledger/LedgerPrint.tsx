@@ -1,6 +1,8 @@
 import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import dayjs from 'dayjs';
+import { formatDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 
 export type LedgerRow = {
   sl_number?: string | number;
@@ -169,7 +171,8 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                               {row?.vr_no ? row.vr_no : ''}
                             </div>
                             <div className={`text-[${fs}px]`}>
-                              {row?.vr_date}
+                              { formatDateUsdToBd(dayjs(row?.vr_date).format('YYYY-MM-DD')) }
+                              {/* { row?.vr_date } */}
                             </div>
                           </td>
                           <td
