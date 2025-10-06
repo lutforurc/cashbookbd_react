@@ -78,7 +78,6 @@ const TradingBusinessPurchase = () => {
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
-  const [voucherType, setVoucherType] = useState('');
   const [lineTotal, setLineTotal] = useState<number>(0);
 
   dayjs.extend(utc); 

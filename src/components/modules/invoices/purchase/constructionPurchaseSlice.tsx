@@ -96,7 +96,7 @@ export const constructionPurchaseUpdate = (data: formData, callback?: (message: 
 
 interface editData {
   invoiceNo: string;
-  voucherType: string;
+  purchaseType: string;
 }
 
 export const constructionPurchaseEdit = (data: editData, callback?: (message: string) => void) => (dispatch: any) => {

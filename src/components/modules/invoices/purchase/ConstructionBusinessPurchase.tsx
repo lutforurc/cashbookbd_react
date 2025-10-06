@@ -65,8 +65,10 @@ const ConstructionBusinessPurchase = () => {
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [permissions, setPermissions] = useState<any>([]);
   const [voucherType, setVoucherType] = useState('');
+  const [purchaseType, setPurchaseType] = useState('2'); // Define state with type
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
+  const [isUpdateButton, setIsUpdateButton] = useState(false);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -149,6 +151,8 @@ const ConstructionBusinessPurchase = () => {
 
   const resetProducts = () => {
     setFormData(initialFormData); // Reset to the initial state
+    setIsUpdateButton(false);
+    isUpdating && setIsUpdating(false);
   };
 
   const searchInvoice = () => {
@@ -158,7 +162,7 @@ const ConstructionBusinessPurchase = () => {
     }
     dispatch(
       constructionPurchaseEdit(
-        { invoiceNo: search, voucherType: voucherType },
+        { invoiceNo: search, purchaseType: purchaseType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -166,9 +170,76 @@ const ConstructionBusinessPurchase = () => {
         },
       ),
     );
+    if (purchase.isEdit === true) {
+      setIsUpdateButton(true);
+    }
     setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
+
+  useEffect(() => {
+    if (purchase.data.transaction) {
+      const products = purchase.data.transaction?.purchase_master.details.map(
+        (detail: any) => ({
+          id: detail.id,
+          product: detail.product.id,
+          product_name: detail.product.name,
+          serial_no: detail.serial_no,
+          unit: detail.product.unit.name,
+          qty: detail.quantity,
+          price: detail.purchase_price,
+          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+        }),
+      );
+
+      // Find accountName
+      let accountName = '-';
+      if (purchase?.data?.transaction.acc_transaction_master?.length > 0) {
+        for (const trxMaster of purchase?.data?.transaction
+          .acc_transaction_master) {
+          for (const detail of trxMaster.acc_transaction_details) {
+            if (
+              detail.coa_l4?.id ===
+              purchase?.data?.transaction?.purchase_master?.supplier_id
+            ) {
+              accountName = detail.coa_l4.name;
+              break;
+            }
+          }
+          if (accountName !== '-') break;
+        }
+      }
+
+      // Update formData using previous state to maintain integrity
+      const updatedFormData = {
+        ...formData,
+        mtmId: purchase.data.mtmId,
+        account:
+          purchase?.data?.transaction?.purchase_master?.supplier_id.toString() ??
+          '',
+        accountName,
+        vehicleNumber:
+          purchase.data.transaction.purchase_master?.vehicle_no || '',
+        purchaseOrderNumber:
+          purchase.data.transaction.purchase_master?.purchase_order?.id.toString() ||
+          '',
+        purchaseOrderText:
+          purchase.data.transaction.purchase_master?.purchase_order
+            ?.order_number,
+        invoice_no: purchase.data.transaction.purchase_master?.invoice_no || '',
+        invoice_date:
+          purchase.data.transaction.purchase_master?.invoice_date || '',
+        paymentAmt:
+          purchase.data.transaction.purchase_master.netpayment.toString() || '',
+        discountAmt:
+          parseFloat(purchase.data.transaction.purchase_master.discount) || 0,
+        notes: purchase.data.transaction.purchase_master.notes || '',
+        products: products || [],
+      };
+
+      setFormData(updatedFormData);
+    }
+  }, [purchase.data.transaction]);
 
   const totalAmount = formData.products.reduce(
     (sum, row) => sum + Number(row.qty) * Number(row.price),
@@ -396,8 +467,17 @@ const ConstructionBusinessPurchase = () => {
         }
       }),
     );
+    setIsUpdateButton(false);
     setIsUpdating(false);
   };
+
+  useEffect(() => {
+    if (purchase.isEdit) {
+      setIsUpdateButton(true);
+    } else {
+      setIsUpdateButton(false);
+    }
+  }, [purchase.isEdit]);
 
   const handleStartDate = (e: any) => {
     const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
@@ -436,27 +516,25 @@ const ConstructionBusinessPurchase = () => {
   };
 
   const handleChangeVoucherType = (e: any) => {
-    setVoucherType(e.target.value);
+    setPurchaseType(e.target.value);
   };
-  
 
-    useEffect(() => {
-      if (formData.account == '17') {
-        setFormData((prevState) => ({
-          ...prevState,
-          paymentAmt: 
-            totalAmount > 0
-              ? (totalAmount - prevState.discountAmt).toString()
-              : '0',
-        }));
-      } else {
-        setFormData((prevState) => ({
-          ...prevState,
-          paymentAmt: '',
-        }));
-      }
-    }, [formData.account]);
-
+  useEffect(() => {
+    if (formData.account == '17') {
+      setFormData((prevState) => ({
+        ...prevState,
+        paymentAmt:
+          totalAmount > 0
+            ? (totalAmount - prevState.discountAmt).toString()
+            : '0',
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        paymentAmt: '',
+      }));
+    }
+  }, [formData.account]);
 
   useEffect(() => {
     // Calculate total from products
@@ -586,7 +664,7 @@ const ConstructionBusinessPurchase = () => {
               />
               <InputElement
                 id="paymentAmt"
-                value={formData.paymentAmt.toString()}
+                value={Math.floor(Number(formData.paymentAmt)).toString()}
                 name="paymentAmt"
                 placeholder={'Payment Amount'}
                 disabled={Number(formData.account) === 17}
@@ -803,7 +881,7 @@ const ConstructionBusinessPurchase = () => {
                   }}
                 />
               )}
-              {purchase.isEdit ? (
+              {/* {purchase.isEdit ? (
                 <ButtonLoading
                   onClick={handleInvoiceUpdate}
                   buttonLoading={buttonLoading}
@@ -819,6 +897,24 @@ const ConstructionBusinessPurchase = () => {
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
+                />
+              )} */}
+
+              {isUpdateButton ? (
+                <ButtonLoading
+                  onClick={handleInvoiceUpdate}
+                  buttonLoading={buttonLoading}
+                  label="Update"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                />
+              ) : (
+                <ButtonLoading
+                  onClick={handlePurchaseInvoiceSave}
+                  buttonLoading={buttonLoading}
+                  label="Save"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                 />
               )}
 
