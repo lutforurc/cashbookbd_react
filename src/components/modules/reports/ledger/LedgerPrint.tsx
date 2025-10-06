@@ -100,7 +100,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                   {/* বাম পাশ */}
                   <div>
                     <span className="block font-semibold">
-                      {coal4?.name || '-'}
+                      <span>{coal4?.name } { coal4?.cust_party_infos?.idfr_code && <span className=''>({coal4?.cust_party_infos?.idfr_code})</span> }</span>
                     </span>
                     {coal4?.cust_party_infos?.address || coal4?.cust_party_infos?.manual_address && (
                       <span className='block'>
