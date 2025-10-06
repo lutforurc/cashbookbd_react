@@ -17,10 +17,11 @@ import RequisitionTypes from '../../utils/utils-functions/RequisitionTypes';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { getRequisitions } from './requisitionSlice';
+import { formatDate } from '../../utils/utils-functions/formatDate';
 
 const Requisitions = (user: any) => {
-  const orders = useSelector((state) => state.orders);
   const branchDdlData = useSelector((state) => state.branchDdl);
+  const requisitionData = useSelector((state) => state.requisition);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const dispatch = useDispatch();
   const [totalPages, setTotalPages] = useState(0);
@@ -35,11 +36,17 @@ const Requisitions = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null); // Define state with type
   const [endDate, setEndDate] = useState<Date | null>(null); // Define state with type
 
+
   useEffect(() => {
-    dispatch(getRequisitions({ page, perPage, search, requisitionType, branchId, startDate, endDate}));
-    setTotalPages(Math.ceil(orders?.data?.total / perPage));
-    setTableData(orders?.data?.data);
-  }, [page, perPage, branchId, requisitionType, orders?.data?.total]);
+    dispatch(getRequisitions({ page, perPage, search, requisitionType, branchId, startDate, endDate }));
+    // setTableData(requisitionData?.data?.data);
+  }, []);
+
+  useEffect(() => {
+    dispatch(getRequisitions({ page, perPage, search, requisitionType, branchId, startDate, endDate }));
+    // setTotalPages(Math.ceil(requisitionData?.total / perPage));
+    // setTableData(requisitionData?.data?.data);
+  }, [page, perPage, branchId, requisitionType]);
 
   useEffect(() => {
     if (branchDdlData?.protectedData?.data && branchDdlData?.protectedData?.transactionDate) {
@@ -53,33 +60,34 @@ const Requisitions = (user: any) => {
   const handleSearchButton = (e: any) => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(getOrders({ page, perPage, search, requisitionType }));
-    if (orders?.data?.total >= 0) {
-      setTotalPages(Math.ceil(orders?.data?.total / perPage));
-      setTableData(orders?.data?.data);
+    dispatch(getRequisitions({ page, perPage, search, requisitionType, branchId, startDate, endDate }));
+    if (requisitionData?.data?.total >= 0) {
+      setTotalPages(Math.ceil(requisitionData?.data?.total / perPage));
+      setTableData(requisitionData?.data?.data);
     }
   };
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);
     setPage(1);
     setCurrentPage(1);
-    setTotalPages(Math.ceil(orders?.data?.total / perPage));
-    setTableData(orders?.data?.data);
+    setTotalPages(Math.ceil(requisitionData?.data?.total / perPage));
+    setTableData(requisitionData?.data?.data);
   };
   const handlePageChange = (page: any) => {
     setPerPage(perPage);
     setPage(page);
     setCurrentPage(page);
-    setTotalPages(Math.ceil(orders?.data?.last_page));
-    setTableData(orders.data.data);
+    setTotalPages(Math.ceil(requisitionData?.data?.last_page));
+    setTableData(requisitionData?.data?.data);
   };
 
   const handleRequisitionChange = (e: any) => {
     setRequisitionType(e.target.value);
   };
   useEffect(() => {
-    setTableData(orders?.data?.data);
-  }, [orders?.data]);
+    setTableData(requisitionData?.data?.data);
+    setTotalPages(Math.ceil(requisitionData?.data?.last_page));
+  }, [requisitionData?.data?.data]);
   const handleStartDate = (e: any) => {
     setStartDate(e);
   };
@@ -88,65 +96,86 @@ const Requisitions = (user: any) => {
   };
   const columns = [
     {
-      key: 'serial',
+      key: 'id',
       header: 'Sl. No.',
+      headerClass: 'text-center w-16',
+      cellClass: 'text-center w-16',
     },
+
     {
-      key: 'order_for',
-      header: 'Req. No',
-    },
-    {
-      key: 'product_name',
+      key: 'req_no',
+      headerClass: 'w-40',
+      cellClass: 'w-40',
       header: (
         <p>
+          <span className="block">Req. No</span>
           <span className="block">Req. Date</span>
-          <span className="block">Req. Date Qty</span>
         </p>
       ),
       render: (data: any) => (
         <p>
-          <span className="block">{data.product_name}</span>
-          <span className="block">{thousandSeparator(data.trx_quantity, 0)}</span>
+          <span className="block">{data.req_no}</span>
+          <span className="block">{formatDate(data.vr_date)}</span>
+        </p>
+      ),
+    },
+    {
+      key: 'requisition_end_date',
+      headerClass: 'w-40',
+      cellClass: 'w-40',
+      header: (
+        <p>
+          <span className="block">Req. Std. Date</span>
+          <span className="block">Req. End Date</span>
+        </p>
+      ),
+      render: (data: any) => (
+        <p>
+          <span className="block">{formatDate(data.requisition_start_date)}</span>
+          <span className="block">{formatDate(data.requisition_end_date)}</span>
+        </p>
+      ),
+    },
+
+
+    {
+      key: 'notes',
+      header: (
+        <p>
+          <span className="block">Project</span>
+          <span className="block">Note</span>
+        </p>
+      ),
+      render: (data: any) => (
+        <p>
+          <span className="block">{data.project}</span>
+          <span className="block">{data.notes}</span>
         </p>
       ),
     },
 
     {
-      key: 'order_number',
+      key: 'req_total',
+      headerClass: 'w-40',
+      cellClass: 'w-40',
       header: (
-        <p>
-          <span className="block">Req Tk.</span>
-          <span className="block">Req Tk.</span>
-        </p>
+        <div className='text-right'>
+          <span className="block">Req. Amount</span>
+          <span className="block">Req. App. Amt</span>
+        </div>
       ),
       render: (data: any) => (
-        <p>
-          <span className="block">{data.order_number}</span>
-          <span className="block">{data.order_date}</span>
-        </p>
-      ),
-    },
-    {
-      key: 'order_rate',
-      header: (
-        <p className="text-right">
-          <span className="block">Order Rate</span>
-          <span className="block">Order Qty</span>
-        </p>
-      ),
-      render: (data: any) => (
-        <p className="text-right">
-          <span className="block">{data.order_rate}</span>
-          <span className="block">
-            {thousandSeparator(data.total_order, 0)}
-          </span>
-        </p>
+        <div className="text-right">
+          <span className="block">{thousandSeparator(data.req_total, 0)}</span>
+          <span className="block">{thousandSeparator(data.approved_total, 0)}</span>
+        </div>
       ),
     },
     {
       key: 'action',
       header: 'Action',
-      headerClass: 'text-center',
+      headerClass: 'text-center w-40',
+      cellClass: 'w-40',
       render: (data: any) => (
         <div className="flex justify-center items-center">
           <button onClick={() => { }} className="text-blue-500">
@@ -163,6 +192,7 @@ const Requisitions = (user: any) => {
     },
   ];
 
+  console.log(tableData);
 
   return (
     <div>
@@ -218,7 +248,7 @@ const Requisitions = (user: any) => {
       </div>
 
       <div className="relative overflow-x-auto">
-        {orders.isLoading == true ? <Loader /> : ''}
+        {requisitionData.isLoading == true ? <Loader /> : ''}
         <Table columns={columns} data={tableData} className="" />
 
         {/* Pagination Controls */}

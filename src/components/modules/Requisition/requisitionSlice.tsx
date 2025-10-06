@@ -128,8 +128,7 @@ export const requisitionStore = (data: formData, callback?: (message: string) =>
 export const getRequisitions = (params: any) => (dispatch: any) => {
   dispatch({ type: REQUISITION_DATA_LIST_PENDING });
 
-  httpService
-    .post(API_REQUISITION_LIST_URL, params)
+  httpService.post(API_REQUISITION_LIST_URL, params)
     .then((res) => {
       const _data = res.data;
       if (_data.success) {
