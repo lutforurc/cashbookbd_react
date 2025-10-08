@@ -295,7 +295,7 @@ const ProductStock = (user: any) => {
             </div>
           </div>
           <div className="sm:grid md:flex gap-x-3 ">
-            <div className="mt-1 md:mt-6 w-full">
+            <div className="flex w-full">
               <div className="mr-2">
                 <InputElement
                   id="perPage"
@@ -304,7 +304,7 @@ const ProductStock = (user: any) => {
                   value={perPage.toString()}
                   onChange={handlePerPageChange}
                   type="text"
-                  className="font-medium text-sm h-9 w-12"
+                  className="font-medium text-sm h-8 w-12"
                 />
               </div>
               <div className="mr-2">
@@ -315,19 +315,21 @@ const ProductStock = (user: any) => {
                   value={fontSize.toString()}
                   onChange={handleFontSizeChange}
                   type="text"
-                  className="font-medium text-sm h-9 w-12"
+                  className="font-medium text-sm h-8 w-12"
                 />
               </div>
-              <ButtonLoading
+              <div className='mt-6'>
+                <ButtonLoading
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
                 label="Run"
-                className="pt-[0.45rem] pb-[0.45rem] w-full"
+                className="h-8 w-full"
               />
+              </div>
               <PrintButton
                 onClick={handlePrint}
                 label="Print"
-                className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
+                className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-8"
               />
             </div>
           </div>
@@ -345,7 +347,7 @@ const ProductStock = (user: any) => {
               startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined
             }
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
-            title="Cash Book"
+            title="Product Stock"
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
           />

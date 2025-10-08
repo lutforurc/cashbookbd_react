@@ -1,4 +1,5 @@
 import React from 'react';
+import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 
 type StockRow = {
   sl_number?: number | string;
@@ -51,6 +52,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
         {pages.map((pageRows, pIdx) => (
           <div key={pIdx} className="print-page">
             {/* Header */}
+            <PadPrinting />
             <div className="mb-4">
               <h1 className="text-2xl font-bold text-center">{title}</h1>
               <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
