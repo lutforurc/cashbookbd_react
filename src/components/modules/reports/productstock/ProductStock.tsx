@@ -35,7 +35,7 @@ const ProductStock = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
-  const [perPage, setPerPage] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(20);
   const [fontSize, setFontSize] = useState<number>(12);
 
   useEffect(() => {
@@ -227,10 +227,11 @@ const ProductStock = (user: any) => {
     },
   ];
 
-  const optionsWithAll = [
-  { id: '', name: 'All Product' }, // default option
-  ...ddlCategory
+const optionsWithAll = [
+  { id: '', name: 'All Product' },
+  ...(ddlCategory || []), // ddlCategory যদি undefined/null হয় তাহলে empty array
 ];
+
   return (
     <div className="">
       <HelmetTitle title={'Product Stock'} />
