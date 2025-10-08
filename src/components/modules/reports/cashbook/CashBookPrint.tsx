@@ -2,6 +2,7 @@ import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import { formatBdShortDate, formatLongDateUsdToBd } from '../../../utils/utils-functions/formatDate';
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type Somity = {
   idfr_code?: string;
@@ -59,37 +60,7 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
-        <style>
-          {`
-            @media print {
-                @page {
-                size: A4 portrait;
-                margin: 6mm 8mm 8mm 10mm; /* you already have this */
-                }
-
-                /* You already have these: */
-                .no-print { display: none !important; }
-                .page-break { page-break-after: always; }
-                .avoid-break { break-inside: avoid; }
-                .print-root { padding: 0 !important; }
-                .print-page { padding: 8mm !important; }
-
-                /* NEW: make each printed page a flex column, and ensure it fills the printable area */
-                .print-page {
-                display: flex;
-                flex-direction: column;
-
-                /* Page content height = 297mm (A4 height) 
-                    - top margin (6mm) - bottom margin (8mm)
-                    - top padding (8mm) - bottom padding (8mm) */
-                min-height: calc(297mm - 6mm - 8mm - 8mm - 8mm);
-                }
-
-                /* Optional: remove default top margins from headings */
-                h1, h2, h3 { margin-top: 0; }
-            }
-        `}
-        </style>
+        <PrintStyles />
 
         {/* Pages */}
         {pages.map((pageRows, pIdx) => {
