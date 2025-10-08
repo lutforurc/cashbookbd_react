@@ -227,6 +227,10 @@ const ProductStock = (user: any) => {
     },
   ];
 
+  const optionsWithAll = [
+  { id: '', name: 'All Product' }, // default option
+  ...ddlCategory
+];
   return (
     <div className="">
       <HelmetTitle title={'Product Stock'} />
@@ -258,7 +262,7 @@ const ProductStock = (user: any) => {
                 <CategoryDropdown
                   onChange={handleCategoryChange}
                   className="w-full font-medium text-sm"
-                  categoryDdl={ddlCategory}
+                  categoryDdl={optionsWithAll}
                 />
               )}
             </div>

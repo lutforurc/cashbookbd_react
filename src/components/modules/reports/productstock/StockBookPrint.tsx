@@ -76,13 +76,25 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                           {row.opening != null ? <span className="text-sm">{row.opening} {row.unit && `(${row.unit})`}</span> : '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                          {row.stock_in != null ? <span className="text-sm">{row.stock_in} {row.unit && `(${row.unit})`}</span> : '-'}
+                          {row.stock_in != null ? <span className="text-sm">{row.stock_in != 0 ? (
+                            <>
+                              {row.stock_in} {row.unit && `(${row.unit})`}
+                            </>
+                          ) : '-'}</span> : '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                          {row.stock_out != null ? <span className="text-sm">{row.stock_out} {row.unit && `(${row.unit})`}</span> : '-'}
+                          {row.stock_out != null ? <span className="text-sm">{row.stock_out != 0 ? (
+                            <>
+                              {row.stock_out} {row.unit && `(${row.unit})`}
+                            </>
+                          ) : '-'}</span> : '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                          {row.balance != null ? <span className="text-sm">{row.balance} {row.unit && `(${row.unit})`}</span> : '-'}
+                          {row.balance != null ? <span className="text-sm">{row.balance != 0 ? (
+                            <>
+                              {row.balance} {row.unit && `(${row.unit})`}
+                            </>
+                          ) : '-'}</span> : '-'}
                         </td>
                       </tr>
                     ))
