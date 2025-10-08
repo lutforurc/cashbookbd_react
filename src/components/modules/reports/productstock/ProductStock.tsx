@@ -229,7 +229,7 @@ const ProductStock = (user: any) => {
 
 const optionsWithAll = [
   { id: '', name: 'All Product' },
-  ...(ddlCategory || []), // ddlCategory যদি undefined/null হয় তাহলে empty array
+  ...(Array.isArray(ddlCategory) ? ddlCategory : []),
 ];
 
   return (
