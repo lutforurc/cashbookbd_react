@@ -13,7 +13,6 @@ import { getCategoryDdl } from '../../category/categorySlice';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import dayjs from 'dayjs';
 
-
 const ProductStock = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
@@ -33,13 +32,26 @@ const ProductStock = (user: any) => {
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(getCategoryDdl());
-    if (Array.isArray(categoryData)) {
-      setDdlCategory(categoryData); // Use data if it's an array
-      setCategoryId(ddlCategory[0]?.id);
-    } else {
-      setDdlCategory([]); // Fallback to empty array
-    }
   }, []);
+
+  useEffect(() => {
+    if (Array.isArray(categoryData?.ddlData?.data?.category)) {
+      setDdlCategory(categoryData?.ddlData?.data?.category || []);
+      setCategoryId(categoryData.ddlData[0]?.id ?? null);
+    }
+  }, [categoryData]);
+
+
+  // useEffect(() => {
+  //   dispatch(getDdlProtectedBranch());
+  //   dispatch(getCategoryDdl());
+  //   if (Array.isArray(categoryData)) {
+  //     setDdlCategory(categoryData); // Use data if it's an array
+  //     setCategoryId(ddlCategory[0]?.id);
+  //   } else {
+  //     setDdlCategory([]); // Fallback to empty array
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
@@ -51,9 +63,13 @@ const ProductStock = (user: any) => {
     setBranchId(e.target.value);
   };
 
-  const handleCategoryChange = (e: any) => {
-    setCategoryId(e.target.value);
-  };
+const handleCategoryChange = (selectedOption: any) => {
+  if (selectedOption) {
+    setCategoryId(selectedOption.value);
+  } else {
+    setCategoryId(null); // অথবা default value
+  }
+};
 
   const handleStartDate = (e: any) => {
     setStartDate(e);
@@ -66,7 +82,15 @@ const ProductStock = (user: any) => {
   const handleActionButtonClick = () => {
     const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-    dispatch(getProductStock({ branchId, categoryId, search, startDate: startD, endDate: endD }))
+    dispatch(
+      getProductStock({
+        branchId,
+        categoryId,
+        search,
+        startDate: startD,
+        endDate: endD,
+      }),
+    );
   };
 
   useEffect(() => {
@@ -76,7 +100,8 @@ const ProductStock = (user: any) => {
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
       setDdlCategory(categoryData?.data);
-      const [day, month, year] = branchDdlData?.protectedData?.transactionDate.split('/');
+      const [day, month, year] =
+        branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
       setStartDate(parsedDate);
       setEndDate(parsedDate);
@@ -87,7 +112,7 @@ const ProductStock = (user: any) => {
   const columns = [
     {
       key: 'sl_number',
-      header: 'Sl. No', 
+      header: 'Sl. No',
       headerClass: 'text-center',
       cellClass: 'text-center',
     },
@@ -97,7 +122,7 @@ const ProductStock = (user: any) => {
     },
     {
       key: 'opening',
-      header: 'Opening', 
+      header: 'Opening',
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
@@ -115,17 +140,29 @@ const ProductStock = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <> 
-            {row.stock_in ? <span className="text-sm ">{row.stock_in} ({row.unit})</span> : '-'} 
+        <>
+          {row.stock_in ? (
+            <span className="text-sm ">
+              {row.stock_in} ({row.unit})
+            </span>
+          ) : (
+            '-'
+          )}
         </>
-      )
+      ),
     },
     {
       key: 'stock_out',
       header: 'Stock Out',
       render: (row: any) => (
-        <> 
-            {row.stock_in ? <span className="text-sm ">{row.stock_in} ({row.unit})</span> : '-'} 
+        <>
+          {row.stock_in ? (
+            <span className="text-sm ">
+              {row.stock_in} ({row.unit})
+            </span>
+          ) : (
+            '-'
+          )}
         </>
       ),
       headerClass: 'text-right',
@@ -137,8 +174,14 @@ const ProductStock = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <> 
-            {row.balance ? <span className="text-sm ">{row.balance} ({row.unit})</span> : '-'} 
+        <>
+          {row.balance ? (
+            <span className="text-sm ">
+              {row.balance} ({row.unit})
+            </span>
+          ) : (
+            '-'
+          )}
         </>
       ),
     },
@@ -149,7 +192,7 @@ const ProductStock = (user: any) => {
       <HelmetTitle title={'Product Stock'} />
       <div className="mb-2">
         <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-4 gap-y-2">
-          <div className=''>
+          <div className="">
             <div>
               {' '}
               <label htmlFor="">Select Branch</label>
@@ -158,26 +201,29 @@ const ProductStock = (user: any) => {
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
+                className="w-full font-medium text-sm pl-1.5 pt-3 pb-2"
                 branchDdl={dropdownData}
               />
             </div>
           </div>
-          <div className=''>
+          <div className="">
             <div>
               {' '}
               <label htmlFor="">Select Category</label>
             </div>
             <div>
-              {categoryData.isLoading == true ? <Loader /> : ''}
-              <CategoryDropdown
-                onChange={handleCategoryChange}
-                className="w-full font-medium text-sm p-1.5"
-                categoryDdl={ddlCategory?.category}
-              />
+              {categoryData.isLoading ? (
+                <Loader />
+              ) : (
+                <CategoryDropdown
+                  onChange={handleCategoryChange}
+                  className="w-full font-medium text-sm"
+                  categoryDdl={ddlCategory}
+                />
+              )}
             </div>
           </div>
-          <div className=''>
+          <div className="">
             <div>
               {' '}
               <label htmlFor="">Search by Name</label>
@@ -188,8 +234,8 @@ const ProductStock = (user: any) => {
               className="text-nowrap h-8 bg-transparent w-full"
             />
           </div>
-          <div className='sm:grid md:flex gap-x-3 '>
-            <div className='w-full'>
+          <div className="sm:grid md:flex gap-x-3 ">
+            <div className="w-full">
               <label htmlFor="">Start Date</label>
               <InputDatePicker
                 setCurrentDate={handleStartDate}
@@ -198,7 +244,7 @@ const ProductStock = (user: any) => {
                 setSelectedDate={setStartDate}
               />
             </div>
-            <div className='w-full'>
+            <div className="w-full">
               <label htmlFor="">End Date</label>
               <InputDatePicker
                 setCurrentDate={handleEndDate}
@@ -207,7 +253,7 @@ const ProductStock = (user: any) => {
                 setSelectedDate={setEndDate}
               />
             </div>
-            <div className='mt-1 md:mt-6 w-full'>
+            <div className="mt-1 md:mt-6 w-full">
               <ButtonLoading
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
@@ -218,9 +264,10 @@ const ProductStock = (user: any) => {
           </div>
         </div>
       </div>
-      <div className='overflow-y-auto'>
+      <div className="overflow-y-auto">
         {stock.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} /> {/* Ensure data is always an array */}
+        <Table columns={columns} data={tableData || []} />{' '}
+        {/* Ensure data is always an array */}
       </div>
     </div>
   );

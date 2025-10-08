@@ -31,9 +31,8 @@ interface categoryParam {
 
 export const getCategory =
   ({ page, perPage, search = '' }: categoryParam) =>
-  (dispatch: any) => {
-    dispatch({ type: CATEGORY_LIST_PENDING });
-    httpService
+  (dispatch: any) => {dispatch({ type: CATEGORY_LIST_PENDING });
+  httpService
       .get(
         API_CATEGORY_LIST_URL +
           `?page=${page}&per_page=${perPage}&search=${search}`,
@@ -70,7 +69,7 @@ export const getCategoryDdl = () => async (dispatch: Dispatch<any>) => {
     if (_data.success) {
       dispatch({
         type: CATEGORY_LIST_DDL_SUCCESS,
-        payload: _data.data.data, // Dispatch success with payload
+        payload: _data.data, // Dispatch success with payload
       });
     } else {
       dispatch({
@@ -129,90 +128,47 @@ export const storeCategory = (data: any, callback?: (message: string, success?: 
 };
 
 
+
 const initialState = {
   isLoading: false,
   errors: null,
-  data: {},
+  listData: [],
+  ddlData: [],
+    data: {},
 };
 
 const categoryReducer = (state = initialState, action: any) => {
   switch (action.type) {
-    case CATEGORY_UPDATE_PENDING:
-      return {
-        ...state,
-        isLoading: true,
-        isUpdate: false,
-        editData: {},
-      };
-    case CATEGORY_STORE_PENDING:
-      return {
-        ...state,
-        isLoading: true,
-        isSave: false,
-      };
-
     case CATEGORY_LIST_PENDING:
     case CATEGORY_LIST_DDL_PENDING:
     case CATEGORY_EDIT_PENDING:
       return {
         ...state,
         isLoading: true,
-        isUpdate: false,
       };
 
-    case CATEGORY_STORE_SUCCESS:
-      return {
-        ...state,
-        isLoading: false,
-        isSave: true,
-        errors: {},
-      };
-
-    case CATEGORY_UPDATE_SUCCESS:
-      return {
-        ...state,
-        isLoading: false,
-        isUpdate: true,
-        updateData: action.payload,
-      };
-    case CATEGORY_EDIT_SUCCESS:
-      return {
-        ...state,
-        isLoading: false,
-        editData: action.payload,
-      };
     case CATEGORY_LIST_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        listData: action.payload,
+      };
+
     case CATEGORY_LIST_DDL_SUCCESS:
       return {
         ...state,
         isLoading: false,
-        data: action.payload,
-      };
-
-    case CATEGORY_UPDATE_ERROR:
-      return {
-        ...state,
-        isLoading: false,
-        isUpdate: false,
-        errors: action.payload,
-      };
-
-    case CATEGORY_STORE_ERROR:
-      return {
-        ...state,
-        isLoading: false,
-        isSave: false,
-        errors: action.payload,
+        ddlData: action.payload,
       };
 
     case CATEGORY_LIST_ERROR:
-    case CATEGORY_EDIT_ERROR:
     case CATEGORY_LIST_DDL_ERROR:
       return {
         ...state,
         isLoading: false,
         errors: action.payload,
       };
+
     default:
       return state;
   }
