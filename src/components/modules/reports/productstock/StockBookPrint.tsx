@@ -1,5 +1,6 @@
 import React from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type StockRow = {
   sl_number?: number | string;
@@ -35,7 +36,8 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
-        <style>
+        <PrintStyles />
+        {/* <style>
           {`
             @media print {
               @page { size: A4 portrait; margin: 6mm 8mm 8mm 10mm; }
@@ -47,7 +49,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
               h1,h2,h3 { margin-top: 0; }
             }
           `}
-        </style>
+        </style> */}
 
         {pages.map((pageRows, pIdx) => (
           <div key={pIdx} className="print-page">
