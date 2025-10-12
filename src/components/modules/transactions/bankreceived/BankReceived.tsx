@@ -10,10 +10,8 @@ import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import Loader from '../../../../common/Loader';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
-
 
 interface ReceivedItem {
   id: string | number;
@@ -59,7 +57,7 @@ const BankReceived = () => {
 
 
 
-  const selectedLedgerOptionHandler = (option: any) => {
+  const receiverBankAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
     setFormData({
@@ -67,6 +65,10 @@ const BankReceived = () => {
       [key]: option.value,
       [accountName]: option.label,
     });
+
+    console.log('====================================');
+    console.log(formData);
+    console.log('====================================');
   };
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -102,6 +104,9 @@ const BankReceived = () => {
         }
       }, 100);
     }
+    console.log('====================================');
+    console.log("table data", tableData);
+    console.log('====================================');
   };
   const handleDelete = (id: number) => {
     setTableData(tableData.filter((row) => row.id !== id));
@@ -118,6 +123,9 @@ const BankReceived = () => {
     } else {
       setBankId(null); // অথবা default value
     }
+    console.log('====================================');
+    console.log(bankId);
+    console.log('====================================');
   };
 
   const optionsWithAll = [
@@ -172,25 +180,7 @@ const BankReceived = () => {
                   className="w-full font-medium text-sm"
                   categoryDdl={optionsWithAll}
                 />
-                {/* <DdlMultiline
-                  id="account"
-                  name="account"
-                  placeholder='Receiver Bank Account'
-                  onSelect={selectedLedgerOptionHandler}
-                  value={
-                    formData.account
-                      ? { value: formData.account, label: formData.accountName }
-                      : null
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const nextElement = document.getElementById('remarks');
-                      if (nextElement) {
-                        nextElement.focus();
-                      }
-                    }
-                  }}
-                /> */}
+               
               </div>
 
               <div className="mt-6">
@@ -199,7 +189,7 @@ const BankReceived = () => {
                   id="account"
                   name="account"
                   placeholder='Select Transaction Account'
-                  onSelect={selectedLedgerOptionHandler}
+                  onSelect={receiverBankAccountHandler}
                   value={
                     formData.account
                       ? { value: formData.account, label: formData.accountName }
