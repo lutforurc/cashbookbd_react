@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
@@ -11,6 +11,8 @@ import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import Loader from '../../../../common/Loader';
+import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
+import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 
 
 interface ReceivedItem {
@@ -33,12 +35,27 @@ const initialReceivedItem: ReceivedItem = {
   currentProduct: undefined, // Use undefined instead of null
 };
 const BankReceived = () => {
-
+  const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
+  const coal3 = useSelector((s: any) => s.coal3);
   const [search, setSearch] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
+  const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  const [ddlBankList, setDdlBankList] = useState<any[]>([]);
+
+    useEffect(() => {
+      dispatch(getCoal3ByCoal4(2));
+    }, []);
+
+      // useEffect(() => {
+      //   if (Array.isArray(coal3?.ddlData?.data?.category)) {
+      //     setDdlCategory(categoryData?.ddlData?.data?.category || []);
+      //     setCategoryId(categoryData.ddlData[0]?.id ?? null);
+      //   }
+      // }, [categoryData]);
+
 
 
   const selectedLedgerOptionHandler = (option: any) => {
@@ -93,6 +110,20 @@ const BankReceived = () => {
     (sum, row) => sum + Number(row.amount),
     0,
   );
+
+  const handleCategoryChange = (selectedOption: any) => {
+    if (selectedOption) {
+      setCategoryId(selectedOption.value);
+    } else {
+      setCategoryId(null); // অথবা default value
+    }
+  };
+
+  const optionsWithAll = [
+  { id: '', name: 'All Product' },
+  ...(Array.isArray(ddlBankList) ? ddlBankList : []),
+];
+
   return (
     <>
       <HelmetTitle title="Bank Received" />
@@ -134,7 +165,12 @@ const BankReceived = () => {
 
               <div className="">
                 <label htmlFor="">Receiver Bank Account</label>
-                <DdlMultiline
+                <CategoryDropdown
+                  onChange={handleCategoryChange}
+                  className="w-full font-medium text-sm"
+                  categoryDdl={optionsWithAll}
+                />
+                {/* <DdlMultiline
                   id="account"
                   name="account"
                   placeholder='Receiver Bank Account'
@@ -152,7 +188,7 @@ const BankReceived = () => {
                       }
                     }
                   }}
-                />
+                /> */}
               </div>
 
               <div className="mt-6">
@@ -217,7 +253,7 @@ const BankReceived = () => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      // handleAdd();
+                      handleAdd();
                       setTimeout(() => {
                         const account = document.getElementById('account');
                         account?.focus();

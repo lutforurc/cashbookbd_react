@@ -50,8 +50,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   ) => {
     if (inputValue.length >= 3) {
       try {
-        const response: any = await dispatch(
-          getCoal4DdlNext(inputValue, acType),
+        const response: any = await dispatch(getCoal4DdlNext(inputValue, acType),
         );
 
         if (Array.isArray(response.payload)) {

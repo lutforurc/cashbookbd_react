@@ -309,10 +309,11 @@ const GeneralCashReceived = () => {
             </div>
 
             <div className="">
-              <label htmlFor="">Select Account</label>
+              <label htmlFor="">Select cash received account</label>
               <DdlMultiline
                 id="account"
                 name="account"
+                placeholder="Select cash received account"
                 onSelect={selectedLedgerOptionHandler}
                 value={
                   formData.account
@@ -345,7 +346,7 @@ const GeneralCashReceived = () => {
               value={String(formData.amount)}
               name="amount"
               type="number"
-              placeholder="Enter Amount"
+              placeholder="Enter Received Amount"
               label="Amount (Tk.)"
               onChange={handleOnChange}
               onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
