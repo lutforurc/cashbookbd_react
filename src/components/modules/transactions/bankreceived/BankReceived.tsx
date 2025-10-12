@@ -87,39 +87,55 @@ const BankReceived = () => {
   };
 
   const searchTransaction = () => {};
-  const handleAdd = () => {
-    const newTransaction = {
-      id: Date.now(),
-      account: formData.transactionList?.[0]?.account || '',
-      accountName: formData.transactionList?.[0]?.accountName || '',
-      remarks: formData.transactionList?.[0]?.remarks || '',
-      amount: formData.transactionList?.[0]?.amount || 0,
-    };
+const handleAdd = () => {
+  const transaction = formData.transactionList?.[0];
 
-    setTableData([
-      ...tableData,
-      {
-        ...formData,
-        transactionList: [...(formData.transactionList || []), newTransaction],
-      },
-    ]);
+  if (!transaction?.account || !transaction?.amount) {
+    alert('Please select account and enter amount');
+    return;
+  }
 
-    setFormData({
-      ...formData,
-      transactionList: [],
-    });
-
-    setTimeout(() => {
-      const nextElement = document.getElementById('account');
-      if (nextElement instanceof HTMLElement) {
-        nextElement.focus();
-      }
-    }, 100);
+  const newTransaction = {
+    id: Date.now(),
+    account: transaction.account,
+    accountName: transaction.accountName,
+    remarks: transaction.remarks,
+    amount: transaction.amount,
   };
+
+  setTableData((prev) => [
+    ...prev,
+    {
+      receiverAccount: formData.receiverAccount,
+      receiverAccountName: formData.receiverAccountName,
+      transactionList: [newTransaction],
+      id: newTransaction.id,
+    },
+  ]);
+
+  setFormData({
+    ...formData,
+    transactionList: [],
+  });
+
+  setTimeout(() => {
+    const nextElement = document.getElementById('account');
+    if (nextElement instanceof HTMLElement) nextElement.focus();
+  }, 100);
+};
+
 
   const handleDelete = (id: number) => {
-    setTableData(tableData.filter((row) => row.id !== id));
-  };
+  setTableData(prev =>
+    prev
+      .map(row => ({
+        ...row,
+        transactionList: row.transactionList?.filter(t => Number(t.id) !== id),
+      }))
+      .filter(row => row.transactionList && row.transactionList.length > 0) // খালি transactionList বাদ দেবে
+  );
+};
+
 
   const totalAmount = tableData.reduce(
     (sum, row) =>
