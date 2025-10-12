@@ -1,3 +1,4 @@
+import { Dispatch } from 'react';
 import {
   COAL3_LIST_ERROR, COAL3_LIST_PENDING, COAL3_LIST_SUCCESS,
 } from '../../../constant/constant/constant';
@@ -8,6 +9,9 @@ interface coal3Param {
   page: number;
   perPage: number;
   search: string;
+}
+interface coal3Param {
+  name: string | null;
 }
 
 export const getCoal3 = ({ page, perPage, search = '' }: coal3Param) => (dispatch: any) => {
@@ -35,17 +39,42 @@ export const getCoal3 = ({ page, perPage, search = '' }: coal3Param) => (dispatc
     });
 };
 
-interface coal3Param {
-  name: string | null;
-}
+
 
 
 const initialState = {
   isLoading: false,
   errors: null,
   data: { label: 'Select Ledger', value: 'null' },
+  coal4: { label: 'Select Ledger', value: 'null' },
 };
 
+
+export const getCategoryDdl = () => async (dispatch: Dispatch<any>) => {
+  dispatch({ type: CATEGORY_LIST_DDL_PENDING });
+
+  try {
+    const res = await httpService.get(API_CATEGORY_DDL_URL); // Await the API call
+    const _data = res.data;
+
+    if (_data.success) {
+      dispatch({
+        type: CATEGORY_LIST_DDL_SUCCESS,
+        payload: _data.data, // Dispatch success with payload
+      });
+    } else {
+      dispatch({
+        type: CATEGORY_LIST_DDL_ERROR,
+        payload: _data.error.message, // Dispatch error from API
+      });
+    }
+  } catch (err) {
+    dispatch({
+      type: CATEGORY_LIST_DDL_ERROR,
+      payload: 'Something went wrong!', // Dispatch error if API fails
+    });
+  }
+};
 const coal3Reducer = (state = initialState, action: any) => {
   switch (action.type) {
 

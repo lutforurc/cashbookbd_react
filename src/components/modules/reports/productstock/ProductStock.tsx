@@ -71,27 +71,14 @@ const ProductStock = (user: any) => {
 
   const handlePrint = useReactToPrint({
     content: () => {
-      if (!printRef.current) {
-        // alert("Nothing to print: Ref not ready");
+      if (!printRef.current) { 
         return null;
       }
       return printRef.current;
     },
-    documentTitle: 'Due Report',
-    // onAfterPrint: () => alert('Printed successfully!'),
+    documentTitle: 'Due Report', 
     removeAfterPrint: true,
   });
-
-  // useEffect(() => {
-  //   dispatch(getDdlProtectedBranch());
-  //   dispatch(getCategoryDdl());
-  //   if (Array.isArray(categoryData)) {
-  //     setDdlCategory(categoryData); // Use data if it's an array
-  //     setCategoryId(ddlCategory[0]?.id);
-  //   } else {
-  //     setDdlCategory([]); // Fallback to empty array
-  //   }
-  // }, []);
 
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {

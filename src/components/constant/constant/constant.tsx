@@ -323,6 +323,12 @@ export const COAL3_LIST_PENDING = 'COAL3/list/pending';
 export const COAL3_LIST_SUCCESS = 'COAL3/list/success';
 export const COAL3_LIST_ERROR = 'COAL3/list/error';
 
+
+// Get COAL4 by COAL3
+export const COAL3_BY_COAL4_LIST_PENDING = 'COAL3/by/coal4/list/pending';
+export const COAL3_BY_COAL4_LIST_SUCCESS = 'COAL3/by/coal4/list/success';
+export const COAL3_BY_COAL4_LIST_ERROR = 'COAL3/by/coal4/list/error';
+
 // Level 4
 export const COAL4_DDL_LIST_PENDING = 'COAL4/DDL/list/pending';
 export const COAL4_DDL_LIST_SUCCESS = 'COAL4/DDL/list/success';

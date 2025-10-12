@@ -4,13 +4,11 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
-import $ from 'jquery';
 import 'magnific-popup';
 import {
   FiEdit2,
   FiHome,
   FiPlus,
-  FiRefreshCcw,
   FiSave,
   FiSearch,
   FiTrash2,
@@ -19,9 +17,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
 import { toast } from 'react-toastify';
-
-import { validateForm } from '../../../utils/utils-functions/validationUtils';
-import { validationMessage } from '../../../utils/utils-functions/validationMessage';
+ 
 import InputOnly from '../../../utils/fields/InputOnly';
 import { hasPermission } from '../../../utils/permissionChecker';
 import {
@@ -129,11 +125,6 @@ const GeneralCashReceived = () => {
   };
 
   const handleAdd = () => {
-    // const validationMessages = validateForm(formData, validationMessage);
-    // if (validationMessages) {
-    //     toast.error(validationMessages);
-    //     return;
-    // }
     if (formData.account && formData.amount) {
       const { id, ...restFormData } = formData;
       setTableData([
