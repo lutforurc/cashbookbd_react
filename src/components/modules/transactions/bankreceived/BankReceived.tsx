@@ -296,7 +296,7 @@ const handleAdd = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-x-1 gap-y-1">
-              {1 !== 1 ? (
+              {1 != 1 ? (
                 <ButtonLoading
                   // onClick={editReceivedVoucher}
                   // buttonLoading={buttonLoading}
@@ -328,7 +328,7 @@ const handleAdd = () => {
                 />
               )}
 
-              {1 === 1 ? (
+              {1 !== 1 ? (
                 <ButtonLoading
                   // onClick={handleInvoiceUpdate}
                   // buttonLoading={buttonLoading}
@@ -340,7 +340,7 @@ const handleAdd = () => {
                 />
               ) : (
                 <ButtonLoading
-                  // onClick={handleCashReceivedSave}
+                  onClick={handleSave}
                   // buttonLoading={buttonLoading}
                   label="Save"
                   className="whitespace-nowrap text-center mr-0"
