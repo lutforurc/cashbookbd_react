@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2 } from 'react-icons/fi';
+import {
+  FiEdit2,
+  FiHome,
+  FiPlus,
+  FiSave,
+  FiSearch,
+  FiTrash2,
+} from 'react-icons/fi';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import { hasPermission } from '../../../utils/permissionChecker';
@@ -13,25 +20,30 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 
-interface ReceivedItem {
+interface TransactionList {
   id: string | number;
-  mtmId: string;
   account: string;
   accountName: string;
   remarks: string;
-  amount: string | number;
-  currentProduct?: { [key: string]: any } | null; // Allow null
+  amount: number | string;
+}
+
+interface ReceivedItem {
+  id: string | number;
+  mtmId: string;
+  receiverAccount: string;
+  receiverAccountName: string;
+  transactionList?: TransactionList[]; // ✅ object → array
 }
 
 const initialReceivedItem: ReceivedItem = {
   id: '',
   mtmId: '',
-  account: '',
-  accountName: '',
-  remarks: '',
-  amount: 0,
-  currentProduct: undefined, // Use undefined instead of null
+  receiverAccount: '',
+  receiverAccountName: '',
+  transactionList: [], // ✅ object নয়, array হবে
 };
+
 const BankReceived = () => {
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
@@ -43,77 +55,79 @@ const BankReceived = () => {
   const [bankId, setBankId] = useState<number | string | null>(null);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
 
-    useEffect(() => {
-      dispatch(getCoal3ByCoal4(2));
-    }, []);
+  useEffect(() => {
+    dispatch(getCoal3ByCoal4(2));
+  }, []);
 
-      useEffect(() => {
-        if (Array.isArray(coal3?.coal4)) {
-          setDdlBankList(coal3?.coal4 || []);
-          setBankId(coal3?.coal4[0]?.id ?? null);
-        }
-      }, [coal3]);
- 
+  useEffect(() => {
+    if (Array.isArray(coal3?.coal4)) {
+      setDdlBankList(coal3?.coal4 || []);
+      setBankId(coal3?.coal4[0]?.id ?? null);
+    }
+  }, [coal3]);
 
-
-
-  const receiverBankAccountHandler = (option: any) => {
-    const key = 'account'; // Set the desired key dynamically
-    const accountName = 'accountName'; // Set the desired key dynamically
+  const transactionAccountHandler = (option: any) => {
     setFormData({
       ...formData,
-      [key]: option.value,
-      [accountName]: option.label,
+      transactionList: [
+        {
+          id: Date.now(),
+          account: option.value,
+          accountName: option.label,
+          remarks: '',
+          amount: 0,
+        },
+      ],
     });
-
-    console.log('====================================');
-    console.log(formData);
-    console.log('====================================');
   };
+
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const searchTransaction = () => { }
+  const searchTransaction = () => {};
   const handleAdd = () => {
-    if (formData.account && formData.amount) {
-      const { id, ...restFormData } = formData;
-      setTableData([
-        ...tableData,
-        {
-          id: Date.now(),
-          ...restFormData,
-          amount: Number(formData.amount),
-          currentProduct: formData.currentProduct || undefined,
-        },
-      ]);
-      setFormData({
-        id: formData.id,
-        mtmId: '',
-        account: formData.account,
-        accountName: formData.accountName,
-        remarks: '',
-        amount: '',
-        currentProduct: null,
-      }); // Reset form
-      setTimeout(() => {
-        const nextElement = document.getElementById('account');
-        if (nextElement instanceof HTMLElement) {
-          nextElement.focus();
-        }
-      }, 100);
-    }
-    console.log('====================================');
-    console.log("table data", tableData);
-    console.log('====================================');
+    const newTransaction = {
+      id: Date.now(),
+      account: formData.transactionList?.[0]?.account || '',
+      accountName: formData.transactionList?.[0]?.accountName || '',
+      remarks: formData.transactionList?.[0]?.remarks || '',
+      amount: formData.transactionList?.[0]?.amount || 0,
+    };
+
+    setTableData([
+      ...tableData,
+      {
+        ...formData,
+        transactionList: [...(formData.transactionList || []), newTransaction],
+      },
+    ]);
+
+    setFormData({
+      ...formData,
+      transactionList: [],
+    });
+
+    setTimeout(() => {
+      const nextElement = document.getElementById('account');
+      if (nextElement instanceof HTMLElement) {
+        nextElement.focus();
+      }
+    }, 100);
   };
+
   const handleDelete = (id: number) => {
     setTableData(tableData.filter((row) => row.id !== id));
   };
-  
+
   const totalAmount = tableData.reduce(
-    (sum, row) => sum + Number(row.amount),
+    (sum, row) =>
+      sum +
+      (row.transactionList?.reduce(
+        (subSum, t) => subSum + Number(t.amount || 0),
+        0,
+      ) || 0),
     0,
   );
 
@@ -123,16 +137,30 @@ const BankReceived = () => {
     } else {
       setBankId(null); // অথবা default value
     }
-    console.log('====================================');
-    console.log(bankId);
-    console.log('====================================');
   };
 
   const optionsWithAll = [
-  { id: '', name: 'Select Receiver Bank Account' },
-  ...(Array.isArray(ddlBankList) ? ddlBankList : []),
-];
+    { id: '', name: 'Select Receiver Bank Account' },
+    ...(Array.isArray(ddlBankList) ? ddlBankList : []),
+  ];
 
+  const handleSave = () => {
+    const payload = {
+      receiverAccount: formData.receiverAccount, // ✅ শুধু একবার যাবে
+      transactions: tableData.flatMap((item) => item.transactionList || []), // ✅ array আকারে
+    };
+
+    console.log('Payload to API:', payload);
+    // dispatch or httpService.post(...)
+  };
+
+  const receiverBankAccountHandler = (option: any) => {
+    setFormData({
+      ...formData,
+      receiverAccount: option.value,
+      receiverAccountName: option.label,
+    });
+  };
 
   return (
     <>
@@ -146,41 +174,42 @@ const BankReceived = () => {
                   settings.data.permissions,
                   'cash.received.edit',
                 ) && (
-                    <>
-                      <div className="w-full mb-4">
-                        <label htmlFor="search">Search Bank Received Voucher</label>
-                        <InputOnly
-                          id="search"
-                          value={search}
-                          name="search"
-                          placeholder="Search Bank Received Voucher"
-                          label=""
-                          className="py-1 w-full" // Add padding-right to account for the button
-                          onChange={(e) => setSearch(e.target.value)}
-                        />
-                      </div>
-                      <div className=''>
-                        <label htmlFor=""> </label>
-                        <ButtonLoading
-                          onClick={searchTransaction}
-                          buttonLoading={buttonLoading}
-                          label=" "
-                          className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
-                          icon={<FiSearch className="text-white text-lg ml-2" />}
-                        />
-                      </div>
-                    </>
-                  )}
+                  <>
+                    <div className="w-full mb-4">
+                      <label htmlFor="search">
+                        Search Bank Received Voucher
+                      </label>
+                      <InputOnly
+                        id="search"
+                        value={search}
+                        name="search"
+                        placeholder="Search Bank Received Voucher"
+                        label=""
+                        className="py-1 w-full" // Add padding-right to account for the button
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
+                    </div>
+                    <div className="">
+                      <label htmlFor=""> </label>
+                      <ButtonLoading
+                        onClick={searchTransaction}
+                        buttonLoading={buttonLoading}
+                        label=" "
+                        className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
+                        icon={<FiSearch className="text-white text-lg ml-2" />}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="">
                 <label htmlFor="">Receiver Bank Account</label>
                 <CategoryDropdown
-                  onChange={handleBankChange}
+                  onChange={receiverBankAccountHandler}
                   className="w-full font-medium text-sm"
                   categoryDdl={optionsWithAll}
                 />
-               
               </div>
 
               <div className="mt-6">
@@ -188,11 +217,15 @@ const BankReceived = () => {
                 <DdlMultiline
                   id="account"
                   name="account"
-                  placeholder='Select Transaction Account'
-                  onSelect={receiverBankAccountHandler}
+                  placeholder="Select Transaction Account"
+                  onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
                   value={
-                    formData.account
-                      ? { value: formData.account, label: formData.accountName }
+                    formData.transactionList &&
+                    formData.transactionList[0]?.account
+                      ? {
+                          value: formData.transactionList[0].account,
+                          label: formData.transactionList[0].accountName,
+                        }
                       : null
                   }
                   onKeyDown={(e) => {
@@ -208,23 +241,41 @@ const BankReceived = () => {
 
               <InputElement
                 id="remarks"
-                value={formData.remarks}
+                value={formData.transactionList?.[0]?.remarks || ''}
                 name="remarks"
                 placeholder={'Enter Remarks'}
                 label={'Enter Remarks'}
                 className={''}
-                onChange={handleOnChange}
+                onChange={(e) => {
+                  const updated = {
+                    ...formData.transactionList?.[0],
+                    remarks: e.target.value,
+                  };
+                  setFormData({
+                    ...formData,
+                    transactionList: [updated],
+                  });
+                }}
                 onKeyDown={(e) => handleInputKeyDown(e, 'amount')}
               />
               <InputElement
                 id="amount"
-                value={String(formData.amount)}
+                value={String(formData.transactionList?.[0]?.amount || '')}
                 name="amount"
                 type="number"
                 placeholder="Enter Amount"
                 label="Amount (Tk.)"
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
+                onChange={(e) => {
+                  const updated = {
+                    ...formData.transactionList?.[0],
+                    amount: e.target.value,
+                  };
+                  setFormData({
+                    ...formData,
+                    transactionList: [updated],
+                  });
+                }}
+                onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
               />
             </div>
 
@@ -289,7 +340,7 @@ const BankReceived = () => {
             </div>
           </div>
         </div>
-         <div className="mt-6 col-span-2 overflow-x-auto ">
+        <div className="mt-6 col-span-2 overflow-x-auto ">
           {/* {cashReceived.isLoading ? <Loader /> : null} */}
           <table
             className={`w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400`}
@@ -314,45 +365,40 @@ const BankReceived = () => {
               </tr>
             </thead>
             <tbody className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-              {tableData.map((row) => (
-                <tr
-                  key={row.id}
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                >
-                  <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
+              {tableData.map((row) =>
+                row.transactionList?.map((t) => (
+                  <tr
+                    key={t.id}
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                   >
-                    {row.accountName}
-                  </td>
-                  <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
-                  >
-                    {row.remarks}
-                  </td>
-                  <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
-                  >
-                    {thousandSeparator(Number(row.amount), 0)}
-                  </td>
-                  <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}
-                  >
-                    <button
-                      onClick={() => handleDelete(Number(row.id))}
-                      className="text-red-500 ml-2 text-center"
-                    >
-                      <FiTrash2 className="cursor-pointer text-center" />
-                    </button>
+                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {t.accountName}
+                    </td>
+                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {t.remarks}
+                    </td>
+                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
+                      {t.amount}
+                    </td>
+                    <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
+                      <button
+                        onClick={() => handleDelete(Number(t.id))}
+                        className="text-red-500 ml-2 text-center"
+                      >
+                        <FiTrash2 className="cursor-pointer text-center" />
+                      </button>
 
-                    <button
-                      // onClick={() => receivedEditItem(Number(row.id))}
-                      className="text-green-500 ml-2 text-center"
-                    >
-                      <FiEdit2 className="cursor-pointer text-center" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      <button
+                        onClick={() => receivedEditItem(Number(t.id))}
+                        className="text-green-500 ml-2 text-center"
+                      >
+                        <FiEdit2 className="cursor-pointer text-center" />
+                      </button>
+                    </td>
+                  </tr>
+                )),
+              )}
+
               <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td
                   className={`px-2 py-2 font-bold text-gray-900 whitespace-nowrap dark:text-white `}
