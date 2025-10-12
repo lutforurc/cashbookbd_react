@@ -6,7 +6,7 @@ import httpService from '../../../services/httpService';
 
 export interface TransactionList {
   id: string | number;
-  account: string;
+  account: number;
   accountName: string;
   remarks: string;
   amount: number | string;

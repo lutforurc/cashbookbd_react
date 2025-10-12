@@ -163,13 +163,12 @@ const handleAdd = () => {
 
   const handleSave = () => {
     const payload = {
-      receiverAccount: formData.receiverAccount, // ✅ শুধু একবার যাবে
-      transactions: tableData.flatMap((item) => item.transactionList || []), // ✅ array আকারে
+      receiverAccount: formData.receiverAccount, 
+      receiverAccountName: formData.receiverAccountName, 
+      transactions: tableData.flatMap((item) => item.transactionList || []),
     };
 
-    dispatch(saveBankReceived(formData));
-    // console.log('Payload to API:', payload);
-    // dispatch or httpService.post(...)
+    dispatch(saveBankReceived(payload)); 
   };
 
   const receiverBankAccountHandler = (option: any) => {
