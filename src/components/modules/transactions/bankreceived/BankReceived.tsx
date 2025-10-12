@@ -42,19 +42,20 @@ const BankReceived = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
-  const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  const [bankId, setBankId] = useState<number | string | null>(null);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
 
     useEffect(() => {
       dispatch(getCoal3ByCoal4(2));
     }, []);
 
-      // useEffect(() => {
-      //   if (Array.isArray(coal3?.ddlData?.data?.category)) {
-      //     setDdlCategory(categoryData?.ddlData?.data?.category || []);
-      //     setCategoryId(categoryData.ddlData[0]?.id ?? null);
-      //   }
-      // }, [categoryData]);
+      useEffect(() => {
+        if (Array.isArray(coal3?.coal4)) {
+          setDdlBankList(coal3?.coal4 || []);
+          setBankId(coal3?.coal4[0]?.id ?? null);
+        }
+      }, [coal3]);
+ 
 
 
 
@@ -111,18 +112,19 @@ const BankReceived = () => {
     0,
   );
 
-  const handleCategoryChange = (selectedOption: any) => {
+  const handleBankChange = (selectedOption: any) => {
     if (selectedOption) {
-      setCategoryId(selectedOption.value);
+      setBankId(selectedOption.value);
     } else {
-      setCategoryId(null); // অথবা default value
+      setBankId(null); // অথবা default value
     }
   };
 
   const optionsWithAll = [
-  { id: '', name: 'All Product' },
+  { id: '', name: 'Select Receiver Bank Account' },
   ...(Array.isArray(ddlBankList) ? ddlBankList : []),
 ];
+
 
   return (
     <>
@@ -166,7 +168,7 @@ const BankReceived = () => {
               <div className="">
                 <label htmlFor="">Receiver Bank Account</label>
                 <CategoryDropdown
-                  onChange={handleCategoryChange}
+                  onChange={handleBankChange}
                   className="w-full font-medium text-sm"
                   categoryDdl={optionsWithAll}
                 />

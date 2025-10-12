@@ -90,8 +90,7 @@ const coal3Reducer = (state = initialState, action: any) => {
         coal4: {},
       };
 
-    case COAL3_LIST_SUCCESS:
-    case COAL3_BY_COAL4_LIST_SUCCESS:
+    case COAL3_LIST_SUCCESS: 
       return {
         ...state,
         isLoading: false,
