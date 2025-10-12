@@ -19,6 +19,7 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
+import { saveBankReceived } from './bankReceivedSlice';
 
 interface TransactionList {
   id: string | number;
@@ -166,7 +167,8 @@ const handleAdd = () => {
       transactions: tableData.flatMap((item) => item.transactionList || []), // ✅ array আকারে
     };
 
-    console.log('Payload to API:', payload);
+    dispatch(saveBankReceived(formData));
+    // console.log('Payload to API:', payload);
     // dispatch or httpService.post(...)
   };
 

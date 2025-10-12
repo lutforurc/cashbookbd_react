@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { API_BANK_RECEIVED_LIST_URL, API_BANK_RECEIVED_URL } from '../../../services/apiRoutes';
+import httpService from '../../../services/httpService';
 
 // ---------------- Interfaces ----------------
 
@@ -38,7 +39,7 @@ const initialState: BankReceivedState = {
 // Fetch Bank Received list
 export const fetchBankReceived = createAsyncThunk<ReceivedItem[], void, { rejectValue: string }>('bankReceived/fetchBankReceived', async (_, thunkAPI) => {
   try {
-    const response = await axios.get('/api/general/bank/received'); // GET API
+    const response = await httpService.get(API_BANK_RECEIVED_LIST_URL); // GET API  
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || 'Failed to fetch data');
@@ -48,7 +49,8 @@ export const fetchBankReceived = createAsyncThunk<ReceivedItem[], void, { reject
 // Save Bank Received
 export const saveBankReceived = createAsyncThunk<ReceivedItem,ReceivedItem,{ rejectValue: string }>('bankReceived/saveBankReceived', async (payload, thunkAPI) => {
   try {
-    const response = await axios.post('/api/general/bank/received', payload); // POST API
+      
+    const response = await httpService.post(API_BANK_RECEIVED_URL, payload); // POST API
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || 'Failed to save data');
@@ -57,7 +59,7 @@ export const saveBankReceived = createAsyncThunk<ReceivedItem,ReceivedItem,{ rej
 
 // ---------------- Slice ----------------
 
-const bankReceivedSlice = createSlice({name: 'bankReceived',initialState,reducers: { addBankReceived(state, action: PayloadAction<ReceivedItem>) {
+const bankReceivedSlice = createSlice({name: 'bankReceived', initialState,reducers: { addBankReceived(state, action: PayloadAction<ReceivedItem>) {
       state.bankReceived.push(action.payload);
     }, 
     updateBankReceived(state, action: PayloadAction<ReceivedItem>) {

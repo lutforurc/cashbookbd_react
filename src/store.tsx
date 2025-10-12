@@ -46,6 +46,7 @@ import employeeSlice from './components/modules/employee/employeeSlice';
 import electronicsSalesSlice from './components/modules/invoices/sales/electronicsSalesSlice';
 import labourLedgerSlice from './components/modules/reports/ledger-labour/labourLedgerSlice';
 import requisitionSlice from './components/modules/Requisition/requisitionSlice';
+import bankReceivedReducer from './components/modules/transactions/bankreceived/bankReceivedSlice';
 
 const store = configureStore({
   reducer: {
@@ -74,6 +75,7 @@ const store = configureStore({
     salesLedger: salesLedgerReducer,
     cashReceived: cashReceivedReducer,
     cashPayment: cashPaymentReducer,
+    bankReceived: bankReceivedReducer,
     activeWarehouse: warehouseDdlReducer,
     tradingPurchase: tradingPurchaseReducer,
     constructionPurchase: constructionPurchaseReducer,
