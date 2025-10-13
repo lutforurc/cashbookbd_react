@@ -137,7 +137,6 @@ const optionsWithAll = useMemo(
   [ddlBankList]
 );
 
-
 const handleSave = useCallback(async () => {
   if (saveButtonLoading) return;
 
@@ -145,8 +144,6 @@ const handleSave = useCallback(async () => {
   if (!transactions.length) return toast.warning('Add at least one transaction');
 
   setSaveButtonLoading(true);
-
-  
 
   try {
     const payload = {
