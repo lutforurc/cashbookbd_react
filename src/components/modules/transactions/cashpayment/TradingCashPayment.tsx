@@ -25,6 +25,7 @@ import {
 } from './cashPaymentSlice';
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import InputOnly from '../../../utils/fields/InputOnly';
+import useCtrlS from '../../../utils/hooks/useCtrlS';
 
 interface PaymentItem {
   id: string | number;
@@ -315,6 +316,7 @@ const TradingCashPayment = () => {
     setIsResetOrder(false);
   };
 
+  useCtrlS(handleCashPaymentSave);
   return (
     <>
       <HelmetTitle title="Cash Payment" />

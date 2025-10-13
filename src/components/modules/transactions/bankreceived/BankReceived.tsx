@@ -22,6 +22,7 @@ import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import { saveBankReceived } from './bankReceivedSlice';
 import { toast } from 'react-toastify';
 import { setTime } from 'react-datepicker/dist/date_utils';
+import useCtrlS from '../../../utils/hooks/useCtrlS';
 
 interface TransactionList {
   id: string | number;
@@ -92,7 +93,8 @@ const BankReceived = () => {
     const transaction = formData.transactionList?.[0];
 
     if (!transaction?.account || !transaction?.amount) {
-      alert('Please select account and enter amount');
+      // alert('Please select account and enter amount');
+      toast.warning('Please select account and enter amount');
       return;
     }
 
@@ -208,11 +210,13 @@ const BankReceived = () => {
     if (latestData && latestData !== prevDataRef.current) {
       toast.success(latestData);
       prevDataRef.current = latestData;
-      setFormData({
+      setTimeout(() => {
+        setFormData({
         ...formData,
         transactionList: [],
       });
       setTableData([]);
+      }, 2000);
     }
   }, [bankReceived]);
 
@@ -221,7 +225,7 @@ const BankReceived = () => {
       toast.error(bankReceived.error);
     }
   }, [bankReceived.error]);
-
+  useCtrlS(handleSave);
   return (
     <>
       <HelmetTitle title="Bank Received" />
