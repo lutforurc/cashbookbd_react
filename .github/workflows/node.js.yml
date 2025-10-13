@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        node-version: '22'
+        node-version: [22.x]
 
     steps:
       - name: Checkout
