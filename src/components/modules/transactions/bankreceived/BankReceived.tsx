@@ -49,6 +49,7 @@ const BankReceived = () => {
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
   const coal3 = useSelector((s: any) => s.coal3);
+  const bankReceived = useSelector((s: any) => s.bankReceived);
   const [search, setSearch] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
@@ -169,6 +170,7 @@ const handleAdd = () => {
     };
 
     dispatch(saveBankReceived(payload)); 
+
   };
 
   const receiverBankAccountHandler = (option: any) => {
@@ -178,6 +180,9 @@ const handleAdd = () => {
       receiverAccountName: option.label,
     });
   };
+
+  console.log('formData:', bankReceived?.bankReceived[bankReceived?.bankReceived.length - 1]?.data?.data[0]);
+  // console.log('bankReceived:', bankReceived);
 
   return (
     <>
