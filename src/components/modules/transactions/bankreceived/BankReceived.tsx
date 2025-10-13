@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef  } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import {
   FiEdit2,
@@ -20,6 +20,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import { saveBankReceived } from './bankReceivedSlice';
+import { toast } from 'react-toastify';
 
 interface TransactionList {
   id: string | number;
@@ -46,6 +47,7 @@ const initialReceivedItem: ReceivedItem = {
 };
 
 const BankReceived = () => {
+  const prevDataRef = useRef(null);
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
   const coal3 = useSelector((s: any) => s.coal3);
@@ -181,8 +183,17 @@ const handleAdd = () => {
     });
   };
 
-  console.log('formData:', bankReceived?.bankReceived[bankReceived?.bankReceived.length - 1]?.data?.data[0]);
-  // console.log('bankReceived:', bankReceived);
+
+ 
+
+useEffect(() => {
+  const latestData =
+    bankReceived?.bankReceived?.[bankReceived.bankReceived.length - 1]?.data?.data?.[0];
+  if (latestData && latestData !== prevDataRef.current) {
+    toast.success(latestData);
+    prevDataRef.current = latestData;
+  }
+}, [bankReceived]);
 
   return (
     <>
