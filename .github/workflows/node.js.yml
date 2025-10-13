@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "staging" ]
+    branches: ["staging"]
   pull_request:
-    branches: [ "staging" ]
+    branches: ["staging"]
 
 permissions:
   contents: read
@@ -15,10 +15,11 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        node-version: [22.x]   # চাইলে [20.x, 22.x]
+        node-version: [20.x, 22.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
