@@ -20,7 +20,7 @@ jobs:
     env:
       NODE_ENV: production
       # আপনার সার্ভারের টার্গেট পাথ
-      REMOTE_DIR: /home/accounts_staging/htdocs/accounts.staging.cashbookbd.com
+      REMOTE_DIR: /home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/
 
     steps:
       - name: Checkout code
