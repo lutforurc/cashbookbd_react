@@ -1,0 +1,145 @@
+name: Staging React-Application CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "staging" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy React App
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: production
+      # আপনার সার্ভারের টার্গেট পাথ
+      REMOTE_DIR: /home/accounts_staging/htdocs/staging.cashbookbd.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          set -Eeuo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build React app
+        env:
+          CI: true
+          # উদাহরণ: Vite/CRA build-time env (থাকলে সিক্রেটে রাখুন)
+          # VITE_API_BASE: ${{ secrets.STAGING_API_BASE }}
+        run: |
+          set -Eeuo pipefail
+          npm run build
+          test -d dist || (echo "❌ dist/ not found. Check your build output folder." && exit 1)
+
+      - name: Upload build artifact (for debugging/rollback)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Prepare SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+          # ঐচ্ছিক: পিন করা হোস্ট কী (ed25519 ফিঙ্গারপ্রিন্ট)
+          SSH_HOST_FINGERPRINT: ${{ secrets.STAGING_SSH_HOSTKEY_ED25519 }}
+        run: |
+          set -Eeuo pipefail
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          cat > ~/.ssh/config <<EOF
+          Host staging-host
+            HostName $SSH_HOST
+            Port $SSH_PORT
+            UserKnownHostsFile ~/.ssh/known_hosts
+            StrictHostKeyChecking yes
+          EOF
+
+          if [ -n "${SSH_HOST_FINGERPRINT:-}" ]; then
+            # উদাহরণ: ssh-ed25519 AAAAC3Nza...
+            echo "$SSH_HOST ssh-ed25519 $SSH_HOST_FINGERPRINT" >> ~/.ssh/known_hosts
+          else
+            echo "⚠️ Using ssh-keyscan fallback (pin host key for better security)."
+            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          fi
+
+      - name: Deploy build via rsync
+        env:
+          SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+        run: |
+          set -Eeuo pipefail
+          echo "📦 Local build contents:"
+          ls -la dist/
+
+          # Ensure remote directory exists
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
+
+          # Sync with safer delete behavior
+          rsync -avz \
+            --delete-delay \
+            --numeric-ids \
+            --chmod=D755,F644 \
+            --rsync-path="rsync" \
+            -e "ssh -p $SSH_PORT" \
+            dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
+
+      - name: (Optional) Fix permissions on server
+        if: always()
+        env:
+          SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+        run: |
+          set -Eeuo pipefail
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "
+            sudo chown -R www-data:www-data '$REMOTE_DIR' || true
+            find '$REMOTE_DIR' -type d -exec chmod 755 {} \; || true
+            find '$REMOTE_DIR' -type f -exec chmod 644 {} \; || true
+          "
+
+      - name: Reload web server on VPS
+        env:
+          SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+        run: |
+          set -Eeuo pipefail
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "sudo systemctl reload nginx || sudo systemctl restart nginx"
+
+      - name: Smoke test (HTTP 200/301/302 expected)
+        run: |
+          set -Eeuo pipefail
+          curl -I --max-time 10 https://staging.cashbookbd.com | tee /tmp/headers.txt
+          grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
+            echo '❌ Smoke test failed'; exit 1;
+          }
