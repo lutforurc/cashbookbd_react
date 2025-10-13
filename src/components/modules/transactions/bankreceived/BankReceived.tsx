@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef  } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import {
   FiEdit2,
@@ -21,6 +21,7 @@ import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import { saveBankReceived } from './bankReceivedSlice';
 import { toast } from 'react-toastify';
+import { setTime } from 'react-datepicker/dist/date_utils';
 
 interface TransactionList {
   id: string | number;
@@ -54,6 +55,7 @@ const BankReceived = () => {
   const bankReceived = useSelector((s: any) => s.bankReceived);
   const [search, setSearch] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
@@ -85,61 +87,59 @@ const BankReceived = () => {
     });
   };
 
-  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
   const searchTransaction = () => {};
-const handleAdd = () => {
-  const transaction = formData.transactionList?.[0];
+  const handleAdd = () => {
+    const transaction = formData.transactionList?.[0];
 
-  if (!transaction?.account || !transaction?.amount) {
-    alert('Please select account and enter amount');
-    return;
-  }
+    if (!transaction?.account || !transaction?.amount) {
+      alert('Please select account and enter amount');
+      return;
+    }
 
-  const newTransaction = {
-    id: Date.now(),
-    account: transaction.account,
-    accountName: transaction.accountName,
-    remarks: transaction.remarks,
-    amount: transaction.amount,
+    const newTransaction = {
+      id: Date.now(),
+      account: transaction.account,
+      accountName: transaction.accountName,
+      remarks: transaction.remarks,
+      amount: transaction.amount,
+    };
+
+    setTableData((prev) => [
+      ...prev,
+      {
+        receiverAccount: formData.receiverAccount,
+        receiverAccountName: formData.receiverAccountName,
+        transactionList: [newTransaction],
+        id: newTransaction.id,
+      },
+    ]);
+
+    setFormData({
+      ...formData,
+      transactionList: [],
+    });
+
+    setTimeout(() => {
+      const nextElement = document.getElementById('account');
+      if (nextElement instanceof HTMLElement) nextElement.focus();
+    }, 100);
   };
-
-  setTableData((prev) => [
-    ...prev,
-    {
-      receiverAccount: formData.receiverAccount,
-      receiverAccountName: formData.receiverAccountName,
-      transactionList: [newTransaction],
-      id: newTransaction.id,
-    },
-  ]);
-
-  setFormData({
-    ...formData,
-    transactionList: [],
-  });
-
-  setTimeout(() => {
-    const nextElement = document.getElementById('account');
-    if (nextElement instanceof HTMLElement) nextElement.focus();
-  }, 100);
-};
-
 
   const handleDelete = (id: number) => {
-  setTableData(prev =>
-    prev
-      .map(row => ({
-        ...row,
-        transactionList: row.transactionList?.filter(t => Number(t.id) !== id),
-      }))
-      .filter(row => row.transactionList && row.transactionList.length > 0) // খালি transactionList বাদ দেবে
-  );
-};
-
+    setTableData(
+      (prev) =>
+        prev
+          .map((row) => ({
+            ...row,
+            transactionList: row.transactionList?.filter(
+              (t) => Number(t.id) !== id,
+            ),
+          }))
+          .filter(
+            (row) => row.transactionList && row.transactionList.length > 0,
+          ), // খালি transactionList বাদ দেবে
+    );
+  };
 
   const totalAmount = tableData.reduce(
     (sum, row) =>
@@ -151,28 +151,46 @@ const handleAdd = () => {
     0,
   );
 
-  const handleBankChange = (selectedOption: any) => {
-    if (selectedOption) {
-      setBankId(selectedOption.value);
-    } else {
-      setBankId(null); // অথবা default value
-    }
-  };
-
   const optionsWithAll = [
     { id: '', name: 'Select Receiver Bank Account' },
     ...(Array.isArray(ddlBankList) ? ddlBankList : []),
   ];
 
-  const handleSave = () => {
-    const payload = {
-      receiverAccount: formData.receiverAccount, 
-      receiverAccountName: formData.receiverAccountName, 
-      transactions: tableData.flatMap((item) => item.transactionList || []),
-    };
+  const handleSave = async () => {
+    if (saveButtonLoading) return; // button already loading হলে return
 
-    dispatch(saveBankReceived(payload)); 
+    setSaveButtonLoading(true); // spinner + disable
 
+    try {
+      const transactions = tableData.flatMap(
+        (item) => item.transactionList || [],
+      );
+
+      if (transactions.length === 0) {
+        toast.warning('Please add at least one transaction before saving.');
+        return;
+      }
+
+      const payload = {
+        receiverAccount: formData.receiverAccount,
+        receiverAccountName: formData.receiverAccountName,
+        transactions,
+      };
+      const response = await dispatch(saveBankReceived(payload)).unwrap();
+
+    } catch (error: any) {
+      console.error('Save failed:', error);
+      const errorMessage =
+        error?.message ||
+        error?.error?.message ||
+        'Something went wrong while saving.';
+      toast.error(errorMessage);
+    } finally {
+      // spinner 2 seconds পরে বন্ধ হবে
+      setTimeout(() => {
+        setSaveButtonLoading(false);
+      }, 2000);
+    }
   };
 
   const receiverBankAccountHandler = (option: any) => {
@@ -183,17 +201,26 @@ const handleAdd = () => {
     });
   };
 
+  useEffect(() => {
+    const latestData =
+      bankReceived?.bankReceived?.[bankReceived.bankReceived.length - 1]?.data
+        ?.data?.[0];
+    if (latestData && latestData !== prevDataRef.current) {
+      toast.success(latestData);
+      prevDataRef.current = latestData;
+      setFormData({
+        ...formData,
+        transactionList: [],
+      });
+      setTableData([]);
+    }
+  }, [bankReceived]);
 
- 
-
-useEffect(() => {
-  const latestData =
-    bankReceived?.bankReceived?.[bankReceived.bankReceived.length - 1]?.data?.data?.[0];
-  if (latestData && latestData !== prevDataRef.current) {
-    toast.success(latestData);
-    prevDataRef.current = latestData;
-  }
-}, [bankReceived]);
+  useEffect(() => {
+    if (bankReceived?.error) {
+      toast.error(bankReceived.error);
+    }
+  }, [bankReceived.error]);
 
   return (
     <>
@@ -357,8 +384,9 @@ useEffect(() => {
                 />
               ) : (
                 <ButtonLoading
+                  disabled={saveButtonLoading}
                   onClick={handleSave}
-                  // buttonLoading={buttonLoading}
+                  buttonLoading={saveButtonLoading}
                   label="Save"
                   className="whitespace-nowrap text-center mr-0"
                   icon={

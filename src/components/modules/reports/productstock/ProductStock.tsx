@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
 const ProductStock = (user: any) => {
   const dispatch = useDispatch();
@@ -155,8 +156,8 @@ const ProductStock = (user: any) => {
       render: (row: any) => (
         <>
           <p>
-            {row.opening}
-            {row.opening ? <span className="text-sm "> ({row.unit})</span> : ''}
+            { thousandSeparator ( Math.floor(row.opening),0)}
+            { Math.floor(row.opening) ? <span className="text-sm "> ({row.unit})</span> : ''}
           </p>
         </>
       ),
@@ -170,7 +171,7 @@ const ProductStock = (user: any) => {
         <>
           {row.stock_in ? (
             <span className="text-sm ">
-              {row.stock_in} ({row.unit})
+              { thousandSeparator( Math.floor(row.stock_in),0)} ({row.unit})
             </span>
           ) : (
             '-'
@@ -183,9 +184,9 @@ const ProductStock = (user: any) => {
       header: 'Stock Out',
       render: (row: any) => (
         <>
-          {row.stock_in ? (
+          {row.stock_out ? (
             <span className="text-sm ">
-              {row.stock_in} ({row.unit})
+              { thousandSeparator (Math.floor(row.stock_out),0)} ({row.unit})
             </span>
           ) : (
             '-'
@@ -202,9 +203,9 @@ const ProductStock = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => (
         <>
-          {row.balance ? (
+          {Math.floor(row.balance) ? (
             <span className="text-sm ">
-              {row.balance} ({row.unit})
+              { thousandSeparator (Math.floor(row.balance),0)} ({row.unit})
             </span>
           ) : (
             '-'

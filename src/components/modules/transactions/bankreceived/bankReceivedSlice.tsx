@@ -93,7 +93,7 @@ const bankReceivedSlice = createSlice({name: 'bankReceived', initialState,reduce
         state.bankReceived.push(action.payload);
       })
       .addCase(saveBankReceived.rejected, (state, action) => {
-        state.loading = false;
+        state.loading = false; 
         state.error = action.payload as string;
       });
   },
