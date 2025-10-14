@@ -99,7 +99,7 @@ const searchTransaction = async () => {
   try {
     const response = await dispatch(editBankReceived({ id: search })).unwrap();
 
-    toast.success('Bank Received updated successfully!');
+    toast.success(response?.message || 'Search successful.');
     console.log('Edit response:', response);
     setIsUpdating(false);
   } catch (error: any) {
