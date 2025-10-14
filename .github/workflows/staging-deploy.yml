@@ -2,7 +2,11 @@ name: Staging React-Application CI/CD Pipeline
 
 on:
   push:
-    branches: [ "staging" ]
+    branches: ["staging"]
+    tags:
+      - "*"
+  pull_request:
+    branches: ["staging"]
   workflow_dispatch:
 
 permissions:
@@ -13,13 +17,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  sanity-check:
+    name: Sanity trigger check
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "✅ Workflow triggered on $GITHUB_REF ($GITHUB_SHA)"
+
   build-and-deploy:
     name: Build and Deploy React App
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    needs: [sanity-check]
     env:
       NODE_ENV: production
-      # আপনার সার্ভারের টার্গেট পাথ
       REMOTE_DIR: /home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/
 
     steps:
@@ -31,7 +41,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -43,52 +53,59 @@ jobs:
             npm install
           fi
 
-      - name: Build React app
+      - name: Build React app (auto-detect outdir)
         env:
           CI: true
-          # উদাহরণ: Vite/CRA build-time env (থাকলে সিক্রেটে রাখুন)
-          # VITE_API_BASE: ${{ secrets.STAGING_API_BASE }}
         run: |
           set -Eeuo pipefail
           npm run build
-          test -d dist || (echo "❌ dist/ not found. Check your build output folder." && exit 1)
+          OUTDIR=""
+          if [ -d dist ]; then
+            OUTDIR="dist"
+          elif [ -d build ]; then
+            OUTDIR="build"
+          fi
+          test -n "$OUTDIR" || (echo "❌ No dist/ or build/ found. Check your bundler output." && exit 1)
+          echo "OUTDIR=$OUTDIR" >> "$GITHUB_ENV"
 
       - name: Upload build artifact (for debugging/rollback)
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ github.sha }}
-          path: dist
+          name: ${{ env.OUTDIR }}-${{ github.sha }}
+          path: ${{ env.OUTDIR }}
           if-no-files-found: error
           retention-days: 7
 
       - name: Prepare SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_USER: ${{ secrets.USERNAME }}
           SSH_HOST: ${{ secrets.HOST }}
           SSH_PORT: ${{ secrets.PORT }}
-          # ঐচ্ছিক: পিন করা হোস্ট কী (ed25519 ফিঙ্গারপ্রিন্ট)
-          SSH_HOST_FINGERPRINT: ${{ secrets.HOSTKEY_ED25519 }}
         run: |
           set -Eeuo pipefail
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+
+          # Add host key dynamically using ssh-keyscan fallback
+          echo "⚙️ Fetching host key using ssh-keyscan..."
+          ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" \
+            | sed "s/^$SSH_HOST/[${SSH_HOST}]:${SSH_PORT:-22}/" >> ~/.ssh/known_hosts
 
           cat > ~/.ssh/config <<EOF
           Host staging-host
             HostName $SSH_HOST
-            Port $SSH_PORT
-            UserKnownHostsFile ~/.ssh/known_hosts
+            Port ${SSH_PORT:-22}
+            User $SSH_USER
             StrictHostKeyChecking yes
+            UserKnownHostsFile ~/.ssh/known_hosts
           EOF
 
-          if [ -n "${SSH_HOST_FINGERPRINT:-}" ]; then
-            # উদাহরণ: ssh-ed25519 AAAAC3Nza...
-            echo "$SSH_HOST ssh-ed25519 $SSH_HOST_FINGERPRINT" >> ~/.ssh/known_hosts
-          else
-            echo "⚠️ Using ssh-keyscan fallback (pin host key for better security)."
-            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
-          fi
+      - name: Debug SSH connection (optional)
+        continue-on-error: true
+        run: |
+          ssh -vvv -p "${{ secrets.PORT }}" "${{ secrets.USERNAME }}@${{ secrets.HOST }}" "echo '✅ Connected:' && whoami && hostname"
 
       - name: Deploy build via rsync
         env:
@@ -97,30 +114,32 @@ jobs:
           SSH_PORT: ${{ secrets.PORT }}
         run: |
           set -Eeuo pipefail
+          test -n "${OUTDIR:-}" || (echo "OUTDIR not set" && exit 1)
+
           echo "📦 Local build contents:"
-          ls -la dist/
+          ls -la "$OUTDIR"/
 
           # Ensure remote directory exists
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
+          ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
 
           # Sync with safer delete behavior
           rsync -avz \
             --delete-delay \
             --numeric-ids \
             --chmod=D755,F644 \
-            --rsync-path="rsync" \
-            -e "ssh -p $SSH_PORT" \
-            dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
+            --exclude='.DS_Store' \
+            -e "ssh -p ${SSH_PORT:-22}" \
+            "$OUTDIR"/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
 
-      - name: (Optional) Fix permissions on server
-        if: always()
+      - name: Fix permissions on server (optional)
+        continue-on-error: true
         env:
           SSH_USER: ${{ secrets.USERNAME }}
           SSH_HOST: ${{ secrets.HOST }}
           SSH_PORT: ${{ secrets.PORT }}
         run: |
           set -Eeuo pipefail
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "
+          ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "
             sudo chown -R www-data:www-data '$REMOTE_DIR' || true
             find '$REMOTE_DIR' -type d -exec chmod 755 {} \; || true
             find '$REMOTE_DIR' -type f -exec chmod 644 {} \; || true
@@ -133,13 +152,13 @@ jobs:
           SSH_PORT: ${{ secrets.PORT }}
         run: |
           set -Eeuo pipefail
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+          ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" \
             "sudo systemctl reload nginx || sudo systemctl restart nginx"
 
       - name: Smoke test (HTTP 200/301/302 expected)
         run: |
           set -Eeuo pipefail
-          curl -I --max-time 10 https://staging.cashbookbd.com | tee /tmp/headers.txt
+          curl -I --max-time 15 https://accounts.staging.cashbookbd.com | tee /tmp/headers.txt
           grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
             echo '❌ Smoke test failed'; exit 1;
           }
