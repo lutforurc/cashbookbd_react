@@ -108,9 +108,6 @@ const BankReceived = () => {
   setTimeout(() => document.getElementById('account')?.focus(), 100);
 };
 
-
-
-
 const handleDelete = (id: number) => {
   setTableData(prev =>
     prev
@@ -159,7 +156,6 @@ const handleSave = useCallback(async () => {
     setSaveButtonLoading(false);
   }
 }, [saveButtonLoading, tableData, formData, dispatch]);
-
 
   const receiverBankAccountHandler = (option: any) => {
     setFormData({
