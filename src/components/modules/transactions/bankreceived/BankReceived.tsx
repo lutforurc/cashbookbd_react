@@ -140,6 +140,8 @@ const searchTransaction = async () => {
     );
   };
 
+  
+
   const totalAmount = useMemo(
     () =>
       tableData.reduce(
