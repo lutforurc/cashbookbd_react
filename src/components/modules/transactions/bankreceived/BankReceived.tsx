@@ -19,7 +19,7 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
-import { saveBankReceived } from './bankReceivedSlice';
+import { editBankReceived, saveBankReceived } from './bankReceivedSlice';
 import { toast } from 'react-toastify';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 
@@ -90,26 +90,25 @@ const BankReceived = () => {
     });
   };
 
-  const searchTransaction = () => {
-    if (search === '') {
-      toast.error('Please enter a search value.');
-      return;
-    }
-    try {
-      // Dispatch the search action
-      dispatch(
-        editCashReceived({ invoiceNo: search }, (message: string) => {
-          if (message) {
-            toast.error(message);
-          }
-        }),
-      );
+const searchTransaction = async () => {
+  if (search === '') {
+    toast.error('Please enter a search value.');
+    return;
+  }
 
-      setIsUpdating(false);
-    } catch (error) {
-      console.error('Error searching invoice:', error);
-    }
-  };
+  try {
+    const response = await dispatch(editBankReceived({ id: search })).unwrap();
+
+    toast.success('Bank Received updated successfully!');
+    console.log('Edit response:', response);
+    setIsUpdating(false);
+  } catch (error: any) {
+    toast.error(error || 'Error searching invoice.');
+    console.error('Error searching invoice:', error);
+  }
+};
+
+
 
   const handleAdd = () => {
     const [transaction] = formData.transactionList || [];
