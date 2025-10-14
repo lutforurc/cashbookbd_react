@@ -68,11 +68,12 @@ jobs:
 
       - name: Prepare SSH
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
-          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_USER: ${{ secrets.USERNAME }}
+          SSH_HOST: ${{ secrets.HOST }}
+          SSH_PORT: ${{ secrets.PORT }}
           # 👉 এই সিক্রেটে host public key রাখুন (e.g. "ssh-ed25519 AAAAC3Nza...")
-          SSH_HOST_PUBLIC_KEY_ED25519: ${{ secrets.STAGING_SSH_HOST_PUBLIC_KEY_ED25519 }}
+          SSH_HOST_PUBLIC_KEY_ED25519: ${{ secrets.HOST_PUBLIC_KEY_ED25519 }}
         run: |
           set -Eeuo pipefail
           mkdir -p ~/.ssh
@@ -97,9 +98,9 @@ jobs:
 
       - name: Deploy build via rsync
         env:
-          SSH_USER: ${{ secrets.STAGING_SSH_USER }}
-          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
-          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+          SSH_USER: ${{ secrets.USERNAME }}
+          SSH_HOST: ${{ secrets.HOST }}
+          SSH_PORT: ${{ secrets.PORT }}
         run: |
           set -Eeuo pipefail
           test -n "${OUTDIR:-}" || (echo "OUTDIR not set" && exit 1)
@@ -122,9 +123,9 @@ jobs:
       - name: (Optional) Fix permissions on server
         continue-on-error: true
         env:
-          SSH_USER: ${{ secrets.STAGING_SSH_USER }}
-          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
-          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+          SSH_USER: ${{ secrets.USERNAME }}
+          SSH_HOST: ${{ secrets.HOST }}
+          SSH_PORT: ${{ secrets.PORT }}
         run: |
           set -Eeuo pipefail
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "
@@ -135,9 +136,9 @@ jobs:
 
       - name: Reload web server on VPS
         env:
-          SSH_USER: ${{ secrets.STAGING_SSH_USER }}
-          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
-          SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+          SSH_USER: ${{ secrets.USERNAME }}
+          SSH_HOST: ${{ secrets.HOST }}
+          SSH_PORT: ${{ secrets.PORT }}
         run: |
           set -Eeuo pipefail
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" \
