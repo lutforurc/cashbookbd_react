@@ -60,6 +60,9 @@ const BankReceived = () => {
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     dispatch(getCoal3ByCoal4(2));
@@ -87,75 +90,103 @@ const BankReceived = () => {
     });
   };
 
-  const searchTransaction = () => {};
+  const searchTransaction = () => {
+    if (search === '') {
+      toast.error('Please enter a search value.');
+      return;
+    }
+    try {
+      // Dispatch the search action
+      dispatch(
+        editCashReceived({ invoiceNo: search }, (message: string) => {
+          if (message) {
+            toast.error(message);
+          }
+        }),
+      );
 
- const handleAdd = () => {
-  const [transaction] = formData.transactionList || [];
-  if (!transaction?.account || !transaction?.amount) {
-    toast.warning('Please select account and enter amount');
-    return;
-  }
+      setIsUpdating(false);
+    } catch (error) {
+      console.error('Error searching invoice:', error);
+    }
+  };
 
-  const newTransaction = { ...transaction, id: Date.now() };
+  const handleAdd = () => {
+    const [transaction] = formData.transactionList || [];
+    if (!transaction?.account || !transaction?.amount) {
+      toast.warning('Please select account and enter amount');
+      return;
+    }
 
-  setTableData(prev => [
-    ...prev,
-    { ...formData, transactionList: [newTransaction], id: newTransaction.id },
-  ]);
+    const newTransaction = { ...transaction, id: Date.now() };
 
-  setFormData(prev => ({ ...prev, transactionList: [] }));
+    setTableData((prev) => [
+      ...prev,
+      { ...formData, transactionList: [newTransaction], id: newTransaction.id },
+    ]);
 
-  setTimeout(() => document.getElementById('account')?.focus(), 100);
-};
+    setFormData((prev) => ({ ...prev, transactionList: [] }));
 
-const handleDelete = (id: number) => {
-  setTableData(prev =>
-    prev
-      .map(row => ({
-        ...row,
-        transactionList: row.transactionList?.filter(t => t.id !== id),
-      }))
-      .filter(row => row.transactionList?.length)
+    setTimeout(() => document.getElementById('account')?.focus(), 100);
+  };
+
+  const handleDelete = (id: number) => {
+    setTableData((prev) =>
+      prev
+        .map((row) => ({
+          ...row,
+          transactionList: row.transactionList?.filter((t) => t.id !== id),
+        }))
+        .filter((row) => row.transactionList?.length),
+    );
+  };
+
+  const totalAmount = useMemo(
+    () =>
+      tableData.reduce(
+        (sum, row) =>
+          sum +
+          (row.transactionList?.reduce(
+            (s, t) => s + Number(t.amount || 0),
+            0,
+          ) || 0),
+        0,
+      ),
+    [tableData],
   );
-};
 
- const totalAmount = useMemo(
-  () =>
-    tableData.reduce(
-      (sum, row) =>
-        sum + (row.transactionList?.reduce((s, t) => s + Number(t.amount || 0), 0) || 0),
-      0
-    ),
-  [tableData]
-);
+  const optionsWithAll = useMemo(
+    () => [
+      { id: '', name: 'Select Receiver Bank Account' },
+      ...(ddlBankList || []),
+    ],
+    [ddlBankList],
+  );
 
-const optionsWithAll = useMemo(
-  () => [{ id: '', name: 'Select Receiver Bank Account' }, ...(ddlBankList || [])],
-  [ddlBankList]
-);
+  const handleSave = useCallback(async () => {
+    if (saveButtonLoading) return;
 
-const handleSave = useCallback(async () => {
-  if (saveButtonLoading) return;
+    const transactions = tableData.flatMap(
+      (item) => item.transactionList || [],
+    );
+    if (!transactions.length)
+      return toast.warning('Add at least one transaction');
 
-  const transactions = tableData.flatMap(item => item.transactionList || []);
-  if (!transactions.length) return toast.warning('Add at least one transaction');
+    setSaveButtonLoading(true);
 
-  setSaveButtonLoading(true);
-
-  
-  try {
-    const payload = {
-      receiverAccount: formData.receiverAccount,
-      receiverAccountName: formData.receiverAccountName,
-      transactions,
-    };
-    await dispatch(saveBankReceived(payload)).unwrap();
-  } catch (error: any) {
-    toast.error(error?.message || 'Something went wrong while saving.');
-  } finally {
-    setSaveButtonLoading(false);
-  }
-}, [saveButtonLoading, tableData, formData, dispatch]);
+    try {
+      const payload = {
+        receiverAccount: formData.receiverAccount,
+        receiverAccountName: formData.receiverAccountName,
+        transactions,
+      };
+      await dispatch(saveBankReceived(payload)).unwrap();
+    } catch (error: any) {
+      toast.error(error?.message || 'Something went wrong while saving.');
+    } finally {
+      setSaveButtonLoading(false);
+    }
+  }, [saveButtonLoading, tableData, formData, dispatch]);
 
   const receiverBankAccountHandler = (option: any) => {
     setFormData({
@@ -165,19 +196,19 @@ const handleSave = useCallback(async () => {
     });
   };
 
-useEffect(() => {
-  const latestData = bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
-  if (latestData && latestData !== prevDataRef.current) {
-    toast.success(latestData);
-    prevDataRef.current = latestData;
+  useEffect(() => {
+    const latestData =
+      bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
+    if (latestData && latestData !== prevDataRef.current) {
+      toast.success(latestData);
+      prevDataRef.current = latestData;
 
-    setTimeout(() => {
-      setFormData(prev => ({ ...prev, transactionList: [] }));
-      setTableData([]);
-    }, 2000);
-  }
-}, [bankReceived]);
-
+      setTimeout(() => {
+        setFormData((prev) => ({ ...prev, transactionList: [] }));
+        setTableData([]);
+      }, 2000);
+    }
+  }, [bankReceived]);
 
   useEffect(() => {
     if (bankReceived?.error) {
