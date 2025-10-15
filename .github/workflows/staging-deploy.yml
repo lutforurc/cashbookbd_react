@@ -29,12 +29,23 @@ jobs:
           set -Eeuo pipefail
           npm ci
 
+      # ✅ Build-time এ API URL inject (কোন .env দরকার নেই)
       - name: Build React app
         env:
           CI: true
+          VITE_API_URL: ${{ secrets.REACT_STAGING_API_URL }}   # e.g. https://staging.cashbookbd.com
         run: |
           set -Eeuo pipefail
+          echo "🌐 VITE_API_URL=${VITE_API_URL:-<empty>}"
+          [ -n "${VITE_API_URL-}" ] || { echo "❌ REACT_STAGING_API_URL secret missing"; exit 1; }
           npm run build
+
+      # (ঐচ্ছিক) dist এ API URL bake হয়েছে কি না যাচাই
+      - name: Verify baked API URL
+        continue-on-error: true
+        run: |
+          set -Eeuo pipefail
+          grep -R "staging\.cashbookbd\.com" dist -n || echo "ℹ️ API URL not found in dist (maybe minified)."
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
