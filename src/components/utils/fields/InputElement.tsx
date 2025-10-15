@@ -4,7 +4,7 @@ interface InputElementProps {
   id: string;
   name: string;
   label: string | number;
-  value: string;
+  value?: string;
   placeholder?: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;

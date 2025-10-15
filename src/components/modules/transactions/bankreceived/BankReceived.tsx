@@ -105,6 +105,8 @@ const BankReceived = () => {
       const mapped = mapReceivedData(response);
       setReceivedData(mapped);
       setTableData([mapped]);
+      // ✅ setFormData(mapped) রাখুন না - transactionList খালি রাখুন add-এর জন্য
+      // যদি প্রথম transaction auto-load করতে চান edit-এর জন্য, নিচের useEffect দেখুন
       console.log('====================================');
       console.log('mapped', mapped);
       console.log('====================================');
@@ -143,6 +145,24 @@ const BankReceived = () => {
     };
   };
 
+  // ✅ নতুন: Search-এর পর প্রথম transaction auto-load করুন form-এ (edit mode-এর জন্য)
+  useEffect(() => {
+    if (receivedData && receivedData.transactionList && receivedData.transactionList.length > 0) {
+      const firstTransaction = receivedData.transactionList[0];
+      setFormData({
+        ...receivedData,  // receiver info নিন
+        transactionList: [firstTransaction],  // শুধু প্রথম transaction load করুন form-এ
+      });
+      setTimeout(() => document.getElementById('account')?.focus(), 100);  // Optional: focus
+    } else if (receivedData) {
+      // যদি কোনো transaction না থাকে, receiver শুধু set করুন, transactionList খালি রাখুন
+      setFormData({
+        ...receivedData,
+        transactionList: [],
+      });
+    }
+  }, [receivedData]);
+  
   const handleAdd = () => {
     const [transaction] = formData.transactionList || [];
     if (!transaction?.account || !transaction?.amount) {
@@ -173,6 +193,24 @@ const BankReceived = () => {
     );
   };
 
+  // ✅ নতুন: Table-এ edit button-এর জন্য function (আগে undefined ছিল)
+  const receivedEditItem = useCallback((id: number) => {
+    // সব row থেকে transaction খুঁজুন
+    const allTransactions = tableData.flatMap((row) => row.transactionList || []);
+    const transactionToEdit = allTransactions.find((t) => Number(t.id) === id);
+    
+    if (transactionToEdit) {
+      setFormData({
+        ...formData,  // receiver info রাখুন (search থেকে)
+        transactionList: [transactionToEdit],  // এই transaction load করুন form-এ
+      });
+      setTimeout(() => document.getElementById('account')?.focus(), 100);  // Optional: focus account-এ
+      toast.info('Transaction loaded for editing.');  // Optional: user feedback
+    } else {
+      toast.warning('Transaction not found.');
+    }
+  }, [tableData, formData]);
+
   const totalAmount = useMemo(
     () =>
       tableData.reduce(
@@ -186,14 +224,15 @@ const BankReceived = () => {
       ),
     [tableData],
   );
-const selectedReceiver = useMemo(() => {
-  if (!receivedData) return null;
-  return {
-    id: receivedData.receiverAccount.toString(), // ✅ Use 'value' key
-    name: receivedData.receiverAccountName.toString(), // ✅ Use 'label' key
-  };
-}, [receivedData]);
 
+  // ✅ selectedReceiver fix: value/label ব্যবহার করুন CategoryDropdown-এর জন্য
+  const selectedReceiver = useMemo(() => {
+    if (!receivedData) return null;
+    return {
+      id: receivedData.receiverAccount.toString(),  // ✅ 'value' key
+      name: receivedData.receiverAccountName.toString(),  // ✅ 'label' key
+    };
+  }, [receivedData]);
 
   const optionsWithAll = useMemo(
     () => [
@@ -236,28 +275,26 @@ const selectedReceiver = useMemo(() => {
     });
   };
 
-useEffect(() => {
-  const latestData = bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
-  if (!latestData) return;
+  useEffect(() => {
+    const latestData = bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
+    if (!latestData) return;
 
-  const latestId = latestData.id;
-  if (prevDataRef.current === latestId) return;
+    const latestId = latestData.id;
+    if (prevDataRef.current === latestId) return;
 
-  toast.success('Data saved successfully!');
-  prevDataRef.current = latestId;
+    toast.success('Data saved successfully!');
+    prevDataRef.current = latestId;
 
-  setFormData((prev) => ({ ...prev, transactionList: [] }));
-  setTableData([]);
-}, [bankReceived?.bankReceived?.length]); // only depend on length
-
-
-
+    setFormData((prev) => ({ ...prev, transactionList: [] }));
+    setTableData([]);
+  }, [bankReceived?.bankReceived?.length]); // only depend on length
 
   useEffect(() => {
     if (bankReceived?.error) {
       toast.error(bankReceived.error);
     }
   }, [bankReceived.error]);
+  
   useCtrlS(handleSave);
   return (
     <>
@@ -306,10 +343,6 @@ useEffect(() => {
                   onChange={receiverBankAccountHandler}
                   className="w-full font-medium text-sm"
                   categoryDdl={optionsWithAll}
-                   // value={{
-                  //   id: receivedData?.receiverAccount.toString() || '',
-                  //   name: receivedData?.receiverAccountName.toString() || '',
-                  // }}
                   value={selectedReceiver}
                 />
               </div>
