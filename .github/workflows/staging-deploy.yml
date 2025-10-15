@@ -58,6 +58,16 @@ jobs:
           test -n "${{ secrets.REACT_STAGING_REMOTE_DIR }}" || (echo "❌ REACT_STAGING_REMOTE_DIR is empty" && exit 1)
           test -n "${{ secrets.REACT_STAGING_DEPLOY_URL }}" || (echo "❌ REACT_STAGING_DEPLOY_URL is empty" && exit 1)
 
+      - name: Debug package.json and dependencies
+        run: |
+          set -Eeuo pipefail
+          echo "📜 package.json contents:"
+          cat package.json
+          echo "📜 Installed dependencies:"
+          npm list --depth=0
+          echo "📜 node_modules/.bin contents:"
+          ls -la node_modules/.bin
+
       - name: Install dependencies
         run: |
           set -Eeuo pipefail
@@ -72,7 +82,7 @@ jobs:
           CI: true
         run: |
           set -Eeuo pipefail
-          npm run build
+          ./node_modules/.bin/vite build
           OUTDIR=""
           if [ -d dist ]; then
             OUTDIR="dist"
