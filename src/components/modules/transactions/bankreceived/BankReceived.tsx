@@ -133,7 +133,6 @@ const BankReceived = () => {
     // ✅ শেষের object বাদ
     const filteredDetails = details.slice(0, -1);
 
-    
     // ✅ receiverAccount হবে শেষের object
     const lastDetail = details[details.length - 1];
 
