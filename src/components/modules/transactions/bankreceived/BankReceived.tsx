@@ -34,6 +34,8 @@ interface TransactionList {
 interface ReceivedItem {
   id: string | number;
   mtmId: string;
+  bankReceivedAccount: string;
+  bankReceivedAccountName: string;
   receiverAccount: string;
   receiverAccountName: string;
   transactionList?: TransactionList[]; // ✅ object → array
@@ -42,6 +44,8 @@ interface ReceivedItem {
 const initialReceivedItem: ReceivedItem = {
   id: '',
   mtmId: '',
+  bankReceivedAccount: '',
+  bankReceivedAccountName: '',
   receiverAccount: '',
   receiverAccountName: '',
   transactionList: [], // ✅ object নয়, array হবে
@@ -56,7 +60,6 @@ const BankReceived = () => {
   const [search, setSearch] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
-  const [editButtonLoading, setEditButtonLoading] = useState(false);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
@@ -65,6 +68,9 @@ const BankReceived = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [receivedData, setReceivedData] = useState<ReceivedItem | null>(null);
+  const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
+    null,
+  ); // ✅ নতুন: update-এর জন্য transaction ID track
 
   useEffect(() => {
     dispatch(getCoal3ByCoal4(2));
@@ -78,15 +84,16 @@ const BankReceived = () => {
   }, [coal3]);
 
   const transactionAccountHandler = (option: any) => {
+    const currentTransaction = formData.transactionList?.[0];
     setFormData({
       ...formData,
       transactionList: [
         {
-          id: Date.now(),
+          id: currentTransaction?.id || Date.now(),
           account: option.value,
           accountName: option.label,
-          remarks: '',
-          amount: 0,
+          remarks: currentTransaction?.remarks || '',
+          amount: currentTransaction?.amount || 0,
         },
       ],
     });
@@ -103,14 +110,11 @@ const BankReceived = () => {
         editBankReceived({ id: search }),
       ).unwrap();
 
+      
       const mapped = mapReceivedData(response);
       setReceivedData(mapped);
       setTableData([mapped]);
-      // ✅ setFormData(mapped) রাখুন না - transactionList খালি রাখুন add-এর জন্য
-      // যদি প্রথম transaction auto-load করতে চান edit-এর জন্য, নিচের useEffect দেখুন
-      console.log('====================================');
-      console.log('mapped', mapped);
-      console.log('====================================');
+      setFormData({ ...mapped, transactionList: [] }); // ✅ Receiver set করুন, transactionList খালি রাখুন (fields ফাঁকা)
 
       toast.success(response?.message || 'Search successful.');
 
@@ -134,8 +138,10 @@ const BankReceived = () => {
     return {
       id: data.id,
       mtmId: data.mtmId,
-      receiverAccount: lastDetail?.coa4_id?.toString() || '',
-      receiverAccountName: lastDetail?.coa_l4?.name || '',
+      bankReceivedAccount: lastDetail?.coa4_id?.toString() || '',
+      bankReceivedAccountName: lastDetail?.coa_l4?.name || '',
+      receiverAccount: '',
+      receiverAccountName: '',
       transactionList: filteredDetails.map((item: any) => ({
         id: item.id,
         account: item.coa4_id,
@@ -146,24 +152,8 @@ const BankReceived = () => {
     };
   };
 
-  // ✅ নতুন: Search-এর পর প্রথম transaction auto-load করুন form-এ (edit mode-এর জন্য)
-  useEffect(() => {
-    if (receivedData && receivedData.transactionList && receivedData.transactionList.length > 0) {
-      const firstTransaction = receivedData.transactionList[0];
-      setFormData({
-        ...receivedData,  // receiver info নিন
-        transactionList: [firstTransaction],  // শুধু প্রথম transaction load করুন form-এ
-      });
-      setTimeout(() => document.getElementById('account')?.focus(), 100);  // Optional: focus
-    } else if (receivedData) {
-      // যদি কোনো transaction না থাকে, receiver শুধু set করুন, transactionList খালি রাখুন
-      setFormData({
-        ...receivedData,
-        transactionList: [],
-      });
-    }
-  }, [receivedData]);
-  
+  // ✅ useEffect remove করুন - search-এ fields ফাঁকা রাখার জন্য, শুধু edit button-এ load হবে
+
   const handleAdd = () => {
     const [transaction] = formData.transactionList || [];
     if (!transaction?.account || !transaction?.amount) {
@@ -195,36 +185,71 @@ const BankReceived = () => {
   };
 
   // ✅ নতুন: Table-এ edit button-এর জন্য function (আগে undefined ছিল)
-  const receivedEditItem = useCallback((id: number) => {
+  const receivedEditItem = useCallback(
+    (id: number) => {
+      // সব row থেকে transaction খুঁজুন
+      const allTransactions = tableData.flatMap(
+        (row) => row.transactionList || [],
+      );
+      const transactionToEdit = allTransactions.find(
+        (t) => Number(t.id) === id,
+      );
 
-    setIsEditing(true); 
-    // সব row থেকে transaction খুঁজুন
-    const allTransactions = tableData.flatMap((row) => row.transactionList || []);
-    const transactionToEdit = allTransactions.find((t) => Number(t.id) === id);
-    
-    if (transactionToEdit) {
-      setFormData({
-        ...formData,  // receiver info রাখুন (search থেকে)
-        transactionList: [transactionToEdit],  // এই transaction load করুন form-এ
-      });
-      setTimeout(() => document.getElementById('account')?.focus(), 100);  // Optional: focus account-এ
-      toast.info('Transaction loaded for editing.');  // Optional: user feedback
-    } else {
-      toast.warning('Transaction not found.');
-    }
+      if (transactionToEdit) {
+        setFormData({
+          ...formData, // receiver info রাখুন (search থেকে)
+          transactionList: [transactionToEdit], // এই transaction load করুন form-এ
+        });
+        setUpdateTransactionId(id); // ✅ Update ID set করুন
+        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-এ
+        toast.info('Transaction loaded for editing.'); // Optional: user feedback
+      } else {
+        toast.warning('Transaction not found.');
+      }
+    },
+    [tableData, formData],
+  );
 
-  }, [tableData, formData]);
-
-  const editReceivedVoucher = () => {
-    setEditButtonLoading(true);
-
-    
-    setTimeout(() => {
-      setEditButtonLoading(false);
-
-    }, 1000);  // Optional: focus
-
+  // ✅ Implement editReceivedVoucher like the example (local update)
+// ✅ Implement editReceivedVoucher like the example (local update)
+const editReceivedVoucher = () => {
+  if (updateTransactionId === null || updateTransactionId === undefined) {
+    console.error('No transaction selected for update.');
+    return;
   }
+
+  const [receivedVoucher] = formData.transactionList || [];
+
+  let updatedTransaction: TransactionList = {
+    id: updateTransactionId, // Keep the original ID
+    account: receivedVoucher.account || '',
+    accountName: receivedVoucher.accountName || '',
+    remarks: receivedVoucher.remarks || '',
+    amount: Number(receivedVoucher.amount) || 0,
+  };
+
+  // Update the specific transaction in tableData
+  const updatedTableData = tableData
+    .map((row) => ({
+      ...row,
+      transactionList:
+        row.transactionList?.map((t) =>
+          Number(t.id) === updateTransactionId ? updatedTransaction : t,
+        ) || [],
+    }))
+    .filter((row) => row.transactionList?.length > 0); // Optional: filter empty rows
+
+  setTableData(updatedTableData); // Update the state with the modified array
+  setIsUpdating(false); // Exit update mode
+  // ✅ Receiver fields preserve করুন reset-এর সময়
+  setFormData({
+    ...initialReceivedItem,
+    bankReceivedAccount: formData.bankReceivedAccount,
+    bankReceivedAccountName: formData.bankReceivedAccountName,
+  }); // Reset form data but keep receiver
+  setUpdateTransactionId(null); // Reset update ID
+  toast.success('Transaction updated successfully!');
+};
 
   const totalAmount = useMemo(
     () =>
@@ -239,13 +264,13 @@ const BankReceived = () => {
       ),
     [tableData],
   );
-
-  // ✅ selectedReceiver fix: value/label ব্যবহার করুন CategoryDropdown-এর জন্য
+ 
+  
   const selectedReceiver = useMemo(() => {
     if (!receivedData) return null;
     return {
-      id: receivedData.receiverAccount.toString(),  // ✅ 'value' key
-      name: receivedData.receiverAccountName.toString(),  // ✅ 'label' key
+      id: receivedData.bankReceivedAccount.toString(),
+      name: receivedData.bankReceivedAccountName.toString(),
     };
   }, [receivedData]);
 
@@ -267,13 +292,19 @@ const BankReceived = () => {
       return toast.warning('Add at least one transaction');
 
     setSaveButtonLoading(true);
+ 
 
     try {
       const payload = {
-        receiverAccount: formData.receiverAccount,
-        receiverAccountName: formData.receiverAccountName,
+        bankReceivedAccount: formData.bankReceivedAccount,
+        bankReceivedAccountName: formData.bankReceivedAccountName,
         transactions,
       };
+
+      console.log('====================================');
+      console.log("payload", payload);
+      console.log('====================================');
+
       await dispatch(saveBankReceived(payload)).unwrap();
     } catch (error: any) {
       toast.error(error?.message || 'Something went wrong while saving.');
@@ -282,16 +313,17 @@ const BankReceived = () => {
     }
   }, [saveButtonLoading, tableData, formData]);
 
-  const receiverBankAccountHandler = (option: any) => {
+  const bankReceivedAccountHandler = (option: any) => {
     setFormData({
       ...formData,
-      receiverAccount: option.value,
-      receiverAccountName: option.label,
+      bankReceivedAccount: option.value,
+      bankReceivedAccountName: option.label,
     });
   };
 
   useEffect(() => {
-    const latestData = bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
+    const latestData =
+      bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
     if (!latestData) return;
 
     const latestId = latestData.id;
@@ -309,7 +341,7 @@ const BankReceived = () => {
       toast.error(bankReceived.error);
     }
   }, [bankReceived.error]);
-  
+
   useCtrlS(handleSave);
   return (
     <>
@@ -353,9 +385,9 @@ const BankReceived = () => {
               </div>
 
               <div className="">
-                <label htmlFor="">Receiver Bank Account</label>
+                <label htmlFor="">Bank Received Account</label>
                 <CategoryDropdown
-                  onChange={receiverBankAccountHandler}
+                  onChange={bankReceivedAccountHandler}
                   className="w-full font-medium text-sm"
                   categoryDdl={optionsWithAll}
                   value={selectedReceiver}
@@ -429,14 +461,12 @@ const BankReceived = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-x-1 gap-y-1">
-                
-              {isEditing ? (
+              {updateTransactionId !== null ? (
                 <ButtonLoading
                   onClick={editReceivedVoucher}
-                  buttonLoading={editButtonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit2 className="text-white text-lg ml-2 mr-2" />}
                 />
               ) : (
                 <ButtonLoading
