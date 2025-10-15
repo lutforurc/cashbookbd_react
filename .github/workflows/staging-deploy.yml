@@ -30,8 +30,8 @@ jobs:
     needs: [sanity-check]
     env:
       NODE_ENV: production
-      REMOTE_DIR: ${{ secrets.REMOTE_DIR || '/home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/' }}
-      DEPLOY_URL: ${{ secrets.DEPLOY_URL || 'https://accounts.staging.cashbookbd.com' }}
+      REMOTE_DIR: ${{ secrets.REACT_STAGING_REMOTE_DIR || '/home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/' }}
+      DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL || 'https://accounts.staging.cashbookbd.com' }}
 
     steps:
       - name: Checkout code
@@ -48,11 +48,11 @@ jobs:
       - name: Validate secrets
         run: |
           set -Eeuo pipefail
-          test -n "${{ secrets.SSH_PRIVATE_KEY }}" || (echo "❌ SSH_PRIVATE_KEY is empty" && exit 1)
-          test -n "${{ secrets.USERNAME }}" || (echo "❌ USERNAME is empty" && exit 1)
-          test -n "${{ secrets.HOST }}" || (echo "❌ HOST is empty" && exit 1)
-          test -n "${{ secrets.REMOTE_DIR }}" || (echo "❌ REMOTE_DIR is empty" && exit 1)
-          test -n "${{ secrets.DEPLOY_URL }}" || (echo "❌ DEPLOY_URL is empty" && exit 1)
+          test -n "${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}" || (echo "❌ REACT_STAGING_SSH_PRIVATE_KEY is empty" && exit 1)
+          test -n "${{ secrets.REACT_STAGING_USERNAME }}" || (echo "❌ REACT_STAGING_USERNAME is empty" && exit 1)
+          test -n "${{ secrets.REACT_STAGING_HOST }}" || (echo "❌ REACT_STAGING_HOST is empty" && exit 1)
+          test -n "${{ secrets.REACT_STAGING_REMOTE_DIR }}" || (echo "❌ REACT_STAGING_REMOTE_DIR is empty" && exit 1)
+          test -n "${{ secrets.REACT_STAGING_DEPLOY_URL }}" || (echo "❌ REACT_STAGING_DEPLOY_URL is empty" && exit 1)
 
       - name: Install dependencies
         run: |
@@ -88,10 +88,10 @@ jobs:
 
       - name: Prepare SSH
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_USER: ${{ secrets.USERNAME }}
-          SSH_HOST: ${{ secrets.HOST }}
-          SSH_PORT: ${{ secrets.PORT }}
+          SSH_PRIVATE_KEY: ${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}
+          SSH_USER: ${{ secrets.REACT_STAGING_USERNAME }}
+          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
+          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
         run: |
           set -Eeuo pipefail
           mkdir -p ~/.ssh
@@ -112,13 +112,13 @@ jobs:
       - name: Debug SSH connection (optional)
         continue-on-error: true
         run: |
-          ssh -vvv -p "${{ secrets.PORT }}" "${{ secrets.USERNAME }}@${{ secrets.HOST }}" "echo '✅ Connected:' && whoami && hostname"
+          ssh -vvv -p "${{ secrets.REACT_STAGING_PORT }}" "${{ secrets.REACT_STAGING_USERNAME }}@${{ secrets.REACT_STAGING_HOST }}" "echo '✅ Connected:' && whoami && hostname"
 
       - name: Deploy build via rsync
         env:
-          SSH_USER: ${{ secrets.USERNAME }}
-          SSH_HOST: ${{ secrets.HOST }}
-          SSH_PORT: ${{ secrets.PORT }}
+          SSH_USER: ${{ secrets.REACT_STAGING_USERNAME }}
+          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
+          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
         run: |
           set -Eeuo pipefail
           test -n "${OUTDIR:-}" || (echo "OUTDIR not set" && exit 1)
@@ -135,9 +135,9 @@ jobs:
 
       - name: Fix permissions on server
         env:
-          SSH_USER: ${{ secrets.USERNAME }}
-          SSH_HOST: ${{ secrets.HOST }}
-          SSH_PORT: ${{ secrets.PORT }}
+          SSH_USER: ${{ secrets.REACT_STAGING_USERNAME }}
+          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
+          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
         run: |
           set -Eeuo pipefail
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "
@@ -148,9 +148,9 @@ jobs:
 
       - name: Reload web server on VPS
         env:
-          SSH_USER: ${{ secrets.USERNAME }}
-          SSH_HOST: ${{ secrets.HOST }}
-          SSH_PORT: ${{ secrets.PORT }}
+          SSH_USER: ${{ secrets.REACT_STAGING_USERNAME }}
+          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
+          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
         run: |
           set -Eeuo pipefail
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" \
