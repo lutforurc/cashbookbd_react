@@ -56,6 +56,7 @@ const BankReceived = () => {
   const [search, setSearch] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [editButtonLoading, setEditButtonLoading] = useState(false);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
@@ -195,6 +196,8 @@ const BankReceived = () => {
 
   // ✅ নতুন: Table-এ edit button-এর জন্য function (আগে undefined ছিল)
   const receivedEditItem = useCallback((id: number) => {
+
+    setIsEditing(true); 
     // সব row থেকে transaction খুঁজুন
     const allTransactions = tableData.flatMap((row) => row.transactionList || []);
     const transactionToEdit = allTransactions.find((t) => Number(t.id) === id);
@@ -209,7 +212,19 @@ const BankReceived = () => {
     } else {
       toast.warning('Transaction not found.');
     }
+
   }, [tableData, formData]);
+
+  const editReceivedVoucher = () => {
+    setEditButtonLoading(true);
+
+    
+    setTimeout(() => {
+      setEditButtonLoading(false);
+
+    }, 1000);  // Optional: focus
+
+  }
 
   const totalAmount = useMemo(
     () =>
@@ -414,10 +429,11 @@ const BankReceived = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-x-1 gap-y-1">
-              {1 != 1 ? (
+                
+              {isEditing ? (
                 <ButtonLoading
-                  // onClick={editReceivedVoucher}
-                  // buttonLoading={buttonLoading}
+                  onClick={editReceivedVoucher}
+                  buttonLoading={editButtonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
