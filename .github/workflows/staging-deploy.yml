@@ -68,6 +68,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           echo "📜 package.json contents:"
+          test -f package.json || (echo "❌ package.json not found" && exit 1)
           cat package.json
           echo "📜 package-lock.json exists:"
           ls -la package-lock.json || echo "❌ No package-lock.json found"
@@ -81,11 +82,15 @@ jobs:
           npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log || {
             echo "❌ npm install failed, retrying with clean install"
             rm -rf node_modules package-lock.json
-            npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-retry.log
+            npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-retry.log || {
+              echo "❌ npm install retry failed, installing critical dependencies"
+              npm install --save-dev vite@4.4.7 @vitejs/plugin-react@4.0.0 yaml@2.8.1 --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-critical.log
+            }
           }
           echo "📜 npm install log:"
           cat npm-install.log || echo "No npm-install.log found"
           [ -f npm-install-retry.log ] && echo "📜 npm install retry log:" && cat npm-install-retry.log
+          [ -f npm-install-critical.log ] && echo "📜 npm install critical log:" && cat npm-install-critical.log
 
       - name: Verify vite and yaml installation
         run: |
