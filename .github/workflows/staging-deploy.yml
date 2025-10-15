@@ -2,11 +2,11 @@ name: Staging React-Application CI/CD Pipeline
 
 on:
   push:
-    branches: ["staging"]
+    branches: ["react-staging"]
     tags:
       - "*"
   pull_request:
-    branches: ["staging"]
+    branches: ["react-staging"]
   workflow_dispatch:
 
 permissions:
