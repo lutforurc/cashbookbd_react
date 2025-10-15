@@ -13,7 +13,6 @@
 // export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
-
 // let API_REMOTE_URLs = window.location.origin;
 // console.log("Test Url", API_REMOTE_URLs ); 
 
