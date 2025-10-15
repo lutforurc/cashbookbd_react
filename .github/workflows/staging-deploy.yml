@@ -30,8 +30,8 @@ jobs:
     needs: [sanity-check]
     env:
       NODE_ENV: production
-      REMOTE_DIR: ${{ secrets.REACT_STAGING_REMOTE_DIR || '/home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/' }}
-      DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL || 'https://accounts.staging.cashbookbd.com' }}
+      REMOTE_DIR: ${{ secrets.REACT_STAGING_REMOTE_DIR || '/home/react_staging/htdocs/react.staging.cashbookbd.com/' }}
+      DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL || 'https://react.staging.cashbookbd.com' }}
 
     steps:
       - name: Checkout code
@@ -44,6 +44,10 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Clear npm cache
+        run: |
+          npm cache clean --force
 
       - name: Validate secrets
         run: |
@@ -166,8 +170,9 @@ jobs:
 
       - name: Notify Slack
         if: always()
+        continue-on-error: true
         uses: slackapi/slack-github-action@v1.27.0
         with:
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
-          text: "🎉 Deployed to staging: ${{ github.sha }} on ${{ github.event_name }} by ${{ github.actor }}"
+          slack-message: "🎉 Deployed to staging: ${{ github.sha }} on ${{ github.event_name }} by ${{ github.actor }}"
