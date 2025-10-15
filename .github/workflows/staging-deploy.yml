@@ -78,9 +78,14 @@ jobs:
         run: |
           set -Eeuo pipefail
           echo "📦 Installing dependencies with npm install"
-          npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log
+          npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log || {
+            echo "❌ npm install failed, retrying with clean install"
+            rm -rf node_modules package-lock.json
+            npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-retry.log
+          }
           echo "📜 npm install log:"
-          cat npm-install.log
+          cat npm-install.log || echo "No npm-install.log found"
+          [ -f npm-install-retry.log ] && echo "📜 npm install retry log:" && cat npm-install-retry.log
 
       - name: Verify vite and yaml installation
         run: |
