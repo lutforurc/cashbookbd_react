@@ -71,6 +71,7 @@ const BankReceived = () => {
   const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
     null,
   ); // ✅ নতুন: update-এর জন্য transaction ID track
+    const [isUpdateButton, setIsUpdateButton] = useState(false);
 
   useEffect(() => {
     dispatch(getCoal3ByCoal4(2));
@@ -110,15 +111,15 @@ const BankReceived = () => {
         editBankReceived({ id: search }),
       ).unwrap();
 
-      
       const mapped = mapReceivedData(response);
       setReceivedData(mapped);
       setTableData([mapped]);
       setFormData({ ...mapped, transactionList: [] }); // ✅ Receiver set করুন, transactionList খালি রাখুন (fields ফাঁকা)
+      setIsUpdating(false);
+      setIsUpdateButton(true);
 
       toast.success(response?.message || 'Search successful.');
 
-      setIsUpdating(false);
     } catch (error: any) {
       toast.error(error || 'Error searching invoice.');
       console.error('Error searching invoice:', error);
@@ -202,8 +203,10 @@ const BankReceived = () => {
         });
         setUpdateTransactionId(id); // ✅ Update ID set করুন
         setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-এ
+        setIsUpdating(true); // Update mode on
         toast.info('Transaction loaded for editing.'); // Optional: user feedback
       } else {
+        setIsUpdating(false); // Update mode off
         toast.warning('Transaction not found.');
       }
     },
@@ -211,45 +214,45 @@ const BankReceived = () => {
   );
 
   // ✅ Implement editReceivedVoucher like the example (local update)
-// ✅ Implement editReceivedVoucher like the example (local update)
-const editReceivedVoucher = () => {
-  if (updateTransactionId === null || updateTransactionId === undefined) {
-    console.error('No transaction selected for update.');
-    return;
-  }
+  // ✅ Implement editReceivedVoucher like the example (local update)
+  const editReceivedVoucher = () => {
+    if (updateTransactionId === null || updateTransactionId === undefined) {
+      console.error('No transaction selected for update.');
+      return;
+    }
 
-  const [receivedVoucher] = formData.transactionList || [];
+    const [receivedVoucher] = formData.transactionList || [];
 
-  let updatedTransaction: TransactionList = {
-    id: updateTransactionId, // Keep the original ID
-    account: receivedVoucher.account || '',
-    accountName: receivedVoucher.accountName || '',
-    remarks: receivedVoucher.remarks || '',
-    amount: Number(receivedVoucher.amount) || 0,
+    let updatedTransaction: TransactionList = {
+      id: updateTransactionId, // Keep the original ID
+      account: receivedVoucher.account || '',
+      accountName: receivedVoucher.accountName || '',
+      remarks: receivedVoucher.remarks || '',
+      amount: Number(receivedVoucher.amount) || 0,
+    };
+
+    // Update the specific transaction in tableData
+    const updatedTableData = tableData
+      .map((row) => ({
+        ...row,
+        transactionList:
+          row.transactionList?.map((t) =>
+            Number(t.id) === updateTransactionId ? updatedTransaction : t,
+          ) || [],
+      }))
+      .filter((row) => row.transactionList?.length > 0); // Optional: filter empty rows
+
+    setTableData(updatedTableData); // Update the state with the modified array
+    setIsUpdating(false); // Exit update mode
+    // ✅ Receiver fields preserve করুন reset-এর সময়
+    setFormData({
+      ...initialReceivedItem,
+      bankReceivedAccount: formData.bankReceivedAccount,
+      bankReceivedAccountName: formData.bankReceivedAccountName,
+    }); // Reset form data but keep receiver
+    setUpdateTransactionId(null); // Reset update ID
+    toast.success('Transaction updated successfully!');
   };
-
-  // Update the specific transaction in tableData
-  const updatedTableData = tableData
-    .map((row) => ({
-      ...row,
-      transactionList:
-        row.transactionList?.map((t) =>
-          Number(t.id) === updateTransactionId ? updatedTransaction : t,
-        ) || [],
-    }))
-    .filter((row) => row.transactionList?.length > 0); // Optional: filter empty rows
-
-  setTableData(updatedTableData); // Update the state with the modified array
-  setIsUpdating(false); // Exit update mode
-  // ✅ Receiver fields preserve করুন reset-এর সময়
-  setFormData({
-    ...initialReceivedItem,
-    bankReceivedAccount: formData.bankReceivedAccount,
-    bankReceivedAccountName: formData.bankReceivedAccountName,
-  }); // Reset form data but keep receiver
-  setUpdateTransactionId(null); // Reset update ID
-  toast.success('Transaction updated successfully!');
-};
 
   const totalAmount = useMemo(
     () =>
@@ -264,8 +267,7 @@ const editReceivedVoucher = () => {
       ),
     [tableData],
   );
- 
-  
+
   const selectedReceiver = useMemo(() => {
     if (!receivedData) return null;
     return {
@@ -292,17 +294,17 @@ const editReceivedVoucher = () => {
       return toast.warning('Add at least one transaction');
 
     setSaveButtonLoading(true);
- 
 
     try {
       const payload = {
+        mtmId: formData.mtmId,
         bankReceivedAccount: formData.bankReceivedAccount,
         bankReceivedAccountName: formData.bankReceivedAccountName,
         transactions,
       };
 
       console.log('====================================');
-      console.log("payload", payload);
+      console.log('payload', payload);
       console.log('====================================');
 
       await dispatch(saveBankReceived(payload)).unwrap();
@@ -391,7 +393,7 @@ const editReceivedVoucher = () => {
                   // !border !border-red-800
                   className="w-full font-medium text-sm "
                   categoryDdl={optionsWithAll}
-                  value={selectedReceiver} 
+                  value={selectedReceiver}
                 />
               </div>
               <div className="mt-6">
@@ -402,7 +404,9 @@ const editReceivedVoucher = () => {
                   placeholder="Select Transaction Account"
                   onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
                   value={
-                    formData.transactionList && formData.transactionList[0]?.account ? {
+                    formData.transactionList &&
+                    formData.transactionList[0]?.account
+                      ? {
                           value: formData.transactionList[0].account,
                           label: formData.transactionList[0].accountName,
                         }
@@ -416,7 +420,6 @@ const editReceivedVoucher = () => {
                       }
                     }
                   }}
-                  
                 />
               </div>
 
@@ -428,10 +431,14 @@ const editReceivedVoucher = () => {
                 label={'Enter Remarks'}
                 className={''}
                 onChange={(e) => {
-                  const updated = {
-                    ...formData.transactionList?.[0],
-                    remarks: e.target.value,
+                  const current = formData.transactionList?.[0] || {
+                    id: Date.now(),
+                    account: '',
+                    accountName: '',
+                    remarks: '',
+                    amount: 0,
                   };
+                  const updated = { ...current, remarks: e.target.value };
                   setFormData({
                     ...formData,
                     transactionList: [updated],
@@ -447,10 +454,14 @@ const editReceivedVoucher = () => {
                 placeholder="Enter Amount"
                 label="Amount (Tk.)"
                 onChange={(e) => {
-                  const updated = {
-                    ...formData.transactionList?.[0],
-                    amount: e.target.value,
+                  const current = formData.transactionList?.[0] || {
+                    id: Date.now(),
+                    account: '',
+                    accountName: '',
+                    remarks: '',
+                    amount: 0,
                   };
+                  const updated = { ...current, amount: e.target.value };
                   setFormData({
                     ...formData,
                     transactionList: [updated],
@@ -461,11 +472,11 @@ const editReceivedVoucher = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-x-1 gap-y-1">
-              {updateTransactionId !== null ? (
+              {isUpdating ? (
                 <ButtonLoading
                   onClick={editReceivedVoucher}
                   label="Update"
-                  className="whitespace-nowrap text-center mr-0 py-1.5"
+                  className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit2 className="text-white text-lg ml-2 mr-2" />}
                 />
               ) : (
@@ -483,7 +494,7 @@ const editReceivedVoucher = () => {
                       }, 100);
                     }
                   }}
-                  // buttonLoading={buttonLoading}
+                  buttonLoading={buttonLoading}
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
@@ -492,7 +503,7 @@ const editReceivedVoucher = () => {
                 />
               )}
 
-              {1 !== 1 ? (
+              { isUpdateButton ? (
                 <ButtonLoading
                   // onClick={handleInvoiceUpdate}
                   // buttonLoading={buttonLoading}
