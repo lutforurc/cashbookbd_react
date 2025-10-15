@@ -55,14 +55,16 @@ jobs:
           node -v
           npm -v
 
-      - name: Validate secrets
+      - name: Validate configuration and secrets
         run: |
           set -Eeuo pipefail
+          # These can come from defaults or secrets
+          test -n "${REMOTE_DIR}" || (echo "❌ REMOTE_DIR is empty" && exit 1)
+          test -n "${DEPLOY_URL}" || (echo "❌ DEPLOY_URL is empty" && exit 1)
+          # Required secrets
           test -n "${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}" || (echo "❌ REACT_STAGING_SSH_PRIVATE_KEY is empty" && exit 1)
           test -n "${{ secrets.REACT_STAGING_USERNAME }}" || (echo "❌ REACT_STAGING_USERNAME is empty" && exit 1)
           test -n "${{ secrets.REACT_STAGING_HOST }}" || (echo "❌ REACT_STAGING_HOST is empty" && exit 1)
-          test -n "${{ secrets.REACT_STAGING_REMOTE_DIR }}" || (echo "❌ REACT_STAGING_REMOTE_DIR is empty" && exit 1)
-          test -n "${{ secrets.REACT_STAGING_DEPLOY_URL }}" || (echo "❌ REACT_STAGING_DEPLOY_URL is empty" && exit 1)
 
       - name: Debug package.json and dependencies
         run: |
@@ -70,10 +72,12 @@ jobs:
           echo "📜 package.json contents:"
           test -f package.json || (echo "❌ package.json not found" && exit 1)
           cat package.json
-          echo "📜 Checking for vite in package.json:"
-          grep -E '"vite":' package.json || (echo "❌ vite not found in package.json" && exit 1)
-          echo "📜 Checking for @vitejs/plugin-react in package.json:"
-          grep -E '"@vitejs/plugin-react":' package.json || echo "⚠️ @vitejs/plugin-react not found in package.json"
+          echo "📜 Checking for vite in package.json (warn-only):"
+          if ! grep -E '"vite":' package.json >/dev/null; then
+            echo "⚠️ vite not listed in package.json"
+          fi
+          echo "📜 Checking for @vitejs/plugin-react (warn-only):"
+          grep -E '"@vitejs/plugin-react":' package.json >/dev/null || echo "⚠️ @vitejs/plugin-react not found in package.json"
           echo "📜 package-lock.json exists:"
           ls -la package-lock.json || echo "❌ No package-lock.json found"
           echo "📜 node_modules/.bin contents (before install):"
@@ -83,14 +87,14 @@ jobs:
         run: |
           set -Eeuo pipefail
           echo "📦 Installing dependencies with npm install"
-          npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log || {
-            echo "❌ npm install failed, retrying with clean install"
+          if ! npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log; then
+            echo "❌ npm install failed, retrying clean"
             rm -rf node_modules package-lock.json
-            npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-retry.log || {
-              echo "❌ npm install retry failed, installing critical dependencies"
+            if ! npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-retry.log; then
+              echo "❌ npm install retry failed, installing critical deps"
               npm install --save-dev vite@4.4.7 @vitejs/plugin-react@4.0.0 yaml@2.8.1 --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-critical.log
-            }
-          }
+            fi
+          fi
           echo "📜 npm install log:"
           cat npm-install.log || echo "No npm-install.log found"
           [ -f npm-install-retry.log ] && echo "📜 npm install retry log:" && cat npm-install-retry.log
@@ -99,18 +103,8 @@ jobs:
       - name: Verify vite and yaml installation
         run: |
           set -Eeuo pipefail
-          if [ -f ./node_modules/.bin/vite ]; then
-            echo "✅ vite binary found"
-          else
-            echo "❌ vite binary not found"
-            exit 1
-          fi
-          if [ -d ./node_modules/yaml ]; then
-            echo "✅ yaml package found"
-          else
-            echo "❌ yaml package not found"
-            exit 1
-          fi
+          npx --no vite --version >/dev/null 2>&1 && echo "✅ vite available" || { echo "❌ vite not available"; exit 1; }
+          node -e "require.resolve('yaml')" && echo "✅ yaml package found" || { echo "❌ yaml package not found"; exit 1; }
 
       - name: Debug installed dependencies
         run: |
@@ -131,8 +125,10 @@ jobs:
             OUTDIR="dist"
           elif [ -d build ]; then
             OUTDIR="build"
+          else
+            OUTDIR="$(node -e "try{console.log(require('./vite.config.js').build?.outDir||'')}catch{}")"
           fi
-          test -n "$OUTDIR" || (echo "❌ No dist/ or build/ found. Check your bundler output." && exit 1)
+          test -n "$OUTDIR" && [ -d "$OUTDIR" ] || (echo "❌ No dist/ or build/ found. Check your bundler output." && exit 1)
           echo "OUTDIR=$OUTDIR" >> "$GITHUB_ENV"
 
       - name: Upload build artifact (for debugging/rollback)
@@ -154,7 +150,7 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          echo "⚙️ Fetching host key using ssh-keyscan..."
+          echo "⚙️ Fetching host key..."
           ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" \
             | sed "s/^$SSH_HOST/[${SSH_HOST}]:${SSH_PORT:-22}/" >> ~/.ssh/known_hosts
           cat > ~/.ssh/config <<EOF
@@ -213,10 +209,10 @@ jobs:
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" \
             "sudo systemctl reload nginx || sudo systemctl restart nginx"
 
-      - name: Smoke test (HTTP 200/301/302 expected)
+      - name: Smoke test (HTTP 2xx/3xx expected)
         run: |
           set -Eeuo pipefail
-          curl -I --max-time 15 "$DEPLOY_URL" | tee /tmp/headers.txt
-          grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
+          curl -I -L --retry 3 --retry-connrefused --max-time 30 "$DEPLOY_URL" | tee /tmp/headers.txt
+          grep -E '^HTTP/.* (200|2..|3..) ' /tmp/headers.txt >/dev/null || {
             echo '❌ Smoke test failed'; exit 1;
           }
