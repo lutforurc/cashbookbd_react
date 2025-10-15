@@ -1,4 +1,3 @@
-```yaml
 name: Staging React-Application CI/CD Pipeline
 
 on:
@@ -172,4 +171,3 @@ jobs:
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
           text: "🎉 Deployed to staging: ${{ github.sha }} on ${{ github.event_name }} by ${{ github.actor }}"
-```
