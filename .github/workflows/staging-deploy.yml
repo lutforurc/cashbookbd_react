@@ -71,7 +71,9 @@ jobs:
           test -f package.json || (echo "❌ package.json not found" && exit 1)
           cat package.json
           echo "📜 Checking for vite in package.json:"
-          grep -E '"vite":' package.json || echo "⚠️ vite not found in package.json"
+          grep -E '"vite":' package.json || (echo "❌ vite not found in package.json" && exit 1)
+          echo "📜 Checking for @vitejs/plugin-react in package.json:"
+          grep -E '"@vitejs/plugin-react":' package.json || echo "⚠️ @vitejs/plugin-react not found in package.json"
           echo "📜 package-lock.json exists:"
           ls -la package-lock.json || echo "❌ No package-lock.json found"
           echo "📜 node_modules/.bin contents (before install):"
