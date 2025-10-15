@@ -22,8 +22,6 @@
 //   API_REMOTE_URL = 'http://cashbook_api.test';
 // }
 
-
-
 // export { API_REMOTE_URL };
 
 export const API_REMOTE_URL = import.meta.env.VITE_API_URL;
