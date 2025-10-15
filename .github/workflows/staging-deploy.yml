@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'   # তোমার দেয়া ভার্সন রাখা হলো
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -36,7 +36,6 @@ jobs:
           set -Eeuo pipefail
           npm run build
 
-      # Optional: upload artifact for debugging/rollback
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -50,17 +49,25 @@ jobs:
       - name: Validate deploy secrets
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}
-          SSH_USER:        ${{ secrets.REACT_STAGING_SSH_USER }}
+          SSH_USER:        ${{ secrets.REACT_STAGING_SSH_USER }}   # নিশ্চিত করুন এই সিক্রেট আছে
           SSH_HOST:        ${{ secrets.REACT_STAGING_HOST }}
           SSH_PORT:        ${{ secrets.REACT_STAGING_PORT }}
+          REMOTE_DIR:      ${{ secrets.REACT_STAGING_REMOTE_DIR }}
         run: |
           set -Eeuo pipefail
           : "${SSH_PORT:=22}"
+
+          # Length বের করার পোর্টেবল উপায় (no bad substitution)
+          KEYLEN=$(printf '%s' "${SSH_PRIVATE_KEY-}" | wc -c | tr -d '[:space:]')
+
           echo "🔍 user=${SSH_USER:-<empty>} host=${SSH_HOST:-<empty>} port=${SSH_PORT:-<empty>}"
-          echo "🔍 private_key_length=${#SSH_PRIVATE_KEY:-0}"
-          test -n "${SSH_PRIVATE_KEY:-}" || { echo "❌ REACT_STAGING_SSH_PRIVATE_KEY is empty"; exit 1; }
-          test -n "${SSH_USER:-}"        || { echo "❌ REACT_STAGING_SSH_USER is empty"; exit 1; }
-          test -n "${SSH_HOST:-}"        || { echo "❌ REACT_STAGING_HOST is empty"; exit 1; }
+          echo "🔍 private_key_length=${KEYLEN}"
+          echo "🔍 remote_dir=${REMOTE_DIR:-<empty>}"
+
+          [ -n "${SSH_PRIVATE_KEY-}" ] || { echo "❌ REACT_STAGING_SSH_PRIVATE_KEY is empty"; exit 1; }
+          [ -n "${SSH_USER-}" ]        || { echo "❌ REACT_STAGING_SSH_USER is empty"; exit 1; }
+          [ -n "${SSH_HOST-}" ]        || { echo "❌ REACT_STAGING_HOST is empty"; exit 1; }
+          [ -n "${REMOTE_DIR-}" ]      || { echo "❌ REACT_STAGING_REMOTE_DIR is empty"; exit 1; }
 
       - name: Prepare SSH
         env:
@@ -93,26 +100,25 @@ jobs:
 
       - name: Deploy to VPS via rsync
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}
-          SSH_USER:        ${{ secrets.REACT_STAGING_SSH_USER }}
-          SSH_HOST:        ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT:        ${{ secrets.REACT_STAGING_PORT }}
+          SSH_USER:   ${{ secrets.REACT_STAGING_SSH_USER }}
+          SSH_HOST:   ${{ secrets.REACT_STAGING_HOST }}
+          SSH_PORT:   ${{ secrets.REACT_STAGING_PORT }}
+          REMOTE_DIR: ${{ secrets.REACT_STAGING_REMOTE_DIR }}
         run: |
           set -Eeuo pipefail
           : "${SSH_PORT:=22}"
 
-          # Confirm build output
           echo "📦 Local build contents:"
           ls -la dist/ || { echo "❌ dist/ not found. Did the build produce a different outDir?"; exit 1; }
 
-          # Ensure remote target exists (adjust if you change target path)
+          # Ensure remote target exists
           ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "mkdir -p /home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/"
+            "mkdir -p '$REMOTE_DIR'"
 
-          # Deploy (uses the private key written in Prepare SSH step)
+          # Deploy
           rsync -avz --delete-delay \
             -e "ssh -o IdentitiesOnly=yes -p ${SSH_PORT}" \
-            dist/ "$SSH_USER@$SSH_HOST:/home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/"
+            dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
 
           echo "🚀 Deployment completed."
 
@@ -128,11 +134,13 @@ jobs:
             "sudo -n systemctl reload nginx || sudo -n systemctl restart nginx"
           echo "🔄 Nginx reloaded."
 
-      # Optional: quick smoke test (change URL if needed)
       - name: Smoke test
+        env:
+          DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL }}
         run: |
           set -Eeuo pipefail
-          curl -I --max-time 20 https://accounts.staging.cashbookbd.com | tee /tmp/headers.txt
+          test -n "${DEPLOY_URL-}" || { echo "❌ REACT_STAGING_DEPLOY_URL is empty"; exit 1; }
+          curl -I -L --max-time 20 "$DEPLOY_URL" | tee /tmp/headers.txt
           grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
             echo '❌ Smoke test failed'; exit 1;
           }
