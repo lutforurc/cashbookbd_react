@@ -177,12 +177,3 @@ jobs:
           grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
             echo '❌ Smoke test failed'; exit 1;
           }
-
-      - name: Notify Slack
-        if: always()
-        continue-on-error: true
-        uses: slackapi/slack-github-action@v1.27.0
-        with:
-          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
-          slack-message: "🎉 Deployed to staging: ${{ github.sha }} on ${{ github.event_name }} by ${{ github.actor }}"
