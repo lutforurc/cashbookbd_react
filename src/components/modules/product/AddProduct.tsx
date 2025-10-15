@@ -114,6 +114,10 @@ const AddProduct = () => {
     }
   };
 
+  console.log('====================================');
+  console.log("category", category);
+  console.log('====================================');
+
   const handleButtonClick = (e) => {
     e.preventDefault();
     if (!(formData.category_id || '').trim()) {
@@ -201,13 +205,15 @@ const AddProduct = () => {
       <HelmetTitle title={formData?.id ? 'Edit Product' : 'Add New Product'} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {category.isLoading == true ? <Loader /> : ''}
+        
+        
         <DropdownCommon
           id="category_id"
           name={'category_id'}
           label="Select Category"
           onChange={handleOnChange}
           className="h-[2.20rem]"
-          data={category?.data?.category}
+          data={category?.ddlData?.data?.category}
           defaultValue={formData?.category_id?.toString() ?? ''}
         />
         <DropdownCommon
@@ -216,7 +222,7 @@ const AddProduct = () => {
           onChange={handleOnChange}
           name={'product_type'}
           className="h-[2.20rem]"
-          data={category?.data?.product_type}
+          data={category?.ddlData?.data?.product_type}
           defaultValue={formData?.product_type?.toString() ?? ''}
         />
 

@@ -63,6 +63,7 @@ const BankReceived = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [receivedData, setReceivedData] = useState<ReceivedItem | null>(null);
 
   useEffect(() => {
     dispatch(getCoal3ByCoal4(2));
@@ -90,25 +91,57 @@ const BankReceived = () => {
     });
   };
 
-const searchTransaction = async () => {
-  if (search === '') {
-    toast.error('Please enter a search value.');
-    return;
-  }
+  const searchTransaction = async () => {
+    if (search === '') {
+      toast.error('Please enter a search value.');
+      return;
+    }
 
-  try {
-    const response = await dispatch(editBankReceived({ id: search })).unwrap();
+    try {
+      const response = await dispatch(
+        editBankReceived({ id: search }),
+      ).unwrap();
 
-    toast.success(response?.message || 'Search successful.');
-    console.log('Edit response:', response);
-    setIsUpdating(false);
-  } catch (error: any) {
-    toast.error(error || 'Error searching invoice.');
-    console.error('Error searching invoice:', error);
-  }
-};
+      const mapped = mapReceivedData(response);
+      setReceivedData(mapped);
+      setTableData([mapped]);
+      console.log('====================================');
+      console.log('mapped', mapped);
+      console.log('====================================');
 
+      toast.success(response?.message || 'Search successful.');
 
+      setIsUpdating(false);
+    } catch (error: any) {
+      toast.error(error || 'Error searching invoice.');
+      console.error('Error searching invoice:', error);
+    }
+  };
+
+  const mapReceivedData = (res: any): ReceivedItem => {
+    const data = res.data.data;
+    const details = data.acc_transaction_master[0].acc_transaction_details;
+
+    // ✅ শেষের object বাদ
+    const filteredDetails = details.slice(0, -1);
+
+    // ✅ receiverAccount হবে শেষের object
+    const lastDetail = details[details.length - 1];
+
+    return {
+      id: data.id,
+      mtmId: data.mtmId,
+      receiverAccount: lastDetail?.coa4_id?.toString() || '',
+      receiverAccountName: lastDetail?.coa_l4?.name || '',
+      transactionList: filteredDetails.map((item: any) => ({
+        id: item.id,
+        account: item.coa4_id,
+        accountName: item.coa_l4?.name,
+        remarks: item.remarks,
+        amount: item.credit,
+      })),
+    };
+  };
 
   const handleAdd = () => {
     const [transaction] = formData.transactionList || [];
@@ -140,8 +173,6 @@ const searchTransaction = async () => {
     );
   };
 
-  
-
   const totalAmount = useMemo(
     () =>
       tableData.reduce(
@@ -155,6 +186,14 @@ const searchTransaction = async () => {
       ),
     [tableData],
   );
+const selectedReceiver = useMemo(() => {
+  if (!receivedData) return null;
+  return {
+    id: receivedData.receiverAccount.toString(), // ✅ Use 'value' key
+    name: receivedData.receiverAccountName.toString(), // ✅ Use 'label' key
+  };
+}, [receivedData]);
+
 
   const optionsWithAll = useMemo(
     () => [
@@ -187,7 +226,7 @@ const searchTransaction = async () => {
     } finally {
       setSaveButtonLoading(false);
     }
-  }, [saveButtonLoading, tableData, formData, dispatch]);
+  }, [saveButtonLoading, tableData, formData]);
 
   const receiverBankAccountHandler = (option: any) => {
     setFormData({
@@ -197,19 +236,22 @@ const searchTransaction = async () => {
     });
   };
 
-  useEffect(() => {
-    const latestData =
-      bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
-    if (latestData && latestData !== prevDataRef.current) {
-      toast.success(latestData);
-      prevDataRef.current = latestData;
+useEffect(() => {
+  const latestData = bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
+  if (!latestData) return;
 
-      setTimeout(() => {
-        setFormData((prev) => ({ ...prev, transactionList: [] }));
-        setTableData([]);
-      }, 2000);
-    }
-  }, [bankReceived]);
+  const latestId = latestData.id;
+  if (prevDataRef.current === latestId) return;
+
+  toast.success('Data saved successfully!');
+  prevDataRef.current = latestId;
+
+  setFormData((prev) => ({ ...prev, transactionList: [] }));
+  setTableData([]);
+}, [bankReceived?.bankReceived?.length]); // only depend on length
+
+
+
 
   useEffect(() => {
     if (bankReceived?.error) {
@@ -264,9 +306,13 @@ const searchTransaction = async () => {
                   onChange={receiverBankAccountHandler}
                   className="w-full font-medium text-sm"
                   categoryDdl={optionsWithAll}
+                   // value={{
+                  //   id: receivedData?.receiverAccount.toString() || '',
+                  //   name: receivedData?.receiverAccountName.toString() || '',
+                  // }}
+                  value={selectedReceiver}
                 />
               </div>
-
               <div className="mt-6">
                 <label htmlFor="">Select Transaction Account</label>
                 <DdlMultiline

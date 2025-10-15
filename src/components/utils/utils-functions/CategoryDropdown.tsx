@@ -1,33 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react"; // ✅ Add useMemo import
 import Select from "react-select";
 
 interface CategoryDropdownProps {
-  categoryDdl: { id: number; name: string }[];
+  categoryDdl: { id: number | string; name: string }[];
   onChange: (selectedOption: any) => void;
   className?: string;
+  value?: { id: string | number; name: string } | null; // ✅ Optional value
 }
 
 const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   categoryDdl,
   onChange,
   className,
+  value,
 }) => {
   const [selectedOption, setSelectedOption] = useState<any>(null);
 
-  const options =
-    Array.isArray(categoryDdl) &&
-    categoryDdl.map((item) => ({
-      value: item.id,
-      label: item.name,
-    }));
+  // ✅ Memoize options to stabilize reference
+  const options = useMemo(
+    () =>
+      Array.isArray(categoryDdl)
+        ? categoryDdl.map((item) => ({
+            value: item.id,
+            label: item.name,
+          }))
+        : [],
+    [categoryDdl]
+  );
 
-  // প্রথমে ডিফল্ট সেট করা
+  // ✅ যদি value prop থাকে, সেটিকে select করবে
   useEffect(() => {
-    if (options && options.length > 0 && !selectedOption) {
-      setSelectedOption(options[0]);
-      onChange(options[0]); // চাইলে parent component-এ notify করতে
+    if (value && options.length > 0) {
+      const match = options.find(
+        (opt) => opt.value.toString() === value.id.toString()
+      );
+      if (match && (!selectedOption || match.value.toString() !== selectedOption.value.toString())) {
+        // ✅ Optional: Avoid set if already matching (by value, not ref)
+        setSelectedOption(match);
+      }
     }
-  }, [options]);
+  }, [value, options, selectedOption]); // ✅ Added selectedOption to deps for the check
+
+  // ✅ যদি value না থাকে (optional), প্রথম option কে default সিলেক্ট করবে
+  useEffect(() => {
+    if (!value && options.length > 0 && !selectedOption) {
+      setSelectedOption(options[0]);
+      onChange(options[0]);
+    }
+  }, [options, value, selectedOption, onChange]); // ✅ Added selectedOption and onChange to deps
 
   const handleChange = (option: any) => {
     setSelectedOption(option);
