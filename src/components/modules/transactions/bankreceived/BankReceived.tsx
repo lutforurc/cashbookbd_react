@@ -390,8 +390,7 @@ const BankReceived = () => {
                 <label htmlFor="">Bank Received Account</label>
                 <CategoryDropdown
                   onChange={bankReceivedAccountHandler}
-                  // !border !border-red-800
-                  className="w-full font-medium text-sm "
+                  className={`w-full font-medium text-sm ${formData.mtmId && '!border !border-red-800'}`}
                   categoryDdl={optionsWithAll}
                   value={selectedReceiver}
                 />
