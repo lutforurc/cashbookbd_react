@@ -1,218 +1,50 @@
-name: Staging React-Application CI/CD Pipeline
+name: Staging React App CI/CD Pipeline
 
 on:
   push:
-    branches: ["react-staging"]
-    tags:
-      - "*"
-  pull_request:
-    branches: ["react-staging"]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: staging-deploy
-  cancel-in-progress: true
+    branches:
+      - staging  # Specify the branch for deployment
 
 jobs:
-  sanity-check:
-    name: Sanity trigger check
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "✅ Workflow triggered on $GITHUB_REF ($GITHUB_SHA)"
-
   build-and-deploy:
     name: Build and Deploy React App
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: [sanity-check]
-    env:
-      NODE_ENV: production
-      REMOTE_DIR: ${{ secrets.REACT_STAGING_REMOTE_DIR || '/home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/' }}
-      DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL || 'https://accounts.staging.cashbookbd.com' }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20' # Set your Node.js version
 
-      - name: Clear and verify npm cache
-        run: |
-          npm cache clean --force
-          npm cache verify
+    - name: Install dependencies
+      run: npm install
 
-      - name: Check Node.js and npm versions
-        run: |
-          node -v
-          npm -v
+    - name: Build React app
+      run: npm run build
 
-      - name: Validate configuration and secrets
-        run: |
-          set -Eeuo pipefail
-          # These can come from defaults or secrets
-          test -n "${REMOTE_DIR}" || (echo "❌ REMOTE_DIR is empty" && exit 1)
-          test -n "${DEPLOY_URL}" || (echo "❌ DEPLOY_URL is empty" && exit 1)
-          # Required secrets
-          test -n "${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}" || (echo "❌ REACT_STAGING_SSH_PRIVATE_KEY is empty" && exit 1)
-          test -n "${{ secrets.REACT_STAGING_USERNAME }}" || (echo "❌ REACT_STAGING_USERNAME is empty" && exit 1)
-          test -n "${{ secrets.REACT_STAGING_HOST }}" || (echo "❌ REACT_STAGING_HOST is empty" && exit 1)
+    - name: Deploy to VPS via SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}
+        SSH_USER: ${{ secrets.REACT_STAGING_SSH_USER }}
+        SSH_HOST: ${{ secrets.REACT_STAGING_SSH_HOST }}
+        SSH_PORT: ${{ secrets.REACT_STAGING_SSH_PORT }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Debug package.json and dependencies
-        run: |
-          set -Eeuo pipefail
-          echo "📜 package.json contents:"
-          test -f package.json || (echo "❌ package.json not found" && exit 1)
-          cat package.json
-          echo "📜 Checking for vite in package.json (warn-only):"
-          if ! grep -E '"vite":' package.json >/dev/null; then
-            echo "⚠️ vite not listed in package.json"
-          fi
-          echo "📜 Checking for @vitejs/plugin-react (warn-only):"
-          grep -E '"@vitejs/plugin-react":' package.json >/dev/null || echo "⚠️ @vitejs/plugin-react not found in package.json"
-          echo "📜 package-lock.json exists:"
-          ls -la package-lock.json || echo "❌ No package-lock.json found"
-          echo "📜 node_modules/.bin contents (before install):"
-          ls -la node_modules/.bin || echo "No node_modules/.bin directory yet"
+        ls -la dist/
+        # Transfer build files to VPS
+        rsync -avz -e "ssh -p $SSH_PORT" dist/ $SSH_USER@$SSH_HOST:/var/www/testmy.copaccount.com/
 
-      - name: Install dependencies
-        run: |
-          set -Eeuo pipefail
-          echo "📦 Installing dependencies with npm install"
-          if ! npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log; then
-            echo "❌ npm install failed, retrying clean"
-            rm -rf node_modules package-lock.json
-            if ! npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-retry.log; then
-              echo "❌ npm install retry failed, installing critical deps"
-              npm install --save-dev vite@4.4.7 @vitejs/plugin-react@4.0.0 yaml@2.8.1 --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install-critical.log
-            fi
-          fi
-          echo "📜 npm install log:"
-          cat npm-install.log || echo "No npm-install.log found"
-          [ -f npm-install-retry.log ] && echo "📜 npm install retry log:" && cat npm-install-retry.log
-          [ -f npm-install-critical.log ] && echo "📜 npm install critical log:" && cat npm-install-critical.log
-
-      - name: Verify vite and yaml installation
-        run: |
-          set -Eeuo pipefail
-          npx --no vite --version >/dev/null 2>&1 && echo "✅ vite available" || { echo "❌ vite not available"; exit 1; }
-          node -e "require.resolve('yaml')" && echo "✅ yaml package found" || { echo "❌ yaml package not found"; exit 1; }
-
-      - name: Debug installed dependencies
-        run: |
-          set -Eeuo pipefail
-          echo "📜 Installed dependencies:"
-          npm list --depth=0 || echo "npm list failed"
-          echo "📜 node_modules/.bin contents (after install):"
-          ls -la node_modules/.bin
-
-      - name: Build React app (auto-detect outdir)
-        env:
-          CI: true
-        run: |
-          set -Eeuo pipefail
-          ./node_modules/.bin/vite build
-          OUTDIR=""
-          if [ -d dist ]; then
-            OUTDIR="dist"
-          elif [ -d build ]; then
-            OUTDIR="build"
-          else
-            OUTDIR="$(node -e "try{console.log(require('./vite.config.js').build?.outDir||'')}catch{}")"
-          fi
-          test -n "$OUTDIR" && [ -d "$OUTDIR" ] || (echo "❌ No dist/ or build/ found. Check your bundler output." && exit 1)
-          echo "OUTDIR=$OUTDIR" >> "$GITHUB_ENV"
-
-      - name: Upload build artifact (for debugging/rollback)
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.OUTDIR }}-${{ github.sha }}
-          path: ${{ env.OUTDIR }}
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Prepare SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}
-          SSH_USER: ${{ secrets.REACT_STAGING_USERNAME }}
-          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
-        run: |
-          set -Eeuo pipefail
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          echo "⚙️ Fetching host key..."
-          ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" \
-            | sed "s/^$SSH_HOST/[${SSH_HOST}]:${SSH_PORT:-22}/" >> ~/.ssh/known_hosts
-          cat > ~/.ssh/config <<EOF
-          Host staging-host
-            HostName $SSH_HOST
-            Port ${SSH_PORT:-22}
-            User $SSH_USER
-            StrictHostKeyChecking yes
-            UserKnownHostsFile ~/.ssh/known_hosts
-          EOF
-
-      - name: Debug SSH connection (optional)
-        continue-on-error: true
-        run: |
-          ssh -vvv -p "${{ secrets.REACT_STAGING_PORT }}" "${{ secrets.REACT_STAGING_USERNAME }}@${{ secrets.REACT_STAGING_HOST }}" "echo '✅ Connected:' && whoami && hostname"
-
-      - name: Deploy build via rsync
-        env:
-          SSH_USER: ${{ secrets.REACT_STAGING_USERNAME }}
-          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
-        run: |
-          set -Eeuo pipefail
-          test -n "${OUTDIR:-}" || (echo "OUTDIR not set" && exit 1)
-          echo "📦 Local build contents:"
-          ls -la "$OUTDIR"/
-          ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
-          rsync -avz \
-            --delete-delay \
-            --numeric-ids \
-            --chmod=D755,F644 \
-            --exclude='.DS_Store' \
-            -e "ssh -p ${SSH_PORT:-22}" \
-            "$OUTDIR"/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
-
-      - name: Fix permissions on server
-        env:
-          SSH_USER: ${{ secrets.REACT_STAGING_USERNAME }}
-          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
-        run: |
-          set -Eeuo pipefail
-          ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "
-            sudo chown -R www-data:www-data '$REMOTE_DIR' && \
-            find '$REMOTE_DIR' -type d -exec chmod 755 {} \; && \
-            find '$REMOTE_DIR' -type f -exec chmod 644 {} \;
-          " || { echo "❌ Failed to fix permissions"; exit 1; }
-
-      - name: Reload web server on VPS
-        env:
-          SSH_USER: ${{ secrets.REACT_STAGING_USERNAME }}
-          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
-        run: |
-          set -Eeuo pipefail
-          ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" \
-            "sudo systemctl reload nginx || sudo systemctl restart nginx"
-
-      - name: Smoke test (HTTP 2xx/3xx expected)
-        run: |
-          set -Eeuo pipefail
-          curl -I -L --retry 3 --retry-connrefused --max-time 30 "$DEPLOY_URL" | tee /tmp/headers.txt
-          grep -E '^HTTP/.* (200|2..|3..) ' /tmp/headers.txt >/dev/null || {
-            echo '❌ Smoke test failed'; exit 1;
-          }
+    - name: Restart web server on VPS
+      env:
+        SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+        SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+        SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+      run: |
+        ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "sudo systemctl restart nginx"  # Use your web server's restart command
