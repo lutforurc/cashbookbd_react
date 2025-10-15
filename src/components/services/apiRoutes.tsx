@@ -1,3 +1,6 @@
+export const API_REMOTE_URLs = import.meta.env.VITE_API_URL;
+
+console.log("Env url", API_REMOTE_URLs);
 
 // export const API_REMOTE_URL = 'https://sonycybernet.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://rmrs.cashbookbd.com';
@@ -24,9 +27,7 @@ export const API_REMOTE_URL = 'https://staging.cashbookbd.com';
 
 // export { API_REMOTE_URL };
 
-export const API_REMOTE_URLs = import.meta.env.VITE_API_URL;
 
-console.log("Env url", API_REMOTE_URL);
 
 
 export const API_CSRF_COOKIES = API_REMOTE_URL + '/sanctum/csrf-cookie';
