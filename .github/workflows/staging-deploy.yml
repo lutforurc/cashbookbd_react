@@ -48,7 +48,7 @@ jobs:
       - name: Validate secrets
         run: |
           set -Eeuo pipefail
-          test -n "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" || (echo "❌ SSH_PRIVATE_KEY is empty" && exit 1)
+          test -n "${{ secrets.SSH_PRIVATE_KEY }}" || (echo "❌ SSH_PRIVATE_KEY is empty" && exit 1)
           test -n "${{ secrets.USERNAME }}" || (echo "❌ USERNAME is empty" && exit 1)
           test -n "${{ secrets.HOST }}" || (echo "❌ HOST is empty" && exit 1)
           test -n "${{ secrets.REMOTE_DIR }}" || (echo "❌ REMOTE_DIR is empty" && exit 1)
@@ -88,7 +88,7 @@ jobs:
 
       - name: Prepare SSH
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_USER: ${{ secrets.USERNAME }}
           SSH_HOST: ${{ secrets.HOST }}
           SSH_PORT: ${{ secrets.PORT }}
