@@ -127,6 +127,8 @@ const BankReceived = () => {
   };
 
 
+  
+
   const mapReceivedData = (res: any): ReceivedItem => {
     const data = res.data.data;
     const details = data.acc_transaction_master[0].acc_transaction_details;
