@@ -1,3 +1,4 @@
+```yaml
 name: Staging React-Application CI/CD Pipeline
 
 on:
@@ -30,7 +31,8 @@ jobs:
     needs: [sanity-check]
     env:
       NODE_ENV: production
-      REMOTE_DIR: /home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/
+      REMOTE_DIR: ${{ secrets.REMOTE_DIR || '/home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/' }}
+      DEPLOY_URL: ${{ secrets.DEPLOY_URL || 'https://accounts.staging.cashbookbd.com' }}
 
     steps:
       - name: Checkout code
@@ -43,6 +45,15 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Validate secrets
+        run: |
+          set -Eeuo pipefail
+          test -n "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" || (echo "❌ SSH_PRIVATE_KEY is empty" && exit 1)
+          test -n "${{ secrets.USERNAME }}" || (echo "❌ USERNAME is empty" && exit 1)
+          test -n "${{ secrets.HOST }}" || (echo "❌ HOST is empty" && exit 1)
+          test -n "${{ secrets.REMOTE_DIR }}" || (echo "❌ REMOTE_DIR is empty" && exit 1)
+          test -n "${{ secrets.DEPLOY_URL }}" || (echo "❌ DEPLOY_URL is empty" && exit 1)
 
       - name: Install dependencies
         run: |
@@ -87,12 +98,9 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
-          # Add host key dynamically using ssh-keyscan fallback
           echo "⚙️ Fetching host key using ssh-keyscan..."
           ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" \
             | sed "s/^$SSH_HOST/[${SSH_HOST}]:${SSH_PORT:-22}/" >> ~/.ssh/known_hosts
-
           cat > ~/.ssh/config <<EOF
           Host staging-host
             HostName $SSH_HOST
@@ -115,14 +123,9 @@ jobs:
         run: |
           set -Eeuo pipefail
           test -n "${OUTDIR:-}" || (echo "OUTDIR not set" && exit 1)
-
           echo "📦 Local build contents:"
           ls -la "$OUTDIR"/
-
-          # Ensure remote directory exists
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
-
-          # Sync with safer delete behavior
           rsync -avz \
             --delete-delay \
             --numeric-ids \
@@ -131,8 +134,7 @@ jobs:
             -e "ssh -p ${SSH_PORT:-22}" \
             "$OUTDIR"/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
 
-      - name: Fix permissions on server (optional)
-        continue-on-error: true
+      - name: Fix permissions on server
         env:
           SSH_USER: ${{ secrets.USERNAME }}
           SSH_HOST: ${{ secrets.HOST }}
@@ -140,10 +142,10 @@ jobs:
         run: |
           set -Eeuo pipefail
           ssh -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" "
-            sudo chown -R www-data:www-data '$REMOTE_DIR' || true
-            find '$REMOTE_DIR' -type d -exec chmod 755 {} \; || true
-            find '$REMOTE_DIR' -type f -exec chmod 644 {} \; || true
-          "
+            sudo chown -R www-data:www-data '$REMOTE_DIR' && \
+            find '$REMOTE_DIR' -type d -exec chmod 755 {} \; && \
+            find '$REMOTE_DIR' -type f -exec chmod 644 {} \;
+          " || { echo "❌ Failed to fix permissions"; exit 1; }
 
       - name: Reload web server on VPS
         env:
@@ -158,7 +160,16 @@ jobs:
       - name: Smoke test (HTTP 200/301/302 expected)
         run: |
           set -Eeuo pipefail
-          curl -I --max-time 15 https://accounts.staging.cashbookbd.com | tee /tmp/headers.txt
+          curl -I --max-time 15 "$DEPLOY_URL" | tee /tmp/headers.txt
           grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
             echo '❌ Smoke test failed'; exit 1;
           }
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          text: "🎉 Deployed to staging: ${{ github.sha }} on ${{ github.event_name }} by ${{ github.actor }}"
+```
