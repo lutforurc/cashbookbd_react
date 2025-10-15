@@ -388,9 +388,10 @@ const editReceivedVoucher = () => {
                 <label htmlFor="">Bank Received Account</label>
                 <CategoryDropdown
                   onChange={bankReceivedAccountHandler}
-                  className="w-full font-medium text-sm"
+                  // !border !border-red-800
+                  className="w-full font-medium text-sm "
                   categoryDdl={optionsWithAll}
-                  value={selectedReceiver}
+                  value={selectedReceiver} 
                 />
               </div>
               <div className="mt-6">
@@ -401,9 +402,7 @@ const editReceivedVoucher = () => {
                   placeholder="Select Transaction Account"
                   onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
                   value={
-                    formData.transactionList &&
-                    formData.transactionList[0]?.account
-                      ? {
+                    formData.transactionList && formData.transactionList[0]?.account ? {
                           value: formData.transactionList[0].account,
                           label: formData.transactionList[0].accountName,
                         }
@@ -417,6 +416,7 @@ const editReceivedVoucher = () => {
                       }
                     }
                   }}
+                  
                 />
               </div>
 
