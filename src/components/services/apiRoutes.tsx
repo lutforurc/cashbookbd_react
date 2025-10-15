@@ -3,7 +3,7 @@
 // export const API_REMOTE_URL = 'https://rmrs.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://mbdpp.cashbookbd.com';
 // export const API_REMOTE_URL = 'http://127.0.0.1:8000';
-// export const API_REMOTE_URL = 'https://staging.cashbookbd.com';
+export const API_REMOTE_URL = 'https://staging.cashbookbd.com';
 // export const API_REMOTE_URL = 'http://cashbook_api.test';
 // export const API_REMOTE_URL = 'https://krf.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://mikdad.cashbookbd.com';
@@ -24,7 +24,7 @@
 
 // export { API_REMOTE_URL };
 
-export const API_REMOTE_URL = import.meta.env.VITE_API_URL;
+export const API_REMOTE_URLs = import.meta.env.VITE_API_URL;
 
 console.log("Env url", API_REMOTE_URL);
 
