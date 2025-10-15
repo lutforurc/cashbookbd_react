@@ -31,7 +31,7 @@ jobs:
     env:
       NODE_ENV: production
       REMOTE_DIR: ${{ secrets.REACT_STAGING_REMOTE_DIR || '/home/accounts_staging/htdocs/accounts.staging.cashbookbd.com/' }}
-      DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL || 'https://react.staging.cashbookbd.com' }}
+      DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL || 'https://accounts.staging.cashbookbd.com' }}
 
     steps:
       - name: Checkout code
