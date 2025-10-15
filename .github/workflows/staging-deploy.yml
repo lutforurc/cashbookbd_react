@@ -77,23 +77,24 @@ jobs:
       - name: Install dependencies
         run: |
           set -Eeuo pipefail
-          if [ -f package-lock.json ]; then
-            echo "📦 Using npm ci with package-lock.json"
-            npm ci --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log
-          else
-            echo "📦 No package-lock.json found, using npm install"
-            npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log
-          fi
+          echo "📦 Installing dependencies with npm install"
+          npm install --loglevel verbose --registry https://registry.npmjs.org 2>&1 | tee npm-install.log
           echo "📜 npm install log:"
           cat npm-install.log
 
-      - name: Verify vite installation
+      - name: Verify vite and yaml installation
         run: |
           set -Eeuo pipefail
           if [ -f ./node_modules/.bin/vite ]; then
             echo "✅ vite binary found"
           else
             echo "❌ vite binary not found"
+            exit 1
+          fi
+          if [ -d ./node_modules/yaml ]; then
+            echo "✅ yaml package found"
+          else
+            echo "❌ yaml package not found"
             exit 1
           fi
 
