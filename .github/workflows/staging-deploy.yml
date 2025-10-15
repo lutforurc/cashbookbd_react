@@ -3,7 +3,7 @@ name: Staging User-Portel CI/CD Pipeline
 on:
   push:
     branches:
-      - staging  # Specify the branch for deployment
+      - react-staging  # Specify the branch for deployment
 
 jobs:
   build-and-deploy:
