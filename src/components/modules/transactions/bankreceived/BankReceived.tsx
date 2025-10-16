@@ -102,6 +102,7 @@ const BankReceived = () => {
     });
   };
 
+  
   const searchTransaction = async () => {
     if (search === '') {
       toast.error('Please enter a search value.');
