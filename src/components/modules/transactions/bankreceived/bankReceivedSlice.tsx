@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { API_BANK_GENERAL_EDIT_URL, API_BANK_RECEIVED_LIST_URL, API_BANK_RECEIVED_URL } from '../../../services/apiRoutes';
+import {
+  API_BANK_GENERAL_EDIT_URL,
+  API_BANK_GENERAL_UPDATE_URL,
+  API_BANK_RECEIVED_LIST_URL,
+  API_BANK_RECEIVED_URL,
+} from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
 // ---------------- Interfaces ----------------
@@ -36,32 +41,43 @@ const initialState: BankReceivedState = {
 
 // ---------------- Async Thunks ----------------
 
-// Fetch Bank Received list
-export const fetchBankReceived = createAsyncThunk<ReceivedItem[], void, { rejectValue: string }>('bankReceived/fetchBankReceived', async (_, thunkAPI) => {
+// 📌 Fetch Bank Received list
+export const fetchBankReceived = createAsyncThunk<ReceivedItem[],void,{ rejectValue: string }>('bankReceived/fetchBankReceived', async (_, thunkAPI) => {
   try {
-    const response = await httpService.get(API_BANK_RECEIVED_LIST_URL); // GET API  
+    const response = await httpService.get(API_BANK_RECEIVED_LIST_URL);
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || 'Failed to fetch data');
   }
 });
 
-// Save Bank Received
+// 📌 Save Bank Received
 export const saveBankReceived = createAsyncThunk<ReceivedItem,ReceivedItem,{ rejectValue: string }>('bankReceived/saveBankReceived', async (payload, thunkAPI) => {
   try {
-      
-    const response = await httpService.post(API_BANK_RECEIVED_URL, payload); // POST API
+    const response = await httpService.post(API_BANK_RECEIVED_URL, payload);
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || 'Failed to save data');
   }
 });
 
-// Edit Bank Received
-// ✅ Edit / Update Bank Received
-export const editBankReceived = createAsyncThunk<ReceivedItem, ReceivedItem, { rejectValue: string }>('bankReceived/editBankReceived', async (payload, thunkAPI) => {
+// 📌 Edit Bank Received
+export const editBankReceived = createAsyncThunk<ReceivedItem,ReceivedItem,{ rejectValue: string }>('bankReceived/editBankReceived', async (payload, thunkAPI) => {
   try {
-    const response = await httpService.get(`${API_BANK_GENERAL_EDIT_URL}/${payload.id}`);
+    const response = await httpService.get(`${API_BANK_GENERAL_EDIT_URL}/${payload.id}`,);
+    return response.data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.message || 'Failed to update bank received',
+    );
+  }
+});
+
+// 📌 Update Bank Received
+export const updateBankReceived = createAsyncThunk<ReceivedItem,ReceivedItem,{ rejectValue: string }>('bankReceived/updateBankReceived', async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_BANK_GENERAL_UPDATE_URL, payload);
+    // const response = await httpService.put(`${API_BANK_GENERAL_UPDATE_URL}/${payload.id}`,payload,);
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
@@ -72,13 +88,14 @@ export const editBankReceived = createAsyncThunk<ReceivedItem, ReceivedItem, { r
 
 // ---------------- Slice ----------------
 
-const bankReceivedSlice = createSlice({name: 'bankReceived', initialState, reducers: {addBankReceived(state, action: PayloadAction<ReceivedItem>) {
+const bankReceivedSlice = createSlice({
+  name: 'bankReceived',
+  initialState,
+  reducers: {
+    addBankReceived(state, action: PayloadAction<ReceivedItem>) {
       state.bankReceived.push(action.payload);
     },
-    updateBankReceived(state, action: PayloadAction<ReceivedItem>) {
-      const index = state.bankReceived.findIndex((item) => item.id === action.payload.id);
-      if (index !== -1) state.bankReceived[index] = action.payload;
-    },
+    // ❌ updateBankReceived reducer মুছে ফেলা হলো
     deleteBankReceived(state, action: PayloadAction<string | number>) {
       state.bankReceived = state.bankReceived.filter(
         (item) => item.id !== action.payload,
@@ -87,7 +104,8 @@ const bankReceivedSlice = createSlice({name: 'bankReceived', initialState, reduc
   },
   extraReducers: (builder) => {
     builder
-    .addCase(fetchBankReceived.pending, (state) => {
+      // 📌 Fetch
+      .addCase(fetchBankReceived.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -120,7 +138,7 @@ const bankReceivedSlice = createSlice({name: 'bankReceived', initialState, reduc
         state.error = action.payload as string;
       })
 
-      // 📌 Edit / Update
+      // 📌 Edit
       .addCase(editBankReceived.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -140,12 +158,33 @@ const bankReceivedSlice = createSlice({name: 'bankReceived', initialState, reduc
       .addCase(editBankReceived.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+
+      // 📌 Update
+      .addCase(updateBankReceived.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        updateBankReceived.fulfilled,
+        (state, action: PayloadAction<ReceivedItem>) => {
+          state.loading = false;
+          const index = state.bankReceived.findIndex(
+            (item) => item.id === action.payload.id,
+          );
+          if (index !== -1) {
+            state.bankReceived[index] = action.payload;
+          }
+        },
+      )
+      .addCase(updateBankReceived.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
 // ---------------- Export Actions & Reducer ----------------
 
-export const { addBankReceived, updateBankReceived, deleteBankReceived } =
-  bankReceivedSlice.actions;
+export const { addBankReceived, deleteBankReceived } = bankReceivedSlice.actions;
 export default bankReceivedSlice.reducer;

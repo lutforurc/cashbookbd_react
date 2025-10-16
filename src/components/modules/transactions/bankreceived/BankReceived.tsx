@@ -19,9 +19,10 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
-import { editBankReceived, saveBankReceived } from './bankReceivedSlice';
+import { editBankReceived, saveBankReceived, updateBankReceived } from './bankReceivedSlice';
 import { toast } from 'react-toastify';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import { setTime } from 'react-datepicker/dist/date_utils';
 
 interface TransactionList {
   id: string | number;
@@ -60,6 +61,7 @@ const BankReceived = () => {
   const [search, setSearch] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [updatingLoading, setUpdatingLoading] = useState(false);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
@@ -346,6 +348,67 @@ const BankReceived = () => {
     }
   }, [bankReceived.error]);
 
+const handleBankReceivedUpdate = async () => {
+  // লোডিং চালু করো
+  setUpdatingLoading(true);
+
+  // ✅ Validation
+  const transactions = tableData.flatMap((item) => item.transactionList || []);
+  if (!transactions.length) {
+    toast.warning('No transactions to update.');
+    setUpdatingLoading(false);
+    return;
+  }
+
+  if (!formData.bankReceivedAccount) {
+    toast.warning('Please select Receiver Bank Account.');
+    setUpdatingLoading(false);
+    return;
+  }
+
+  try {
+    // ✅ Payload তৈরি
+    const payload = {
+      id: formData.id, // যেটা search থেকে এসেছে
+      mtmId: formData.mtmId,
+      bankReceivedAccount: formData.bankReceivedAccount,
+      bankReceivedAccountName: formData.bankReceivedAccountName,
+      transactions: transactions.map((t) => ({
+        id: t.id,
+        account: t.account,
+        accountName: t.accountName,
+        remarks: t.remarks,
+        amount: Number(t.amount),
+      })),
+    };
+
+    console.log('📝 Update Payload:', payload);
+
+    // ✅ API কল বা redux dispatch
+    await dispatch(updateBankReceived(payload)).unwrap();
+
+    // ✅ সফল হলে
+    toast.success('Bank received transaction updated successfully!');
+    setTableData([]); // table clear
+    setFormData((prev) => ({
+      ...initialReceivedItem,
+      bankReceivedAccount: prev.bankReceivedAccount,
+      bankReceivedAccountName: prev.bankReceivedAccountName,
+    }));
+    setIsUpdateButton(false); // update button বন্ধ করো
+    setReceivedData(null);
+
+  } catch (error: any) {
+    console.error('❌ Error updating transaction:', error);
+    toast.error(error?.message || 'Failed to update transaction.');
+  } finally {
+    setUpdatingLoading(false);
+  }
+};
+
+
+
+
   useCtrlS(handleSave);
   return (
     <>
@@ -506,8 +569,8 @@ const BankReceived = () => {
 
               { isUpdateButton ? (
                 <ButtonLoading
-                  // onClick={handleInvoiceUpdate}
-                  // buttonLoading={buttonLoading}
+                  onClick={handleBankReceivedUpdate}
+                  buttonLoading={updatingLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
