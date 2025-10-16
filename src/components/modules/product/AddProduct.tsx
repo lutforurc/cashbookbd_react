@@ -306,7 +306,7 @@ const AddProduct = () => {
           label="Select Unit"
           onChange={handleOnChange}
           name={'unit_id'}
-          className="h-[2.20rem] mt-1"
+          className="h-[2.20rem]"
           data={category?.ddlData?.data?.unit}
           defaultValue={formData?.unit_id?.toString() ?? ''}
         />
