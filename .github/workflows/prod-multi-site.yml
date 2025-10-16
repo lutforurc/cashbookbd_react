@@ -1,0 +1,183 @@
+name: Production React Production App CI/CD Pipeline (Multi-site)
+
+on:
+  push:
+    branches:
+      - main-react-prod
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy — ${{ matrix.site_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 👉 এখানে যত খুশি সাইট যোগ করুন
+          - site_name: prod-site-a
+            environment: prod-site-a
+            mode: prod-site-a              # loads .env.prod-site-a
+          - site_name: prod-site-b
+            environment: prod-site-b
+            mode: prod-site-b              # loads .env.prod-site-b
+
+    environment:
+      name: ${{ matrix.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          set -Eeuo pipefail
+          npm ci
+
+      # ✅ প্রতি সাইটের .env.<mode> থেকে VITE_API_URL build-time এ bake হবে
+      - name: Build React app (mode: ${{ matrix.mode }})
+        env:
+          CI: true
+        run: |
+          set -Eeuo pipefail
+          echo "🧱 Using Vite mode='${{ matrix.mode }}'"
+          test -f ".env.${{ matrix.mode }}" || { echo "❌ .env.${{ matrix.mode }} not found"; exit 1; }
+          # (ইচ্ছা করলে .env কনটেন্ট লগে না দেখানোই উত্তম)
+          npm run build -- --mode ${{ matrix.mode }}
+
+      # (ঐচ্ছিক) dist এ API URL bake হয়েছে কি না যাচাই
+      - name: Verify baked API URL
+        continue-on-error: true
+        run: |
+          set -Eeuo pipefail
+          URL=$(grep -E '^VITE_API_URL=' ".env.${{ matrix.mode }}" | cut -d= -f2-)
+          if [ -n "${URL-}" ]; then
+            echo "🔎 Expecting URL: $URL"
+            grep -R "$(printf '%s' "$URL" | sed 's/[].[^$*\/]/\\&/g')" dist -n \
+              || echo "ℹ️ API URL not found in dist (maybe minified or injected differently)."
+          else
+            echo "⚠️ VITE_API_URL not found in .env.${{ matrix.mode }}"
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.site_name }}-${{ github.sha }}
+          path: dist
+          if-no-files-found: error
+          retention-days: 5
+
+      # ---- Deploy Section ----
+
+      - name: Validate deploy secrets
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.REACT_PROD_SSH_PRIVATE_KEY }}
+          SSH_USER:        ${{ secrets.REACT_PROD_SSH_USER }}
+          SSH_HOST:        ${{ secrets.REACT_PROD_HOST }}
+          SSH_PORT:        ${{ secrets.REACT_PROD_PORT }}
+          REMOTE_DIR:      ${{ secrets.REACT_PROD_REMOTE_DIR }}
+        run: |
+          set -Eeuo pipefail
+          : "${SSH_PORT:=22}"
+          KEYLEN=$(printf '%s' "${SSH_PRIVATE_KEY-}" | wc -c | tr -d '[:space:]')
+          echo "🔍 site=${{ matrix.site_name }} user=${SSH_USER:-<empty>} host=${SSH_HOST:-<empty>} port=${SSH_PORT:-<empty>}"
+          echo "🔍 private_key_length=${KEYLEN}"
+          echo "🔍 remote_dir=${REMOTE_DIR:-<empty>}"
+          [ -n "${SSH_PRIVATE_KEY-}" ] || { echo "❌ REACT_PROD_SSH_PRIVATE_KEY is empty"; exit 1; }
+          [ -n "${SSH_USER-}" ]        || { echo "❌ REACT_PROD_SSH_USER is empty"; exit 1; }
+          [ -n "${SSH_HOST-}" ]        || { echo "❌ REACT_PROD_HOST is empty"; exit 1; }
+          [ -n "${REMOTE_DIR-}" ]      || { echo "❌ REACT_PROD_REMOTE_DIR is empty"; exit 1; }
+
+      - name: Prepare SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.REACT_PROD_SSH_PRIVATE_KEY }}
+          SSH_HOST:        ${{ secrets.REACT_PROD_HOST }}
+          SSH_PORT:        ${{ secrets.REACT_PROD_PORT }}
+        run: |
+          set -Eeuo pipefail
+          : "${SSH_PORT:=22}"
+
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          # Host key add (non-22 port safe)
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" \
+            | sed "s/^$SSH_HOST/[${SSH_HOST}]:${SSH_PORT}/" >> ~/.ssh/known_hosts
+
+          echo "✅ SSH key and host added."
+
+      - name: Debug SSH connection (optional)
+        continue-on-error: true
+        env:
+          SSH_USER: ${{ secrets.REACT_PROD_SSH_USER }}
+          SSH_HOST: ${{ secrets.REACT_PROD_HOST }}
+          SSH_PORT: ${{ secrets.REACT_PROD_PORT }}
+        run: |
+          ssh -vvv -o BatchMode=yes -o IdentitiesOnly=yes -p "${SSH_PORT:-22}" \
+            "$SSH_USER@$SSH_HOST" "echo '✅ SSH Connected'; whoami; echo HOME=$HOME; hostname"
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ matrix.site_name }}-${{ github.sha }}
+          path: dist
+
+      - name: Deploy to VPS via rsync (keep .env safe)
+        env:
+          SSH_USER:   ${{ secrets.REACT_PROD_SSH_USER }}
+          SSH_HOST:   ${{ secrets.REACT_PROD_HOST }}
+          SSH_PORT:   ${{ secrets.REACT_PROD_PORT }}
+          REMOTE_DIR: ${{ secrets.REACT_PROD_REMOTE_DIR }}
+        run: |
+          set -Eeuo pipefail
+          : "${SSH_PORT:=22}"
+
+          echo "📦 Local build contents:"
+          ls -la dist/ || { echo "❌ dist/ not found. Did the build produce a different outDir?"; exit 1; }
+
+          # Ensure remote target exists
+          ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "mkdir -p '$REMOTE_DIR'"
+
+          # 🚀 Deploy — exclude .env files to keep server config intact
+          rsync -avz --delete-delay \
+            --exclude='.env*' \
+            -e "ssh -o IdentitiesOnly=yes -p ${SSH_PORT}" \
+            dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
+
+          echo "🚀 Deployment completed to $REMOTE_DIR (kept .env files untouched)."
+
+      - name: Restart web server on VPS
+        env:
+          SSH_USER:             ${{ secrets.REACT_PROD_SSH_USER }}
+          SSH_HOST:             ${{ secrets.REACT_PROD_HOST }}
+          SSH_PORT:             ${{ secrets.REACT_PROD_PORT }}
+          REACT_PROD_NGINX_SVC: ${{ secrets.REACT_PROD_NGINX_SERVICE }}
+        run: |
+          set -Eeuo pipefail
+          : "${SSH_PORT:=22}"
+          : "${REACT_PROD_NGINX_SVC:=nginx}"
+          ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "sudo -n systemctl reload ${REACT_PROD_NGINX_SVC} || sudo -n systemctl restart ${REACT_PROD_NGINX_SVC}"
+          echo "🔄 ${REACT_PROD_NGINX_SVC} reloaded."
+
+      - name: Smoke test
+        env:
+          DEPLOY_URL: ${{ secrets.REACT_PROD_DEPLOY_URL }}
+        run: |
+          set -Eeuo pipefail
+          test -n "${DEPLOY_URL-}" || { echo "❌ REACT_PROD_DEPLOY_URL is empty"; exit 1; }
+          curl -I -L --max-time 20 "$DEPLOY_URL" | tee /tmp/headers.txt
+          grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
+            echo '❌ Smoke test failed'; exit 1;
+          }
