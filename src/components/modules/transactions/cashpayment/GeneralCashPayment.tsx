@@ -78,6 +78,7 @@ const GeneralCashPayment = () => {
     });
   };
 
+  
   const handleCashPaymentSave = async () => {
     setSaveButtonLoading(true);
     if (tableData.length === 0) {
