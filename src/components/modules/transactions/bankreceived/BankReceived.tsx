@@ -360,20 +360,20 @@ const editReceivedVoucher = () => {
     });
   };
 
-  useEffect(() => {
-    const latestData =
-      bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
-    if (!latestData) return;
+  // useEffect(() => {
+  //   const latestData =
+  //     bankReceived?.bankReceived?.slice(-1)[0]?.data?.data?.[0];
+  //   if (!latestData) return;
 
-    const latestId = latestData.id;
-    if (prevDataRef.current === latestId) return;
+  //   const latestId = latestData.id;
+  //   if (prevDataRef.current === latestId) return;
 
-    toast.success('Data saved successfully!');
-    prevDataRef.current = latestId;
+  //   toast.success('Data saved successfully!');
+  //   prevDataRef.current = latestId;
 
-    setFormData((prev) => ({ ...prev, transactionList: [] }));
-    setTableData([]);
-  }, [bankReceived?.bankReceived?.length]); // only depend on length
+  //   setFormData((prev) => ({ ...prev, transactionList: [] }));
+  //   setTableData([]);
+  // }, [bankReceived?.bankReceived?.length]); // only depend on length
 
   useEffect(() => {
     if (bankReceived?.error) {
