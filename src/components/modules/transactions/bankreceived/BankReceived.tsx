@@ -22,7 +22,6 @@ import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import { editBankReceived, saveBankReceived, updateBankReceived } from './bankReceivedSlice';
 import { toast } from 'react-toastify';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
-import { setTime } from 'react-datepicker/dist/date_utils';
 
 interface TransactionList {
   id: string | number;
@@ -49,7 +48,7 @@ const initialReceivedItem: ReceivedItem = {
   bankReceivedAccountName: '',
   receiverAccount: '',
   receiverAccountName: '',
-  transactionList: [], // ✅ object নয়, array হবে
+  transactionList: [],
 };
 
 const BankReceived = () => {
@@ -72,7 +71,7 @@ const BankReceived = () => {
   const [receivedData, setReceivedData] = useState<ReceivedItem | null>(null);
   const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
     null,
-  ); // ✅ নতুন: update-এর জন্য transaction ID track
+  );
     const [isUpdateButton, setIsUpdateButton] = useState(false);
 
   useEffect(() => {
@@ -135,10 +134,10 @@ const BankReceived = () => {
     const data = res.data.data;
     const details = data.acc_transaction_master[0].acc_transaction_details;
 
-    // ✅ শেষের object বাদ
+ 
     const filteredDetails = details.slice(0, -1);
 
-    // ✅ receiverAccount হবে শেষের object sfdsfds
+
     const lastDetail = details[details.length - 1];
 
     return {
@@ -157,8 +156,7 @@ const BankReceived = () => {
       })),
     };
   };
-
-  // ✅ useEffect remove করুন - search-এ fields ফাঁকা রাখার জন্য, শুধু edit button-এ load হবে
+ 
 
   const handleAdd = () => {
     const [transaction] = formData.transactionList || [];
@@ -190,10 +188,9 @@ const BankReceived = () => {
     );
   };
 
-  // ✅ নতুন: Table-এ edit button-এর জন্য function (আগে undefined ছিল)
+
   const receivedEditItem = useCallback(
-    (id: number) => {
-      // সব row থেকে transaction খুঁজুন
+    (id: number) => { 
       const allTransactions = tableData.flatMap(
         (row) => row.transactionList || [],
       );
@@ -203,10 +200,10 @@ const BankReceived = () => {
 
       if (transactionToEdit) {
         setFormData({
-          ...formData, // receiver info রাখুন (search থেকে)
-          transactionList: [transactionToEdit], // এই transaction load করুন form-এ
+          ...formData, 
+          transactionList: [transactionToEdit], 
         });
-        setUpdateTransactionId(id); // ✅ Update ID set করুন
+        setUpdateTransactionId(id); 
         setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-এ
         setIsUpdating(true); // Update mode on
         toast.info('Transaction loaded for editing.'); // Optional: user feedback
@@ -219,45 +216,64 @@ const BankReceived = () => {
   );
 
   // ✅ Implement editReceivedVoucher like the example (local update)
-  // ✅ Implement editReceivedVoucher like the example (local update)
-  const editReceivedVoucher = () => {
-    if (updateTransactionId === null || updateTransactionId === undefined) {
-      console.error('No transaction selected for update.');
-      return;
-    }
 
-    const [receivedVoucher] = formData.transactionList || [];
+const editReceivedVoucher = () => {
+  if (updateTransactionId == null) {
+    console.error('No transaction selected for update.');
+    return;
+  }
 
-    let updatedTransaction: TransactionList = {
-      id: updateTransactionId, // Keep the original ID
-      account: receivedVoucher.account || '',
-      accountName: receivedVoucher.accountName || '',
-      remarks: receivedVoucher.remarks || '',
-      amount: Number(receivedVoucher.amount) || 0,
-    };
+  
+  const receivedVoucher = formData.transactionList?.[0];
+  if (!receivedVoucher) {
+    toast.warning('No transaction data in form.');
+    return;
+  }
+ 
+  const currentLine =
+    tableData
+      .flatMap(r => r.transactionList ?? [])
+      .find(t => String(t.id) === String(updateTransactionId));
 
-    // Update the specific transaction in tableData
-    const updatedTableData = tableData
-      .map((row) => ({
-        ...row,
-        transactionList:
-          row.transactionList?.map((t) =>
-            Number(t.id) === updateTransactionId ? updatedTransaction : t,
-          ) || [],
-      }))
-      .filter((row) => row.transactionList?.length > 0); // Optional: filter empty rows
+  if (!currentLine) {
+    console.error('Transaction not found in tableData.');
+    return;
+  }
 
-    setTableData(updatedTableData); // Update the state with the modified array
-    setIsUpdating(false); // Exit update mode
-    // ✅ Receiver fields preserve করুন reset-এর সময়
-    setFormData({
-      ...initialReceivedItem,
-      bankReceivedAccount: formData.bankReceivedAccount,
-      bankReceivedAccountName: formData.bankReceivedAccountName,
-    }); // Reset form data but keep receiver
-    setUpdateTransactionId(null); // Reset update ID
-    toast.success('Transaction updated successfully!');
+  const updatedTransaction: TransactionList = {
+    ...currentLine,
+    id: currentLine.id, // original id keep
+    account: receivedVoucher.account || '',
+    accountName: receivedVoucher.accountName || '',
+    remarks: receivedVoucher.remarks || '',
+    amount: Number(receivedVoucher.amount) || 0,
   };
+
+
+  const updatedTableData = tableData
+    .map(row => ({
+      ...row,
+      transactionList: (row.transactionList ?? []).map(t =>
+        String(t.id) === String(updateTransactionId) ? updatedTransaction : t
+      ),
+    }))
+    .filter(row => (row.transactionList?.length ?? 0) > 0);
+
+  setTableData(updatedTableData);
+  setIsUpdating(false);
+
+  // ✅ Reset: header-এর id/mtmId/receiver
+  setFormData(prev => ({
+    ...initialReceivedItem,
+    id: prev?.id as any,
+    mtmId: prev?.mtmId as any,
+    bankReceivedAccount: prev?.bankReceivedAccount,
+    bankReceivedAccountName: prev?.bankReceivedAccountName,
+  }));
+
+  setUpdateTransactionId(null);
+  toast.success('Transaction updated successfully!');
+};
 
   const totalAmount = useMemo(
     () =>
@@ -307,12 +323,28 @@ const BankReceived = () => {
         bankReceivedAccountName: formData.bankReceivedAccountName,
         transactions,
       };
+    const response = await dispatch(saveBankReceived(payload)).unwrap();
+    // console.log('Save Response:', response);
 
-      console.log('====================================');
-      console.log('payload', payload);
-      console.log('====================================');
+    // server sample:
+    const voucherText = response?.data?.data?.[0];
 
-      await dispatch(saveBankReceived(payload)).unwrap();
+    if (voucherText) {
+      // Use a stable toastId so it can't render twice for the same save
+      toast.success(voucherText, { toastId: `bank-received-success-${voucherText}` });
+    }
+
+  // ✅ Clear table
+    setTableData([]);
+
+    // ✅ Reset form but keep account fields
+    setFormData({
+      ...initialReceivedItem,
+      bankReceivedAccount: formData.bankReceivedAccount,
+      bankReceivedAccountName: formData.bankReceivedAccountName,
+    });
+
+    
     } catch (error: any) {
       toast.error(error?.message || 'Something went wrong while saving.');
     } finally {
@@ -350,7 +382,7 @@ const BankReceived = () => {
   }, [bankReceived.error]);
 
 const handleBankReceivedUpdate = async () => {
-  // লোডিং চালু করো
+  
   setUpdatingLoading(true);
 
   // ✅ Validation
@@ -367,10 +399,9 @@ const handleBankReceivedUpdate = async () => {
     return;
   }
 
-  try {
-    // ✅ Payload তৈরি
+  try { 
     const payload = {
-      id: formData.id, // যেটা search থেকে এসেছে
+      id: formData.id,
       mtmId: formData.mtmId,
       bankReceivedAccount: formData.bankReceivedAccount,
       bankReceivedAccountName: formData.bankReceivedAccountName,
@@ -385,10 +416,10 @@ const handleBankReceivedUpdate = async () => {
 
     console.log('📝 Update Payload:', payload);
 
-    // ✅ API কল বা redux dispatch
+    // ✅ API call or redux dispatch
     await dispatch(updateBankReceived(payload)).unwrap();
 
-    // ✅ সফল হলে
+    // ✅ after success
     toast.success('Bank received transaction updated successfully!');
     setTableData([]); // table clear
     setFormData((prev) => ({
@@ -396,7 +427,7 @@ const handleBankReceivedUpdate = async () => {
       bankReceivedAccount: prev.bankReceivedAccount,
       bankReceivedAccountName: prev.bankReceivedAccountName,
     }));
-    setIsUpdateButton(false); // update button বন্ধ করো
+    setIsUpdateButton(false); // update close button 
     setReceivedData(null);
 
   } catch (error: any) {
@@ -406,9 +437,6 @@ const handleBankReceivedUpdate = async () => {
     setUpdatingLoading(false);
   }
 };
-
-
-
 
   useCtrlS(handleSave);
   return (

@@ -39,6 +39,15 @@ const initialState: BankReceivedState = {
   error: null,
 };
 
+// types for the server response you showed
+type SaveBankReceivedResponse = {
+  success: boolean;
+  message: number;
+  data: { data: string[]; transaction_date: string };
+  success_code: { code: number };
+  error: { code: number };
+};
+
 // ---------------- Async Thunks ----------------
 
 // 📌 Fetch Bank Received list
@@ -52,10 +61,10 @@ export const fetchBankReceived = createAsyncThunk<ReceivedItem[],void,{ rejectVa
 });
 
 // 📌 Save Bank Received
-export const saveBankReceived = createAsyncThunk<ReceivedItem,ReceivedItem,{ rejectValue: string }>('bankReceived/saveBankReceived', async (payload, thunkAPI) => {
+export const saveBankReceived = createAsyncThunk<ReceivedItem,SaveBankReceivedResponse,{ rejectValue: string }>('bankReceived/saveBankReceived', async (payload, thunkAPI) => {
   try {
     const response = await httpService.post(API_BANK_RECEIVED_URL, payload);
-    return response.data;
+    return response.data as SaveBankReceivedResponse;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || 'Failed to save data');
   }
