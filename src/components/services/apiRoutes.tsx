@@ -157,7 +157,7 @@ export const API_CASH_PAYMENT_UPDATE_URL = `${API_BASE_URL}/trading/cash/payment
 // Bank Received url
 export const API_BANK_RECEIVED_URL = `${API_BASE_URL}/general/bank/received`;
 export const API_BANK_GENERAL_EDIT_URL = `${API_BASE_URL}/general/bank/general/edit`;
-export const API_BANK_GENERAL_UPDATE_URL = `${API_BASE_URL}/general/bank/general/update`;
+export const API_BANK_GENERAL_UPDATE_URL = `${API_BASE_URL}/general/bank/update`;
 export const API_BANK_RECEIVED_LIST_URL = `${API_BASE_URL}/general/bank/received/list`;
 
 
