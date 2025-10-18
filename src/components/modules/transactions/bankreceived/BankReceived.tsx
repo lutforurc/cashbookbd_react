@@ -22,6 +22,7 @@ import { getCoal3ByCoal4 } from '../../chartofaccounts/levelthree/coal3Sliders';
 import { editBankReceived, saveBankReceived, updateBankReceived } from './bankReceivedSlice';
 import { toast } from 'react-toastify';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import Loader from '../../../../common/Loader';
 
 interface TransactionList {
   id: string | number;
@@ -69,6 +70,8 @@ const BankReceived = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [receivedData, setReceivedData] = useState<ReceivedItem | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // ✅ new
+  const searchingRef = useRef(false); // ✅ guard against concurrent searches
   const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
     null,
   );
@@ -109,9 +112,9 @@ const BankReceived = () => {
     }
 
     try {
-      const response = await dispatch(
-        editBankReceived({ id: search }),
-      ).unwrap();
+      searchingRef.current = true;
+      setIsLoading(true);
+      const response = await dispatch(editBankReceived({ id: search })).unwrap();
 
       const mapped = mapReceivedData(response);
       setReceivedData(mapped);
@@ -125,8 +128,11 @@ const BankReceived = () => {
     } catch (error: any) {
       setIsUpdateButton(false);
       setReceivedData(null);
-      toast.error(error || 'Error searching invoice.');
+      toast.error(error?.message || 'Error searching invoice.');
       console.error('Error searching invoice:', error);
+    } finally {
+      setIsLoading(false);   // ✅ hide Loader
+      searchingRef.current = false;
     }
   };
 
@@ -299,12 +305,13 @@ const BankReceived = () => {
     };
   }, [receivedData]);
 
-const optionsWithAll = useMemo(
-  () => [{ id: '', name: 'Select Receiver Bank Account' }, ...((ddlBankList ?? []) as any[])],
-  [ddlBankList]
-);
+  const optionsWithAll = useMemo(
+    () => [{ id: '', name: 'Select Receiver Bank Account' }, ...((ddlBankList ?? []) as any[])],
+    [ddlBankList]
+  );
 
   const handleSave = useCallback(async () => {
+
     if (saveButtonLoading) return;
 
     const transactions = tableData.flatMap(
@@ -313,6 +320,7 @@ const optionsWithAll = useMemo(
     if (!transactions.length)
       return toast.warning('Add at least one transaction');
 
+    setIsLoading(true);
     setSaveButtonLoading(true);
 
     try {
@@ -348,6 +356,7 @@ const optionsWithAll = useMemo(
       toast.error(error?.message || 'Something went wrong while saving.');
     } finally {
       setSaveButtonLoading(false);
+      setIsLoading(false);
     }
   }, [saveButtonLoading, tableData, formData]);
 
@@ -368,6 +377,7 @@ const optionsWithAll = useMemo(
   const handleBankReceivedUpdate = async () => {
 
     setUpdatingLoading(true);
+    setIsLoading(true);
 
     // ✅ Validation
     const transactions = tableData.flatMap((item) => item.transactionList || []);
@@ -401,11 +411,16 @@ const optionsWithAll = useMemo(
       console.log('📝 Update Payload:', payload);
 
       // ✅ API call or redux dispatch
-     const response =  await dispatch(updateBankReceived(payload)).unwrap();
-      console.log('🔄 Update Response:', response);
+      const response = await dispatch(updateBankReceived(payload)).unwrap();
 
-      // ✅ after success
-      toast.success('Bank received transaction updated successfully!');
+
+      // server sample:
+      const voucherText = response?.data?.data?.[0];
+
+      if (voucherText) {
+        // Use a stable toastId so it can't render twice for the same save
+        toast.success(voucherText, { toastId: `bank-received-success-${voucherText}` });
+      }
       setTableData([]); // table clear
       setFormData((prev) => ({
         ...initialReceivedItem,
@@ -419,21 +434,23 @@ const optionsWithAll = useMemo(
       console.error('❌ Error updating transaction:', error);
       toast.error(error?.message || 'Failed to update transaction.');
     } finally {
+      setIsLoading(false);
       setUpdatingLoading(false);
     }
   };
 
   // useCtrlS(handleSave);
   useCtrlS(() => {
-  if (isUpdateButton) return handleBankReceivedUpdate();
-  return handleSave();
-});
+    if (isUpdateButton) return handleBankReceivedUpdate();
+    return handleSave();
+  });
 
 
   return (
     <>
       <HelmetTitle title="Bank Received" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        {isLoading && <Loader />}
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
             <div className="w-full">

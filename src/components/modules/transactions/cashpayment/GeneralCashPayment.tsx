@@ -24,11 +24,7 @@ import {
   storeCashPayment,
   updateCashPayment,
 } from './cashPaymentSlice';
-import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
-import { validateForm } from '../../../utils/utils-functions/validationUtils';
-import { validationMessage } from '../../../utils/utils-functions/validationMessage';
 import InputOnly from '../../../utils/fields/InputOnly';
-import useLocalStorage from '../../../../hooks/useLocalStorage';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 
@@ -65,6 +61,7 @@ const GeneralCashPayment = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [search, setSearch] = useState(''); // State to store the search value
   const [isUpdateButton, setIsUpdateButton] = useState(false);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
 
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
@@ -82,6 +79,7 @@ const GeneralCashPayment = () => {
   };
 
   const handleCashPaymentSave = async () => {
+    setSaveButtonLoading(true);
     if (tableData.length === 0) {
       toast.error('Please add some transactions.');
       return;
@@ -107,7 +105,10 @@ const GeneralCashPayment = () => {
     try {
       await dispatch(storeCashPayment(updatedTableData));
     } catch (error) {
+      setSaveButtonLoading(false);
       console.error('Error saving transactions:', error);
+    } finally {
+      setSaveButtonLoading(false);
     }
   };
 
@@ -333,17 +334,17 @@ const GeneralCashPayment = () => {
                 defaultValue={
                   formData.account
                     ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
-                      }
+                      value: formData.account,
+                      label: formData.accountName, //productData.accountName
+                    }
                     : null
                 }
                 value={
                   formData.account
                     ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
-                      }
+                      value: formData.account,
+                      label: formData.accountName, //productData.accountName
+                    }
                     : null
                 }
                 onKeyDown={(e) => {
@@ -421,9 +422,10 @@ const GeneralCashPayment = () => {
                 />
               ) : (
                 <ButtonLoading
+                  disabled={saveButtonLoading}
                   onClick={handleCashPaymentSave}
-                  buttonLoading={buttonLoading}
-                  label="Save"
+                  buttonLoading={saveButtonLoading}
+                  label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
                 />
