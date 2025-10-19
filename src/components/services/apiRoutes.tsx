@@ -1,7 +1,7 @@
 // Hosting Server host setup
 // REACT_MAIN_HOST
 // {
-// "kpsnew": "http://accounts.kps.cashbookbd.com",
+// "kpsnew": "accounts.kps.cashbookbd.com",
 // }
 
 // REACT_MAIN_API_URLS
