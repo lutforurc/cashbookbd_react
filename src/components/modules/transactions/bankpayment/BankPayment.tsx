@@ -17,7 +17,6 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { toast } from 'react-toastify';
 import { editBankPayment, saveBankPayment, updateBankPayment } from './bankPaymentSlice';
 
-
 interface TransactionList {
   id: string | number;
   account: string;
