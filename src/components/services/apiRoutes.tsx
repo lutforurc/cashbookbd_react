@@ -1,3 +1,11 @@
+// Hosting Server host setup
+// REACT_MAIN_HOST
+
+// {
+// "kpsnew": "http://accounts.kps.cashbookbd.com",
+// }
+
+
 // export const API_BASE_URLs = import.meta.env.VITE_API_URL;
 
 // console.log("Env url", API_REMOTE_URLs);
