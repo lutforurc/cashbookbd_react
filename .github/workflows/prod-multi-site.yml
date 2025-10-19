@@ -1,4 +1,4 @@
-name: Production React App CI/CD (multi-site: kpsnew & gmenterprise)
+name: Production React App CI/CD (multi-site)
 
 on:
   push:
@@ -50,11 +50,15 @@ jobs:
             URL="$API_RAW"
           fi
 
-          # Normalize whitespace/CRLF, ensure scheme, strip trailing / and accidental /api
+          # Normalize whitespace/CRLF
           URL="$(printf '%s' "$URL" | tr -d '\r' | sed 's/^[[:space:]]\+//; s/[[:space:]]\+$//')"
+
+          # Ensure scheme; allow user to give bare host
           if ! printf '%s' "$URL" | grep -Eq '^https?://'; then
             URL="https://$URL"
           fi
+
+          # Strip trailing slash and accidental /api (to avoid double /api)
           URL="${URL%/}"
           case "$URL" in
             */api) URL="${URL%/api}";;
@@ -77,7 +81,7 @@ jobs:
         env:
           CI: true
           VITE_SITE_NAME: ${{ matrix.site }}
-          VITE_API_URL:   ${{ steps.api.outputs.url }}
+          VITE_API_URL: ${{ steps.api.outputs.url }}
         run: |
           set -Eeuo pipefail
           echo "🧱 Building React app (SITE=$VITE_SITE_NAME)"
@@ -97,11 +101,11 @@ jobs:
       - name: Resolve deploy variables
         id: tgt
         env:
-          KEY:       ${{ matrix.site }}
-          HOST_RAW:  ${{ secrets.REACT_MAIN_HOST }}         # scalar OR JSON
-          PORT_RAW:  ${{ secrets.REACT_MAIN_PORT }}         # scalar
-          SSH_USER:  ${{ secrets.REACT_MAIN_SSH_USER }}     # scalar
-          REMOTE_RAW:${{ secrets.REACT_MAIN_REMOTE_DIR }}   # scalar OR JSON
+          KEY: ${{ matrix.site }}
+          HOST_RAW: ${{ secrets.REACT_MAIN_HOST }}          # scalar OR JSON
+          PORT_RAW: ${{ secrets.REACT_MAIN_PORT }}          # scalar
+          SSH_USER: ${{ secrets.REACT_MAIN_SSH_USER }}      # scalar
+          REMOTE_RAW: ${{ secrets.REACT_MAIN_REMOTE_DIR }}  # scalar OR JSON
         run: |
           set -Eeuo pipefail
 
@@ -112,7 +116,9 @@ jobs:
           else
             HOST="$HOST_RAW"
           fi
-          HOST="${HOST#http://}"; HOST="${HOST#https://}"; HOST="${HOST%%/}"
+          HOST="${HOST#http://}"
+          HOST="${HOST#https://}"
+          HOST="${HOST%%/}"
           RAW_HOST="$HOST"
           HOST="$(printf '%s' "$HOST" | tr -d '\r\n\t ' | sed 's/[^A-Za-z0-9\.\-]//g')"
           if [ -z "$HOST" ] || ! printf '%s' "$HOST" | grep -Eq '^[A-Za-z0-9.-]+$'; then
@@ -122,7 +128,7 @@ jobs:
 
           # --- PORT / USER ---
           PORT="$(printf '%s' "${PORT_RAW:-22}" | tr -d '\r\n\t ')"
-          USER="$(printf '%s' "$SSH_USER"       | tr -d '\r\n\t ')"
+          USER="$(printf '%s' "$SSH_USER" | tr -d '\r\n\t ')"
           [ -n "$USER" ] || { echo "❌ [$KEY] SSH_USER empty"; exit 1; }
           [ -n "$PORT" ] || PORT=22
 
@@ -175,9 +181,9 @@ jobs:
       # -------- Deploy (keep .env) --------
       - name: Deploy via rsync (keep .env)
         env:
-          SSH_USER:   ${{ steps.tgt.outputs.user }}
-          SSH_HOST:   ${{ steps.tgt.outputs.host }}
-          SSH_PORT:   ${{ steps.tgt.outputs.port }}
+          SSH_USER: ${{ steps.tgt.outputs.user }}
+          SSH_HOST: ${{ steps.tgt.outputs.host }}
+          SSH_PORT: ${{ steps.tgt.outputs.port }}
           REMOTE_DIR: ${{ steps.tgt.outputs.remote_dir }}
         run: |
           set -Eeuo pipefail
