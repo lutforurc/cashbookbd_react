@@ -8,17 +8,9 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build & Deploy — ${{ matrix.site_name }}
+    name: Build & Deploy — kpsnew
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - site_name: kpsnew
-            mode: prod-kpsnew
-            api_key: kpsnew
-            deploy_key: kpsnew
 
     steps:
       - name: Checkout code
@@ -37,21 +29,20 @@ jobs:
           set -Eeuo pipefail
           npm ci
 
-      # 🔁 Secret JSON → .env.<mode> : VITE_API_URL override (REACT_MAIN_API_URLS)
+      # Secret JSON → .env.<mode> : VITE_API_URL override (REACT_MAIN_API_URLS)
       - name: Prepare API URL from secret
         env:
-          ENV_MODE: ${{ matrix.mode }}
+          MODE: prod-kpsnew
           API_JSON: ${{ secrets.REACT_MAIN_API_URLS }}
-          API_KEY:  ${{ matrix.api_key }}
+          API_KEY:  kpsnew
         run: |
           set -Eeuo pipefail
-          if [ ! -f ".env_${ENV_MODE}" ] && [ ! -f ".env.${ENV_MODE}" ]; then
-            echo "❌ .env.${ENV_MODE} not found"; exit 1;
-          fi
 
           # prefer .env.<mode>
-          ENV_FILE=".env.${ENV_MODE}"
-          [ -f "$ENV_FILE" ] || ENV_FILE=".env_${ENV_MODE}"
+          ENV_FILE=".env.${MODE}"
+          if [ ! -f "$ENV_FILE" ]; then
+            echo "❌ $ENV_FILE not found"; exit 1;
+          fi
 
           if [ -n "${API_JSON-}" ]; then
             if ! command -v jq >/dev/null 2>&1; then
@@ -73,17 +64,18 @@ jobs:
             echo "ℹ️ REACT_MAIN_API_URLS not set — using $ENV_FILE default."
           fi
 
-      - name: Build (mode: ${{ matrix.mode }})
+      - name: Build
         env:
+          MODE: prod-kpsnew
           CI: true
         run: |
           set -Eeuo pipefail
-          npm run build -- --mode ${{ matrix.mode }}
+          npm run build -- --mode "$MODE"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.site_name }}-${{ github.sha }}
+          name: dist-kpsnew-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 5
@@ -95,24 +87,21 @@ jobs:
           HOSTS_JSON: ${{ secrets.REACT_MAIN_HOST }}
           PORTS_JSON: ${{ secrets.REACT_MAIN_PORT }}
           SSH_USER:   ${{ secrets.REACT_MAIN_SSH_USER }}
-          DEPLOY_KEY: ${{ matrix.deploy_key }}
+          DEPLOY_KEY: kpsnew
         run: |
           set -Eeuo pipefail
           if ! command -v jq >/dev/null 2>&1; then
             sudo apt-get update -y
             sudo apt-get install -y jq
           fi
-
           HOST=$(printf '%s' "${HOSTS_JSON-}" | jq -r --arg k "$DEPLOY_KEY" '.[$k] // empty')
           PORT=$(printf '%s' "${PORTS_JSON-}" | jq -r --arg k "$DEPLOY_KEY" '.[$k] // empty')
-
           if [ -z "${HOST-}" ]; then
             echo "❌ host not found for '$DEPLOY_KEY'"; exit 1;
           fi
           if [ -z "${PORT-}" ] || [ "${PORT}" = "null" ]; then
             PORT=22
           fi
-
           echo "host=$HOST" >> "$GITHUB_OUTPUT"
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
           echo "user=${SSH_USER}" >> "$GITHUB_OUTPUT"
@@ -134,7 +123,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist-${{ matrix.site_name }}-${{ github.sha }}
+          name: dist-kpsnew-${{ github.sha }}
           path: dist
 
       - name: Deploy via rsync
@@ -142,7 +131,7 @@ jobs:
           SSH_USER:   ${{ steps.tgt.outputs.user }}
           SSH_HOST:   ${{ steps.tgt.outputs.host }}
           SSH_PORT:   ${{ steps.tgt.outputs.port }}
-          REMOTE_DIR: /var/www/html/${{ matrix.site_name }}
+          REMOTE_DIR: /var/www/html/kpsnew
         run: |
           set -Eeuo pipefail
           : "${SSH_PORT:=22}"
