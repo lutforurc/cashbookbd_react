@@ -351,7 +351,6 @@ const BankReceived = () => {
         bankReceivedAccountName: formData.bankReceivedAccountName,
       });
 
-
     } catch (error: any) {
       toast.error(error?.message || 'Something went wrong while saving.');
     } finally {
