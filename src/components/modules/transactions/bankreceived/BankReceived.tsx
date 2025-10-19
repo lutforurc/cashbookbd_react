@@ -367,6 +367,7 @@ const BankReceived = () => {
     });
   };
 
+  
   useEffect(() => {
     if (bankReceived?.error) {
       toast.error(bankReceived.error);
