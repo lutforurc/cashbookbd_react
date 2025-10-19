@@ -1,4 +1,4 @@
-name: Production React App CI/CD (kpsnew, keep .env file)
+name: Production React App CI/CD (kpsnew)
 
 on:
   push:
@@ -28,16 +28,52 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # --- Build React app ---
+      # -------- Resolve API URL (handles scalar or JSON secret) --------
+      - name: Resolve API URL (JSON or scalar)
+        id: api
+        env:
+          API_RAW: ${{ secrets.REACT_MAIN_API_URLS }}   # "https://kpsnew.cashbookbd.com" OR {"kpsnew":"https://kpsnew.cashbookbd.com"}
+        run: |
+          set -Eeuo pipefail
+          KEY="kpsnew"
+
+          # Determine if JSON object or plain string
+          T=$(printf '%s' "${API_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
+          if [ "$T" = "object" ]; then
+            URL=$(printf '%s' "$API_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
+          else
+            URL="$API_RAW"
+          fi
+
+          # Normalize: trim spaces/CR, strip trailing slash and accidental /api
+          URL="$(printf '%s' "$URL" | tr -d '\r' | sed 's/[[:space:]]\+$//')"
+          URL="${URL%/}"
+          case "$URL" in
+            */api) URL="${URL%/api}";;
+          esac
+
+          # Basic validation
+          if ! printf '%s' "$URL" | grep -Eq '^https?://'; then
+            echo "❌ Invalid API URL after resolve: $URL"
+            exit 1
+          fi
+
+          {
+            echo "url<<EOF"; echo "$URL"; echo "EOF";
+          } >> "$GITHUB_OUTPUT"
+
+          echo "🔗 Resolved API base = $URL"
+
+      # --- Build React app (uses resolved scalar URL) ---
       - name: Build React app
         env:
           CI: true
           VITE_SITE_NAME: kpsnew
-          VITE_API_URL: ${{ secrets.REACT_MAIN_API_URLS }}
+          VITE_API_URL: ${{ steps.api.outputs.url }}
         run: |
           set -Eeuo pipefail
           echo "🧱 Building React app (SITE=$VITE_SITE_NAME)"
-          echo "🔗 API_URL=$VITE_API_URL"
+          echo "🔗 VITE_API_URL=$VITE_API_URL"
           npm run build -- --mode production
 
       # --- Upload artifact ---
@@ -49,50 +85,60 @@ jobs:
           if-no-files-found: error
           retention-days: 5
 
-      # --- Resolve deploy target ---
+      # -------- Resolve deploy target & remote dir --------
       - name: Resolve deploy variables
         id: tgt
         env:
-          HOST_RAW: ${{ secrets.REACT_MAIN_HOST }}
-          PORT_RAW: ${{ secrets.REACT_MAIN_PORT }}
-          SSH_USER: ${{ secrets.REACT_MAIN_SSH_USER }}
-          REMOTE_RAW: ${{ secrets.REACT_MAIN_REMOTE_DIR }}
+          HOST_RAW:   ${{ secrets.REACT_MAIN_HOST }}         # JSON or scalar
+          PORT_RAW:   ${{ secrets.REACT_MAIN_PORT }}         # scalar
+          SSH_USER:   ${{ secrets.REACT_MAIN_SSH_USER }}     # scalar
+          REMOTE_RAW: ${{ secrets.REACT_MAIN_REMOTE_DIR }}   # JSON or scalar
         run: |
           set -Eeuo pipefail
           KEY="kpsnew"
 
-          # Resolve HOST
-          H_TYPE=$(printf '%s' "${HOST_RAW-}" | jq -r 'type' 2>/dev/null || echo "string")
+          # --- Resolve HOST (JSON object OR scalar) ---
+          H_TYPE=$(printf '%s' "${HOST_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
           if [ "$H_TYPE" = "object" ]; then
             HOST=$(printf '%s' "$HOST_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
           else
             HOST="$HOST_RAW"
           fi
+
+          # Remove scheme/trailing slash then hard-sanitize
           HOST="${HOST#http://}"
           HOST="${HOST#https://}"
           HOST="${HOST%%/}"
           RAW_HOST="$HOST"
           HOST="$(printf '%s' "$HOST" | tr -d '\r\n\t ' | sed 's/[^A-Za-z0-9\.\-]//g')"
 
+          echo "🔎 Host (raw vs sanitized)"
+          echo "  raw:       $(printf '%s' "$RAW_HOST" | od -An -tx1 | tr -s ' ')"
+          echo "  sanitized: $(printf '%s' "$HOST"    | od -An -tx1 | tr -s ' ')"
+
           if [ -z "$HOST" ] || ! printf '%s' "$HOST" | grep -Eq '^[A-Za-z0-9.-]+$'; then
-            echo "❌ Invalid hostname after sanitize."
+            echo "❌ Invalid hostname after sanitize. Check REACT_MAIN_HOST."
             exit 1
           fi
 
-          # Resolve PORT / USER
+          # --- Resolve PORT / USER (scalars) ---
           PORT="$(printf '%s' "${PORT_RAW:-22}" | tr -d '\r\n\t ')"
-          USER="$(printf '%s' "$SSH_USER" | tr -d '\r\n\t ')"
-          [ -n "$USER" ] || { echo "❌ SSH_USER empty"; exit 1; }
+          USER="$(printf '%s' "$SSH_USER"       | tr -d '\r\n\t ')"
+          [ -n "$USER" ] || { echo "❌ REACT_MAIN_SSH_USER empty"; exit 1; }
+          [ -n "$PORT" ] || PORT=22
 
-          # Resolve REMOTE_DIR
-          R_TYPE=$(printf '%s' "${REMOTE_RAW-}" | jq -r 'type' 2>/dev/null || echo "string")
+          # --- Resolve REMOTE_DIR (JSON object OR scalar) ---
+          R_TYPE=$(printf '%s' "${REMOTE_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
           if [ "$R_TYPE" = "object" ]; then
             REMOTE_DIR=$(printf '%s' "$REMOTE_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
           else
             REMOTE_DIR="$REMOTE_RAW"
           fi
           REMOTE_DIR="$(printf '%s' "$REMOTE_DIR" | tr -d '\r\n\t ')"
-          [ -n "$REMOTE_DIR" ] || { echo "❌ REMOTE_DIR not resolved"; exit 1; }
+          [ -n "$REMOTE_DIR" ] || { echo "❌ REACT_MAIN_REMOTE_DIR not resolved for key '$KEY'"; exit 1; }
+
+          echo "🔍 user=$USER host=$HOST port=$PORT"
+          echo "🔍 remote_dir=$REMOTE_DIR"
 
           {
             echo "host<<EOF"; echo "$HOST"; echo "EOF";
@@ -101,8 +147,8 @@ jobs:
             echo "remote_dir<<EOF"; echo "$REMOTE_DIR"; echo "EOF";
           } >> "$GITHUB_OUTPUT"
 
-      # --- Prepare SSH ---
-      - name: Prepare SSH
+      # -------- SSH setup --------
+      - name: Prepare SSH (accept new host key automatically)
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REACT_MAIN_PRIVATE_KEY }}
         run: |
@@ -118,7 +164,7 @@ jobs:
             echo '    StrictHostKeyChecking=accept-new'
             echo '    UserKnownHostsFile ~/.ssh/known_hosts'
           } >> ~/.ssh/config
-          echo "✅ SSH key configured"
+          echo "✅ SSH key configured (accept-new)"
 
       # --- Download artifact ---
       - name: Download artifact
@@ -127,12 +173,12 @@ jobs:
           name: dist-kpsnew-${{ github.sha }}
           path: dist
 
-      # --- Deploy ---
+      # -------- Deploy (keep .env) --------
       - name: Deploy via rsync (keep .env)
         env:
-          SSH_USER: ${{ steps.tgt.outputs.user }}
-          SSH_HOST: ${{ steps.tgt.outputs.host }}
-          SSH_PORT: ${{ steps.tgt.outputs.port }}
+          SSH_USER:   ${{ steps.tgt.outputs.user }}
+          SSH_HOST:   ${{ steps.tgt.outputs.host }}
+          SSH_PORT:   ${{ steps.tgt.outputs.port }}
           REMOTE_DIR: ${{ steps.tgt.outputs.remote_dir }}
         run: |
           set -Eeuo pipefail
@@ -148,9 +194,9 @@ jobs:
             -e "ssh -p ${SSH_PORT}" \
             dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
 
-          echo "✅ Deployment completed (kept .env file)"
+          echo "✅ Deployment completed (kept .env)"
 
-      # --- Reload nginx ---
+      # -------- Reload nginx --------
       - name: Reload nginx
         env:
           SSH_USER: ${{ steps.tgt.outputs.user }}
@@ -162,7 +208,7 @@ jobs:
             "systemctl reload nginx || systemctl restart nginx"
           echo "🔄 nginx reloaded"
 
-      # --- Smoke test ---
+      # -------- Smoke test --------
       - name: Smoke test
         env:
           DEPLOY_URL: ${{ secrets.REACT_PROD_DEPLOY_URL }}
