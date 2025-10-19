@@ -1,4 +1,4 @@
-name: Production React App CI/CD (kpsnew)
+name: Production React App CI/CD (kpsnew, no-env)
 
 on:
   push:
@@ -24,77 +24,18 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          set -Eeuo pipefail
-          npm ci
+        run: npm ci
 
-      # Ensure .env for Vite mode exists (create minimal if missing)
-      - name: Ensure .env for mode (create if missing)
+      - name: Build React app (inject API_URL directly)
         env:
-          MODE: prod-kpsnew
-        run: |
-          set -Eeuo pipefail
-          ENV_FILE=".env.${MODE}"
-          if [ ! -f "$ENV_FILE" ]; then
-            echo "ℹ️ $ENV_FILE not found — creating minimal file."
-            {
-              echo "VITE_SITE_NAME=kpsnew"
-              echo "VITE_API_URL=https://staging.cashbookbd.com"
-            } > "$ENV_FILE"
-          else
-            echo "✅ Found $ENV_FILE"
-          fi
-          echo "----- $ENV_FILE (redacted) -----"
-          sed 's/=.*/=<redacted>/' "$ENV_FILE" || true
-
-      # REACT_MAIN_API_URLS can be JSON object or single string
-      - name: Prepare API URL from secret (safe, sed-free)
-        env:
-          MODE: prod-kpsnew
-          API_RAW: ${{ secrets.REACT_MAIN_API_URLS }}
-        run: |
-          set -Eeuo pipefail
-          ENV_FILE=".env.${MODE}"
-
-          if [ -z "${API_RAW-}" ]; then
-            echo "ℹ️ REACT_MAIN_API_URLS not set — using $ENV_FILE default."
-            exit 0
-          fi
-
-          # Detect type; fallback to string if jq not available
-          if command -v jq >/dev/null 2>&1; then
-            TYPE=$(printf '%s' "$API_RAW" | jq -r 'type' 2>/dev/null || echo "string")
-          else
-            TYPE="string"
-          fi
-
-          if [ "$TYPE" = "object" ]; then
-            KEY="kpsnew"
-            API_URL=$(printf '%s' "$API_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
-          else
-            API_URL="$API_RAW"
-          fi
-
-          if [ -z "${API_URL-}" ] || [ "$API_URL" = "null" ]; then
-            echo "ℹ️ No API URL resolved — using $ENV_FILE default."
-            exit 0
-          fi
-
-          echo "🔗 VITE_API_URL => $API_URL"
-
-          # Replace VITE_API_URL line without sed substitution pitfalls
-          TMP="${ENV_FILE}.tmp"
-          grep -v '^VITE_API_URL=' "$ENV_FILE" > "$TMP" || true
-          printf 'VITE_API_URL=%s\n' "$API_URL" >> "$TMP"
-          mv "$TMP" "$ENV_FILE"
-
-      - name: Build
-        env:
-          MODE: prod-kpsnew
           CI: true
+          VITE_SITE_NAME: kpsnew
+          VITE_API_URL: ${{ secrets.REACT_MAIN_API_URLS }}
         run: |
           set -Eeuo pipefail
-          npm run build -- --mode "$MODE"
+          echo "🧱 Building with SITE_NAME=$VITE_SITE_NAME"
+          echo "🔗 Injected API_URL=$VITE_API_URL"
+          npm run build -- --mode production
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -104,10 +45,6 @@ jobs:
           if-no-files-found: error
           retention-days: 5
 
-      # -------- DEPLOY --------
-      # HOST secret may be JSON object or single string (NO scheme, e.g. accounts.kps.cashbookbd.com)
-      # PORT is a single scalar (e.g. 22)
-      # SSH_USER is a single scalar (e.g. ubuntu)
       - name: Resolve deploy target
         id: tgt
         env:
@@ -116,56 +53,31 @@ jobs:
           SSH_USER: ${{ secrets.REACT_MAIN_SSH_USER }}
         run: |
           set -Eeuo pipefail
-
-          # Resolve HOST
-          if command -v jq >/dev/null 2>&1; then
-            H_TYPE=$(printf '%s' "$HOST_RAW" | jq -r 'type' 2>/dev/null || echo "string")
-          else
-            H_TYPE="string"
-          fi
-          if [ "$H_TYPE" = "object" ]; then
-            KEY="kpsnew"
-            HOST=$(printf '%s' "$HOST_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
-          else
-            HOST="$HOST_RAW"
-          fi
-
-          # Strip scheme if someone accidentally included it
-          HOST="${HOST#http://}"
+          HOST="${HOST_RAW#http://}"
           HOST="${HOST#https://}"
           HOST="${HOST%%/}"
-
-          [ -n "${HOST-}" ] || { echo "❌ host not resolved"; exit 1; }
-
-          # PORT (single scalar)
           PORT="${PORT_RAW:-22}"
-          [ -n "${PORT-}" ] || PORT=22
-
-          # SSH user (single scalar)
-          [ -n "${SSH_USER-}" ] || { echo "❌ REACT_MAIN_SSH_USER is empty"; exit 1; }
-
           echo "host=$HOST" >> "$GITHUB_OUTPUT"
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
-          echo "user=${SSH_USER}" >> "$GITHUB_OUTPUT"
-          echo "🔍 Deploy target → user=${SSH_USER} host=${HOST} port=${PORT}"
+          echo "user=$SSH_USER" >> "$GITHUB_OUTPUT"
+          echo "🔍 Deploy target → $SSH_USER@$HOST:$PORT"
 
-      - name: Prepare SSH (no sed; safe known_hosts)
+      - name: Prepare SSH (accept new host key automatically)
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REACT_MAIN_PRIVATE_KEY }}
-          SSH_HOST: ${{ steps.tgt.outputs.host }}
-          SSH_PORT: ${{ steps.tgt.outputs.port }}
         run: |
           set -Eeuo pipefail
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
-          # Write [host]:port into known_hosts safely without sed
-          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" \
-            | awk -v h="$SSH_HOST" -v p="$SSH_PORT" '{$1="["h"]:"p; print}' \
-            >> ~/.ssh/known_hosts
-
-          echo "✅ SSH prepared."
+          {
+            echo 'Host *'
+            echo '    BatchMode yes'
+            echo '    IdentitiesOnly yes'
+            echo '    StrictHostKeyChecking=accept-new'
+            echo '    UserKnownHostsFile ~/.ssh/known_hosts'
+          } >> ~/.ssh/config
+          echo "✅ SSH config ready."
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -183,14 +95,10 @@ jobs:
           set -Eeuo pipefail
           : "${SSH_PORT:=22}"
           test -d dist || { echo "❌ dist not found"; exit 1; }
-
-          ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
-
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
           rsync -avz --delete-delay \
-            --exclude='.env*' \
-            -e "ssh -o IdentitiesOnly=yes -p ${SSH_PORT}" \
+            -e "ssh -p ${SSH_PORT}" \
             dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
-
           echo "🚀 Deployed to $REMOTE_DIR"
 
       - name: Reload nginx
@@ -200,7 +108,7 @@ jobs:
           SSH_PORT: ${{ steps.tgt.outputs.port }}
         run: |
           set -Eeuo pipefail
-          ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             "sudo -n systemctl reload nginx || sudo -n systemctl restart nginx"
           echo "🔄 nginx reloaded."
 
