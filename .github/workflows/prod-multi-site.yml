@@ -50,49 +50,53 @@ jobs:
       - name: Resolve deploy variables
         id: tgt
         env:
-          HOST_RAW: ${{ secrets.REACT_MAIN_HOST }}
-          PORT_RAW: ${{ secrets.REACT_MAIN_PORT }}
-          SSH_USER: ${{ secrets.REACT_MAIN_SSH_USER }}
-          REMOTE_RAW: ${{ secrets.REACT_MAIN_REMOTE_DIR }}
+          HOST_RAW:   ${{ secrets.REACT_MAIN_HOST }}         # JSON or scalar
+          PORT_RAW:   ${{ secrets.REACT_MAIN_PORT }}         # scalar
+          SSH_USER:   ${{ secrets.REACT_MAIN_SSH_USER }}     # scalar
+          REMOTE_RAW: ${{ secrets.REACT_MAIN_REMOTE_DIR }}   # JSON or scalar
         run: |
           set -Eeuo pipefail
+          KEY="kpsnew"
 
-          # 🧹 Clean up and sanitize host
-          HOST="${HOST_RAW#http://}"
+          # --- Resolve HOST (JSON object OR scalar) ---
+          H_TYPE=$(printf '%s' "${HOST_RAW-}" | jq -r 'type' 2>/dev/null || echo "string")
+          if [ "$H_TYPE" = "object" ]; then
+            HOST=$(printf '%s' "$HOST_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
+          else
+            HOST="$HOST_RAW"
+          fi
+
+          # Remove scheme/trailing slash then hard-sanitize
+          HOST="${HOST#http://}"
           HOST="${HOST#https://}"
           HOST="${HOST%%/}"
-
           RAW_HOST="$HOST"
           HOST="$(printf '%s' "$HOST" | tr -d '\r\n\t ' | sed 's/[^A-Za-z0-9\.\-]//g')"
 
           echo "🔎 Host (raw vs sanitized)"
-          echo "  raw:       $(printf '%s' "$RAW_HOST" | od -An -tx1 | tr -s ' ' )"
-          echo "  sanitized: $(printf '%s' "$HOST"    | od -An -tx1 | tr -s ' ' )"
+          echo "  raw:       $(printf '%s' "$RAW_HOST" | od -An -tx1 | tr -s ' ')"
+          echo "  sanitized: $(printf '%s' "$HOST"    | od -An -tx1 | tr -s ' ')"
 
           if [ -z "$HOST" ] || ! printf '%s' "$HOST" | grep -Eq '^[A-Za-z0-9.-]+$'; then
-            echo "❌ Invalid hostname after sanitize. Check REACT_MAIN_HOST secret."
+            echo "❌ Invalid hostname after sanitize. Check REACT_MAIN_HOST."
             exit 1
           fi
 
+          # --- Resolve PORT / USER (scalars) ---
           PORT="$(printf '%s' "${PORT_RAW:-22}" | tr -d '\r\n\t ')"
-          USER="$(printf '%s' "$SSH_USER" | tr -d '\r\n\t ')"
-          [ -n "$USER" ] || { echo "❌ SSH_USER empty"; exit 1; }
+          USER="$(printf '%s' "$SSH_USER"       | tr -d '\r\n\t ')"
+          [ -n "$USER" ] || { echo "❌ REACT_MAIN_SSH_USER empty"; exit 1; }
+          [ -n "$PORT" ] || PORT=22
 
-          # 🧭 Resolve REMOTE_DIR from JSON or scalar
-          KEY="kpsnew"
-          if command -v jq >/dev/null 2>&1; then
-            TYPE=$(printf '%s' "${REMOTE_RAW-}" | jq -r 'type' 2>/dev/null || echo "string")
-          else
-            TYPE="string"
-          fi
-          if [ "$TYPE" = "object" ]; then
+          # --- Resolve REMOTE_DIR (JSON object OR scalar) ---
+          R_TYPE=$(printf '%s' "${REMOTE_RAW-}" | jq -r 'type' 2>/dev/null || echo "string")
+          if [ "$R_TYPE" = "object" ]; then
             REMOTE_DIR=$(printf '%s' "$REMOTE_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
           else
             REMOTE_DIR="$REMOTE_RAW"
           fi
-
           REMOTE_DIR="$(printf '%s' "$REMOTE_DIR" | tr -d '\r\n\t ')"
-          [ -n "$REMOTE_DIR" ] || { echo "❌ REACT_MAIN_REMOTE_DIR not resolved for '$KEY'"; exit 1; }
+          [ -n "$REMOTE_DIR" ] || { echo "❌ REACT_MAIN_REMOTE_DIR not resolved for key '$KEY'"; exit 1; }
 
           echo "🔍 user=$USER host=$HOST port=$PORT"
           echo "🔍 remote_dir=$REMOTE_DIR"
