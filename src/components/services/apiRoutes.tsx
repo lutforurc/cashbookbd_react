@@ -8,7 +8,7 @@
 //  "accounts_nibirnirman": "accounts.nibirnirman.cashbookbd.com",
 //  "accounts_rmr": "accounts.rmr.cashbookbd.com",
 //  "accountsscn": "accounts.scn.cashbookbd.com",
-//  "accounts_sinthia": "accounts.sinthia.cashbookbd.com",
+//  "accounts_sinthia": "accounts.sinthia.cashbookbd.com"
 // }
 
 

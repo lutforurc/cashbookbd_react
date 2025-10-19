@@ -82,6 +82,8 @@ const BankPayment = () => {
     }
   }, [coal3]);
 
+
+  
   const transactionAccountHandler = (option: any) => {
     const currentTransaction = formData.transactionList?.[0];
     setFormData({
