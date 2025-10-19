@@ -3,6 +3,12 @@
 // {
 // "kpsnew": "accounts.kps.cashbookbd.com",
 //  "gmenterprise": "accounts.gme.cashbookbd.com",
+//  "cashbookbd_accounts_krf": "accounts.krf.cashbookbd.com",
+//  "accountsmbdpp": "accounts.mbdpp.cashbookbd.com",
+//  "accounts_nibirnirman": "accounts.nibirnirman.cashbookbd.com",
+//  "accounts_rmr": "accounts.rmr.cashbookbd.com",
+//  "accountsscn": "accounts.scn.cashbookbd.com",
+//  "accounts_sinthia": "accounts.sinthia.cashbookbd.com",
 // }
 
 
@@ -10,13 +16,25 @@
 // REACT_MAIN_REMOTE_DIR
 // {
 // "kpsnew": "/home/cashbookbd_accounts/htdocs/accounts.kps.cashbookbd.com/",
-// "gmenterprise": "//home/accounts_gme/htdocs/accounts.gme.cashbookbd.com/"
+// "gmenterprise": "/home/accounts_gme/htdocs/accounts.gme.cashbookbd.com/",
+// "cashbookbd_accounts_krf": "/home/cashbookbd_accounts_krf/htdocs/accounts.krf.cashbookbd.com/",
+// "accountsmbdpp": "/home/accountsmbdpp/htdocs/accounts.mbdpp.cashbookbd.com/",
+// "accounts_nibirnirman": "/home/accounts_nibirnirman/htdocs/accounts.nibirnirman.cashbookbd.com/",
+// "accounts_rmr": "/home/accounts_rmr/htdocs/accounts.rmr.cashbookbd.com/",
+// "accountsscn": "/home/accountsscn/htdocs/accounts.scn.cashbookbd.com/",
+// "accounts_sinthia": "/home/accounts_sinthia/htdocs/accounts.sinthia.cashbookbd.com/"
 // }
 
 // REACT_MAIN_API_URLS 
 // {
 // "kpsnew": "https://kpsnew.cashbookbd.com",
-//  "gmenterprise": "https://gmenterprise.cashbookbd.com"
+//  "gmenterprise": "https://gmenterprise.cashbookbd.com",
+//  "cashbookbd_accounts_krf": "https://krf.cashbookbd.com",
+//  "accountsmbdpp": "https://mbdpp.cashbookbd.com",
+//  "accounts_nibirnirman": "https://nibirnirman.cashbookbd.com",
+//  "accounts_rmr": "https://rmrs.cashbookbd.com",
+//  "accountsscn": "https://sonycybernet.cashbookbd.com",
+//  "accounts_sinthia": "https://sinthia.cashbookbd.com"
 // }
 
 
