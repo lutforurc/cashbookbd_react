@@ -1,4 +1,4 @@
-name: Production React Production App CI/CD Pipeline (kpsnew)
+name: Production React App CI/CD (kpsnew)
 
 on:
   push:
@@ -29,26 +29,34 @@ jobs:
           set -Eeuo pipefail
           npm ci
 
-      # Secret JSON → .env.<mode> : VITE_API_URL override (REACT_MAIN_API_URLS)
+      - name: Ensure .env for mode (create if missing)
+        env:
+          MODE: prod-kpsnew
+        run: |
+          set -Eeuo pipefail
+          ENV_FILE=".env.${MODE}"
+          if [ ! -f "$ENV_FILE" ]; then
+            echo "ℹ️ $ENV_FILE not found — creating minimal file."
+            {
+              echo "VITE_SITE_NAME=kpsnew"
+              echo "VITE_API_URL=https://staging.cashbookbd.com"
+            } > "$ENV_FILE"
+          else
+            echo "✅ Found $ENV_FILE"
+          fi
+          echo "----- $ENV_FILE -----"
+          cat "$ENV_FILE" | sed 's/=.*/=<redacted>/' || true
+
       - name: Prepare API URL from secret
         env:
           MODE: prod-kpsnew
           API_JSON: ${{ secrets.REACT_MAIN_API_URLS }}
-          API_KEY:  kpsnew
+          API_KEY: kpsnew
         run: |
           set -Eeuo pipefail
-
-          # prefer .env.<mode>
           ENV_FILE=".env.${MODE}"
-          if [ ! -f "$ENV_FILE" ]; then
-            echo "❌ $ENV_FILE not found"; exit 1;
-          fi
-
           if [ -n "${API_JSON-}" ]; then
-            if ! command -v jq >/dev/null 2>&1; then
-              sudo apt-get update -y
-              sudo apt-get install -y jq
-            fi
+            sudo apt-get update -y && sudo apt-get install -y jq
             API_URL=$(printf '%s' "$API_JSON" | jq -r --arg k "$API_KEY" '.[$k] // empty')
             if [ -n "${API_URL-}" ] && [ "${API_URL}" != "null" ]; then
               echo "🔗 VITE_API_URL => $API_URL"
@@ -58,13 +66,13 @@ jobs:
                 printf '\nVITE_API_URL=%s\n' "$API_URL" >> "$ENV_FILE"
               fi
             else
-              echo "ℹ️ No API URL for key '$API_KEY' — using $ENV_FILE default."
+              echo "ℹ️ No API URL found in secret JSON."
             fi
           else
-            echo "ℹ️ REACT_MAIN_API_URLS not set — using $ENV_FILE default."
+            echo "ℹ️ REACT_MAIN_API_URLS not set — using .env default."
           fi
 
-      - name: Build
+      - name: Build React app
         env:
           MODE: prod-kpsnew
           CI: true
@@ -72,7 +80,7 @@ jobs:
           set -Eeuo pipefail
           npm run build -- --mode "$MODE"
 
-      - name: Upload artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-kpsnew-${{ github.sha }}
@@ -90,28 +98,21 @@ jobs:
           DEPLOY_KEY: kpsnew
         run: |
           set -Eeuo pipefail
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update -y
-            sudo apt-get install -y jq
-          fi
+          sudo apt-get update -y && sudo apt-get install -y jq
           HOST=$(printf '%s' "${HOSTS_JSON-}" | jq -r --arg k "$DEPLOY_KEY" '.[$k] // empty')
           PORT=$(printf '%s' "${PORTS_JSON-}" | jq -r --arg k "$DEPLOY_KEY" '.[$k] // empty')
-          if [ -z "${HOST-}" ]; then
-            echo "❌ host not found for '$DEPLOY_KEY'"; exit 1;
-          fi
-          if [ -z "${PORT-}" ] || [ "${PORT}" = "null" ]; then
-            PORT=22
-          fi
+          [ -n "${HOST-}" ] || { echo "❌ host not found for '$DEPLOY_KEY'"; exit 1; }
+          [ -n "${PORT-}" ] || PORT=22
           echo "host=$HOST" >> "$GITHUB_OUTPUT"
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
           echo "user=${SSH_USER}" >> "$GITHUB_OUTPUT"
-          echo "🔍 target user=${SSH_USER:-<empty>} host=${HOST} port=${PORT}"
+          echo "🔍 Deploy target → user=${SSH_USER:-<empty>} host=${HOST} port=${PORT}"
 
       - name: Prepare SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REACT_MAIN_PRIVATE_KEY }}
-          SSH_HOST:        ${{ steps.tgt.outputs.host }}
-          SSH_PORT:        ${{ steps.tgt.outputs.port }}
+          SSH_HOST: ${{ steps.tgt.outputs.host }}
+          SSH_PORT: ${{ steps.tgt.outputs.port }}
         run: |
           set -Eeuo pipefail
           mkdir -p ~/.ssh
@@ -128,9 +129,9 @@ jobs:
 
       - name: Deploy via rsync
         env:
-          SSH_USER:   ${{ steps.tgt.outputs.user }}
-          SSH_HOST:   ${{ steps.tgt.outputs.host }}
-          SSH_PORT:   ${{ steps.tgt.outputs.port }}
+          SSH_USER: ${{ steps.tgt.outputs.user }}
+          SSH_HOST: ${{ steps.tgt.outputs.host }}
+          SSH_PORT: ${{ steps.tgt.outputs.port }}
           REMOTE_DIR: /var/www/html/kpsnew
         run: |
           set -Eeuo pipefail
