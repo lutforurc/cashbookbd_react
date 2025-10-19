@@ -1,4 +1,4 @@
-name: Production React App CI/CD (kpsnew)
+name: Production React App CI/CD (multi-site: kpsnew & gmenterprise)
 
 on:
   push:
@@ -7,9 +7,14 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build & Deploy — kpsnew
+    name: Build & Deploy — ${{ matrix.site }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
+
+    strategy:
+      fail-fast: false
+      matrix:
+        site: [kpsnew, gmenterprise]
 
     steps:
       # --- Checkout source code ---
@@ -32,12 +37,12 @@ jobs:
       - name: Resolve API URL (JSON or scalar)
         id: api
         env:
-          API_RAW: ${{ secrets.REACT_MAIN_API_URLS }}   # "https://kpsnew.cashbookbd.com" OR {"kpsnew":"https://kpsnew.cashbookbd.com"}
+          API_RAW: ${{ secrets.REACT_MAIN_API_URLS }}   # scalar OR JSON map: { "kpsnew": "...", "gmenterprise": "..." }
+          KEY: ${{ matrix.site }}
         run: |
           set -Eeuo pipefail
-          KEY="kpsnew"
 
-          # Determine if JSON object or plain string
+          # Pick value by key if JSON; else use as-is
           T=$(printf '%s' "${API_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
           if [ "$T" = "object" ]; then
             URL=$(printf '%s' "$API_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
@@ -45,16 +50,19 @@ jobs:
             URL="$API_RAW"
           fi
 
-          # Normalize: trim spaces/CR, strip trailing slash and accidental /api
-          URL="$(printf '%s' "$URL" | tr -d '\r' | sed 's/[[:space:]]\+$//')"
+          # Normalize whitespace/CRLF, ensure scheme, strip trailing / and accidental /api
+          URL="$(printf '%s' "$URL" | tr -d '\r' | sed 's/^[[:space:]]\+//; s/[[:space:]]\+$//')"
+          if ! printf '%s' "$URL" | grep -Eq '^https?://'; then
+            URL="https://$URL"
+          fi
           URL="${URL%/}"
           case "$URL" in
             */api) URL="${URL%/api}";;
           esac
 
           # Basic validation
-          if ! printf '%s' "$URL" | grep -Eq '^https?://'; then
-            echo "❌ Invalid API URL after resolve: $URL"
+          if ! printf '%s' "$URL" | grep -Eq '^https?://[A-Za-z0-9.-]+'; then
+            echo "❌ Invalid API URL for $KEY: $URL"
             exit 1
           fi
 
@@ -62,72 +70,63 @@ jobs:
             echo "url<<EOF"; echo "$URL"; echo "EOF";
           } >> "$GITHUB_OUTPUT"
 
-          echo "🔗 Resolved API base = $URL"
+          echo "🔗 [$KEY] API base = $URL"
 
-      # --- Build React app (uses resolved scalar URL) ---
+      # --- Build React app (per-site build so env differs) ---
       - name: Build React app
         env:
           CI: true
-          VITE_SITE_NAME: kpsnew
-          VITE_API_URL: ${{ steps.api.outputs.url }}
+          VITE_SITE_NAME: ${{ matrix.site }}
+          VITE_API_URL:   ${{ steps.api.outputs.url }}
         run: |
           set -Eeuo pipefail
           echo "🧱 Building React app (SITE=$VITE_SITE_NAME)"
           echo "🔗 VITE_API_URL=$VITE_API_URL"
           npm run build -- --mode production
 
-      # --- Upload artifact ---
+      # --- Upload artifact (per-site) ---
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist-kpsnew-${{ github.sha }}
+          name: dist-${{ matrix.site }}-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 5
 
-      # -------- Resolve deploy target & remote dir --------
+      # -------- Resolve deploy target & remote dir (JSON or scalar secrets) --------
       - name: Resolve deploy variables
         id: tgt
         env:
-          HOST_RAW:   ${{ secrets.REACT_MAIN_HOST }}         # JSON or scalar
-          PORT_RAW:   ${{ secrets.REACT_MAIN_PORT }}         # scalar
-          SSH_USER:   ${{ secrets.REACT_MAIN_SSH_USER }}     # scalar
-          REMOTE_RAW: ${{ secrets.REACT_MAIN_REMOTE_DIR }}   # JSON or scalar
+          KEY:       ${{ matrix.site }}
+          HOST_RAW:  ${{ secrets.REACT_MAIN_HOST }}         # scalar OR JSON
+          PORT_RAW:  ${{ secrets.REACT_MAIN_PORT }}         # scalar
+          SSH_USER:  ${{ secrets.REACT_MAIN_SSH_USER }}     # scalar
+          REMOTE_RAW:${{ secrets.REACT_MAIN_REMOTE_DIR }}   # scalar OR JSON
         run: |
           set -Eeuo pipefail
-          KEY="kpsnew"
 
-          # --- Resolve HOST (JSON object OR scalar) ---
+          # --- HOST ---
           H_TYPE=$(printf '%s' "${HOST_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
           if [ "$H_TYPE" = "object" ]; then
             HOST=$(printf '%s' "$HOST_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
           else
             HOST="$HOST_RAW"
           fi
-
-          # Remove scheme/trailing slash then hard-sanitize
-          HOST="${HOST#http://}"
-          HOST="${HOST#https://}"
-          HOST="${HOST%%/}"
+          HOST="${HOST#http://}"; HOST="${HOST#https://}"; HOST="${HOST%%/}"
           RAW_HOST="$HOST"
           HOST="$(printf '%s' "$HOST" | tr -d '\r\n\t ' | sed 's/[^A-Za-z0-9\.\-]//g')"
-
-          echo "🔎 Host (raw vs sanitized)"
-          echo "  raw:       $(printf '%s' "$RAW_HOST" | od -An -tx1 | tr -s ' ')"
-          echo "  sanitized: $(printf '%s' "$HOST"    | od -An -tx1 | tr -s ' ')"
-
           if [ -z "$HOST" ] || ! printf '%s' "$HOST" | grep -Eq '^[A-Za-z0-9.-]+$'; then
-            echo "❌ Invalid hostname after sanitize. Check REACT_MAIN_HOST."
+            echo "❌ [$KEY] Invalid hostname after sanitize."
             exit 1
           fi
 
-          # --- Resolve PORT / USER (scalars) ---
+          # --- PORT / USER ---
           PORT="$(printf '%s' "${PORT_RAW:-22}" | tr -d '\r\n\t ')"
           USER="$(printf '%s' "$SSH_USER"       | tr -d '\r\n\t ')"
-          [ -n "$USER" ] || { echo "❌ REACT_MAIN_SSH_USER empty"; exit 1; }
+          [ -n "$USER" ] || { echo "❌ [$KEY] SSH_USER empty"; exit 1; }
           [ -n "$PORT" ] || PORT=22
 
-          # --- Resolve REMOTE_DIR (JSON object OR scalar) ---
+          # --- REMOTE_DIR ---
           R_TYPE=$(printf '%s' "${REMOTE_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
           if [ "$R_TYPE" = "object" ]; then
             REMOTE_DIR=$(printf '%s' "$REMOTE_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
@@ -135,10 +134,10 @@ jobs:
             REMOTE_DIR="$REMOTE_RAW"
           fi
           REMOTE_DIR="$(printf '%s' "$REMOTE_DIR" | tr -d '\r\n\t ')"
-          [ -n "$REMOTE_DIR" ] || { echo "❌ REACT_MAIN_REMOTE_DIR not resolved for key '$KEY'"; exit 1; }
+          [ -n "$REMOTE_DIR" ] || { echo "❌ [$KEY] REMOTE_DIR not resolved"; exit 1; }
 
-          echo "🔍 user=$USER host=$HOST port=$PORT"
-          echo "🔍 remote_dir=$REMOTE_DIR"
+          echo "🔍 [$KEY] user=$USER host=$HOST port=$PORT"
+          echo "🔍 [$KEY] remote_dir=$REMOTE_DIR"
 
           {
             echo "host<<EOF"; echo "$HOST"; echo "EOF";
@@ -166,11 +165,11 @@ jobs:
           } >> ~/.ssh/config
           echo "✅ SSH key configured (accept-new)"
 
-      # --- Download artifact ---
+      # --- Download artifact (for this site) ---
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist-kpsnew-${{ github.sha }}
+          name: dist-${{ matrix.site }}-${{ github.sha }}
           path: dist
 
       # -------- Deploy (keep .env) --------
@@ -194,7 +193,7 @@ jobs:
             -e "ssh -p ${SSH_PORT}" \
             dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
 
-          echo "✅ Deployment completed (kept .env)"
+          echo "✅ [$SSH_HOST] Deployment completed (kept .env)"
 
       # -------- Reload nginx --------
       - name: Reload nginx
@@ -206,22 +205,22 @@ jobs:
           set -Eeuo pipefail
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             "systemctl reload nginx || systemctl restart nginx"
-          echo "🔄 nginx reloaded"
+          echo "🔄 [$SSH_HOST] nginx reloaded"
 
-      # -------- Smoke test --------
+      # -------- Smoke test (uses resolved API base) --------
       - name: Smoke test
         env:
-          DEPLOY_URL: ${{ secrets.REACT_PROD_DEPLOY_URL }}
+          DEPLOY_URL: ${{ steps.api.outputs.url }}
         run: |
           set -Eeuo pipefail
           if [ -z "${DEPLOY_URL-}" ]; then
-            echo "⚠️ DEPLOY_URL not set, skipping"
+            echo "⚠️ No DEPLOY_URL for this site, skipping"
             exit 0
           fi
           echo "🌐 Checking $DEPLOY_URL ..."
           if curl -I -L --max-time 20 "$DEPLOY_URL" | grep -E '^HTTP/.* (200|301|302) '; then
             echo "✅ Smoke test passed"
           else
-            echo "❌ Smoke test failed"
+            echo "❌ Smoke test failed for $DEPLOY_URL"
             exit 1
           fi
