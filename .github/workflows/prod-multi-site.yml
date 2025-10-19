@@ -2,7 +2,8 @@ name: Production React Production App CI/CD Pipeline (kpsnew)
 
 on:
   push:
-    branches: [react-main]
+    branches:
+      - react-main
   workflow_dispatch:
 
 jobs:
@@ -15,14 +16,15 @@ jobs:
       matrix:
         include:
           - site_name: kpsnew
-            mode: prod-kpsnew        # loads .env.prod-kpsnew
-            api_key: kpsnew          # key for REACT_MAIN_API_URLS
-            deploy_key: kpsnew       # key for REACT_MAIN_HOST/PORT
+            mode: prod-kpsnew
+            api_key: kpsnew
+            deploy_key: kpsnew
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with: { fetch-depth: 1 }
+        with:
+          fetch-depth: 1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -35,29 +37,40 @@ jobs:
           set -Eeuo pipefail
           npm ci
 
-      # 🔁 Secret JSON → .env.<mode> : VITE_API_URL ওভাররাইড
+      # 🔁 Secret JSON → .env.<mode> : VITE_API_URL override (REACT_MAIN_API_URLS)
       - name: Prepare API URL from secret
         env:
+          ENV_MODE: ${{ matrix.mode }}
           API_JSON: ${{ secrets.REACT_MAIN_API_URLS }}
+          API_KEY:  ${{ matrix.api_key }}
         run: |
           set -Eeuo pipefail
-          test -f ".env.${{ matrix.mode }}" || { echo "❌ .env.${{ matrix.mode }} not found"; exit 1; }
+          if [ ! -f ".env_${ENV_MODE}" ] && [ ! -f ".env.${ENV_MODE}" ]; then
+            echo "❌ .env.${ENV_MODE} not found"; exit 1;
+          fi
+
+          # prefer .env.<mode>
+          ENV_FILE=".env.${ENV_MODE}"
+          [ -f "$ENV_FILE" ] || ENV_FILE=".env_${ENV_MODE}"
 
           if [ -n "${API_JSON-}" ]; then
-            command -v jq >/dev/null 2>&1 || { sudo apt-get update -y; sudo apt-get install -y jq; }
-            API_URL=$(printf '%s' "$API_JSON" | jq -r --arg k "${{ matrix.api_key }}" '.[$k] // empty')
+            if ! command -v jq >/dev/null 2>&1; then
+              sudo apt-get update -y
+              sudo apt-get install -y jq
+            fi
+            API_URL=$(printf '%s' "$API_JSON" | jq -r --arg k "$API_KEY" '.[$k] // empty')
             if [ -n "${API_URL-}" ] && [ "${API_URL}" != "null" ]; then
               echo "🔗 VITE_API_URL => $API_URL"
-              if grep -q '^VITE_API_URL=' ".env.${{ matrix.mode }}"; then
-                sed -i "s#^VITE_API_URL=.*#VITE_API_URL=${API_URL}#g" ".env.${{ matrix.mode }}"
+              if grep -q '^VITE_API_URL=' "$ENV_FILE"; then
+                sed -i "s#^VITE_API_URL=.*#VITE_API_URL=${API_URL}#g" "$ENV_FILE"
               else
-                printf '\nVITE_API_URL=%s\n' "$API_URL" >> ".env.${{ matrix.mode }}"
+                printf '\nVITE_API_URL=%s\n' "$API_URL" >> "$ENV_FILE"
               fi
             else
-              echo "ℹ️ No API URL found for key '${{ matrix.api_key }}' — using .env default."
+              echo "ℹ️ No API URL for key '$API_KEY' — using $ENV_FILE default."
             fi
           else
-            echo "ℹ️ REACT_MAIN_API_URLS secret is empty — using .env default."
+            echo "ℹ️ REACT_MAIN_API_URLS not set — using $ENV_FILE default."
           fi
 
       - name: Build (mode: ${{ matrix.mode }})
@@ -75,23 +88,30 @@ jobs:
           if-no-files-found: error
           retention-days: 5
 
-      # ------------- DEPLOY -------------
-
+      # -------- DEPLOY --------
       - name: Resolve deploy target
         id: tgt
         env:
           HOSTS_JSON: ${{ secrets.REACT_MAIN_HOST }}
           PORTS_JSON: ${{ secrets.REACT_MAIN_PORT }}
           SSH_USER:   ${{ secrets.REACT_MAIN_SSH_USER }}
+          DEPLOY_KEY: ${{ matrix.deploy_key }}
         run: |
           set -Eeuo pipefail
-          command -v jq >/dev/null 2>&1 || { sudo apt-get update -y; sudo apt-get install -y jq; }
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
 
-          HOST=$(printf '%s' "$HOSTS_JSON" | jq -r --arg k "${{ matrix.deploy_key }}" '.[$k] // empty')
-          PORT=$(printf '%s' "$PORTS_JSON" | jq -r --arg k "${{ matrix.deploy_key }}" '.[$k] // empty')
+          HOST=$(printf '%s' "${HOSTS_JSON-}" | jq -r --arg k "$DEPLOY_KEY" '.[$k] // empty')
+          PORT=$(printf '%s' "${PORTS_JSON-}" | jq -r --arg k "$DEPLOY_KEY" '.[$k] // empty')
 
-          [ -n "${HOST-}" ] || { echo "❌ host not found for '${{ matrix.deploy_key }}'"; exit 1; }
-          [ -n "${PORT-}" ] || PORT=22
+          if [ -z "${HOST-}" ]; then
+            echo "❌ host not found for '$DEPLOY_KEY'"; exit 1;
+          fi
+          if [ -z "${PORT-}" ] || [ "${PORT}" = "null" ]; then
+            PORT=22
+          fi
 
           echo "host=$HOST" >> "$GITHUB_OUTPUT"
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
@@ -108,15 +128,14 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" \
-            | sed "s/^$SSH_HOST/[${SSH_HOST}]:${SSH_PORT}/" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" | sed "s/^$SSH_HOST/[${SSH_HOST}]:${SSH_PORT}/" >> ~/.ssh/known_hosts
           echo "✅ SSH prepared."
 
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: dist-${{ matrix.site_name }}-${{ github.sha }}
-        # default path: ./dist
+          path: dist
 
       - name: Deploy via rsync
         env:
