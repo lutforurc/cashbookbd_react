@@ -130,23 +130,25 @@ jobs:
 
           echo "🚀 Deployment completed (kept .env files untouched)."
 
+      - name: Restart web server on VPS
+        env:
+          SSH_USER: ${{ secrets.REACT_STAGING_SSH_USER }}
+          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
+          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
+        run: |
+          set -Eeuo pipefail
+          : "${SSH_PORT:=22}"
+          ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "sudo -n systemctl reload nginx || sudo -n systemctl restart nginx"
+          echo "🔄 Nginx reloaded."
+
       - name: Smoke test
         env:
           DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL }}
         run: |
           set -Eeuo pipefail
           test -n "${DEPLOY_URL-}" || { echo "❌ REACT_STAGING_DEPLOY_URL is empty"; exit 1; }
-
-          # If scheme is missing, assume https
-          if ! echo "$DEPLOY_URL" | grep -Eq '^https?://'; then
-            DEPLOY_URL="https://${DEPLOY_URL}"
-          fi
-
-          echo "🔎 Probing: $DEPLOY_URL"
-          # Try HTTPS first; follow redirects; retry a bit
-          curl -I -L --max-time 30 --retry 3 --retry-connrefused --retry-delay 2 "$DEPLOY_URL" | tee /tmp/headers.txt
-
-          # Accept 200/301/302 as OK
+          curl -I -L --max-time 20 "$DEPLOY_URL" | tee /tmp/headers.txt
           grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
             echo '❌ Smoke test failed'; exit 1;
           }
