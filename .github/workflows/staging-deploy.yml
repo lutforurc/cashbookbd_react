@@ -136,7 +136,17 @@ jobs:
         run: |
           set -Eeuo pipefail
           test -n "${DEPLOY_URL-}" || { echo "❌ REACT_STAGING_DEPLOY_URL is empty"; exit 1; }
-          curl -I -L --max-time 20 "$DEPLOY_URL" | tee /tmp/headers.txt
+
+          # If scheme is missing, assume https
+          if ! echo "$DEPLOY_URL" | grep -Eq '^https?://'; then
+            DEPLOY_URL="https://${DEPLOY_URL}"
+          fi
+
+          echo "🔎 Probing: $DEPLOY_URL"
+          # Try HTTPS first; follow redirects; retry a bit
+          curl -I -L --max-time 30 --retry 3 --retry-connrefused --retry-delay 2 "$DEPLOY_URL" | tee /tmp/headers.txt
+
+          # Accept 200/301/302 as OK
           grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
             echo '❌ Smoke test failed'; exit 1;
           }
