@@ -2,8 +2,7 @@ name: Production React App CI/CD (kpsnew)
 
 on:
   push:
-    branches:
-      - react-main
+    branches: [react-main]
   workflow_dispatch:
 
 jobs:
@@ -29,6 +28,7 @@ jobs:
           set -Eeuo pipefail
           npm ci
 
+      # .env না থাকলে বানায় (পরে secret দিয়ে VITE_API_URL ওভাররাইড হবে)
       - name: Ensure .env for mode (create if missing)
         env:
           MODE: prod-kpsnew
@@ -44,35 +44,45 @@ jobs:
           else
             echo "✅ Found $ENV_FILE"
           fi
-          echo "----- $ENV_FILE -----"
+          echo "----- $ENV_FILE (redacted) -----"
           cat "$ENV_FILE" | sed 's/=.*/=<redacted>/' || true
 
+      # REACT_MAIN_API_URLS: JSON বা single string—দুইটাই সাপোর্ট
       - name: Prepare API URL from secret
         env:
           MODE: prod-kpsnew
-          API_JSON: ${{ secrets.REACT_MAIN_API_URLS }}
-          API_KEY: kpsnew
+          API_RAW: ${{ secrets.REACT_MAIN_API_URLS }}
         run: |
           set -Eeuo pipefail
           ENV_FILE=".env.${MODE}"
-          if [ -n "${API_JSON-}" ]; then
-            sudo apt-get update -y && sudo apt-get install -y jq
-            API_URL=$(printf '%s' "$API_JSON" | jq -r --arg k "$API_KEY" '.[$k] // empty')
-            if [ -n "${API_URL-}" ] && [ "${API_URL}" != "null" ]; then
-              echo "🔗 VITE_API_URL => $API_URL"
-              if grep -q '^VITE_API_URL=' "$ENV_FILE"; then
-                sed -i "s#^VITE_API_URL=.*#VITE_API_URL=${API_URL}#g" "$ENV_FILE"
-              else
-                printf '\nVITE_API_URL=%s\n' "$API_URL" >> "$ENV_FILE"
-              fi
-            else
-              echo "ℹ️ No API URL found in secret JSON."
-            fi
-          else
-            echo "ℹ️ REACT_MAIN_API_URLS not set — using .env default."
+
+          if [ -z "${API_RAW-}" ]; then
+            echo "ℹ️ REACT_MAIN_API_URLS not set — using $ENV_FILE default."
+            exit 0
           fi
 
-      - name: Build React app
+          # টাইপ বের করুন (jq না থাকলে string ধরে নিন)
+          TYPE=$(printf '%s' "$API_RAW" | jq -r 'type' 2>/dev/null || echo "string")
+          if [ "$TYPE" = "object" ]; then
+            KEY="kpsnew"
+            API_URL=$(printf '%s' "$API_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
+          else
+            API_URL="$API_RAW"  # single-site scalar
+          fi
+
+          if [ -z "${API_URL-}" ] || [ "$API_URL" = "null" ]; then
+            echo "ℹ️ No API URL resolved — using $ENV_FILE default."
+            exit 0
+          fi
+
+          echo "🔗 VITE_API_URL => $API_URL"
+          if grep -q '^VITE_API_URL=' "$ENV_FILE"; then
+            sed -i "s#^VITE_API_URL=.*#VITE_API_URL=${API_URL}#g" "$ENV_FILE"
+          else
+            printf '\nVITE_API_URL=%s\n' "$API_URL" >> "$ENV_FILE"
+          fi
+
+      - name: Build
         env:
           MODE: prod-kpsnew
           CI: true
@@ -80,7 +90,7 @@ jobs:
           set -Eeuo pipefail
           npm run build -- --mode "$MODE"
 
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-kpsnew-${{ github.sha }}
@@ -89,24 +99,39 @@ jobs:
           retention-days: 5
 
       # -------- DEPLOY --------
+      # HOST: JSON or string — দুইটাই সাপোর্ট
+      # PORT: single scalar
+      # SSH_USER: single scalar
       - name: Resolve deploy target
         id: tgt
         env:
-          HOSTS_JSON: ${{ secrets.REACT_MAIN_HOST }}
-          PORTS_JSON: ${{ secrets.REACT_MAIN_PORT }}
-          SSH_USER:   ${{ secrets.REACT_MAIN_SSH_USER }}
-          DEPLOY_KEY: kpsnew
+          HOST_RAW: ${{ secrets.REACT_MAIN_HOST }}
+          PORT_RAW: ${{ secrets.REACT_MAIN_PORT }}
+          SSH_USER: ${{ secrets.REACT_MAIN_SSH_USER }}
         run: |
           set -Eeuo pipefail
-          sudo apt-get update -y && sudo apt-get install -y jq
-          HOST=$(printf '%s' "${HOSTS_JSON-}" | jq -r --arg k "$DEPLOY_KEY" '.[$k] // empty')
-          PORT=$(printf '%s' "${PORTS_JSON-}" | jq -r --arg k "$DEPLOY_KEY" '.[$k] // empty')
-          [ -n "${HOST-}" ] || { echo "❌ host not found for '$DEPLOY_KEY'"; exit 1; }
+
+          # HOST resolve (object or string)
+          H_TYPE=$(printf '%s' "$HOST_RAW" | jq -r 'type' 2>/dev/null || echo "string")
+          if [ "$H_TYPE" = "object" ]; then
+            KEY="kpsnew"
+            HOST=$(printf '%s' "$HOST_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
+          else
+            HOST="$HOST_RAW"
+          fi
+          [ -n "${HOST-}" ] || { echo "❌ host not resolved"; exit 1; }
+
+          # PORT resolve (single value expected)
+          PORT="${PORT_RAW:-22}"
           [ -n "${PORT-}" ] || PORT=22
+
+          # SSH user (single value expected)
+          [ -n "${SSH_USER-}" ] || { echo "❌ REACT_MAIN_SSH_USER is empty"; exit 1; }
+
           echo "host=$HOST" >> "$GITHUB_OUTPUT"
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
           echo "user=${SSH_USER}" >> "$GITHUB_OUTPUT"
-          echo "🔍 Deploy target → user=${SSH_USER:-<empty>} host=${HOST} port=${PORT}"
+          echo "🔍 Deploy target → user=${SSH_USER} host=${HOST} port=${PORT}"
 
       - name: Prepare SSH
         env:
