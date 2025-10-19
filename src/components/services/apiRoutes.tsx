@@ -2,18 +2,21 @@
 // REACT_MAIN_HOST
 // {
 // "kpsnew": "accounts.kps.cashbookbd.com",
+//  "gme": "accounts.gme.cashbookbd.com",
 // }
 
 
 
 // REACT_MAIN_REMOTE_DIR
 // {
-// "kpsnew": "/home/cashbookbd_accounts/htdocs/accounts.kps.cashbookbd.com/"
+// "kpsnew": "/home/cashbookbd_accounts/htdocs/accounts.kps.cashbookbd.com/",
+// "gme": "//home/accounts_gme/htdocs/accounts.gme.cashbookbd.com/",
 // }
 
 // REACT_MAIN_API_URLS 
 // {
-// "kpsnew": "https://kpsnew.cashbookbd.com"
+// "kpsnew": "https://kpsnew.cashbookbd.com",
+//  "gme": "https://accounts.gme.cashbookbd.com",
 // }
 
 
