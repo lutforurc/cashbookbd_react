@@ -340,7 +340,6 @@ const BankReceived = () => {
         // Use a stable toastId so it can't render twice for the same save
         toast.success(voucherText, { toastId: `bank-received-success-${voucherText}` });
       }
-
       
       // ✅ Clear table
       setTableData([]);

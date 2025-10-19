@@ -4,14 +4,17 @@
 // "kpsnew": "accounts.kps.cashbookbd.com",
 // }
 
-// REACT_MAIN_API_URLS
-// { "kpsnew": "http://accounts.kps.cashbookbd.com" }
 
 
 
 // REACT_MAIN_REMOTE_DIR
 // {
 // "kpsnew": "/home/cashbookbd_accounts/htdocs/accounts.kps.cashbookbd.com/"
+// }
+
+// REACT_MAIN_API_URLS 
+// {
+// "kpsnew": "kpsnew.cashbookbd.com"
 // }
 
 
