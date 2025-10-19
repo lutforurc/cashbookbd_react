@@ -341,7 +341,7 @@ const BankReceived = () => {
         toast.success(voucherText, { toastId: `bank-received-success-${voucherText}` });
       }
       
-      
+    
       // ✅ Clear table
       setTableData([]);
 

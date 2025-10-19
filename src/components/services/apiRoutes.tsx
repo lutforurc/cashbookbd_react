@@ -16,7 +16,7 @@
 // REACT_MAIN_API_URLS 
 // {
 // "kpsnew": "https://kpsnew.cashbookbd.com",
-//  "gmenterprise": "https://accounts.gme.cashbookbd.com"
+//  "gmenterprise": "https://gmenterprise.cashbookbd.com"
 // }
 
 
