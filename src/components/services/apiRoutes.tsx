@@ -10,7 +10,7 @@
 
 // REACT_MAIN_REMOTE_DIR
 // {
-// "kpsnew": "/home/cashbookbd_accounts/htdocs/accounts.kps.cashbookbd.com",
+// "kpsnew": "/home/cashbookbd_accounts/htdocs/accounts.kps.cashbookbd.com/"
 // }
 
 
