@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        site: [kpsnew, gmenterprise]
+        site: [kpsnew, gmenterprise, cashbookbd_accounts_krf, accountsmbdpp, accounts_nibirnirman, accounts_rmr, accountsscn, accounts_sinthia]
 
     steps:
       # --- Checkout source code ---
