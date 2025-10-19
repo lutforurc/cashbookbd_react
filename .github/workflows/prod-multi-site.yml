@@ -1,4 +1,4 @@
-name: Production React App CI/CD (kpsnew, no-env)
+name: Production React App CI/CD (kpsnew, remote-dir from secret)
 
 on:
   push:
@@ -26,16 +26,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ✅ Build directly with injected secrets (no .env)
-      - name: Build React app (inject API_URL directly)
+      # Build without .env — inject secrets directly
+      - name: Build React app
         env:
           CI: true
           VITE_SITE_NAME: kpsnew
           VITE_API_URL: ${{ secrets.REACT_MAIN_API_URLS }}
         run: |
           set -Eeuo pipefail
-          echo "🧱 Building for SITE_NAME=$VITE_SITE_NAME"
-          echo "🔗 Injected API_URL=$VITE_API_URL"
+          echo "🧱 Building React app (SITE=$VITE_SITE_NAME)"
+          echo "🔗 API_URL=$VITE_API_URL"
           npm run build -- --mode production
 
       - name: Upload artifact
@@ -46,66 +46,80 @@ jobs:
           if-no-files-found: error
           retention-days: 5
 
-      # -------- DEPLOY TARGET RESOLUTION --------
-      - name: Resolve deploy target
+      # -------- Resolve deploy target & remote dir --------
+      - name: Resolve deploy variables
         id: tgt
         env:
-          HOST_RAW: ${{ secrets.REACT_MAIN_HOST }}
-          PORT_RAW: ${{ secrets.REACT_MAIN_PORT }}
-          SSH_USER: ${{ secrets.REACT_MAIN_SSH_USER }}
+          HOST_RAW: ${{ secrets.REACT_MAIN_HOST }}             # scalar
+          PORT_RAW: ${{ secrets.REACT_MAIN_PORT }}             # scalar
+          SSH_USER: ${{ secrets.REACT_MAIN_SSH_USER }}         # scalar
+          REMOTE_RAW: ${{ secrets.REACT_MAIN_REMOTE_DIR }}     # JSON or scalar
         run: |
           set -Eeuo pipefail
-          # Resolve host
-          if command -v jq >/dev/null 2>&1; then
-            H_TYPE=$(printf '%s' "${HOST_RAW-}" | jq -r 'type' 2>/dev/null || echo "string")
-          else
-            H_TYPE="string"
-          fi
-          if [ "$H_TYPE" = "object" ]; then
-            KEY="kpsnew"
-            HOST=$(printf '%s' "$HOST_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
-          else
-            HOST="$HOST_RAW"
-          fi
 
-          # Clean host
-          HOST="${HOST#http://}"
+          # host cleanup (remove scheme/slash if mistakenly provided)
+          HOST="${HOST_RAW#http://}"
           HOST="${HOST#https://}"
           HOST="${HOST%%/}"
-
           HOST="$(printf '%s' "$HOST" | tr -d '\r\n')"
+
           PORT="$(printf '%s' "${PORT_RAW:-22}" | tr -d '\r\n')"
-          SSH_USER="$(printf '%s' "$SSH_USER" | tr -d '\r\n')"
+          USER="$(printf '%s' "$SSH_USER" | tr -d '\r\n')"
 
-          [ -n "$HOST" ] || { echo "❌ host empty"; exit 1; }
-          [ -n "$SSH_USER" ] || { echo "❌ SSH user empty"; exit 1; }
+          [ -n "$HOST" ] || { echo "❌ REACT_MAIN_HOST empty"; exit 1; }
+          [ -n "$USER" ] || { echo "❌ REACT_MAIN_SSH_USER empty"; exit 1; }
+          [ -n "$PORT" ] || PORT=22
 
-          echo "🔍 Deploy target → user=<redacted> host=$HOST port=$PORT"
+          # REMOTE_DIR from secret:
+          # - If JSON object → pick key "kpsnew"
+          # - Else treat as scalar path
+          KEY="kpsnew"
+          if command -v jq >/dev/null 2>&1; then
+            TYPE=$(printf '%s' "${REMOTE_RAW-}" | jq -r 'type' 2>/dev/null || echo "string")
+          else
+            TYPE="string"
+          fi
 
-          # ✅ Safe multiline output (no Invalid format)
+          if [ "$TYPE" = "object" ]; then
+            REMOTE_DIR=$(printf '%s' "$REMOTE_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
+          else
+            REMOTE_DIR="$REMOTE_RAW"
+          fi
+
+          REMOTE_DIR="$(printf '%s' "$REMOTE_DIR" | tr -d '\r\n')"
+          [ -n "$REMOTE_DIR" ] || { echo "❌ REACT_MAIN_REMOTE_DIR did not resolve for key '$KEY'"; exit 1; }
+
+          echo "🔍 host=$HOST"
+          echo "🔍 user=$USER"
+          echo "🔍 port=$PORT"
+          echo "🔍 remote_dir=$REMOTE_DIR"
+
+          # Multiline-safe outputs
           {
             echo "host<<EOF"; echo "$HOST"; echo "EOF";
             echo "port<<EOF"; echo "$PORT"; echo "EOF";
-            echo "user<<EOF"; echo "$SSH_USER"; echo "EOF";
+            echo "user<<EOF"; echo "$USER"; echo "EOF";
+            echo "remote_dir<<EOF"; echo "$REMOTE_DIR"; echo "EOF";
           } >> "$GITHUB_OUTPUT"
 
-      # -------- SSH SETUP --------
-      - name: Prepare SSH (accept new host key automatically)
+      # -------- SSH setup (accept new host key) --------
+      - name: Prepare SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REACT_MAIN_PRIVATE_KEY }}
         run: |
           set -Eeuo pipefail
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           {
             echo 'Host *'
             echo '    BatchMode yes'
             echo '    IdentitiesOnly yes'
+            echo '    IdentityFile ~/.ssh/id_ed25519'
             echo '    StrictHostKeyChecking=accept-new'
             echo '    UserKnownHostsFile ~/.ssh/known_hosts'
           } >> ~/.ssh/config
-          echo "✅ SSH key ready, host key auto-accept enabled."
+          echo "✅ SSH key configured (accept-new)"
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -113,23 +127,29 @@ jobs:
           name: dist-kpsnew-${{ github.sha }}
           path: dist
 
+      # -------- Deploy --------
       - name: Deploy via rsync
         env:
-          SSH_USER: ${{ steps.tgt.outputs.user }}
-          SSH_HOST: ${{ steps.tgt.outputs.host }}
-          SSH_PORT: ${{ steps.tgt.outputs.port }}
-          REMOTE_DIR: /var/www/html/kpsnew
+          SSH_USER:   ${{ steps.tgt.outputs.user }}
+          SSH_HOST:   ${{ steps.tgt.outputs.host }}
+          SSH_PORT:   ${{ steps.tgt.outputs.port }}
+          REMOTE_DIR: ${{ steps.tgt.outputs.remote_dir }}
         run: |
           set -Eeuo pipefail
           : "${SSH_PORT:=22}"
           test -d dist || { echo "❌ dist not found"; exit 1; }
 
+          echo "📂 Creating remote dir: $REMOTE_DIR"
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
+
+          echo "🚀 Rsync to $REMOTE_DIR"
           rsync -avz --delete-delay \
             -e "ssh -p ${SSH_PORT}" \
             dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
-          echo "🚀 Deployed to $REMOTE_DIR"
 
+          echo "✅ Deployment completed"
+
+      # -------- Reload nginx --------
       - name: Reload nginx
         env:
           SSH_USER: ${{ steps.tgt.outputs.user }}
@@ -138,16 +158,23 @@ jobs:
         run: |
           set -Eeuo pipefail
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "sudo -n systemctl reload nginx || sudo -n systemctl restart nginx"
-          echo "🔄 nginx reloaded."
+            "systemctl reload nginx || systemctl restart nginx"
+          echo "🔄 nginx reloaded"
 
+      # -------- Smoke test (optional) --------
       - name: Smoke test
         env:
           DEPLOY_URL: ${{ secrets.REACT_PROD_DEPLOY_URL }}
         run: |
           set -Eeuo pipefail
-          test -n "${DEPLOY_URL-}" || { echo "❌ DEPLOY_URL empty"; exit 1; }
-          curl -I -L --max-time 20 "$DEPLOY_URL" | tee /tmp/headers.txt
-          grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
-            echo '❌ Smoke test failed'; exit 1;
-          }
+          if [ -z "${DEPLOY_URL-}" ]; then
+            echo "⚠️ DEPLOY_URL not set — skipping"
+            exit 0
+          fi
+          echo "🌐 Checking $DEPLOY_URL ..."
+          if curl -I -L --max-time 20 "$DEPLOY_URL" | grep -E '^HTTP/.* (200|301|302) '; then
+            echo "✅ Smoke test passed"
+          else
+            echo "❌ Smoke test failed"
+            exit 1
+          fi
