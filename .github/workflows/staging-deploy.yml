@@ -130,18 +130,6 @@ jobs:
 
           echo "🚀 Deployment completed (kept .env files untouched)."
 
-      - name: Restart web server on VPS
-        env:
-          SSH_USER: ${{ secrets.REACT_STAGING_SSH_USER }}
-          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
-        run: |
-          set -Eeuo pipefail
-          : "${SSH_PORT:=22}"
-          ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "sudo -n systemctl reload nginx || sudo -n systemctl restart nginx"
-          echo "🔄 Nginx reloaded."
-
       - name: Smoke test
         env:
           DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL }}
