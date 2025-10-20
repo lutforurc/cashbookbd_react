@@ -47,7 +47,6 @@ const Ledger = (user: any) => {
 
 
 
-
   useEffect(() => {
     if (ledgerData && !ledgerData.isLoading && !(ledgerData.data?.data)) {
       const tableRows = generateTableData(ledgerData.data);
@@ -81,11 +80,6 @@ const Ledger = (user: any) => {
     );
     dispatch(getCoal4ById(Number(ledgerId))); 
   };
-
-
-  console.log('====================================');
-  console.log('Table Data', coal4);
-  console.log('====================================');
 
 
 
