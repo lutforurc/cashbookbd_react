@@ -216,6 +216,13 @@ export const API_BANK_GENERAL_UPDATE_URL = `${API_BASE_URL}/general/bank/update`
 export const API_BANK_RECEIVED_LIST_URL = `${API_BASE_URL}/general/bank/received/list`;
 
 
+// Bank Payment url
+export const API_BANK_PAYMENT_URL = `${API_BASE_URL}/general/bank/payment`;
+export const API_BANK_PAYMENT_EDIT_URL = `${API_BASE_URL}/general/bank/payment/edit`;
+export const API_BANK_PAYMENT_UPDATE_URL = `${API_BASE_URL}/general/bank/payment/update`;
+export const API_BANK_PAYMENT_LIST_URL = `${API_BASE_URL}/general/bank/payment/list`;
+
+
 // Installment url
 export const API_INSTALLMENT_LIST_URL = `${API_BASE_URL}/accounts/installment/details`;
 export const API_FILTER_INSTALLMENT_LIST_URL = `${API_BASE_URL}/accounts/installment/filter`;

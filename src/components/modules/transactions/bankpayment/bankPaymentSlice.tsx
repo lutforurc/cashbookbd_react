@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import {API_BANK_GENERAL_EDIT_URL, API_BANK_GENERAL_UPDATE_URL, API_BANK_RECEIVED_LIST_URL, API_BANK_RECEIVED_URL, } from '../../../services/apiRoutes';
+import {API_BANK_GENERAL_EDIT_URL, API_BANK_GENERAL_UPDATE_URL, API_BANK_PAYMENT_URL, API_BANK_RECEIVED_LIST_URL, API_BANK_RECEIVED_URL, } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
 // ---------------- Interfaces ----------------
@@ -56,9 +56,9 @@ export const fetchBankPayment = createAsyncThunk<PaymentItem[],void,{ rejectValu
 });
 
 // 📌 Save Bank Payment
-export const saveBankPayment = createAsyncThunk<PaymentItem,SaveBankPaymentResponse,{ rejectValue: string }>('bankPayment/saveBankPayment', async (payload, thunkAPI) => {
+export const saveBankPayment = createAsyncThunk<PaymentItem, SaveBankPaymentResponse,{ rejectValue: string }>('bankPayment/saveBankPayment', async (payload, thunkAPI) => {
   try {
-    const response = await httpService.post(API_BANK_RECEIVED_URL, payload);
+    const response = await httpService.post(API_BANK_PAYMENT_URL, payload);
     return response.data as SaveBankPaymentResponse;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || 'Failed to save data');
