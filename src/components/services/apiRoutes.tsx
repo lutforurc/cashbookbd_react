@@ -38,6 +38,19 @@
 // }
 
 
+//  "newnibirnirman": "/home/newnibirnirman/htdocs/nibirnirman.cashbookbd.com",
+// "kpshostingusr": "/home/kpshostingusr/htdocs/kpsnew.cashbookbd.com",
+
+// LARAVEL_MAIN_ROOT_PATHS 
+// {
+//  "cashbookbd-gme": "/home/cashbookbd-gme/htdocs/gmenterprise.cashbookbd.com",
+//  "cashbookbdkrf": "/home/cashbookbdkrf/htdocs/krf.cashbookbd.com",
+//  "cashbookbdmbdpp": "/home/cashbookbdmbdpp/htdocs/mbdpp.cashbookbd.com",
+//  "cashbookbdrmr": "/home/cashbookbdrmr/htdocs/rmr.cashbookbd.com",
+//  "sonycybernet": "/home/sonycybernet/htdocs/sonycybernet.cashbookbd.com",
+//  "admin_sinthiacb": "/home/admin_sinthiacb/htdocs/sinthia.cashbookbd.com"
+// }
+
 
 
 // export const API_BASE_URLs = import.meta.env.VITE_API_URL;
