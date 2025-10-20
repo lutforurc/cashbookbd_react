@@ -112,7 +112,7 @@ const Ledger = (user: any) => {
       headerClass: 'items-center text-center',
       cellClass: 'items-center text-center',
       render: (row: any) => (
-        <div className="">{row.sl_number ? row.sl_number : '-'}</div>
+        <div className="">{row.sl_number ? row.sl_number : ''}</div>
       ),
     },
     {
@@ -133,7 +133,7 @@ const Ledger = (user: any) => {
       render: (row: any) => (
         <>
           <p>{row.name}</p>
-          <div className="text-sm text-gray-500   lg:max-w-150 break-words whitespace-normal">{row.remarks === "-" ? "" : row.remarks}</div>
+          <div className="text-sm text-gray-500 lg:max-w-150 break-words whitespace-normal">{row.remarks === "-" ? "" : row.remarks}</div>
         </>
       ),
     },
