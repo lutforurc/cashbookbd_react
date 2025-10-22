@@ -72,8 +72,8 @@ import RequisitionForm from './components/modules/Requisition/RequisitionForm';
 import VoucherDelete from './components/modules/vr_settings/VoucherDelete';
 import Comparison from './components/modules/Requisition/Comparison';
 import RequisitionList from './components/modules/Requisition/Requisitions';
-import Requisitions from './components/modules/Requisition/Requisitions';
-import RealEstateAreaAdd from './components/modules/real-estate/RealEstateAreaAdd';
+import Requisitions from './components/modules/Requisition/Requisitions'; 
+import AreaAdd from './components/modules/real-estate/AreaAdd';
 
 
 
@@ -209,7 +209,7 @@ function App() {
 
 
             {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
-            <Route path={routes.real_estate_area_add} element={<RealEstateAreaAdd />} />
+            <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
 
 
           </Route>

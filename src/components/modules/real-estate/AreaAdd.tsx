@@ -10,7 +10,7 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
 import { status } from '../../utils/fields/DataConstant';
 
-const RealEstateAreaAdd = (user: any) => {
+const AreaAdd = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
 
@@ -248,4 +248,4 @@ const RealEstateAreaAdd = (user: any) => {
   );
 };
 
-export default RealEstateAreaAdd;
+export default AreaAdd;
