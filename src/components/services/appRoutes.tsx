@@ -156,6 +156,14 @@ const ROUTES = {
   voucher_delete: '/vr-settings/voucher-delete', 
 
 
+
+  // Real Estate Area
+  real_estate_area_list: '/real-estate/area-list',
+  real_estate_area_add: '/real-estate/add-area',
+
+
+
+
   notFound: '*',
 };
 
