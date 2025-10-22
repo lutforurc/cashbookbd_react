@@ -73,10 +73,9 @@ import VoucherDelete from './components/modules/vr_settings/VoucherDelete';
 import Comparison from './components/modules/Requisition/Comparison';
 import RequisitionList from './components/modules/Requisition/Requisitions';
 import Requisitions from './components/modules/Requisition/Requisitions';
+import RealEstateAreaAdd from './components/modules/real-estate/RealEstateAreaAdd';
 
-function ProtectedRoute({ condition, children }) {
-  return condition ? children : <Navigate to="/" replace />;
-}
+
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -207,6 +206,12 @@ function App() {
 
             {/* Also show customer dashboard if admin wants */}
             <Route path={routes.customer_dashboard} element={<CustomerDashboard />} />
+
+
+            {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
+            <Route path={routes.real_estate_area_add} element={<RealEstateAreaAdd />} />
+
+
           </Route>
 
           {/* Public Routes */}

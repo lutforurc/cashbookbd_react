@@ -5,7 +5,7 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
-const RealEstateArea = () => {
+const RealEstateAreaAdd = () => {
   const [formData, setFormData] = useState({
     company_id: '',
     branch_id: '',
@@ -197,7 +197,7 @@ const RealEstateArea = () => {
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        {1 !== 2 ? (
+        {1 === 2 ? (
           <ButtonLoading
             onClick={handleAreaUpdate}
             buttonLoading={buttonLoading}
@@ -230,4 +230,4 @@ const RealEstateArea = () => {
   );
 };
 
-export default RealEstateArea;
+export default RealEstateAreaAdd;
