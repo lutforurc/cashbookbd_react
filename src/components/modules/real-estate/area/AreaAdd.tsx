@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiSave, FiRefreshCcw, FiHome } from 'react-icons/fi';
-import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
-import InputElement from '../../utils/fields/InputElement';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import InputElement from '../../../utils/fields/InputElement';
+import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
-import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
-import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
-import Loader from '../../../common/Loader';
-import { status } from '../../utils/fields/DataConstant';
+import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
+import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
+import Loader from '../../../../common/Loader';
+import { status } from '../../../utils/fields/DataConstant';
+import { saveArea } from './areaSlice';
 
 const AreaAdd = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
 
   const [formData, setFormData] = useState({
-    company_id: '',
+    
     branch_id: '',
     name: '',
     description: '',
@@ -30,12 +31,10 @@ const AreaAdd = (user: any) => {
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    // setIsSelected(user.user.branch_id);
-    // setBranchId(user.user.branch_id);
-    // setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
+
   }, []);
 
-  const handleOnChange = (e) => {
+  const handleOnChange = (e:any) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -43,26 +42,22 @@ const AreaAdd = (user: any) => {
     }));
   };
 
-  const handleOnSelectChange = (name: any, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  console.log('====================================');
-  console.log(branchDdlData);
-  console.log('====================================');
+    // BranchDropdown -> onChange(value) => branch_id আপডেট
+    const handleBranchChange = (e: any) => {
+        setFormData({ ...formData, ['branch_id']: e.target.value });
+    };
 
   const handleAreaSave = async () => {
     setButtonLoading(true);
     try {
       // Call API to save area
-      const response = await fetch('/api/areas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      const response = await dispatch(saveArea(formData)).unwrap();
+     
       if (response.ok) {
         // onSuccess(); // Refresh list or close modal
       }
@@ -92,7 +87,6 @@ const AreaAdd = (user: any) => {
 
   const handleReset = () => {
     setFormData({
-      company_id: '',
       branch_id: '',
       name: '',
       description: '',
@@ -105,12 +99,8 @@ const AreaAdd = (user: any) => {
     });
   };
 
-  const statusOptions = [
-    { id: 'active', name: 'Active' },
-    { id: 'inactive', name: 'Inactive' },
-  ];
-
   //   const isEdit = areaEditData?.editData?.id;
+console.log(branchDdlData);
 
   return (
     <div>
@@ -125,7 +115,7 @@ const AreaAdd = (user: any) => {
             {branchDdlData.isLoading == true ? <Loader /> : ''}
             <BranchDropdown
               defaultValue={user?.user?.branch_id}
-              onChange={handleOnSelectChange}
+              onChange={handleBranchChange}
               className="w-60 font-medium text-sm p-1.5 h-9 "
               branchDdl={branchDdlData?.protectedData?.data}
             />

@@ -47,6 +47,7 @@ import electronicsSalesSlice from './components/modules/invoices/sales/electroni
 import labourLedgerSlice from './components/modules/reports/ledger-labour/labourLedgerSlice';
 import requisitionSlice from './components/modules/Requisition/requisitionSlice';
 import bankReceivedReducer from './components/modules/transactions/bankreceived/bankReceivedSlice';
+import realEstateArea from './components/modules/real-estate/area/areaSlice';
 
 const store = configureStore({
   reducer: {
@@ -98,6 +99,7 @@ const store = configureStore({
     changeDate: changeVoucherDateSlice,
     employees: employeeSlice,
     requisition: requisitionSlice,
+    realEstateArea: realEstateArea,
   },
 });
 

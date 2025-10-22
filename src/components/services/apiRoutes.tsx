@@ -223,6 +223,14 @@ export const API_BANK_PAYMENT_UPDATE_URL = `${API_BASE_URL}/general/bank/payment
 export const API_BANK_PAYMENT_LIST_URL = `${API_BASE_URL}/general/bank/payment/list`;
 
 
+
+// Real Estate Area url
+export const API_AREA_SAVE_URL = `${API_BASE_URL}/real-estate/area/store`;
+export const API_AREA_EDIT_URL = `${API_BASE_URL}/real-estate/area/edit`;
+export const API_AREA_UPDATE_URL = `${API_BASE_URL}/real-estate/area/update`;
+export const API_AREA_LIST_URL = `${API_BASE_URL}/real-estate/area/list`;
+
+
 // Installment url
 export const API_INSTALLMENT_LIST_URL = `${API_BASE_URL}/accounts/installment/details`;
 export const API_FILTER_INSTALLMENT_LIST_URL = `${API_BASE_URL}/accounts/installment/filter`;
