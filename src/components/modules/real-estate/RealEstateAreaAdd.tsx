@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
+import { status } from '../../utils/fields/DataConstant';
 
 const RealEstateAreaAdd = (user: any) => {
   const dispatch = useDispatch();
@@ -187,7 +188,7 @@ const RealEstateAreaAdd = (user: any) => {
           onChange={handleOnSelectChange}
           defaultValue={formData.status || ''}
           className="h-[2.1rem] bg-transparent mt-1"
-          data={statusOptions}
+          data={status}
         />
         <InputElement
           id="created_by"
