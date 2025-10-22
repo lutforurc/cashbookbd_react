@@ -45,9 +45,6 @@ interface editTransaction {
   transactionNo: string;
 }
 
-
-
-
 export const editCashReceived = (data: editTransaction, callback?: (message: string) => void) => (dispatch: any) => {
   dispatch({ type: CASH_RECEIVED_EDIT_PENDING });
   httpService.post(API_CASH_RECEIVED_EDIT_URL, data)

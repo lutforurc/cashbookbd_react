@@ -5,6 +5,7 @@ import Logo from '../../images/logo/logo.svg';
 import {
   FiBook,
   FiGrid,
+  FiHome,
   FiLayers,
   FiServer,
   FiShoppingCart,
@@ -139,9 +140,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Dashboard
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
@@ -179,15 +179,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/accounts/cash/receive' ||
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/accounts/cash/receive' ||
                           pathname === '/accounts/cash/payment' ||
                           pathname === '/accounts/bank/receive' ||
                           pathname === '/accounts/bank/payment' ||
                           pathname === '/accounts/journal' ||
                           pathname.includes('/accounts/cash/receive')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -199,9 +198,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Transaction
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         {hasPermission(permissions, 'cash.received.create') && (
@@ -302,13 +300,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/invoice/purchase' ||
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/invoice/purchase' ||
                           pathname === '/invoice/sales' ||
                           pathname === '/invoice/labour-invoice' ||
                           pathname.includes('/invoice/sales')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -320,9 +317,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Invoice
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         {hasPermission(permissions, 'purchase.create') && (
@@ -385,8 +381,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/branch/branch-list' ||
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
                           pathname === '/user/user-list' ||
                           pathname === '/admin/dayclose' ||
                           pathname === '/order/order-list' ||
@@ -400,7 +395,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/orders/avg-price' ||
                           pathname.includes('/branch/branch-list')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -412,9 +407,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Admin
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         {hasPermission(permissions, 'branch.view') && (
@@ -565,6 +559,74 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 )}
               </SidebarLinkGroup>
 
+
+              {/* Reports */}
+              <SidebarLinkGroup
+                activeCondition={
+                  pathname === '/real-estate/add-area' ||
+                  pathname === '/real-estate/area-list' ||
+                  pathname.includes('forms')
+                }
+                menuId="real-estate"
+                open={openMenu === 'real-estate'}
+                handleClick={() => handleMenuClick('real-estate')}
+              >
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    <NavLink
+                      to="#"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/real-estate/area-list' ||
+
+                          pathname.includes('/real-estate/add-area')) &&
+                        'bg-graydark dark:bg-meta-4'
+                        }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        sidebarExpanded
+                          ? handleClick()
+                          : setSidebarExpanded(true);
+                      }}
+                    >
+                      <FiHome />
+                      Real Estate
+                    </NavLink>
+                    <div
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
+                    >
+                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <li>
+                          <NavLink
+                            to="/real-estate/area-list"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                              (isActive && '!text-white')
+                            }
+                          >
+                            Area List
+                          </NavLink>
+                        </li>
+                        {hasPermission(permissions, 'cashbook.view') && (
+                          <li>
+                            <NavLink
+                              to="/real-estate/add-area"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Cash Book
+                            </NavLink>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  </React.Fragment>
+                )}
+              </SidebarLinkGroup>
+
+
+
               {/* Reports */}
               <SidebarLinkGroup
                 activeCondition={
@@ -587,8 +649,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/reports/date-wise-total-data' ||
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/reports/date-wise-total-data' ||
                           pathname.includes('reports/cashbook') ||
                           pathname === '/reports/due-installments' ||
                           pathname.includes('/reports/due-list') ||
@@ -601,7 +662,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname.includes('/reports/mitch-match') ||
                           pathname.includes('reports/ledger')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -613,9 +674,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Reports
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         {hasPermission(permissions, 'cashbook.view') && (
@@ -799,11 +859,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/product/product-list' ||
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/product/product-list' ||
                           pathname === '/category/category-list') &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -815,19 +874,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Products
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
                           <NavLink
                             to="/category/category-list"
-                            className={`group relative flex items-center gap-2.5 rounded-xs px-4 py-1 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
-                              (pathname === '/category/category-list' ||
+                            className={`group relative flex items-center gap-2.5 rounded-xs px-4 py-1 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${(pathname === '/category/category-list' ||
                                 pathname === '/category/category-list') &&
                               'text-white '
-                            }`}
+                              }`}
                           >
                             Category List
                           </NavLink>
@@ -835,11 +892,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <li>
                           <NavLink
                             to="/product/product-list"
-                            className={`group relative flex items-center gap-2.5 rounded-xs px-4 py-1 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
-                              (pathname === '/product/product-list' ||
+                            className={`group relative flex items-center gap-2.5 rounded-xs px-4 py-1 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${(pathname === '/product/product-list' ||
                                 pathname === '/product/add-product') &&
                               'text-white '
-                            }`}
+                              }`}
                           >
                             Product List
                           </NavLink>
@@ -853,8 +909,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* Requisition */}
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === '/requisition/comparison' || 
-                  pathname === '/requisition/create' || 
+                  pathname === '/requisition/comparison' ||
+                  pathname === '/requisition/create' ||
                   pathname.includes('forms')
                 }
                 menuId="requisition"
@@ -865,15 +921,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(
                           pathname === '/requisitions' ||
                           pathname === '/requisition/create' ||
-                          pathname === '/requisition/comparison' || 
+                          pathname === '/requisition/comparison' ||
                           pathname.includes('/requisition/comparison')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
-                        
+                        }`}
+
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -885,9 +940,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Requisition
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
@@ -932,7 +986,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* VR Settings */}
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === '/vr-settings/voucher-delete' || 
+                  pathname === '/vr-settings/voucher-delete' ||
                   pathname.includes('forms')
                 }
                 menuId="vr_settings"
@@ -943,11 +997,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/vr-settings/voucher-delete' || 
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/vr-settings/voucher-delete' ||
                           pathname.includes('/vr-settings/voucher-delete')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -959,9 +1012,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       VR Settings
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         {hasPermission(permissions, 'dayclose.all.view') && (
@@ -976,7 +1028,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               Voucher Delete
                             </NavLink>
                           </li>
-                        )} 
+                        )}
                       </ul>
                     </div>
                   </React.Fragment>
@@ -998,12 +1050,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/user-management/roles' ||
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/user-management/roles' ||
                           pathname === '/user-management/create-role' ||
                           pathname.includes('/user-management/roles')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -1015,9 +1066,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       User Management
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
@@ -1062,11 +1112,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/customer-supplier/list' ||
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/customer-supplier/list' ||
                           pathname.includes('/customer-supplier/list')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -1078,9 +1127,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Customer & Supplier
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
@@ -1114,14 +1162,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/coal1/coal1-list' ||
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/coal1/coal1-list' ||
                           pathname === '/coal2/coal2-list' ||
                           pathname === '/coal3/coal3-list' ||
                           pathname === '/coal4/coal4-list' ||
                           pathname.includes('/coal4/coal4-list')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -1133,9 +1180,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Chart of Accounts
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
@@ -1187,14 +1233,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   </React.Fragment>
                 )}
               </SidebarLinkGroup>
- 
+
               {/* Chart */}
               <li>
                 <NavLink
                   to="/chart"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-middle text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes('chart') && 'bg-graydark dark:bg-meta-4'
-                  }`}
+                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-middle text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('chart') && 'bg-graydark dark:bg-meta-4'
+                    }`}
                 >
                   <svg
                     className="fill-current"
@@ -1233,9 +1278,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <li>
                 <NavLink
                   to="/customer-dashboard"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-middle text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes('chart') && 'bg-graydark dark:bg-meta-4'
-                  }`}
+                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-middle text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('chart') && 'bg-graydark dark:bg-meta-4'
+                    }`}
                 >
                   <svg
                     className="fill-current"
@@ -1281,10 +1325,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                        (pathname === '/ui' || pathname.includes('ui')) &&
+                      className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/ui' || pathname.includes('ui')) &&
                         'bg-graydark dark:bg-meta-4'
-                      }`}
+                        }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -1343,9 +1386,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       </svg>
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                        open ? 'max-h-96' : 'max-h-0'
-                      }`}
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
                     >
                       <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
                         <li>
