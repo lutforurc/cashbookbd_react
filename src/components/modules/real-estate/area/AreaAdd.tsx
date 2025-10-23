@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FiSave, FiRefreshCcw, FiHome } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiSave, FiRefreshCcw, FiHome, FiPlus, FiEdit2 } from 'react-icons/fi';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
 import { status } from '../../../utils/fields/DataConstant';
 import { saveArea } from './areaSlice';
+import { FaArrowLeft } from 'react-icons/fa6';
 
 const AreaAdd = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    
-    branch_id: '',
     name: '',
     description: '',
     latitude: '',
@@ -34,7 +33,7 @@ const AreaAdd = (user: any) => {
 
   }, []);
 
-  const handleOnChange = (e:any) => {
+  const handleOnChange = (e: any) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -47,17 +46,17 @@ const AreaAdd = (user: any) => {
     setFormData({ ...formData, [name]: value });
   };
 
-    // BranchDropdown -> onChange(value) => branch_id আপডেট
-    const handleBranchChange = (e: any) => {
-        setFormData({ ...formData, ['branch_id']: e.target.value });
-    };
+  // BranchDropdown -> onChange(value) => branch_id আপডেট
+  const handleBranchChange = (e: any) => {
+    setFormData({ ...formData, ['branch_id']: e.target.value });
+  };
 
   const handleAreaSave = async () => {
     setButtonLoading(true);
     try {
       // Call API to save area
       const response = await dispatch(saveArea(formData)).unwrap();
-     
+
       if (response.ok) {
         // onSuccess(); // Refresh list or close modal
       }
@@ -87,7 +86,6 @@ const AreaAdd = (user: any) => {
 
   const handleReset = () => {
     setFormData({
-      branch_id: '',
       name: '',
       description: '',
       latitude: '',
@@ -99,29 +97,16 @@ const AreaAdd = (user: any) => {
     });
   };
 
-  //   const isEdit = areaEditData?.editData?.id;
-console.log(branchDdlData);
+  const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate('/real-estate/area-list');
+  };
+
 
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         {branchDdlData.isLoading == true ? <Loader /> : ''}
-        <div>
-          <div>
-            {' '}
-            <label htmlFor="">Select Branch</label>
-          </div>
-          <div className="w-full">
-            {branchDdlData.isLoading == true ? <Loader /> : ''}
-            <BranchDropdown
-              defaultValue={user?.user?.branch_id}
-              onChange={handleBranchChange}
-              className="w-60 font-medium text-sm p-1.5 h-9 "
-              branchDdl={branchDdlData?.protectedData?.data}
-            />
-          </div>
-        </div>
-
         <InputElement
           id="name"
           value={formData.name || ''}
@@ -131,17 +116,7 @@ console.log(branchDdlData);
           className=""
           onChange={handleOnChange}
         />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        <InputElement
-          id="description"
-          value={formData.description || ''}
-          name="description"
-          placeholder="Enter Description"
-          label="Enter Description"
-          className=""
-          onChange={handleOnChange}
-        />
+
         <InputElement
           id="latitude"
           value={formData.latitude || ''}
@@ -163,6 +138,15 @@ console.log(branchDdlData);
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <InputElement
+          id="description"
+          value={formData.description || ''}
+          name="description"
+          placeholder="Enter Description"
+          label="Enter Description"
+          className=""
+          onChange={handleOnChange}
+        />
+        <InputElement
           id="notes"
           value={formData.notes || ''}
           name="notes"
@@ -180,29 +164,10 @@ console.log(branchDdlData);
           className="h-[2.1rem] bg-transparent mt-1"
           data={status}
         />
-        <InputElement
-          id="created_by"
-          value={formData.created_by || ''}
-          name="created_by"
-          placeholder="Enter Created By"
-          label="Enter Created By"
-          className=""
-          onChange={handleOnChange}
-        />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        <InputElement
-          id="updated_by"
-          value={formData.updated_by || ''}
-          name="updated_by"
-          placeholder="Enter Updated By"
-          label="Enter Updated By"
-          className=""
-          onChange={handleOnChange}
-        />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        {1 === 2 ? (
+
+      <div className="grid grid-cols-3 gap-x-1 gap-y-1">
+        {1 !== 1 ? (
           <ButtonLoading
             onClick={handleAreaUpdate}
             buttonLoading={buttonLoading}
@@ -226,13 +191,13 @@ console.log(branchDdlData);
           className="whitespace-nowrap text-center mr-0 p-2"
           icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
         />
-        <Link
-          to="/areas/area-list"
-          className="text-nowrap justify-center mr-0 p-2"
-        >
-          <FiHome className="text-white text-lg ml-2 mr-2 " />
-          <span className="">Back</span>
-        </Link>
+        <ButtonLoading
+          onClick={handleBack}
+          buttonLoading={false}
+          label="Back"
+          className="whitespace-nowrap text-center mr-0 p-2"
+          icon={<FaArrowLeft className="text-white text-lg ml-2 mr-2" />}
+        />
       </div>
     </div>
   );

@@ -42,6 +42,15 @@ const AreaList = () => {
         {row?.branch?.description ? row?.branch?.description : ''}
       </div>,
     },
+    {
+      key: 'company',
+      header: 'Company',
+      width: '80px', 
+      render: (row: any) => <div>
+        {row?.company?.name ? row?.company?.name : ''}
+        {row?.company?.description ? row?.company?.description : ''}
+      </div>,
+    },
     
   ];
   

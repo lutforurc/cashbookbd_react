@@ -615,7 +615,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Cash Book
+                              Area Add
                             </NavLink>
                           </li>
                         )}
