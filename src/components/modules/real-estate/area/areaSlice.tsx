@@ -59,8 +59,8 @@ export const fetchAreas = createAsyncThunk<Area[], void, { rejectValue: string }
 export const saveArea = createAsyncThunk<Area, Partial<Area>, { rejectValue: string }>('area/saveArea',async (payload, thunkAPI) => {
     try {
       const res = await httpService.post(API_AREA_SAVE_URL, payload);
-      const data = (res.data?.data ?? res.data) as Area;
-      return data;
+      // const data = (res.data?.data ?? res.data) as Area;
+      return res.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err?.message || 'Failed to save area');
     }
