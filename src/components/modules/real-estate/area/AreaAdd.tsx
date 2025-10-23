@@ -11,6 +11,7 @@ import { status } from '../../../utils/fields/DataConstant';
 import { saveArea } from './areaSlice';
 import { FaArrowLeft } from 'react-icons/fa6';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
+import { toast } from 'react-toastify';
 
 const AreaAdd = (user: any) => {
   const dispatch = useDispatch();
@@ -47,24 +48,30 @@ const AreaAdd = (user: any) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // BranchDropdown -> onChange(value) => branch_id আপডেট
-  const handleBranchChange = (e: any) => {
-    setFormData({ ...formData, ['branch_id']: e.target.value });
-  };
+
 
   const handleAreaSave = async () => {
     setButtonLoading(true);
     try {
       // Call API to save area
       const response = await dispatch(saveArea(formData)).unwrap();
+      console.log(response?.message);
 
-      if (response.ok) {
-        // onSuccess(); // Refresh list or close modal
+      const voucherText = response?.message;
+      // console.log(voucherText);
+      
+      if (voucherText) {
+        // Use a stable toastId so it can't render twice for the same save
+        toast.success(voucherText, { toastId: `bank-payment-success-${voucherText}` });
+        
       }
     } catch (error) {
-      console.error('Error saving area:', error);
+      toast.info(error?.message || 'Something went wrong while saving.', { toastId: `bank-payment-error-${error?.message}` });
     }
-    setButtonLoading(false);
+    finally {
+      handleReset();
+      setButtonLoading(false);
+    }
   };
 
   const handleAreaUpdate = async () => {
