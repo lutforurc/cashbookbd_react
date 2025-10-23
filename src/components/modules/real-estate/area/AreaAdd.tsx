@@ -10,6 +10,7 @@ import Loader from '../../../../common/Loader';
 import { status } from '../../../utils/fields/DataConstant';
 import { saveArea } from './areaSlice';
 import { FaArrowLeft } from 'react-icons/fa6';
+import HelmetTitle from '../../../utils/others/HelmetTitle';
 
 const AreaAdd = (user: any) => {
   const dispatch = useDispatch();
@@ -105,6 +106,7 @@ const AreaAdd = (user: any) => {
 
   return (
     <div>
+      <HelmetTitle title={'Add New Area'} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         {branchDdlData.isLoading == true ? <Loader /> : ''}
         <InputElement

@@ -114,9 +114,6 @@ const AddProduct = () => {
     }
   };
 
-  console.log('====================================');
-  console.log("category", category);
-  console.log('====================================');
 
   const handleButtonClick = (e) => {
     e.preventDefault();
@@ -205,8 +202,6 @@ const AddProduct = () => {
       <HelmetTitle title={formData?.id ? 'Edit Product' : 'Add New Product'} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {category.isLoading == true ? <Loader /> : ''}
-        
-        
         <DropdownCommon
           id="category_id"
           name={'category_id'}

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAreas } from './areaSlice';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
+import HelmetTitle from '../../../utils/others/HelmetTitle';
 
 
 const AreaList = () => {
@@ -56,6 +57,7 @@ const AreaList = () => {
   
   return (
     <div>
+      <HelmetTitle title={'Area List'} />
       {realEstateArea.isLoading ? <Loader /> : ''}
         <Table columns={columns} data={tableData || []} />
     </div>
