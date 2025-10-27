@@ -68,7 +68,7 @@
 // export const API_REMOTE_URL = 'https://kpsnew.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://sinthia.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
-// export const API_REMOTE_URL = 'https://gmenterprise.cashbookbd.com';
+// export const API_REMOTE_URL = 'https://gme.cashbookbd.com';
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
 // let API_REMOTE_URLs = window.location.origin;
