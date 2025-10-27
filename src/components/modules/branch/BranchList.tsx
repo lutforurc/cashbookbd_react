@@ -63,19 +63,17 @@ const BranchList = () => {
     setTotalPages(Math.ceil(branchList.data.total / page.target.value));
   };
 
+  const handleToggle = (row: any) => {
+    const newStatus = row.status === 1 ? 0 : 1;
 
-const handleToggle = (row: any) => {
-  // status যদি 1 থাকে তাহলে inactive করব, নাহলে active করব
-  const newStatus = row.status === 1 ? 0 : 1;
-
-  dispatch(branchStatus(row.id, newStatus))
-    .then(() => {
-      // API হিট করার পর আবার branch লিস্ট রিফ্রেশ করা
+    dispatch(branchStatus(row.id, newStatus)).then(() => {
       dispatch(getBranch({ page, perPage, searchValue }));
     });
 
-  console.log(`Toggled row with ID ${row.id} to ${newStatus ? 'enabled' : 'disabled'}`); 
-};
+    console.log(
+      `Toggled row with ID ${row.id} to ${newStatus ? 'enabled' : 'disabled'}`,
+    );
+  };
 
   const columns = [
     {
@@ -110,24 +108,22 @@ const handleToggle = (row: any) => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => (
-        <div>
-          <ActionButtons
-          row={row}
-          showEdit={true}
-          handleEdit={handleBranchEdit}
+        <>
+          <div>
+            <ActionButtons
+              row={row}
+              showEdit={true}
+              handleEdit={handleBranchEdit}
+              showDelete={false}
+              handleDelete={handleBranchDelete}
+              showToggle={true}
+              handleToggle={() => handleToggle(row)} // এখন row পাঠাচ্ছে
 
-          showDelete={false}
-          handleDelete={handleBranchDelete} 
-
-
-          showToggle={true}
-          handleToggle={() => handleToggle(row)} // এখন row পাঠাচ্ছে
-
-
-          // showConfirmId={showConfirmId}
-          // setShowConfirmId={setShowConfirmId} 
-        />
-        </div>
+              // showConfirmId={showConfirmId}
+              // setShowConfirmId={setShowConfirmId}
+            />
+          </div>
+        </>
       ),
     },
   ];
@@ -135,14 +131,13 @@ const handleToggle = (row: any) => {
     console.log('View =>' + row);
   };
   const handleBranchEdit = (row: any) => {
-    navigate(`/branch/edit/${row.branch_id}`);
+    console.log('Edit =>' + row);
+    navigate(`/branch/branch-edit/${row}`);
   };
   const handleBranchDelete = (row: any) => {
     console.log('Delete =>' + row);
     navigate('/branch/branch-list');
   };
-
-  
 
   return (
     <div>

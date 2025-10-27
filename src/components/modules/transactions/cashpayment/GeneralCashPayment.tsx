@@ -27,6 +27,7 @@ import {
 import InputOnly from '../../../utils/fields/InputOnly';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import { validateForm } from '../../../utils/utils-functions/validationUtils';
 
 interface PaymentItem {
   id: string | number;
@@ -99,6 +100,7 @@ const GeneralCashPayment = () => {
       return row; // Keep other rows unchanged
     });
 
+
     // Update the state with the modified data
     setTableData(updatedTableData);
 
@@ -166,12 +168,17 @@ const GeneralCashPayment = () => {
   };
 
   const paymentEditItem = (productId: number) => {
+
     const productIndex = tableData.findIndex((item) => item.id === productId);
     if (productIndex === -1) {
       return;
     }
 
     const product = tableData[productIndex];
+
+    console.log('====================================');
+    console.log(formData);
+    console.log('====================================');
 
     // Safely update formData
     setFormData((prevState) => ({
@@ -186,7 +193,9 @@ const GeneralCashPayment = () => {
         ? { ...product, index: productIndex }
         : prevState.currentProduct || null,
     }));
-
+    console.log('====================================');
+    console.log(formData);
+    console.log('====================================');
     setIsUpdating(true);
     setIsUpdating(true);
     setUpdateId(productIndex);
@@ -257,31 +266,39 @@ const GeneralCashPayment = () => {
     }
   }, [cashPayment.isEdit]);
 
-  const handleInvoiceUpdate = async () => {
-    // Check Required fields are not empty
-    // const validationMessages = validateForm(formData, invoiceMessage);
-    // if (validationMessages) {
-    //     toast.info(validationMessages);
-    //     return;
-    // }
+const handleInvoiceUpdate = async () => {
 
-    // if (!formData.account || formData.products.length === 0) {
-    //     toast.error("Please add products information!");
-    //     return;
-    // }
+//   console.log("formData.account =>", formData.account);
+// console.log("tableData =>", tableData);
 
-    // Save Invoice Update
-    dispatch(
-      updateCashPayment(tableData, function (message) {
-        if (message) {
-          toast.info(message);
-        }
+//   if (!formData.account || tableData.length === 0) {
+//     toast.error("Please add at least one transaction before updating!");
+//     return;
+//   }
+
+  try {
+    setButtonLoading(true);
+
+    // Dispatch update action
+    await dispatch(
+      updateCashPayment(tableData, (message: string) => {
+        if (message) toast.info(message);
       }),
     );
+
+    toast.success("Invoice updated successfully!");
+
+    // Reset UI state
     setIsUpdateButton(false);
     setIsUpdating(false);
-    setIsUpdateButton(false);
-  };
+  } catch (error) {
+    console.error("Error updating invoice:", error);
+    toast.error("Failed to update invoice.");
+  } finally {
+    setButtonLoading(false);
+  }
+};
+
 
   useEffect(() => {
     if (cashPayment.isEdit) {

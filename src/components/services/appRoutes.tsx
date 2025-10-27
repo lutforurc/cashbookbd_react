@@ -44,7 +44,7 @@ const ROUTES = {
   // Branch routes
   branch_list: '/branch/branch-list',
   branch_add: '/branch/add-branch',
-  branch_edit: '/branch/edit/:id',
+  branch_edit: '/branch/branch-edit/:id',
   branch_update: '/branch/branch-update',
   branch_store: '/branch/branch-store',
   branch_all_ddl_list: '/branch/ddl/all-branch',

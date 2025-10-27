@@ -32,6 +32,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   } | null>(null);
   const [enabled, setEnabled] = useState(row.status === 1);
 
+
+
   useEffect(() => {
     if (showConfirmId === row.id && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
@@ -49,7 +51,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   const handleToggleClick = () => {
     const newState = !enabled;
     setEnabled(newState);
-    handleToggle && handleToggle(row.id, newState);
+    handleToggle && handleToggle(row.branch_id, newState);
   };
 
   return (
@@ -58,7 +60,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       {showEdit && handleEdit && (
         <div
           className="btn btn-sm btn-outline cursor-pointer w-5 h-5 flex items-center justify-center"
-          onClick={() => handleEdit(row.id)}
+          onClick={() => handleEdit(row.branch_id)}
         >
           <FiEdit2 className="text-blue-600" />
         </div>
