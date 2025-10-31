@@ -20,7 +20,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import Loader from '../../../common/Loader';
-import {formatDate} from '../../utils/utils-functions/formatDate';
+import { formatDate } from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
 
 const Dashboard = () => {
@@ -40,8 +40,10 @@ const Dashboard = () => {
   const [successItems, setSuccessItems] = useState<{ [key: string]: boolean }>(
     {},
   ); // Track success state per item
-    const [totalDebit, setTotalDebit] = useState(0); // State to store the total sum of debits
+  const [totalDebit, setTotalDebit] = useState(0); // State to store the total sum of debits
 
+  console.log("currentBranch", currentBranch);
+  
 
   useEffect(() => {
     dispatch(getDashboard());
@@ -50,7 +52,7 @@ const Dashboard = () => {
     dispatch(getDdlProtectedBranch());
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     // Calculate the total sum of debits whenever the data is loaded
     if (dashboard?.data?.receiveDetails?.receivedDetails) {
       const total = dashboard?.data?.receiveDetails?.receivedDetails[
@@ -175,9 +177,9 @@ const Dashboard = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.debit > 0
                       ? thousandSeparator(
-                          dashboard?.data?.todayReceived?.debit,
-                          0,
-                        )
+                        dashboard?.data?.todayReceived?.debit,
+                        0,
+                      )
                       : 0}
                   </span>
                 </div>
@@ -187,9 +189,9 @@ const Dashboard = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.credit > 0
                       ? thousandSeparator(
-                          dashboard?.data?.todayReceived?.credit,
-                          0,
-                        )
+                        dashboard?.data?.todayReceived?.credit,
+                        0,
+                      )
                       : 0}
                   </span>
                 </div>
@@ -201,7 +203,7 @@ const Dashboard = () => {
                       !dashboard.isLoading &&
                       thousandSeparator(
                         dashboard?.data?.totalTransaction?.debit -
-                          dashboard?.data?.totalTransaction?.credit,
+                        dashboard?.data?.totalTransaction?.credit,
                         0,
                       )}
                   </span>
@@ -218,7 +220,7 @@ const Dashboard = () => {
           ''
         )}
       </div>
-      {dashboard.isLoading == false ? (
+      {dashboard.isLoading == false && currentBranch?.business_type_id == 7 ? (
         <div className="grid grid-cols-1 xl:grid-cols-2 mt-6 ">
           <div className="bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
             <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 flex justify-between">
@@ -228,7 +230,7 @@ const Dashboard = () => {
                   dashboard?.data?.transactionText}
               </span>
               <span>
-                  Tk. { thousandSeparator (totalDebit,0)}
+                {totalDebit ? `Tk. ${thousandSeparator(totalDebit, 0)}` : '-'}
               </span>
             </div>
             <div className="max-h-96 overflow-y-auto">
@@ -280,43 +282,9 @@ const Dashboard = () => {
       )}
 
       <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-2">
-        {/* <div> */}
-        {/* <label> Display Month</label> */}
-        {/* <InputOnly
-            id="display_month"
-            label="Display Month"
-            name="display_month"
-            value={displayMonth.toString()}
-            className=""
-            placeholder="Display Month"
-            onChange={handleDisplayMonthChange}
-          /> */}
-        {/* </div> */}
-
-        {/* <div> 
-          <label> Select Branch</label>
-          <BranchDropdown
-            onChange={handleBranchChange}
-            className="w-full font-medium text-sm p-2"
-            branchDdl={[
-              { id: '', name: 'All' }, // Add the "All" option
-              ...(branchDdlData?.protectedData?.data || []), // Spread existing options
-            ]}
-          />
-        </div> */}
-
-        {/* <div className="flex items-end">
-          <ButtonLoading
-            label="Run"
-            onClick={handleChart}
-            loading={dashboard.isLoading}
-            className="bg-blue-500 text-white w-20 h-9"
-          />
-        </div> */}
       </div>
       {!dashboard.isLoading == true ? (
         <div className="mt-10">
-          {/* <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 w-full text-sm overflow-hidden text-black dark:bg-gray-700 dark:text-white  rounded-lg"> */}
           <div className=""></div>
           <div className="border-slate-200 pb-3 text-white pt-2">
             {currentBranch.branch_types_id == 1 ? (
