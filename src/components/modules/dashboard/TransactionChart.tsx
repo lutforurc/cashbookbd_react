@@ -5,6 +5,7 @@ import { getBranchChart } from "./chartSlice";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import Loader from "../../../common/Loader";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
+import { userCurrentBranch } from "../branch/branchSlice";
 
 // Define types for the response data
 interface ChartData {
@@ -26,6 +27,7 @@ const TransactionChart: React.FC = () => {
 
   useEffect(() => {
     dispatch(getBranchChart());
+    dispatch(userCurrentBranch());
   }, [dispatch]);
   
   useEffect(() => {
@@ -57,14 +59,8 @@ const TransactionChart: React.FC = () => {
     legend: { show: false },
     stroke: { curve: 'smooth', show: true, width: 3 },
     xaxis: { categories: chartData.labels },
-    title: { text: `Received and Payment by ${currentBranch?.currentBranch?.name}`, align: "center", style: { color: titleColor } },
-    // tooltip: {
-    //   custom: function({ series, seriesIndex, dataPointIndex, w }) {
-    //     let monthName = charts.transactionChart.data.data.labels[dataPointIndex];
-    //     return `<div class="custom-tooltip">${monthName}: ${ thousandSeparator (series[seriesIndex][dataPointIndex], 0)}</div>`;
-    //   }
-    // }
-
+    title: { text: `Received and Payment by  ${currentBranch?.currentBranch?.name}`, align: "center", style: { color: titleColor } },
+ 
     tooltip: {
       enabled: true, theme: "dark", style: { fontSize: "12px" },
       y: {
@@ -73,6 +69,8 @@ const TransactionChart: React.FC = () => {
         }
       }
     }
+    
+    
     
     // tooltip: {
     //   enabled: true, theme: "dark", style: { fontSize: "12px" },
@@ -83,6 +81,7 @@ const TransactionChart: React.FC = () => {
     //   }
     // }
   };
+  console.log(currentBranch?.currentBranch?.name);
   return (
     <div>
       {chartData.series.length > 0 ? (

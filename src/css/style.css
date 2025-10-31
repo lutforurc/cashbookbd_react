@@ -273,3 +273,69 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
   -moz-appearance: textfield; /* Firefox */
 }
+
+
+
+.threes {
+  @apply flex items-center justify-between w-12 h-6 mx-auto;
+}
+.threes.primary .three {
+  @apply !bg-[#1BAFB3] my-2;
+}
+.threes .three {
+  @apply inline-flex w-3 h-3 rounded-full bg-white;
+  -webkit-animation: three 1.5s infinite ease-in-out both;
+  animation: three 1.5s infinite ease-in-out both;
+}
+.threes .three-1 {
+  -webkit-animation-delay: -320ms;
+  animation-delay: -320ms;
+}
+.threes .three-2 {
+  -webkit-animation-delay: -160ms;
+  animation-delay: -160ms;
+}
+@keyframes three {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+.otp-wrap input[type="text"]{
+  @apply !w-9 sm:!w-12 !h-9 sm:!h-12 text-center mx-1 border-none outline-none bg-[#f4f4f4] rounded-lg text-xl font-medium;
+}
+
+
+.threes {
+  @apply flex items-center justify-between w-12 h-6 mx-auto;
+}
+.threes.primary .three {
+  @apply !bg-[#1BAFB3] my-2;
+}
+.threes .three {
+  @apply inline-flex w-3 h-3 rounded-full bg-white;
+  -webkit-animation: three 1.5s infinite ease-in-out both;
+  animation: three 1.5s infinite ease-in-out both;
+}
+.threes .three-1 {
+  -webkit-animation-delay: -320ms;
+  animation-delay: -320ms;
+}
+.threes .three-2 {
+  -webkit-animation-delay: -160ms;
+  animation-delay: -160ms;
+}
+@keyframes three {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
