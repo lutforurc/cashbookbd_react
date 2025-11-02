@@ -138,6 +138,8 @@ export default function VoucherUpload(user: any): JSX.Element {
   };
 
   const handleUpload = async (id: number) => {
+    console.log(id);
+    
     const selectedFiles = files[id];
     if (!selectedFiles?.length) {
       toast.warning('Please select files first!');
@@ -208,7 +210,7 @@ export default function VoucherUpload(user: any): JSX.Element {
     const { name, value } = e.target;
     setVoucherImageFormData({ ...voucherImageFormData, [name]: value });
 
-    console.log('Selected value:', voucherImageFormData);
+    // console.log('Selected value:', voucherImageFormData);
   };
 
   const columns = [
@@ -276,19 +278,19 @@ export default function VoucherUpload(user: any): JSX.Element {
                     multiple
                     accept="image/*"
                     onChange={(e) =>
-                      handleFileChange(row.mtm_id, e.target.files)
+                      handleFileChange(row.id, e.target.files)
                     }
                   />
                   <button
-                    onClick={() => handleUpload(row.mtm_id)}
-                    disabled={loading[row.mtm_id]}
+                    onClick={() => handleUpload(row.id)}
+                    disabled={loading[row.id]}
                     className={`px-3 py-1 rounded text-white ${
-                      loading[row.mtm_id]
+                      loading[row.id]
                         ? 'bg-gray-400'
                         : 'bg-blue-500 hover:bg-blue-600'
                     }`}
                   >
-                    {loading[row.mtm_id] ? (
+                    {loading[row.id] ? (
                       <span className="flex items-center gap-1">
                         <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4"></span>
                         Uploading...

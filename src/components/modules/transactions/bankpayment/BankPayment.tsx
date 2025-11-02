@@ -444,7 +444,7 @@ const BankPayment = () => {
   return (
     <>
       <HelmetTitle title="Bank Payment" />
-      <span className="text-2xl font-bold text-red-500 text-center block">(Not Ready)</span>
+      {/* <span className="text-2xl font-bold text-red-500 text-center block">(Not Ready)</span> */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         {isLoading && <Loader />}
         <div className="col-span-1">

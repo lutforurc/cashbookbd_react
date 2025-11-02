@@ -104,7 +104,7 @@ export const voucherTypes = [
 export const ImageVoucherType = [
   { id: 1, name: 'Received Voucher' },
   { id: 2, name: 'Payment Voucher' },
-  { id: 3, name: 'Journal Voucher' },
+  { id: 5, name: 'Journal Voucher' },
 ];
 export const Attachment = [
   { id: 1, name: 'With Image' },

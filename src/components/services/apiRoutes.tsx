@@ -82,7 +82,7 @@
 
 // export { API_REMOTE_URL };
 
-export const API_REMOTE_URL = import.meta.env.VITE_API_URL;
+// export const API_REMOTE_URL = import.meta.env.VITE_API_URL;
 
 
 
@@ -92,8 +92,10 @@ export const API_REMOTE_URL = import.meta.env.VITE_API_URL;
 // export const API_LOGOUT_URL = `${API_BASE_URL}api/user/logout`;
 // export const API_SIGNUP_URL = `${API_BASE_URL}api/user/signup`;
 
-
-
+// export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
+export const API_REMOTE_URL = import.meta.env.VITE_API_URL;
+ 
+console.log("API Remote URL:", API_REMOTE_URL);
 
 export const API_CSRF_COOKIES = `${API_REMOTE_URL}/sanctum/csrf-cookie`;
 export const API_BASE_URL = `${API_REMOTE_URL}/api`;
