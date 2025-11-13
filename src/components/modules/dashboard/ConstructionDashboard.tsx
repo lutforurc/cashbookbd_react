@@ -23,7 +23,7 @@ import { formatDate } from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
 import LoaderDots from '../../utils/LoaderDots';
 
-const Dashboard = () => {
+const ConstructionDashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const branchDdlData = useSelector((state) => state.branchDdl);
   const dispatch = useDispatch();
@@ -307,4 +307,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default ConstructionDashboard;

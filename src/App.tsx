@@ -9,7 +9,7 @@ import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout'; 
 import { authCheck } from './features/authReducer';
-import Dashboard from './components/modules/dashboard/Dashboard';
+import Dashboard from './components/modules/dashboard/ConstructionDashboard';
 import { useDispatch, useSelector } from 'react-redux';
 import routes from './components/services/appRoutes';
 import BranchList from './components/modules/branch/BranchList';
@@ -75,6 +75,7 @@ import RequisitionList from './components/modules/Requisition/Requisitions';
 import Requisitions from './components/modules/Requisition/Requisitions';  
 import AreaAdd from './components/modules/real-estate/area/AreaAdd';
 import AreaList from './components/modules/real-estate/area/AreaList';
+import DashboardIndex from './components/modules/dashboard/DashboardIndex';
 
 
 
@@ -107,8 +108,8 @@ function App() {
 
           {/* Admin + Authenticated User Section */}
           <Route path="/" element={<DefaultLayout isLoggedIn={isLoggedIn} isLoading={isLoading} user={me} />}>
-            <Route path={routes.main} element={<Dashboard />} />
-            <Route path={routes.dashboard} element={<Dashboard />} />
+            <Route path={routes.main} element={<DashboardIndex />} />
+            <Route path={routes.dashboard} element={<DashboardIndex />} />
             <Route path={routes.calendar} element={<Calendar />} />
             <Route path={routes.profile} element={<Profile />} />
             <Route path={routes.formElements} element={<FormElements />} />
