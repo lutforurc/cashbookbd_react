@@ -8,9 +8,7 @@ import { useEffect } from 'react';
 
 const SalesIndex = () => {
   const dispatch = useDispatch();
-  const currentBranch = useSelector(
-    (state: any) => state.branchList.currentBranch,
-  );
+  const currentBranch = useSelector((state: any) => state.branchList.currentBranch);
 
   useEffect(() => {
     if (!currentBranch?.business_type_id) {

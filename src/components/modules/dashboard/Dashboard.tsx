@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { dispatchRemittance, getDashboard } from './dashboardSlice';
-import { FiHome, FiSave } from 'react-icons/fi';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import TransactionChart from './TransactionChart';
