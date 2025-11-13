@@ -118,36 +118,9 @@ const ConstructionDashboard = () => {
     );
   };
 
-  // The handleCheckCircleClick function
-  // const handleCheckCircleClick = async (item: any) => {
-  //   setLoading(true);  // Start loading
-  //   setIsSuccess(false);  // Reset success before API call
 
-  //   try {
-  //     // Dispatch the remittance and wait for the response
-  //     const response = await dispatchRemittance(item, (message, success) => {
-  //       if (success) {
-  //         setIsSuccess(true);  // If successful, set success state
-  //         toast.success(message);  // Show success toast
-  //       } else {
-  //         setIsSuccess(false);  // If failure, retain the current state
-  //         toast.error(message);  // Show error toast
-  //       }
-  //     });
-
-  //     // Optionally handle the response if you need to use it further
-  //     if (response.success) {
-  //       setIsSuccess(true);
-  //     } else {
-  //       setIsSuccess(false);
-  //     }
-  //   } catch (error) {
-  //     toast.error(error.message);
-  //     setIsSuccess(false);  // In case of an error, retain the current state
-  //   } finally {
-  //     setLoading(false);  // Stop loading after the operation finishes
-  //   }
-  // };
+  console.log("dashboard?.data", dashboard?.data?.receiveDetails?.receivedDetails);
+  
 
   return (
     <>
@@ -221,12 +194,16 @@ const ConstructionDashboard = () => {
         )}
       </div>
 
-      {dashboard.isLoading == false && currentBranch?.business_type_id == 7 ? (
+      {!dashboard.isLoading &&
+ currentBranch?.business_type_id === 7 &&
+ Object.values(dashboard?.data?.receiveDetails?.receivedDetails || {}).some(
+   (items): items is any[] => Array.isArray(items) && items.length > 0
+ ) ?(
         <div  className = "grid grid-cols-1 xl:grid-cols-2 mt-6 ">
         <div  className = "bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
         <div  className = "mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 flex justify-between">
         <span className = "text-sm font-bold">
-                {dashboard?.data &&
+                {
                   !dashboard.isLoading &&
                   dashboard?.data?.transactionText}
               </span>
