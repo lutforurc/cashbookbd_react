@@ -409,15 +409,24 @@ function ConstructionLabourInvoice(): JSX.Element {
 
   // search invoice
   const [search, setSearch] = useState("");
+
+
   const searchInvoice = useCallback(() => {
     if (!search) {
       toast.info("Please enter an invoice number");
       return;
     }
-    dispatch(labourInvoiceEdit({ invoiceNo: search, voucherType }));
+    const res = dispatch(labourInvoiceEdit({ invoiceNo: search, voucherType }));
     // mark edit attempt; actual form will load when editLabourInvoice updates
     setIsInvoiceUpdate(true);
   }, [dispatch, search, voucherType]);
+
+
+  useEffect(() => {
+  if (labourInvoice.editLabourInvoice?.message) {
+    toast.info(labourInvoice.editLabourInvoice.message);
+  }
+}, [labourInvoice.editLabourInvoice]);
 
   /* -------------------------
      useCtrlS for save
