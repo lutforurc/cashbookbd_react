@@ -161,6 +161,7 @@ function ConstructionLabourInvoice(): JSX.Element {
     setUpdateIndex(null);
     setIsInvoiceUpdate(false);
     setProductData({});
+    setStartDate(null);
   }, []);
 
   /* -------------------------
@@ -485,7 +486,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                 name="bill_no"
                 placeholder={"Bill Number"}
                 label={"Bill Number"}
-                className={"py-1 -mt-1"}
+                className="w-full p-1"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, "bill_date")}
               />
@@ -544,7 +545,7 @@ function ConstructionLabourInvoice(): JSX.Element {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {hasPermission(settings?.data?.permissions, "purchase.edit") && (
-                <div className="relative mt-6">
+                <div className="relative">
                   <div className="w-full ">
                     <DropdownCommon
                       id={"voucher_type"}
@@ -559,7 +560,7 @@ function ConstructionLabourInvoice(): JSX.Element {
               )}
 
               {hasPermission(settings?.data?.permissions, "purchase.edit") && (
-                <div className="relative mt-6">
+                <div className="relative">
                   <label className="text-black dark:text-white">Search Invoice</label>
                   <div className="w-full ">
                     <InputOnly
@@ -604,7 +605,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                       ? { label: productData.product_name, value: productData.product }
                       : null
                   }
-                  className="w-full py-1"
+                  className={"py-1"}
                 />
               </div>
 
@@ -615,7 +616,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   name="qty"
                   placeholder={"Quantity"}
                   label={"Quantity"}
-                  className={"py-1"}
+                  className={"py-1 mt-1"}
                   type="number"
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, "price")}
@@ -630,7 +631,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   name="price"
                   placeholder={"Price"}
                   label={"Price"}
-                  className={"py-1"}
+                  className={"py-1 mt-1"}
                   type="number"
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, "addProduct")}
