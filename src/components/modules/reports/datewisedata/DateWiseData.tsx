@@ -1,224 +1,304 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getDateWiseTotal } from './dateWiseDataSlice';
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import InputDatePicker from '../../../utils/fields/DatePicker';
-import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
-import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import Loader from '../../../../common/Loader';
+import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
+import InputDatePicker from "../../../utils/fields/DatePicker";
+import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import HelmetTitle from "../../../utils/others/HelmetTitle";
+import Loader from "../../../../common/Loader";
 
-import HelmetTitle from '../../../utils/others/HelmetTitle';
-import Table from '../../../utils/others/Table';
-import { useNavigate } from 'react-router-dom';
-import { FiEdit, FiTrash2, FiList, FiBook } from 'react-icons/fi';
-import dayjs from 'dayjs';
-import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { getDateWiseTotal } from "./dateWiseDataSlice";
+import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
+
+import Table from "../../../utils/others/Table";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+
+import InputElement from "../../../utils/fields/InputElement";
+import { useReactToPrint } from "react-to-print";
+import dayjs from "dayjs";
+
+import DateWisePrint from "./DateWisePrint";
 
 const DateWiseData = (user: any) => {
-  const dateWiseTotal = useSelector((state) => state.dateWiseTotal);
-  const branchDdlData = useSelector((state) => state.branchDdl);
-
   const dispatch = useDispatch();
-  const [branchId, setBranchId] = useState<number | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null); // Define state with type
-  const [endDate, setEndDate] = useState<Date | null>(null); // Define state with type
+  const branchDdlData = useSelector((state) => state.branchDdl);
+  const dateWiseTotal = useSelector((state) => state.dateWiseTotal);
+
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [buttonLoading, setButtonLoading] = useState(false);
-  const [isSelected, setIsSelected] = useState<number | string>('');
+  const [branchId, setBranchId] = useState<number | null>(null);
 
-  const [cumulativeDebit, setCumulativeDebit] = useState<number>(0); // Opening Balance for debit
-  const [cumulativeCredit, setCumulativeCredit] = useState<number>(0); // Opening Balance for credit
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
   const [tableData, setTableData] = useState<any[]>([]);
-  const navigate = useNavigate();
+  const [buttonLoading, setButtonLoading] = useState(false);
 
+  const [perPage, setPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
+
+  const printRef = useRef<HTMLDivElement>(null);
+
+  // -----------------------------------------------------
+  // Load Branch List & Default Branch
+  // -----------------------------------------------------
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    setIsSelected(user.user.branch_id);
     setBranchId(user.user.branch_id);
   }, []);
 
-  useEffect(() => {
-    let currentDebit = cumulativeDebit;
-    let currentCredit = cumulativeCredit;
-
-    if (dateWiseTotal?.data.length > 0) {
-      const computedData = dateWiseTotal?.data.map(
-        (item: any, index: number) => {
-          currentDebit += parseFloat(item.debit);
-          currentCredit += parseFloat(item.credit);
-          const balance = currentDebit - currentCredit;
-
-          return {
-            ...item,
-            rowNumber: index + 1,
-            cumulativeDebit: currentDebit,
-            cumulativeCredit: currentCredit,
-            balance: balance,
-          };
-        },
-      );
-      setTableData(computedData);
-    }
-  }, [dateWiseTotal]);
-
+  // -----------------------------------------------------
+  // Set Default Start/End Date From backend
+  // -----------------------------------------------------
   useEffect(() => {
     if (
       branchDdlData?.protectedData?.data &&
       branchDdlData?.protectedData?.transactionDate
     ) {
-      setDropdownData(branchDdlData?.protectedData?.data);
+      setDropdownData(branchDdlData.protectedData.data);
+
       const [day, month, year] =
-        branchDdlData?.protectedData?.transactionDate.split('/');
-      const startDate = new Date(Number(year), Number(month) - 1, Number('01'));
-      const endDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(startDate);
-      setEndDate(endDate);
-      setBranchId(user.user.branch_id);
-    } else {
-      // console.warn('branchDdlData is not ready yet or missing required fields.');
+        branchDdlData.protectedData.transactionDate.split("/");
+
+      const sDate = new Date(Number(year), Number(month) - 1, 1);
+      const eDate = new Date(Number(year), Number(month) - 1, Number(day));
+
+      setStartDate(sDate);
+      setEndDate(eDate);
     }
   }, [branchDdlData?.protectedData?.data]);
 
-  const handleActionButtonClick = (e: any) => {
-    const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
-    const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
+  // -----------------------------------------------------
+  // Run Button → Load Table Data
+  // -----------------------------------------------------
+  const handleRun = () => {
+    const startD = dayjs(startDate).format("YYYY-MM-DD");
+    const endD = dayjs(endDate).format("YYYY-MM-DD");
+
     dispatch(getDateWiseTotal({ branchId, startDate: startD, endDate: endD }));
   };
-  const handleBranchChange = (e: any) => {
-    setBranchId(e.target.value);
 
-  };
-  const handleStartDate = (e: any) => {
-    setStartDate(e);
-  };
-  const handleEndDate = (e: any) => {
-    setEndDate(e);
+  // -----------------------------------------------------
+  // SAFE row extractor (map error free)
+  // -----------------------------------------------------
+  const extractRows = (payload: any) => {
+    if (!payload) return [];
+
+    if (Array.isArray(payload)) return payload;
+
+    if (Array.isArray(payload.data)) return payload.data;
+
+    if (Array.isArray(payload.data?.data)) return payload.data.data;
+
+    return [];
   };
 
+  // -----------------------------------------------------
+  // Prepare Cumulative Table Data
+  // -----------------------------------------------------
+  useEffect(() => {
+    const rows = extractRows(dateWiseTotal);
+
+    if (rows.length === 0) {
+      setTableData([]);
+      return;
+    }
+
+    let debit = 0;
+    let credit = 0;
+
+    const computed = rows.map((row: any, index: number) => {
+      debit += Number(row.debit);
+      credit += Number(row.credit);
+
+      return {
+        ...row,
+        sl_number: index + 1,
+        cumulative_debit: debit,
+        cumulative_credit: credit,
+        balance: debit - credit,
+      };
+    });
+
+    setTableData(computed);
+  }, [dateWiseTotal]);
+
+  // -----------------------------------------------------
+  // Table Columns
+  // -----------------------------------------------------
   const columns = [
     {
-      key: 'sl_number',
-      header: 'Sl. No.',
-      headerClass: 'text-center',
-      cellClass: 'text-center', 
-      width: '80px',
+      key: "sl_number",
+      header: "Sl No",
+      headerClass: "text-center",
+      cellClass: "text-center",
     },
     {
-      key: 'vr_date',
-      header: 'Vr Date',  
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-      width: '120px',
+      key: "vr_date",
+      header: "Vr Date",
+      headerClass: "text-center",
+      cellClass: "text-center",
     },
     {
-      key: 'debit',
-      header: 'debit', 
-      render: (row: any) => (
-        <div>
-          <span>{ row?.debit > 0 ? thousandSeparator (row?.debit,0) : '-'}</span>
-        </div>
-      ),
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "debit",
+      header: "Debit",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: any) =>
+        row.debit > 0 ? thousandSeparator(row.debit, 0) : "-",
     },
     {
-      key: 'credit',
-      header: 'credit', 
-      render: (row: any) => (
-        <div>
-          <span>{ row?.credit > 0 ? thousandSeparator (row?.credit,0) : '-'}</span>
-        </div>
-      ),
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "credit",
+      header: "Credit",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: any) =>
+        row.credit > 0 ? thousandSeparator(row.credit, 0) : "-",
     },
     {
-      key: 'cumulative_debit',
-      header: 'Cum. Received', 
-      render: (row: any) => (
-        <div>
-          <span>{ row?.cumulative_debit > 0 ? thousandSeparator (row?.cumulative_debit,0) : '-'}</span>
-        </div>
-      ),
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "cumulative_debit",
+      header: "Cum. Debit",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: any) =>
+        row.cumulative_debit
+          ? thousandSeparator(row.cumulative_debit, 0)
+          : "-",
     },
     {
-      key: 'cumulative_credit',
-      header: 'Cum. Payment', 
-      render: (row: any) => (
-        <div>
-          <span>{ row?.cumulative_credit > 0 ? thousandSeparator (row?.cumulative_credit,0) : '-'}</span>
-        </div>
-      ),
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "cumulative_credit",
+      header: "Cum. Credit",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: any) =>
+        row.cumulative_credit
+          ? thousandSeparator(row.cumulative_credit, 0)
+          : "-",
     },
     {
-      key: 'balance',
-      header: 'Balance', 
-      render: (row: any) => (
-        <div>
-          <span>{ thousandSeparator (row?.balance,0)}</span>
-        </div>
-      ),
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "balance",
+      header: "Balance",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: any) => thousandSeparator(row.balance, 0),
     },
   ];
+
+  // -----------------------------------------------------
+  // Print Function
+  // -----------------------------------------------------
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: "Date Wise Total",
+    removeAfterPrint: true,
+  });
+
   return (
-    <div className="">
-      <HelmetTitle title={'Datewise Total'} />
-      <div className="flex justify-between mb-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-1 md:gap-x-2 w-full">
-          <div className='w-full'>
-            <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
-            </div>
-            <div className='w-full'>
-              {branchDdlData.isLoading == true ? <Loader /> : ''}
-              <BranchDropdown
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5 "
-                branchDdl={dropdownData}
-              />
-            </div>
-          </div>
-          <div className='w-full'>
-            <label htmlFor="">Start Date</label>
-            <InputDatePicker
-              setCurrentDate={handleStartDate}
-              className="w-full font-medium text-sm h-8.5"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
-            />
-          </div>
-          <div>
-            <label htmlFor="">End Date</label>
-            <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="w-full font-medium text-sm h-8.5"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-            />
-          </div>
-          <div className='md:mt-6'>
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
-              label="Run"
-              className="pt-[0.45rem] pb-[0.45rem] w-full "
-            />
+    <div>
+      <HelmetTitle title={"Date Wise Total"} />
+
+      {/* FILTER SECTION */}
+      {/* FULL RESPONSIVE SINGLE ROW BAR */}
+<div className="
+  w-full 
+  flex flex-wrap md:flex-nowrap 
+  items-end gap-2 mb-3
+">
+
+  {/* Branch */}
+  <div className="flex-1 min-w-[140px]">
+    <label>Select Branch</label>
+    <BranchDropdown
+      onChange={(e) => setBranchId(e.target.value)}
+      branchDdl={dropdownData}
+      className="w-full p-1.5 text-sm"
+    />
+  </div>
+
+  {/* Start Date */}
+  <div className="flex-1 min-w-[120px]">
+    <label>Start Date</label>
+    <InputDatePicker
+      selectedDate={startDate}
+      setSelectedDate={setStartDate}
+      setCurrentDate={setStartDate}
+      className="w-full h-8 text-sm"
+    />
+  </div>
+
+  {/* End Date */}
+  <div className="flex-1 min-w-[120px]">
+    <label>End Date</label>
+    <InputDatePicker
+      selectedDate={endDate}
+      setSelectedDate={setEndDate}
+      setCurrentDate={setEndDate}
+      className="w-full h-8 text-sm"
+    />
+  </div>
+
+  {/* ROWS (small) */}
+  <div className="min-w-[70px]">
+    <InputElement
+      id="perPage"
+      label="Rows"
+      value={perPage.toString()}
+      onChange={(e) => setPerPage(Number(e.target.value))}
+      className="w-full h-8 text-sm"
+    />
+  </div>
+
+  {/* FONT (small) */}
+  <div className="min-w-[70px]">
+    <InputElement
+      id="fontSize"
+      label="Font"
+      value={fontSize.toString()}
+      onChange={(e) => setFontSize(Number(e.target.value))}
+      className="w-full h-8 text-sm"
+    />
+  </div>
+
+  {/* RUN */}
+  <div className="min-w-[90px]">
+    <ButtonLoading
+      onClick={handleRun}
+      buttonLoading={buttonLoading}
+      label="Run"
+      className="w-full h-8 whitespace-nowrap"
+    />
+  </div>
+
+  {/* PRINT */}
+  <div className="min-w-[90px]">
+    <PrintButton
+      onClick={handlePrint}
+      className="w-full h-8 whitespace-nowrap"
+    />
+  </div>
+
+</div>
 
 
-          </div>
-        </div>
+      {/* ROWS + FONT + RUN + PRINT */}
+
+
+      {/* TABLE */}
+      <div className="overflow-auto">
+        {dateWiseTotal.isLoading && <Loader />}
+        <Table columns={columns} data={tableData} />
       </div>
-      <div className='overflow-y-auto'>
-        {dateWiseTotal.isLoading ? <Loader /> : ''}
-        <Table columns={columns} data={tableData} className="" />
+
+      {/* HIDDEN PRINT COMPONENT */}
+      <div className="hidden">
+        <DateWisePrint
+          ref={printRef}
+          rows={tableData}
+          startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
+          endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
+          rowsPerPage={perPage}
+          fontSize={fontSize}
+          title="Date Wise Total"
+        />
       </div>
     </div>
   );
