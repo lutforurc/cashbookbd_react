@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import React, { useEffect, useRef, useState } from 'react';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -11,6 +11,10 @@ import dayjs from 'dayjs';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import Table from '../../../utils/others/Table';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import CashBookPrint from '../cashbook/CashBookPrint';
+import DueListPrint from './DueListPrint';
+import InputElement from '../../../utils/fields/InputElement';
+import { useReactToPrint } from 'react-to-print';
 
 
 const DueList = (user: any) => {
@@ -26,8 +30,16 @@ const DueList = (user: any) => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
 
 
+    interface OptionType {
+    value: string;
+    label: string;
+    additionalDetails: string;
+  }
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setIsSelected(user.user.branch_id);
@@ -74,14 +86,14 @@ const DueList = (user: any) => {
   const columns = [
     {
       key: 'sl_number',
-      header: 'Sl. No',  
-      headerClass: 'text-center', 
+      header: 'Sl. No',
+      headerClass: 'text-center',
       cellClass: 'text-center',
     },
     {
       key: 'coa4_name',
       header: 'coa4_name',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
           <p>{row.coa4_name}</p>
           <p className="text-sm text-gray-500">{row.mobile}</p>
@@ -91,44 +103,75 @@ const DueList = (user: any) => {
     },
     {
       key: 'ledger_page',
-      header: 'Page', 
+      header: 'Page',
       headerClass: 'text-center',
       cellClass: 'text-center',
     },
     {
       key: 'area_id',
-      header: 'Area Code', 
+      header: 'Area Code',
       headerClass: 'text-center',
       cellClass: 'text-center',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
           <p>{row.area_id ? row.area_id : '-'}</p>
         </>
       )
     },
-    { 
+    {
       key: 'debit',
-      header: 'Debit', 
+      header: 'Debit',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
-          <p>{ row.debit>0?thousandSeparator (row.debit, 0):'-'}</p> 
+          <p>{row.debit > 0 ? thousandSeparator(row.debit, 0) : '-'}</p>
         </>
       )
     },
     {
       key: 'credit',
-      header: 'Credit', 
+      header: 'Credit',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row:any) => (
+      render: (row: any) => (
         <>
-          <p>{ row.credit > 0 ? thousandSeparator (row.credit, 0) : '-'}</p> 
+          <p>{row.credit > 0 ? thousandSeparator(row.credit, 0) : '-'}</p>
         </>
       )
     }
   ];
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setPerPage(value);
+    } else {
+      setPerPage(10); // Reset if input is invalid
+    }
+  };
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+
+    if (!isNaN(value)) {
+      setFontSize(value);
+    } else {
+      setFontSize(10); // Reset if input is invalid
+    }
+  };
+
+  const handlePrint = useReactToPrint({
+    content: () => {
+      if (!printRef.current) {
+        // alert("Nothing to print: Ref not ready");
+        return null;
+      }
+      return printRef.current;
+    },
+    documentTitle: 'Due Report',
+    // onAfterPrint: () => alert('Printed successfully!'),
+    removeAfterPrint: true,
+  });
 
   return (
     <div className="">
@@ -164,19 +207,59 @@ const DueList = (user: any) => {
               setSelectedDate={setEndDate}
             />
           </div>
-          <div className='mt-0 md:mt-6'>
+          <div className="flex w-full">
+            <div className="mr-2">
+              <InputElement
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type='text'
+                className="font-medium text-sm h-9 w-12"
+              />
+            </div>
+            <div className="mr-2">
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type='text'
+                className="font-medium text-sm h-9 w-12"
+              />
+            </div>
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
-              className="pt-[0.45rem] pb-[0.45rem] w-full"
+              className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
+            />
+            <PrintButton
+              onClick={handlePrint}
+              label=""
+              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
             />
           </div>
+
         </div>
       </div>
       <div className='overflow-y-auto overflow-x-auto'>
         {dueList.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} /> {/* Ensure data is always an array */}
+
+        {/* === Hidden Print Component === */}
+        <div className="hidden">
+          <DueListPrint
+          ref={printRef}
+          rows={tableData || []}
+          endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
+          title="Due List Print"
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+          />
+        </div>
       </div>
     </div>
   );
