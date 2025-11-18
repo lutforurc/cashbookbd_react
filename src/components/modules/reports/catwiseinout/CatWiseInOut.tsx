@@ -1,229 +1,313 @@
-import React, { useEffect, useState } from 'react';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import InputDatePicker from '../../../utils/fields/DatePicker';
-import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
-import HelmetTitle from '../../../utils/others/HelmetTitle';
-import Loader from '../../../../common/Loader';
-import { useDispatch, useSelector } from 'react-redux';
-import Table from '../../../utils/others/Table';
-import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { getCatWiseInOut } from './catWiseInOutSlice';
-import SearchInput from '../../../utils/fields/SearchInput';
-import { getCategoryDdl } from '../../category/categorySlice';
-import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
-import { orderType } from '../../../utils/fields/DataConstant';
-import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { toast } from 'react-toastify';
-import dayjs from 'dayjs';
-import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import HelmetTitle from "../../../utils/others/HelmetTitle";
+import Loader from "../../../../common/Loader";
+
+import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
+import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import InputDatePicker from "../../../utils/fields/DatePicker";
+import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
+import CategoryDropdown from "../../../utils/utils-functions/CategoryDropdown";
+import Table from "../../../utils/others/Table";
+import InputElement from "../../../utils/fields/InputElement";
+
+import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
+import { getCategoryDdl } from "../../category/categorySlice";
+import { getCatWiseInOut } from "./catWiseInOutSlice";
+
+import { orderType } from "../../../utils/fields/DataConstant";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+
+import CatWiseInOutPrint from "./CatWiseInOutPrint";
+import { useReactToPrint } from "react-to-print";
+
 const CatWiseInOut = (user: any) => {
   const dispatch = useDispatch();
+
   const branchDdlData = useSelector((state) => state.branchDdl);
   const categoryData = useSelector((state) => state.category);
   const inOutData = useSelector((state) => state.catWiseInOut);
-  const stock = useSelector((state) => state.stock);
+
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [categoryList, setCategoryList] = useState<any[]>([]);
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
-  const [buttonLoading, setButtonLoading] = useState(false);
-  const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
-  const [reportType, setReportType] = useState('');
 
   const [branchId, setBranchId] = useState<number | string | null>(null);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
+  const [reportType, setReportType] = useState("");
 
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [buttonLoading, setButtonLoading] = useState(false);
 
+  const [perPage, setPerPage] = useState(20);
+  const [fontSize, setFontSize] = useState(11);
+
+  const printRef = useRef<HTMLDivElement>(null);
+
+  // Load Dropdowns
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(getCategoryDdl());
-    // setBranchId(user?.user?.branch_id);
-    if (Array.isArray(categoryData)) {
-      setDdlCategory(categoryData); // Use data if it's an array
-      setCategoryId(ddlCategory[0]?.id);
-    } else {
-      setDdlCategory([]); // Fallback to empty array
-    }
   }, []);
 
-
+  // Set Branch + Dates
   useEffect(() => {
-    if (
-      branchDdlData?.protectedData?.data &&
-      branchDdlData?.protectedData?.transactionDate
-    ) {
+    if (branchDdlData?.protectedData?.data) {
       setDropdownData(branchDdlData?.protectedData?.data);
-      setDdlCategory(categoryData?.data);
-      const [day, month, year] = branchDdlData?.protectedData?.transactionDate.split('/');
+
+      const [day, month, year] =
+        branchDdlData?.protectedData?.transactionDate.split("/");
+
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
       setStartDate(parsedDate);
       setEndDate(parsedDate);
+
       setBranchId(user.user.branch_id);
     }
   }, [branchDdlData?.protectedData]);
 
+  // Load category list
+  // useEffect(() => {
+  //   if (categoryData?.data) {
+  //     setCategoryList(categoryData.data.category);
+  //     setDdlCategory(categoryData?.ddlData?.data?.category || []);
+  //   }
+  // }, [categoryData]);
 
 
+    useEffect(() => {
+      if (Array.isArray(categoryData?.ddlData?.data?.category)) {
+        setDdlCategory(categoryData?.ddlData?.data?.category || []);
+        setCategoryId(categoryData.ddlData[0]?.id ?? null);
+      }
+    }, [categoryData]);
+
+  // Load table data
   useEffect(() => {
-    if (!stock.isLoading && Array.isArray(stock?.data)) {
-      setTableData(stock?.data);
-    }
-  }, [stock]);
-
-  const handleBranchChange = (e: any) => {
-    setBranchId(e.target.value);
-  };
-
-  const handleCategoryChange = (e: any) => {
-    setCategoryId(e.target.value);
-  };
-
-  const handleStartDate = (e: any) => {
-    setStartDate(e);
-  };
-
-  const handleEndDate = (e: any) => {
-    setEndDate(e);
-  };
-
-  const handleReportTypeChange = (e: any) => {
-    setReportType(e.target.value);
-  }
-
-  const handleActionButtonClick = () => {
-    if (!(reportType || '').trim()) {
-      toast.info('Please select report type.');
-      return;
-    }
-
-    const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
-    const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-
-    dispatch(getCatWiseInOut({ branchId, reportType, categoryId, startDate: startD, endDate: endD }));
-  };
-
-  useEffect(() => {
-    // Update table data only when ledgerData is valid
     if (!inOutData.isLoading && Array.isArray(inOutData?.data)) {
       setTableData(inOutData?.data);
     }
   }, [inOutData]);
 
+  const handleRun = () => {
+    if (!reportType) {
+      toast.info("Please select report type.");
+      return;
+    }
 
+    const startD = dayjs(startDate).format("YYYY-MM-DD");
+    const endD = dayjs(endDate).format("YYYY-MM-DD");
+
+    dispatch(
+      getCatWiseInOut({
+        branchId,
+        reportType,
+        categoryId,
+        startDate: startD,
+        endDate: endD,
+      })
+    );
+  };
+
+  // Print handler
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: "Category Wise In Out",
+  });
+
+  // Table columns
   const columns = [
     {
-      key: 'sl_number',
-      header: 'Sl. No',  
-      headerClass: 'text-center',
-      cellClass: 'text-center', 
+      key: "sl_number",
+      header: "Sl",
+      headerClass: "text-center",
+      cellClass: "text-center",
     },
     {
-      key: 'product_name',
-      header: 'Product Name',
+      key: "product_name",
+      header: "Product Name",
     },
     {
-      key: 'cat_name',
-      header: 'Cagegery Name',
+      key: "cat_name",
+      header: "Category Name",
     },
     {
-      key: 'unit',
-      header: 'Unit',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
+      key: "unit",
+      header: "Unit",
+      headerClass: "text-center",
+      cellClass: "text-center",
     },
     {
-      key: 'quantity',
-      header: 'Quantity',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: any) => (
-        <>
-          <p>{ thousandSeparator (row.quantity, 0)}</p>
-        </>
-      ),
-    }
+      key: "quantity",
+      header: "Quantity",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row) => thousandSeparator(row.quantity, 0),
+    },
   ];
 
+    const handleCategoryChange = (selectedOption: any) => {
+    if (selectedOption) {
+      setCategoryId(selectedOption.value);
+    } else {
+      setCategoryId(null); // অথবা default value
+    }
+  };
+
+  const optionsWithAll = [
+  { id: '', name: 'All Product' },
+  ...(Array.isArray(ddlCategory) ? ddlCategory : []),
+];
+
+
+
+// Report Type
+  const reportTypeWithAll = [
+  { id: '', name: 'Select Type' },
+  ...(Array.isArray(orderType) ? orderType : []),
+];
+
+// orderType
+
   return (
-    <div className="">
-      <HelmetTitle title={'Category wise in and out'} />
-      <div className="mb-2 ">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
-          <div className=''>
-            <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
-            </div>
-            <div>
-              {branchDdlData.isLoading == true ? <Loader /> : ''}
-              <BranchDropdown
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
-                branchDdl={dropdownData}
-              />
-            </div>
-          </div>
-          <div className=''>
-            <div>
-              {' '}
-              <label htmlFor="">Select Category</label>
-            </div>
-            <div>
-              {categoryData.isLoading == true ? <Loader /> : ''}
-              <CategoryDropdown
-                onChange={handleCategoryChange}
-                className="w-full font-medium text-sm p-1.5"
-                categoryDdl={ddlCategory?.category}
-              />
-            </div>
-          </div>
-          <div className=''>
-            <div>
-              {categoryData.isLoading == true ? <Loader /> : ''}
-              <DropdownCommon id="category_type_id"
-                name={'category_type_id'}
-                label="Report Type"
-                onChange={handleReportTypeChange}
-                className="h-[2.1rem] bg-transparent"
-                data={orderType} />
-            </div>
-          </div>
-          <div className='sm:grid md:flex gap-x-3 '>
-            <div className='w-full'>
-              <label htmlFor="">Start Date</label>
-              <InputDatePicker
-                setCurrentDate={handleStartDate}
-                className="w-full font-medium text-sm h-8.5"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
-              />
-            </div>
-            <div className='w-full'>
-              <label htmlFor="">End Date</label>
-              <InputDatePicker
-                setCurrentDate={handleEndDate}
-                className="w-full font-medium text-sm h-8.5"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
-              />
-            </div>
-            <div className='mt-1 md:mt-6 w-full'>
-              <ButtonLoading
-                onClick={handleActionButtonClick}
-                buttonLoading={buttonLoading}
-                label="Run"
-                className="pt-[0.45rem] pb-[0.45rem] w-full"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className='overflow-y-auto'>
+    <div>
+      <HelmetTitle title={"Category Wise In & Out"} />
+
+      {/* FILTER BAR */}
+      {/* ---- ROW 1 ---- */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+
+  {/* Branch */}
+  <div className="flex flex-col">
+    <label>Select Branch</label>
+    <BranchDropdown
+      onChange={(e) => setBranchId(e.target.value)}
+      branchDdl={dropdownData}
+      className="w-full text-sm h-9.5"
+    />
+  </div>
+
+  {/* Category */}
+  <div className="flex flex-col">
+    <label>Select Category</label>
+    {categoryData.isLoading ? (
+      <Loader />
+    ) : (
+      <CategoryDropdown
+        onChange={handleCategoryChange}
+        className="w-full text-sm "
+        categoryDdl={optionsWithAll}
+      />
+    )}
+  </div>
+
+  {/* Report Type */}
+  <div className="flex flex-col">
+    <label>Report Type</label>
+    <DropdownCommon
+      name="reportType"
+      onChange={(e) => setReportType(e.target.value)}
+      data={reportTypeWithAll}
+      className="h-9.5"
+    />
+  </div>
+
+</div>
+
+
+{/* ---- ROW 2 ---- */}
+<div className="flex flex-wrap gap-4 items-end mb-3">
+
+  {/* Start Date */}
+  <div className="flex flex-col min-w-[160px] flex-1">
+    <label>Start Date</label>
+    <InputDatePicker
+      selectedDate={startDate}
+      setSelectedDate={setStartDate}
+      setCurrentDate={setStartDate}
+      className="w-full h-8 text-sm"
+    />
+  </div>
+
+  {/* End Date */}
+  <div className="flex flex-col min-w-[160px] flex-1">
+    <label>End Date</label>
+    <InputDatePicker
+      selectedDate={endDate}
+      setSelectedDate={setEndDate}
+      setCurrentDate={setEndDate}
+      className="w-full h-8 text-sm"
+    />
+  </div>
+
+  {/* Rows */}
+  <div className="flex flex-col min-w-[100px]">
+    <label>Rows</label>
+    <InputElement
+      id="perPage"
+      label={""}
+      name="perPage"
+      value={perPage.toString()}
+      onChange={(e) => setPerPage(Number(e.target.value))}
+      className="h-8 text-sm"
+    />
+  </div>
+
+  {/* Font */}
+  <div className="flex flex-col min-w-[100px]">
+    <label>Font</label>
+    <InputElement
+      id="fontSize"
+      name="fontSize"
+      label={""}
+      value={fontSize.toString()}
+      onChange={(e) => setFontSize(Number(e.target.value))}
+      className="h-8 text-sm"
+    />
+  </div>
+
+  {/* Buttons */}
+  <div className="flex gap-2 ml-auto">
+    <ButtonLoading
+      onClick={handleRun}
+      buttonLoading={buttonLoading}
+      label="Run"
+      className="h-9 px-4"
+    />
+    <PrintButton
+      onClick={handlePrint}
+      className="h-9 px-4"
+    />
+  </div>
+
+</div>
+
+      {/* TABLE */}
+      <div className="overflow-y-auto">
         {inOutData.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} /> {/* Ensure data is always an array */}
+        <Table columns={columns} data={tableData || []} />
       </div>
 
+      {/* PRINT COMPONENT */}
+      <div style={{ opacity: 0, position: "absolute", pointerEvents: "none" }}>
+        <CatWiseInOutPrint
+          ref={printRef}
+          rows={tableData}
+          branchName={dropdownData?.find((b) => b.id == branchId)?.name}
+          categoryName={categoryList?.find((c) => c.id == categoryId)?.name}
+          reportType={orderType.find((x) => x.value == reportType)?.label}
+          startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
+          endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
+          rowsPerPage={perPage}
+          fontSize={fontSize}
+        />
+      </div>
     </div>
   );
 };
