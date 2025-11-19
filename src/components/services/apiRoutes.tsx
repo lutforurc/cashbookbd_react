@@ -116,6 +116,7 @@ export const API_APP_SETTING_VOCHER_TYPE_URL =  `${API_BASE_URL}/settings/vouche
 // dashboard Routes
 export const API_DASHBOARD_URL = `${API_BASE_URL}/dashboard/data`;
 export const API_BRANCH_TRANSACTION_CHART_URL = `${API_BASE_URL}/dashboard/branch/transaction-chart-data`;
+export const API_BRANCH_PURCHASE_SALES_CHART_URL = `${API_BASE_URL}/dashboard/branch/monthly-purchase-sales`;
 export const API_HEAD_OFFICE_PAYMENT_CHART_URL = `${API_BASE_URL}/dashboard/head-office/payment/transaction-chart-data`;
 export const API_HEAD_OFFICE_RECEIVED_CHART_URL = `${API_BASE_URL}/dashboard/head-office/received/transaction-chart-data`;
 export const API_RECEIVED_REMITTANCE_URL = `${API_BASE_URL}/accounts/payment/specific-item`;

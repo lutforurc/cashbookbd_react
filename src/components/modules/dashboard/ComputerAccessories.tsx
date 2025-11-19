@@ -3,6 +3,10 @@ import HelmetTitle from '../../utils/others/HelmetTitle'
 import { useDispatch, useSelector } from 'react-redux';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDashboard } from './dashboardSlice';
+import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
+import DailyPurchaseSalesChart from './DailyPurchaseChart';
+import DailyPurchaseChart from './DailyPurchaseChart';
+import DailySalesChart from './DailySalesChart';
 
 const ComputerAccessories = () => {
     const dashboard = useSelector((state) => state.dashboard);
@@ -83,6 +87,11 @@ const ComputerAccessories = () => {
           ''
         )}
       </div>
+       <div className='mt-5'>
+       <DailySalesChart />
+       <DailyPurchaseChart />
+        <MonthlyPurchaseSalesChart />
+        </div>
     </div>
   )
 }

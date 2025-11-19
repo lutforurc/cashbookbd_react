@@ -69,17 +69,6 @@ const TransactionChart: React.FC = () => {
         }
       }
     }
-    
-    
-    
-    // tooltip: {
-    //   enabled: true, theme: "dark", style: { fontSize: "12px" },
-    //   y: {
-    //     formatter: (value: number): string => {
-    //       return `${ thousandSeparator (value,0)}`;
-    //     }
-    //   }
-    // }
   };
   console.log(currentBranch?.currentBranch?.name);
   return (

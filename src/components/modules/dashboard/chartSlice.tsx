@@ -2,13 +2,24 @@
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import httpService from "../../services/httpService";
-import { API_BRANCH_TRANSACTION_CHART_URL, API_HEAD_OFFICE_PAYMENT_CHART_URL, API_HEAD_OFFICE_RECEIVED_CHART_URL } from "../../services/apiRoutes";
+import { API_BRANCH_PURCHASE_SALES_CHART_URL, API_BRANCH_TRANSACTION_CHART_URL, API_HEAD_OFFICE_PAYMENT_CHART_URL, API_HEAD_OFFICE_RECEIVED_CHART_URL } from "../../services/apiRoutes";
 
 export const getBranchChart = createAsyncThunk("getBranchChart/fetch", async (params, { rejectWithValue }) => {
     try {
 
       const { month = 12, branch = ''} = params || {};
       const { data } = await httpService.get(`${API_BRANCH_TRANSACTION_CHART_URL}?month=${month}&branch=${branch}`);
+      return { data };
+    } catch (error) {
+      return rejectWithValue({ message: "Authentication failed, please try again!" });
+    }
+  }
+);
+
+
+export const getMonthlyPurchaseSales = createAsyncThunk("getMonthlyPurchaseSales/fetch", async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await httpService.get(`${API_BRANCH_PURCHASE_SALES_CHART_URL}`);
       return { data };
     } catch (error) {
       return rejectWithValue({ message: "Authentication failed, please try again!" });
@@ -55,6 +66,7 @@ const chartSlice = createSlice({
     transactionChart: [],   
     headOfficePayment: [],   
     headOfficeReceived: [],   
+    purchaseSales: [],
     error: null,
   },
   reducers: {
@@ -74,6 +86,19 @@ const chartSlice = createSlice({
         state.transactionChart = action.payload.data; 
       })
       .addCase(getBranchChart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong!";
+      }) 
+
+    .addCase(getMonthlyPurchaseSales.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMonthlyPurchaseSales.fulfilled, (state, action) => {
+        state.loading = false;
+        state.purchaseSales = action.payload.data; 
+      })
+      .addCase(getMonthlyPurchaseSales.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong!";
       }) 
