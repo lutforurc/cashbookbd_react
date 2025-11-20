@@ -25,11 +25,6 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
       { name: "Sales", data: [] },
     ],
   });
-
-  useEffect(() => {
-    dispatch(getMonthlyPurchaseSales());
-  }, []);
-
   // Build Chart Data
   useEffect(() => {
     if (purchaseSales?.data?.data) {
