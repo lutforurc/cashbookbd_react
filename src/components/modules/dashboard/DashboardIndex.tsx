@@ -21,10 +21,10 @@ function DashboardIndex() {
   const components: { [key: number]: JSX.Element } = {
     4: <ComputerAccessories />, // 4 for Computer and Accessories
     7: <ConstructionDashboard />, // 7 for Construction Business
-    8: <ConstructionDashboard />, // 8 for Trading Business
+    8: <ComputerAccessories />, // 8 for Trading Business
   };
 
-  return components[currentBranch.business_type_id] || <ConstructionDashboard />;
+  return components[currentBranch.business_type_id] || <ComputerAccessories />;
 }
 
 export default DashboardIndex
