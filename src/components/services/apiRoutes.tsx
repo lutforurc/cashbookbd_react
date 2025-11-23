@@ -353,3 +353,9 @@ export const API_REQUISITION_COMPARISONS_URL = `${API_BASE_URL}/requisition/comp
 export const API_REQUISITION_ITEMS_URL = `${API_BASE_URL}/requisition/items`;
 export const API_REQUISITION_STORE_URL = `${API_BASE_URL}/requisition/store`;
 export const API_REQUISITION_LIST_URL = `${API_BASE_URL}/requisition/list`;
+
+
+
+// Voucher Settings Routes
+// Voucher Delete URL
+export const API_VOUCHER_DELETE_URL = `${API_BASE_URL}/voucher-settings/destroy`;

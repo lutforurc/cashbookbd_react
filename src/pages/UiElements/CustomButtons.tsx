@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiCheck } from 'react-icons/fi';
 
 // Define the props for the Button component
 interface ButtonProps {
@@ -69,7 +70,7 @@ export const ButtonSuccess: React.FC<ButtonProps> = ({
         type={type}
         onClick={onClick}
         disabled={disabled}
-        onKeyDown={onKeyDown} 
+        onKeyDown={onKeyDown}
         className={`text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:bg-blue-400 font-medium rounded-lg text-sm px-5 py-1 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center ${className}`}
       >
         {label}
@@ -78,15 +79,13 @@ export const ButtonSuccess: React.FC<ButtonProps> = ({
   );
 };
 
-
 type PrintButtonProps = {
-  label?: string;  // optional
+  label?: string; // optional
   onClick?: (() => void) | React.MouseEventHandler<HTMLButtonElement>; // flexible
   className?: string; // optional
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
 };
-
 
 export const PrintButton: React.FC<PrintButtonProps> = ({
   label = '',
@@ -106,27 +105,65 @@ export const PrintButton: React.FC<PrintButtonProps> = ({
   );
 };
 
+interface DeleteButtonProps {
+  label?: string;
+  onClick: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+  className?: string;
+}
+
+export const DeleteButton: React.FC<DeleteButtonProps> = ({
+  label = "Confirm",
+  onClick,
+  loading = false,
+  disabled = false,
+  className = "",
+}) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={`text-white bg-red-600 hover:bg-red-700 focus:outline-none font-medium text-sm px-5 h-8 text-center rounded inline-flex items-center justify-center ${className}`}
+    >
+      <span className="flex items-center">
+        {loading ? (
+          <>
+            <Spinner />
+            {label}
+          </>
+        ) : (
+          <>
+            <FiCheck className="text-white text-lg mr-2" />
+            {label}
+          </>
+        )}
+      </span>
+    </button>
+  );
+};
 
 
 const Spinner = () => (
   <svg
-  className="h-5 w-5 animate-spin text-white mr-2"
-  xmlns="http://www.w3.org/2000/svg"
-  fill="none"
-  viewBox="0 0 24 24"
->
-  <circle
-    className="opacity-20"
-    cx="12"
-    cy="12"
-    r="10"
-    stroke="currentColor"
-    strokeWidth="4"
-/>
-  <path
-    className="opacity-80"
-    fill="currentColor"
-    d="M12 2a10 10 0 00-3.95.81l1.5 3.28A6 6 0 0118 12h4a10 10 0 00-10-10z"
-/>
-</svg>
+    className="h-5 w-5 animate-spin text-white mr-2"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-20"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    />
+    <path
+      className="opacity-80"
+      fill="currentColor"
+      d="M12 2a10 10 0 00-3.95.81l1.5 3.28A6 6 0 0118 12h4a10 10 0 00-10-10z"
+    />
+  </svg>
 );

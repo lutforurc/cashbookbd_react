@@ -1,143 +1,149 @@
-import React, { useEffect, useState } from 'react'
-import HelmetTitle from '../../utils/others/HelmetTitle'
-import InputElement from '../../utils/fields/InputElement'
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import { FiHome, FiSave } from 'react-icons/fi';
+import React, { useEffect, useState } from 'react';
+import HelmetTitle from '../../utils/others/HelmetTitle';
+import InputElement from '../../utils/fields/InputElement';
+import {
+  ButtonLoading,
+  DeleteButton,
+} from '../../../pages/UiElements/CustomButtons';
+import { FiHome, FiSave, FiX } from 'react-icons/fi';
 import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { addDayInDate } from '../../utils/utils-functions/addDayInDate';
 import { getSettings } from '../settings/settingsSlice';
-import { FaPersonSkating } from "react-icons/fa6";
-import { hasPermission } from '../../utils/permissionChecker';
-import { useNavigate } from 'react-router-dom';
-
- 
+import { deleteVoucher } from './voucherSettingsSlice';
 
 const VoucherDelete = () => {
-    const settings = useSelector((s: any) => s.settings);
-    const dayclose = useSelector((state: any) => state.dayclose);
-    const navigate = useNavigate();
-    const [currentDate, setCurrentDate] = useState<string>('');
-    const [nextDate, setNextDate] = useState<string>('');
-    const dispatch = useDispatch();
-      const [saveButtonLoading, setSaveButtonLoading] = useState(false);
-      const [jumpDateButtonLoading, setJumpDateButtonLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        current_date: "",
-        next_date: "",
-    });
+  const settings = useSelector((s) => s.settings);
+  const dispatch = useDispatch();
 
-    const handleOnChange = (e: any) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
+  const [voucherNo, setVoucherNo] = useState('');
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  // ================= Sync Settings from localStorage =================
+  useEffect(() => {
+    if (settings?.data?.trx_dt) {
+      localStorage.setItem('settings_updated', Date.now().toString());
     }
+  }, [settings?.data?.trx_dt]);
 
-    useEffect(() => {
-        if (settings?.data?.trx_dt) {
-            setFormData({
-                current_date: settings?.data?.trx_dt,
-                next_date: addDayInDate(settings?.data?.trx_dt, 1)
-            });
-            setCurrentDate(settings.data.trx_dt);
-            setNextDate(settings.data.trx_dt);
-            setNextDate(addDayInDate(settings.data.trx_dt, 1));
-        }
-
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === 'settings_updated') {
         dispatch(getSettings());
-        
-    }, [settings.data.trx_dt, dayclose?.data?.trx_date]);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [dispatch]);
 
-    // Update localStorage when settings change
-    useEffect(() => {
-        if (settings.data.trx_dt) {
-            localStorage.setItem('settings_updated', Date.now().toString());
-        }
-    }, [settings.data.trx_dt]);
+  // ================= Handle Confirm Delete =================
+const handleDeleteConfirmed = async () => {
+  // Show spinner
+  setSaveButtonLoading(true);
 
-    // Listen for changes in other tabs
-    useEffect(() => {
-        const handleStorageChange = (event) => {
-            if (event.key === 'settings_updated') {
-                dispatch(getSettings());
-            }
-        };
+  // ৩০ সেকেন্ডের timeout
+  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-        window.addEventListener('storage', handleStorageChange);
+  try {
+    const result = await dispatch(deleteVoucher({ voucher_no: voucherNo }));
 
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, [dispatch]);
+    await wait(100);
 
-    const handleJumpDate = () => {
-        navigate('/admin/jumpdate', { state: { current_date: formData.current_date, next_date: formData.next_date } });
+    if (deleteVoucher.fulfilled.match(result)) {
+      toast.success("Voucher deleted successfully");
+      setVoucherNo("");
+    } else {
+      toast.error(result.payload || "Failed to delete voucher");
     }
+  } catch (error) {
+    toast.error("Something went wrong");
+  } finally {
+    setSaveButtonLoading(false); // spinner hide
+    setShowConfirm(false); // modal close
+  }
+};
 
-    const handleSave = async () => {
-        setSaveButtonLoading(true);
-        await dispatch(storeDayClose(formData, function (message) {
-            toast.success(`${message} has been saved.`);
-        }));
-        setTimeout(() => {
-            setSaveButtonLoading(false);
-        }, 1000);
-    }
- 
-    return (
-        <>
-            <HelmetTitle title="Voucher Delete" />
-            <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 justify-center mx-auto mt-5 "> 
-                <InputElement
-                    id="current_date"
-                    value={currentDate}
-                    name="current_date"
-                    placeholder={'Current Date (Transaction Date)'}
-                    label={'Current Date (Transaction Date)'}
-                    className={'mb-2'}
-                    onChange={handleOnChange}
-                />
-                <InputElement
-                    id="current_date"
-                    value={nextDate}
-                    name="current_date"
-                    placeholder={'Next Date (Upcoming Transaction Date)'}
-                    label={'Next Date (Upcoming Transaction Date)'}
-                    className={'mb-2'}
-                    onChange={handleOnChange}
-                />
 
-                <div className={`grid grid-cols-1 gap-x-1 gap-y-1 ${hasPermission(settings.data.permissions, 'dayclose.jumpdate') ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
-                    <ButtonLoading
-                        onClick={handleSave}
-                        buttonLoading={saveButtonLoading}
-                        label="Update"
-                        className="whitespace-nowrap text-center mr-0 h-8"
-                        icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
-                        disabled={saveButtonLoading}
-                    />
-                    
-                    {hasPermission(settings.data.permissions, 'dayclose.jumpdate') && (
-                        <ButtonLoading
-                        onClick={handleJumpDate}
-                        buttonLoading={jumpDateButtonLoading}
-                        label="Jump Date"
-                        className="whitespace-nowrap text-center mr-0 h-8"
-                        icon={<FaPersonSkating className="text-white text-lg ml-2 mr-2" />}
-                    /> 
-                    )}
-                    <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-8">
-                        <FiHome className="text-white text-lg ml-2  mr-2" />
-                        <span className='hidden md:block'>{'Home'}</span>
-                    </Link>
-                    
-                </div>
+  return (
+    <>
+      <HelmetTitle title="Voucher Delete" />
+
+      <div className="grid grid-cols-1 gap-2 w-full md:w-1/3 mx-auto mt-5">
+        {/* Branch Info */}
+        <div className="!mb-2">
+          <div>The branch whose data you want to delete:</div>
+          <span className="text-white font-bold">
+            {settings?.data?.branch?.name}
+          </span>
+        </div>
+
+        {/* Voucher Number Input */}
+        <InputElement
+          id="voucher_no"
+          value={voucherNo}
+          name="voucher_no"
+          placeholder="Enter Voucher Number"
+          label="Enter Voucher Number"
+          className="mb-2"
+          onChange={(e) => setVoucherNo(e.target.value)}
+        />
+
+        {/* Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <ButtonLoading
+            onClick={() => {
+              if (!voucherNo) {
+                toast.error('Please enter voucher number');
+                return;
+              }
+              setShowConfirm(true);
+            }}
+            buttonLoading={saveButtonLoading}
+            label="Delete Voucher"
+            className="whitespace-nowrap h-8"
+            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+          />
+
+          <Link to="/dashboard" className="text-nowrap justify-center h-8">
+            <FiHome className="text-white text-lg ml-2 mr-2" />
+            <span className="hidden md:block">Home</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* ================= Confirmation Modal ================= */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-900 text-white rounded-lg shadow-lg w-96 p-5">
+            <h3 className="text-lg font-semibold mb-4">Confirm Deletion</h3>
+            <p className="mb-4">
+              Are you sure you want to delete voucher{' '}
+              <span className="block font-bold">{voucherNo} ?</span>
+            </p>
+            <div className="flex justify-end gap-3">
+              {/* Cancel Button */}
+              <ButtonLoading
+                onClick={() => setShowConfirm(false)}
+                label="Cancel"
+                className="whitespace-nowrap h-8 bg-gray-600 hover:bg-gray-700"
+                icon={<FiX className="text-white text-lg mr-2" />}
+                disabled={saveButtonLoading} // Cancel button disabled while loading
+              />
+
+              {/* Confirm Button */}
+              <DeleteButton
+                label="Confirm"
+                onClick={handleDeleteConfirmed}
+                loading={saveButtonLoading} // spinner shows while API call is running
+                disabled={saveButtonLoading} // button disabled while API call
+              />
             </div>
-        </>
-    )
-}
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
-export default VoucherDelete
+export default VoucherDelete;
