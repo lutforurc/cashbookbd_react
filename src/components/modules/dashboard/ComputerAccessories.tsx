@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import HelmetTitle from '../../utils/others/HelmetTitle'
+import React, { useEffect } from 'react';
+import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useDispatch, useSelector } from 'react-redux';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDashboard } from './dashboardSlice';
@@ -21,9 +21,8 @@ const ComputerAccessories = () => {
   }, []);
 
   console.log('====================================');
-  console.log("purchaseSales", purchaseSales);
+  console.log('purchaseSales', purchaseSales);
   console.log('====================================');
-
 
   return (
     <div>
@@ -53,10 +52,10 @@ const ComputerAccessories = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.debit > 0
                       ? thousandSeparator(
-                        dashboard?.data?.todayReceived?.debit,
-                        0,
-                      )
-                      : 0}
+                          dashboard?.data?.todayReceived?.debit,
+                          0,
+                        )
+                      : '-'}
                   </span>
                 </div>
                 <div className="mb-2 text-sm ">
@@ -65,10 +64,10 @@ const ComputerAccessories = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.credit > 0
                       ? thousandSeparator(
-                        dashboard?.data?.todayReceived?.credit,
-                        0,
-                      )
-                      : 0}
+                          dashboard?.data?.todayReceived?.credit,
+                          0,
+                        )
+                      : '-'}
                   </span>
                 </div>
                 <div className="mb-2 text-sm ">
@@ -78,8 +77,10 @@ const ComputerAccessories = () => {
                     {dashboard?.data &&
                       !dashboard.isLoading &&
                       thousandSeparator(
-                        dashboard?.data?.totalTransaction?.debit -
-                        dashboard?.data?.totalTransaction?.credit,
+                        (Number(dashboard?.data?.totalTransaction?.debit) ||
+                          0) -
+                          (Number(dashboard?.data?.totalTransaction?.credit) ||
+                            0),
                         0,
                       )}
                   </span>
@@ -92,58 +93,118 @@ const ComputerAccessories = () => {
               </div>
             </div>
 
-            {purchaseSales?.data?.data?.topSales?.length > 0 && (
+            {purchaseSales?.data?.data?.topProductsSales?.length > 0 && (
               <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
                 {/* Header */}
                 <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
-                  <span className="text-sm font-bold">Top Sold Products (Last 7 Days)</span>
+                  <span className="text-sm font-bold">
+                    Top Sold Products (Last 7 Days)
+                  </span>
                 </div>
                 {/* Body */}
                 <div className={`p-4 max-h-72 overflow-y-auto`}>
-                  {purchaseSales?.data?.data?.topSales?.length > 0 ? (
+                  {purchaseSales?.data?.data?.topProductsSales?.length > 0 ? (
                     <ul className="space-y-2">
-                      {purchaseSales?.data?.data?.topSales.map((item, index) => {
-                        const nameLength = item.name?.length || 0;
-                        const fontClass =
-                          nameLength <= 10
-                            ? "text-[12px]"
-                            : nameLength <= 15
-                              ? "text-[11px]"
-                              : "text-[10px]";
-                        return (<li
-                          key={item.product_id}
-                          className="flex items-center justify-between border-b border-slate-200 dark:border-gray-600 rounded transition"
-                        >
-                          <div className="flex-1">
-                            <span className={`font-medium truncate block ${fontClass}`}>
-                              {index + 1}. {item.name}
-                            </span>
-                          </div>
-                          <div className="ml-2">
-                            <span className={`font-bold ${fontClass}`}>
-                              {Number(item.qty)}
-                            </span>
-                          </div>
-                        </li>)
-                      })}
+                      {purchaseSales?.data?.data?.topProductsSales.map(
+                        (item, index) => {
+                          const nameLength = item.name?.length || 0;
+                          const fontClass =
+                            nameLength <= 10
+                              ? 'text-[12px]'
+                              : nameLength <= 15
+                                ? 'text-[11px]'
+                                : 'text-[10px]';
+                          return (
+                            <li
+                              key={item.product_id}
+                              className="flex items-center justify-between border-b border-slate-200 dark:border-gray-600 rounded transition"
+                            >
+                              <div className="flex-1">
+                                <span
+                                  className={`font-medium truncate block ${fontClass}`}
+                                >
+                                  {index + 1}. {item.name}
+                                </span>
+                              </div>
+                              <div className="ml-2">
+                                <span className={`font-bold ${fontClass}`}>
+                                  {Number(item.qty)}
+                                </span>
+                              </div>
+                            </li>
+                          );
+                        },
+                      )}
                     </ul>
                   ) : (
-                    <p className="text-sm italic text-gray-500 dark:text-gray-300">No sales found</p>
+                    <p className="text-sm italic text-gray-500 dark:text-gray-300">
+                      No sales found
+                    </p>
                   )}
                 </div>
               </div>
             )}
-
+            {purchaseSales?.data?.data?.topProductsPurchase?.length > 0 && (
+              <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
+                {/* Header */}
+                <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
+                  <span className="text-sm font-bold">
+                    Top Purchase Products (Last 7 Days)
+                  </span>
+                </div>
+                {/* Body */}
+                <div className={`p-4 max-h-72 overflow-y-auto`}>
+                  {purchaseSales?.data?.data?.topProductsPurchase?.length > 0 ? (
+                    <ul className="space-y-2">
+                      {purchaseSales?.data?.data?.topProductsPurchase.map(
+                        (item, index) => {
+                          const nameLength = item.name?.length || 0;
+                          const fontClass =
+                            nameLength <= 10
+                              ? 'text-[12px]'
+                              : nameLength <= 15
+                                ? 'text-[11px]'
+                                : 'text-[10px]';
+                          return (
+                            <li
+                              key={item.product_id}
+                              className="flex items-center justify-between border-b border-slate-200 dark:border-gray-600 rounded transition"
+                            >
+                              <div className="flex-1">
+                                <span
+                                  className={`font-medium truncate block ${fontClass}`}
+                                >
+                                  {index + 1}. {item.name}
+                                </span>
+                              </div>
+                              <div className="ml-2">
+                                <span className={`font-bold ${fontClass}`}>
+                                  {Number(item.qty)}
+                                </span>
+                              </div>
+                            </li>
+                          );
+                        },
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="text-sm italic text-gray-500 dark:text-gray-300">
+                      No sales found
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
-      <div className='mt-5'>
+      <div className="mt-5">
         <DailySalesChart />
         <DailyPurchaseChart />
         <MonthlyPurchaseSalesChart />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ComputerAccessories
+export default ComputerAccessories;

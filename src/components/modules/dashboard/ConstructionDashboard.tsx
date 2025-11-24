@@ -34,12 +34,13 @@ const ConstructionDashboard = () => {
   const [branchId, setBranchId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [loadingItems, setLoadingItems] = useState<{ [key: string]: boolean }>({}); // Track loading state per item
-  const [successItems, setSuccessItems] = useState<{ [key: string]: boolean }>({}); // Track success state per item
+  const [loadingItems, setLoadingItems] = useState<{ [key: string]: boolean }>(
+    {},
+  ); // Track loading state per item
+  const [successItems, setSuccessItems] = useState<{ [key: string]: boolean }>(
+    {},
+  ); // Track success state per item
   const [totalDebit, setTotalDebit] = useState(0); // State to store the total sum of debits
-
-
-
 
   useEffect(() => {
     dispatch(getDashboard());
@@ -114,9 +115,7 @@ const ConstructionDashboard = () => {
     );
   };
 
-
-  console.log("dashboard?.data", dashboard?.data?.receiveDetails?.receivedDetails);
-
+  console.log('dashboard?.data',dashboard?.data?.topProductsPurchase);
 
   return (
     <>
@@ -146,9 +145,9 @@ const ConstructionDashboard = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.debit > 0
                       ? thousandSeparator(
-                        dashboard?.data?.todayReceived?.debit,
-                        0,
-                      )
+                          dashboard?.data?.todayReceived?.debit,
+                          0,
+                        )
                       : 0}
                   </span>
                 </div>
@@ -158,9 +157,9 @@ const ConstructionDashboard = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.credit > 0
                       ? thousandSeparator(
-                        dashboard?.data?.todayReceived?.credit,
-                        0,
-                      )
+                          dashboard?.data?.todayReceived?.credit,
+                          0,
+                        )
                       : 0}
                   </span>
                 </div>
@@ -171,8 +170,10 @@ const ConstructionDashboard = () => {
                     {dashboard?.data &&
                       !dashboard.isLoading &&
                       thousandSeparator(
-                        dashboard?.data?.totalTransaction?.debit -
-                        dashboard?.data?.totalTransaction?.credit,
+                        (Number(dashboard?.data?.totalTransaction?.debit) ||
+                          0) -
+                          (Number(dashboard?.data?.totalTransaction?.credit) ||
+                            0),
                         0,
                       )}
                   </span>
@@ -184,6 +185,58 @@ const ConstructionDashboard = () => {
                 </span>
               </div>
             </div>
+
+                  {dashboard?.data?.topProductsPurchase?.length > 0 && (
+              <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
+                {/* Header */}
+                <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
+                  <span className="text-sm font-bold">
+                    Top Purchase Products (Last 7 Days)
+                  </span>
+                </div>
+                {/* Body */}
+                <div className={`p-4 max-h-72 overflow-y-auto`}>
+                  {dashboard?.data?.topProductsPurchase?.length > 0 ? (
+                    <ul className="space-y-2">
+                      {dashboard?.data?.topProductsPurchase.map(
+                        (item, index) => {
+                          const nameLength = item.name?.length || 0;
+                          const fontClass =
+                            nameLength <= 10
+                              ? 'text-[13px]'
+                              : nameLength <= 20
+                                ? 'text-[12px]'
+                                : 'text-[10px]';
+                          return (
+                            <li
+                              key={item.product_id}
+                              className="flex items-center justify-between border-b border-slate-200 dark:border-gray-600 rounded transition"
+                            >
+                              <div className="flex-1">
+                                <span
+                                  className={`font-medium truncate block ${fontClass}`}
+                                >
+                                  {index + 1}. {item.name}
+                                </span>
+                              </div>
+                              <div className="ml-2">
+                                <span className={`font-bold ${fontClass}`}>
+                                  {Number(item.qty)}
+                                </span>
+                              </div>
+                            </li>
+                          );
+                        },
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="text-sm italic text-gray-500 dark:text-gray-300">
+                      No sales found
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         ) : (
           ''
@@ -191,17 +244,17 @@ const ConstructionDashboard = () => {
       </div>
 
       {!dashboard.isLoading &&
-        currentBranch?.business_type_id === 7 &&
-        Object.values(dashboard?.data?.receiveDetails?.receivedDetails || {}).some(
-          (items): items is any[] => Array.isArray(items) && items.length > 0
-        ) ? (
+      currentBranch?.business_type_id === 7 &&
+      Object.values(
+        dashboard?.data?.receiveDetails?.receivedDetails || {},
+      ).some(
+        (items): items is any[] => Array.isArray(items) && items.length > 0,
+      ) ? (
         <div className="grid grid-cols-1 xl:grid-cols-2 mt-6 ">
           <div className="bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
             <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 flex justify-between">
               <span className="text-sm font-bold">
-                {
-                  !dashboard.isLoading &&
-                  dashboard?.data?.transactionText}
+                {!dashboard.isLoading && dashboard?.data?.transactionText}
               </span>
               <span>
                 {totalDebit ? `Tk. ${thousandSeparator(totalDebit, 0)}` : '-'}
@@ -254,9 +307,9 @@ const ConstructionDashboard = () => {
       ) : (
         ''
       )}
+      
 
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-2">
-      </div>
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-2"></div>
       {!dashboard.isLoading == true ? (
         <div className="mt-10">
           <div className=""></div>
