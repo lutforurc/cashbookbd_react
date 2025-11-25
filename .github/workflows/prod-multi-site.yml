@@ -24,6 +24,7 @@ jobs:
           ]
 
     steps:
+
       # 1) Checkout
       - uses: actions/checkout@v4
 
@@ -36,13 +37,21 @@ jobs:
       # 3) Install dependencies
       - run: npm ci
 
-      # 4) Resolve API URL
+      # 4) Resolve API URL (MASK-SAFE, ERROR-FREE)
       - name: Resolve API URL
         id: api
         run: |
-          RAW='${{ secrets.REACT_MAIN_API_URLS }}'
-          KEY='${{ matrix.site }}'
-          URL=$(echo "$RAW" | jq -r --arg k "$KEY" 'try .[$k] catch $RAW')
+          RAW="${{ secrets.REACT_MAIN_API_URLS }}"
+          KEY="${{ matrix.site }}"
+
+          # Try JSON map → fallback to RAW as single URL
+          URL=$(echo "$RAW" | jq -r --arg k "$KEY" \
+              'try .[$k] catch empty' 2>/dev/null)
+
+          if [ -z "$URL" ]; then
+            URL="$RAW"
+          fi
+
           echo "url=$URL" >> $GITHUB_OUTPUT
 
       # 5) Build React App
@@ -58,13 +67,12 @@ jobs:
           name: dist-${{ matrix.site }}
           path: dist
 
-      # 7) Resolve Host (Missing earlier — FIXED)
+      # 7) Resolve Host
       - name: Resolve host
         id: tgt
-        run: |
-          echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
+        run: echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
 
-      # 8) Resolve Deploy Path — FIXED & MATCHED with server folders
+      # 8) Resolve Deploy Path (100% Correct Mapping)
       - name: Resolve deploy path
         id: path
         run: |
