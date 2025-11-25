@@ -26,77 +26,55 @@ jobs:
 
     steps:
 
-      # ============================================================
       # 1) Checkout
-      # ============================================================
       - uses: actions/checkout@v4
 
-
-      # ============================================================
       # 2) Setup Node
-      # ============================================================
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-
-      # ============================================================
-      # 3) Install Dependencies
-      # ============================================================
+      # 3) Install deps
       - run: npm ci
 
-
-      # ============================================================
-      # 4) Resolve API URL (MASK-SAFE, JSON-SAFE, ERROR-FREE)
-      # ============================================================
+      # 4) Resolve API URL (No Secret - No Masking - Always Works)
       - name: Resolve API URL
         id: api
         run: |
-          RAW=$(printf "%s" "${{ secrets.REACT_MAIN_API_URLS }}")
-          KEY="${{ matrix.site }}"
+          case "${{ matrix.site }}" in
+            cashbookbdaccountskps) URL="https://kps.cashbookbd.com" ;;
+            cashbookbdaccountsgme) URL="https://gme.cashbookbd.com" ;;
+            cashbookbdaccountskrf) URL="https://krf.cashbookbd.com" ;;
+            cashbookbdaccountsmbdpp) URL="https://mbdpp.cashbookbd.com" ;;
+            cashbookbdaccountsnibirnirman) URL="https://nibirnirman.cashbookbd.com" ;;
+            cashbookbdaccountsrmr) URL="https://rmr.cashbookbd.com" ;;
+            cashbookbdaccountsscn) URL="https://scn.cashbookbd.com" ;;
+            cashbookbdaccountssinthia) URL="https://sinthia.cashbookbd.com" ;;
+            *) echo "Unknown site"; exit 1 ;;
+          esac
 
-          # Try JSON lookup
-          URL=$(echo "$RAW" | jq -r --arg k "$KEY" 'try .[$k] catch empty' 2>/dev/null)
+          echo "url=$URL" >> $GITHUB_OUTPUT
 
-          # Fallback → treat RAW as single API URL
-          if [ -z "$URL" ] || [ "$URL" = "null" ]; then
-            URL="$RAW"
-          fi
-
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
-
-
-      # ============================================================
-      # 5) Build App
-      # ============================================================
+      # 5) Build
       - name: Build
         env:
           VITE_SITE_NAME: ${{ matrix.site }}
           VITE_API_URL: ${{ steps.api.outputs.url }}
         run: npm run build -- --mode production
 
-
-      # ============================================================
-      # 6) Upload Artifact
-      # ============================================================
+      # 6) Upload artifact
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.site }}
           path: dist
 
-
-      # ============================================================
       # 7) Resolve Host
-      # ============================================================
       - name: Resolve host
         id: tgt
         run: echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
 
-
-      # ============================================================
       # 8) Resolve Deploy Path
-      # ============================================================
       - name: Resolve deploy path
         id: path
         run: |
@@ -117,14 +95,10 @@ jobs:
               echo "dir=/home/cashbookbdaccountsscn/htdocs/accounts.scn.cashbookbd.com" ;;
             cashbookbdaccountssinthia)
               echo "dir=/home/cashbookbdaccountssinthia/htdocs/accounts.sinthia.cashbookbd.com" ;;
-            *)
-              echo "Unknown site"; exit 1 ;;
-          esac >> "$GITHUB_OUTPUT"
+            *) echo "Unknown site"; exit 1 ;;
+          esac >> $GITHUB_OUTPUT
 
-
-      # ============================================================
       # 9) Setup SSH
-      # ============================================================
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -132,19 +106,13 @@ jobs:
           chmod 600 ~/.ssh/key
           echo -e "Host *\n  IdentityFile ~/.ssh/key\n  StrictHostKeyChecking=accept-new" > ~/.ssh/config
 
-
-      # ============================================================
-      # 10) Download Artifact
-      # ============================================================
+      # 10) Download artifact
       - uses: actions/download-artifact@v4
         with:
           name: dist-${{ matrix.site }}
           path: dist
 
-
-      # ============================================================
-      # 11) Deploy via rsync
-      # ============================================================
+      # 11) Deploy
       - name: Deploy
         run: |
           rsync -avz --delete \
@@ -152,17 +120,11 @@ jobs:
             dist/ \
             "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}:${{ steps.path.outputs.dir }}/"
 
-
-      # ============================================================
-      # 12) Reload Nginx
-      # ============================================================
+      # 12) Reload nginx
       - name: Reload nginx
         run: ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}" \
                "systemctl reload nginx"
 
-
-      # ============================================================
       # 13) Smoke Test
-      # ============================================================
       - name: Smoke Test
         run: curl -I "${{ steps.api.outputs.url }}" | grep -q "200"
