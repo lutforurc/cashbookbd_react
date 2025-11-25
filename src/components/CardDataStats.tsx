@@ -9,7 +9,6 @@ interface CardDataStatsProps {
   children: ReactNode;
 }
 
-
 const CardDataStats: React.FC<CardDataStatsProps> = ({
   title,
   total,
