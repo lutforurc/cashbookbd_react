@@ -482,7 +482,7 @@ useEffect(() => {
     <>
       <HelmetTitle title="Electronics Purchase Invoice" />
       <div className="text-center font-bold">
-        <span className="block text-red-500">(Not Ready)</span>
+        {/* <span className="block text-red-500">(Not Ready)</span> */}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {purchase.isLoading ? <Loader /> : null}
