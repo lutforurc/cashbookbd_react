@@ -1,4 +1,4 @@
-name: Production React App CI/CD (multi-site)
+name: React Multi-Site CI/CD
 
 on:
   push:
@@ -6,227 +6,114 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
-    name: Build & Deploy — ${{ matrix.site }}
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-
     strategy:
       fail-fast: false
       matrix:
-        site: [kpsnew, gmenterprise, cashbookbd_accounts_krf, accountsmbdpp, accounts_nibirnirman, accounts_rmr, accountsscn, accounts_sinthia]
+        site:
+          [
+            cashbookbdaccountskps,
+            cashbookbdaccountsgme,
+            cashbookbdaccountskrf,
+            cashbookbdaccountsmbdpp,
+            cashbookbdaccountsnibirnirman,
+            cashbookbdaccountsrmr,
+            cashbookbdaccountsscn,
+            cashbookbdaccountssinthia
+          ]
 
     steps:
-      # --- Checkout source code ---
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # 1) Checkout
+      - uses: actions/checkout@v4
+
+      # 2) Node setup
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 1
+          node-version: 22
+          cache: npm
 
-      # --- Set up Node.js ---
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
+      # 3) Install dependencies
+      - run: npm ci
 
-      - name: Install dependencies
-        run: npm ci
-
-      # -------- Resolve API URL (handles scalar or JSON secret) --------
-      - name: Resolve API URL (JSON or scalar)
+      # 4) Resolve API URL
+      - name: Resolve API URL
         id: api
-        env:
-          API_RAW: ${{ secrets.REACT_MAIN_API_URLS }}   # scalar OR JSON map: { "kpsnew": "...", "gmenterprise": "..." }
-          KEY: ${{ matrix.site }}
         run: |
-          set -Eeuo pipefail
+          RAW='${{ secrets.REACT_MAIN_API_URLS }}'
+          KEY='${{ matrix.site }}'
+          URL=$(echo "$RAW" | jq -r --arg k "$KEY" 'try .[$k] catch $RAW')
+          echo "url=$URL" >> $GITHUB_OUTPUT
 
-          # Pick value by key if JSON; else use as-is
-          T=$(printf '%s' "${API_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
-          if [ "$T" = "object" ]; then
-            URL=$(printf '%s' "$API_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
-          else
-            URL="$API_RAW"
-          fi
-
-          # Normalize whitespace/CRLF
-          URL="$(printf '%s' "$URL" | tr -d '\r' | sed 's/^[[:space:]]\+//; s/[[:space:]]\+$//')"
-
-          # Ensure scheme; allow user to give bare host
-          if ! printf '%s' "$URL" | grep -Eq '^https?://'; then
-            URL="https://$URL"
-          fi
-
-          # Strip trailing slash and accidental /api (to avoid double /api)
-          URL="${URL%/}"
-          case "$URL" in
-            */api) URL="${URL%/api}";;
-          esac
-
-          # Basic validation
-          if ! printf '%s' "$URL" | grep -Eq '^https?://[A-Za-z0-9.-]+'; then
-            echo "❌ Invalid API URL for $KEY: $URL"
-            exit 1
-          fi
-
-          {
-            echo "url<<EOF"; echo "$URL"; echo "EOF";
-          } >> "$GITHUB_OUTPUT"
-
-          echo "🔗 [$KEY] API base = $URL"
-
-      # --- Build React app (per-site build so env differs) ---
-      - name: Build React app
+      # 5) Build React App
+      - name: Build
         env:
-          CI: true
           VITE_SITE_NAME: ${{ matrix.site }}
           VITE_API_URL: ${{ steps.api.outputs.url }}
-        run: |
-          set -Eeuo pipefail
-          echo "🧱 Building React app (SITE=$VITE_SITE_NAME)"
-          echo "🔗 VITE_API_URL=$VITE_API_URL"
-          npm run build -- --mode production
+        run: npm run build -- --mode production
 
-      # --- Upload artifact (per-site) ---
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      # 6) Upload build artifact
+      - uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.site }}-${{ github.sha }}
+          name: dist-${{ matrix.site }}
           path: dist
-          if-no-files-found: error
-          retention-days: 5
 
-      # -------- Resolve deploy target & remote dir (JSON or scalar secrets) --------
-      - name: Resolve deploy variables
+      # 7) Resolve Host (Missing earlier — FIXED)
+      - name: Resolve host
         id: tgt
-        env:
-          KEY: ${{ matrix.site }}
-          HOST_RAW: ${{ secrets.REACT_MAIN_HOST }}          # scalar OR JSON
-          PORT_RAW: ${{ secrets.REACT_MAIN_PORT }}          # scalar
-          SSH_USER: ${{ secrets.REACT_MAIN_SSH_USER }}      # scalar
-          REMOTE_RAW: ${{ secrets.REACT_MAIN_REMOTE_DIR }}  # scalar OR JSON
         run: |
-          set -Eeuo pipefail
+          echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
 
-          # --- HOST ---
-          H_TYPE=$(printf '%s' "${HOST_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
-          if [ "$H_TYPE" = "object" ]; then
-            HOST=$(printf '%s' "$HOST_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
-          else
-            HOST="$HOST_RAW"
-          fi
-          HOST="${HOST#http://}"
-          HOST="${HOST#https://}"
-          HOST="${HOST%%/}"
-          RAW_HOST="$HOST"
-          HOST="$(printf '%s' "$HOST" | tr -d '\r\n\t ' | sed 's/[^A-Za-z0-9\.\-]//g')"
-          if [ -z "$HOST" ] || ! printf '%s' "$HOST" | grep -Eq '^[A-Za-z0-9.-]+$'; then
-            echo "❌ [$KEY] Invalid hostname after sanitize."
-            exit 1
-          fi
-
-          # --- PORT / USER ---
-          PORT="$(printf '%s' "${PORT_RAW:-22}" | tr -d '\r\n\t ')"
-          USER="$(printf '%s' "$SSH_USER" | tr -d '\r\n\t ')"
-          [ -n "$USER" ] || { echo "❌ [$KEY] SSH_USER empty"; exit 1; }
-          [ -n "$PORT" ] || PORT=22
-
-          # --- REMOTE_DIR ---
-          R_TYPE=$(printf '%s' "${REMOTE_RAW-}" | jq -r 'try type catch "string"' 2>/dev/null || echo "string")
-          if [ "$R_TYPE" = "object" ]; then
-            REMOTE_DIR=$(printf '%s' "$REMOTE_RAW" | jq -r --arg k "$KEY" '.[$k] // empty')
-          else
-            REMOTE_DIR="$REMOTE_RAW"
-          fi
-          REMOTE_DIR="$(printf '%s' "$REMOTE_DIR" | tr -d '\r\n\t ')"
-          [ -n "$REMOTE_DIR" ] || { echo "❌ [$KEY] REMOTE_DIR not resolved"; exit 1; }
-
-          echo "🔍 [$KEY] user=$USER host=$HOST port=$PORT"
-          echo "🔍 [$KEY] remote_dir=$REMOTE_DIR"
-
-          {
-            echo "host<<EOF"; echo "$HOST"; echo "EOF";
-            echo "port<<EOF"; echo "$PORT"; echo "EOF";
-            echo "user<<EOF"; echo "$USER"; echo "EOF";
-            echo "remote_dir<<EOF"; echo "$REMOTE_DIR"; echo "EOF";
-          } >> "$GITHUB_OUTPUT"
-
-      # -------- SSH setup --------
-      - name: Prepare SSH (accept new host key automatically)
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.REACT_MAIN_PRIVATE_KEY }}
+      # 8) Resolve Deploy Path — FIXED & MATCHED with server folders
+      - name: Resolve deploy path
+        id: path
         run: |
-          set -Eeuo pipefail
+          case "${{ matrix.site }}" in
+            cashbookbdaccountskps)
+              echo "dir=/home/cashbookbdaccountskps/htdocs/accounts.kps.cashbookbd.com" ;;
+            cashbookbdaccountsgme)
+              echo "dir=/home/cashbookbdaccountsgme/htdocs/accounts.gme.cashbookbd.com" ;;
+            cashbookbdaccountskrf)
+              echo "dir=/home/cashbookbdaccountskrf/htdocs/accounts.krf.cashbookbd.com" ;;
+            cashbookbdaccountsmbdpp)
+              echo "dir=/home/cashbookbdaccountsmbdpp/htdocs/accounts.mbdpp.cashbookbd.com" ;;
+            cashbookbdaccountsnibirnirman)
+              echo "dir=/home/cashbookbdaccountsnibirnirman/htdocs/accounts.nibirnirman.cashbookbd.com" ;;
+            cashbookbdaccountsrmr)
+              echo "dir=/home/cashbookbdaccountsrmr/htdocs/accounts.rmr.cashbookbd.com" ;;
+            cashbookbdaccountsscn)
+              echo "dir=/home/cashbookbdaccountsscn/htdocs/accounts.scn.cashbookbd.com" ;;
+            cashbookbdaccountssinthia)
+              echo "dir=/home/cashbookbdaccountssinthia/htdocs/accounts.sinthia.cashbookbd.com" ;;
+            *)
+              echo "Unknown site"; exit 1 ;;
+          esac >> $GITHUB_OUTPUT
+
+      # 9) SSH Setup
+      - name: Setup SSH
+        run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          {
-            echo 'Host *'
-            echo '    BatchMode yes'
-            echo '    IdentitiesOnly yes'
-            echo '    IdentityFile ~/.ssh/id_ed25519'
-            echo '    StrictHostKeyChecking=accept-new'
-            echo '    UserKnownHostsFile ~/.ssh/known_hosts'
-          } >> ~/.ssh/config
-          echo "✅ SSH key configured (accept-new)"
+          echo '${{ secrets.REACT_MAIN_PRIVATE_KEY }}' > ~/.ssh/key
+          chmod 600 ~/.ssh/key
+          echo -e "Host *\n IdentityFile ~/.ssh/key\n StrictHostKeyChecking=accept-new" > ~/.ssh/config
 
-      # --- Download artifact (for this site) ---
-      - name: Download artifact
-        uses: actions/download-artifact@v4
+      # 10) Download artifact
+      - uses: actions/download-artifact@v4
         with:
-          name: dist-${{ matrix.site }}-${{ github.sha }}
+          name: dist-${{ matrix.site }}
           path: dist
 
-      # -------- Deploy (keep .env) --------
-      - name: Deploy via rsync (keep .env)
-        env:
-          SSH_USER: ${{ steps.tgt.outputs.user }}
-          SSH_HOST: ${{ steps.tgt.outputs.host }}
-          SSH_PORT: ${{ steps.tgt.outputs.port }}
-          REMOTE_DIR: ${{ steps.tgt.outputs.remote_dir }}
+      # 11) Deploy to server
+      - name: Deploy
         run: |
-          set -Eeuo pipefail
-          : "${SSH_PORT:=22}"
-          test -d dist || { echo "❌ dist not found"; exit 1; }
+          rsync -avz --delete \
+            -e "ssh -p 22" \
+            dist/ "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}:${{ steps.path.outputs.dir }}/"
 
-          echo "📂 Creating remote dir: $REMOTE_DIR"
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_DIR'"
-
-          echo "🚀 Deploying to $REMOTE_DIR"
-          rsync -avz --delete-delay \
-            --exclude='.env' \
-            -e "ssh -p ${SSH_PORT}" \
-            dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
-
-          echo "✅ [$SSH_HOST] Deployment completed (kept .env)"
-
-      # -------- Reload nginx --------
+      # 12) Reload nginx
       - name: Reload nginx
-        env:
-          SSH_USER: ${{ steps.tgt.outputs.user }}
-          SSH_HOST: ${{ steps.tgt.outputs.host }}
-          SSH_PORT: ${{ steps.tgt.outputs.port }}
-        run: |
-          set -Eeuo pipefail
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "systemctl reload nginx || systemctl restart nginx"
-          echo "🔄 [$SSH_HOST] nginx reloaded"
+        run: ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}" "systemctl reload nginx"
 
-      # -------- Smoke test (uses resolved API base) --------
-      - name: Smoke test
-        env:
-          DEPLOY_URL: ${{ steps.api.outputs.url }}
-        run: |
-          set -Eeuo pipefail
-          if [ -z "${DEPLOY_URL-}" ]; then
-            echo "⚠️ No DEPLOY_URL for this site, skipping"
-            exit 0
-          fi
-          echo "🌐 Checking $DEPLOY_URL ..."
-          if curl -I -L --max-time 20 "$DEPLOY_URL" | grep -E '^HTTP/.* (200|301|302) '; then
-            echo "✅ Smoke test passed"
-          else
-            echo "❌ Smoke test failed for $DEPLOY_URL"
-            exit 1
-          fi
+      # 13) Smoke Test
+      - name: Smoke Test
+        run: curl -I "${{ steps.api.outputs.url }}" | grep -q "200"
