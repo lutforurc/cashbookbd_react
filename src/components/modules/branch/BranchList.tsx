@@ -140,7 +140,7 @@ const BranchList = () => {
   };
 
   return (
-    <div>
+    <div className=''>
       <HelmetTitle title={'Branch List'} />
       <div className="flex justify-between mb-1">
         <SelectOption onChange={handleSelectChange} />
@@ -150,7 +150,7 @@ const BranchList = () => {
           label="Add Branch"
         />
       </div>
-      <div className="relative overflow-x-auto">
+      <div className="relative no-scrollbar">
         <div className="relative h-full">
           {branchList.isLoading == true ? <Loader /> : ''}
           <Table columns={columns} data={branchList?.data?.data} className="" />
