@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
@@ -25,54 +26,77 @@ jobs:
 
     steps:
 
+      # ============================================================
       # 1) Checkout
+      # ============================================================
       - uses: actions/checkout@v4
 
-      # 2) Node setup
+
+      # ============================================================
+      # 2) Setup Node
+      # ============================================================
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-      # 3) Install dependencies
+
+      # ============================================================
+      # 3) Install Dependencies
+      # ============================================================
       - run: npm ci
 
-      # 4) Resolve API URL (MASK-SAFE, ERROR-FREE)
+
+      # ============================================================
+      # 4) Resolve API URL (MASK-SAFE, JSON-SAFE, ERROR-FREE)
+      # ============================================================
       - name: Resolve API URL
         id: api
         run: |
-          RAW="${{ secrets.REACT_MAIN_API_URLS }}"
+          RAW=$(printf "%s" "${{ secrets.REACT_MAIN_API_URLS }}")
           KEY="${{ matrix.site }}"
 
-          # Try JSON map → fallback to RAW as single URL
-          URL=$(echo "$RAW" | jq -r --arg k "$KEY" \
-              'try .[$k] catch empty' 2>/dev/null)
+          # Try JSON lookup
+          URL=$(echo "$RAW" | jq -r --arg k "$KEY" 'try .[$k] catch empty' 2>/dev/null)
 
-          if [ -z "$URL" ]; then
+          # Fallback → treat RAW as single API URL
+          if [ -z "$URL" ] || [ "$URL" = "null" ]; then
             URL="$RAW"
           fi
 
-          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
 
-      # 5) Build React App
+
+      # ============================================================
+      # 5) Build App
+      # ============================================================
       - name: Build
         env:
           VITE_SITE_NAME: ${{ matrix.site }}
           VITE_API_URL: ${{ steps.api.outputs.url }}
         run: npm run build -- --mode production
 
-      # 6) Upload build artifact
+
+      # ============================================================
+      # 6) Upload Artifact
+      # ============================================================
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.site }}
           path: dist
 
+
+      # ============================================================
       # 7) Resolve Host
+      # ============================================================
       - name: Resolve host
         id: tgt
         run: echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
 
-      # 8) Resolve Deploy Path (100% Correct Mapping)
+
+      # ============================================================
+      # 8) Resolve Deploy Path
+      # ============================================================
       - name: Resolve deploy path
         id: path
         run: |
@@ -95,33 +119,50 @@ jobs:
               echo "dir=/home/cashbookbdaccountssinthia/htdocs/accounts.sinthia.cashbookbd.com" ;;
             *)
               echo "Unknown site"; exit 1 ;;
-          esac >> $GITHUB_OUTPUT
+          esac >> "$GITHUB_OUTPUT"
 
-      # 9) SSH Setup
+
+      # ============================================================
+      # 9) Setup SSH
+      # ============================================================
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo '${{ secrets.REACT_MAIN_PRIVATE_KEY }}' > ~/.ssh/key
           chmod 600 ~/.ssh/key
-          echo -e "Host *\n IdentityFile ~/.ssh/key\n StrictHostKeyChecking=accept-new" > ~/.ssh/config
+          echo -e "Host *\n  IdentityFile ~/.ssh/key\n  StrictHostKeyChecking=accept-new" > ~/.ssh/config
 
-      # 10) Download artifact
+
+      # ============================================================
+      # 10) Download Artifact
+      # ============================================================
       - uses: actions/download-artifact@v4
         with:
           name: dist-${{ matrix.site }}
           path: dist
 
-      # 11) Deploy to server
+
+      # ============================================================
+      # 11) Deploy via rsync
+      # ============================================================
       - name: Deploy
         run: |
           rsync -avz --delete \
             -e "ssh -p 22" \
-            dist/ "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}:${{ steps.path.outputs.dir }}/"
+            dist/ \
+            "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}:${{ steps.path.outputs.dir }}/"
 
-      # 12) Reload nginx
+
+      # ============================================================
+      # 12) Reload Nginx
+      # ============================================================
       - name: Reload nginx
-        run: ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}" "systemctl reload nginx"
+        run: ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}" \
+               "systemctl reload nginx"
 
+
+      # ============================================================
       # 13) Smoke Test
+      # ============================================================
       - name: Smoke Test
         run: curl -I "${{ steps.api.outputs.url }}" | grep -q "200"
