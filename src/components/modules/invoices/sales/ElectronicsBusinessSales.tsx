@@ -132,6 +132,7 @@ const ElectronicsBusinessSales = () => {
     notes: string;
     serviceCharge: number;
     tdsAmount: number;
+    transportationAmt: number;
     currentProduct: { index?: number } | null;
     searchInvoice: string;
     products: Product[];
@@ -147,6 +148,7 @@ const ElectronicsBusinessSales = () => {
     notes: '',
     serviceCharge: 0,
     tdsAmount: 0,
+    transportationAmt: 0,
     currentProduct: null,
     searchInvoice: '',
     products: [],
@@ -911,7 +913,6 @@ const ElectronicsBusinessSales = () => {
                 value={(formData.serviceCharge || 0).toString()}
                 name="serviceCharge"
                 placeholder="Service Charge"
-                disabled={Number(formData.account) === 17}
                 label="Service Charge (Not Ready)"
                 className="py-1 text-right"
                 onChange={handleOnChange}
@@ -922,23 +923,32 @@ const ElectronicsBusinessSales = () => {
                 value={(formData.tdsAmount || 0).toString()}
                 name="tdsAmount"
                 placeholder="TDS Amount"
-                disabled={Number(formData.account) === 17}
                 label="TDS/VAT (Not Ready)"
                 className="py-1 text-right"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
-              <div className="mt-7">
-              <p className="text-sm font-bold dark:text-white">
-                Total Tk. {thousandSeparator(totalAmount, 0)}
-              </p>
-            </div>
+              <InputElement
+                id="transportationAmt"
+                value={(formData.transportationAmt || 0).toString()}
+                name="transportationAmt"
+                placeholder="Transportation Amount"
+                label="Transportation (Not Ready)"
+                className="py-1 text-right"
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
+              />
+              
             </div>
           </div>
           {/* Installment Popup */}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-0">
-            
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
+            <div className="mt-4">
+                <p className="text-sm font-bold dark:text-white">
+                  Total Tk. {thousandSeparator(totalAmount, 0)}
+                </p>
+              </div>
             {hasPermission(permissions, 'sales.edit') && (
               <>
                 <div className="mt-2">
