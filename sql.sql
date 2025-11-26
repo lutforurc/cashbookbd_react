@@ -1,0 +1,3 @@
+INSERT INTO `acc_coa_level4s` (`id`, `name`, `bangla`, `company_id`, `sku_code`, `acc_coa_level3_id`, `acc_reporting_to_id`, `is_editable`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(41, 'TDS / VAT', NULL, 1, NULL, 30, 3, '0', '1', 1, NULL, '2018-12-01 10:44:06', '2018-12-01 10:44:06'),
+(42, 'Service Charge', NULL, 1, NULL, 33, 3, '0', '1', 1, NULL, '2025-11-26 05:18:57', '2025-11-26 05:18:57');

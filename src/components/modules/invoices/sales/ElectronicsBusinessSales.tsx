@@ -130,6 +130,8 @@ const ElectronicsBusinessSales = () => {
     receivedAmt: string;
     discountAmt: number;
     notes: string;
+    serviceCharge: number;
+    tdsAmount: number;
     currentProduct: { index?: number } | null;
     searchInvoice: string;
     products: Product[];
@@ -143,6 +145,8 @@ const ElectronicsBusinessSales = () => {
     receivedAmt: '',
     discountAmt: 0,
     notes: '',
+    serviceCharge: 0,
+    tdsAmount: 0,
     currentProduct: null,
     searchInvoice: '',
     products: [],
@@ -876,7 +880,7 @@ const ElectronicsBusinessSales = () => {
                 placeholder="Received Amount"
                 disabled={Number(formData.account) === 17}
                 label="Received Amount"
-                className="py-1"
+                className="py-1 text-right"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
@@ -886,7 +890,7 @@ const ElectronicsBusinessSales = () => {
                 name="discountAmt"
                 placeholder="Discount Amount"
                 label="Discount Amount"
-                className="py-1"
+                className="py-1 text-right"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
@@ -896,19 +900,45 @@ const ElectronicsBusinessSales = () => {
                 name="notes"
                 placeholder="Notes"
                 label="Notes"
-                className="py-1"
+                className="py-1 "
                 onChange={handleOnChange}
               />
             </div>
-          </div>
-          {/* Installment Popup */}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
-            <div className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <InputElement
+                id="serviceCharge"
+                value={(formData.serviceCharge || 0).toString()}
+                name="serviceCharge"
+                placeholder="Service Charge"
+                disabled={Number(formData.account) === 17}
+                label="Service Charge (Not Ready)"
+                className="py-1 text-right"
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
+              />
+              <InputElement
+                id="tdsAmount"
+                value={(formData.tdsAmount || 0).toString()}
+                name="tdsAmount"
+                placeholder="TDS Amount"
+                disabled={Number(formData.account) === 17}
+                label="TDS/VAT (Not Ready)"
+                className="py-1 text-right"
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
+              />
+              <div className="mt-7">
               <p className="text-sm font-bold dark:text-white">
                 Total Tk. {thousandSeparator(totalAmount, 0)}
               </p>
             </div>
+            </div>
+          </div>
+          {/* Installment Popup */}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-0">
+            
             {hasPermission(permissions, 'sales.edit') && (
               <>
                 <div className="mt-2">
