@@ -1,68 +1,114 @@
-
-import { APP_SETTINGS_ERROR, APP_SETTINGS_PENDING, APP_SETTINGS_SUCCESS } from '../../constant/constant/constant';
-import { API_APP_SETTING_URL } from '../../services/apiRoutes';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { API_APP_SETTING_URL, API_SERVICE_LIST_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
-  
- 
-  export const getSettings = (data: any) => (dispatch: any) => {
-    dispatch({ type: APP_SETTINGS_PENDING });
-    httpService.post(API_APP_SETTING_URL, data)
-      .then((res) => {
-        const _data = res.data;
-        if (_data.success) {
-          dispatch({
-            type: APP_SETTINGS_SUCCESS,
-            payload: _data.data.data,
-          });
-        } else {
-          dispatch({
-            type: APP_SETTINGS_ERROR,
-            payload: _data.error.message,
-          });
-        }
-      })
-      .catch(() => {
-        dispatch({
-          type: APP_SETTINGS_ERROR,
-          payload: 'Something went wrong.',
-        });
-      });
-  };
-  
- 
-  const initialState = {
-    isLoading: false, 
-    data: {},
-    errors: {},
-  };
 
-  const settingsReducer = (state = initialState, action: any) => {
-    switch (action.type) {
-      case APP_SETTINGS_PENDING: 
-        return {
-          ...state,
-          isLoading: true,  
-        };
-  
-      case APP_SETTINGS_SUCCESS:
-        return {
-          ...state,
-          isLoading: false,  
-          data: action.payload,
-          errors: {},
-        };
-  
-      case APP_SETTINGS_ERROR: // Fixed this case
-        return {
-          ...state,
-          isLoading: false,  
-          errors: action.payload,
-        };
-  
-      default:
-        return state;
+// ---------------- Types ----------------
+
+interface SettingsState {
+  data: any;
+  serviceList: any[];
+  loading: boolean;
+  serviceLoading: boolean;
+  error: string | null;
+  serviceError: string | null;
+}
+
+interface SettingsResponse {
+  success: boolean;
+  data: { data: any };
+  error: { message: string };
+}
+
+// ---------------- Initial State ----------------
+
+const initialState: SettingsState = {
+  data: {},
+  serviceList: [],
+  loading: false,
+  serviceLoading: false,
+  error: null,
+  serviceError: null,
+};
+
+// ---------------- Async Thunks ----------------
+
+// 🔵 Existing (Settings)
+export const getSettings = createAsyncThunk<any, any, { rejectValue: string }>(
+  'settings/getSettings',
+  async (payload, thunkAPI) => {
+    try {
+      const res = await httpService.post(API_APP_SETTING_URL, payload);
+      const _data: SettingsResponse = res.data;
+
+      if (_data.success) {
+        return _data.data.data;
+      } else {
+        return thunkAPI.rejectWithValue(_data.error.message);
+      }
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message || 'Something went wrong.');
     }
-  };
-  
-  export default settingsReducer;
-  
+  },
+);
+
+// 🔵 NEW → Get Service List
+export const getServiceList = createAsyncThunk<any[], any, { rejectValue: string }>('settings/getServiceList', async (payload, thunkAPI) => {
+    try {
+      const res = await httpService.post(API_SERVICE_LIST_URL, payload);
+      const _data: SettingsResponse = res.data;
+      if (_data.success) {
+        return _data.data.data;
+      } else {
+        return thunkAPI.rejectWithValue(_data.error.message);
+      }
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message || 'Failed to load service list');
+    }
+  },
+);
+
+// ---------------- Slice ----------------
+
+const settingsSlice = createSlice({
+  name: 'settings',
+  initialState,
+  reducers: {
+    updateSettings(state, action: PayloadAction<any>) {
+      state.data = action.payload;
+    },
+  },
+
+  extraReducers: (builder) => {
+    builder
+      // ---------------- Settings ----------------
+      .addCase(getSettings.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getSettings.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(getSettings.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // ---------------- Service List ----------------
+      .addCase(getServiceList.pending, (state) => {
+        state.serviceLoading = true;
+        state.serviceError = null;
+      })
+      .addCase(getServiceList.fulfilled, (state, action) => {
+        state.serviceLoading = false;
+        state.serviceList = action.payload;
+      })
+      .addCase(getServiceList.rejected, (state, action) => {
+        state.serviceLoading = false;
+        state.serviceError = action.payload as string;
+      });
+  },
+});
+
+export const { updateSettings } = settingsSlice.actions;
+export default settingsSlice.reducer;

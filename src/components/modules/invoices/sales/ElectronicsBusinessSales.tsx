@@ -40,6 +40,7 @@ import {
   electronicsSalesStore,
   electronicsSalesUpdate,
 } from './electronicsSalesSlice';
+import { getServiceList } from '../../settings/settingsSlice';
 
 interface Product {
   id: number;
@@ -111,9 +112,16 @@ const ElectronicsBusinessSales = () => {
 
   useEffect(() => {
     dispatch(userCurrentBranch());
+    dispatch(getServiceList());
     dispatch(getDdlWarehouse());
     setPermissions(settings.data.permissions);
   }, []);
+
+
+  console.log('====================================');
+  console.log("settings", settings?.serviceList);
+  console.log('====================================');
+
 
   useEffect(() => {
     if (productData.qty) {
@@ -710,6 +718,10 @@ const ElectronicsBusinessSales = () => {
     }
   }, [formData.account, formData.discountAmt, formData.products]);
 
+const serviceList = (id: number, list: any[]) => {
+  return list.find((item) => item.id === id)?.name || "";
+};
+
   return (
     <>
       <HelmetTitle title="Installment Sales Invoice" />
@@ -912,8 +924,8 @@ const ElectronicsBusinessSales = () => {
                 id="serviceCharge"
                 value={(formData.serviceCharge || 0).toString()}
                 name="serviceCharge"
-                placeholder="Service Charge"
-                label="Service Charge (Not Ready)"
+                placeholder={serviceList(42, settings?.serviceList)}
+                label={serviceList(42, settings?.serviceList)}
                 className="py-1 text-right"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
@@ -922,8 +934,8 @@ const ElectronicsBusinessSales = () => {
                 id="tdsAmount"
                 value={(formData.tdsAmount || 0).toString()}
                 name="tdsAmount"
-                placeholder="TDS Amount"
-                label="TDS/VAT (Not Ready)"
+                placeholder={serviceList(41, settings?.serviceList)}
+                label={serviceList(41, settings?.serviceList)}
                 className="py-1 text-right"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
@@ -932,8 +944,8 @@ const ElectronicsBusinessSales = () => {
                 id="transportationAmt"
                 value={(formData.transportationAmt || 0).toString()}
                 name="transportationAmt"
-                placeholder="Transportation Amount"
-                label="Transportation (Not Ready)"
+                placeholder={serviceList(197, settings?.serviceList)}
+                label={serviceList(197, settings?.serviceList)}
                 className="py-1 text-right"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}

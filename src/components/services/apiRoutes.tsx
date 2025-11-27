@@ -112,6 +112,7 @@ export const API_CUSTOMER_BASE_URL = `${API_BASE_URL}/customer`;
 // Settings url
 export const API_APP_SETTING_URL = `${API_BASE_URL}/settings/get-settings`;
 export const API_APP_SETTING_VOCHER_TYPE_URL =  `${API_BASE_URL}/settings/voucher-types`;
+export const API_SERVICE_LIST_URL =  `${API_BASE_URL}/settings/service-list`;
 
 // dashboard Routes
 export const API_DASHBOARD_URL = `${API_BASE_URL}/dashboard/data`;
