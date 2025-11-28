@@ -969,8 +969,8 @@ const serviceList = (id: number, list: any[]) => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
             <div className="mt-4">
-                <p className="text-sm font-bold dark:text-white"> 
-                  Total Tk. {thousandSeparator(  (totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) -  Number(formData?.discountAmt)  ), 0)}
+                <p className="text-sm font-bold dark:text-white">
+                  Total Tk. {thousandSeparator(  (totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) -  Number(formData?.discountAmt)  ), 0)}  {Number(formData?.receivedAmt) > 0 ? `(${ (totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) -  Number(formData?.discountAmt)  ) - Number(formData?.receivedAmt)})` : ""}
                 </p>
               </div>
             {hasPermission(permissions, 'sales.edit') && (
