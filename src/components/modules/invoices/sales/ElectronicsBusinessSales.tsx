@@ -14,17 +14,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import Loader from '../../../../common/Loader';
-import {
-  FiEdit,
-  FiEdit2,
-  FiHome,
-  FiPlus,
-  FiRefreshCcw,
-  FiSave,
-  FiSearch,
-  FiShare,
-  FiTrash2,
-} from 'react-icons/fi';
+import {FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2, } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
@@ -95,9 +85,7 @@ const ElectronicsBusinessSales = () => {
   const [isEarlyPayment, setIsEarlyPayment] = useState(false);
   const [showInstallmentPopup, setShowInstallmentPopup] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
-  const [editedInstallments, setEditedInstallments] = useState<
-    editInstallmentData[]
-  >([]);
+  const [editedInstallments, setEditedInstallments] = useState<editInstallmentData[]>([]);
   const [installmentData, setInstallmentData] = useState<InstallmentData>({
     amount: 0,
     startDate: null,
@@ -236,6 +224,20 @@ const ElectronicsBusinessSales = () => {
     );
   };
 
+
+ function findCoaCredit(items: any[], target = 41, fallback = 23) {
+    const found =
+        items.find(item => item.coa4_id === target) ||
+        items.find(item => item.coa4_id === fallback);
+
+    // যদি না পায় → null
+    if (!found) return null;
+
+    // "65" কে number 65 এ convert করে রিটার্ন
+    return Number(found.credit);
+}
+
+
   useEffect(() => {
     if (sales.data.transaction) {
       const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
@@ -268,18 +270,21 @@ const ElectronicsBusinessSales = () => {
         }
       }
 
+      const details =sales?.data?.transaction?.acc_transaction_master?.[0]?.acc_transaction_details || [];
+
+
       // Update formData using previous state to maintain integrity
       const updatedFormData = {
         ...formData,
         mtmId: sales.data.mtmId,
-        account:
-          sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
+        account: sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
         accountName,
-        receivedAmt:
-          sales.data.transaction.sales_master.netpayment.toString() || '',
-        discountAmt:
-          parseFloat(sales.data.transaction.sales_master.discount) || 0,
+        receivedAmt: sales.data.transaction.sales_master.netpayment.toString() || '',
+        discountAmt: parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
+        tdsAmount: findCoaCredit(details, 41),
+        serviceCharge: findCoaCredit(details, 42),
+        transportationAmt: findCoaCredit(details, 198),
         products: products || [],
         editInstallmentData: sales.data.transaction.installments.map(
           (installment: any) => ({
@@ -295,15 +300,17 @@ const ElectronicsBusinessSales = () => {
           }),
         ),
       };
-
+      console.log('====================================');
+      console.log("Search", sales);
+      console.log('====================================');
       setFormData(updatedFormData);
       setEditedInstallments(updatedFormData.editInstallmentData);
     }
   }, [sales.data.transaction]);
 
-  useEffect(() => {
-    console.log('Updated formData:', formData);
-  }, [formData]);
+  // useEffect(() => {
+  //   console.log('Updated formData:', formData);
+  // }, [formData]);
 
 
   const totalAmount = formData.products.reduce(
@@ -678,7 +685,11 @@ const ElectronicsBusinessSales = () => {
     setProductData(updatedProduct);
   };
 
+  console.log("Service Charge", formData )
   useEffect(() => {
+    const serviceCharge = Number(formData?.serviceCharge) || 0; 
+    const tdsAmount = Number(formData?.tdsAmount) || 0;
+    const transportationAmt = Number(formData?.transportationAmt) || 0; 
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
       const price = parseFloat(product.price?.toString() || '0') || 0;
@@ -691,7 +702,7 @@ const ElectronicsBusinessSales = () => {
           ...prev,
           receivedAmt: Math.max(
             0,
-            total - parseFloat(prev.discountAmt?.toString() || '0'),
+            total - parseFloat(prev.discountAmt?.toString() || '0') + serviceCharge + tdsAmount + transportationAmt,
           ).toFixed(0),
         }));
       } else {
@@ -716,7 +727,8 @@ const ElectronicsBusinessSales = () => {
         }));
       }
     }
-  }, [formData.account, formData.discountAmt, formData.products]);
+  }, [formData.account, formData.discountAmt, formData.products, formData.serviceCharge, formData.tdsAmount, formData.transportationAmt]);
+
 
 const serviceList = (id: number, list: any[]) => {
   return list.find((item) => item.id === id)?.name || "";
@@ -944,8 +956,8 @@ const serviceList = (id: number, list: any[]) => {
                 id="transportationAmt"
                 value={(formData.transportationAmt || 0).toString()}
                 name="transportationAmt"
-                placeholder={serviceList(197, settings?.serviceList)}
-                label={serviceList(197, settings?.serviceList)}
+                placeholder={serviceList(198, settings?.serviceList)}
+                label={serviceList(198, settings?.serviceList)}
                 className="py-1 text-right"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
@@ -957,8 +969,8 @@ const serviceList = (id: number, list: any[]) => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
             <div className="mt-4">
-                <p className="text-sm font-bold dark:text-white">
-                  Total Tk. {thousandSeparator(totalAmount, 0)}
+                <p className="text-sm font-bold dark:text-white"> 
+                  Total Tk. {thousandSeparator(  (totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) -  Number(formData?.discountAmt)  ), 0)}
                 </p>
               </div>
             {hasPermission(permissions, 'sales.edit') && (
