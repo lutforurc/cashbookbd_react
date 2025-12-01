@@ -72,7 +72,7 @@ const StatusIcon = ({ status }: { status: string }) => {
     );
   } else {
     return (
-      <span className=" flex  items-center gap-1 text-gray-500 text-left font-semibold">
+      <span className=" flex  items-center gap-1 text-green-700 text-left font-semibold">
         <BiCheckCircle /> { firstCharacterUppercase( status)}
       </span>
     );
