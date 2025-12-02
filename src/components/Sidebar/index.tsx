@@ -84,7 +84,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      className={`absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden duration-300 ease-linear bg-white dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
       <div className="flex items-center justify-between gap-2 px-6 py-3 lg:py-3">
         <NavLink to="/">{/* <img src={Logo} alt="Logo" /> */}</NavLink>
@@ -128,7 +128,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/' || pathname.includes('dashboard')) && 'bg-gray-300 dark:bg-meta-4'}`}
+                      className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/' || pathname.includes('dashboard')) && 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'}`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -149,7 +149,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/dashboard"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Dashboard
@@ -185,7 +185,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/accounts/bank/payment' ||
                           pathname === '/accounts/journal' ||
                           pathname.includes('/accounts/cash/receive')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -208,7 +208,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/accounts/cash/receive"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Cash Received
@@ -221,7 +221,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/admin/installment-details"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Installments
@@ -235,7 +235,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/accounts/cash/payment"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Cash Payment
@@ -248,7 +248,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/accounts/bank/receive"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Bank Received
@@ -261,7 +261,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/accounts/bank/payment"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Bank Payment
@@ -273,7 +273,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/accounts/journal"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Journal
@@ -304,7 +304,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/invoice/sales' ||
                           pathname === '/invoice/labour-invoice' ||
                           pathname.includes('/invoice/sales')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -327,7 +327,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/invoice/purchase"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Purchase
@@ -340,7 +340,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/invoice/sales"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Sales
@@ -352,7 +352,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/invoice/labour-invoice"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Labour Invoice
@@ -394,7 +394,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/admin/voucher/date-change' ||
                           pathname === '/orders/avg-price' ||
                           pathname.includes('/branch/branch-list')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -417,7 +417,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/branch/branch-list"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Branch List
@@ -431,7 +431,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/user/user-list"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               User List
@@ -444,7 +444,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/admin/dayclose"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Day Close
@@ -457,7 +457,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/order/order-list"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Orders
@@ -469,7 +469,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/orders/avg-price"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Average Price
@@ -480,7 +480,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/admin/voucher-approval"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Voucher Approval
@@ -491,7 +491,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/admin/remove-approval"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Approval Remove
@@ -502,7 +502,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/admin/voucher/type-change"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Change Voucher Type
@@ -513,7 +513,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/admin/image-upload"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Voucher Upload
@@ -524,7 +524,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/admin/bulk-upload"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Bulk Upload
@@ -535,7 +535,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to={routes.admin_change_date}
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Voucher Date Change
@@ -547,7 +547,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to={'hello-bangladesh'}
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Print
@@ -578,7 +578,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/real-estate/area-list' ||
 
                           pathname.includes('/real-estate/add-area')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -600,7 +600,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/real-estate/area-list"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Area List
@@ -612,7 +612,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/real-estate/add-area"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Area Add
@@ -631,6 +631,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <SidebarLinkGroup
                 activeCondition={
                   pathname === '/reports/cashbook' ||
+                  pathname === '/reports/employee-installment' ||
                   pathname === '/reports/ledger' ||
                   pathname === '/reports/due-installments' ||
                   pathname === '/reports/date-wise-total-data' ||
@@ -651,6 +652,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/reports/date-wise-total-data' ||
                           pathname.includes('reports/cashbook') ||
+                          pathname === '/reports/employee-installment' ||
                           pathname === '/reports/due-installments' ||
                           pathname.includes('/reports/due-list') ||
                           pathname.includes('/reports/product/stock') ||
@@ -661,7 +663,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname.includes('/reports/labour/ledger') ||
                           pathname.includes('/reports/mitch-match') ||
                           pathname.includes('reports/ledger')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -684,7 +686,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/reports/cashbook"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Cash Book
@@ -698,7 +700,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/reports/due-installments"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Due Installments
@@ -712,7 +714,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/reports/employee-installment"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Employee Installments
@@ -726,7 +728,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/reports/ledger"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Ledger
@@ -739,7 +741,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/labour/ledger"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Labour Ledger
@@ -752,7 +754,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/reports/due-list"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Due List
@@ -764,7 +766,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/date-wise-total-data"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Date Wise Total
@@ -775,7 +777,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/product/stock"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Product Stock
@@ -786,7 +788,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/cat-wise/in-out"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Cat Wise In Out
@@ -797,7 +799,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/purchase-ledger"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Purchase Ledger
@@ -808,7 +810,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/sales-ledger"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Sales Ledger
@@ -819,7 +821,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/group-report"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Group Report
@@ -830,7 +832,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/mitch-match"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Mismatch 
@@ -841,7 +843,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/mitch-match"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Mismatch 
@@ -852,7 +854,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/reports/mitch-match"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Mismatch 
@@ -883,7 +885,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/product/product-list' ||
                           pathname === '/category/category-list') &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -905,7 +907,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/category/category-list"
                             className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                           >
                             Category List
@@ -916,7 +918,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/product/product-list"
                             className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                           >
                             Product List
@@ -948,7 +950,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/requisition/create' ||
                           pathname === '/requisition/comparison' ||
                           pathname.includes('/requisition/comparison')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
 
                       onClick={(e) => {
@@ -971,7 +973,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/requisitions"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Requisitions
@@ -982,7 +984,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/requisition/create"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Create
@@ -993,7 +995,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/requisition/comparison"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Comparison
@@ -1021,7 +1023,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/vr-settings/voucher-delete' ||
                           pathname.includes('/vr-settings/voucher-delete')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1044,7 +1046,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               to="/vr-settings/voucher-delete"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-800 dark:text-white')
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
                               Voucher Delete
@@ -1075,7 +1077,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/user-management/roles' ||
                           pathname === '/user-management/create-role' ||
                           pathname.includes('/user-management/roles')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1097,7 +1099,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/user-management/roles"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Roles
@@ -1108,7 +1110,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/user-management/create-role"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Add Roles
@@ -1136,7 +1138,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/customer-supplier/list' ||
                           pathname.includes('/customer-supplier/list')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1158,7 +1160,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/customer-supplier/list"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Customer & Supplier List
@@ -1189,7 +1191,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/coal3/coal3-list' ||
                           pathname === '/coal4/coal4-list' ||
                           pathname.includes('/coal4/coal4-list')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1211,7 +1213,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/coal1/coal1-list"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Coa L1
@@ -1222,7 +1224,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/coal2/coal2-list"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Coa L2
@@ -1233,7 +1235,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/coal3/coal3-list"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Coa L3
@@ -1244,7 +1246,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/coal4/coal4-list"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Coa L4
@@ -1265,7 +1267,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           
                     className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/coal1/coal1-list' ||
                           pathname === '/customer-dashboard' ) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                 >
                   <svg
@@ -1313,7 +1315,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <NavLink
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/ui' || pathname.includes('ui')) &&
-                        'bg-gray-300 dark:bg-meta-4'
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1382,7 +1384,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/ui/alerts"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Alerts
@@ -1393,7 +1395,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             to="/ui/buttons"
                             className={({ isActive }) =>
                               'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-800 dark:text-white')
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
                             Buttons
