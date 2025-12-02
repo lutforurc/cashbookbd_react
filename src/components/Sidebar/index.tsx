@@ -181,6 +181,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/accounts/cash/receive' ||
                           pathname === '/accounts/cash/payment' ||
+                          pathname === '/admin/installment-details' ||
                           pathname === '/accounts/bank/receive' ||
                           pathname === '/accounts/bank/payment' ||
                           pathname === '/accounts/journal' ||
