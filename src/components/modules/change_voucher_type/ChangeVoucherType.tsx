@@ -41,6 +41,7 @@ const ChangeVoucherType = () => {
   const [formData, setFormData] = useState<VoucherTypeItems>(initialFormData);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(me?.branch_id ?? null);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
 
   useEffect(() => {
     dispatch(getVoucherTypes());
@@ -84,13 +85,23 @@ const ChangeVoucherType = () => {
   };
 
 
-  const handleSave = async () => {
-    await dispatch(
-      changeVoucherTypeStore({ ...formData, branch_id: branchId }, (message: string) => {
-        toast.success(message);
-      })
-    );
-  };
+ const handleSave = async () => {
+  setSaveButtonLoading(true);
+
+  await dispatch(
+    changeVoucherTypeStore({ ...formData, branch_id: branchId }, (res) => {
+      
+      if (res.success) { 
+        toast.success(res.message);
+      } else {
+        toast.error(res.message);  // now error toast works!
+      }
+      setSaveButtonLoading(false);
+    })
+  );
+
+  setSaveButtonLoading(false);
+};
 
   return (
     <>
@@ -142,7 +153,8 @@ const ChangeVoucherType = () => {
         <div className="grid grid-cols-1 gap-1 md:grid-cols-3">
           <ButtonLoading
             onClick={handleSave}
-            buttonLoading={true}
+            buttonLoading={saveButtonLoading}
+            disabled={saveButtonLoading}
             label="Change"
             className="whitespace-nowrap text-center mr-0 h-8"
             icon={<FaArrowsTurnToDots className="text-white text-lg ml-2 mr-2" />}

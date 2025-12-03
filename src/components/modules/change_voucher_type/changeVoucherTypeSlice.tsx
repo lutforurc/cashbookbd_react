@@ -3,39 +3,48 @@ import { API_VOUCHER_TYPE_CHANGE_STORE_URL, API_VOUCHER_TYPE_URL } from '../../s
 import httpService from '../../services/httpService';
 
   
-export const changeVoucherTypeStore = (data: any, callback?: (message: string) => void) => (dispatch: any) => {
-  dispatch({ type: VOUCHER_TYPE_CHANGE_STORE_PENDING });
-  httpService.post(API_VOUCHER_TYPE_CHANGE_STORE_URL, data)
-    .then((res) => {
-      const _data = res.data; 
-      if (_data.success) {
-        dispatch({
-          type: VOUCHER_TYPE_CHANGE_STORE_SUCCESS,
-          payload: _data.data.data,
-        });
-        if ('function' == typeof callback) {
-          callback(_data.data.data);
+export const changeVoucherTypeStore = (data: any, callback?: (response: { success: boolean, message: string }) => void) =>
+  (dispatch: any) => {
+
+    dispatch({ type: VOUCHER_TYPE_CHANGE_STORE_PENDING });
+
+    httpService.post(API_VOUCHER_TYPE_CHANGE_STORE_URL, data)
+      .then((res) => {
+        const _data = res.data;
+
+        if (_data.success) {
+          dispatch({
+            type: VOUCHER_TYPE_CHANGE_STORE_SUCCESS,
+            payload: _data.data.data,
+          });
+
+          if (typeof callback === "function") {
+            callback({ success: true, message: _data?.data?.data?.original?.message });
+          }
+
+        } else {
+          dispatch({
+            type: VOUCHER_TYPE_CHANGE_STORE_ERROR,
+            payload: _data.error.message,
+          });
+
+          if (typeof callback === "function") { 
+            callback({ success: false, message: _data?.data?.original?.message });
+          }
         }
-      } else {
+      })
+      .catch((err) => {
         dispatch({
           type: VOUCHER_TYPE_CHANGE_STORE_ERROR,
-          payload: _data.error.message,
+          payload: "Something went wrong.",
         });
-        if ('function' == typeof callback) {
-          callback(_data.message);
+
+        if (typeof callback === "function") { 
+          callback({ success: false, message: err.message });
         }
-      }
-    })
-    .catch((err) => {
-      dispatch({
-        type: VOUCHER_TYPE_CHANGE_STORE_ERROR,
-        payload: 'Something went wrong.',
       });
-      if ('function' == typeof callback) {
-        callback(err.message);
-      }
-    });
-};
+  };
+
   
 
   
