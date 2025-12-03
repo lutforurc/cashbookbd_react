@@ -20,7 +20,7 @@ const Table: React.FC<TableProps> = ({ columns, data, className }) => {
   return (
     <div className={`overflow-x-auto rounded-sm shadow-sm   ${className}`}>
       <table className="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
-        <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+        <thead className="text-xs uppercase bg-gray-300 text-gray-800 dark:bg-gray-700  dark:text-gray-300">
           <tr>
             {columns.map((column) => (
               <th
