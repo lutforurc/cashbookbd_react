@@ -392,7 +392,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/admin/image-upload' ||
                           pathname === '/admin/bulk-upload' ||
                           pathname === '/admin/jumpdate' ||
-                          pathname === '/admin/voucher/date-change' ||
                           pathname === '/orders/avg-price' ||
                           pathname.includes('/branch/branch-list')) &&
                         'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
@@ -531,36 +530,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             Bulk Upload
                           </NavLink>
                         </li>
-                        <li>
-                          <NavLink
-                            to={routes.admin_change_date}
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Voucher Date Change
-                          </NavLink>
-                        </li>
-                        {/* <Route path={'hello-bangladesh'} element={<ReportComponent />} /> */}
-                        <li>
-                          <NavLink
-                            to={'hello-bangladesh'}
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Print
-                          </NavLink>
-                        </li>
                       </ul>
                     </div>
                   </React.Fragment>
                 )}
               </SidebarLinkGroup>
-
-
               {/* Reports */}
               <SidebarLinkGroup
                 activeCondition={
@@ -1012,18 +986,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <SidebarLinkGroup
                 activeCondition={
                   pathname === '/vr-settings/voucher-delete' ||
+                  pathname === '/admin/voucher/date-change' ||
                   pathname.includes('forms')
                 }
                 menuId="vr_settings"
                 open={openMenu === 'vr_settings'}
                 handleClick={() => handleMenuClick('vr_settings')}
               >
+
                 {(handleClick, open) => (
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/vr-settings/voucher-delete' ||
-                          pathname.includes('/vr-settings/voucher-delete')) &&
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
+                        pathname === '/vr-settings/voucher-delete' ||
+                        pathname === '/admin/voucher/date-change' ||
+                         pathname.includes('/vr-settings/voucher-delete')
+                        ) &&
                         'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
                       onClick={(e) => {
@@ -1054,6 +1033,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </NavLink>
                           </li>
                         )}
+
+                        <li>
+                          <NavLink
+                            to={routes.admin_change_date}
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
+                            }
+                          >
+                            Voucher Date Change
+                          </NavLink>
+                        </li>
                       </ul>
                     </div>
                   </React.Fragment>
