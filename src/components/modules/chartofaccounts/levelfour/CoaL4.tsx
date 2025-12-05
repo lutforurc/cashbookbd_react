@@ -107,9 +107,6 @@ const CoaL4 = () => {
         },
     ];
 
-    console.log('====================================');
-    console.log("tableData", coal4?.data?.data);
-    console.log('====================================');
     return (
         <div>
             <HelmetTitle title={'Chart of Accounts L4'} />
