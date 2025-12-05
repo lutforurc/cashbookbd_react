@@ -42,9 +42,9 @@ const StatusIcon = ({ status }: { status: string }) => {
       </div>
     );
   } 
-  else if (status === 'paid (bad)') {
+  else if (status === 'Paid (bad)') {
     return (
-      <div className="flex items-center gap-1 text-red-600 font-semibold">
+      <div className="flex items-center gap-1 text-teal-800 font-semibold">
         <BiAlarm /> Paid (bad)
       </div>
     );
