@@ -22,6 +22,7 @@ import Loader from '../../../common/Loader';
 import { formatDate } from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
 import LoaderDots from '../../utils/LoaderDots';
+import CompareSingleItem from './CompareSingleItem';
 
 const ConstructionDashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
@@ -322,7 +323,10 @@ const ConstructionDashboard = () => {
                 <div>{/* <HeadOfficeReceivedChart /> */}</div>
               </div>
             ) : (
-              <TransactionChart />
+              <>
+                <TransactionChart />
+                <CompareSingleItem />
+              </>
             )}
           </div>
         </div>

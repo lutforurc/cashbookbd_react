@@ -123,6 +123,12 @@ export const API_HEAD_OFFICE_RECEIVED_CHART_URL = `${API_BASE_URL}/dashboard/hea
 export const API_RECEIVED_REMITTANCE_URL = `${API_BASE_URL}/accounts/payment/specific-item`;
 // API_PROJECT_RECEIVED_CHART_URL
 
+
+// Charts
+export const API_ITEM_COMPARE_CHART_URL = `${API_BASE_URL}/dashboard/branch/transaction-compare`;
+
+
+
 // User Routes
 export const API_USER_LIST_URL = `${API_BASE_URL}/user/user-list`;
 export const API_USER_ADD_URL = `${API_BASE_URL}/user/add-user`;
