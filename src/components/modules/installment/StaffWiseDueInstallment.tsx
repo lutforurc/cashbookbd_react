@@ -184,7 +184,7 @@ const StaffWiseDueInstallment = (user: any) => {
           {row?.father && <span className="block">{row?.father}</span>}
           <span className="block">{row?.customer_address}</span>
           <span className="block">{row?.customer_mobile}</span>
-          <span className="block border-t border-red-500">{row?.employee}</span>
+          { row?.employee && <span className="block border-t border-red-500">{row?.employee}</span> }
         </div>
       ),
     },
