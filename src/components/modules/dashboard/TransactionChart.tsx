@@ -63,6 +63,16 @@ const TransactionChart: React.FC = () => {
   stroke: { curve: 'smooth', show: true, width: 3 },
 
   xaxis: { categories: chartData.labels },
+  
+  yaxis: {
+      title: {
+          text: "",
+          style: { fontSize: "14px", fontWeight: 600 }
+        },
+        labels: {
+          formatter: (value: number) => thousandSeparator(value, 0),
+        },
+    },
 
   title: {
     text: `Received and Payment by ${currentBranch?.currentBranch?.name}`,

@@ -94,15 +94,25 @@ const CompareSingleItem: React.FC = () => {
     stroke: { curve: "smooth", width: 3 },
 
     xaxis: { categories: chartData.labels },
+    yaxis: {
+      title: {
+          text: "",
+          style: { fontSize: "14px", fontWeight: 600 }
+        },
+        labels: {
+          formatter: (value: number) => thousandSeparator(value, 0),
+        },
+    },
 
     title: {
-      text: `Tea & Tiffin comparison`,
+      text: `Tea & tiffin expense - ${currentBranch?.currentBranch?.name}`,
       align: "center",
       style: { color: titleColor },
     },
 
     tooltip: {
       enabled: true,
+      theme: "dark",
       shared: true,        // show both Period 1 & Period 2 in tooltip
       intersect: false,    // fix tooltip not showing on second line
       y: {
