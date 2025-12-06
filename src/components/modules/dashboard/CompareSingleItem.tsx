@@ -12,11 +12,11 @@ const CompareSingleItem: React.FC = () => {
   const dispatch = useDispatch();
 
   const [colorMode] = useLocalStorage("color-theme", "light");
-  const [titleColor] = useState(colorMode === "dark" ? "#fff" : "#666666");
+  const titleColor = colorMode === "dark" ? "#fff" : "#666666";
 
   const [chartData, setChartData] = useState({
     labels: [],
-    series: [],
+    series: []
   });
 
   useEffect(() => {
@@ -24,25 +24,41 @@ const CompareSingleItem: React.FC = () => {
     dispatch(userCurrentBranch());
   }, []);
 
-  /**  MAP COMPARE DATA TO CHART FORMAT **/
+ 
+  /** --------------------------------------
+   *     MAP COMPARE API DATA → CHART DATA  
+   *  -------------------------------------- */
   useEffect(() => {
-  const compare = charts?.compareData;
+  const compare =
+    charts?.compareData?.period1 ||       // if compareData slice exists
+    charts?.data?.data?.period1 ||        // if API stored here
+    charts?.transactionChart?.data?.data?.period1; // fallback (not likely)
 
-  if (compare?.period1?.labels && compare?.period1?.series) {
-    
-    // FORMAT YYYY-MM-DD → MM-DD
-    const formattedLabels = compare.period1.labels.map((dateString: string) => {
-      const parts = dateString.split("-"); 
-      return `${parts[2]}`; // MM-DD
-    });
 
-    setChartData({
-      labels: formattedLabels,      // <-- formatted labels
-      series: compare.period1.series
-    });
-  }
+
+  if (!compare?.labels || !compare?.series) return;
+
+  const formattedLabels = compare.labels.map((dateStr) =>
+    dateStr?.split("-") || ""
+  );
+
+  const updatedSeries = compare.series.map((s, i) => ({
+    name: s.name?.trim() !== "" ? s.name : `Series ${i + 1}`,
+    data: s.data || [],
+  }));
+
+  setChartData({
+    labels: compare.labels,
+    series: updatedSeries,
+  });
+
+  console.log("COMPARE DATA:", compare);
+
 }, [charts]);
 
+
+
+  // Chart Options
   const options = {
     chart: { type: "line", height: 250, toolbar: { show: false } },
 
@@ -53,7 +69,7 @@ const CompareSingleItem: React.FC = () => {
     xaxis: { categories: chartData.labels },
 
     title: {
-      text: `Tea & tiffin comparison — ${currentBranch?.currentBranch?.name}`,
+      text: `Tea & Tiffin comparison `,
       align: "center",
       style: { color: titleColor },
     },
@@ -65,14 +81,19 @@ const CompareSingleItem: React.FC = () => {
       },
     },
 
-    colors: ["#008FFB", "#FF4560"], // Period 1 = Blue, Period 2 = Red
+    colors: ["#008FFB", "#FF4560"], 
     legend: { show: true },
   };
 
   return (
     <div>
       {chartData.series.length ? (
-        <ApexChart options={options} series={chartData.series} type="line" height={250} />
+        <ApexChart 
+          options={options} 
+          series={chartData.series} 
+          type="line" 
+          height={250} 
+        />
       ) : (
         ""
       )}
