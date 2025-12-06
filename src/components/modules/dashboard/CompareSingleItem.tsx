@@ -7,6 +7,7 @@ import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
 import { userCurrentBranch } from "../branch/branchSlice";
 
 const CompareSingleItem: React.FC = () => {
+  const settings = useSelector((state) => state.settings);
   const charts = useSelector((state) => state.charts);
   const currentBranch = useSelector((state) => state.branchList);
   const dispatch = useDispatch();
@@ -19,42 +20,53 @@ const CompareSingleItem: React.FC = () => {
     series: []
   });
 
-  useEffect(() => {
-    dispatch(getCompare());
-    dispatch(userCurrentBranch());
-  }, []);
 
- 
+useEffect(() => {
+  dispatch(
+    getCompare({
+      branch_id: currentBranch?.currentBranch.id,
+      coal4_id: 126,
+      period1_start: "2025-10-01",
+      period1_end: "2025-10-31",
+      period2_start: "2025-11-01",
+      period2_end: "2025-11-30",
+    })
+  );
+
+  dispatch(userCurrentBranch());
+}, []);
+
+
   /** --------------------------------------
    *     MAP COMPARE API DATA → CHART DATA  
    *  -------------------------------------- */
   useEffect(() => {
-  const compare =
-    charts?.compareData?.period1 ||       // if compareData slice exists
-    charts?.data?.data?.period1 ||        // if API stored here
-    charts?.transactionChart?.data?.data?.period1; // fallback (not likely)
+    const compare =
+      charts?.compareData?.period1 ||       // if compareData slice exists
+      charts?.data?.data?.period1 ||        // if API stored here
+      charts?.transactionChart?.data?.data?.period1; // fallback (not likely)
 
 
 
-  if (!compare?.labels || !compare?.series) return;
+    if (!compare?.labels || !compare?.series) return;
 
-  const formattedLabels = compare.labels.map((dateStr) =>
-    dateStr?.split("-") || ""
-  );
+    const formattedLabels = compare.labels.map((dateStr) =>
+      dateStr?.split("-") || ""
+    );
 
-  const updatedSeries = compare.series.map((s, i) => ({
-    name: s.name?.trim() !== "" ? s.name : `Series ${i + 1}`,
-    data: s.data || [],
-  }));
+    const updatedSeries = compare.series.map((s, i) => ({
+      name: s.name?.trim() !== "" ? s.name : `Series ${i + 1}`,
+      data: s.data || [],
+    }));
 
-  setChartData({
-    labels: compare.labels,
-    series: updatedSeries,
-  });
+    setChartData({
+      labels: compare.labels,
+      series: updatedSeries,
+    });
 
-  console.log("COMPARE DATA:", compare);
+    console.log("COMPARE DATA:", compare);
 
-}, [charts]);
+  }, [charts]);
 
 
 
@@ -81,18 +93,18 @@ const CompareSingleItem: React.FC = () => {
       },
     },
 
-    colors: ["#008FFB", "#FF4560"], 
+    colors: ["#008FFB", "#FF4560"],
     legend: { show: true },
   };
 
   return (
     <div>
       {chartData.series.length ? (
-        <ApexChart 
-          options={options} 
-          series={chartData.series} 
-          type="line" 
-          height={250} 
+        <ApexChart
+          options={options}
+          series={chartData.series}
+          type="line"
+          height={250}
         />
       ) : (
         ""

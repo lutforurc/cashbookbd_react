@@ -42,17 +42,17 @@ export const getHeadOfficePaymentChart = createAsyncThunk("getHeadOfficePaymentC
 
 export const getCompare = createAsyncThunk(
   "compare/fetch",
-  async (_, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       // HARD-CODED PAYLOAD
-      const payload = {
-        branch_id: 14,
-        coal4_id: 126,
-        period1_start: "2025-10-01",
-        period1_end: "2025-10-31",
-        period2_start: "2025-11-01",
-        period2_end: "2025-11-30",
-      };
+      // const payload = {
+      //   branch_id: 14,
+      //   coal4_id: 126,
+      //   period1_start: "2025-10-01",
+      //   period1_end: "2025-10-31",
+      //   period2_start: "2025-11-01",
+      //   period2_end: "2025-11-30",
+      // };
 
       const { data } = await httpService.post(API_ITEM_COMPARE_CHART_URL, payload);
       return data.data;
