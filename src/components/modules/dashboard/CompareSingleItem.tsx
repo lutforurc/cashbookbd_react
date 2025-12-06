@@ -76,7 +76,7 @@ const CompareSingleItem: React.FC = () => {
       type: "line",
       height: 250,
       toolbar: {
-        show: true,
+        show: false,
         tools: {
           zoom: false,      // disable zoom tool
           zoomin: false,    // disable zoom-in button

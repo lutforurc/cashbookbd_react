@@ -45,7 +45,7 @@ const TransactionChart: React.FC = () => {
     type: "area",
     height: 250,
     toolbar: {
-      show: true,
+      show: false,
       tools: {
         zoom: false,      // Disable zoom selection
         zoomin: false,    // Disable + zoom button
