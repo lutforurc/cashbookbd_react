@@ -5,7 +5,7 @@ import {
   ButtonLoading,
   DeleteButton,
 } from '../../../pages/UiElements/CustomButtons';
-import { FiHome, FiSave, FiX } from 'react-icons/fi';
+import { FiHome, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -39,28 +39,34 @@ const VoucherDelete = () => {
 
   // ================= Handle Confirm Delete =================
 const handleDeleteConfirmed = async () => {
-  // Show spinner
   setSaveButtonLoading(true);
-
-  // ৩০ সেকেন্ডের timeout
-  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   try {
     const result = await dispatch(deleteVoucher({ voucher_no: voucherNo }));
 
-    await wait(100);
-
+    // success match
     if (deleteVoucher.fulfilled.match(result)) {
-      toast.success("Voucher deleted successfully");
-      setVoucherNo("");
+      
+      const response = result.payload;
+
+      // ❗ API success flag check
+      if (response?.success === true) {
+        toast.success("Voucher deleted successfully");
+        setVoucherNo("");
+      } else {
+        // API error message safely read
+        toast.error(response?.error?.message || "Failed to delete voucher");
+      }
+
     } else {
-      toast.error(result.payload || "Failed to delete voucher");
+      toast.error("Failed to delete voucher");
     }
+
   } catch (error) {
     toast.error("Something went wrong");
   } finally {
-    setSaveButtonLoading(false); // spinner hide
-    setShowConfirm(false); // modal close
+    setSaveButtonLoading(false);
+    setShowConfirm(false);
   }
 };
 
@@ -102,7 +108,7 @@ const handleDeleteConfirmed = async () => {
             buttonLoading={saveButtonLoading}
             label="Delete Voucher"
             className="whitespace-nowrap h-8"
-            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            icon={<FiTrash2 className="dark:text-red-700 text-lg ml-2 mr-2" />}
           />
 
           <Link to="/dashboard" className="text-nowrap justify-center h-8">

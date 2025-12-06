@@ -70,7 +70,7 @@ const TransactionChart: React.FC = () => {
       }
     }
   };
-  console.log(currentBranch?.currentBranch?.name);
+
   return (
     <div>
       {chartData.series.length > 0 ? (
