@@ -41,35 +41,45 @@ const TransactionChart: React.FC = () => {
 
 
   const options = {
-    chart: {
-      type: "area",
-      height: 250,
-      toolbar: { show: false }
-    },
-    
-    labels: {
-      style: {
-        fontSize: '12px'
-      },
-      formatter: (defaultValue: number): string => {
-        return (defaultValue / 1000).toString();
+  chart: {
+    type: "area",
+    height: 250,
+    toolbar: {
+      show: true,
+      tools: {
+        zoom: false,      // Disable zoom selection
+        zoomin: false,    // Disable + zoom button
+        zoomout: false,   // Disable − zoom button
+        pan: false,       // Disable panning
       }
     },
-    dataLabels: { enabled: false },
-    legend: { show: false },
-    stroke: { curve: 'smooth', show: true, width: 3 },
-    xaxis: { categories: chartData.labels },
-    title: { text: `Received and Payment by  ${currentBranch?.currentBranch?.name}`, align: "center", style: { color: titleColor } },
- 
-    tooltip: {
-      enabled: true, theme: "dark", style: { fontSize: "12px" },
-      y: {
-        formatter: (value: number): string => {
-          return `${ thousandSeparator (value,0)}`;
-        }
-      }
+    zoom: {
+      enabled: false,     // Disable zoom by mouse scroll or drag
+    },
+  },
+
+  dataLabels: { enabled: false },
+  legend: { show: false },
+  stroke: { curve: 'smooth', show: true, width: 3 },
+
+  xaxis: { categories: chartData.labels },
+
+  title: {
+    text: `Received and Payment by ${currentBranch?.currentBranch?.name}`,
+    align: "center",
+    style: { color: titleColor },
+  },
+
+  tooltip: {
+    enabled: true,
+    theme: "dark",
+    style: { fontSize: "12px" },
+    y: {
+      formatter: (value:number) => `${thousandSeparator(value, 0)}`
     }
-  };
+  }
+};
+
 
   return (
     <div>

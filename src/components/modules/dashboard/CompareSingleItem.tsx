@@ -21,20 +21,20 @@ const CompareSingleItem: React.FC = () => {
   });
 
 
-useEffect(() => {
-  dispatch(
-    getCompare({
-      branch_id: currentBranch?.currentBranch.id,
-      coal4_id: 126,
-      period1_start: "2025-10-01",
-      period1_end: "2025-10-31",
-      period2_start: "2025-11-01",
-      period2_end: "2025-11-30",
-    })
-  );
+  useEffect(() => {
+    dispatch(
+      getCompare({
+        branch_id: currentBranch?.currentBranch.id,
+        coal4_id: 126,
+        period1_start: "2025-10-01",
+        period1_end: "2025-10-31",
+        period2_start: "2025-11-01",
+        period2_end: "2025-11-30",
+      })
+    );
 
-  dispatch(userCurrentBranch());
-}, []);
+    dispatch(userCurrentBranch());
+  }, []);
 
 
   /** --------------------------------------
@@ -72,7 +72,22 @@ useEffect(() => {
 
   // Chart Options
   const options = {
-    chart: { type: "line", height: 250, toolbar: { show: false } },
+    chart: {
+      type: "line",
+      height: 250,
+      toolbar: {
+        show: true,
+        tools: {
+          zoom: false,      // disable zoom tool
+          zoomin: false,    // disable zoom-in button
+          zoomout: false,   // disable zoom-out button
+          pan: false,       // disable pan
+        }
+      },
+      zoom: {
+        enabled: false,     // disable zoom by drag or scroll
+      }
+    },
 
     dataLabels: { enabled: false },
 
@@ -81,13 +96,15 @@ useEffect(() => {
     xaxis: { categories: chartData.labels },
 
     title: {
-      text: `Tea & Tiffin comparison `,
+      text: `Tea & Tiffin comparison`,
       align: "center",
       style: { color: titleColor },
     },
 
     tooltip: {
       enabled: true,
+      shared: true,        // show both Period 1 & Period 2 in tooltip
+      intersect: false,    // fix tooltip not showing on second line
       y: {
         formatter: (value: number) => thousandSeparator(value, 0),
       },
@@ -96,6 +113,7 @@ useEffect(() => {
     colors: ["#008FFB", "#FF4560"],
     legend: { show: true },
   };
+
 
   return (
     <div>
