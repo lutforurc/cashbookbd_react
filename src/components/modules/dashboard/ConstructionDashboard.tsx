@@ -116,7 +116,6 @@ const ConstructionDashboard = () => {
     );
   };
 
-  console.log('dashboard?.data',dashboard?.data?.topProductsPurchase);
 
   return (
     <>

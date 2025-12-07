@@ -63,9 +63,6 @@ const CompareSingleItem: React.FC = () => {
       labels: compare.labels,
       series: updatedSeries,
     });
-
-    console.log("COMPARE DATA:", compare);
-
   }, [charts]);
 
 
@@ -96,12 +93,12 @@ const CompareSingleItem: React.FC = () => {
     xaxis: { categories: chartData.labels },
     yaxis: {
       title: {
-          text: "",
-          style: { fontSize: "14px", fontWeight: 600 }
-        },
-        labels: {
-          formatter: (value: number) => thousandSeparator(value, 0),
-        },
+        text: "",
+        style: { fontSize: "14px", fontWeight: 600 }
+      },
+      labels: {
+        formatter: (value: number) => thousandSeparator(value, 0),
+      },
     },
 
     title: {
@@ -112,12 +109,18 @@ const CompareSingleItem: React.FC = () => {
 
     tooltip: {
       enabled: true,
-      theme: "dark",
-      shared: true,        // show both Period 1 & Period 2 in tooltip
-      intersect: false,    // fix tooltip not showing on second line
+      shared: true,
+      intersect: false,
       y: {
-        formatter: (value: number) => thousandSeparator(value, 0),
-      },
+        formatter: function (value, { seriesIndex, dataPointIndex, w }) { 
+          console.log('====================================');
+          console.log("Global", w.globals);
+          console.log('====================================');
+          const label = chartData.labels[dataPointIndex]; // x-axis label
+
+          return `${label} (${value})`;
+        }
+      }
     },
 
     colors: ["#008FFB", "#FF4560"],
