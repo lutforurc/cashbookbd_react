@@ -3,12 +3,16 @@ import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from '../../images/logo/logo.svg';
 import {
+  FiActivity,
+  FiBarChart2,
   FiBook,
   FiGrid,
   FiHome,
   FiLayers,
+  FiPieChart,
   FiServer,
   FiShoppingCart,
+  FiTrendingUp,
   FiUsers,
 } from 'react-icons/fi';
 import { FaBluetooth, FaGear, FaRegStar } from 'react-icons/fa6';
@@ -1250,6 +1254,59 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 )}
               </SidebarLinkGroup>
 
+
+
+            {/* Chart of Accounts */}
+              <SidebarLinkGroup
+                activeCondition={
+                  pathname === '/item/item-chart' || pathname.includes('forms')
+                }
+                menuId="al-charts"
+                open={openMenu === 'al-charts'}
+                handleClick={() => handleMenuClick('al-charts')}
+              >
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    <NavLink
+                      to="#"
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${
+                        (
+                          pathname === '/item/item-chart' || 
+                          pathname.includes('/item/item-chart')
+                        ) &&
+                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                        }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        sidebarExpanded
+                          ? handleClick()
+                          : setSidebarExpanded(true);
+                      }}
+                    >
+                      <FiBarChart2  />
+                      Charts
+                    </NavLink>
+                    <div
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        }`}
+                    >
+                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <li>
+                          <NavLink
+                            to="/item/item-chart"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
+                            }
+                          >
+                            Item
+                          </NavLink>
+                        </li>
+                      </ul>
+                    </div>
+                  </React.Fragment>
+                )}
+              </SidebarLinkGroup>
               
 
               {/* Customer Dashboard */}

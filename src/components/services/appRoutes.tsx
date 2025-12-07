@@ -163,6 +163,10 @@ const ROUTES = {
 
 
 
+  item_chart: '/item/item-chart',
+
+
+
 
   notFound: '*',
 };

@@ -75,7 +75,8 @@ import RequisitionList from './components/modules/Requisition/Requisitions';
 import Requisitions from './components/modules/Requisition/Requisitions';  
 import AreaAdd from './components/modules/real-estate/area/AreaAdd';
 import AreaList from './components/modules/real-estate/area/AreaList';
-import DashboardIndex from './components/modules/dashboard/DashboardIndex';
+import DashboardIndex from './components/modules/dashboard/DashboardIndex'; 
+import ItemChart from './components/modules/charts/item-char/ItemChart';
 
 
 
@@ -214,6 +215,11 @@ function App() {
             <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
             <Route path={routes.real_estate_area_list} element={<AreaList />} />
 
+
+
+            {/* All Cart */}
+            
+          <Route path={routes.item_chart} element={<ItemChart user={me} />} />
 
           </Route>
 
