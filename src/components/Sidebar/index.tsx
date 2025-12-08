@@ -1038,7 +1038,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </NavLink>
                           </li>
                         )}
-                        {hasPermission(permissions, 'dayclose.all.view') && (
+                        {/* {hasPermission(permissions, 'dayclose.all.view') && (
                           <li>
                             <NavLink
                               to="/vr-settings/installment-delete"
@@ -1050,7 +1050,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               Installment Delete
                             </NavLink>
                           </li>
-                        )}
+                        )} */}
 
                         <li>
                           <NavLink
