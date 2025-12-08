@@ -1004,6 +1004,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
                         pathname === '/vr-settings/voucher-delete' ||
+                        pathname === '/vr-settings/installment-delete' ||
                         pathname === '/admin/voucher/date-change' ||
                          pathname.includes('/vr-settings/voucher-delete')
                         ) &&
@@ -1034,6 +1035,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               }
                             >
                               Voucher Delete
+                            </NavLink>
+                          </li>
+                        )}
+                        {hasPermission(permissions, 'dayclose.all.view') && (
+                          <li>
+                            <NavLink
+                              to="/vr-settings/installment-delete"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              Installment Delete
                             </NavLink>
                           </li>
                         )}

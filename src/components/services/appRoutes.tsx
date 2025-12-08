@@ -154,6 +154,7 @@ const ROUTES = {
 
   // VR Settings
   voucher_delete: '/vr-settings/voucher-delete', 
+  installment_delete: '/vr-settings/installment-delete', 
 
 
 
