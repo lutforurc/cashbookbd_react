@@ -1284,7 +1284,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       }}
                     >
                       <FiBarChart2  />
-                      Charts
+                      Analytics
                     </NavLink>
                     <div
                       className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'

@@ -121,7 +121,7 @@ const CompareSingleItem = ({
       options={options}
       series={chartData.series}
       type="line"
-      height={250}
+      height={500}
     />
   ) : null;
 };
