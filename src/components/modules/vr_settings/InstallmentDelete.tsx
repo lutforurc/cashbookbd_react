@@ -124,8 +124,8 @@ const handleDeleteConfirmed = async () => {
           <div className="bg-gray-900 text-white rounded-lg shadow-lg w-96 p-5">
             <h3 className="text-lg font-semibold mb-4">Confirm Deletion</h3>
             <p className="mb-4">
-              Are you sure you want to delete voucher{' '}
-              <span className="block font-bold">{voucherNo} ?</span>
+              Are you sure you want to delete installment for this voucher{' '}
+              <span className="font-bold">{voucherNo}?</span>
             </p>
             <div className="flex justify-end gap-3">
               {/* Cancel Button */}
