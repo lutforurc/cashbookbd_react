@@ -78,9 +78,7 @@ const ItemChart = (user) => {
     setLedgerAccount(option.value);
   };
 
-  const handleRun = () => {
-    setButtonLoading((prev) => !prev);
-  };
+
 
   /* ===============================
    ✅ UI

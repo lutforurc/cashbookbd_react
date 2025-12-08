@@ -38,37 +38,35 @@ const InstallmentDelete = () => {
   }, [dispatch]);
 
   // ================= Handle Confirm Delete =================
-const handleDeleteConfirmed = async () => {
-  setSaveButtonLoading(true);
+  const handleDeleteConfirmed = async () => {
+    setSaveButtonLoading(true);
 
-  try {
-    const result = await dispatch(deleteInstallment({ voucher_no: voucherNo }));
+    try {
+      const result = await dispatch(deleteInstallment({ voucher_no: voucherNo }));
 
-    // success match
-    if (deleteVoucher.fulfilled.match(result)) {
-      
-      const response = result.payload;
+      console.log("Delete Installment Result:", result);
 
-      // ❗ API success flag check
+      const response = result?.payload;
+
+      // ✅ API real success check
       if (response?.success === true) {
-        toast.success("Installment deleted successfully");
+        toast.success(response?.message || "Installment deleted successfully");
         setVoucherNo("");
-      } else {
-        // API error message safely read
-        toast.error(response?.error?.message || "Failed to delete installment");
+      }
+      else if (response?.success === false) {
+        toast.error(response?.message || "Installment not found");
+      }
+      else {
+        toast.error("Unexpected response from server");
       }
 
-    } else {
-      toast.error("Failed to delete installment");
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setSaveButtonLoading(false);
+      setShowConfirm(false);
     }
-
-  } catch (error) {
-    toast.error("Something went wrong");
-  } finally {
-    setSaveButtonLoading(false);
-    setShowConfirm(false);
-  }
-};
+  };
 
 
   return (
