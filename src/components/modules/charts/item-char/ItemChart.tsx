@@ -90,7 +90,7 @@ const ItemChart = (user) => {
       <HelmetTitle title={"Item Chart"} />
 
       <div className="mb-2">
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 w-full gap-2 items-end">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 w-full gap-2 items-end">
 
           {/* ✅ Select Branch */}
           <div>
@@ -157,12 +157,12 @@ const ItemChart = (user) => {
           </div>
 
           {/* ✅ Run Button */}
-          <ButtonLoading
+          {/* <ButtonLoading
             onClick={handleRun}
             buttonLoading={buttonLoading}
             label="Run"
             className="mt-2 w-full h-9"
-          />
+          /> */}
         </div>
       </div>
 
