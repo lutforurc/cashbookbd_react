@@ -10,7 +10,7 @@ import Link from '../../utils/others/Link';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getSettings } from '../settings/settingsSlice';
-import { deleteVoucher } from './voucherSettingsSlice';
+import { deleteInstallment, deleteVoucher } from './voucherSettingsSlice';
 
 const InstallmentDelete = () => {
   const settings = useSelector((s) => s.settings);
@@ -42,7 +42,7 @@ const handleDeleteConfirmed = async () => {
   setSaveButtonLoading(true);
 
   try {
-    const result = await dispatch(deleteVoucher({ voucher_no: voucherNo }));
+    const result = await dispatch(deleteInstallment({ voucher_no: voucherNo }));
 
     // success match
     if (deleteVoucher.fulfilled.match(result)) {
