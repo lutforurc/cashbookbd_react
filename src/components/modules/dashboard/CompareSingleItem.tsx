@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import ApexChart from "react-apexcharts";
-import { useDispatch, useSelector } from "react-redux";
-import { getCompare } from "./chartSlice";
-import useLocalStorage from "../../../hooks/useLocalStorage";
-import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
+import React, { useEffect, useState } from 'react';
+import ApexChart from 'react-apexcharts';
+import { useDispatch, useSelector } from 'react-redux';
+import { getCompare } from './chartSlice';
+import useLocalStorage from '../../../hooks/useLocalStorage';
+import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 
 const CompareSingleItem = ({
   branchId,
@@ -17,14 +17,13 @@ const CompareSingleItem = ({
   const charts = useSelector((state) => state.charts);
   const dispatch = useDispatch();
 
-  const [colorMode] = useLocalStorage("color-theme", "light");
-  const titleColor = colorMode === "dark" ? "#fff" : "#666666";
+  const [colorMode] = useLocalStorage('color-theme', 'light');
+  const titleColor = colorMode === 'dark' ? '#fff' : '#666666';
 
   const [chartData, setChartData] = useState({
     labels: [],
     series: [],
   });
-
 
   /* ===============================
    ✅ Dynamic API Call (SAFE)
@@ -38,23 +37,28 @@ const CompareSingleItem = ({
         coal4_id: ledgerId,
 
         period1_start: startDate1
-          ? startDate1.toISOString().split("T")[0]
+          ? startDate1.toISOString().split('T')[0]
           : null,
 
-        period1_end: endDate1
-          ? endDate1.toISOString().split("T")[0]
-          : null,
+        period1_end: endDate1 ? endDate1.toISOString().split('T')[0] : null,
 
         period2_start: startDate2
-          ? startDate2.toISOString().split("T")[0]
+          ? startDate2.toISOString().split('T')[0]
           : null,
 
-        period2_end: endDate2
-          ? endDate2.toISOString().split("T")[0]
-          : null,
-      })
+        period2_end: endDate2 ? endDate2.toISOString().split('T')[0] : null,
+      }),
     );
-  }, [run, branchId, ledgerId, startDate1, endDate1, startDate2, endDate2, dispatch]);
+  }, [
+    run,
+    branchId,
+    ledgerId,
+    startDate1,
+    endDate1,
+    startDate2,
+    endDate2,
+    dispatch,
+  ]);
 
   /* ===============================
    ✅ Chart Data Mapping (SAFE)
@@ -73,9 +77,13 @@ const CompareSingleItem = ({
   /* ===============================
    ✅ Chart Options
   ================================= */
+
+  const allValues = chartData.series.flatMap((s) => s.data);
+  const maxValue = Math.max(...allValues, 0);
+
   const options = {
     chart: {
-      type: "line",
+      type: 'line',
       height: 250,
       toolbar: { show: false },
       zoom: { enabled: false },
@@ -83,21 +91,29 @@ const CompareSingleItem = ({
 
     dataLabels: { enabled: false },
 
-    stroke: { curve: "smooth", width: 3 },
+    stroke: { curve: 'smooth', width: 3 },
 
     xaxis: {
       categories: chartData.labels,
     },
 
     yaxis: {
+      min: 0, // নিচের সর্বনিম্ন ভ্যালু
+      max: maxValue, // উপরের সর্বোচ্চ ভ্যালু ✅ (আপনার ডাটা অনুযায়ী সেট করবেন)
+      tickAmount: 10, // ✅ মোট 5টা স্টেপ হবে (gap control)
+
       labels: {
-        formatter: (value) => thousandSeparator(value, 0),
+        // formatter: (value) => thousandSeparator(value, 0),
+        formatter: (value) => {
+          const rounded = Math.round(value / 100) * 100; // ✅ 495 → 500
+          return thousandSeparator(rounded, 0);
+        },
       },
     },
 
     title: {
       text: `Item Comparison`,
-      align: "center",
+      align: 'center',
       style: { color: titleColor },
     },
 
@@ -106,13 +122,13 @@ const CompareSingleItem = ({
       intersect: false,
       y: {
         formatter: (value, { dataPointIndex }) => {
-          const label = chartData.labels[dataPointIndex] || "";
+          const label = chartData.labels[dataPointIndex] || '';
           return `${label} → ${thousandSeparator(value, 0)}`;
         },
       },
     },
 
-    colors: ["#008FFB", "#FF4560"],
+    colors: ['#008FFB', '#FF4560'],
     legend: { show: true },
   };
 
