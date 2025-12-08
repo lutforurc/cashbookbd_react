@@ -1,64 +1,93 @@
-import React, { useEffect, useState } from 'react';
-import HelmetTitle from '../../../utils/others/HelmetTitle';
-import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
-import { useDispatch, useSelector } from 'react-redux';
-import Loader from '../../../../common/Loader';
-import InputDatePicker from '../../../utils/fields/DatePicker';
-import InputElement from '../../../utils/fields/InputElement';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
+import React, { useEffect, useState } from "react";
+import HelmetTitle from "../../../utils/others/HelmetTitle";
+import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import { useDispatch, useSelector } from "react-redux";
+import Loader from "../../../../common/Loader";
+import InputDatePicker from "../../../utils/fields/DatePicker";
+import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
+import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
+import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
+import CompareSingleItem from "../../dashboard/CompareSingleItem";
 
-const ItemChart = (user: any) => {
+const ItemChart = (user) => {
   const dispatch = useDispatch();
-  const branchDdlData = useSelector((state: any) => state.branchDdl);
-  const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [branchId, setBranchId] = useState<number | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null); // Define state with type
-  const [endDate, setEndDate] = useState<Date | null>(null); // Define state with type
+  const branchDdlData = useSelector((state) => state.branchDdl);
+
+  const [dropdownData, setDropdownData] = useState([]);
+  const [branchId, setBranchId] = useState(null);
+
+  // ✅✅✅ আলাদা আলাদা Date State
+  const [p1StartDate, setP1StartDate] = useState(null);
+  const [p1EndDate, setP1EndDate] = useState(null);
+  const [p2StartDate, setP2StartDate] = useState(null);
+  const [p2EndDate, setP2EndDate] = useState(null);
+
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [tableData, setTableData] = useState<any[]>([]);
-  const [isSelected, setIsSelected] = useState<number | string>('');
-  const [perPage, setPerPage] = useState<number>(12);
-  const [fontSize, setFontSize] = useState<number>(12);
-  const [branchPad, setBranchPad] = useState<string | null>(null);
+  const [ledgerId, setLedgerAccount] = useState(null);
 
-
+  /* ===============================
+   ✅ INITIAL LOAD
+  ================================= */
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    setIsSelected(user.user.branch_id);
-    setBranchId(user.user.branch_id);
-    setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
+
+    if (user?.user?.branch_id) {
+      setBranchId(user.user.branch_id);
+    }
   }, []);
 
+  /* ===============================
+   ✅ SET DROPDOWN & DEFAULT DATE
+  ================================= */
   useEffect(() => {
     if (
       branchDdlData?.protectedData?.data &&
       branchDdlData?.protectedData?.transactionDate
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
+
       const [day, month, year] =
-        branchDdlData?.protectedData?.transactionDate.split('/');
-      const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(parsedDate);
-      setEndDate(parsedDate);
-      setBranchId(user.user.branch_id);
-    } else {
+        branchDdlData?.protectedData?.transactionDate.split("/");
+
+      const parsedDate = new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day)
+      );
+
+      // ✅✅✅ Default সবগুলো আলাদা করে সেট
+      setP1StartDate(parsedDate);
+      setP1EndDate(parsedDate);
+      setP2StartDate(parsedDate);
+      setP2EndDate(parsedDate);
+
+      if (user?.user?.branch_id) {
+        setBranchId(user.user.branch_id);
+      }
     }
   }, [branchDdlData?.protectedData?.data]);
 
-  const handleBranchChange = (e: any) => {
+  /* ===============================
+   ✅ HANDLERS
+  ================================= */
+  const handleBranchChange = (e) => {
     setBranchId(e.target.value);
   };
-  const handleStartDate = (e: any) => {
-    setStartDate(e);
+
+  const selectedLedgerOptionHandler = (option) => {
+    setLedgerAccount(option.value);
   };
-  const handleEndDate = (e: any) => {
-    setEndDate(e);
+
+  const handleRun = () => {
+    setButtonLoading((prev) => !prev);
   };
+
+  /* ===============================
+   ✅ UI
+  ================================= */
   return (
     <div className="">
-      <HelmetTitle title={'Item Chart'} />
+      <HelmetTitle title={"Item Chart"} />
 
       <div className="mb-2">
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 w-full gap-2 items-end">
@@ -77,75 +106,80 @@ const ItemChart = (user: any) => {
             </div>
           </div>
 
-          {/* ✅ Item */}
+          {/* ✅ Select Account */}
           <div>
-            <div className="">
-              <label htmlFor="">Select Account</label>
-              <DdlMultiline className='' onSelect={() => { }} acType={''} />
-            </div>
+            <label className="text-sm font-medium">Select Account</label>
+            <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={""} />
           </div>
 
-          {/* ✅ Start Date (Period 1) */}
+          {/* ✅ Period 1 Start */}
           <div>
-            <label className="text-sm font-medium">Start Date</label>
+            <label className="text-sm font-medium">Start Date (P1)</label>
             <InputDatePicker
-              setCurrentDate={handleStartDate}
+              setCurrentDate={setP1StartDate}
+              selectedDate={p1StartDate}
+              setSelectedDate={setP1StartDate}
               className="font-medium text-sm w-full h-9"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
             />
           </div>
 
-          {/* ✅ End Date (Period 1) */}
+          {/* ✅ Period 1 End */}
           <div>
-            <label className="text-sm font-medium">End Date</label>
+            <label className="text-sm font-medium">End Date (P1)</label>
             <InputDatePicker
-              setCurrentDate={handleEndDate}
+              setCurrentDate={setP1EndDate}
+              selectedDate={p1EndDate}
+              setSelectedDate={setP1EndDate}
               className="font-medium text-sm w-full h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
             />
           </div>
 
-          {/* ✅ Start Date (Period 2) */}
+          {/* ✅ Period 2 Start */}
           <div>
-            <label className="text-sm font-medium">Start Date</label>
+            <label className="text-sm font-medium">Start Date (P2)</label>
             <InputDatePicker
-              setCurrentDate={handleEndDate}
+              setCurrentDate={setP2StartDate}
+              selectedDate={p2StartDate}
+              setSelectedDate={setP2StartDate}
               className="font-medium text-sm w-full h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
             />
           </div>
 
-          {/* ✅ End Date (Period 2) + ✅ Button in SAME COLUMN */}
-
+          {/* ✅ Period 2 End */}
           <div>
-            <label className="text-sm font-medium">End Date</label>
+            <label className="text-sm font-medium">End Date (P2)</label>
             <InputDatePicker
-              setCurrentDate={handleEndDate}
+              setCurrentDate={setP2EndDate}
+              selectedDate={p2EndDate}
+              setSelectedDate={setP2EndDate}
               className="font-medium text-sm w-full h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
             />
           </div>
-          {/* ✅ Perfect Button Placement */}
+
+          {/* ✅ Run Button */}
           <ButtonLoading
-            onClick={() => { }}
+            onClick={handleRun}
             buttonLoading={buttonLoading}
             label="Run"
             className="mt-2 w-full h-9"
           />
-
-
         </div>
       </div>
 
-      <div className="overflow-y-auto mt-3"></div>
+      {/* ✅ Compare Chart */}
+      <div className="mt-3">
+        <CompareSingleItem
+          branchId={branchId}
+          ledgerId={ledgerId}
+          startDate1={p1StartDate}
+          endDate1={p1EndDate}
+          startDate2={p2StartDate}
+          endDate2={p2EndDate}
+          run={buttonLoading}
+        />
+      </div>
     </div>
-
   );
-
 };
 
 export default ItemChart;

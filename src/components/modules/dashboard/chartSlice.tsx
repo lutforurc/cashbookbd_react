@@ -1,61 +1,104 @@
-// 
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import httpService from "../../services/httpService";
-import { API_BRANCH_PURCHASE_SALES_CHART_URL, API_BRANCH_TRANSACTION_CHART_URL, API_HEAD_OFFICE_PAYMENT_CHART_URL, API_HEAD_OFFICE_RECEIVED_CHART_URL, API_ITEM_COMPARE_CHART_URL } from "../../services/apiRoutes";
+import {
+  API_BRANCH_PURCHASE_SALES_CHART_URL,
+  API_BRANCH_TRANSACTION_CHART_URL,
+  API_HEAD_OFFICE_PAYMENT_CHART_URL,
+  API_HEAD_OFFICE_RECEIVED_CHART_URL,
+  API_ITEM_COMPARE_CHART_URL,
+} from "../../services/apiRoutes";
 
-export const getBranchChart = createAsyncThunk("getBranchChart/fetch", async (params, { rejectWithValue }) => {
-  try {
-
-    const { month = 12, branch = '' } = params || {};
-    const { data } = await httpService.get(`${API_BRANCH_TRANSACTION_CHART_URL}?month=${month}&branch=${branch}`);
-    return { data };
-  } catch (error) {
-    return rejectWithValue({ message: "Authentication failed, please try again!" });
+/* =========================================
+✅ Branch Transaction Chart
+========================================= */
+export const getBranchChart = createAsyncThunk(
+  "getBranchChart/fetch",
+  async (params, { rejectWithValue }) => {
+    try {
+      const { month = 12, branch = "" } = params || {};
+      const { data } = await httpService.get(
+        `${API_BRANCH_TRANSACTION_CHART_URL}?month=${month}&branch=${branch}`
+      );
+      return data;
+    } catch (error) {
+      return rejectWithValue({
+        message: "Failed to fetch branch transaction chart",
+      });
+    }
   }
-}
 );
 
-
-export const getMonthlyPurchaseSales = createAsyncThunk("getMonthlyPurchaseSales/fetch", async (_, { rejectWithValue }) => {
-  try {
-    const { data } = await httpService.get(`${API_BRANCH_PURCHASE_SALES_CHART_URL}`);
-    return { data };
-  } catch (error) {
-    return rejectWithValue({ message: "Authentication failed, please try again!" });
+/* =========================================
+✅ Monthly Purchase Sales
+========================================= */
+export const getMonthlyPurchaseSales = createAsyncThunk(
+  "getMonthlyPurchaseSales/fetch",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await httpService.get(
+        `${API_BRANCH_PURCHASE_SALES_CHART_URL}`
+      );
+      return data;
+    } catch (error) {
+      return rejectWithValue({
+        message: "Failed to fetch monthly purchase sales",
+      });
+    }
   }
-}
 );
 
-export const getHeadOfficePaymentChart = createAsyncThunk("getHeadOfficePaymentChart/fetch", async (params, { rejectWithValue }) => {
-  try {
-    const { month = 12, branch = '' } = params || {};
-    const { data } = await httpService.get(`${API_HEAD_OFFICE_PAYMENT_CHART_URL}?month=${month}&branch=${branch}`);
-
-    return { data };
-  } catch (error) {
-    return rejectWithValue({ message: "Authentication failed, please try again!" });
+/* =========================================
+✅ Head Office Payment Chart
+========================================= */
+export const getHeadOfficePaymentChart = createAsyncThunk(
+  "getHeadOfficePaymentChart/fetch",
+  async (params, { rejectWithValue }) => {
+    try {
+      const { month = 12, branch = "" } = params || {};
+      const { data } = await httpService.get(
+        `${API_HEAD_OFFICE_PAYMENT_CHART_URL}?month=${month}&branch=${branch}`
+      );
+      return data;
+    } catch (error) {
+      return rejectWithValue({
+        message: "Failed to fetch head office payment chart",
+      });
+    }
   }
-}
 );
 
+/* =========================================
+✅ Head Office Received Chart
+========================================= */
+export const getHeadOfficeReceivedChart = createAsyncThunk(
+  "getHeadOfficeReceivedChart/fetch",
+  async (params, { rejectWithValue }) => {
+    try {
+      const { month = 12, branch = "" } = params || {};
+      const { data } = await httpService.get(
+        `${API_HEAD_OFFICE_RECEIVED_CHART_URL}?month=${month}&branch=${branch}`
+      );
+      return data;
+    } catch (error) {
+      return rejectWithValue({
+        message: "Failed to fetch head office received chart",
+      });
+    }
+  }
+);
 
+/* =========================================
+✅ Item Compare Chart
+========================================= */
 export const getCompare = createAsyncThunk(
   "compare/fetch",
   async (payload, { rejectWithValue }) => {
     try {
-      // HARD-CODED PAYLOAD
-      // const payload = {
-      //   branch_id: 14,
-      //   coal4_id: 126,
-      //   period1_start: "2025-10-01",
-      //   period1_end: "2025-10-31",
-      //   period2_start: "2025-11-01",
-      //   period2_end: "2025-11-30",
-      // };
-
-      const { data } = await httpService.post(API_ITEM_COMPARE_CHART_URL, payload);
-      return data.data;
+      const { data } = await httpService.post(
+        API_ITEM_COMPARE_CHART_URL,
+        payload
+      );
+      return data.data; // ✅ IMPORTANT → only inner data return
     } catch (error) {
       return rejectWithValue({
         message: "Failed to fetch compare transaction",
@@ -64,30 +107,20 @@ export const getCompare = createAsyncThunk(
   }
 );
 
-
-
-export const getHeadOfficeReceivedChart = createAsyncThunk("getHeadOfficeReceivedChart/fetch", async (params, { rejectWithValue }) => {
-  try {
-    const { month = 12, branch = '' } = params || {};
-
-    const { data } = await httpService.get(`${API_HEAD_OFFICE_RECEIVED_CHART_URL}?month=${month}&branch=${branch}`);
-    return { data };
-  } catch (error) {
-    return rejectWithValue({ message: "Authentication failed, please try again!" });
-  }
-}
-);
-
-// Slice
+/* =========================================
+✅ SLICE
+========================================= */
 const chartSlice = createSlice({
   name: "chartProperties",
   initialState: {
     loading: false,
-    transactionChart: [],
-    compareData: [],
-    headOfficePayment: [],
-    headOfficeReceived: [],
-    purchaseSales: [],
+
+    transactionChart: {},   // ✅ object
+    compareData: null,      // ✅ object
+    headOfficePayment: {},  // ✅ object
+    headOfficeReceived: {}, // ✅ object
+    purchaseSales: {},      // ✅ object
+
     error: null,
   },
   reducers: {
@@ -98,72 +131,75 @@ const chartSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
+      /* ===== ✅ COMPARE ===== */
       .addCase(getCompare.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getCompare.fulfilled, (state, action) => {
         state.loading = false;
-        state.compareData = action.payload.data;
+        state.compareData = action.payload; // ✅ FIXED
       })
       .addCase(getCompare.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Something went wrong!";
+        state.error = action.payload?.message || "Compare failed";
       })
 
+      /* ===== ✅ BRANCH CHART ===== */
       .addCase(getBranchChart.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getBranchChart.fulfilled, (state, action) => {
         state.loading = false;
-        state.transactionChart = action.payload.data;
+        state.transactionChart = action.payload; // ✅ FIXED
       })
       .addCase(getBranchChart.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Something went wrong!";
+        state.error = action.payload?.message || "Branch chart failed";
       })
 
+      /* ===== ✅ PURCHASE SALES ===== */
       .addCase(getMonthlyPurchaseSales.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getMonthlyPurchaseSales.fulfilled, (state, action) => {
         state.loading = false;
-        state.purchaseSales = action.payload.data;
+        state.purchaseSales = action.payload;
       })
       .addCase(getMonthlyPurchaseSales.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Something went wrong!";
+        state.error = action.payload?.message || "Purchase sales failed";
       })
 
-
+      /* ===== ✅ HEAD OFFICE PAYMENT ===== */
       .addCase(getHeadOfficePaymentChart.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getHeadOfficePaymentChart.fulfilled, (state, action) => {
         state.loading = false;
-        state.headOfficePayment = action.payload.data;
+        state.headOfficePayment = action.payload;
       })
       .addCase(getHeadOfficePaymentChart.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Something went wrong!";
+        state.error = action.payload?.message || "Head office payment failed";
       })
 
+      /* ===== ✅ HEAD OFFICE RECEIVED ===== */
       .addCase(getHeadOfficeReceivedChart.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getHeadOfficeReceivedChart.fulfilled, (state, action) => {
         state.loading = false;
-        state.headOfficeReceived = action.payload.data;
+        state.headOfficeReceived = action.payload;
       })
       .addCase(getHeadOfficeReceivedChart.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Something went wrong!";
-      })
-
+        state.error = action.payload?.message || "Head office received failed";
+      });
   },
 });
 

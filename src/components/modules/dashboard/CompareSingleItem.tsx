@@ -4,12 +4,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { getCompare } from "./chartSlice";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import thousandSeparator from "../../utils/utils-functions/thousandSeparator";
-import { userCurrentBranch } from "../branch/branchSlice";
 
-const CompareSingleItem: React.FC = () => {
-  const settings = useSelector((state) => state.settings);
+const CompareSingleItem = ({
+  branchId,
+  ledgerId,
+  startDate1,
+  endDate1,
+  startDate2,
+  endDate2,
+  run,
+}) => {
   const charts = useSelector((state) => state.charts);
-  const currentBranch = useSelector((state) => state.branchList);
   const dispatch = useDispatch();
 
   const [colorMode] = useLocalStorage("color-theme", "light");
@@ -17,131 +22,108 @@ const CompareSingleItem: React.FC = () => {
 
   const [chartData, setChartData] = useState({
     labels: [],
-    series: []
+    series: [],
   });
 
 
+  /* ===============================
+   ✅ Dynamic API Call (SAFE)
+  ================================= */
   useEffect(() => {
+    if (!branchId || !startDate1 || !endDate1) return;
+
     dispatch(
       getCompare({
-        branch_id: currentBranch?.currentBranch.id,
-        coal4_id: 126,
-        period1_start: "2025-10-01",
-        period1_end: "2025-10-31",
-        period2_start: "2025-11-01",
-        period2_end: "2025-11-30",
+        branch_id: branchId,
+        coal4_id: ledgerId,
+
+        period1_start: startDate1
+          ? startDate1.toISOString().split("T")[0]
+          : null,
+
+        period1_end: endDate1
+          ? endDate1.toISOString().split("T")[0]
+          : null,
+
+        period2_start: startDate2
+          ? startDate2.toISOString().split("T")[0]
+          : null,
+
+        period2_end: endDate2
+          ? endDate2.toISOString().split("T")[0]
+          : null,
       })
     );
+  }, [run, branchId, ledgerId, startDate1, endDate1, startDate2, endDate2, dispatch]);
 
-    dispatch(userCurrentBranch());
-  }, []);
-
-
-  /** --------------------------------------
-   *     MAP COMPARE API DATA → CHART DATA  
-   *  -------------------------------------- */
+  /* ===============================
+   ✅ Chart Data Mapping (SAFE)
+  ================================= */
   useEffect(() => {
-    const compare =
-      charts?.compareData?.period1 ||       // if compareData slice exists
-      charts?.data?.data?.period1 ||        // if API stored here
-      charts?.transactionChart?.data?.data?.period1; // fallback (not likely)
+    const compare = charts?.compareData?.data?.period1;
 
-
-
-    if (!compare?.labels || !compare?.series) return;
-
-    const formattedLabels = compare.labels.map((dateStr) =>
-      dateStr?.split("-") || ""
-    );
-
-    const updatedSeries = compare.series.map((s, i) => ({
-      name: s.name?.trim() !== "" ? s.name : `Series ${i + 1}`,
-      data: s.data || [],
-    }));
+    if (!compare || !compare.labels || !compare.series) return;
 
     setChartData({
       labels: compare.labels,
-      series: updatedSeries,
+      series: compare.series,
     });
   }, [charts]);
 
-
-
-  // Chart Options
+  /* ===============================
+   ✅ Chart Options
+  ================================= */
   const options = {
     chart: {
       type: "line",
       height: 250,
-      toolbar: {
-        show: false,
-        tools: {
-          zoom: false,      // disable zoom tool
-          zoomin: false,    // disable zoom-in button
-          zoomout: false,   // disable zoom-out button
-          pan: false,       // disable pan
-        }
-      },
-      zoom: {
-        enabled: false,     // disable zoom by drag or scroll
-      }
+      toolbar: { show: false },
+      zoom: { enabled: false },
     },
 
     dataLabels: { enabled: false },
 
     stroke: { curve: "smooth", width: 3 },
 
-    xaxis: { categories: chartData.labels },
+    xaxis: {
+      categories: chartData.labels,
+    },
+
     yaxis: {
-      title: {
-        text: "",
-        style: { fontSize: "14px", fontWeight: 600 }
-      },
       labels: {
-        formatter: (value: number) => thousandSeparator(value, 0),
+        formatter: (value) => thousandSeparator(value, 0),
       },
     },
 
     title: {
-      text: `Tea & tiffin expense - ${currentBranch?.currentBranch?.name}`,
+      text: `Item Comparison`,
       align: "center",
       style: { color: titleColor },
     },
 
     tooltip: {
-      enabled: true,
       shared: true,
       intersect: false,
       y: {
-        formatter: function (value, { seriesIndex, dataPointIndex, w }) { 
-          console.log('====================================');
-          console.log("Global", w.globals);
-          console.log('====================================');
-          const label = chartData.labels[dataPointIndex]; // x-axis label
-
-          return `${label} (${value})`;
-        }
-      }
+        formatter: (value, { dataPointIndex }) => {
+          const label = chartData.labels[dataPointIndex] || "";
+          return `${label} → ${thousandSeparator(value, 0)}`;
+        },
+      },
     },
 
     colors: ["#008FFB", "#FF4560"],
     legend: { show: true },
   };
 
-
-  return (
-    <div>
-      {chartData.series.length ? (
-        <ApexChart
-          options={options}
-          series={chartData.series}
-          type="line"
-          height={250}
-        />
-      ) : (
-        ""
-      )}
-    </div>
-  );
+  return chartData.series.length ? (
+    <ApexChart
+      options={options}
+      series={chartData.series}
+      type="line"
+      height={250}
+    />
+  ) : null;
 };
 
 export default CompareSingleItem;
