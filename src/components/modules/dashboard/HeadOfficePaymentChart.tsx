@@ -40,7 +40,10 @@ const HeadOfficePaymentChart: React.FC = () => {
   const options = {
     chart: {
       type: "area",
-      height: 250,
+      height: 350,
+      zoom: {
+        enabled: false
+      },
       toolbar: { show: false }
     },
     
@@ -57,6 +60,16 @@ const HeadOfficePaymentChart: React.FC = () => {
     stroke: { curve: 'smooth', show: true, width: 3 },
     colors: ['#2E93fA', '#66DA26', '#546E7A', '#E91E63', '#FF9800', '#DC9899', '#A6D21E'],
     xaxis: { categories: chartData.labels },
+    yaxis: {
+    title: {
+        text: 'Payment'
+      },
+      labels: {
+        formatter: function (value:number) {
+          return thousandSeparator(value, 0);
+        }
+      }
+    },
     title: { text: "Payment from Branch and Head Office", align: "center", style: { color: titleColor } },
     tooltip: {
       enabled: true, theme: "dark", style: { fontSize: "12px" },

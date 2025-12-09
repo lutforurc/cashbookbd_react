@@ -315,7 +315,7 @@ const ConstructionDashboard = () => {
           <div className=""></div>
           <div className="border-slate-200 pb-3 text-white pt-2">
             {currentBranch.branch_types_id == 1 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="grid grid-cols-1">
                 <div>
                   <HeadOfficePaymentChart />
                 </div>
