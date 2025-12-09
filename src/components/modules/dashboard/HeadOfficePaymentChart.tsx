@@ -70,7 +70,7 @@ const HeadOfficePaymentChart: React.FC = () => {
         }
       }
     },
-    title: { text: "Payment from Branch and Head Office", align: "center", style: { color: titleColor } },
+    title: { text: "Payment from Head Office to Branch", align: "center", style: { color: titleColor } },
     tooltip: {
       enabled: true, theme: "dark", style: { fontSize: "12px" },
       y: {
