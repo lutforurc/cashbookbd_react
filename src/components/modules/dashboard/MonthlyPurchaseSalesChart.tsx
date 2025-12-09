@@ -62,6 +62,16 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
       ...getApexTheme(mode).xaxis,
       categories: chartData.labels,
     },
+    yaxis: {
+    title: {
+        text: 'Purchase & Sales'
+      },
+      labels: {
+        formatter: function (value:number) {
+          return thousandSeparator(value, 0);
+        }
+      }
+    },
 
     legend: {
       labels: { colors: getApexTheme(mode).legend.labels.colors },

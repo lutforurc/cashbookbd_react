@@ -19,10 +19,7 @@ const ComputerAccessories = () => {
     dispatch(getDashboard());
     dispatch(getMonthlyPurchaseSales());
   }, []);
-
-  console.log('====================================');
-  console.log('purchaseSales', purchaseSales);
-  console.log('====================================');
+ 
 
   return (
     <div>

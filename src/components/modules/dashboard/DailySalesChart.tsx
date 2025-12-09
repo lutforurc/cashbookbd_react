@@ -48,6 +48,16 @@ const DailySalesChart = () => {
       ...getApexTheme(mode).xaxis,
       categories: chartData.labels,
     },
+    yaxis: {
+    title: {
+        text: 'Purchase'
+      },
+      labels: {
+        formatter: function (value:number) {
+          return thousandSeparator(value, 0);
+        }
+      }
+    },
   };
 
   return (
