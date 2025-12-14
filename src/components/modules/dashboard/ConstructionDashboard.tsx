@@ -221,7 +221,7 @@ const ConstructionDashboard = () => {
                               </div>
                               <div className="ml-2">
                                 <span className={`font-bold ${fontClass}`}>
-                                  {Number(item.qty)}
+                                  { thousandSeparator((Number(item.qty)), 0)}
                                 </span>
                               </div>
                             </li>
