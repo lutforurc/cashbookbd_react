@@ -191,7 +191,7 @@ const ConstructionDashboard = () => {
                 {/* Header */}
                 <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
                   <span className="text-sm font-bold">
-                    Top Purchase Products (Last 7 Days)
+                    Top Purchase (Last 7 Days)
                   </span>
                 </div>
                 {/* Body */}
