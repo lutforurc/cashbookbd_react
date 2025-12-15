@@ -72,17 +72,17 @@ const ROUTES = {
   coal4_list: '/coal4/coal4-list',
   coal4_add: '/coal4/add-coal4',
 
-  report_ledger         : '/reports/ledger',
-  report_cashbook       : '/reports/cashbook',
-  report_due_list       : '/reports/due-list',
+  report_ledger: '/reports/ledger',
+  report_cashbook: '/reports/cashbook',
+  report_due_list: '/reports/due-list',
   report_date_wise_total: '/reports/date-wise-total-data',
-  report_product_stock  : '/reports/product/stock',
-  cat_wise_in_out       : '/reports/cat-wise/in-out',
-  purchase_ledger       : '/reports/purchase-ledger',
-  sales_ledger          : '/reports/sales-ledger',
-  mitch_match           : '/reports/mitch-match',
-  report_labour_ledger  : '/reports/labour/ledger',
-  group_report          : '/reports/group-report',
+  report_product_stock: '/reports/product/stock',
+  cat_wise_in_out: '/reports/cat-wise/in-out',
+  purchase_ledger: '/reports/purchase-ledger',
+  sales_ledger: '/reports/sales-ledger',
+  mitch_match: '/reports/mitch-match',
+  report_labour_ledger: '/reports/labour/ledger',
+  group_report: '/reports/group-report',
 
   // Cash Received',
   cash_received: '/accounts/cash/receive',
@@ -91,7 +91,7 @@ const ROUTES = {
   product_list: '/product/product-list',
   product_create: '/product/add-product',
   product_edit: '/product/edit/:id',
-  product_store: '/product/store', 
+  product_store: '/product/store',
 
   // Category Route
   category_list: '/category/category-list',
@@ -144,30 +144,21 @@ const ROUTES = {
 
   customer_dashboard: '/customer-dashboard',
 
-
-
   // Requisition
   requisition: '/requisitions',
   requisition_comparison: '/requisition/comparison',
   requisition_create: '/requisition/create',
 
-
   // VR Settings
-  voucher_delete: '/vr-settings/voucher-delete', 
-  installment_delete: '/vr-settings/installment-delete', 
-
-
+  voucher_delete: '/vr-settings/voucher-delete',
+  installment_delete: '/vr-settings/installment-delete',
+  recyclebin: '/vr-settings/recyclebin',
 
   // Real Estate Area
   real_estate_area_list: '/real-estate/area-list',
   real_estate_area_add: '/real-estate/add-area',
 
-
-
   item_chart: '/item/item-chart',
-
-
-
 
   notFound: '*',
 };

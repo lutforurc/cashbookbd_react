@@ -367,3 +367,4 @@ export const API_REQUISITION_LIST_URL = `${API_BASE_URL}/requisition/list`;
 // Voucher Delete URL
 export const API_VOUCHER_DELETE_URL = `${API_BASE_URL}/voucher-settings/destroy`;
 export const API_INSTALLMENT_DELETE_URL = `${API_BASE_URL}/voucher-settings/installment-destroy`;
+export const API_VOUCHER_RECYCLEBIN_URL = `${API_BASE_URL}/voucher-settings/recyclebin`;

@@ -78,6 +78,7 @@ import AreaList from './components/modules/real-estate/area/AreaList';
 import DashboardIndex from './components/modules/dashboard/DashboardIndex'; 
 import ItemChart from './components/modules/charts/item-char/ItemChart';
 import InstallmentDelete from './components/modules/vr_settings/InstallmentDelete';
+import Recyclebin from './components/modules/vr_settings/Recyclebin';
 
 
 
@@ -202,6 +203,7 @@ function App() {
             {/* Voucher Delete */}
             <Route path={routes.installment_delete} element={<InstallmentDelete />} />
             <Route path={routes.voucher_delete} element={<VoucherDelete />} />
+            <Route path={routes.recyclebin} element={<Recyclebin />} />
 
 
             {/* Invoices */}

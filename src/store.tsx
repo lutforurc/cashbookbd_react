@@ -48,6 +48,7 @@ import labourLedgerSlice from './components/modules/reports/ledger-labour/labour
 import requisitionSlice from './components/modules/Requisition/requisitionSlice';
 import bankReceivedReducer from './components/modules/transactions/bankreceived/bankReceivedSlice';
 import realEstateArea from './components/modules/real-estate/area/areaSlice';
+import voucherSettings from './components/modules/vr_settings/voucherSettingsSlice';
 
 const store = configureStore({
   reducer: {
@@ -100,6 +101,7 @@ const store = configureStore({
     employees: employeeSlice,
     requisition: requisitionSlice,
     realEstateArea: realEstateArea,
+    voucherSettings: voucherSettings,
   },
 });
 
