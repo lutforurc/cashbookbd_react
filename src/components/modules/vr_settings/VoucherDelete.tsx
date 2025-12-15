@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getSettings } from '../settings/settingsSlice';
 import { deleteVoucher } from './voucherSettingsSlice';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
 
 const VoucherDelete = () => {
   const settings = useSelector((s) => s.settings);
@@ -38,37 +39,37 @@ const VoucherDelete = () => {
   }, [dispatch]);
 
   // ================= Handle Confirm Delete =================
-const handleDeleteConfirmed = async () => {
-  setSaveButtonLoading(true);
+  const handleDeleteConfirmed = async () => {
+    setSaveButtonLoading(true);
 
-  try {
-    const result = await dispatch(deleteVoucher({ voucher_no: voucherNo }));
+    try {
+      const result = await dispatch(deleteVoucher({ voucher_no: voucherNo }));
 
-    // success match
-    if (deleteVoucher.fulfilled.match(result)) {
-      
-      const response = result.payload;
+      // success match
+      if (deleteVoucher.fulfilled.match(result)) {
 
-      // ❗ API success flag check
-      if (response?.success === true) {
-        toast.success("Voucher deleted successfully");
-        setVoucherNo("");
+        const response = result.payload;
+
+        // ❗ API success flag check
+        if (response?.success === true) {
+          toast.success("Voucher deleted successfully");
+          setVoucherNo("");
+        } else {
+          // API error message safely read
+          toast.error(response?.error?.message || "Failed to delete voucher");
+        }
+
       } else {
-        // API error message safely read
-        toast.error(response?.error?.message || "Failed to delete voucher");
+        toast.error("Failed to delete voucher");
       }
 
-    } else {
-      toast.error("Failed to delete voucher");
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setSaveButtonLoading(false);
+      setShowConfirm(false);
     }
-
-  } catch (error) {
-    toast.error("Something went wrong");
-  } finally {
-    setSaveButtonLoading(false);
-    setShowConfirm(false);
-  }
-};
+  };
 
 
   return (
@@ -119,35 +120,21 @@ const handleDeleteConfirmed = async () => {
       </div>
 
       {/* ================= Confirmation Modal ================= */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-900 text-white rounded-lg shadow-lg w-96 p-5">
-            <h3 className="text-lg font-semibold mb-4">Confirm Deletion</h3>
-            <p className="mb-4">
-              Are you sure you want to delete voucher{' '}
-              <span className="block font-bold">{voucherNo} ?</span>
-            </p>
-            <div className="flex justify-end gap-3">
-              {/* Cancel Button */}
-              <ButtonLoading
-                onClick={() => setShowConfirm(false)}
-                label="Cancel"
-                className="whitespace-nowrap h-8 bg-gray-600 hover:bg-gray-700"
-                icon={<FiX className="text-white text-lg mr-2" />}
-                disabled={saveButtonLoading} // Cancel button disabled while loading
-              />
-
-              {/* Confirm Button */}
-              <DeleteButton
-                label="Confirm"
-                onClick={handleDeleteConfirmed}
-                loading={saveButtonLoading} // spinner shows while API call is running
-                disabled={saveButtonLoading} // button disabled while API call
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        show={showConfirm}
+        title="Confirm Deletion"
+        message={
+          <>
+            Are you sure you want to delete voucher
+            <span className="block font-bold mt-1">
+              {voucherNo} ?
+            </span>
+          </>
+        }
+        loading={saveButtonLoading}
+        onCancel={() => setShowConfirm(false)}
+        onConfirm={handleDeleteConfirmed}
+      />
     </>
   );
 };

@@ -1,10 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../services/httpService";
-import { 
-  API_INSTALLMENT_DELETE_URL, 
-  API_VOUCHER_DELETE_URL, 
-  API_VOUCHER_RECYCLEBIN_URL 
-} from "../../services/apiRoutes";
+import {API_INSTALLMENT_DELETE_URL,API_VOUCHER_DELETE_URL,API_VOUCHER_RECYCLEBIN_URL,API_REMOVE_RECYCLEBIN_URL,} from "../../services/apiRoutes";
 
 // ---------- Types ----------
 export interface VoucherItem {
@@ -39,6 +35,15 @@ interface RecycleBinParams {
   search?: string;
 }
 
+interface RemoveRecycleBinParams {
+  id: number;
+}
+
+interface RemoveRecycleBinResponse {
+  success: boolean;
+  message: string;
+}
+
 interface VoucherState {
   vouchers: VoucherItem[];
   recycleBinItems: RecycleBinResponse | null;
@@ -58,65 +63,66 @@ const initialState: VoucherState = {
 // ---------- Thunks ----------
 
 // Fetch Recycle Bin
-export const fetchRecycleBin = createAsyncThunk<
-  RecycleBinResponse,
-  RecycleBinParams | void,
-  { rejectValue: string }
->(
-  "voucher/fetchRecycleBin",
-  async (params, thunkAPI) => {
-    try {
-      const response = await httpService.post(API_VOUCHER_RECYCLEBIN_URL, {
-        page: params?.page || 1,
-        per_page: params?.per_page || 10,
-        ...(params?.search ? { search: params.search } : {}),
-      });
-      return response.data as RecycleBinResponse;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || error.message || "Failed to fetch recycle bin"
-      );
-    }
+export const fetchRecycleBin = createAsyncThunk<RecycleBinResponse,RecycleBinParams | void,{ rejectValue: string }>("voucher/fetchRecycleBin", async (params, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_VOUCHER_RECYCLEBIN_URL, {
+      page: params?.page || 1,
+      per_page: params?.per_page || 10,
+      ...(params?.search ? { search: params.search } : {}),
+    });
+    return response.data as RecycleBinResponse;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to fetch recycle bin"
+    );
   }
-);
+});
 
-// Delete Voucher
-export const deleteVoucher = createAsyncThunk<
-  VoucherDeleteResponse,
-  { voucher_no: string | number },
-  { rejectValue: string }
->(
-  "voucher/deleteVoucher",
-  async (payload, thunkAPI) => {
-    try {
-      const response = await httpService.post(API_VOUCHER_DELETE_URL, {
-        voucher_no: payload.voucher_no,
-      });
-      return response.data as VoucherDeleteResponse;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.message || "Failed to delete voucher");
-    }
+// Permanent Remove From Recycle Bin
+export const removeRecycleBin = createAsyncThunk<RemoveRecycleBinResponse,RemoveRecycleBinParams,{ rejectValue: string }>("voucher/removeRecycleBin", async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_REMOVE_RECYCLEBIN_URL, {
+      id: payload.id,
+    });
+    return response.data as RemoveRecycleBinResponse;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to remove recycle bin item"
+    );
   }
-);
+});
+
+// Delete Voucher (soft delete)
+export const deleteVoucher = createAsyncThunk<VoucherDeleteResponse,{ voucher_no: string | number },{ rejectValue: string }>("voucher/deleteVoucher", async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_VOUCHER_DELETE_URL, {
+      voucher_no: payload.voucher_no,
+    });
+    return response.data as VoucherDeleteResponse;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.message || "Failed to delete voucher"
+    );
+  }
+});
 
 // Delete Installment
-export const deleteInstallment = createAsyncThunk<
-  VoucherDeleteResponse,
-  { voucher_no: string | number },
-  { rejectValue: string }
->(
-  "voucher/deleteInstallment",
-  async (payload, thunkAPI) => {
-    try {
-      const response = await httpService.post(API_INSTALLMENT_DELETE_URL, {
-        voucher_no: payload.voucher_no,
-      });
-      return response.data as VoucherDeleteResponse;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.message || "Failed to delete installment");
-    }
+export const deleteInstallment = createAsyncThunk<VoucherDeleteResponse,{ voucher_no: string | number },{ rejectValue: string }>("voucher/deleteInstallment", async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_INSTALLMENT_DELETE_URL, {
+      voucher_no: payload.voucher_no,
+    });
+    return response.data as VoucherDeleteResponse;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.message || "Failed to delete installment"
+    );
   }
-);
+});
 
 // ---------- Slice ----------
 const voucherSlice = createSlice({
@@ -137,7 +143,7 @@ const voucherSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchRecycleBin.fulfilled, (state, action: PayloadAction<RecycleBinResponse>) => {
+      .addCase(fetchRecycleBin.fulfilled, (state, action) => {
         state.loading = false;
         state.recycleBinItems = action.payload;
       })
@@ -146,40 +152,54 @@ const voucherSlice = createSlice({
         state.error = action.payload || "Failed to fetch recycle bin";
       });
 
+    // Remove Recycle Bin Item
+    builder
+      .addCase(removeRecycleBin.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(removeRecycleBin.fulfilled, (state, action) => {
+        state.loading = false;
+        // state.message = action.payload;
+      })
+      .addCase(removeRecycleBin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Recycle bin remove failed";
+      });
+
     // Delete Voucher
     builder
       .addCase(deleteVoucher.pending, (state) => {
         state.loading = true;
-        state.error = null;
         state.deleteSuccess = false;
       })
-      .addCase(deleteVoucher.fulfilled, (state, action: PayloadAction<VoucherDeleteResponse>) => {
+      .addCase(deleteVoucher.fulfilled, (state, action) => {
         state.loading = false;
         state.deleteSuccess = true;
-        state.vouchers = state.vouchers.filter(v => v.vr_no !== action.payload.voucher_no);
+        state.vouchers = state.vouchers.filter(
+          (v) => v.vr_no !== action.payload.voucher_no
+        );
       })
       .addCase(deleteVoucher.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Delete failed";
-        state.deleteSuccess = false;
       });
 
     // Delete Installment
     builder
       .addCase(deleteInstallment.pending, (state) => {
         state.loading = true;
-        state.error = null;
         state.deleteSuccess = false;
       })
-      .addCase(deleteInstallment.fulfilled, (state, action: PayloadAction<VoucherDeleteResponse>) => {
+      .addCase(deleteInstallment.fulfilled, (state, action) => {
         state.loading = false;
         state.deleteSuccess = true;
-        state.vouchers = state.vouchers.filter(v => v.vr_no !== action.payload.voucher_no);
+        state.vouchers = state.vouchers.filter(
+          (v) => v.vr_no !== action.payload.voucher_no
+        );
       })
       .addCase(deleteInstallment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Delete failed";
-        state.deleteSuccess = false;
       });
   },
 });

@@ -5,12 +5,14 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiTrash2 } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { fetchRecycleBin } from './voucherSettingsSlice';
+import { fetchRecycleBin, removeRecycleBin } from './voucherSettingsSlice';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
+import { toast } from 'react-toastify';
 
 const Recyclebin = () => {
   const dispatch = useDispatch();
@@ -27,15 +29,24 @@ const Recyclebin = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
 
-  // Fetch data whenever page, perPage, or search changes
-  useEffect(() => {
+  // Delete Modal state
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch data
+  const fetchData = () => {
     setButtonLoading(true);
     dispatch(fetchRecycleBin({ page, per_page: perPage, search }))
       .unwrap()
       .finally(() => setButtonLoading(false));
-  }, [page, perPage, dispatch]);
+  };
 
-  // Update table data & total pages whenever voucherSettings changes
+  useEffect(() => {
+    fetchData();
+  }, [page, perPage, search, dispatch]);
+
+  // Update table & total pages whenever voucherSettings changes
   useEffect(() => {
     const data = voucherSettings?.recycleBinItems?.data?.data?.data || [];
     const total = voucherSettings?.recycleBinItems?.data?.data?.total || 0;
@@ -45,8 +56,8 @@ const Recyclebin = () => {
 
   // Handlers
   const handleSearchButton = () => {
-    setPage(1); // reset page when searching
-    dispatch(fetchRecycleBin({ page: 1, per_page: perPage, search }));
+    setPage(1);
+    fetchData();
   };
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -54,71 +65,66 @@ const Recyclebin = () => {
     setPage(1);
   };
 
-  // Update table when voucherSettings changes
-  useEffect(() => {
-    const data = voucherSettings?.recycleBinItems?.data?.data?.data || [];
-    setTableData(data);
-  }, [voucherSettings]);
-
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
-  const handleProductEdit = (row: any) => {
-    navigate(`/product/edit/${row.product_id}`);
+  const handleRemoveRecycle = (row: any) => {
+    if (!row?.id) return;
+    setSelectedRow(row);
+    setShowConfirm(true);
   };
+
+const handleDeleteConfirmed = async () => {
+  if (!selectedRow?.id) return;
+
+  setLoading(true);
+
+  try {
+    // ১. প্রথমে remove API call
+                  //  await dispatch(removeRecycleBin({ id: selectedRow.id })).unwrap();
+    const result = await dispatch(removeRecycleBin({ id: selectedRow.id })).unwrap();
+toast.success(result.message || "Voucher restored successfully");
+    // toast.success("Item permanently deleted");
+    console.log('====================================');
+    console.log("result", result);
+    console.log('====================================');
+
+    await dispatch(fetchRecycleBin({ page, per_page: perPage, search: search || undefined })).unwrap();
+
+  } catch (err) {
+    console.error("Remove failed:", err);
+  } finally {
+
+      
+    
+    setLoading(false);
+    setShowConfirm(false);
+    setSelectedRow(null);
+  }
+};
+
+
 
   // Table columns
   const columns = [
-    {
-      key: 'sl_no',
-      header: 'Sl. No.',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-    },
-    {
-      key: 'vr_no',
-      header: 'Voucher No',
-      render: (row: any) => <p>{row.vr_no}</p>,
-    },
-    {
-      key: 'vr_date',
-      header: 'Voucher Date',
-      render: (row: any) => <p>{row.vr_date}</p>,
-    },
-    {
-      key: 'coal_name',
-      header: 'Name',
-      render: (row: any) => <p>{row.coal_name}</p>,
-    },
+    { key: 'sl_no', header: 'Sl. No.', headerClass: 'text-center', cellClass: 'text-center' },
+    { key: 'vr_no', header: 'Voucher No', render: (row: any) => <p>{row.vr_no}</p> },
+    { key: 'vr_date', header: 'Voucher Date', render: (row: any) => <p>{row.vr_date}</p> },
+    { key: 'coal_name', header: 'Name', render: (row: any) => <p>{row.coal_name}</p> },
     {
       key: 'delete_at',
       header: 'Deleted At',
       render: (row: any) => (
         <p>
-          {
-            <>
-              <span className="font-semibold block">{row.delete_at}</span>
-              <span className="font-semibold">{row.delete_at_human}</span>
-            </>
-          }
+          <span className="font-semibold">{row.delete_at}</span>
         </p>
       ),
     },
-
     {
       key: 'delete_by',
       header: 'Deleted By',
-      render: (row: any) => (
-        <p>
-          {
-            <>
-              <span className="font-semibold">{row.delete_by}</span>
-              <br />
-            </>
-          }
-        </p>
-      ),
+      render: (row: any) => <p className="font-semibold">{row.delete_by}</p>,
     },
     {
       key: 'debit',
@@ -141,16 +147,10 @@ const Recyclebin = () => {
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex justify-center items-center">
-          <button className="text-blue-500">
-            <FiBook />
-          </button>
           <button
-            onClick={() => handleProductEdit(row)}
-            className="text-blue-500 ml-2"
+            className="text-red-500 ml-2"
+            onClick={() => handleRemoveRecycle(row)}
           >
-            <FiEdit2 />
-          </button>
-          <button className="text-red-500 ml-2">
             <FiTrash2 />
           </button>
         </div>
@@ -162,14 +162,11 @@ const Recyclebin = () => {
     <div>
       <HelmetTitle title="Recycle Bin" />
 
+      {/* Filters */}
       <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">
           <SelectOption onChange={handleSelectChange} className="mr-2" />
-          <SearchInput
-            className=""
-            search={search}
-            setSearchValue={setSearchValue}
-          />
+          <SearchInput className='' search={search} setSearchValue={setSearchValue} />
           <ButtonLoading
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}
@@ -179,6 +176,7 @@ const Recyclebin = () => {
         </div>
       </div>
 
+      {/* Table */}
       <div className="relative overflow-x-auto">
         {voucherSettings.isLoading && <Loader />}
         <Table columns={columns} data={tableData} />
@@ -190,6 +188,26 @@ const Recyclebin = () => {
           />
         )}
       </div>
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        show={showConfirm}
+        title="Confirm Deletion"
+        message={
+          <>
+            Delete this item permanently?
+            <span className="block font-bold mt-1">
+              {selectedRow?.vr_no || selectedRow?.id}
+            </span>
+          </>
+        }
+        loading={loading}
+        onCancel={() => {
+          setShowConfirm(false);
+          setSelectedRow(null);
+        }}
+        onConfirm={handleDeleteConfirmed}
+      />
     </div>
   );
 };
