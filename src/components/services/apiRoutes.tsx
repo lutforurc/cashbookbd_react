@@ -369,3 +369,4 @@ export const API_VOUCHER_DELETE_URL = `${API_BASE_URL}/voucher-settings/destroy`
 export const API_INSTALLMENT_DELETE_URL = `${API_BASE_URL}/voucher-settings/installment-destroy`;
 export const API_VOUCHER_RECYCLEBIN_URL = `${API_BASE_URL}/voucher-settings/recyclebin`;
 export const API_REMOVE_RECYCLEBIN_URL = `${API_BASE_URL}/voucher-settings/remove-recyclebin`;
+export const API_RESTORE_RECYCLEBIN_URL = `${API_BASE_URL}/voucher-settings/restore-recyclebin`;

@@ -10,9 +10,10 @@ import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { fetchRecycleBin, removeRecycleBin } from './voucherSettingsSlice';
+import { fetchRecycleBin, removeRecycleBin, restoreRecycleBin } from './voucherSettingsSlice';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { toast } from 'react-toastify';
+import { FaRecycle } from 'react-icons/fa';
 
 const Recyclebin = () => {
   const dispatch = useDispatch();
@@ -23,14 +24,15 @@ const Recyclebin = () => {
 
   // Local state
   const [search, setSearchValue] = useState('');
-  const [page, setPage] = useState(1); // 1-based indexing
+  const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [tableData, setTableData] = useState<any[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
 
-  // Delete Modal state
-  const [showConfirm, setShowConfirm] = useState(false);
+  // Modal & loading state
+  const [showConfirm, setShowConfirm] = useState(false); // Delete
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false); // Restore
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -43,8 +45,10 @@ const Recyclebin = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [page, perPage, search, dispatch]);
+    if (search.trim().length === 0 || search.trim().length > 3) {
+      fetchData();
+    }
+  }, [search, page, perPage]);
 
   // Update table & total pages whenever voucherSettings changes
   useEffect(() => {
@@ -75,36 +79,49 @@ const Recyclebin = () => {
     setShowConfirm(true);
   };
 
-const handleDeleteConfirmed = async () => {
-  if (!selectedRow?.id) return;
+  const handleRestoreRecycle = (row: any) => {
+    if (!row?.id) return;
+    setSelectedRow(row);
+    setShowRestoreConfirm(true);
+  };
 
-  setLoading(true);
+  // Delete Confirm
+  const handleDeleteConfirmed = async () => {
+    if (!selectedRow?.id) return;
+    setLoading(true);
 
-  try {
-    // ১. প্রথমে remove API call
-                  //  await dispatch(removeRecycleBin({ id: selectedRow.id })).unwrap();
-    const result = await dispatch(removeRecycleBin({ id: selectedRow.id })).unwrap();
-toast.success(result.message || "Voucher restored successfully");
-    // toast.success("Item permanently deleted");
-    console.log('====================================');
-    console.log("result", result);
-    console.log('====================================');
+    try {
+      const result = await dispatch(removeRecycleBin({ id: selectedRow.id })).unwrap();
+      toast.success(result.message || "Voucher deleted successfully");
+      await dispatch(fetchRecycleBin({ page, per_page: perPage, search })).unwrap();
+    } catch (err) {
+      toast.error("Delete failed");
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setShowConfirm(false);
+      setSelectedRow(null);
+    }
+  };
 
-    await dispatch(fetchRecycleBin({ page, per_page: perPage, search: search || undefined })).unwrap();
+  // Restore Confirm
+  const handleRestoreConfirmed = async () => {
+    if (!selectedRow?.id) return;
+    setLoading(true);
 
-  } catch (err) {
-    console.error("Remove failed:", err);
-  } finally {
-
-      
-    
-    setLoading(false);
-    setShowConfirm(false);
-    setSelectedRow(null);
-  }
-};
-
-
+    try {
+      const result = await dispatch(restoreRecycleBin({ id: selectedRow.id })).unwrap();
+      toast.success(result.message || "Voucher restored successfully");
+      await dispatch(fetchRecycleBin({ page, per_page: perPage, search })).unwrap();
+    } catch (err) {
+      toast.error("Restore failed");
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setShowRestoreConfirm(false);
+      setSelectedRow(null);
+    }
+  };
 
   // Table columns
   const columns = [
@@ -148,11 +165,11 @@ toast.success(result.message || "Voucher restored successfully");
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex justify-center items-center">
-          <button
-            className="text-red-500 ml-2"
-            onClick={() => handleRemoveRecycle(row)}
-          >
-            <FiTrash2 className="dark:text-red-700 text-lg" />
+          <button onClick={() => handleRestoreRecycle(row)}>
+            <FaRecycle className="text-green-500 text-lg font-bold" />
+          </button>
+          <button onClick={() => handleRemoveRecycle(row)}>
+            <FiTrash2 className="text-red-500 ml-2 text-lg" />
           </button>
         </div>
       ),
@@ -167,7 +184,7 @@ toast.success(result.message || "Voucher restored successfully");
       <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">
           <SelectOption onChange={handleSelectChange} className="mr-2" />
-          <SearchInput className='' search={search} setSearchValue={setSearchValue} />
+          <SearchInput search={search} setSearchValue={setSearchValue} />
           <ButtonLoading
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}
@@ -179,7 +196,7 @@ toast.success(result.message || "Voucher restored successfully");
 
       {/* Table */}
       <div className="relative overflow-x-auto">
-        {voucherSettings.isLoading && <Loader />}
+        {voucherSettings.loading && <Loader />}
         <Table columns={columns} data={tableData} />
         {totalPages > 1 && (
           <Pagination
@@ -190,16 +207,14 @@ toast.success(result.message || "Voucher restored successfully");
         )}
       </div>
 
-      {/* Confirm Modal */}
+      {/* Delete Modal */}
       <ConfirmModal
         show={showConfirm}
         title="Confirm Deletion"
         message={
           <>
             Delete this item permanently?
-            <span className="block font-bold mt-1">
-              {selectedRow?.vr_no || selectedRow?.id}
-            </span>
+            <span className="block font-bold mt-1">{selectedRow?.vr_no || selectedRow?.id}</span>
           </>
         }
         loading={loading}
@@ -208,6 +223,24 @@ toast.success(result.message || "Voucher restored successfully");
           setSelectedRow(null);
         }}
         onConfirm={handleDeleteConfirmed}
+      />
+
+      {/* Restore Modal */}
+      <ConfirmModal
+        show={showRestoreConfirm}
+        title="Confirm Restore"
+        message={
+          <>
+            Restore this voucher?
+            <span className="block font-bold mt-1">{selectedRow?.vr_no || selectedRow?.id}</span>
+          </>
+        }
+        loading={loading}
+        onCancel={() => {
+          setShowRestoreConfirm(false);
+          setSelectedRow(null);
+        }}
+        onConfirm={handleRestoreConfirmed}
       />
     </div>
   );

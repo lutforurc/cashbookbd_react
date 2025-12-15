@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../services/httpService";
-import {API_INSTALLMENT_DELETE_URL,API_VOUCHER_DELETE_URL,API_VOUCHER_RECYCLEBIN_URL,API_REMOVE_RECYCLEBIN_URL,} from "../../services/apiRoutes";
+import {API_INSTALLMENT_DELETE_URL,API_VOUCHER_DELETE_URL,API_VOUCHER_RECYCLEBIN_URL,API_REMOVE_RECYCLEBIN_URL, API_RESTORE_RECYCLEBIN_URL,} from "../../services/apiRoutes";
 
 // ---------- Types ----------
 export interface VoucherItem {
@@ -95,6 +95,21 @@ export const removeRecycleBin = createAsyncThunk<RemoveRecycleBinResponse,Remove
     );
   }
 });
+// Permanent Remove From Recycle Bin
+export const restoreRecycleBin = createAsyncThunk<RemoveRecycleBinResponse,RemoveRecycleBinParams,{ rejectValue: string }>("voucher/restoreRecycleBin", async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_RESTORE_RECYCLEBIN_URL, {
+      id: payload.id,
+    });
+    return response.data as RemoveRecycleBinResponse;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to remove recycle bin item"
+    );
+  }
+});
 
 // Delete Voucher (soft delete)
 export const deleteVoucher = createAsyncThunk<VoucherDeleteResponse,{ voucher_no: string | number },{ rejectValue: string }>("voucher/deleteVoucher", async (payload, thunkAPI) => {
@@ -164,6 +179,19 @@ const voucherSlice = createSlice({
       .addCase(removeRecycleBin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Recycle bin remove failed";
+      });
+    // Restore Recycle Bin Item
+    builder
+      .addCase(restoreRecycleBin.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(restoreRecycleBin.fulfilled, (state, action) => {
+        state.loading = false;
+        // state.message = action.payload;
+      })
+      .addCase(restoreRecycleBin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Recycle bin restore failed";
       });
 
     // Delete Voucher
