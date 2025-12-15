@@ -117,7 +117,8 @@ toast.success(result.message || "Voucher restored successfully");
       header: 'Deleted At',
       render: (row: any) => (
         <p>
-          <span className="font-semibold">{row.delete_at}</span>
+          <span className="font-semibold block">{row.delete_at}</span>
+          <span className="font-semibold">{row.delete_at_human}</span>
         </p>
       ),
     },
@@ -151,7 +152,7 @@ toast.success(result.message || "Voucher restored successfully");
             className="text-red-500 ml-2"
             onClick={() => handleRemoveRecycle(row)}
           >
-            <FiTrash2 />
+            <FiTrash2 className="dark:text-red-700 text-lg" />
           </button>
         </div>
       ),
