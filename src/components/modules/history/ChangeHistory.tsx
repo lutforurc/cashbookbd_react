@@ -1,16 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FiFileText } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { getSettings } from '../settings/settingsSlice';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { fetchVoucherChangeHistory } from './historySlice';
 
 /* =====================================================
-   Helper: Invoice Changes (CLEAN)
+   Helper: Invoice Changes (UNCHANGED)
 ===================================================== */
 const extractInvoiceChanges = (oldData, newData) => {
   if (!oldData.sales_master || !newData.sales_master) return [];
@@ -60,12 +59,12 @@ const extractInvoiceChanges = (oldData, newData) => {
 };
 
 /* =====================================================
-   Helper: Accounting Journal
+   Helper: Accounting Journal (OLD DATA + GLOBAL MAP)
 ===================================================== */
-const renderJournal = (data) => {
+const renderJournal = (data, coaNameMap = {}) => {
   const masters = data?.acc_transaction_master || [];
 
-  if (masters.length === 0) {
+  if (!masters.length) {
     return (
       <p className="text-sm text-gray-500 dark:text-gray-400">
         No entries
@@ -76,7 +75,7 @@ const renderJournal = (data) => {
   return masters.map((m, mi) => (
     <table
       key={mi}
-      className="w-full text-sm border mb-3 
+      className="w-full text-sm border mb-3
                  border-gray-200 dark:border-gray-700
                  bg-white dark:bg-gray-900"
     >
@@ -97,7 +96,7 @@ const renderJournal = (data) => {
         {m.acc_transaction_details.map((d) => (
           <tr key={d.id}>
             <td className="border px-2 py-1 dark:border-gray-700">
-              {d.coa4_id}
+              {coaNameMap[d.coa4_id] || d.coa4_id}
             </td>
             <td className="border px-2 py-1 text-right dark:border-gray-700">
               {d.debit !== '0' ? d.debit : ''}
@@ -115,7 +114,7 @@ const renderJournal = (data) => {
 /* =====================================================
    History Card
 ===================================================== */
-const HistoryCard = ({ item }) => {
+const HistoryCard = ({ item, coaNameMap }) => {
   const oldData = JSON.parse(item.old_data);
   const newData = JSON.parse(item.new_data);
 
@@ -123,9 +122,11 @@ const HistoryCard = ({ item }) => {
   const isInvoice = !!newData.sales_master;
 
   return (
-    <div className="border rounded-lg p-4 mb-4
-                    bg-white dark:bg-gray-900
-                    border-gray-200 dark:border-gray-700">
+    <div
+      className="border rounded-lg p-4 mb-4
+                 bg-white dark:bg-gray-900
+                 border-gray-200 dark:border-gray-700"
+    >
       {/* Header */}
       <div className="flex justify-between mb-3">
         <div className="font-semibold text-gray-700 dark:text-gray-200">
@@ -189,14 +190,14 @@ const HistoryCard = ({ item }) => {
           <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300">
             Before
           </p>
-          {renderJournal(oldData)}
+          {renderJournal(oldData, coaNameMap)}
         </div>
 
         <div>
           <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300">
             After
           </p>
-          {renderJournal(newData)}
+          {renderJournal(newData, coaNameMap)}
         </div>
       </div>
     </div>
@@ -208,7 +209,6 @@ const HistoryCard = ({ item }) => {
 ===================================================== */
 const ChangeHistory = () => {
   const dispatch = useDispatch();
-  const settings = useSelector((state) => state.settings);
   const historyState = useSelector((state) => state.history);
 
   const historyList = historyState?.history?.data?.data || [];
@@ -217,28 +217,24 @@ const ChangeHistory = () => {
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  useEffect(() => {
-    if (settings?.data?.trx_dt) {
-      localStorage.setItem(
-        'settings_updated',
-        Date.now().toString()
-      );
-    }
-  }, [settings?.data?.trx_dt]);
+  /* ---------------------------------------------------
+     GLOBAL COA ID → NAME MAP (FROM ALL HISTORY)
+  --------------------------------------------------- */
+  const coaNameMap = useMemo(() => {
+    const map = {};
 
-  useEffect(() => {
-    const handleStorageChange = (event) => {
-      if (event.key === 'settings_updated') {
-        dispatch(getSettings());
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () =>
-      window.removeEventListener(
-        'storage',
-        handleStorageChange
-      );
-  }, [dispatch]);
+    historyList.forEach((item) => {
+      item.main_transaction?.acc_transaction_master?.forEach((m) => {
+        m.acc_transaction_details.forEach((d) => {
+          if (d.coa4_id && d.coa_l4?.name) {
+            map[d.coa4_id] = d.coa_l4.name;
+          }
+        });
+      });
+    });
+
+    return map;
+  }, [historyList]);
 
   const handleFetchConfirmed = async () => {
     setLoading(true);
@@ -265,10 +261,11 @@ const ChangeHistory = () => {
 
   return (
     <>
-      <HelmetTitle title="Voucher / Invoice Change History" />
-
+      <HelmetTitle title="Voucher Change History" />
       <div className="grid grid-cols-1 gap-2 w-full md:w-1/3 mx-auto mt-5">
         <InputElement
+          id='voucherNo'
+          name='voucherNo'
           value={voucherNo}
           label="Voucher Number"
           placeholder="Enter Voucher Number"
@@ -278,6 +275,7 @@ const ChangeHistory = () => {
         <ButtonLoading
           label="View History"
           buttonLoading={loading}
+          className='p-2  dark:text-gray-200'
           icon={<FiFileText />}
           onClick={() => {
             if (!voucherNo) {
@@ -291,7 +289,11 @@ const ChangeHistory = () => {
 
       <div className="max-w-5xl mx-auto mt-6">
         {historyList.map((item) => (
-          <HistoryCard key={item.id} item={item} />
+          <HistoryCard
+            key={item.id}
+            item={item}
+            coaNameMap={coaNameMap}
+          />
         ))}
       </div>
 
