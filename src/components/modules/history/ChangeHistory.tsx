@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import { FiHome, FiFileText, FiChevronDown, FiChevronUp } from 'react-icons/fi';
-import Link from '../../utils/others/Link';
+import { FiFileText } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getSettings } from '../settings/settingsSlice';
@@ -11,110 +10,201 @@ import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { fetchVoucherChangeHistory } from './historySlice';
 
 /* =====================================================
-   DIFF UI COMPONENT
+   Helper: Invoice Changes (CLEAN)
 ===================================================== */
-const DiffRow = ({ field, oldVal, newVal, level }) => (
-  <div
-    className="grid grid-cols-3 gap-3 text-sm py-2"
-    style={{ paddingLeft: level * 20 }}
-  >
-    <div className="font-medium text-gray-700 break-all">
-      {field}
-    </div>
-    <div className="bg-red-50 text-red-700 px-2 py-1 rounded">
-      {String(oldVal)}
-    </div>
-    <div className="bg-green-50 text-green-700 px-2 py-1 rounded">
-      {String(newVal)}
-    </div>
-  </div>
-);
+const extractInvoiceChanges = (oldData, newData) => {
+  if (!oldData.sales_master || !newData.sales_master) return [];
 
-/* =====================================================
-   RECURSIVE DIFF LOGIC (NO FIELD SKIPPED)
-===================================================== */
-const renderDiff = (oldVal, newVal, path = '', level = 0) => {
-  if (
-    typeof oldVal !== 'object' ||
-    oldVal === null ||
-    typeof newVal !== 'object' ||
-    newVal === null
-  ) {
-    if (oldVal === newVal) return null;
-    return (
-      <DiffRow
-        key={path}
-        field={path || 'value'}
-        oldVal={oldVal}
-        newVal={newVal}
-        level={level}
-      />
-    );
+  const changes = [];
+  const oldSales = oldData.sales_master;
+  const newSales = newData.sales_master;
+
+  if (oldSales.customer_id !== newSales.customer_id) {
+    changes.push({
+      field: 'Customer',
+      old: oldSales.customer_id,
+      new: newSales.customer_id,
+    });
   }
 
-  if (Array.isArray(oldVal)) {
-    return oldVal.map((item, i) =>
-      renderDiff(item, newVal?.[i], `${path}[${i}]`, level + 1)
-    );
+  if (oldSales.netpayment !== newSales.netpayment) {
+    changes.push({
+      field: 'Net Payment',
+      old: oldSales.netpayment,
+      new: newSales.netpayment,
+    });
   }
 
-  return Object.keys(oldVal).map((key) =>
-    renderDiff(
-      oldVal[key],
-      newVal?.[key],
-      path ? `${path}.${key}` : key,
-      level + 1
-    )
-  );
+  const oldItem = oldSales.details?.[0];
+  const newItem = newSales.details?.[0];
+
+  if (oldItem && newItem) {
+    if (oldItem.quantity !== newItem.quantity) {
+      changes.push({
+        field: 'Quantity',
+        old: oldItem.quantity,
+        new: newItem.quantity,
+      });
+    }
+
+    if (oldItem.sales_price !== newItem.sales_price) {
+      changes.push({
+        field: 'Sales Price',
+        old: oldItem.sales_price,
+        new: newItem.sales_price,
+      });
+    }
+  }
+
+  return changes;
 };
 
 /* =====================================================
-   HISTORY CARD (ACCORDION STYLE)
+   Helper: Accounting Journal
+===================================================== */
+const renderJournal = (data) => {
+  const masters = data?.acc_transaction_master || [];
+
+  if (masters.length === 0) {
+    return (
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        No entries
+      </p>
+    );
+  }
+
+  return masters.map((m, mi) => (
+    <table
+      key={mi}
+      className="w-full text-sm border mb-3 
+                 border-gray-200 dark:border-gray-700
+                 bg-white dark:bg-gray-900"
+    >
+      <thead className="bg-gray-100 dark:bg-gray-800">
+        <tr>
+          <th className="border px-2 py-1 dark:border-gray-700 text-left">
+            COA
+          </th>
+          <th className="border px-2 py-1 dark:border-gray-700 text-right">
+            Debit
+          </th>
+          <th className="border px-2 py-1 dark:border-gray-700 text-right">
+            Credit
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {m.acc_transaction_details.map((d) => (
+          <tr key={d.id}>
+            <td className="border px-2 py-1 dark:border-gray-700">
+              {d.coa4_id}
+            </td>
+            <td className="border px-2 py-1 text-right dark:border-gray-700">
+              {d.debit !== '0' ? d.debit : ''}
+            </td>
+            <td className="border px-2 py-1 text-right dark:border-gray-700">
+              {d.credit !== '0' ? d.credit : ''}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ));
+};
+
+/* =====================================================
+   History Card
 ===================================================== */
 const HistoryCard = ({ item }) => {
-  const [open, setOpen] = useState(false);
   const oldData = JSON.parse(item.old_data);
   const newData = JSON.parse(item.new_data);
 
-  return (
-    <div className="border rounded-xl mb-4 bg-white shadow-sm">
-      {/* Header */}
-      <div
-        className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50"
-        onClick={() => setOpen(!open)}
-      >
-        <div>
-          <h3 className="font-semibold text-gray-800">
-            Voucher / Invoice Update
-          </h3>
-          <p className="text-xs text-gray-500">
-            {new Date(item.created_at).toLocaleString()}
-          </p>
-        </div>
+  const invoiceChanges = extractInvoiceChanges(oldData, newData);
+  const isInvoice = !!newData.sales_master;
 
-        {open ? <FiChevronUp /> : <FiChevronDown />}
+  return (
+    <div className="border rounded-lg p-4 mb-4
+                    bg-white dark:bg-gray-900
+                    border-gray-200 dark:border-gray-700">
+      {/* Header */}
+      <div className="flex justify-between mb-3">
+        <div className="font-semibold text-gray-700 dark:text-gray-200">
+          {isInvoice ? 'Invoice Update' : 'Voucher Update'}
+        </div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          {new Date(item.created_at).toLocaleString()}
+        </div>
       </div>
 
-      {/* Body */}
-      {open && (
-        <div className="border-t p-4 bg-gray-50">
-          <div className="grid grid-cols-3 text-sm font-semibold mb-3">
-            <span className="text-gray-600">Field</span>
-            <span className="text-red-600">Old</span>
-            <span className="text-green-600">New</span>
-          </div>
+      {/* Invoice Changes */}
+      {invoiceChanges.length > 0 && (
+        <>
+          <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-400">
+            Invoice Changes
+          </h4>
 
-          <div className="space-y-1">
-            {renderDiff(oldData, newData)}
-          </div>
-        </div>
+          <table
+            className="w-full text-sm border mb-4
+                       border-gray-200 dark:border-gray-700"
+          >
+            <thead className="bg-gray-100 dark:bg-gray-800">
+              <tr>
+                <th className="border px-2 py-1 dark:border-gray-700">
+                  Field
+                </th>
+                <th className="border px-2 py-1 dark:border-gray-700">
+                  Before
+                </th>
+                <th className="border px-2 py-1 dark:border-gray-700">
+                  After
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {invoiceChanges.map((c, i) => (
+                <tr key={i}>
+                  <td className="border px-2 py-1 dark:border-gray-700">
+                    {c.field}
+                  </td>
+                  <td className="border px-2 py-1 text-red-600 dark:border-gray-700">
+                    {c.old}
+                  </td>
+                  <td className="border px-2 py-1 text-green-600 dark:border-gray-700">
+                    {c.new}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
+
+      {/* Accounting Journal */}
+      <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">
+        Accounting Journal
+      </h4>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300">
+            Before
+          </p>
+          {renderJournal(oldData)}
+        </div>
+
+        <div>
+          <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300">
+            After
+          </p>
+          {renderJournal(newData)}
+        </div>
+      </div>
     </div>
   );
 };
 
 /* =====================================================
-   MAIN COMPONENT
+   Main Component
 ===================================================== */
 const ChangeHistory = () => {
   const dispatch = useDispatch();
@@ -129,7 +219,10 @@ const ChangeHistory = () => {
 
   useEffect(() => {
     if (settings?.data?.trx_dt) {
-      localStorage.setItem('settings_updated', Date.now().toString());
+      localStorage.setItem(
+        'settings_updated',
+        Date.now().toString()
+      );
     }
   }, [settings?.data?.trx_dt]);
 
@@ -141,7 +234,10 @@ const ChangeHistory = () => {
     };
     window.addEventListener('storage', handleStorageChange);
     return () =>
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener(
+        'storage',
+        handleStorageChange
+      );
   }, [dispatch]);
 
   const handleFetchConfirmed = async () => {
@@ -171,14 +267,7 @@ const ChangeHistory = () => {
     <>
       <HelmetTitle title="Voucher / Invoice Change History" />
 
-      {/* Search Section */}
       <div className="grid grid-cols-1 gap-2 w-full md:w-1/3 mx-auto mt-5">
-        <div>
-          <span className="font-bold">
-            {settings?.data?.branch?.name}
-          </span>
-        </div>
-
         <InputElement
           value={voucherNo}
           label="Voucher Number"
@@ -186,38 +275,21 @@ const ChangeHistory = () => {
           onChange={(e) => setVoucherNo(e.target.value)}
         />
 
-        <div className="grid grid-cols-2 gap-2">
-          <ButtonLoading
-            label="View History"
-            buttonLoading={loading}
-            icon={<FiFileText />}
-            onClick={() => {
-              if (!voucherNo) {
-                toast.error('Please enter voucher number');
-                return;
-              }
-              setShowConfirm(true);
-            }}
-          />
-
-          <Link to="/dashboard" className="h-8 justify-center">
-            <FiHome /> Home
-          </Link>
-        </div>
+        <ButtonLoading
+          label="View History"
+          buttonLoading={loading}
+          icon={<FiFileText />}
+          onClick={() => {
+            if (!voucherNo) {
+              toast.error('Please enter voucher number');
+              return;
+            }
+            setShowConfirm(true);
+          }}
+        />
       </div>
 
-      {/* History List */}
       <div className="max-w-5xl mx-auto mt-6">
-        {historyState.loading && (
-          <p className="text-center">Loading...</p>
-        )}
-
-        {!historyState.loading && historyList.length === 0 && (
-          <p className="text-center text-gray-500">
-            No history found
-          </p>
-        )}
-
         {historyList.map((item) => (
           <HistoryCard key={item.id} item={item} />
         ))}
