@@ -154,6 +154,9 @@ const ROUTES = {
   installment_delete: '/vr-settings/installment-delete',
   recyclebin: '/vr-settings/recyclebin',
 
+  // Voucher history
+  voucher_history: '/vr-settings/voucher-history',
+
   // Real Estate Area
   real_estate_area_list: '/real-estate/area-list',
   real_estate_area_add: '/real-estate/add-area',

@@ -184,7 +184,7 @@ const Recyclebin = () => {
       <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">
           <SelectOption onChange={handleSelectChange} className="mr-2" />
-          <SearchInput search={search} setSearchValue={setSearchValue} />
+          <SearchInput className='' search={search} setSearchValue={setSearchValue} />
           <ButtonLoading
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}

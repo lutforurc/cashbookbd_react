@@ -49,6 +49,7 @@ import requisitionSlice from './components/modules/Requisition/requisitionSlice'
 import bankReceivedReducer from './components/modules/transactions/bankreceived/bankReceivedSlice';
 import realEstateArea from './components/modules/real-estate/area/areaSlice';
 import voucherSettings from './components/modules/vr_settings/voucherSettingsSlice';
+import historySlice from './components/modules/history/historySlice';
 
 const store = configureStore({
   reducer: {
@@ -102,6 +103,7 @@ const store = configureStore({
     requisition: requisitionSlice,
     realEstateArea: realEstateArea,
     voucherSettings: voucherSettings,
+    history: historySlice,
   },
 });
 

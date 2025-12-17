@@ -79,6 +79,7 @@ import DashboardIndex from './components/modules/dashboard/DashboardIndex';
 import ItemChart from './components/modules/charts/item-char/ItemChart';
 import InstallmentDelete from './components/modules/vr_settings/InstallmentDelete';
 import Recyclebin from './components/modules/vr_settings/Recyclebin';
+import ChangeHistory from './components/modules/history/ChangeHistory';
 
 
 
@@ -204,6 +205,7 @@ function App() {
             <Route path={routes.installment_delete} element={<InstallmentDelete />} />
             <Route path={routes.voucher_delete} element={<VoucherDelete />} />
             <Route path={routes.recyclebin} element={<Recyclebin />} />
+            <Route path={routes.voucher_history} element={<ChangeHistory />} />
 
 
             {/* Invoices */}
