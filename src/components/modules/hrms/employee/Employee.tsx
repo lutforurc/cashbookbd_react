@@ -149,13 +149,30 @@ const Employee = ({ user }: any) => {
     <>
       <HelmetTitle title="Employee Entry" />
       <div className="bg-white dark:bg-gray-800 rounded shadow p-4">
-        <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-          Employee Information
-        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <InputElement
+            id="name"
+            label="Name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+          />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <InputElement id="name" label="Name" name="name" value={formData.name} onChange={handleChange} />
-          <InputElement id="father_name" label="Father's Name" name="father_name" value={formData.father_name} onChange={handleChange} />
+          <InputElement
+            id="father_name"
+            label="Father's Name"
+            name="father_name"
+            value={formData.father_name}
+            onChange={handleChange}
+          />
+
+          <InputElement
+            id="nid"
+            label="National ID"
+            name="nid"
+            value={formData.nid}
+            onChange={handleChange}
+          />
 
           <InputElement
             id="present_address"
@@ -163,7 +180,7 @@ const Employee = ({ user }: any) => {
             name="present_address"
             value={formData.present_address}
             onChange={handleChange}
-            className="md:col-span-2"
+            className="md:col-span-2 lg:col-span-2"
           />
 
           <InputElement
@@ -172,11 +189,16 @@ const Employee = ({ user }: any) => {
             name="permanent_address"
             value={formData.permanent_address}
             onChange={handleChange}
-            className="md:col-span-2"
+            className="md:col-span-2 lg:col-span-2"
           />
 
-          <InputElement id="nid" label="National ID" name="nid" value={formData.nid} onChange={handleChange} />
-          <InputElement id="mobile" label="Mobile Number" name="mobile" value={formData.mobile} onChange={handleChange} />
+          <InputElement
+            id="mobile"
+            label="Mobile Number"
+            name="mobile"
+            value={formData.mobile}
+            onChange={handleChange}
+          />
 
           <div>
             <label>Date of Birth</label>
@@ -200,103 +222,152 @@ const Employee = ({ user }: any) => {
             />
           </div>
 
-          <div>
-            <DropdownCommon
-              id="designation"
-              name="designation"
-              label="Select Designation"
-              onChange={handleOnSelectChange}
-              className="h-[2.1rem] bg-transparent"
-              defaultValue={formData?.designation?.toString() ?? ''}
-              data={designation}
-            />
-          </div>
+          <DropdownCommon
+            id="designation"
+            name="designation"
+            label="Select Designation"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.designation?.toString() ?? ''}
+            data={designation}
+          />
 
           <div>
             <label>Select Branch</label>
             <div className="w-full">
               {branchDdlData.isLoading === true ? <Loader /> : null}
               <BranchDropdown
-                id='branch'
-                name='branch'
+                id="branch"
+                name="branch"
                 defaultValue={isSelected}
                 onChange={handleBranchChange}
-                className="w-60 font-medium text-sm p-1.5"
+                className="w-full font-medium text-sm p-1.5"
                 branchDdl={dropdownData}
               />
             </div>
           </div>
 
-          <InputElement id="qualification" label="Qualification" name="qualification" value={formData.qualification} onChange={handleChange} />
+          <InputElement
+            id="qualification"
+            label="Qualification"
+            name="qualification"
+            value={formData.qualification}
+            onChange={handleChange}
+          />
 
-          <div>
-            <DropdownCommon
-              id="status"
-              name="status"
-              label="Select Status"
-              onChange={handleOnSelectChange}
-              className="h-[2.1rem] bg-transparent"
-              defaultValue={formData?.status?.toString() ?? ''}
-              data={status}
-            />
-          </div>
+          <DropdownCommon
+            id="status"
+            name="status"
+            label="Select Status"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.status?.toString() ?? ''}
+            data={status}
+          />
 
-          <div>
-            <DropdownCommon
-              id="gender"
-              name="gender"
-              label="Gender"
-              onChange={handleOnSelectChange}
-              className="h-[2.1rem] bg-transparent"
-              defaultValue={formData?.gender?.toString() ?? ''}
-              data={genderList} // ✅ FIXED
-            />
-          </div>
+          <DropdownCommon
+            id="gender"
+            name="gender"
+            label="Gender"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.gender?.toString() ?? ''}
+            data={genderList}
+          />
 
-          <InputElement id="basic_salary" label="Basic Salary" name="basic_salary" value={formData.basic_salary} onChange={handleChange} />
-          <InputElement id="house_rent" label="House Rent" name="house_rent" value={formData.house_rent} onChange={handleChange} />
-          <InputElement id="medical" label="Medical Allowance" name="medical" value={formData.medical} onChange={handleChange} />
-          <InputElement id="others_allowance" label="Others Allowance" name="others_allowance" value={formData.others_allowance} onChange={handleChange} />
-          <InputElement id="loan_deduction" label="Loan Deduction" name="loan_deduction" value={formData.loan_deduction} onChange={handleChange} />
-          <InputElement id="others_deduction" label="Others Deduction" name="others_deduction" value={formData.others_deduction} onChange={handleChange} />
+          <InputElement
+            id="basic_salary"
+            label="Basic Salary"
+            name="basic_salary"
+            value={formData.basic_salary}
+            onChange={handleChange}
+          />
 
-          <div>
-            <DropdownCommon
-              id="salary_payable"
-              name="salary_payable" // ✅ FIXED: Blade name
-              label="Is Payable?"
-              onChange={handleOnSelectChange}
-              className="h-[2.1rem] bg-transparent"
-              defaultValue={formData?.salary_payable?.toString() ?? ''}
-              data={isPayable}
-            />
-          </div>
+          <InputElement
+            id="house_rent"
+            label="House Rent"
+            name="house_rent"
+            value={formData.house_rent}
+            onChange={handleChange}
+          />
 
-          <div>
-            <DropdownCommon
-              id="employee_group"
-              name="employee_group"
-              label="Employee Group"
-              onChange={handleOnSelectChange}
-              className="h-[2.1rem] bg-transparent"
-              defaultValue={formData?.employee_group?.toString() ?? ''}
-              data={employeeGroup}
-            />
-          </div>
+          <InputElement
+            id="medical"
+            label="Medical Allowance"
+            name="medical"
+            value={formData.medical}
+            onChange={handleChange}
+          />
 
-          <InputElement id="employee_serial" label="Employee Serial" name="employee_serial" value={formData.employee_serial} onChange={handleChange} />
+          <InputElement
+            id="others_allowance"
+            label="Others Allowance"
+            name="others_allowance"
+            value={formData.others_allowance}
+            onChange={handleChange}
+          />
+
+          <InputElement
+            id="loan_deduction"
+            label="Loan Deduction"
+            name="loan_deduction"
+            value={formData.loan_deduction}
+            onChange={handleChange}
+          />
+
+          <InputElement
+            id="others_deduction"
+            label="Others Deduction"
+            name="others_deduction"
+            value={formData.others_deduction}
+            onChange={handleChange}
+          />
+
+          <DropdownCommon
+            id="salary_payable"
+            name="salary_payable"
+            label="Is Payable?"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.salary_payable?.toString() ?? ''}
+            data={isPayable}
+          />
+
+          <DropdownCommon
+            id="employee_group"
+            name="employee_group"
+            label="Employee Group"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.employee_group?.toString() ?? ''}
+            data={employeeGroup}
+          />
+
+          <InputElement
+            id="employee_serial"
+            label="Employee Serial"
+            name="employee_serial"
+            value={formData.employee_serial}
+            onChange={handleChange}
+          />
+
         </div>
 
+        {/* ================= BUTTONS ================= */}
         <div className="flex justify-end gap-2 mt-4">
           <Link to="/dashboard" className="h-8">
             <FiHome className="mr-2" /> Home
           </Link>
 
-          <button onClick={handleSave} className="flex items-center h-8 px-4 bg-blue-600 text-white rounded">
+          <button
+            onClick={handleSave}
+            className="flex items-center h-8 px-4 bg-blue-600 text-white rounded"
+          >
             <FiSave className="mr-2" /> Save
           </button>
         </div>
       </div>
+
     </>
   );
 };
