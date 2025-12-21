@@ -22,7 +22,8 @@ import InstallmentModal from './InstallmentModal';
 import 'antd/dist/reset.css';
 import PaymentDetailsModal from './PaymentDetailsModal';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { getEmployees } from '../employee/employeeSlice';
+import { getEmployeesDDL } from '../hrms/employee/employeeSlice';
+
 
 const StaffWiseDueInstallment = (user: any) => {
   const dispatch = useDispatch();
@@ -56,9 +57,8 @@ const StaffWiseDueInstallment = (user: any) => {
 
   useEffect(() => {
     if (user?.user?.branch_id) {
-      
       dispatch(
-        getEmployees({
+        getEmployeesDDL({
           branchId: user.user.branch_id
         }),
       );
@@ -67,7 +67,7 @@ const StaffWiseDueInstallment = (user: any) => {
 
     useEffect(() => {
     if (employees) {
-        setFieldOfficers(employees?.employees?.data?.data);
+        setFieldOfficers(employees?.employeeDDL?.data?.data);
       }
   }, [employees]);
 

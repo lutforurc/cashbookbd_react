@@ -80,6 +80,7 @@ import ItemChart from './components/modules/charts/item-char/ItemChart';
 import InstallmentDelete from './components/modules/vr_settings/InstallmentDelete';
 import Recyclebin from './components/modules/vr_settings/Recyclebin';
 import ChangeHistory from './components/modules/history/ChangeHistory';
+import Employee from './components/modules/hrms/employee/Employee';
 
 
 
@@ -220,6 +221,9 @@ function App() {
             {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
             <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
             <Route path={routes.real_estate_area_list} element={<AreaList />} />
+
+            {/* HRM */}
+            <Route path={routes.hrms_employee_list} element={<Employee />} />
 
 
 

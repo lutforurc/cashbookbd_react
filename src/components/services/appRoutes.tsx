@@ -160,6 +160,13 @@ const ROUTES = {
   // Real Estate Area
   real_estate_area_list: '/real-estate/area-list',
   real_estate_area_add: '/real-estate/add-area',
+  
+  
+  // HRM
+  hrms_employee_list: '/hrms/employee',
+  hrms_employee_add: '/hrms/employee/add', 
+
+
 
   item_chart: '/item/item-chart',
 
