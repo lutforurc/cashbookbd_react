@@ -180,34 +180,36 @@ const Employee = ({ user }: any) => {
     };
 
     try {
-      await dispatch(storeEmployee(payload)).unwrap();
+      const response = await dispatch(storeEmployee(payload)).unwrap();
       toast.success('Employee saved successfully');
-
+      console.log('====================================');
+      console.log("response", response);
+      console.log('====================================');
       // ✅ Reset form after success
-      setFormData({
-        name: '',
-        father_name: '',
-        present_address: '',
-        permanent_address: '',
-        nid: '',
-        mobile: '',
-        dob: '',
-        joining_date: '',
-        designation: '',
-        branch: '',
-        qualification: '',
-        status: 'Active',
-        gender: '1',
-        basic_salary: '',
-        house_rent: '',
-        medical: '',
-        others_allowance: '',
-        loan_deduction: '',
-        others_deduction: '',
-        salary_payable: '',
-        employee_group: '',
-        employee_serial: '',
-      });
+      // setFormData({
+      //   name: '',
+      //   father_name: '',
+      //   present_address: '',
+      //   permanent_address: '',
+      //   nid: '',
+      //   mobile: '',
+      //   dob: '',
+      //   joining_date: '',
+      //   designation: '',
+      //   branch: '',
+      //   qualification: '',
+      //   status: 'Active',
+      //   gender: '1',
+      //   basic_salary: '',
+      //   house_rent: '',
+      //   medical: '',
+      //   others_allowance: '',
+      //   loan_deduction: '',
+      //   others_deduction: '',
+      //   salary_payable: '',
+      //   employee_group: '',
+      //   employee_serial: '',
+      // });
       setStartDate(null);
       setEndDate(null);
     } catch (err: any) {
