@@ -91,10 +91,7 @@ const Employees = ({ user }: any) => {
     setTableData(employees?.employees?.data?.data?.data || []);
   }, [employees]);
 
-
-    console.log('====================================');
-  console.log("tableData", tableData);
-  console.log('====================================');
+ 
 
   const columns = [
     {
@@ -121,27 +118,35 @@ const Employees = ({ user }: any) => {
         </>
       ),
     },
-    
     {
-      key: 'basic_salary',
-      header: 'Basic Salary',
-      headerClass: 'text-right',
+      key: 'branch_name',
+      header: 'Branch',
       render: (row: any) => (
         <>
-          <p className="text-right">{ thousandSeparator(Number(row.basic_salary),0)}</p>
+          <p className="">{row.branch_name}</p>
         </>
       ),
-    },
-     {
-      key: 'others_allowance',
-      header: 'Others',
-      headerClass: 'text-right',
-      render: (row: any) => (
-        <>
-          <p className="text-right">{ thousandSeparator(Number(row.others_allowance),0)}</p>
-        </>
-      ),
-    },
+    },    
+    // {
+    //   key: 'basic_salary',
+    //   header: 'Basic Salary',
+    //   headerClass: 'text-right',
+    //   render: (row: any) => (
+    //     <>
+    //       <p className="text-right">{ thousandSeparator(Number(row.basic_salary),0)}</p>
+    //     </>
+    //   ),
+    // },
+    //  {
+    //   key: 'others_allowance',
+    //   header: 'Others',
+    //   headerClass: 'text-right',
+    //   render: (row: any) => (
+    //     <>
+    //       <p className="text-right">{ thousandSeparator(Number(row.others_allowance),0)}</p>
+    //     </>
+    //   ),
+    // },
  
     {
       key: 'action',
