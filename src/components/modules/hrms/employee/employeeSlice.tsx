@@ -4,6 +4,7 @@ import {
   API_EMPLOYEE_DDL_LIST_URL,
   API_EMPLOYEE_LIST_URL,
   API_EMPLOYEE_SETTINGS_URL,
+  API_EMPLOYEE_STORE_URL,
 } from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
@@ -94,11 +95,7 @@ const initialState: EmployeeState = {
 
 /* ================= THUNKS ================= */
 
-export const fetchEmployees = createAsyncThunk<
-  EmployeeListResponse,
-  EmployeeListParams | void,
-  { rejectValue: string }
->("employee/fetchEmployees", async (params, thunkAPI) => {
+export const fetchEmployees = createAsyncThunk<EmployeeListResponse, EmployeeListParams | void, { rejectValue: string }>("employee/fetchEmployees", async (params, thunkAPI) => {
   try {
     const response = await httpService.post(API_EMPLOYEE_LIST_URL, {
       page: params?.page,
@@ -112,34 +109,26 @@ export const fetchEmployees = createAsyncThunk<
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
       error.response?.data?.message ||
-        error.message ||
-        "Failed to fetch employees"
+      error.message ||
+      "Failed to fetch employees"
     );
   }
 });
 
-export const fetchEmployeeSettings = createAsyncThunk<
-  EmployeeSettingsResponse,
-  void,
-  { rejectValue: string }
->("employee/fetchEmployeeSettings", async (_, thunkAPI) => {
+export const fetchEmployeeSettings = createAsyncThunk<EmployeeSettingsResponse, void, { rejectValue: string }>("employee/fetchEmployeeSettings", async (_, thunkAPI) => {
   try {
     const response = await httpService.get(API_EMPLOYEE_SETTINGS_URL);
     return response.data as EmployeeSettingsResponse;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
       error.response?.data?.message ||
-        error.message ||
-        "Failed to fetch employee settings"
+      error.message ||
+      "Failed to fetch employee settings"
     );
   }
 });
 
-export const getEmployeesDDL = createAsyncThunk<
-  EmployeeDDL[],
-  EmployeeDDLRequest,
-  { rejectValue: { message: string } }
->("employee/getEmployeesDDL", async (payload, { rejectWithValue }) => {
+export const getEmployeesDDL = createAsyncThunk<EmployeeDDL[], EmployeeDDLRequest, { rejectValue: { message: string } }>("employee/getEmployeesDDL", async (payload, { rejectWithValue }) => {
   try {
     const { data } = await httpService.post(API_EMPLOYEE_DDL_LIST_URL, {
       branchId: payload.branchId,
@@ -151,6 +140,25 @@ export const getEmployeesDDL = createAsyncThunk<
     });
   }
 });
+
+
+/* ---------- Store Employee ---------- */
+export const storeEmployee = createAsyncThunk<{ message: string }, any, { rejectValue: string }>("employee/storeEmployee", async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(
+      API_EMPLOYEE_STORE_URL,
+      payload
+    );
+    return response.data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to save employee"
+    );
+  }
+}
+);
 
 /* ================= SLICE ================= */
 
@@ -227,6 +235,21 @@ const employeeSlice = createSlice({
         state.loading = false;
         state.error =
           action.payload?.message || "Failed to fetch employees";
+      })
+
+      /* ===== Store Employee ===== */
+      .addCase(storeEmployee.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(storeEmployee.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload.message || "Employee saved successfully";
+      })
+      .addCase(storeEmployee.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to save employee";
       });
   },
 });

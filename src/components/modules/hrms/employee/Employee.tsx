@@ -11,13 +11,8 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { fetchEmployeeSettings } from './employeeSlice';
+import { fetchEmployeeSettings, storeEmployee } from './employeeSlice';
 import dayjs from 'dayjs';
-
-const genderList = [
-  { id: 'Male', name: 'Male' },
-  { id: 'Female', name: 'Female' },
-];
 
 const Employee = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -26,11 +21,12 @@ const Employee = ({ user }: any) => {
 
   // Blade-like: dob + joining date
   const [startDate, setStartDate] = useState<Date | null>(null); // Joining Date
-  const [endDate, setEndDate] = useState<Date | null>(null); // Date of Birth
+  const [dob, setDob] = useState<Date | null>(null); // Date of Birth
 
   const [branchId, setBranchId] = useState<number | null>(null);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [designation, setDesignation] = useState<any[]>([]);
+  const [gender, setGender] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
 
   const [formData, setFormData] = useState<any>({
@@ -49,7 +45,7 @@ const Employee = ({ user }: any) => {
     branch: '',
     qualification: '',
     status: 'Active',
-    gender: 'Male',
+    gender: '1',
     basic_salary: '',
     house_rent: '',
     medical: '',
@@ -79,11 +75,16 @@ const Employee = ({ user }: any) => {
     // ✅ mapping same as you wrote (not changing your structure)
     setDropdownData(employeeSettings?.employeeSettings?.data?.data?.branchs || []);
     setDesignation(employeeSettings?.employeeSettings?.data?.data?.designation || []);
+    setGender(employeeSettings?.employeeSettings?.data?.data?.sex || []);
 
     const bId = user?.branch_id ?? user?.user?.branch_id ?? null;
     setBranchId(bId ?? null);
   }, [employeeSettings, user]);
 
+
+  console.log('====================================');
+  console.log("employeeSettings", employeeSettings);
+  console.log('====================================');
   /* ================= HANDLERS ================= */
 
   // ✅ One handler works for InputElement + DropdownCommon (if they emit event)
@@ -100,20 +101,11 @@ const Employee = ({ user }: any) => {
 
   // ✅ Date of Birth
   const handleEndDate = (d: Date | null) => {
-    setEndDate(d);
-    setFormData((prev: any) => ({
-      ...prev,
-      dob: d ? dayjs(d).format('DD/MM/YYYY') : '',
-    }));
+    // setEndDate(d);
   };
 
-  // ✅ Joining Date
   const handleStartDate = (d: Date | null) => {
     setStartDate(d);
-    setFormData((prev: any) => ({
-      ...prev,
-      joining_date: d ? dayjs(d).format('DD/MM/YYYY') : '',
-    }));
   };
 
   // ✅ Branch change -> numeric
@@ -135,15 +127,41 @@ const Employee = ({ user }: any) => {
 
     // ✅ Blade-style payload keys (branch is project_id in Blade)
     const payload = {
-      ...formData,
-      project_id: branchId,
-      date_of_birth: formData.dob, // Blade key
-      joning_dt: formData.joining_date, // Blade key
+      name: formData.name,
+      father_name: formData.father_name,
+      nid: formData.nid,
+      designation: formData.designation,
+      qualification: formData.qualification,
+
+      // date_of_birth: dayjs(endDate).format('DD/MM/YYYY'),
+      joning_dt: dayjs(startDate).format('DD/MM/YYYY'),
+
+      present_address: formData.present_address,
+      permanent_address: formData.permanent_address,
+      mobile: formData.mobile,
+
+      sex: formData.gender,          // 🔥 DB column
+      project_id: branchId,          // 🔥 DB column
+      status: formData.status === 'Active' ? 1 : 0,
+
+      basic_salary: formData.basic_salary,
+      house_rent: formData.house_rent,
+      medical_allowance: formData.medical,
+      others_allowance: formData.others_allowance,
+      loan_deduction: formData.loan_deduction,
+      others_deduction: formData.others_deduction,
+
+      salary_payable: formData.salary_payable,
+      employee_group: formData.employee_group,
+      employee_serial: formData.employee_serial,
     };
 
+    dispatch(storeEmployee(payload));
     console.log('Employee Payload:', payload);
     toast.success('Employee saved successfully (demo)');
   };
+
+
 
   return (
     <>
@@ -272,7 +290,7 @@ const Employee = ({ user }: any) => {
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
             defaultValue={formData?.gender?.toString() ?? ''}
-            data={genderList}
+            data={gender}
           />
 
           <InputElement

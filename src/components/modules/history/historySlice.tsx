@@ -86,9 +86,7 @@ const initialState: VoucherChangeHistoryState = {
 
 /* ================= THUNK ================= */
 
-export const fetchVoucherChangeHistory = createAsyncThunk<VoucherChangeHistoryResponse, HistoryParams, { rejectValue: string }>(
-  "voucher/fetchChangeHistory",
-  async (params, thunkAPI) => {
+export const fetchVoucherChangeHistory = createAsyncThunk<VoucherChangeHistoryResponse, HistoryParams, { rejectValue: string }>("voucher/fetchChangeHistory",async (params, thunkAPI) => {
     try {
       const response = await httpService.post(
         API_CHANGE_HISTORY_URL,
@@ -96,7 +94,6 @@ export const fetchVoucherChangeHistory = createAsyncThunk<VoucherChangeHistoryRe
           voucher_no: params.voucher_no
         }
       );
-
       return response.data as VoucherChangeHistoryResponse;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
