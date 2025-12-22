@@ -1109,8 +1109,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <NavLink
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                        pathname === '/vr-settings/voucher-delete' ||
-                        pathname === '/vr-settings/installment-delete' ||
+                        pathname === '/hrms/employee/add' ||
+                        pathname === '/hrms/employees' ||
                         pathname === '/admin/voucher/date-change' ||
                         pathname === '/vr-settings/recyclebin' ||
                          pathname.includes('/vr-settings/voucher-delete')
@@ -1132,19 +1132,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        {hasPermission(permissions, 'dayclose.all.view') && (
                           <li>
                             <NavLink
-                              to="/hrms/employee"
+                              to="/hrms/employees"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                              Employee Entry
+                              Employees
                             </NavLink>
                           </li>
-                        )}
+                  
                       </ul>
                     </div>
                   </React.Fragment>

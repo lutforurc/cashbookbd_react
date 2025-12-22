@@ -3,11 +3,13 @@ export const orderType = [
   { id: 2, name: 'Sales' },
 ];
 export const isPayable = [
+  { id: "", name: 'Select Pay Type' },
   { id: 0, name: 'Not Payable' },
   { id: 1, name: 'Payable' },
 ];
 
 export const employeeGroup = [
+  { id: "", name: 'Select Group' },
   { id: 0, name: 'Owners Group' },
   { id: 1, name: 'Engines Group' },
   { id: 2, name: 'Officer Group' },
@@ -52,10 +54,11 @@ export const printerSettings = [
 ];
 
 export const status = [
-  { id: 0, name: 'Inactive' },
-  { id: 1, name: 'Active' },
-  { id: 2, name: 'Pending' },
-  { id: 3, name: 'Deleted' },
+  { id: "", name: 'Select Status' },
+  { id: "0", name: 'Inactive' },
+  { id: "1", name: 'Active' },
+  { id: "2", name: 'Pending' },
+  { id: "3", name: 'Deleted' },
 ];
 
 export const businessTypes = [

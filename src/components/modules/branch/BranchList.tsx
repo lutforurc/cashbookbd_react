@@ -117,7 +117,7 @@ const BranchList = () => {
               showDelete={false}
               handleDelete={handleBranchDelete}
               showToggle={true}
-              handleToggle={() => handleToggle(row)} // এখন row পাঠাচ্ছে
+              handleToggle={() => handleToggle(row)}
 
               // showConfirmId={showConfirmId}
               // setShowConfirmId={setShowConfirmId}

@@ -163,7 +163,7 @@ const ROUTES = {
   
   
   // HRM
-  hrms_employee_list: '/hrms/employee',
+  hrms_employee_list: '/hrms/employees',
   hrms_employee_add: '/hrms/employee/add', 
 
 

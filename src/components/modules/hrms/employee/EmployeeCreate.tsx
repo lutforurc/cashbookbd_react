@@ -15,7 +15,36 @@ import { fetchEmployeeSettings, storeEmployee } from './employeeSlice';
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
-const Employee = ({ user }: any) => {
+class EmployeeFormModel {
+  static create() {
+    return {
+      name: '',
+      father_name: '',
+      present_address: '',
+      permanent_address: '',
+      nid: '',
+      mobile: '',
+      dob: '',
+      joining_date: '',
+      designation: '8',
+      branch: '',
+      qualification: '',
+      status: '',
+      sex: '',
+      basic_salary: '',
+      house_rent: '',
+      medical: '',
+      others_allowance: '',
+      loan_deduction: '',
+      others_deduction: '',
+      salary_payable: '',
+      employee_group: '',
+      employee_serial: '',
+    };
+  }
+}
+
+const EmployeeCreate = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const employeeSettings = useSelector((state: any) => state.employees);
   const dispatch = useDispatch<any>();
@@ -27,44 +56,16 @@ const Employee = ({ user }: any) => {
   const [branchId, setBranchId] = useState<number | null>(null);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [designation, setDesignation] = useState<any[]>([]);
-  const [gender, setGender] = useState<any[]>([]);
+  const [sex, setSex] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
   const [saveLoading, setSaveLoading] = useState(false);
 
-  const [formData, setFormData] = useState<any>({
-    name: '',
-    father_name: '',
-    present_address: '',
-    permanent_address: '',
-    nid: '',
-    mobile: '',
-
-    // keep these as string fields (Blade sends string)
-    dob: '',
-    joining_date: '',
-
-    designation: '8',
-    branch: '',
-    qualification: '',
-    status: '1',
-    gender: '1',
-    basic_salary: '',
-    house_rent: '',
-    medical: '',
-    others_allowance: '',
-    loan_deduction: '',
-    others_deduction: '',
-
-    // ✅ IMPORTANT: Use Blade field name
-    salary_payable: '1',
-
-    employee_group: '2',
-    employee_serial: '',
-  });
+  const [formData, setFormData] = useState<any>(EmployeeFormModel.create());
 
   /* ================= INIT ================= */
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
+    dispatch(fetchEmployeeSettings());
     dispatch(fetchEmployeeSettings());
 
     const bId = user?.branch_id ?? user?.user?.branch_id ?? null;
@@ -78,7 +79,7 @@ const Employee = ({ user }: any) => {
     // ✅ mapping same as you wrote (not changing your structure)
     setDropdownData(employeeSettings?.employeeSettings?.data?.data?.branchs || []);
     setDesignation(employeeSettings?.employeeSettings?.data?.data?.designation || []);
-    setGender(employeeSettings?.employeeSettings?.data?.data?.sex || []);
+    setSex(employeeSettings?.employeeSettings?.data?.data?.sex || []);
 
     const bId = user?.branch_id ?? user?.user?.branch_id ?? null;
     setBranchId(bId ?? null);
@@ -95,6 +96,9 @@ const Employee = ({ user }: any) => {
 
   // ✅ keep your dropdown handler (same behavior)
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log('====================================');
+    console.log("e", e.target.value);
+    console.log('====================================');
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
@@ -154,6 +158,11 @@ const Employee = ({ user }: any) => {
       return toast.error('Please enter date of joining');
     }
 
+    if (!formData.sex) {
+      setSaveLoading(false);
+      return toast.error('Please select gender');
+    }
+
     const payload = {
       name: formData.name,
       father_name: formData.father_name,
@@ -165,7 +174,7 @@ const Employee = ({ user }: any) => {
       present_address: formData.present_address,
       permanent_address: formData.permanent_address, // ✅ typo fix
       mobile: formData.mobile,
-      sex: formData.gender,
+      sex: formData.sex,
       project_id: branchId,
       status: formData.status === 'Active' ? 1 : 0,
       basic_salary: formData.basic_salary || '0',
@@ -182,39 +191,11 @@ const Employee = ({ user }: any) => {
     try {
       const response = await dispatch(storeEmployee(payload)).unwrap();
       toast.success('Employee saved successfully');
-      console.log('====================================');
-      console.log("response", response);
-      console.log('====================================');
-      // ✅ Reset form after success
-      // setFormData({
-      //   name: '',
-      //   father_name: '',
-      //   present_address: '',
-      //   permanent_address: '',
-      //   nid: '',
-      //   mobile: '',
-      //   dob: '',
-      //   joining_date: '',
-      //   designation: '',
-      //   branch: '',
-      //   qualification: '',
-      //   status: 'Active',
-      //   gender: '1',
-      //   basic_salary: '',
-      //   house_rent: '',
-      //   medical: '',
-      //   others_allowance: '',
-      //   loan_deduction: '',
-      //   others_deduction: '',
-      //   salary_payable: '',
-      //   employee_group: '',
-      //   employee_serial: '',
-      // });
+      setFormData(EmployeeFormModel.create());
       setStartDate(null);
       setEndDate(null);
     } catch (err: any) {
       toast.error(err?.message || 'Failed to save employee');
-      console.error('Error:', err);
     } finally {
       setSaveLoading(false); // ✅ এটা সবশেষে execute হবে
     }
@@ -384,25 +365,21 @@ const Employee = ({ user }: any) => {
               <BranchDropdown
                 id="branch"
                 name="branch"
-                defaultValue={isSelected}
+                defaultValue={isSelected.toString()}
                 onChange={handleBranchChange}
                 className="w-full font-medium text-sm p-1.5"
                 branchDdl={dropdownData}
               />
             </div>
           </div>
-
-
-
-
           <DropdownCommon
-            id="gender"
-            name="gender"
+            id="sex"
+            name="sex"
             label="Gender"
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.gender?.toString() ?? ''}
-            data={gender}
+            value={formData.sex}
+            data={sex}
           />
           <DropdownCommon
             id="salary_payable"
@@ -427,10 +404,10 @@ const Employee = ({ user }: any) => {
           <DropdownCommon
             id="status"
             name="status"
-            label="Select Status"
+            label="Status"
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.status?.toString() ?? ''}
+            defaultValue={formData?.status}
             data={status}
           />
           <InputElement
@@ -465,4 +442,4 @@ const Employee = ({ user }: any) => {
   );
 };
 
-export default Employee;
+export default EmployeeCreate;

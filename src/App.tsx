@@ -79,8 +79,9 @@ import DashboardIndex from './components/modules/dashboard/DashboardIndex';
 import ItemChart from './components/modules/charts/item-char/ItemChart';
 import InstallmentDelete from './components/modules/vr_settings/InstallmentDelete';
 import Recyclebin from './components/modules/vr_settings/Recyclebin';
-import ChangeHistory from './components/modules/history/ChangeHistory';
-import Employee from './components/modules/hrms/employee/Employee';
+import ChangeHistory from './components/modules/history/ChangeHistory'; 
+import EmployeeCreate from './components/modules/hrms/employee/EmployeeCreate';
+import Employees from './components/modules/hrms/employee/Employees';
 
 
 
@@ -223,7 +224,8 @@ function App() {
             <Route path={routes.real_estate_area_list} element={<AreaList />} />
 
             {/* HRM */}
-            <Route path={routes.hrms_employee_list} element={<Employee user={me} />} />
+            <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
+            <Route path={routes.hrms_employee_list} element={<Employees user={me} />} />
 
 
 

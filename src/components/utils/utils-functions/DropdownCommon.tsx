@@ -50,13 +50,6 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
         onChange={handleSelectChange}
         className={`w-full block p-1 text-sm text-gray-900 border border-gray-300 rounded-xs bg-transparent outline-none dark:bg-gray-700 dark:border-transparent dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
       >
-        {label ? (
-          <option value="">
-            {selectOption ?? label}
-          </option>
-        ) : (
-          ''
-        )}
         {data.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}

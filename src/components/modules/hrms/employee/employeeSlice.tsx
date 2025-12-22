@@ -96,24 +96,27 @@ const initialState: EmployeeState = {
 /* ================= THUNKS ================= */
 
 export const fetchEmployees = createAsyncThunk<EmployeeListResponse, EmployeeListParams | void, { rejectValue: string }>("employee/fetchEmployees", async (params, thunkAPI) => {
-  try {
-    const response = await httpService.post(API_EMPLOYEE_LIST_URL, {
-      page: params?.page,
-      per_page: params?.per_page,
-      branch_id: params?.branch_id,
-      status: params?.status,
-      search: params?.search,
-    });
+    try {
+      const response = await httpService.get(API_EMPLOYEE_LIST_URL, {
+        params: {
+          page: params?.page,
+          per_page: params?.per_page,
+          branch_id: params?.branch_id,
+          status: params?.status,
+          search: params?.search,
+        },
+      });
 
-    return response.data as EmployeeListResponse;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data?.message ||
-      error.message ||
-      "Failed to fetch employees"
-    );
+      return response.data as EmployeeListResponse;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch employees"
+      );
+    }
   }
-});
+);
 
 export const fetchEmployeeSettings = createAsyncThunk<EmployeeSettingsResponse, void, { rejectValue: string }>("employee/fetchEmployeeSettings", async (_, thunkAPI) => {
   try {
