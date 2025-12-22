@@ -223,7 +223,7 @@ function App() {
             <Route path={routes.real_estate_area_list} element={<AreaList />} />
 
             {/* HRM */}
-            <Route path={routes.hrms_employee_list} element={<Employee />} />
+            <Route path={routes.hrms_employee_list} element={<Employee user={me} />} />
 
 
 

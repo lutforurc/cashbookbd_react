@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchEmployeeSettings, storeEmployee } from './employeeSlice';
 import dayjs from 'dayjs';
+import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 const Employee = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -28,6 +29,7 @@ const Employee = ({ user }: any) => {
   const [designation, setDesignation] = useState<any[]>([]);
   const [gender, setGender] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
+  const [saveLoading, setSaveLoading] = useState(false);
 
   const [formData, setFormData] = useState<any>({
     name: '',
@@ -41,10 +43,10 @@ const Employee = ({ user }: any) => {
     dob: '',
     joining_date: '',
 
-    designation: '',
+    designation: '8',
     branch: '',
     qualification: '',
-    status: 'Active',
+    status: '1',
     gender: '1',
     basic_salary: '',
     house_rent: '',
@@ -54,9 +56,9 @@ const Employee = ({ user }: any) => {
     others_deduction: '',
 
     // ✅ IMPORTANT: Use Blade field name
-    salary_payable: '',
+    salary_payable: '1',
 
-    employee_group: '',
+    employee_group: '2',
     employee_serial: '',
   });
 
@@ -66,6 +68,7 @@ const Employee = ({ user }: any) => {
     dispatch(fetchEmployeeSettings());
 
     const bId = user?.branch_id ?? user?.user?.branch_id ?? null;
+
     setIsSelected(bId ?? '');
     setBranchId(bId ?? null);
   }, [dispatch, user]);
@@ -82,9 +85,6 @@ const Employee = ({ user }: any) => {
   }, [employeeSettings, user]);
 
 
-  console.log('====================================');
-  console.log("employeeSettings", employeeSettings);
-  console.log('====================================');
   /* ================= HANDLERS ================= */
 
   // ✅ One handler works for InputElement + DropdownCommon (if they emit event)
@@ -125,54 +125,97 @@ const Employee = ({ user }: any) => {
   };
 
   /* ================= SAVE ================= */
-  const handleSave = () => {
-    // Minimal required fields (you can add more like Blade)
-    if (!formData.name) return toast.error('Please enter name');
-    if (!formData.father_name) return toast.error('Please enter father name');
-    if (!formData.mobile) return toast.error('Please enter mobile number');
-    // if (!branchId) return toast.error('Please select branch');
-    if (!formData.designation) return toast.error('Please select designation');
-    if (!formData.dob) return toast.error('Please enter date of birth');
-    if (!formData.joining_date) return toast.error('Please enter date of joining');
+  const handleSave = async () => {
+    setSaveLoading(true);
 
-    // ✅ Blade-style payload keys (branch is project_id in Blade)
+    // Validation
+    if (!formData.name) {
+      setSaveLoading(false);
+      return toast.error('Please enter name');
+    }
+    if (!formData.father_name) {
+      setSaveLoading(false);
+      return toast.error('Please enter father name');
+    }
+    if (!formData.mobile) {
+      setSaveLoading(false);
+      return toast.error('Please enter mobile number');
+    }
+    if (!formData.designation) {
+      setSaveLoading(false);
+      return toast.error('Please select designation');
+    }
+    if (!formData.dob) {
+      setSaveLoading(false);
+      return toast.error('Please enter date of birth');
+    }
+    if (!formData.joining_date) {
+      setSaveLoading(false);
+      return toast.error('Please enter date of joining');
+    }
+
     const payload = {
       name: formData.name,
       father_name: formData.father_name,
       nid: formData.nid,
       designation: formData.designation,
       qualification: formData.qualification,
-
-      // ✅ send dob + joining date (string already)
-      date_of_birth: formData.dob,      // <-- backend key যা লাগে সেটাই দাও
-      joning_dt: formData.joining_date, // <-- যদি backend-এ সত্যিই "joning_dt" লাগে
-
+      date_of_birth: formData.dob,
+      joning_dt: formData.joining_date,
       present_address: formData.present_address,
-      permanent_address: formData.permanent_address,
+      permanent_address: formData.permanent_address, // ✅ typo fix
       mobile: formData.mobile,
-
       sex: formData.gender,
       project_id: branchId,
       status: formData.status === 'Active' ? 1 : 0,
-
-      basic_salary: formData.basic_salary,
-      house_rent: formData.house_rent,
-      medical_allowance: formData.medical,
-      others_allowance: formData.others_allowance,
-      loan_deduction: formData.loan_deduction,
-      others_deduction: formData.others_deduction,
-
-      salary_payable: formData.salary_payable,
-      employee_group: formData.employee_group,
-      employee_serial: formData.employee_serial,
+      basic_salary: formData.basic_salary || '0',
+      house_rent: formData.house_rent || '0',
+      medical_allowance: formData.medical || '0',
+      others_allowance: formData.others_allowance || '0',
+      loan_deduction: formData.loan_deduction || '0',
+      others_deduction: formData.others_deduction || '0',
+      salary_payable: formData.salary_payable || '1',
+      employee_group: formData.employee_group || '1',
+      employee_serial: formData.employee_serial || '0',
     };
 
-    dispatch(storeEmployee(payload))
-      .unwrap()
-      .then(() => toast.success('Employee saved successfully'))
-      .catch((err: any) => toast.error(err?.message || 'Failed to save employee'));
+    try {
+      await dispatch(storeEmployee(payload)).unwrap();
+      toast.success('Employee saved successfully');
 
-    console.log('Employee Payload:', payload);
+      // ✅ Reset form after success
+      setFormData({
+        name: '',
+        father_name: '',
+        present_address: '',
+        permanent_address: '',
+        nid: '',
+        mobile: '',
+        dob: '',
+        joining_date: '',
+        designation: '',
+        branch: '',
+        qualification: '',
+        status: 'Active',
+        gender: '1',
+        basic_salary: '',
+        house_rent: '',
+        medical: '',
+        others_allowance: '',
+        loan_deduction: '',
+        others_deduction: '',
+        salary_payable: '',
+        employee_group: '',
+        employee_serial: '',
+      });
+      setStartDate(null);
+      setEndDate(null);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to save employee');
+      console.error('Error:', err);
+    } finally {
+      setSaveLoading(false); // ✅ এটা সবশেষে execute হবে
+    }
   };
 
 
@@ -180,7 +223,7 @@ const Employee = ({ user }: any) => {
   return (
     <>
       <HelmetTitle title="Employee Entry" />
-      <div className="bg-white dark:bg-gray-800 rounded shadow p-4">
+      <div className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <InputElement
             id="name"
@@ -253,32 +296,6 @@ const Employee = ({ user }: any) => {
               setSelectedDate={setStartDate}
             />
           </div>
-
-          <DropdownCommon
-            id="designation"
-            name="designation"
-            label="Select Designation"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.designation?.toString() ?? ''}
-            data={designation}
-          />
-
-          <div>
-            <label>Select Branch</label>
-            <div className="w-full">
-              {branchDdlData.isLoading === true ? <Loader /> : null}
-              <BranchDropdown
-                id="branch"
-                name="branch"
-                defaultValue={isSelected}
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
-                branchDdl={dropdownData}
-              />
-            </div>
-          </div>
-
           <InputElement
             id="qualification"
             label="Qualification"
@@ -286,26 +303,7 @@ const Employee = ({ user }: any) => {
             value={formData.qualification}
             onChange={handleChange}
           />
-
-          <DropdownCommon
-            id="status"
-            name="status"
-            label="Select Status"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.status?.toString() ?? ''}
-            data={status}
-          />
-
-          <DropdownCommon
-            id="gender"
-            name="gender"
-            label="Gender"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.gender?.toString() ?? ''}
-            data={gender}
-          />
+          
 
           <InputElement
             id="basic_salary"
@@ -354,7 +352,43 @@ const Employee = ({ user }: any) => {
             value={formData.others_deduction}
             onChange={handleChange}
           />
+<DropdownCommon
+            id="designation"
+            name="designation"
+            label="Select Designation"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.designation?.toString() ?? ''}
+            data={designation}
+          />
 
+          <div>
+            <label>Select Branch</label>
+            <div className="w-full">
+              {branchDdlData.isLoading === true ? <Loader /> : null}
+              <BranchDropdown
+                id="branch"
+                name="branch"
+                defaultValue={isSelected}
+                onChange={handleBranchChange}
+                className="w-full font-medium text-sm p-1.5"
+                branchDdl={dropdownData}
+              />
+            </div>
+          </div>
+
+
+
+
+          <DropdownCommon
+            id="gender"
+            name="gender"
+            label="Gender"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.gender?.toString() ?? ''}
+            data={gender}
+          />
           <DropdownCommon
             id="salary_payable"
             name="salary_payable"
@@ -375,9 +409,18 @@ const Employee = ({ user }: any) => {
             data={employeeGroup}
           />
 
+          <DropdownCommon
+            id="status"
+            name="status"
+            label="Select Status"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.status?.toString() ?? ''}
+            data={status}
+          />
           <InputElement
             id="employee_serial"
-            label="Employee Serial"
+            label="Salary Sheet Serial Number"
             name="employee_serial"
             value={formData.employee_serial}
             onChange={handleChange}
@@ -387,16 +430,19 @@ const Employee = ({ user }: any) => {
 
         {/* ================= BUTTONS ================= */}
         <div className="flex justify-end gap-2 mt-4">
+
+
+          <ButtonLoading
+            onClick={handleSave}
+            buttonLoading={saveLoading}
+            disabled={saveLoading}
+            label="Save"
+            className="whitespace-nowrap text-center mr-0 h-8"
+            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+          />
           <Link to="/dashboard" className="h-8">
             <FiHome className="mr-2" /> Home
           </Link>
-
-          <button
-            onClick={handleSave}
-            className="flex items-center h-8 px-4 bg-blue-600 text-white rounded"
-          >
-            <FiSave className="mr-2" /> Save
-          </button>
         </div>
       </div>
 
