@@ -21,7 +21,7 @@ const Employee = ({ user }: any) => {
 
   // Blade-like: dob + joining date
   const [startDate, setStartDate] = useState<Date | null>(null); // Joining Date
-  const [dob, setDob] = useState<Date | null>(null); // Date of Birth
+  const [endDate, setEndDate] = useState<Date | null>(null); // Joining Date 
 
   const [branchId, setBranchId] = useState<number | null>(null);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -100,13 +100,23 @@ const Employee = ({ user }: any) => {
   };
 
   // ✅ Date of Birth
-  const handleEndDate = (d: Date | null) => {
-    // setEndDate(d);
-  };
+const handleEndDate = (d: Date | null) => {
+  setEndDate(d);
 
-  const handleStartDate = (d: Date | null) => {
-    setStartDate(d);
-  };
+  setFormData((prev: any) => ({
+    ...prev,
+    dob: d ? dayjs(d).format('DD/MM/YYYY') : '',
+  }));
+};
+
+const handleStartDate = (d: Date | null) => {
+  setStartDate(d);
+
+  setFormData((prev: any) => ({
+    ...prev,
+    joining_date: d ? dayjs(d).format('DD/MM/YYYY') : '',
+  }));
+}
 
   // ✅ Branch change -> numeric
   const handleBranchChange = (e: any) => {
