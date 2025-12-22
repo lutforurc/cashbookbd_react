@@ -100,23 +100,23 @@ const Employee = ({ user }: any) => {
   };
 
   // ✅ Date of Birth
-const handleEndDate = (d: Date | null) => {
-  setEndDate(d);
+  const handleEndDate = (d: Date | null) => {
+    setEndDate(d);
 
-  setFormData((prev: any) => ({
-    ...prev,
-    dob: d ? dayjs(d).format('DD/MM/YYYY') : '',
-  }));
-};
+    setFormData((prev: any) => ({
+      ...prev,
+      dob: d ? dayjs(d).format('DD/MM/YYYY') : '',
+    }));
+  };
 
-const handleStartDate = (d: Date | null) => {
-  setStartDate(d);
+  const handleStartDate = (d: Date | null) => {
+    setStartDate(d);
 
-  setFormData((prev: any) => ({
-    ...prev,
-    joining_date: d ? dayjs(d).format('DD/MM/YYYY') : '',
-  }));
-}
+    setFormData((prev: any) => ({
+      ...prev,
+      joining_date: d ? dayjs(d).format('DD/MM/YYYY') : '',
+    }));
+  }
 
   // ✅ Branch change -> numeric
   const handleBranchChange = (e: any) => {
@@ -143,15 +143,16 @@ const handleStartDate = (d: Date | null) => {
       designation: formData.designation,
       qualification: formData.qualification,
 
-      // date_of_birth: dayjs(endDate).format('DD/MM/YYYY'),
-      joning_dt: dayjs(startDate).format('DD/MM/YYYY'),
+      // ✅ send dob + joining date (string already)
+      date_of_birth: formData.dob,      // <-- backend key যা লাগে সেটাই দাও
+      joning_dt: formData.joining_date, // <-- যদি backend-এ সত্যিই "joning_dt" লাগে
 
       present_address: formData.present_address,
       permanent_address: formData.permanent_address,
       mobile: formData.mobile,
 
-      sex: formData.gender,          // 🔥 DB column
-      project_id: branchId,          // 🔥 DB column
+      sex: formData.gender,
+      project_id: branchId,
       status: formData.status === 'Active' ? 1 : 0,
 
       basic_salary: formData.basic_salary,
@@ -166,9 +167,12 @@ const handleStartDate = (d: Date | null) => {
       employee_serial: formData.employee_serial,
     };
 
-    dispatch(storeEmployee(payload));
+    dispatch(storeEmployee(payload))
+      .unwrap()
+      .then(() => toast.success('Employee saved successfully'))
+      .catch((err: any) => toast.error(err?.message || 'Failed to save employee'));
+
     console.log('Employee Payload:', payload);
-    toast.success('Employee saved successfully (demo)');
   };
 
 
