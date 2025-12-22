@@ -227,6 +227,7 @@ const Employee = ({ user }: any) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <InputElement
             id="name"
+            placeholder='Enter employee name'
             label="Name"
             name="name"
             value={formData.name}
@@ -235,6 +236,7 @@ const Employee = ({ user }: any) => {
 
           <InputElement
             id="father_name"
+            placeholder="Enter father's name"
             label="Father's Name"
             name="father_name"
             value={formData.father_name}
@@ -243,6 +245,7 @@ const Employee = ({ user }: any) => {
 
           <InputElement
             id="nid"
+            placeholder='Enter NID'
             label="National ID"
             name="nid"
             value={formData.nid}
@@ -250,6 +253,7 @@ const Employee = ({ user }: any) => {
           />
 
           <InputElement
+            placeholder='Enter present address'
             id="present_address"
             label="Present Address"
             name="present_address"
@@ -260,6 +264,7 @@ const Employee = ({ user }: any) => {
 
           <InputElement
             id="permanent_address"
+            placeholder='Enter permanent address'
             label="Permanent Address"
             name="permanent_address"
             value={formData.permanent_address}
@@ -268,6 +273,7 @@ const Employee = ({ user }: any) => {
           />
 
           <InputElement
+            placeholder='Enter mobile number'
             id="mobile"
             label="Mobile Number"
             name="mobile"
@@ -297,15 +303,17 @@ const Employee = ({ user }: any) => {
             />
           </div>
           <InputElement
+            placeholder='Enter Qualification'
             id="qualification"
             label="Qualification"
             name="qualification"
             value={formData.qualification}
             onChange={handleChange}
           />
-          
+
 
           <InputElement
+            placeholder='Enter basic salary'
             id="basic_salary"
             label="Basic Salary"
             name="basic_salary"
@@ -314,6 +322,7 @@ const Employee = ({ user }: any) => {
           />
 
           <InputElement
+            placeholder='Enter house rent'
             id="house_rent"
             label="House Rent"
             name="house_rent"
@@ -322,6 +331,7 @@ const Employee = ({ user }: any) => {
           />
 
           <InputElement
+            placeholder='Enter medical allowance'
             id="medical"
             label="Medical Allowance"
             name="medical"
@@ -330,6 +340,7 @@ const Employee = ({ user }: any) => {
           />
 
           <InputElement
+            placeholder='Enter others allowance'
             id="others_allowance"
             label="Others Allowance"
             name="others_allowance"
@@ -338,6 +349,7 @@ const Employee = ({ user }: any) => {
           />
 
           <InputElement
+            placeholder='Enter loan deduction'
             id="loan_deduction"
             label="Loan Deduction"
             name="loan_deduction"
@@ -346,13 +358,14 @@ const Employee = ({ user }: any) => {
           />
 
           <InputElement
+            placeholder='Enter others deduction'
             id="others_deduction"
             label="Others Deduction"
             name="others_deduction"
             value={formData.others_deduction}
             onChange={handleChange}
           />
-<DropdownCommon
+          <DropdownCommon
             id="designation"
             name="designation"
             label="Select Designation"
