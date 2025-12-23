@@ -90,12 +90,10 @@ useEffect(() => {
 
 
   const handleBranchEdit = (row: any) => {
-    console.log('Edit =>' + row);
     navigate(`/branch/branch-edit/${row}`);
   };
 
   const handleBranchDelete = (row: any) => {
-    console.log('Delete =>' + row);
     navigate('/branch/branch-list');
   };
 
@@ -105,10 +103,6 @@ useEffect(() => {
     dispatch(branchStatus(row.id, newStatus)).then(() => {
       dispatch(getBranch({ page, per_page: perPage, searchValue }));
     });
-
-    console.log(
-      `Toggled row with ID ${row.id} to ${newStatus ? 'enabled' : 'disabled'}`,
-    );
   };
 
   useEffect(() => {
