@@ -95,15 +95,21 @@ const initialState: EmployeeState = {
 
 /* ================= THUNKS ================= */
 
-export const fetchEmployees = createAsyncThunk<EmployeeListResponse, EmployeeListParams | void, { rejectValue: string }>("employee/fetchEmployees", async (params, thunkAPI) => {
+export const fetchEmployees = createAsyncThunk<
+  EmployeeListResponse,
+  EmployeeListParams | undefined,
+  { rejectValue: string }
+>(
+  "employee/fetchEmployees",
+  async (params = {}, thunkAPI) => {
     try {
       const response = await httpService.get(API_EMPLOYEE_LIST_URL, {
         params: {
-          page: params?.page,
-          per_page: params?.per_page,
-          branch_id: params?.branch_id,
-          status: params?.status,
-          search: params?.search,
+          page: params.page ?? 1,
+          per_page: params.per_page ?? 10,
+          branch_id: params.branch_id ?? "",
+          status: params.status ?? "",
+          search: params.search ?? "",
         },
       });
 

@@ -14,9 +14,12 @@ import Pagination from '../../../utils/utils-functions/Pagination';
 import ActionButtons from '../../../utils/fields/ActionButton';
 import { getBranch } from '../../branch/branchSlice';
 import { fetchEmployees } from './employeeSlice';
+import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
+import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
+    const branchDdlData = useSelector((state) => state.branchDdl);
   const dispatch = useDispatch();
   const [search, setSearchValue] = useState('');
   const [page, setPage] = useState(0);
@@ -25,23 +28,43 @@ const Employees = ({ user }: any) => {
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
+  const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [branchId, setBranchId] = useState<number | null>(null);
   const navigate = useNavigate();
+
+
+
+
+    useEffect(() => {
+      dispatch(getDdlProtectedBranch());
+      
+      setBranchId(user?.branch_id);
+
+    }, []);
+
   useEffect(() => {
-    dispatch(fetchEmployees({ page, perPage, search }));
-    setTotalPages(Math.ceil(employees?.data?.total / perPage));
+    dispatch(fetchEmployees({ page, per_page:perPage, search, branch_id: branchId }));
+    setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));
     setTableData(employees);
-  }, [page, perPage, employees?.data?.total]);
+  }, [page, perPage, employees?.employees?.data?.data?.total, branchId]);
 
 
-
+useEffect(() => {
+  if (branchDdlData?.protectedData?.data) {
+    setDropdownData([
+      { id: "", name: 'All Projects' },
+      ...branchDdlData.protectedData.data,
+    ]);
+  }
+}, [branchDdlData?.protectedData?.data]);
 
   const handleSearchButton = (e: any) => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(fetchEmployees({ page, perPage, search }));
+    dispatch(fetchEmployees({ page, per_page: perPage, search, branch_id: branchId }));
 
     if (employees?.data?.total >= 0) {
-      setTotalPages(Math.ceil(employees?.data?.total / perPage));
+      setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));
       setTableData(employees?.employees?.data?.data?.data || []);
     }
   };
@@ -61,37 +84,37 @@ const Employees = ({ user }: any) => {
     setPerPage(perPage);
     setPage(page);
     setCurrentPage(page);
-    setTotalPages(Math.ceil(employees?.data?.last_page));
+    setTotalPages(Math.ceil(employees?.employees?.data?.data?.last_page));
     setTableData(employees?.employees?.data?.data?.data || []);
   };
 
-    const handleBranchEdit = (row: any) => {
+
+  const handleBranchEdit = (row: any) => {
     console.log('Edit =>' + row);
     navigate(`/branch/branch-edit/${row}`);
   };
 
-    const handleBranchDelete = (row: any) => {
+  const handleBranchDelete = (row: any) => {
     console.log('Delete =>' + row);
     navigate('/branch/branch-list');
   };
 
-    const handleToggle = (row: any) => {
-      const newStatus = row.status === 1 ? 0 : 1;
-  
-      dispatch(branchStatus(row.id, newStatus)).then(() => {
-        dispatch(getBranch({ page, perPage, searchValue }));
-      });
-  
-      console.log(
-        `Toggled row with ID ${row.id} to ${newStatus ? 'enabled' : 'disabled'}`,
-      );
-    };
+  const handleToggle = (row: any) => {
+    const newStatus = row.status === 1 ? 0 : 1;
+
+    dispatch(branchStatus(row.id, newStatus)).then(() => {
+      dispatch(getBranch({ page, per_page: perPage, searchValue }));
+    });
+
+    console.log(
+      `Toggled row with ID ${row.id} to ${newStatus ? 'enabled' : 'disabled'}`,
+    );
+  };
 
   useEffect(() => {
     setTableData(employees?.employees?.data?.data?.data || []);
   }, [employees]);
 
- 
 
   const columns = [
     {
@@ -119,14 +142,23 @@ const Employees = ({ user }: any) => {
       ),
     },
     {
+      key: 'mobile',
+      header: 'Mobile',
+      render: (row: any) => (
+        <>
+          <p className="">{row.mobile}</p>
+        </>
+      ),
+    },
+    {
       key: 'branch_name',
-      header: 'Branch',
+      header: 'Project Name',
       render: (row: any) => (
         <>
           <p className="">{row.branch_name}</p>
         </>
       ),
-    },    
+    },
     // {
     //   key: 'basic_salary',
     //   header: 'Basic Salary',
@@ -147,7 +179,7 @@ const Employees = ({ user }: any) => {
     //     </>
     //   ),
     // },
- 
+
     {
       key: 'action',
       header: 'Action',
@@ -165,8 +197,8 @@ const Employees = ({ user }: any) => {
               showToggle={true}
               handleToggle={() => handleToggle(row)}
 
-              // showConfirmId={showConfirmId}
-              // setShowConfirmId={setShowConfirmId}
+            // showConfirmId={showConfirmId}
+            // setShowConfirmId={setShowConfirmId}
             />
           </div>
         </>
@@ -178,30 +210,47 @@ const Employees = ({ user }: any) => {
     navigate(`/product/edit/${row.product_id}`);
   };
 
-
+  const handleBranchChange = (e: any) => {
+    setBranchId(e.target.value);
+  };
 
 
   return (
     <div>
       <HelmetTitle title={'Employee List'} />
       <div className="flex overflow-x-auto justify-between mb-1">
-        <div className="flex">
-          <SelectOption
-            onChange={handleSelectChange}
-            className="mr-1 md:mr-2"
-          />
-          <SearchInput
-            search={search}
-            setSearchValue={setSearchValue}
-            className="text-nowrap"
-          />
-          <ButtonLoading
-            onClick={handleSearchButton}
-            buttonLoading={buttonLoading}
-            label="Search"
-            className="whitespace-nowrap"
-          />
+        <div className='flex'>
+          <div className='mr-2'>
+            <div className="w-full">
+              {/* {branchDdlData.isLoading == true ? <Loader /> : ''} */}
+              <BranchDropdown
+                defaultValue={user?.user?.branch_id}
+                onChange={handleBranchChange}
+                className="w-60 font-medium text-sm p-2 "
+                branchDdl={dropdownData}
+              />
+            </div>
+          </div>
+          <div className="flex">
+            <SelectOption
+              onChange={handleSelectChange}
+              className="mr-1 md:mr-2"
+            />
+            <SearchInput
+              search={search}
+              setSearchValue={setSearchValue}
+              className="text-nowrap"
+            />
+            <ButtonLoading
+              onClick={handleSearchButton}
+              buttonLoading={buttonLoading}
+              label="Search"
+              className="whitespace-nowrap"
+            />
+          </div>
         </div>
+
+
         <Link to="/hrms/employee/add" className="text-nowrap">
           New Employee
         </Link>
