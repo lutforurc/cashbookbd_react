@@ -62,7 +62,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           className="btn btn-sm btn-outline cursor-pointer w-5 h-5 flex items-center justify-center"
           onClick={() => handleEdit(row.branch_id)}
         >
-          <FiEdit2 className="text-blue-600" />
+          <FiEdit2 className="text-blue-600 text-lg" />
         </div>
       )}
 
