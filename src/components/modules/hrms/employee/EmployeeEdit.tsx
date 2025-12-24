@@ -12,10 +12,9 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { fetchEmployeeById, fetchEmployeeSettings } from './employeeSlice';
+import { fetchEmployeeById, fetchEmployeeSettings, updateEmployee } from './employeeSlice';
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import { number } from 'yup';
 
 /* ===== SAME MODEL ===== */
 class EmployeeFormModel {
@@ -70,7 +69,7 @@ const EmployeeEdit = ({ user }: any) => {
   /* ================= INIT ================= */
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    // dispatch(fetchEmployeeSettings());
+    dispatch(fetchEmployeeSettings());
     dispatch(fetchEmployeeById(Number(id)));
   }, [dispatch, id]);
 
@@ -95,10 +94,10 @@ const EmployeeEdit = ({ user }: any) => {
       mobile: emp.mobile,
       dob: emp.date_of_birth,
       joining_date: emp.joning_dt,
-      designation: emp.designation_id,
+      designation: emp.designation,
       qualification: emp.qualification,
-      status: emp.status === 1 ? 'Active' : 'Inactive',
-      sex: emp.sex_id,
+      status: String(emp.status),
+      sex: emp.sex,
       basic_salary: emp.basic_salary,
       house_rent: emp.house_rent,
       medical: emp.medical_allowance,
@@ -136,12 +135,6 @@ const EmployeeEdit = ({ user }: any) => {
     }));
   };
 
-
-  console.log('====================================');
-  console.log("employeeState", employeeState);
-  console.log('====================================');
-
-
   const handleStartDate = (d: Date | null) => {
     setStartDate(d);
     setFormData((p: any) => ({
@@ -162,13 +155,19 @@ const EmployeeEdit = ({ user }: any) => {
     const payload = {
       ...formData,
       project_id: branchId,
-      status: formData.status === 'Active' ? 1 : 0,
+      status: Number(formData.status),
     };
 
     try {
-      // await dispatch(updateEmployee({ id, data: payload })).unwrap();
-      // toast.success('Employee updated successfully');
-      // navigate('/hrms/employee/list');
+      const response = await dispatch(updateEmployee({ id: Number(id), data: payload })).unwrap();
+
+      if (response?.success === true) {
+        toast.success('Employee updated successfully');
+        navigate('/hrms/employees');
+      }else{
+        toast.info('something went wrong');
+      }
+
     } catch (err: any) {
       toast.error(err?.message || 'Failed to update employee');
     } finally {
@@ -341,7 +340,7 @@ const EmployeeEdit = ({ user }: any) => {
               <BranchDropdown
                 id="branch"
                 name="branch"
-                defaultValue={isSelected.toString()}
+                defaultValue={isSelected}
                 onChange={handleBranchChange}
                 className="w-full font-medium text-sm p-1.5"
                 branchDdl={dropdownData}
@@ -383,7 +382,7 @@ const EmployeeEdit = ({ user }: any) => {
             label="Status"
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.status}
+            defaultValue={formData?.status !== null ? String(formData.status) : ''}
             data={status}
           />
           <InputElement

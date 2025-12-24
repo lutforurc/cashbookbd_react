@@ -7,6 +7,7 @@ import {
   API_EMPLOYEE_LIST_URL,
   API_EMPLOYEE_SETTINGS_URL,
   API_EMPLOYEE_STORE_URL,
+  API_EMPLOYEE_UPDATE_URL,
 } from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
@@ -96,6 +97,33 @@ const initialState: EmployeeState = {
   error: null,
   message: null, // ✅ NEW
 };
+
+
+/* ---------- Update Employee ---------- */
+export const updateEmployee = createAsyncThunk<
+  { message: string },
+  { id: number; data: any },
+  { rejectValue: string }
+>(
+  "employee/updateEmployee",
+  async ({ id, data }, thunkAPI) => {
+    try {
+      const response = await httpService.post(
+        `${API_EMPLOYEE_UPDATE_URL}${id}`,
+        data
+      );
+
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update employee"
+      );
+    }
+  }
+);
+
 
 /* ================= THUNKS ================= */
 
@@ -244,6 +272,22 @@ const employeeSlice = createSlice({
       .addCase(fetchEmployees.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch employees";
+      })
+
+
+       /* ===== Update Employee ===== */
+      .addCase(updateEmployee.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(updateEmployee.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload.message || "Employee updated successfully";
+      })
+      .addCase(updateEmployee.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to update employee";
       })
 
 
