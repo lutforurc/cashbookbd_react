@@ -12,9 +12,10 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { fetchEmployeeById, updateEmployee, fetchEmployeeSettings } from './employeeSlice';
+import { fetchEmployeeById, fetchEmployeeSettings } from './employeeSlice';
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { number } from 'yup';
 
 /* ===== SAME MODEL ===== */
 class EmployeeFormModel {
@@ -69,8 +70,8 @@ const EmployeeEdit = ({ user }: any) => {
   /* ================= INIT ================= */
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    dispatch(fetchEmployeeSettings());
-    dispatch(fetchEmployeeById(id));
+    // dispatch(fetchEmployeeSettings());
+    dispatch(fetchEmployeeById(Number(id)));
   }, [dispatch, id]);
 
   /* ================= LOAD SETTINGS ================= */
@@ -135,6 +136,12 @@ const EmployeeEdit = ({ user }: any) => {
     }));
   };
 
+
+  console.log('====================================');
+  console.log("employeeState", employeeState);
+  console.log('====================================');
+
+
   const handleStartDate = (d: Date | null) => {
     setStartDate(d);
     setFormData((p: any) => ({
@@ -159,9 +166,9 @@ const EmployeeEdit = ({ user }: any) => {
     };
 
     try {
-      await dispatch(updateEmployee({ id, data: payload })).unwrap();
-      toast.success('Employee updated successfully');
-      navigate('/hrms/employee/list');
+      // await dispatch(updateEmployee({ id, data: payload })).unwrap();
+      // toast.success('Employee updated successfully');
+      // navigate('/hrms/employee/list');
     } catch (err: any) {
       toast.error(err?.message || 'Failed to update employee');
     } finally {

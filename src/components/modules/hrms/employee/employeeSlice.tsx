@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
 import {
-  
+
   API_EMPLOYEE_DDL_LIST_URL,
   API_EMPLOYEE_EDIT_URL,
   API_EMPLOYEE_LIST_URL,
@@ -78,6 +78,7 @@ export interface EmployeeDDLRequest {
 
 interface EmployeeState {
   employees: EmployeeListResponse | null;
+  employee: any;
   employeeDDL: EmployeeDDL[];
   employeeSettings: EmployeeSettingsResponse | null;
 
@@ -88,6 +89,7 @@ interface EmployeeState {
 
 const initialState: EmployeeState = {
   employees: null,
+  employee: {},
   employeeDDL: [],
   employeeSettings: null,
   loading: false,
@@ -119,8 +121,8 @@ export const fetchEmployees = createAsyncThunk<
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message ||
-          error.message ||
-          "Failed to fetch employees"
+        error.message ||
+        "Failed to fetch employees"
       );
     }
   }
@@ -195,8 +197,8 @@ export const fetchEmployeeById = createAsyncThunk<
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message ||
-          error.message ||
-          'Failed to fetch employee'
+        error.message ||
+        'Failed to fetch employee'
       );
     }
   }
@@ -217,6 +219,7 @@ const employeeSlice = createSlice({
     },
     clearEmployees(state) {
       state.employees = null;
+      state.employee = {};
       state.employeeDDL = [];
       state.employeeSettings = null;
       state.loading = false;
@@ -239,6 +242,23 @@ const employeeSlice = createSlice({
         }
       )
       .addCase(fetchEmployees.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch employees";
+      })
+
+
+      .addCase(fetchEmployeeById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchEmployeeById.fulfilled,
+        (state, action: PayloadAction<EmployeeListResponse>) => {
+          state.loading = false;
+          state.employee = action.payload;
+        }
+      )
+      .addCase(fetchEmployeeById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch employees";
       })
