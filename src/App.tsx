@@ -82,6 +82,7 @@ import Recyclebin from './components/modules/vr_settings/Recyclebin';
 import ChangeHistory from './components/modules/history/ChangeHistory'; 
 import EmployeeCreate from './components/modules/hrms/employee/EmployeeCreate';
 import Employees from './components/modules/hrms/employee/Employees';
+import EmployeeEdit from './components/modules/hrms/employee/EmployeeEdit';
 
 
 
@@ -226,8 +227,9 @@ function App() {
             {/* HRM */}
             <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
             <Route path={routes.hrms_employee_list} element={<Employees user={me} />} />
+            {/* <Route path={routes.hrms_employee_list} element={<EmployeeEdit user={me} />} /> */}
 
-
+<Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
 
             {/* All Cart */}
             

@@ -131,8 +131,7 @@ const BranchList = () => {
     console.log('View =>' + row);
   };
   const handleBranchEdit = (row: any) => {
-    console.log('Edit =>' + row);
-    navigate(`/branch/branch-edit/${row}`);
+    navigate(`/branch/branch-edit/${row.branch_id}`);
   };
   const handleBranchDelete = (row: any) => {
     console.log('Delete =>' + row);

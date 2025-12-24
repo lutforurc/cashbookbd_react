@@ -165,6 +165,7 @@ const ROUTES = {
   // HRM
   hrms_employee_list: '/hrms/employees',
   hrms_employee_add: '/hrms/employee/add', 
+  hrms_employee_edit: '/hrms/employee/edit/:id', 
 
 
 

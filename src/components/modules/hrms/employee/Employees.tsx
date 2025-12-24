@@ -37,7 +37,6 @@ const Employees = ({ user }: any) => {
 
     useEffect(() => {
       dispatch(getDdlProtectedBranch());
-      
       setBranchId(user?.branch_id);
 
     }, []);
@@ -89,9 +88,12 @@ useEffect(() => {
   };
 
 
-  const handleBranchEdit = (row: any) => {
-    navigate(`/branch/branch-edit/${row}`);
-  };
+const handleBranchEdit = (row: any) => {
+  console.log('====================================');
+  console.log("row", row);
+  console.log('====================================');
+  // navigate(`/hrms/employee/edit/${row.id}`);
+};
 
   const handleBranchDelete = (row: any) => {
     navigate('/branch/branch-list');
@@ -153,27 +155,6 @@ useEffect(() => {
         </>
       ),
     },
-    // {
-    //   key: 'basic_salary',
-    //   header: 'Basic Salary',
-    //   headerClass: 'text-right',
-    //   render: (row: any) => (
-    //     <>
-    //       <p className="text-right">{ thousandSeparator(Number(row.basic_salary),0)}</p>
-    //     </>
-    //   ),
-    // },
-    //  {
-    //   key: 'others_allowance',
-    //   header: 'Others',
-    //   headerClass: 'text-right',
-    //   render: (row: any) => (
-    //     <>
-    //       <p className="text-right">{ thousandSeparator(Number(row.others_allowance),0)}</p>
-    //     </>
-    //   ),
-    // },
-
     {
       key: 'action',
       header: 'Action',

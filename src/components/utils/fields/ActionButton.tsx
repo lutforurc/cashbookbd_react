@@ -34,6 +34,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
 
 
+
+
+
   useEffect(() => {
     if (showConfirmId === row.id && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
@@ -60,7 +63,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       {showEdit && handleEdit && (
         <div
           className="btn btn-sm btn-outline cursor-pointer w-5 h-5 flex items-center justify-center"
-          onClick={() => handleEdit(row.branch_id)}
+          onClick={() => handleEdit(row)}
         >
           <FiEdit2 className="text-blue-600 text-lg" />
         </div>
