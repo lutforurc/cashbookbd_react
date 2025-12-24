@@ -76,9 +76,6 @@ useEffect(() => {
     setTableData(employees?.employees?.data?.data?.data || []);
   };
 
-
-
-
   const handlePageChange = (page: any) => {
     setPerPage(perPage);
     setPage(page);
@@ -88,11 +85,8 @@ useEffect(() => {
   };
 
 
-const handleBranchEdit = (row: any) => {
-  console.log('====================================');
-  console.log("row", row);
-  console.log('====================================');
-  // navigate(`/hrms/employee/edit/${row.id}`);
+const handleBranchEdit = (row: any) => { 
+  navigate(`/hrms/employee/edit/${row.id}`);
 };
 
   const handleBranchDelete = (row: any) => {

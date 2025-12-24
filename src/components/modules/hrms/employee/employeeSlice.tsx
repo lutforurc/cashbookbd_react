@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
 import {
+  
   API_EMPLOYEE_DDL_LIST_URL,
+  API_EMPLOYEE_EDIT_URL,
   API_EMPLOYEE_LIST_URL,
   API_EMPLOYEE_SETTINGS_URL,
   API_EMPLOYEE_STORE_URL,
@@ -167,6 +169,37 @@ export const storeEmployee = createAsyncThunk<{ message: string }, any, { reject
     );
   }
 }
+);
+
+
+export const fetchEmployeeById = createAsyncThunk<
+  any,                // return type
+  number,             // argument type (id)
+  { rejectValue: string }
+>(
+  'employee/fetchEmployeeById',
+  async (id, thunkAPI) => {
+    try {
+      const response = await httpService.get(
+        `${API_EMPLOYEE_EDIT_URL}${id}`
+      );
+
+      // API structure অনুযায়ী
+      if (response.data?.success) {
+        return response.data.data.data;
+      } else {
+        return thunkAPI.rejectWithValue(
+          response.data?.error?.message || 'Failed to fetch employee'
+        );
+      }
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to fetch employee'
+      );
+    }
+  }
 );
 
 /* ================= SLICE ================= */

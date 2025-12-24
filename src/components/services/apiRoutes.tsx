@@ -381,3 +381,6 @@ export const API_CHANGE_HISTORY_URL = `${API_BASE_URL}/history/information`;
 export const API_EMPLOYEE_LIST_URL = `${API_BASE_URL}/hrms/employees`;
 export const API_EMPLOYEE_SETTINGS_URL = `${API_BASE_URL}/hrms/employee/settings`;
 export const API_EMPLOYEE_STORE_URL = `${API_BASE_URL}/hrms/employee/store`;
+export const API_EMPLOYEE_EDIT_URL = `${API_BASE_URL}/hrms/employee/edit/`;
+
+

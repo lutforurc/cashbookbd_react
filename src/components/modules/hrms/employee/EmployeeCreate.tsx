@@ -30,7 +30,7 @@ class EmployeeFormModel {
       branch: '',
       qualification: '',
       status: '',
-      sex: '',
+      sex: '1',
       basic_salary: '',
       house_rent: '',
       medical: '',
@@ -422,8 +422,6 @@ const EmployeeCreate = ({ user }: any) => {
 
         {/* ================= BUTTONS ================= */}
         <div className="flex justify-end gap-2 mt-4">
-
-
           <ButtonLoading
             onClick={handleSave}
             buttonLoading={saveLoading}
