@@ -26,8 +26,8 @@ class EmployeeFormModel {
       permanent_address: '',
       nid: '',
       mobile: '',
-      dob: '',
-      joining_date: '',
+      date_of_birth: '',
+      joning_dt: '',
       designation: '8',
       branch: '',
       qualification: '',
@@ -53,6 +53,7 @@ const EmployeeEdit = ({ user }: any) => {
 
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const employeeState = useSelector((state: any) => state.employees);
+  const settings = useSelector((state: any) => state.settings);
 
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -92,8 +93,8 @@ const EmployeeEdit = ({ user }: any) => {
       permanent_address: emp.permanent_address,
       nid: emp.nid,
       mobile: emp.mobile,
-      dob: emp.date_of_birth,
-      joining_date: emp.joning_dt,
+      date_of_birth: emp.date_of_birth,
+      joning_dt: emp.joning_dt,
       designation: emp.designation,
       qualification: emp.qualification,
       status: String(emp.status),
@@ -131,7 +132,7 @@ const EmployeeEdit = ({ user }: any) => {
     setEndDate(d);
     setFormData((p: any) => ({
       ...p,
-      dob: d ? dayjs(d).format('DD/MM/YYYY') : '',
+      date_of_birth: d ? dayjs(d).format('DD/MM/YYYY') : '',
     }));
   };
 
@@ -139,7 +140,7 @@ const EmployeeEdit = ({ user }: any) => {
     setStartDate(d);
     setFormData((p: any) => ({
       ...p,
-      joining_date: d ? dayjs(d).format('DD/MM/YYYY') : '',
+      joning_dt: d ? dayjs(d).format('DD/MM/YYYY') : '',
     }));
   };
 
@@ -149,7 +150,8 @@ const EmployeeEdit = ({ user }: any) => {
   };
 
   /* ================= UPDATE ================= */
-  const handleUpdate = async () => {
+  const handleUpdate = async (e) => {
+    e.preventDefault();
     setSaveLoading(true);
 
     const payload = {
@@ -162,9 +164,17 @@ const EmployeeEdit = ({ user }: any) => {
       const response = await dispatch(updateEmployee({ id: Number(id), data: payload })).unwrap();
 
       if (response?.success === true) {
+
+        // console.log('====================================');
+        // console.log("response", response);
+        // console.log('====================================');
         toast.success('Employee updated successfully');
-        navigate('/hrms/employees');
-      }else{
+        setTimeout(() => navigate('/hrms/employees'), 300);
+        // setTimeout(() => {
+        //   // navigate('/hrms/employees');
+        // }, 500);
+        // navigate('/hrms/employees');
+      } else {
         toast.info('something went wrong');
       }
 
@@ -175,12 +185,15 @@ const EmployeeEdit = ({ user }: any) => {
     }
   };
 
-  if (employeeState.loading) return <Loader />;
+  // if (employeeState.loading) return <Loader />;
 
   /* ================= JSX (UNCHANGED UI) ================= */
   return (
     <>
       <HelmetTitle title="Employee Edit" />
+      {employeeState.loading && (
+          <Loader />
+      )}
       <div className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <InputElement
@@ -397,6 +410,7 @@ const EmployeeEdit = ({ user }: any) => {
         {/* শুধু Save button → Update */}
         <div className="flex justify-end gap-2 mt-4">
           <ButtonLoading
+            type='button'
             onClick={handleUpdate}
             buttonLoading={saveLoading}
             disabled={saveLoading}

@@ -19,7 +19,8 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
-    const branchDdlData = useSelector((state) => state.branchDdl);
+  const branchDdlData = useSelector((state) => state.branchDdl);
+  const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
   const [search, setSearchValue] = useState('');
   const [page, setPage] = useState(0);
@@ -33,6 +34,10 @@ const Employees = ({ user }: any) => {
   const navigate = useNavigate();
 
 
+
+  console.log('====================================');
+  console.log("settings", settings?.data?.branch?.branch_types_id);
+  console.log('====================================');
 
 
     useEffect(() => {
@@ -49,11 +54,18 @@ const Employees = ({ user }: any) => {
 
 
 useEffect(() => {
-  if (branchDdlData?.protectedData?.data) {
-    setDropdownData([
-      { id: "", name: 'All Projects' },
-      ...branchDdlData.protectedData.data,
-    ]);
+  if (branchDdlData?.protectedData?.data)   if (branchDdlData?.protectedData?.data) {
+
+    const baseData = branchDdlData.protectedData.data;
+
+    if (settings?.data?.branch?.branch_types_id === 1) {
+      setDropdownData([
+        { id: "", name: 'All Projects' },
+        ...baseData,
+      ]);
+    } else {
+      setDropdownData(baseData);
+    }
   }
 }, [branchDdlData?.protectedData?.data]);
 

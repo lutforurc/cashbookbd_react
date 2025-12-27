@@ -175,10 +175,7 @@ const GeneralCashPayment = () => {
     }
 
     const product = tableData[productIndex];
-
-    console.log('====================================');
-    console.log(formData);
-    console.log('====================================');
+ 
 
     // Safely update formData
     setFormData((prevState) => ({
