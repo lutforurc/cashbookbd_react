@@ -28,7 +28,7 @@ interface SalaryRow {
 }
 
 interface SalaryGenerateRequest {
-  branch_id: number;
+  branch_id: string | number;
   group_id?: number;
   month_id: string;
   employees: SalaryRow[]; // 👈 এটা লাগবেই
@@ -44,14 +44,17 @@ const SalarySheetGenerate = ({ user }: any) => {
     (state: any) => state.salary
   );
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const settings = useSelector((state: any) => state.settings);
 
   const [employees, setEmployees] = useState<SalaryRow[]>([]);
-  const [branchId, setBranchId] = useState<number>(user?.branch_id ?? 8);
+  const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
+
   const [groupId, setGroupId] = useState<number | undefined>(undefined);
   const [monthId, setMonthId] = useState<string>("");
   const [searched, setSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [dropdownData, setDropdownData] = useState<any[]>([]);
 
   /* ================= INIT ================= */
   useEffect(() => {
@@ -60,7 +63,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   /* ================= FETCH DATA ================= */
   const handleSearchButton = () => {
-    if (!branchId) return;
+    // if (!branchId) return;
     setSearched(true); // ✅ important
     setSearchLoading(true);
 
@@ -277,20 +280,39 @@ const SalarySheetGenerate = ({ user }: any) => {
     }
   };
 
+  useEffect(() => {
+    if (branchDdlData?.protectedData?.data) if (branchDdlData?.protectedData?.data) {
+
+      const baseData = branchDdlData.protectedData.data;
+
+      if (settings?.data?.branch?.branch_types_id === 1) {
+        setDropdownData([
+          { id: "", name: 'All Projects' },
+          ...baseData,
+        ]);
+      } else {
+        setDropdownData(baseData);
+      }
+    }
+  }, [branchDdlData?.protectedData?.data]);
 
   /* ================= UI ================= */
   return (
     <div>
-      <HelmetTitle title="Salary Sheet Generate" />
+      <HelmetTitle title="Salary Generate" />
 
       {/* ===== Top Bar ===== */}
       <div className="flex justify-between items-center mb-2 ">
         <div className="max-w-280 flex ">
+
           <BranchDropdown
             defaultValue={branchId?.toString()}
-            onChange={(e: any) => setBranchId(Number(e.target.value))}
-            className="font-medium text-sm p-2 w-full mr-2"
-            branchDdl={branchDdlData?.protectedData?.data || []}
+            onChange={(e: any) => {
+              const value = e.target.value;
+              setBranchId(value === "" ? "" : Number(value));
+            }}
+            className="w-60 font-medium text-sm p-2 mr-2 "
+            branchDdl={dropdownData}
           />
           <DropdownCommon
             id="employee_group"
@@ -300,12 +322,14 @@ const SalarySheetGenerate = ({ user }: any) => {
             data={employeeGroup}
           />
 
-          <MonthDropdown
-            id="month_id"
-            name="month_id"
-            className="h-[2.3rem] bg-transparent ml-2 mr-2"
-            onChange={handleOnMonthChange}
-          />
+          <div className="mr-2">
+            <MonthDropdown
+              id="month_id"
+              name="month_id"
+              className="h-[2.3rem] bg-transparent ml-2 mr-2 min-w-35"
+              onChange={handleOnMonthChange}
+            />
+          </div>
 
           <ButtonLoading
             onClick={handleSearchButton}
