@@ -100,12 +100,7 @@ const initialState: EmployeeState = {
 
 
 /* ---------- Update Employee ---------- */
-export const updateEmployee = createAsyncThunk<
-  { message: string },
-  { id: number; data: any },
-  { rejectValue: string }
->(
-  "employee/updateEmployee",
+export const updateEmployee = createAsyncThunk<{ message: string },{ id: number; data: any },{ rejectValue: string }>("employee/updateEmployee",
   async ({ id, data }, thunkAPI) => {
     try {
       const response = await httpService.post(

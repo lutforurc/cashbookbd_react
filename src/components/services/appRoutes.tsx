@@ -164,6 +164,7 @@ const ROUTES = {
   
   // HRM
   hrms_employee_list: '/hrms/employees',
+  hrms_salary_generate: '/hrms/salary/salary-generate',
   hrms_employee_add: '/hrms/employee/add', 
   hrms_employee_edit: '/hrms/employee/edit/:id', 
 
