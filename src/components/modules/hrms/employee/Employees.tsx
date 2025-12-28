@@ -43,7 +43,6 @@ const Employees = ({ user }: any) => {
     useEffect(() => {
       dispatch(getDdlProtectedBranch());
       setBranchId(user?.branch_id);
-
     }, []);
 
   useEffect(() => {

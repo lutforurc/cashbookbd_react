@@ -1,10 +1,10 @@
 import React, { InputHTMLAttributes } from 'react';
 
 interface InputElementProps {
-  id: string;
-  name: string;
-  label: string | number;
-  value?: string;
+  id?: string;
+  name?: string;
+  label?: string | number;
+  value?: string | number;
   placeholder?: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
@@ -48,7 +48,7 @@ const InputElement: React.FC<InputElementProps> = ({
         disabled={disabled}
         inputMode={inputMode}
         pattern={pattern}
-        className={`form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
+        className={`form-input px-3 py-1 text-gray-600  outline-none border rounded-xs bg-white dark:bg-transparent 
           dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none 
           focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}
         style={{

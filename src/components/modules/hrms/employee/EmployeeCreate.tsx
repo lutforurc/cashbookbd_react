@@ -96,9 +96,6 @@ const EmployeeCreate = ({ user }: any) => {
 
   // ✅ keep your dropdown handler (same behavior)
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log('====================================');
-    console.log("e", e.target.value);
-    console.log('====================================');
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
