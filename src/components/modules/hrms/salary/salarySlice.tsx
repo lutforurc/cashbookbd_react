@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
-import { API_SALARY_VIEW_URL } from "../../../services/apiRoutes";
+import { API_SALARY_GENERATE_URL, API_SALARY_VIEW_URL } from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
 
@@ -27,6 +27,17 @@ export interface SalaryEmployee {
   designations?: Designation;
 }
 
+interface SalaryRow {
+  id: number;
+  serial_no: number;
+  name: string;
+  designation_name: string;
+  basic_salary: number;
+  others_allowance: number;
+  loan_deduction: number;
+  net_deduction: number;
+}
+
 interface SalaryViewRequest {
   branch_id: number;
   group_id?: number;
@@ -38,6 +49,13 @@ interface SalaryState {
   loading: boolean;
   error: string | null;
   message: string | null;
+}
+
+interface SalaryGenerateRequest {
+  branch_id: number;
+  group_id?: number;
+  month_id: string;
+  employees: SalaryRow[]; // ✅ অবশ্যই এখানে
 }
 
 /* ================= INITIAL STATE ================= */
@@ -69,26 +87,36 @@ export const salaryView = createAsyncThunk<SalaryEmployee[], SalaryViewRequest, 
 }
 );
 
-export const salaryGenerate = createAsyncThunk<any, SalaryGenerateRequest, { rejectValue: string }>("salary/salaryGenerate", async (payload, { rejectWithValue }) => {
-  try {
-    const res = await httpService.post(API_SALARY_GENERATE_URL, payload);
+export const salaryGenerate = createAsyncThunk<
+  any,
+  SalaryGenerateRequest,
+  { rejectValue: string }
+>(
+  "salary/salaryGenerate",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await httpService.post(
+        API_SALARY_GENERATE_URL,
+        payload
+      );
 
-    if (res.data?.success === true) {
-      return res.data;
+      if (res.data?.success === true) {
+        return res.data;
+      }
+
+      return rejectWithValue(
+        res.data?.message || "Salary generation failed"
+      );
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to generate salary"
+      );
     }
-
-    return rejectWithValue(
-      res.data?.message || "Salary generation failed"
-    );
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-      error.message ||
-      "Failed to generate salary"
-    );
   }
-}
 );
+
 
 
 /* ================= SLICE ================= */

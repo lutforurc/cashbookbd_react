@@ -27,6 +27,15 @@ interface SalaryRow {
   net_deduction: number;
 }
 
+interface SalaryGenerateRequest {
+  branch_id: number;
+  group_id?: number;
+  month_id: string;
+  employees: SalaryRow[]; // 👈 এটা লাগবেই
+}
+
+
+
 /* ================= COMPONENT ================= */
 const SalarySheetGenerate = ({ user }: any) => {
   const dispatch = useDispatch<any>();
@@ -38,7 +47,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   const [employees, setEmployees] = useState<SalaryRow[]>([]);
   const [branchId, setBranchId] = useState<number>(user?.branch_id ?? 8);
-  const [groupId, setGroupId] = useState<string>("");
+  const [groupId, setGroupId] = useState<number | undefined>(undefined);
   const [monthId, setMonthId] = useState<string>("");
   const [searched, setSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -242,26 +251,32 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   // ✅ keep your dropdown handler (same behavior)
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setGroupId(value.toString());
+    setGroupId(e.target.value ? Number(e.target.value) : undefined);
   };
+
   const handleOnMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setMonthId(value.toString());
   };
 
   const handleSalaryGenerate = async () => {
+    if (!branchId || !monthId) return;
+
     setSaveLoading(true);
     try {
-      const response = await dispatch(salaryGenerate(employees)).unwrap();
-
-      // toast.success(response.message);
-    } catch (err: any) {
-      // toast.error(err);
+      await dispatch(
+        salaryGenerate({
+          branch_id: branchId,
+          group_id: Number(groupId),
+          month_id: monthId,
+          employees: employees, // 👈 এটিই মূল জিনিস
+        })
+      ).unwrap();
     } finally {
       setSaveLoading(false);
     }
   };
+
 
   /* ================= UI ================= */
   return (
@@ -287,7 +302,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
           <MonthDropdown
             id="month_id"
-            name="month_id" 
+            name="month_id"
             className="h-[2.3rem] bg-transparent ml-2 mr-2"
             onChange={handleOnMonthChange}
           />
