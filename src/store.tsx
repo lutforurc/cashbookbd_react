@@ -50,6 +50,7 @@ import bankReceivedReducer from './components/modules/transactions/bankreceived/
 import realEstateArea from './components/modules/real-estate/area/areaSlice';
 import voucherSettings from './components/modules/vr_settings/voucherSettingsSlice';
 import historySlice from './components/modules/history/historySlice';
+import salarySlice from './components/modules/hrms/salary/salarySlice';
 
 const store = configureStore({
   reducer: {
@@ -104,6 +105,7 @@ const store = configureStore({
     realEstateArea: realEstateArea,
     voucherSettings: voucherSettings,
     history: historySlice,
+  salary: salarySlice,
   },
 });
 
