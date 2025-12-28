@@ -112,14 +112,14 @@ const SalarySheetGenerate = ({ user }: any) => {
             buttonLoading={false}
             label="Save Salary"
             icon={<FiSave />}
-            className="whitespace-nowrap"
+            className="whitespace-nowrap p-2"
           />
           <ButtonLoading
             onClick={() => window.print()}
             buttonLoading={false}
             label="Print"
             icon={<FiPrinter />}
-            className="whitespace-nowrap"
+            className="whitespace-nowrap p-2"
           />
         </div>
       </div>
@@ -172,7 +172,7 @@ const SalarySheetGenerate = ({ user }: any) => {
                         e.target.value
                       )
                     }
-                    className="w-full text-right border rounded px-2 py-1"
+                    className="w-full text-right border rounded px-2 py-1 text-black-2"
                   />
                 </td>
 
