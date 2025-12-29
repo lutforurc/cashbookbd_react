@@ -12,7 +12,6 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import Table from "../../../utils/others/Table";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { employeeGroup } from "../../../utils/fields/DataConstant";
-import LoaderDots from "../../../utils/LoaderDots";
 import MonthDropdown from "../../../utils/components/MonthDropdown";
 import { toast } from 'react-toastify';
 
@@ -73,17 +72,13 @@ const SalarySheetGenerate = ({ user }: any) => {
 
     setEmployees([]);
 
-    dispatch(
-      salaryView({
-        branch_id: branchId,
-        group_id: Number(groupId),
-        month_id: monthId,
-      })
-    );
+    const response = dispatch(salaryView({branch_id: branchId, group_id: Number(groupId),month_id: monthId}));
+
     setTimeout(() => {
       setSearchLoading(false);
     }, 500);
   };
+
 
 
   /* ================= MAP API DATA ================= */
@@ -192,7 +187,7 @@ const SalarySheetGenerate = ({ user }: any) => {
     },
     {
       key: "others_allowance",
-      header: "Allowance",
+      header: "Mobile Bill",
       headerClass: "text-right w-24",
       cellClass: "text-right",
       render: (row: SalaryRow) => (
