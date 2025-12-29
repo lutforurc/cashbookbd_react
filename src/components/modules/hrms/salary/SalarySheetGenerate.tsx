@@ -14,6 +14,7 @@ import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { employeeGroup } from "../../../utils/fields/DataConstant";
 import LoaderDots from "../../../utils/LoaderDots";
 import MonthDropdown from "../../../utils/components/MonthDropdown";
+import { toast } from 'react-toastify';
 
 /* ================= TYPES ================= */
 interface SalaryRow {
@@ -63,8 +64,11 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   /* ================= FETCH DATA ================= */
   const handleSearchButton = () => {
-    // if (!branchId) return;
-    setSearched(true); // ✅ important
+    if (!monthId){
+      toast.info("Please select month");
+      return;
+    };
+    setSearched(true); 
     setSearchLoading(true);
 
     setEmployees([]);
@@ -341,6 +345,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         </div>
 
         <div className="flex gap-2">
+        { branchId && 
           <ButtonLoading
             onClick={handleSalaryGenerate}
             buttonLoading={saveLoading}
@@ -349,10 +354,12 @@ const SalarySheetGenerate = ({ user }: any) => {
             icon={<FiSave className="mr-2" />}
             className="whitespace-nowrap p-2"
           />
+        }
           <ButtonLoading
             onClick={() => window.print()}
             label="Print"
             icon={<FiPrinter className="mr-2" />}
+             className="whitespace-nowrap p-2"
           />
         </div>
       </div>
