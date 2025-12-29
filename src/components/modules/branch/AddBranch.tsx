@@ -11,7 +11,7 @@ import {
   status,
 } from '../../utils/fields/DataConstant';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import { FiHome, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { FiArrowLeft, FiHome, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams } from 'react-router-dom';
 import Checkbox from '../../utils/fields/Checkbox';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
@@ -398,9 +398,8 @@ const AddBranch = () => {
               icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
             />
             <Link to="/branch/branch-list" className="text-nowrap justify-center mr-0 P-2">
-                {<FiHome className="text-white text-lg ml-2 mr-2 h-5" />}
-                <span className="">{'Back'}</span>
-              </Link>
+              <FiArrowLeft className="mr-2" /> Back
+            </Link>
           </div>
         </>
       </>

@@ -6,6 +6,7 @@ import {
   FiActivity,
   FiBarChart2,
   FiBook,
+  FiClipboard,
   FiGrid,
   FiHome,
   FiLayers,
@@ -1018,7 +1019,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           : setSidebarExpanded(true);
                       }}
                     >
-                      <FaGear />
+                      <FiLayers />
                       VR Settings
                     </NavLink>
                     <div
@@ -1095,7 +1096,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* VR Settings */}
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === '/vr-settings/voucher-delete' ||
                   pathname === '/admin/voucher/date-change' ||
                   pathname.includes('forms')
                 }
@@ -1111,9 +1111,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
                         pathname === '/hrms/employee/add' ||
                         pathname === '/hrms/employees' ||
-                        pathname === '/admin/voucher/date-change' ||
-                        pathname === '/vr-settings/recyclebin' ||
-                         pathname.includes('/vr-settings/voucher-delete')
+                        pathname === '/hrms/salary/salary-generate' || 
+                         pathname.includes('/hrms/employee/add')
                         ) &&
                         'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}
@@ -1124,7 +1123,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           : setSidebarExpanded(true);
                       }}
                     >
-                      <FaGear />
+                      <FiClipboard />
                       HRM
                     </NavLink>
                     <div

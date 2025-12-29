@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiSave, FiPrinter } from "react-icons/fi";
+import { FiSave, FiPrinter, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
@@ -27,13 +27,6 @@ interface SalaryRow {
   net_deduction: number;
 }
 
-interface SalaryGenerateRequest {
-  branch_id: string | number;
-  group_id?: number;
-  month_id: string;
-  employees: SalaryRow[]; // 👈 এটা লাগবেই
-}
-
 
 
 /* ================= COMPONENT ================= */
@@ -43,8 +36,10 @@ const SalarySheetGenerate = ({ user }: any) => {
   const { salaryEmployees, loading, error } = useSelector(
     (state: any) => state.salary
   );
+
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
+  const salary = useSelector((state: any) => state.salary);
 
   const [employees, setEmployees] = useState<SalaryRow[]>([]);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
@@ -62,22 +57,41 @@ const SalarySheetGenerate = ({ user }: any) => {
   }, [dispatch]);
 
   /* ================= FETCH DATA ================= */
-  const handleSearchButton = () => {
-    if (!monthId){
+  const handleSearchButton = async () => {
+    if (!monthId) {
       toast.info("Please select month");
       return;
-    };
-    setSearched(true); 
-    setSearchLoading(true);
+    }
 
+    setSearched(true);
+    setSearchLoading(true);
     setEmployees([]);
 
-    const response = dispatch(salaryView({branch_id: branchId, group_id: Number(groupId),month_id: monthId}));
+    try {
+      const response = await dispatch(
+        salaryView({
+          branch_id: branchId,
+          group_id: Number(groupId),
+          month_id: monthId,
+        })
+      ).unwrap();
 
-    setTimeout(() => {
+      const list = response?.data?.data ?? [];
+
+      setEmployees(list);
+
+      if (list.length > 0) {
+        toast.success(response.message || "Salary data fetched successfully");
+      } else {
+        toast.info("No salary data found");
+      }
+    } catch (error: any) {
+      toast.info(error);
+    } finally {
       setSearchLoading(false);
-    }, 500);
+    }
   };
+
 
 
 
@@ -126,7 +140,7 @@ const SalarySheetGenerate = ({ user }: any) => {
   /* ================= CALCULATIONS ================= */
   const totalSalary = (emp: SalaryRow) => emp.basic_salary + emp.others_allowance;
 
-  const netSalary = (emp: SalaryRow) => totalSalary(emp) - (emp.loan_deduction + emp.net_deduction);
+  const netSalary = (emp: SalaryRow) => totalSalary(emp) - (emp.loan_deduction );
 
   const grandTotals = useMemo(() => {
     return employees.reduce((acc, emp) => {
@@ -211,7 +225,7 @@ const SalarySheetGenerate = ({ user }: any) => {
     },
     {
       key: "loan_deduction",
-      header: "Loan",
+      header: "Loan Ded.",
       headerClass: "text-right w-24",
       cellClass: "text-right",
       render: (row: SalaryRow) => (
@@ -226,22 +240,6 @@ const SalarySheetGenerate = ({ user }: any) => {
       ),
     },
     {
-      key: "net_deduction",
-      header: "Other Ded.",
-      headerClass: "text-right w-24",
-      cellClass: "text-right w-24",
-      render: (row: SalaryRow) => (
-        <InputElement
-          type="number"
-          value={row.net_deduction}
-          className="text-right w-24 !md:w-20"
-          onChange={(e) =>
-            handleInputChange(row.id, "net_deduction", e.target.value)
-          }
-        />
-      ),
-    },
-    {
       key: "net_salary",
       header: "Net Salary",
       headerClass: "text-right w-28",
@@ -249,6 +247,22 @@ const SalarySheetGenerate = ({ user }: any) => {
       render: (row: SalaryRow) =>
         thousandSeparator(netSalary(row), 0),
     },
+    {
+      key: "actions",
+      header: "Action",
+      headerClass: "text-center max-w-10",
+      cellClass: "text-center",
+      render: (row: SalaryRow) => (
+        <button
+          onClick={() => {
+            setEmployees((prev) => prev.filter((emp) => emp.id !== row.id));
+          }}
+          className="text-red-600 hover:text-red-800"
+        >
+          <FiTrash2 className="block w-4 h-4" />
+        </button>
+      ),
+    }
   ];
 
   // ✅ keep your dropdown handler (same behavior)
@@ -340,21 +354,21 @@ const SalarySheetGenerate = ({ user }: any) => {
         </div>
 
         <div className="flex gap-2">
-        { branchId && 
-          <ButtonLoading
-            onClick={handleSalaryGenerate}
-            buttonLoading={saveLoading}
-            disabled={saveLoading}
-            label="Generate Salary"
-            icon={<FiSave className="mr-2" />}
-            className="whitespace-nowrap p-2"
-          />
-        }
+          {branchId &&
+            <ButtonLoading
+              onClick={handleSalaryGenerate}
+              buttonLoading={saveLoading}
+              disabled={saveLoading}
+              label="Generate Salary"
+              icon={<FiSave className="mr-2" />}
+              className="whitespace-nowrap p-2"
+            />
+          }
           <ButtonLoading
             onClick={() => window.print()}
             label="Print"
             icon={<FiPrinter className="mr-2" />}
-             className="whitespace-nowrap p-2"
+            className="whitespace-nowrap p-2"
           />
         </div>
       </div>

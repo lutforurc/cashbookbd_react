@@ -69,22 +69,35 @@ const initialState: SalaryState = {
 
 /* ================= ASYNC THUNK ================= */
 
-export const salaryView = createAsyncThunk<SalaryEmployee[], SalaryViewRequest, { rejectValue: string }>("salary/salaryView", async (payload, { rejectWithValue }) => {
-  try {
-    const res = await httpService.post(API_SALARY_VIEW_URL, payload);
-    if (res.data?.success === true) {
-      return res.data.data;
-    }
+export const salaryView = createAsyncThunk<
+  {
+    success: boolean;
+    message: string;
+    data: {
+      data: SalaryEmployee[];
+    };
+  },
+  SalaryViewRequest,
+  { rejectValue: string }
+>(
+  "salary/salaryView",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await httpService.post(API_SALARY_VIEW_URL, payload);
 
-    return rejectWithValue(res.data?.message || "No salary data found");
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-      error.message ||
-      "Failed to fetch salary data"
-    );
+      if (res.data?.success === true) {
+        return res.data; // ✅ object return
+      }
+
+      return rejectWithValue(res.data?.message || "No salary data found");
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to fetch salary data"
+      );
+    }
   }
-}
 );
 
 export const salaryGenerate = createAsyncThunk<

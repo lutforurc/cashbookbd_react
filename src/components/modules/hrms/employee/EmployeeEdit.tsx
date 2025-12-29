@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Link from '../../../utils/others/Link';
-import { FiHome, FiSave } from 'react-icons/fi';
+import { FiHome, FiSave, FiArrowLeft  } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
@@ -418,8 +418,8 @@ const EmployeeEdit = ({ user }: any) => {
             className="whitespace-nowrap text-center mr-0 h-8"
             icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
           />
-          <Link to="/dashboard" className="h-8">
-            <FiHome className="mr-2" /> Home
+          <Link to="/hrms/employees" className="h-8">
+            <FiArrowLeft  className="mr-2" /> Back
           </Link>
         </div>
       </div>
