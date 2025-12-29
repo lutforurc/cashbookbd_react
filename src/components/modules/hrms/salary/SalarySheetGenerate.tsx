@@ -338,7 +338,6 @@ const SalarySheetGenerate = ({ user }: any) => {
             label="Search"
             className="whitespace-nowrap p-2 ml-2"
           />
-
         </div>
 
         <div className="flex gap-2">
@@ -346,7 +345,7 @@ const SalarySheetGenerate = ({ user }: any) => {
             onClick={handleSalaryGenerate}
             buttonLoading={saveLoading}
             disabled={saveLoading}
-            label="Save Salary"
+            label="Generate Salary"
             icon={<FiSave className="mr-2" />}
             className="whitespace-nowrap p-2"
           />
