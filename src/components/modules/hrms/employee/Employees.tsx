@@ -137,14 +137,14 @@ const Employees = ({ user }: any) => {
     )
       .unwrap()
       .then(() => {
-        dispatch(
-          fetchEmployees({
-            page,
-            per_page: perPage,
-            search,
-            branch_id: branchId,
-          })
-        );
+        // dispatch(
+        //   fetchEmployees({
+        //     page,
+        //     per_page: perPage,
+        //     search,
+        //     branch_id: branchId,
+        //   })
+        // );
       })
       .catch(console.error);
   };
@@ -223,6 +223,7 @@ const Employees = ({ user }: any) => {
       key: 'designation_name',
       header: 'Designation',
       render: (row: any) => (
+        
         <>
           <p className="">{row.designation_name}</p>
         </>
@@ -233,7 +234,29 @@ const Employees = ({ user }: any) => {
       header: 'Mobile',
       render: (row: any) => (
         <>
-          <p className="">{row.mobile}</p>
+        <InputElement
+          type="number"
+          value={row.mobile ?? ""}
+          className="text-center w-30"
+          onChange={(e) =>
+            handleInputChange(
+              row.id,
+              "mobile",
+              e.target.value
+            )
+          }
+          onBlur={() =>
+            handleInputBlur(
+              row,
+              "mobile"
+            )
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.currentTarget.blur(); // 🔥 Enter = Save
+            }
+          }}
+        />
         </>
       ),
     },
