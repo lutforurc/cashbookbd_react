@@ -2,10 +2,12 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
 import {
 
+  API_BRANCH_STATUS_URL,
   API_EMPLOYEE_DDL_LIST_URL,
   API_EMPLOYEE_EDIT_URL,
   API_EMPLOYEE_LIST_URL,
   API_EMPLOYEE_SETTINGS_URL,
+  API_EMPLOYEE_STATUS_URL,
   API_EMPLOYEE_STORE_URL,
   API_EMPLOYEE_UPDATE_URL,
 } from "../../../services/apiRoutes";
@@ -100,7 +102,7 @@ const initialState: EmployeeState = {
 
 
 /* ---------- Update Employee ---------- */
-export const updateEmployee = createAsyncThunk<{ message: string },{ id: number; data: any },{ rejectValue: string }>("employee/updateEmployee",
+export const updateEmployee = createAsyncThunk<{ message: string }, { id: number; data: any }, { rejectValue: string }>("employee/updateEmployee",
   async ({ id, data }, thunkAPI) => {
     try {
       const response = await httpService.post(
@@ -146,6 +148,36 @@ export const fetchEmployees = createAsyncThunk<
         error.response?.data?.message ||
         error.message ||
         "Failed to fetch employees"
+      );
+    }
+  }
+);
+
+
+interface EmployeeStatusParams {
+  id: number;
+  enabled: number; // or boolean, depending on backend
+}
+
+interface EmployeeStatusResponse {
+  success: boolean;
+  data: any;
+}
+
+
+export const employeeStatus = createAsyncThunk<EmployeeStatusResponse, EmployeeStatusParams, { rejectValue: string }>("employee/employeeStatus", async ({ id, enabled }, thunkAPI) => {
+    try {
+      const response = await httpService.post(API_EMPLOYEE_STATUS_URL, {
+        id,
+        status: enabled,
+      });
+
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update employee status"
       );
     }
   }
@@ -269,8 +301,19 @@ const employeeSlice = createSlice({
         state.error = action.payload || "Failed to fetch employees";
       })
 
+      .addCase(employeeStatus.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(employeeStatus.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(employeeStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? null;
+      })
 
-       /* ===== Update Employee ===== */
+
+      /* ===== Update Employee ===== */
       .addCase(updateEmployee.pending, (state) => {
         state.loading = true;
         state.error = null;

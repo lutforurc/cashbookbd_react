@@ -383,6 +383,7 @@ export const API_EMPLOYEE_SETTINGS_URL = `${API_BASE_URL}/hrms/employee/settings
 export const API_EMPLOYEE_STORE_URL = `${API_BASE_URL}/hrms/employee/store`;
 export const API_EMPLOYEE_EDIT_URL = `${API_BASE_URL}/hrms/employee/edit/`;
 export const API_EMPLOYEE_UPDATE_URL = `${API_BASE_URL}/hrms/employee/update/`;
+export const API_EMPLOYEE_STATUS_URL = `${API_BASE_URL}/hrms/employee/status`;
 
 
 // Salary Routes

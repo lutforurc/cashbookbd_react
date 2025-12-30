@@ -13,7 +13,7 @@ import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import ActionButtons from '../../../utils/fields/ActionButton';
 import { getBranch } from '../../branch/branchSlice';
-import { fetchEmployees } from './employeeSlice';
+import { employeeStatus, fetchEmployees } from './employeeSlice';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
@@ -108,12 +108,25 @@ const Employees = ({ user }: any) => {
   };
 
   const handleToggle = (row: any) => {
-    const newStatus = row.status === 1 ? 0 : 1;
+  const newStatus = row.status === 1 ? 0 : 1;
 
-    dispatch(branchStatus(row.id, newStatus)).then(() => {
-      dispatch(getBranch({ page, per_page: perPage, searchValue }));
-    });
-  };
+  console.log('====================================');
+  console.log("Status", row.status);
+  console.log('====================================');
+
+  dispatch(employeeStatus({ id: row.id, enabled: newStatus })).unwrap()
+    .then(() => {
+      // Option 1: refetch list
+      dispatch(fetchEmployees({
+        page,
+        per_page: perPage,
+        search,
+        branch_id: branchId,
+      }));
+    })
+    .catch(console.error);
+};
+
 
   useEffect(() => {
     setTableData(employees?.employees?.data?.data?.data || []);
@@ -201,9 +214,6 @@ const Employees = ({ user }: any) => {
               handleDelete={handleBranchDelete}
               showToggle={true}
               handleToggle={() => handleToggle(row)}
-
-            // showConfirmId={showConfirmId}
-            // setShowConfirmId={setShowConfirmId}
             />
           </div>
         </>
