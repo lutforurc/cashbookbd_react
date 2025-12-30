@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
@@ -6,7 +6,7 @@ import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import SearchInput from '../../../utils/fields/SearchInput';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
@@ -17,6 +17,10 @@ import { fetchEmployees } from './employeeSlice';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
+import InputElement from '../../../utils/fields/InputElement';
+import { useReactToPrint } from 'react-to-print';
+import CashBookPrint from '../../reports/cashbook/CashBookPrint';
+import EmployeePrint from './EmployeePrint';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
@@ -25,13 +29,16 @@ const Employees = ({ user }: any) => {
   const dispatch = useDispatch();
   const [search, setSearchValue] = useState('');
   const [page, setPage] = useState(0);
-  const [perPage, setPerPage] = useState(10);
+  const [perPage, setPerPage] = useState<number>(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
 
 
@@ -213,6 +220,39 @@ const Employees = ({ user }: any) => {
   };
 
 
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setPerPage(value);
+    } else {
+      setPerPage(10); // Reset if input is invalid
+    }
+  };
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+
+    if (!isNaN(value)) {
+      setFontSize(value);
+    } else {
+      setFontSize(10); // Reset if input is invalid
+    }
+  };
+
+  const handlePrint = useReactToPrint({
+
+    content: () => {
+      if (!printRef.current) {
+        // alert("Nothing to print: Ref not ready");
+        return null;
+      }
+      return printRef.current;
+    },
+    documentTitle: 'Due Report',
+    // onAfterPrint: () => alert('Printed successfully!'),
+    removeAfterPrint: true,
+  });
+
   return (
     <div>
       <HelmetTitle title={'Employee List'} />
@@ -249,9 +289,38 @@ const Employees = ({ user }: any) => {
         </div>
 
 
-        <Link to="/hrms/employee/add" className="text-nowrap">
-          New Employee
-        </Link>
+        <div className='flex'>
+          <div className="mr-2">
+            <InputElement
+              id="perPage"
+              name="perPage"
+              // label="Rows"
+              value={perPage.toString()}
+              onChange={handlePerPageChange}
+              type='text'
+              className="font-medium text-sm h-9 w-12"
+            />
+          </div>
+          <div className="mr-2">
+            <InputElement
+              id="fontSize"
+              name="fontSize"
+              // label="Font"
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type='text'
+              className="font-medium text-sm h-9 w-12"
+            />
+          </div>
+          <PrintButton
+            onClick={handlePrint}
+            label="Print"
+            className="ml-2 mr-2"
+          />
+          <Link to="/hrms/employee/add" className="text-nowrap">
+            New Employee
+          </Link>
+        </div>
       </div>
 
       <div className="relative overflow-x-auto">
@@ -269,6 +338,17 @@ const Employees = ({ user }: any) => {
         ) : (
           ''
         )}
+
+        {/* === Hidden Print Component === */}
+        <div className="hidden">
+          <EmployeePrint
+            ref={printRef}
+            rows={tableData}
+            rowsPerPage={perPage}
+            fontSize={fontSize}
+            branchName={dropdownData?.find(b => b.id == branchId)?.name}
+          />
+        </div>
       </div>
     </div>
   );

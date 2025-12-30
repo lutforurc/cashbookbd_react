@@ -350,7 +350,7 @@ const CashBook = (user: any) => {
         <div className="hidden">
           <CashBookPrint
             ref={printRef}
-            rows={tableData || []} // আপনার data
+            rows={tableData || []} 
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Cash Book"

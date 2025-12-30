@@ -1,7 +1,6 @@
 import React from 'react';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import { formatBdShortDate, formatLongDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type Somity = {
