@@ -11,7 +11,7 @@ export const isPayable = [
 export const employeeGroup = [
   { id: "", name: 'Select All' },
   { id: 1, name: 'Owners Group' },
-  { id: 2, name: 'Engines Group' },
+  { id: 2, name: 'Engineers Group' },
   { id: 3, name: 'Officer Group' },
   { id: 4, name: 'Staff Group' },
   { id: 5, name: 'Labour Group' },

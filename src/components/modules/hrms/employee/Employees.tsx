@@ -16,6 +16,7 @@ import { getBranch } from '../../branch/branchSlice';
 import { fetchEmployees } from './employeeSlice';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
+import { employeeGroup } from '../../../utils/fields/DataConstant';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
@@ -35,38 +36,33 @@ const Employees = ({ user }: any) => {
 
 
 
-  console.log('====================================');
-  console.log("settings", settings?.data?.branch?.branch_types_id);
-  console.log('====================================');
-
-
-    useEffect(() => {
-      dispatch(getDdlProtectedBranch());
-      setBranchId(user?.branch_id);
-    }, []);
+  useEffect(() => {
+    dispatch(getDdlProtectedBranch());
+    setBranchId(user?.branch_id);
+  }, []);
 
   useEffect(() => {
-    dispatch(fetchEmployees({ page, per_page:perPage, search, branch_id: branchId }));
+    dispatch(fetchEmployees({ page, per_page: perPage, search, branch_id: branchId }));
     setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));
     setTableData(employees);
   }, [page, perPage, employees?.employees?.data?.data?.total, branchId]);
 
 
-useEffect(() => {
-  if (branchDdlData?.protectedData?.data)   if (branchDdlData?.protectedData?.data) {
+  useEffect(() => {
+    if (branchDdlData?.protectedData?.data) if (branchDdlData?.protectedData?.data) {
 
-    const baseData = branchDdlData.protectedData.data;
+      const baseData = branchDdlData.protectedData.data;
 
-    if (settings?.data?.branch?.branch_types_id === 1) {
-      setDropdownData([
-        { id: "", name: 'All Projects' },
-        ...baseData,
-      ]);
-    } else {
-      setDropdownData(baseData);
+      if (settings?.data?.branch?.branch_types_id === 1) {
+        setDropdownData([
+          { id: "", name: 'All Projects' },
+          ...baseData,
+        ]);
+      } else {
+        setDropdownData(baseData);
+      }
     }
-  }
-}, [branchDdlData?.protectedData?.data]);
+  }, [branchDdlData?.protectedData?.data]);
 
   const handleSearchButton = (e: any) => {
     setCurrentPage(1);
@@ -96,9 +92,9 @@ useEffect(() => {
   };
 
 
-const handleBranchEdit = (row: any) => { 
-  navigate(`/hrms/employee/edit/${row.id}`);
-};
+  const handleBranchEdit = (row: any) => {
+    navigate(`/hrms/employee/edit/${row.id}`);
+  };
 
   const handleBranchDelete = (row: any) => {
     navigate('/branch/branch-list');
@@ -116,6 +112,11 @@ const handleBranchEdit = (row: any) => {
     setTableData(employees?.employees?.data?.data?.data || []);
   }, [employees]);
 
+  const employeeGroupMap = Object.fromEntries(
+    employeeGroup
+      .filter(g => g.id !== "") // "Select All" বাদ দিন
+      .map(g => [g.id.toString(), g.name])
+  );
 
   const columns = [
     {
@@ -126,9 +127,20 @@ const handleBranchEdit = (row: any) => {
     },
     {
       key: 'employee_serial',
-      header: 'Sal. No.',
+      header: 'Sal. Sl. No.',
       headerClass: 'text-center',
       cellClass: 'text-center',
+    },
+
+    {
+      key: 'employee_group',
+      header: 'Employee Group',
+      headerClass: 'text-left',
+      cellClass: 'text-left',
+      render: (row: any) => {
+        const groupName = employeeGroupMap[row.employee_group?.toString()];
+        return <span className="font-medium">{groupName || '-'}</span>;
+      },
     },
     {
       key: 'name',
