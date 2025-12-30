@@ -125,6 +125,12 @@ const handleBranchEdit = (row: any) => {
       cellClass: 'text-center',
     },
     {
+      key: 'employee_serial',
+      header: 'Sal. No.',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+    },
+    {
       key: 'name',
       header: 'Employee Name',
       render: (row: any) => (
