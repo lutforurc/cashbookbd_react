@@ -1,6 +1,7 @@
 import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import { employeeGroup } from '../../../utils/fields/DataConstant';
 
 type EmployeeRow = {
   serial?: number | string;
@@ -29,6 +30,12 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
+const employeeGroupMap = Object.fromEntries(
+  employeeGroup
+    .filter(g => g.id !== '') // "Select All" বাদ
+    .map(g => [g.id.toString(), g.name])
+);
+
 const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
   (
     {
@@ -54,11 +61,6 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
             {/* Header */}
             <div className="mb-4 text-center">
               <h1 className="text-xl font-bold">{title}</h1>
-              {branchName && (
-                <div className="text-xs mt-1">
-                  <span className="font-semibold">Project:</span> {branchName}
-                </div>
-              )}
             </div>
 
             {/* Table */}
@@ -68,13 +70,12 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
                   <th className="border border-gray-900 p-2 w-10 text-center" style={{ fontSize: fs }}>SL</th>
                   <th className="border border-gray-900 p-2 w-20 text-center" style={{ fontSize: fs }}>Sal SL</th>
                   <th className="border border-gray-900 p-2" style={{ fontSize: fs }}>Employee Name</th>
-                  <th className="border border-gray-900 p-2" style={{ fontSize: fs }}>Group</th>
+                  <th className="border border-gray-900 p-2" style={{ fontSize: fs }}>Section</th>
                   <th className="border border-gray-900 p-2" style={{ fontSize: fs }}>Designation</th>
                   <th className="border border-gray-900 p-2 w-24" style={{ fontSize: fs }}>Mobile</th>
                   <th className="border border-gray-900 p-2" style={{ fontSize: fs }}>Project</th>
                 </tr>
               </thead>
-
               <tbody>
                 {pageRows.length ? (
                   pageRows.map((row, idx) => (
@@ -89,7 +90,8 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
                         {row.name}
                       </td>
                       <td className="border border-gray-900 p-1" style={{ fontSize: fs }}>
-                        {row.employee_group || '-'}
+                        {/* {row.employee_group || '-'} */}
+                        {employeeGroupMap[row.employee_group?.toString()] || '-'}
                       </td>
                       <td className="border border-gray-900 p-1" style={{ fontSize: fs }}>
                         {row.designation_name || '-'}
