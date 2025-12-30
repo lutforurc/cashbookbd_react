@@ -5,6 +5,7 @@ import {
   API_BRANCH_STATUS_URL,
   API_EMPLOYEE_DDL_LIST_URL,
   API_EMPLOYEE_EDIT_URL,
+  API_EMPLOYEE_FROM_UI_URL,
   API_EMPLOYEE_LIST_URL,
   API_EMPLOYEE_SETTINGS_URL,
   API_EMPLOYEE_STATUS_URL,
@@ -120,6 +121,27 @@ export const updateEmployee = createAsyncThunk<{ message: string }, { id: number
     }
   }
 );
+
+
+
+
+/* ---------- Update From UI ---------- */
+export const updateEmployeeFromUI = createAsyncThunk<{ message: string }, { id: number; data: any }, { rejectValue: string }>("employee/updateEmployeeFromUI",
+  async ({ id, data }, thunkAPI) => {
+    try {
+      const response = await httpService.post(`${API_EMPLOYEE_FROM_UI_URL}${id}`, data);
+
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update employee"
+      );
+    }
+  }
+);
+
 
 
 /* ================= THUNKS ================= */

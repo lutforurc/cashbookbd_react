@@ -13,7 +13,7 @@ import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import ActionButtons from '../../../utils/fields/ActionButton';
 import { getBranch } from '../../branch/branchSlice';
-import { employeeStatus, fetchEmployees } from './employeeSlice';
+import { employeeStatus, fetchEmployees, updateEmployee, updateEmployeeFromUI } from './employeeSlice';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
@@ -108,24 +108,46 @@ const Employees = ({ user }: any) => {
   };
 
   const handleToggle = (row: any) => {
-  const newStatus = row.status === 1 ? 0 : 1;
+    const newStatus = row.status === 1 ? 0 : 1;
 
-  console.log('====================================');
-  console.log("Status", row.status);
-  console.log('====================================');
+    dispatch(employeeStatus({ id: row.id, enabled: newStatus })).unwrap()
+      .then(() => {
+        dispatch(fetchEmployees({
+          page,
+          per_page: perPage,
+          search,
+          branch_id: branchId,
+        }));
+      })
+      .catch(console.error);
+  };
 
-  dispatch(employeeStatus({ id: row.id, enabled: newStatus })).unwrap()
-    .then(() => {
-      // Option 1: refetch list
-      dispatch(fetchEmployees({
-        page,
-        per_page: perPage,
-        search,
-        branch_id: branchId,
-      }));
-    })
-    .catch(console.error);
-};
+
+  const handleInputChange = (id: number, field: string, value: string) => {
+    setTableData(prev => prev.map(row => row.id === id ? { ...row, [field]: value } : row)
+    );
+  };
+
+  const handleInputBlur = (row: any, field: string) => {
+    dispatch(
+      updateEmployeeFromUI({
+        id: row.id,
+        data: { [field]: row[field], },
+      })
+    )
+      .unwrap()
+      .then(() => {
+        dispatch(
+          fetchEmployees({
+            page,
+            per_page: perPage,
+            search,
+            branch_id: branchId,
+          })
+        );
+      })
+      .catch(console.error);
+  };
 
 
   useEffect(() => {
@@ -150,7 +172,33 @@ const Employees = ({ user }: any) => {
       header: 'Sal. Sl. No.',
       headerClass: 'text-center',
       cellClass: 'text-center',
+      render: (row: any) => (
+        <InputElement
+          type="number"
+          value={row.employee_serial ?? ""}
+          className="text-center w-16"
+          onChange={(e) =>
+            handleInputChange(
+              row.id,
+              "employee_serial",
+              e.target.value
+            )
+          }
+          onBlur={() =>
+            handleInputBlur(
+              row,
+              "employee_serial"
+            )
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.currentTarget.blur(); // 🔥 Enter = Save
+            }
+          }}
+        />
+      ),
     },
+
 
     {
       key: 'employee_group',
