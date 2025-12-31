@@ -66,7 +66,6 @@ const EmployeeCreate = ({ user }: any) => {
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(fetchEmployeeSettings());
-    dispatch(fetchEmployeeSettings());
 
     const bId = user?.branch_id ?? user?.user?.branch_id ?? null;
 

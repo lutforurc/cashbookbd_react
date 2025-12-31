@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import SearchInput from '../../../utils/fields/SearchInput';
@@ -11,16 +9,16 @@ import Link from '../../../utils/others/Link';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
-import ActionButtons from '../../../utils/fields/ActionButton';
-import { getBranch } from '../../branch/branchSlice';
-import { employeeStatus, fetchEmployees, updateEmployee, updateEmployeeFromUI } from './employeeSlice';
+import ActionButtons from '../../../utils/fields/ActionButton'; 
+import { employeeStatus, fetchEmployees, fetchEmployeeSettings, updateEmployeeFromUI } from './employeeSlice';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
 import InputElement from '../../../utils/fields/InputElement';
-import { useReactToPrint } from 'react-to-print';
-import CashBookPrint from '../../reports/cashbook/CashBookPrint';
+import { useReactToPrint } from 'react-to-print'; 
 import EmployeePrint from './EmployeePrint';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import { toast } from 'react-toastify';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
@@ -37,6 +35,7 @@ const Employees = ({ user }: any) => {
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
+  const [designation, setDesignation] = useState<any[]>([]);
 
   const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
@@ -45,14 +44,21 @@ const Employees = ({ user }: any) => {
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
+    dispatch(fetchEmployeeSettings());
     setBranchId(user?.branch_id);
   }, []);
 
   useEffect(() => {
-    dispatch(fetchEmployees({ page, per_page: perPage, search, branch_id: branchId }));
-    setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));
-    setTableData(employees);
-  }, [page, perPage, employees?.employees?.data?.data?.total, branchId]);
+    setDesignation(employees?.employeeSettings?.data?.data?.designation || []);
+  }, [settings]);
+
+  useEffect(() => {
+    const list = employees?.employees?.data?.data?.data || [];
+    setTableData(list);
+
+    const total = employees?.employees?.data?.data?.total || 0;
+    setTotalPages(Math.ceil(total / perPage));
+  }, [employees?.employees]);
 
 
   useEffect(() => {
@@ -132,27 +138,44 @@ const Employees = ({ user }: any) => {
     dispatch(
       updateEmployeeFromUI({
         id: row.id,
-        data: { [field]: row[field], },
+        data: { [field]: row[field] },
       })
     )
       .unwrap()
-      .then(() => {
-        // dispatch(
-        //   fetchEmployees({
-        //     page,
-        //     per_page: perPage,
-        //     search,
-        //     branch_id: branchId,
-        //   })
-        // );
+      .then((res) => {
+        if (res?.message) {
+          toast.success(res.message); // ✅ SUCCESS MESSAGE
+        }
       })
-      .catch(console.error);
+      .catch((err) => {
+        toast.error(err?.message || 'Update failed');
+      });
   };
 
+  // const handleInputBlur = (row: any, field: string) => {
+  //   dispatch(
+  //     updateEmployeeFromUI({
+  //       id: row.id,
+  //       data: { [field]: row[field], },
+  //     })
+  //   ).unwrap()
+  //     .then(() => {
+  //       // dispatch(
+  //       //   fetchEmployees({
+  //       //     page,
+  //       //     per_page: perPage,
+  //       //     search,
+  //       //     branch_id: branchId,
+  //       //   })
+  //       // );
+  //     })
+  //     .catch(console.error);
+  // };
 
-  useEffect(() => {
-    setTableData(employees?.employees?.data?.data?.data || []);
-  }, [employees]);
+
+  // useEffect(() => {
+  //   setTableData(employees?.employees?.data?.data?.data || []);
+  // }, [employees]);
 
   const employeeGroupMap = Object.fromEntries(
     employeeGroup
@@ -219,44 +242,72 @@ const Employees = ({ user }: any) => {
         </>
       ),
     },
+
     {
-      key: 'designation_name',
+      key: 'designation',
       header: 'Designation',
       render: (row: any) => (
-        
-        <>
-          <p className="">{row.designation_name}</p>
-        </>
-      ),
-    },
-    {
-      key: 'mobile',
-      header: 'Mobile',
-      render: (row: any) => (
-        <>
-        <InputElement
-          type="number"
-          value={row.mobile ?? ""}
-          className="text-center w-30"
+        <DropdownCommon
+          key={row.id}
+          id={`designation-${row.id}`}
+          name="designation"
+          className="h-[2.1rem]"
+          data={designation}
+          value={row.designation?.toString() ?? ""}   // ✅ API field
           onChange={(e) =>
             handleInputChange(
               row.id,
-              "mobile",
+              "designation",       // ✅ SAME field
               e.target.value
             )
           }
           onBlur={() =>
             handleInputBlur(
               row,
-              "mobile"
+              "designation"        // ✅ SAME field
             )
           }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.currentTarget.blur(); // 🔥 Enter = Save
-            }
-          }}
         />
+      ),
+    },
+    // {
+    //   key: 'designation_name',
+    //   header: 'Designation',
+    //   render: (row: any) => (
+
+    //     <>
+    //       <p className="">{row.designation_name}</p>
+    //     </>
+    //   ),
+    // },
+    {
+      key: 'mobile',
+      header: 'Mobile',
+      render: (row: any) => (
+        <>
+          <InputElement
+            type="number"
+            value={row.mobile ?? ""}
+            className="text-center w-30"
+            onChange={(e) =>
+              handleInputChange(
+                row.id,
+                "mobile",
+                e.target.value
+              )
+            }
+            onBlur={() =>
+              handleInputBlur(
+                row,
+                "mobile"
+              )
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.currentTarget.blur(); // 🔥 Enter = Save
+              }
+            }}
+          />
         </>
       ),
     },

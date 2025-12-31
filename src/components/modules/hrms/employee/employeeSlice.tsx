@@ -130,7 +130,6 @@ export const updateEmployeeFromUI = createAsyncThunk<{ message: string }, { id: 
   async ({ id, data }, thunkAPI) => {
     try {
       const response = await httpService.post(`${API_EMPLOYEE_FROM_UI_URL}${id}`, data);
-
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
