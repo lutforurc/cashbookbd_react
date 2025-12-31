@@ -223,15 +223,44 @@ const Employees = ({ user }: any) => {
     },
 
 
+    // {
+    //   key: 'employee_group',
+    //   header: 'Employee Group',
+    //   headerClass: 'text-left',
+    //   cellClass: 'text-left',
+    //   render: (row: any) => {
+    //     const groupName = employeeGroupMap[row.employee_group?.toString()];
+    //     return <span className="font-medium">{groupName || '-'}</span>;
+    //   },
+    // },
+
+    
     {
       key: 'employee_group',
       header: 'Employee Group',
-      headerClass: 'text-left',
-      cellClass: 'text-left',
-      render: (row: any) => {
-        const groupName = employeeGroupMap[row.employee_group?.toString()];
-        return <span className="font-medium">{groupName || '-'}</span>;
-      },
+      render: (row: any) => (
+        <DropdownCommon
+          key={row.id}
+          id={`employee_group-${row.id}`}
+          name="employee_group"
+          className="h-[2.1rem]"
+          data={employeeGroup}
+          value={row.employee_group?.toString() ?? ""}   // ✅ API field
+          onChange={(e) =>
+            handleInputChange(
+              row.id,
+              "employee_group",       // ✅ SAME field
+              e.target.value
+            )
+          }
+          onBlur={() =>
+            handleInputBlur(
+              row,
+              "employee_group"        // ✅ SAME field
+            )
+          }
+        />
+      ),
     },
     {
       key: 'name',
@@ -242,6 +271,7 @@ const Employees = ({ user }: any) => {
         </>
       ),
     },
+
 
     {
       key: 'designation',

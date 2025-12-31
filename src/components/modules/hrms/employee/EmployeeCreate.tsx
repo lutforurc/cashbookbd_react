@@ -394,9 +394,12 @@ const EmployeeCreate = ({ user }: any) => {
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
             defaultValue={formData?.employee_group?.toString() ?? ''}
-            data={employeeGroup}
+            data={[
+              { id: '', name: 'Select Employee Group' },
+              ...employeeGroup
+            ]}
           />
-
+  
           <DropdownCommon
             id="status"
             name="status"
