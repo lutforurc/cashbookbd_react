@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
-import { employeeStatus, fetchEmployees, fetchEmployeeSettings, updateEmployeeFromUI } from "../employee/employeeSlice";
+import { employeeStatus, fetchEmployees, fetchEmployeeSettings, fetchSalarySheet, updateEmployeeFromUI } from "../employee/employeeSlice";
 import { toast } from "react-toastify";
 import InputElement from "../../../utils/fields/InputElement";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
@@ -83,7 +83,7 @@ const [yearId, setYearId] = useState<string>("");
   const handleSearchButton = (e: any) => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(fetchEmployees({ page, per_page: perPage, search, branch_id: branchId }));
+    dispatch(fetchSalarySheet({ page, per_page: perPage, search, branch_id: branchId }));
 
     if (employees?.data?.total >= 0) {
       setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));

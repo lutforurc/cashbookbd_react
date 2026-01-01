@@ -11,6 +11,7 @@ import {
   API_EMPLOYEE_STATUS_URL,
   API_EMPLOYEE_STORE_URL,
   API_EMPLOYEE_UPDATE_URL,
+  API_SALARY_SHEET_URL,
 } from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
@@ -83,6 +84,7 @@ export interface EmployeeDDLRequest {
 interface EmployeeState {
   employees: EmployeeListResponse | null;
   employee: any;
+  salary: any;
   employeeDDL: EmployeeDDL[];
   employeeSettings: EmployeeSettingsResponse | null;
 
@@ -94,6 +96,7 @@ interface EmployeeState {
 const initialState: EmployeeState = {
   employees: null,
   employee: {},
+  salary: [],
   employeeDDL: [],
   employeeSettings: null,
   loading: false,
@@ -145,13 +148,7 @@ export const updateEmployeeFromUI = createAsyncThunk<{ message: string }, { id: 
 
 /* ================= THUNKS ================= */
 
-export const fetchEmployees = createAsyncThunk<
-  EmployeeListResponse,
-  EmployeeListParams | undefined,
-  { rejectValue: string }
->(
-  "employee/fetchEmployees",
-  async (params = {}, thunkAPI) => {
+export const fetchEmployees = createAsyncThunk<EmployeeListResponse,EmployeeListParams | undefined,{ rejectValue: string }>("employee/fetchEmployees", async (params = {}, thunkAPI) => {
     try {
       const response = await httpService.get(API_EMPLOYEE_LIST_URL, {
         params: {
@@ -162,7 +159,31 @@ export const fetchEmployees = createAsyncThunk<
           search: params.search ?? "",
         },
       });
+      return response.data as EmployeeListResponse;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to fetch employees"
+      );
+    }
+  }
+);
 
+
+
+
+export const fetchSalarySheet = createAsyncThunk<EmployeeListResponse,EmployeeListParams | undefined,{ rejectValue: string }>("employee/fetchSalarySheet", async (params = {}, thunkAPI) => {
+    try {
+      const response = await httpService.post(API_SALARY_SHEET_URL, {
+        params: {
+          page: params.page ?? 1,
+          per_page: params.per_page ?? 10,
+          branch_id: params.branch_id ?? "",
+          status: params.status ?? "",
+          search: params.search ?? "",
+        },
+      });
       return response.data as EmployeeListResponse;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -296,6 +317,7 @@ const employeeSlice = createSlice({
     clearEmployees(state) {
       state.employees = null;
       state.employee = {};
+      state.salary = {};
       state.employeeDDL = [];
       state.employeeSettings = null;
       state.loading = false;
@@ -332,6 +354,12 @@ const employeeSlice = createSlice({
         state.loading = false;
         state.error = action.payload ?? null;
       })
+
+
+      // ... বাকি সব extraReducers আগের মতোই থাকবে
+      .addCase(fetchSalarySheet.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(fetchSalarySheet.fulfilled, (state, action) => { state.loading = false; state.salary = action.payload; })
+      .addCase(fetchSalarySheet.rejected, (state, action) => { state.loading = false; state.error = action.payload || "Failed to fetch employee"; })
 
 
       /* ===== Update Employee ===== */

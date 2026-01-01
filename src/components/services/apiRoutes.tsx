@@ -390,5 +390,6 @@ export const API_EMPLOYEE_STATUS_URL = `${API_BASE_URL}/hrms/employee/status`;
 // Salary Routes
 export const API_SALARY_VIEW_URL = `${API_BASE_URL}/hrms/salary-view`;
 export const API_SALARY_GENERATE_URL = `${API_BASE_URL}/hrms/salary-generate`;
+export const API_SALARY_SHEET_URL = `${API_BASE_URL}/hrms/salary-sheet`;
 
 
