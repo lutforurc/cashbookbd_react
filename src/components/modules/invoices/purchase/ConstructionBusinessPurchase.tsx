@@ -242,7 +242,7 @@ const ConstructionBusinessPurchase = () => {
   }, [purchase.data.transaction]);
 
   const totalAmount = formData.products.reduce(
-    (sum, row) => sum + Number(row.qty) * Number(row.price),
+    (sum, row) =>  sum + Number(row.qty) * Number(row.price),
     0,
   );
 
@@ -519,46 +519,44 @@ const ConstructionBusinessPurchase = () => {
     setPurchaseType(e.target.value);
   };
 
-  useEffect(() => {
-    if (formData.account == '17') {
-      setFormData((prevState) => ({
-        ...prevState,
-        paymentAmt:
-          totalAmount > 0
-            ? (totalAmount - prevState.discountAmt).toString()
-            : '0',
-      }));
-    } else {
-      setFormData((prevState) => ({
-        ...prevState,
-        paymentAmt: '',
-      }));
-    }
-  }, [formData.account]);
+  // useEffect(() => {
+  //   if (formData.account == '17') {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       paymentAmt:
+  //         totalAmount > 0
+  //           ? (totalAmount - prevState.discountAmt).toString()
+  //           : '0',
+  //     }));
+  //   } else {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       paymentAmt: '',
+  //     }));
+  //   }
+  // }, [formData.account]);
 
   useEffect(() => {
-    // Calculate total from products
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty?.toString() || '0') || 0;
-      const price = parseFloat(product.price?.toString() || '0') || 0;
-      return acc + qty * price;
-    }, 0);
+  const total = formData.products.reduce((acc, product) => {
+    const qty = parseFloat(product.qty?.toString() || '0') || 0;
+    const price = parseFloat(product.price?.toString() || '0') || 0;
+    return acc + qty * price;
+  }, 0);
 
-    // Parse discountAmt, default to 0 if invalid
-    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+  const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
 
-    // Calculate net total
-    let netTotal = 0;
-    if (total > 0) {
-      netTotal = total - discount;
-    }
+  let netTotal = 0;
+  if (total > 0) {
+    netTotal = Math.floor(total - discount);
+  }
 
-    // Update paymentAmt based on account condition
-    setFormData((prev) => ({
-      ...prev,
-      paymentAmt: netTotal.toString(),
-    }));
-  }, [formData.products, formData.discountAmt]);
+  setFormData((prev) => ({
+    ...prev,
+    paymentAmt: netTotal.toString(),
+  }));
+
+  setLineTotal(netTotal); // ✅ Total Tk. এখান থেকেই আসবে
+}, [formData.products, formData.discountAmt]);
 
   useCtrlS(handlePurchaseInvoiceSave);
 
@@ -686,7 +684,7 @@ const ConstructionBusinessPurchase = () => {
               <div className="grid grid-cols-1 md:gap-x-1 -mb-1">
                 <span>Total Tk. </span>
                 <span className="text-xs font-bold dark:text-white">
-                  {thousandSeparator(totalAmount, 0)}
+                  {thousandSeparator( Math.floor(totalAmount), 0)}
                 </span>
               </div>
               {/* {hasPermission(permissions, 'purchase.edit') && (
