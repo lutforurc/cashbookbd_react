@@ -9,13 +9,13 @@ import Link from '../../../utils/others/Link';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
-import ActionButtons from '../../../utils/fields/ActionButton'; 
+import ActionButtons from '../../../utils/fields/ActionButton';
 import { employeeStatus, fetchEmployees, fetchEmployeeSettings, updateEmployeeFromUI } from './employeeSlice';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
 import InputElement from '../../../utils/fields/InputElement';
-import { useReactToPrint } from 'react-to-print'; 
+import { useReactToPrint } from 'react-to-print';
 import EmployeePrint from './EmployeePrint';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { toast } from 'react-toastify';
@@ -48,9 +48,24 @@ const Employees = ({ user }: any) => {
     setBranchId(user?.branch_id);
   }, []);
 
+  //   useEffect(() => {
+  //   if (
+  //     employees?.employeeSettings?.data?.data?.designation?.length > 0 &&
+  //     branchId
+  //   ) {
+  //     dispatch(fetchEmployees({
+  //       page: 1,
+  //       per_page: perPage,
+  //       search,
+  //       branch_id: branchId,
+  //     }));
+  //   }
+  // }, [employees?.employeeSettings, branchId]);
+
   useEffect(() => {
-    setDesignation(employees?.employeeSettings?.data?.data?.designation || []);
-  }, [settings]);
+    const list = employees?.employeeSettings?.data?.data?.designation || [];
+    setDesignation(list);
+  }, [employees?.employeeSettings]);
 
   useEffect(() => {
     const list = employees?.employees?.data?.data?.data || [];
@@ -96,12 +111,18 @@ const Employees = ({ user }: any) => {
     setTableData(employees?.employees?.data?.data?.data || []);
   };
 
-  const handlePageChange = (page: any) => {
-    setPerPage(perPage);
-    setPage(page);
-    setCurrentPage(page);
-    setTotalPages(Math.ceil(employees?.employees?.data?.data?.last_page));
-    setTableData(employees?.employees?.data?.data?.data || []);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    setCurrentPage(newPage);
+
+    dispatch(
+      fetchEmployees({
+        page: newPage,              // 🔥 IMPORTANT
+        per_page: perPage,
+        search,
+        branch_id: branchId,
+      })
+    );
   };
 
 
@@ -222,19 +243,6 @@ const Employees = ({ user }: any) => {
       ),
     },
 
-
-    // {
-    //   key: 'employee_group',
-    //   header: 'Employee Group',
-    //   headerClass: 'text-left',
-    //   cellClass: 'text-left',
-    //   render: (row: any) => {
-    //     const groupName = employeeGroupMap[row.employee_group?.toString()];
-    //     return <span className="font-medium">{groupName || '-'}</span>;
-    //   },
-    // },
-
-    
     {
       key: 'employee_group',
       header: 'Employee Group',
@@ -276,40 +284,33 @@ const Employees = ({ user }: any) => {
     {
       key: 'designation',
       header: 'Designation',
-      render: (row: any) => (
-        <DropdownCommon
-          key={row.id}
-          id={`designation-${row.id}`}
-          name="designation"
-          className="h-[2.1rem]"
-          data={designation}
-          value={row.designation?.toString() ?? ""}   // ✅ API field
-          onChange={(e) =>
-            handleInputChange(
-              row.id,
-              "designation",       // ✅ SAME field
-              e.target.value
-            )
-          }
-          onBlur={() =>
-            handleInputBlur(
-              row,
-              "designation"        // ✅ SAME field
-            )
-          }
-        />
-      ),
+      render: (row: any) =>
+        designation.length > 0 ? (
+          <DropdownCommon
+            key={row.id}
+            id={`designation-${row.id}`}
+            name="designation"
+            className="h-[2.1rem]"
+            data={designation}
+            value={row.designation?.toString() ?? ""}
+            onChange={(e) =>
+              handleInputChange(
+                row.id,
+                "designation",
+                e.target.value
+              )
+            }
+            onBlur={() =>
+              handleInputBlur(
+                row,
+                "designation"
+              )
+            }
+          />
+        ) : (
+          <span className="text-gray-400">Loading...</span>
+        ),
     },
-    // {
-    //   key: 'designation_name',
-    //   header: 'Designation',
-    //   render: (row: any) => (
-
-    //     <>
-    //       <p className="">{row.designation_name}</p>
-    //     </>
-    //   ),
-    // },
     {
       key: 'mobile',
       header: 'Mobile',

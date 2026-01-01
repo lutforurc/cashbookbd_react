@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Link from '../../../utils/others/Link';
-import { FiHome, FiSave, FiArrowLeft  } from 'react-icons/fi';
+import { FiHome, FiSave, FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
@@ -98,7 +98,7 @@ const EmployeeEdit = ({ user }: any) => {
       designation: emp.designation,
       qualification: emp.qualification,
       status: String(emp.status),
-      sex: emp.sex,
+      sex: emp.sex?.id?.toString() ?? '',
       basic_salary: emp.basic_salary,
       house_rent: emp.house_rent,
       medical: emp.medical_allowance,
@@ -192,7 +192,7 @@ const EmployeeEdit = ({ user }: any) => {
     <>
       <HelmetTitle title="Employee Edit" />
       {employeeState.loading && (
-          <Loader />
+        <Loader />
       )}
       <div className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -336,13 +336,22 @@ const EmployeeEdit = ({ user }: any) => {
             value={formData.others_deduction}
             onChange={handleChange}
           />
-          <DropdownCommon
+          {/* <DropdownCommon
             id="designation"
             name="designation"
             label="Select Designation"
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
             defaultValue={formData?.designation?.toString() ?? ''}
+            data={designation}
+          /> */}
+          <DropdownCommon
+            id="designation"
+            name="designation"
+            label="Select Designation"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            value={formData.designation?.toString() ?? ''}
             data={designation}
           />
 
@@ -360,16 +369,27 @@ const EmployeeEdit = ({ user }: any) => {
               />
             </div>
           </div>
+
           <DropdownCommon
             id="sex"
             name="sex"
-            label="Gender"
+            label="Select Sex"
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
-            value={formData.sex}
+            value={formData.sex?.toString() ?? ''}
             data={sex}
           />
+
           <DropdownCommon
+            id="salary_payable"
+            name="salary_payable"
+            label="Is Payable?"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            value={formData.salary_payable?.toString() ?? ''}
+            data={isPayable}
+          />
+          {/* <DropdownCommon
             id="salary_payable"
             name="salary_payable"
             label="Is Payable?"
@@ -377,9 +397,18 @@ const EmployeeEdit = ({ user }: any) => {
             className="h-[2.1rem] bg-transparent"
             defaultValue={formData?.salary_payable?.toString() ?? ''}
             data={isPayable}
+          /> */}
+          <DropdownCommon
+            id="employee_group"
+            name="employee_group"
+            label="Employee Group"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            value={formData.employee_group?.toString() ?? ''}
+            data={employeeGroup}
           />
 
-          <DropdownCommon
+          {/* <DropdownCommon
             id="employee_group"
             name="employee_group"
             label="Employee Group"
@@ -387,7 +416,7 @@ const EmployeeEdit = ({ user }: any) => {
             className="h-[2.1rem] bg-transparent"
             defaultValue={formData?.employee_group?.toString() ?? ''}
             data={employeeGroup}
-          />
+          /> */}
 
           <DropdownCommon
             id="status"
@@ -395,9 +424,18 @@ const EmployeeEdit = ({ user }: any) => {
             label="Status"
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.status !== null ? String(formData.status) : ''}
+            value={formData.status?.toString() ?? ''}
             data={status}
           />
+          {/* <DropdownCommon
+            id="status"
+            name="status"
+            label="Status"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            defaultValue={formData?.status !== null ? String(formData.status) : ''}
+            data={status}
+          /> */}
           <InputElement
             id="employee_serial"
             label="Salary Sheet Serial Number"
@@ -419,7 +457,7 @@ const EmployeeEdit = ({ user }: any) => {
             icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
           />
           <Link to="/hrms/employees" className="h-8">
-            <FiArrowLeft  className="mr-2" /> Back
+            <FiArrowLeft className="mr-2" /> Back
           </Link>
         </div>
       </div>
