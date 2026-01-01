@@ -4,7 +4,8 @@ interface SelectOptionProps {
   id?: string;
   name: string;
   label?: string;
-  value: string; // 🔥 controlled value
+  value?: string; // 🔥 controlled value
+  defaultValue?: string;
   onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   onBlur?: (event: React.FocusEvent<HTMLSelectElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLSelectElement>) => void;
@@ -17,6 +18,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
   name,
   label,
   value,
+  defaultValue,
   onChange,
   onBlur,
   onKeyDown,
@@ -38,6 +40,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
         id={id}
         name={name}
         value={value}                 // ✅ parent controls value
+        defaultValue={defaultValue}
         onChange={onChange}
         onBlur={onBlur}
         onKeyDown={onKeyDown}

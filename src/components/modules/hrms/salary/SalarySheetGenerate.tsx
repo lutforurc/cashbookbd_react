@@ -39,7 +39,6 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
-  const salary = useSelector((state: any) => state.salary);
 
   const [employees, setEmployees] = useState<SalaryRow[]>([]);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
@@ -140,7 +139,7 @@ const SalarySheetGenerate = ({ user }: any) => {
   /* ================= CALCULATIONS ================= */
   const totalSalary = (emp: SalaryRow) => emp.basic_salary + emp.others_allowance;
 
-  const netSalary = (emp: SalaryRow) => totalSalary(emp) - (emp.loan_deduction );
+  const netSalary = (emp: SalaryRow) => totalSalary(emp) - (emp.loan_deduction);
 
   const grandTotals = useMemo(() => {
     return employees.reduce((acc, emp) => {
@@ -280,14 +279,24 @@ const SalarySheetGenerate = ({ user }: any) => {
 
     setSaveLoading(true);
     try {
-      await dispatch(
+      const response = await dispatch(
         salaryGenerate({
           branch_id: branchId,
           group_id: Number(groupId),
           month_id: monthId,
-          employees: employees, // 👈 এটিই মূল জিনিস
+          employees: employees,
         })
       ).unwrap();
+
+      if (response.success) {
+        toast.success(response.message || "Salary generated successfully");
+        setEmployees([]);
+        setSearched(false);
+      } else {
+        toast.error(response.message || "Something went wrong");
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to generate salary");
     } finally {
       setSaveLoading(false);
     }
@@ -328,6 +337,7 @@ const SalarySheetGenerate = ({ user }: any) => {
             branchDdl={dropdownData}
           />
           <DropdownCommon
+            value=""
             id="employee_group"
             name="employee_group"
             onChange={handleOnSelectChange}

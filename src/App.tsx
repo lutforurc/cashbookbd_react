@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import SignIn from './pages/Authentication/SignIn'; 
-import Calendar from './pages/Calendar'; 
+import SignIn from './pages/Authentication/SignIn';
+import Calendar from './pages/Calendar';
 import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
-import Profile from './pages/Profile';  
+import Profile from './pages/Profile';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
-import DefaultLayout from './layout/DefaultLayout'; 
+import DefaultLayout from './layout/DefaultLayout';
 import { authCheck } from './features/authReducer';
 import Dashboard from './components/modules/dashboard/ConstructionDashboard';
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,7 +19,7 @@ import DateWiseData from './components/modules/reports/datewisedata/DateWiseData
 import AddProduct from './components/modules/product/AddProduct';
 import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
-import EditCategory from './components/modules/category/EditCategory'; 
+import EditCategory from './components/modules/category/EditCategory';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import Ledger from './components/modules/reports/ledger/Ledger';
 import CoaL4 from './components/modules/chartofaccounts/levelfour/CoaL4';
@@ -48,7 +48,7 @@ import VoucherApproval from './components/modules/voucher_approval/VoucherApprov
 import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
 import CashReceivedIndex from './components/modules/transactions/cashreceived/CashReceivedIndex';
-import CashPaymentIndex from './components/modules/transactions/cashpayment/CashPaymentIndex'; 
+import CashPaymentIndex from './components/modules/transactions/cashpayment/CashPaymentIndex';
 import ChangeVoucherType from './components/modules/change_voucher_type/ChangeVoucherType';
 import CustomerSupplier from './components/modules/customer-supplier/CustomerSupplier';
 import MultipleImageUpload from './components/modules/image-upload/MultipleImageUpload';
@@ -72,18 +72,19 @@ import RequisitionForm from './components/modules/Requisition/RequisitionForm';
 import VoucherDelete from './components/modules/vr_settings/VoucherDelete';
 import Comparison from './components/modules/Requisition/Comparison';
 import RequisitionList from './components/modules/Requisition/Requisitions';
-import Requisitions from './components/modules/Requisition/Requisitions';  
+import Requisitions from './components/modules/Requisition/Requisitions';
 import AreaAdd from './components/modules/real-estate/area/AreaAdd';
 import AreaList from './components/modules/real-estate/area/AreaList';
-import DashboardIndex from './components/modules/dashboard/DashboardIndex'; 
+import DashboardIndex from './components/modules/dashboard/DashboardIndex';
 import ItemChart from './components/modules/charts/item-char/ItemChart';
 import InstallmentDelete from './components/modules/vr_settings/InstallmentDelete';
 import Recyclebin from './components/modules/vr_settings/Recyclebin';
-import ChangeHistory from './components/modules/history/ChangeHistory'; 
+import ChangeHistory from './components/modules/history/ChangeHistory';
 import EmployeeCreate from './components/modules/hrms/employee/EmployeeCreate';
 import Employees from './components/modules/hrms/employee/Employees';
 import EmployeeEdit from './components/modules/hrms/employee/EmployeeEdit';
 import SalarySheetGenerate from './components/modules/hrms/salary/SalarySheetGenerate';
+import SalarySheet from './components/modules/hrms/salary/SalarySheet';
 
 
 
@@ -106,7 +107,7 @@ function App() {
         {/* You can show loader if needed: */}
         {/* {currentBranch.loading && <Loader />} */}
         {/* Favicon */}
-         <FaviconUpdater companyName={companyName} />
+        <FaviconUpdater companyName={companyName} />
         <Routes>
           {/* Customer Section */}
           {/* <Route path="/customer" element={<CustomerLayout isLoggedIn={isLoggedIn} isLoading={isLoading} />}> */}
@@ -189,7 +190,7 @@ function App() {
             <Route path={routes.image_upload} element={<MultipleImageUpload user={me} />} />
             <Route path={routes.bulk_upload} element={<BulkImageUpload user={me} />} />
             <Route path={routes.admin_voucher_approval} element={<VoucherApproval />} />
-         
+
 
             <Route path={routes.admin_remove_approval} element={<RemoveApproval />} />
             <Route path={routes.admin_change_voucher_type} element={<ChangeVoucherType />} />
@@ -229,13 +230,15 @@ function App() {
             <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
             <Route path={routes.hrms_employee_list} element={<Employees user={me} />} />
             <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
-            {/* <Route path={routes.hrms_employee_list} element={<EmployeeEdit user={me} />} /> */}
+            <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
 
-<Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
+ 
+
+            <Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
 
             {/* All Cart */}
-            
-          <Route path={routes.item_chart} element={<ItemChart user={me} />} />
+
+            <Route path={routes.item_chart} element={<ItemChart user={me} />} />
 
           </Route>
 
