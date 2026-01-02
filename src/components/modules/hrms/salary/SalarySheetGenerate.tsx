@@ -266,7 +266,8 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   // ✅ keep your dropdown handler (same behavior)
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setGroupId(e.target.value ? Number(e.target.value) : undefined);
+    const value = e.target.value;
+    setGroupId(value === '' ? undefined : Number(value));
   };
 
   const handleOnMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -318,6 +319,10 @@ const SalarySheetGenerate = ({ user }: any) => {
     }
   }, [branchDdlData?.protectedData?.data]);
 
+  const employeeGroupWithAll = [
+    { id: '', name: 'All Groups' },
+    ...employeeGroup,
+  ];
   /* ================= UI ================= */
   return (
     <div>
@@ -337,12 +342,12 @@ const SalarySheetGenerate = ({ user }: any) => {
             branchDdl={dropdownData}
           />
           <DropdownCommon
-            value=""
+            value={groupId?.toString() ?? ''}
             id="employee_group"
             name="employee_group"
             onChange={handleOnSelectChange}
             className="h-[2.3rem] bg-transparent"
-            data={employeeGroup}
+            data={employeeGroupWithAll}
           />
 
           <div className="mr-2">
