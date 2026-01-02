@@ -56,6 +56,7 @@ interface SalaryGenerateRequest {
   group_id?: number;
   month_id: string;
   employees: SalaryRow[]; // ✅ অবশ্যই এখানে
+  group?: any;
 }
 
 /* ================= INITIAL STATE ================= */

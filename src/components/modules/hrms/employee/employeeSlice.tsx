@@ -11,6 +11,7 @@ import {
   API_EMPLOYEE_STATUS_URL,
   API_EMPLOYEE_STORE_URL,
   API_EMPLOYEE_UPDATE_URL,
+  API_FULL_SALARY_PAYMENT_URL,
   API_SALARY_SHEET_URL,
 } from "../../../services/apiRoutes";
 
@@ -105,6 +106,33 @@ const initialState: EmployeeState = {
 };
 
 
+export interface SalarySheetRow {
+  serial_no: number;
+  main_trx_id: number;
+  payment_month: string;
+  payment_year: string;
+  total_employee: number;
+  gross_salary: number;
+  net_salary: number;
+  payment_amount: number;
+  total_deduction: number;
+  main_trx: {
+    id: number;
+    vr_no: string;
+    vr_date: string;
+    branch_id: number;
+    status: number;
+  };
+}
+
+export interface SalarySheetApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    data: SalarySheetRow[];
+    transaction_date: string;
+  };
+}
 /* ---------- Update Employee ---------- */
 export const updateEmployee = createAsyncThunk<{ message: string }, { id: number; data: any }, { rejectValue: string }>("employee/updateEmployee",
   async ({ id, data }, thunkAPI) => {
@@ -148,52 +176,58 @@ export const updateEmployeeFromUI = createAsyncThunk<{ message: string }, { id: 
 
 /* ================= THUNKS ================= */
 
-export const fetchEmployees = createAsyncThunk<EmployeeListResponse,EmployeeListParams | undefined,{ rejectValue: string }>("employee/fetchEmployees", async (params = {}, thunkAPI) => {
-    try {
-      const response = await httpService.get(API_EMPLOYEE_LIST_URL, {
-        params: {
-          page: params.page ?? 1,
-          per_page: params.per_page ?? 10,
-          branch_id: params.branch_id ?? "",
-          status: params.status ?? "",
-          search: params.search ?? "",
-        },
-      });
-      return response.data as EmployeeListResponse;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to fetch employees"
-      );
-    }
+export const fetchEmployees = createAsyncThunk<EmployeeListResponse, EmployeeListParams | undefined, { rejectValue: string }>("employee/fetchEmployees", async (params = {}, thunkAPI) => {
+  try {
+    const response = await httpService.get(API_EMPLOYEE_LIST_URL, {
+      params: {
+        page: params.page ?? 1,
+        per_page: params.per_page ?? 10,
+        branch_id: params.branch_id ?? "",
+        status: params.status ?? "",
+        search: params.search ?? "",
+      },
+    });
+    return response.data as EmployeeListResponse;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to fetch employees"
+    );
   }
+}
 );
 
+export interface SalarySheetParams {
+  branch_id?: number;
+  year_id?: number;
+}
 
 
-
-export const fetchSalarySheet = createAsyncThunk<EmployeeListResponse,EmployeeListParams | undefined,{ rejectValue: string }>("employee/fetchSalarySheet", async (params = {}, thunkAPI) => {
+export const fetchSalarySheet = createAsyncThunk<
+  SalarySheetApiResponse,
+  SalarySheetParams | undefined,
+  { rejectValue: string }
+>(
+  "employee/fetchSalarySheet",
+  async (params = {}, thunkAPI) => {
     try {
       const response = await httpService.post(API_SALARY_SHEET_URL, {
-        params: {
-          page: params.page ?? 1,
-          per_page: params.per_page ?? 10,
-          branch_id: params.branch_id ?? "",
-          status: params.status ?? "",
-          search: params.search ?? "",
-        },
+        branch_id: params.branch_id,
+        year_id: params.year_id,
       });
-      return response.data as EmployeeListResponse;
+
+      return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message ||
         error.message ||
-        "Failed to fetch employees"
+        "Failed to fetch salary sheet"
       );
     }
   }
 );
+
 
 
 interface EmployeeStatusParams {
@@ -206,23 +240,39 @@ interface EmployeeStatusResponse {
   data: any;
 }
 
-
-export const employeeStatus = createAsyncThunk<EmployeeStatusResponse, EmployeeStatusParams, { rejectValue: string }>("employee/employeeStatus", async ({ id, enabled }, thunkAPI) => {
+/* ---------- Employee full salary payment by salary sheet ---------- */
+export const employeeSalaryPaymentFull = createAsyncThunk<{ message: string }, { data: any }, { rejectValue: string }>("employee/employeeSalaryPaymentFull",
+  async (data, thunkAPI) => {
     try {
-      const response = await httpService.post(API_EMPLOYEE_STATUS_URL, {
-        id,
-        status: enabled,
-      });
-
+      const response = await httpService.post(`${API_FULL_SALARY_PAYMENT_URL}`, data);
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message ||
         error.message ||
-        "Failed to update employee status"
+        "Failed to update employee"
       );
     }
   }
+);
+
+
+export const employeeStatus = createAsyncThunk<EmployeeStatusResponse, EmployeeStatusParams, { rejectValue: string }>("employee/employeeStatus", async ({ id, enabled }, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_EMPLOYEE_STATUS_URL, {
+      id,
+      status: enabled,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to update employee status"
+    );
+  }
+}
 );
 
 export const fetchEmployeeSettings = createAsyncThunk<EmployeeSettingsResponse, void, { rejectValue: string }>("employee/fetchEmployeeSettings", async (_, thunkAPI) => {
@@ -317,7 +367,7 @@ const employeeSlice = createSlice({
     clearEmployees(state) {
       state.employees = null;
       state.employee = {};
-      state.salary = {};
+      state.salary = [];
       state.employeeDDL = [];
       state.employeeSettings = null;
       state.loading = false;
@@ -355,10 +405,24 @@ const employeeSlice = createSlice({
         state.error = action.payload ?? null;
       })
 
+      .addCase(employeeSalaryPaymentFull.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(employeeSalaryPaymentFull.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload.message || "Salary payment processed successfully";
+      })
+      .addCase(employeeSalaryPaymentFull.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? null;
+      })
 
-      // ... বাকি সব extraReducers আগের মতোই থাকবে
+
       .addCase(fetchSalarySheet.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchSalarySheet.fulfilled, (state, action) => { state.loading = false; state.salary = action.payload; })
+      .addCase(fetchSalarySheet.fulfilled, (state, action) => {
+        state.loading = false;
+        state.salary = action.payload.data.data; // ✅ THIS IS THE KEY FIX
+      })
       .addCase(fetchSalarySheet.rejected, (state, action) => { state.loading = false; state.error = action.payload || "Failed to fetch employee"; })
 
 

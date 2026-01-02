@@ -282,10 +282,11 @@ const SalarySheetGenerate = ({ user }: any) => {
     try {
       const response = await dispatch(
         salaryGenerate({
-          branch_id: branchId,
+          branch_id: Number(branchId),
           group_id: Number(groupId),
           month_id: monthId,
           employees: employees,
+          group: employeeGroupWithAll
         })
       ).unwrap();
 

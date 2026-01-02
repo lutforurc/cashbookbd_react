@@ -2,25 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
-import { employeeStatus, fetchEmployees, fetchEmployeeSettings, fetchSalarySheet, updateEmployeeFromUI } from "../employee/employeeSlice";
+import { employeeSalaryPaymentFull, fetchSalarySheet } from "../employee/employeeSlice";
 import { toast } from "react-toastify";
 import InputElement from "../../../utils/fields/InputElement";
-import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
-import { employeeGroup } from "../../../utils/fields/DataConstant";
-import ActionButtons from "../../../utils/fields/ActionButton";
 import { useReactToPrint } from "react-to-print";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
-import SelectOption from "../../../utils/utils-functions/SelectOption";
-import SearchInput from "../../../utils/fields/SearchInput";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
-import Link from "../../../utils/others/Link";
 import Loader from "../../../../common/Loader";
 import Table from "../../../utils/others/Table";
-import Pagination from "../../../utils/utils-functions/Pagination";
 import EmployeePrint from "../employee/EmployeePrint";
-import Year from "react-datepicker/dist/year";
 import YearDropdown from "../../../utils/components/YearDropdown";
+import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 
 const SalarySheet = ({ user }: any) => {
@@ -28,47 +22,35 @@ const SalarySheet = ({ user }: any) => {
   const branchDdlData = useSelector((state) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
-  const [search, setSearchValue] = useState('');
-  const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState<number>(20);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
-  const [designation, setDesignation] = useState<any[]>([]);
   const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
-const [yearId, setYearId] = useState<string>("");
+  const [yearId, setYearId] = useState<string>("");
 
 
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    dispatch(fetchEmployeeSettings());
     setBranchId(user?.branch_id);
   }, []);
 
   useEffect(() => {
-    setDesignation(employees?.employeeSettings?.data?.data?.designation || []);
-  }, [settings]);
+    if (yearId === "") {
+      return;
+    }
+    dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
+  }, [branchId]);
 
-  useEffect(() => {
-    const list = employees?.employees?.data?.data?.data || [];
-    setTableData(list);
-
-    const total = employees?.employees?.data?.data?.total || 0;
-    setTotalPages(Math.ceil(total / perPage));
-  }, [employees?.employees]);
 
 
   useEffect(() => {
     if (branchDdlData?.protectedData?.data) if (branchDdlData?.protectedData?.data) {
-
       const baseData = branchDdlData.protectedData.data;
-
       if (settings?.data?.branch?.branch_types_id === 1) {
         setDropdownData([
           { id: "", name: 'All Projects' },
@@ -81,247 +63,102 @@ const [yearId, setYearId] = useState<string>("");
   }, [branchDdlData?.protectedData?.data]);
 
   const handleSearchButton = (e: any) => {
-    setCurrentPage(1);
-    setPage(1);
-    dispatch(fetchSalarySheet({ page, per_page: perPage, search, branch_id: branchId }));
-
-    if (employees?.data?.total >= 0) {
-      setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));
-      setTableData(employees?.employees?.data?.data?.data || []);
+    e.preventDefault();
+    if (yearId === "") {
+      toast.info("Please select year");
+      return;
     }
-  };
-
-  const handleSelectChange = (page: any) => {
-    setPerPage(page.target.value);
-    setPage(1);
-    setCurrentPage(1);
-    setTotalPages(Math.ceil(employees?.employees?.data?.total / perPage));
-    setTableData(employees?.employees?.data?.data?.data || []);
-  };
-
-  const handlePageChange = (page: any) => {
-    setPerPage(perPage);
-    setPage(page);
-    setCurrentPage(page);
-    setTotalPages(Math.ceil(employees?.employees?.data?.data?.last_page));
-    setTableData(employees?.employees?.data?.data?.data || []);
+    dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
   };
 
 
-  const handleBranchEdit = (row: any) => {
-    navigate(`/hrms/employee/edit/${row.id}`);
-  };
 
-  const handleBranchDelete = (row: any) => {
-    navigate('/branch/branch-list');
-  };
-
-  const handleToggle = (row: any) => {
-    const newStatus = row.status === 1 ? 0 : 1;
-
-    dispatch(employeeStatus({ id: row.id, enabled: newStatus })).unwrap()
-      .then(() => {
-        dispatch(fetchEmployees({
-          page,
-          per_page: perPage,
-          search,
-          branch_id: branchId,
-        }));
-      })
-      .catch(console.error);
-  };
-
-
-  const handleInputChange = (id: number, field: string, value: string) => {
-    setTableData(prev => prev.map(row => row.id === id ? { ...row, [field]: value } : row)
-    );
-  };
-
-  const handleInputBlur = (row: any, field: string) => {
-    dispatch(
-      updateEmployeeFromUI({
-        id: row.id,
-        data: { [field]: row[field] },
-      })
-    )
-      .unwrap()
-      .then((res) => {
-        if (res?.message) {
-          toast.success(res.message); // ✅ SUCCESS MESSAGE
-        }
-      })
-      .catch((err) => {
-        toast.error(err?.message || 'Update failed');
-      });
+  const branchColumn = {
+    key: 'branch_name',
+    header: 'Branch Name',
+    render: (row: any) => row.main_trx?.branch?.name ?? '',
   };
 
   const columns = [
     {
-      key: 'serial',
+      key: 'serial_no',
       header: 'Sl. No.',
       headerClass: 'text-center',
       cellClass: 'text-center',
     },
+    ...(!branchId ? [branchColumn] : []),
     {
-      key: 'employee_serial',
-      header: 'Sal. Sl. No.',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-      render: (row: any) => (
-        <InputElement
-          type="number"
-          value={row.employee_serial ?? ""}
-          className="text-center w-16"
-          onChange={(e) =>
-            handleInputChange(
-              row.id,
-              "employee_serial",
-              e.target.value
-            )
-          }
-          onBlur={() =>
-            handleInputBlur(
-              row,
-              "employee_serial"
-            )
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.currentTarget.blur(); // 🔥 Enter = Save
-            }
-          }}
-        />
-      ),
+      key: 'payment_month',
+      header: 'Payment Month',
+      render: (row: any) => formatPaymentMonth(row.payment_month),
+    },
+
+    {
+      key: 'total_employee',
+      header: 'Employees',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
     },
     {
-      key: 'employee_group',
-      header: 'Employee Group',
-      render: (row: any) => (
-        <DropdownCommon
-          key={row.id}
-          id={`employee_group-${row.id}`}
-          name="employee_group"
-          className="h-[2.1rem]"
-          data={employeeGroup}
-          value={row.employee_group?.toString() ?? ""}   // ✅ API field
-          onChange={(e) =>
-            handleInputChange(
-              row.id,
-              "employee_group",       // ✅ SAME field
-              e.target.value
-            )
-          }
-          onBlur={() =>
-            handleInputBlur(
-              row,
-              "employee_group"        // ✅ SAME field
-            )
-          }
-        />
-      ),
+      key: 'gross_salary',
+      header: 'Gross Salary',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => thousandSeparator(row.gross_salary, 0),
     },
     {
-      key: 'name',
-      header: 'Employee Name',
-      render: (row: any) => (
-        <>
-          <p className="">{row.name}</p>
-        </>
-      ),
+      key: 'net_salary',
+      header: 'Net Salary',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => thousandSeparator(row.net_salary, 0),
     },
     {
-      key: 'designation',
-      header: 'Designation',
-      render: (row: any) => (
-        <DropdownCommon
-          key={row.id}
-          id={`designation-${row.id}`}
-          name="designation"
-          className="h-[2.1rem]"
-          data={designation}
-          value={row.designation?.toString() ?? ""}   // ✅ API field
-          onChange={(e) =>
-            handleInputChange(
-              row.id,
-              "designation",       // ✅ SAME field
-              e.target.value
-            )
-          }
-          onBlur={() =>
-            handleInputBlur(
-              row,
-              "designation"        // ✅ SAME field
-            )
-          }
-        />
-      ),
+      key: 'payment_amount',
+      header: 'Payment Amount',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => thousandSeparator(row.payment_amount, 0),
     },
     {
-      key: 'mobile',
-      header: 'Mobile',
-      render: (row: any) => (
-        <>
-          <InputElement
-            type="number"
-            value={row.mobile ?? ""}
-            className="text-center w-30"
-            onChange={(e) =>
-              handleInputChange(
-                row.id,
-                "mobile",
-                e.target.value
-              )
-            }
-            onBlur={() =>
-              handleInputBlur(
-                row,
-                "mobile"
-              )
-            }
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.currentTarget.blur(); // 🔥 Enter = Save
-              }
-            }}
-          />
-        </>
-      ),
-    },
-    {
-      key: 'branch_name',
-      header: 'Project Name',
-      render: (row: any) => (
-        <>
-          <p className="">{row.branch_name}</p>
-        </>
-      ),
+      key: 'total_deduction',
+      header: 'Deduction',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => thousandSeparator(row.total_deduction, 0),
     },
     {
       key: 'action',
       header: 'Action',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-      render: (row: any) => (
-        <>
-          <div>
-            <ActionButtons
-              row={row}
-              showEdit={true}
-              handleEdit={handleBranchEdit}
-              showDelete={false}
-              handleDelete={handleBranchDelete}
-              showToggle={true}
-              handleToggle={() => handleToggle(row)}
-            />
-          </div>
-        </>
-      ),
-    },
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        return (
+          <button
+            onClick={() => { salaryPaymentDetails(row); }}
+            className="text-blue-600 hover:underline"
+          >
+            Details
+          </button>
+        );
+      },
+    }
   ];
 
-  const handleProductEdit = (row: any) => {
-    navigate(`/product/edit/${row.product_id}`);
+
+  const salaryPaymentDetails = async (row: any) => {
+    try {
+      const response = await dispatch(
+        employeeSalaryPaymentFull({ data: row }) // ✅ FIX
+      ).unwrap();
+
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
   };
+
+
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
@@ -362,10 +199,10 @@ const [yearId, setYearId] = useState<string>("");
   });
 
 
-    const handleOnYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const { name, value } = e.target;
-      setYearId(value.toString());
-    };
+  const handleOnYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setYearId(value.toString());
+  };
 
 
   return (
@@ -384,25 +221,22 @@ const [yearId, setYearId] = useState<string>("");
               />
             </div>
           </div>
-          
+
           <div className="mr-2">
             <YearDropdown
               id="year_id"
               name="year_id"
-              className="h-[2.3rem] bg-transparent mr-2 min-w-35"
+              className="h-[2.3rem] bg-transparent min-w-35"
               onChange={handleOnYearChange}
             />
           </div>
           <div className="flex">
-            <SelectOption
-              onChange={handleSelectChange}
-              className="mr-1 md:mr-2"
-            />
-            <SearchInput
+
+            {/* <SearchInput
               search={search}
               setSearchValue={setSearchValue}
               className="text-nowrap"
-            />
+            /> */}
             <ButtonLoading
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
@@ -447,18 +281,9 @@ const [yearId, setYearId] = useState<string>("");
       <div className="relative overflow-x-auto">
         {employees.loading == true ? <Loader /> : ''}
 
-        <Table columns={columns} data={tableData} className="" />
+        <Table columns={columns} data={employees?.salary || []} className="" />
 
-        {/* Pagination Controls */}
-        {totalPages > 1 ? (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            handlePageChange={handlePageChange}
-          />
-        ) : (
-          ''
-        )}
+
 
         {/* === Hidden Print Component === */}
         <div className="hidden">
