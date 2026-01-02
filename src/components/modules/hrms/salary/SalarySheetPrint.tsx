@@ -17,7 +17,7 @@ import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 
-const SalarySheet = ({ user }: any) => {
+const SalarySheetPrint = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
   const branchDdlData = useSelector((state) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
@@ -324,4 +324,4 @@ const SalarySheet = ({ user }: any) => {
   );
 };
 
-export default SalarySheet;
+export default SalarySheetPrint;

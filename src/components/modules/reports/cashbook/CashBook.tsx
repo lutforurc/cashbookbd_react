@@ -91,6 +91,7 @@ const CashBook = (user: any) => {
   }, [branchDdlData?.protectedData?.data]);
 
   const handleCheckBtnClick = () => {};
+  
   const handlePrint = useReactToPrint({
     content: () => {
       if (!printRef.current) {
