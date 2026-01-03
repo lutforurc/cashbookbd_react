@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
-import { API_SALARY_GENERATE_URL, API_SALARY_VIEW_URL } from "../../../services/apiRoutes";
+import { API_SALARY_GENERATE_URL, API_SALARY_SHEET_PRINT_URL, API_SALARY_VIEW_URL } from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
 
@@ -46,6 +46,7 @@ interface SalaryViewRequest {
 
 interface SalaryState {
   salaryEmployees: SalaryEmployee[];
+  salarySheet: any;
   loading: boolean;
   error: string | null;
   message: string | null;
@@ -63,6 +64,7 @@ interface SalaryGenerateRequest {
 
 const initialState: SalaryState = {
   salaryEmployees: [],
+  salarySheet: null,
   loading: false,
   error: null,
   message: null,
@@ -101,34 +103,49 @@ export const salaryView = createAsyncThunk<
   }
 );
 
-export const salaryGenerate = createAsyncThunk<
+export const salarySheetPrint = createAsyncThunk<
   any,
   SalaryGenerateRequest,
   { rejectValue: string }
 >(
-  "salary/salaryGenerate",
+  "salary/salarySheetPrint",
   async (payload, { rejectWithValue }) => {
     try {
-      const res = await httpService.post(
-        API_SALARY_GENERATE_URL,
-        payload
-      );
+      const res = await httpService.post(API_SALARY_SHEET_PRINT_URL, payload);
 
-      if (res.data?.success === true) {
-        return res.data;
-      }
+      // ✅ Laravel returns data directly
+      return res.data;
 
-      return rejectWithValue(
-        res.data?.message || "Salary generation failed"
-      );
     } catch (error: any) {
       return rejectWithValue(
+        error?.response?.data?.error ||
         error?.response?.data?.message ||
         error.message ||
         "Failed to generate salary"
       );
     }
   }
+);
+
+export const salaryGenerate = createAsyncThunk<any, SalaryGenerateRequest, { rejectValue: string }>("salary/salaryGenerate", async (payload, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(API_SALARY_GENERATE_URL, payload);
+
+    if (res.data?.success === true) {
+      return res.data;
+    }
+
+    return rejectWithValue(
+      res.data?.message || "Salary generation failed"
+    );
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message ||
+      error.message ||
+      "Failed to generate salary"
+    );
+  }
+}
 );
 
 
@@ -167,6 +184,22 @@ const salarySlice = createSlice({
         state.error = action.payload || "Failed to fetch salary data";
       })
 
+      /* ===== Salary Generate ===== */
+      .addCase(salarySheetPrint.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(salarySheetPrint.fulfilled, (state, action) => {
+        state.loading = false;
+        state.salarySheet = action.payload;
+        state.message = action.payload?.message || "Salary generated successfully";
+      })
+      .addCase(salarySheetPrint.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload || "Failed to generate salary";
+      })
       /* ===== Salary Generate ===== */
       .addCase(salaryGenerate.pending, (state) => {
         state.loading = true;

@@ -2,6 +2,7 @@ import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
+import { FaKipSign } from 'react-icons/fa6';
 
 type EmployeeRow = {
   serial?: number | string;
@@ -49,7 +50,9 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
   ) => {
     const pages = chunkRows(rows || [], rowsPerPage);
     const fs = fontSize;
-
+    console.log('====================================');
+    console.log("tableData", rows);
+    console.log('====================================');
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
         <PrintStyles />

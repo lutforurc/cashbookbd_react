@@ -105,7 +105,7 @@ const store = configureStore({
     realEstateArea: realEstateArea,
     voucherSettings: voucherSettings,
     history: historySlice,
-  salary: salarySlice,
+    salary: salarySlice,
   },
 });
 

@@ -392,5 +392,6 @@ export const API_FULL_SALARY_PAYMENT_URL = `${API_BASE_URL}/hrms/salary-payment-
 export const API_SALARY_VIEW_URL = `${API_BASE_URL}/hrms/salary-view`;
 export const API_SALARY_GENERATE_URL = `${API_BASE_URL}/hrms/salary-generate`;
 export const API_SALARY_SHEET_URL = `${API_BASE_URL}/hrms/salary-sheet`;
+export const API_SALARY_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/salary-sheet-print`;
 
 

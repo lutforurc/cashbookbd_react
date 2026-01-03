@@ -15,23 +15,37 @@ import EmployeePrint from "../employee/EmployeePrint";
 import YearDropdown from "../../../utils/components/YearDropdown";
 import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import SalarySheetPrint from "./SalarySheetPrint";
+import { salarySheetPrint, salaryView } from "./salarySlice";
 
 
 const SalarySheet = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
+  const salary = useSelector((state) => state.salary);
   const branchDdlData = useSelector((state) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
-  const [perPage, setPerPage] = useState<number>(20);
+  const [perPage, setPerPage] = useState<number>(10);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
+  const [meta, setMeta] = useState<any[]>([]);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
   const [yearId, setYearId] = useState<string>("");
+  const [shouldPrint, setShouldPrint] = useState(false);
 
+
+  useEffect(() => {
+    
+    setMeta(salary?.salarySheet?.meta || []);
+    setTableData(salary?.salarySheet?.data);
+    console.log('====================================');
+    console.log("meta", meta);
+    console.log('====================================');
+  }, [salary]);
 
 
   useEffect(() => {
@@ -71,6 +85,12 @@ const SalarySheet = ({ user }: any) => {
     dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
   };
 
+  useEffect(() => {
+  if (shouldPrint && printRef.current && tableData?.length > 0) {
+    handlePrintAction();
+    setShouldPrint(false); // reset
+  }
+}, [shouldPrint, tableData]);
 
 
   const branchColumn = {
@@ -208,19 +228,29 @@ const SalarySheet = ({ user }: any) => {
     }
   };
 
-  const handlePrint = useReactToPrint({
-
-    content: () => {
-      if (!printRef.current) {
-        // alert("Nothing to print: Ref not ready");
-        return null;
-      }
-      return printRef.current;
-    },
-    documentTitle: 'Due Report',
-    // onAfterPrint: () => alert('Printed successfully!'),
+  const handlePrintAction = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: "Salary Sheet Print",
     removeAfterPrint: true,
   });
+
+ const handlePrint = async (row: any) => {
+  try {
+    await dispatch(salarySheetPrint(row)).unwrap();
+
+    // 👉 শুধু flag set করবেন
+    setShouldPrint(true);
+
+  } catch (error: any) {
+    console.error("Print error:", error);
+    toast.error(
+      typeof error === "string"
+        ? error
+        : error?.message || "Salary generation failed"
+    );
+  }
+};
+
 
 
   const handleOnYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -294,11 +324,11 @@ const SalarySheet = ({ user }: any) => {
               className="font-medium text-sm h-9 w-12"
             />
           </div>
-          <PrintButton
+          {/* <PrintButton
             onClick={handlePrint}
             label="Print"
             className="ml-2 mr-2"
-          />
+          /> */}
         </div>
       </div>
 
@@ -311,9 +341,10 @@ const SalarySheet = ({ user }: any) => {
 
         {/* === Hidden Print Component === */}
         <div className="hidden">
-          <EmployeePrint
+          <SalarySheetPrint
             ref={printRef}
             rows={tableData}
+            meta={meta}
             rowsPerPage={perPage}
             fontSize={fontSize}
             branchName={dropdownData?.find(b => b.id == branchId)?.name}

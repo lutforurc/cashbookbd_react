@@ -71,6 +71,8 @@ const Employees = ({ user }: any) => {
     const list = employees?.employees?.data?.data?.data || [];
     setTableData(list);
 
+
+
     const total = employees?.employees?.data?.data?.total || 0;
     setTotalPages(Math.ceil(total / perPage));
   }, [employees?.employees]);

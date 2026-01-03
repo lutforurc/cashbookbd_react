@@ -83,15 +83,30 @@ function chartDate(dateString: string) {
 export { chartDate }
 
 const formatPaymentMonth = (value: string) => {
-  if (!value || value.length !== 6) return value;
-
-  const month = value.substring(0, 2); // "01"
-  const year = value.substring(2);     // "2026"
+  if (!value) return value;
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   ];
+
+  let month: string | undefined;
+  let year: string | undefined;
+
+  // Case 1: "092025"
+  if (/^\d{6}$/.test(value)) {
+    month = value.substring(0, 2);
+    year = value.substring(2);
+  }
+
+  // Case 2: "12-2025" or "12/2025"
+  else if (/^\d{2}[-/]\d{4}$/.test(value)) {
+    const parts = value.split(/[-/]/);
+    month = parts[0];
+    year = parts[1];
+  }
+
+  if (!month || !year) return value;
 
   const monthIndex = Number(month) - 1;
 
@@ -99,4 +114,5 @@ const formatPaymentMonth = (value: string) => {
     ? `${monthNames[monthIndex]} ${year}`
     : value;
 };
-export { formatPaymentMonth }
+
+export { formatPaymentMonth };
