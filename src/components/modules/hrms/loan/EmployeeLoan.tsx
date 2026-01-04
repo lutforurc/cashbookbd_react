@@ -8,7 +8,6 @@ import { hasPermission } from '../../../utils/permissionChecker';
 import Loader from '../../../../common/Loader';
 import InputOnly from '../../../utils/fields/InputOnly';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
@@ -47,7 +46,6 @@ const initialPaymentItem: PaymentItem = {
 };
 
 const EmployeeLoan = () => {
-  const prevDataRef = useRef(null);
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
   const coal3 = useSelector((s: any) => s.coal3);
@@ -60,8 +58,6 @@ const EmployeeLoan = () => {
   const [tableData, setTableData] = useState<PaymentItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentItem | null>(null);
   const [isLoading, setIsLoading] = useState(false); // ✅ new
@@ -133,32 +129,6 @@ const EmployeeLoan = () => {
   };
 
 
-  const mapPaymentData = (res: any): PaymentItem => {
-    const data = res.data.data;
-    const details = data.acc_transaction_master[0].acc_transaction_details;
-
-
-    const filteredDetails = details.slice(0, -1);
-
-
-    const lastDetail = details[details.length - 1];
-
-    return {
-      id: data.id,
-      mtmId: data.mtmId,
-      bankPaymentAccount: lastDetail?.coa4_id?.toString() || '',
-      bankPaymentAccountName: lastDetail?.coa_l4?.name || '',
-      paymentAccount: '',
-      paymentAccountName: '',
-      transactionList: filteredDetails.map((item: any) => ({
-        id: item.id,
-        account: item.coa4_id,
-        accountName: item.coa_l4?.name,
-        remarks: item.remarks,
-        amount: item.credit,
-      })),
-    };
-  };
 
 
   const handleAdd = () => {
@@ -292,18 +262,8 @@ const EmployeeLoan = () => {
     [tableData],
   );
 
-  const selectedPayment = useMemo(() => {
-    if (!paymentData) return null;
-    return {
-      id: paymentData.bankPaymentAccount.toString(),
-      name: paymentData.bankPaymentAccountName.toString(),
-    };
-  }, [paymentData]);
 
-  const optionsWithAll = useMemo(
-    () => [{ id: '', name: 'Select Payment Bank Account' }, ...((ddlBankList ?? []) as any[])],
-    [ddlBankList]
-  );
+ 
 
   const handleSave = useCallback(async () => {
 
@@ -354,13 +314,6 @@ const EmployeeLoan = () => {
     }
   }, [saveButtonLoading, tableData, formData]);
 
-  const bankPaymentAccountHandler = (option: any) => {
-    setFormData({
-      ...formData,
-      bankPaymentAccount: option.value,
-      bankPaymentAccountName: option.label,
-    });
-  };
 
 
   useEffect(() => {
