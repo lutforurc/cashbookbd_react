@@ -1,179 +1,111 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import {API_BANK_GENERAL_EDIT_URL, API_BANK_GENERAL_UPDATE_URL, API_BANK_PAYMENT_URL, API_BANK_RECEIVED_LIST_URL, API_BANK_RECEIVED_URL, API_EMPLOYEE_DDL_SEARCH_URL, } from '../../../services/apiRoutes';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import httpService from '../../../services/httpService';
+import { API_CHART_OF_ACCOUNTS_DDL_L4_URL } from '../../../services/apiRoutes';
 
-// ---------------- Interfaces ----------------
 
-export interface TransactionList {
-  id: string | number;
-  account: number;
-  accountName: string;
-  remarks: string;
-  amount: number | string;
-}
+// ===== Types =====
+export type Coal4Item = {
+  value: string | number; // API যদি value দেয়
+  label: string;          // API যদি label দেয়
+  // optional extra fields (আপনার API যেগুলো দেয়)
+  id?: number | string;
+  name?: string;
+  l3_name?: string;
+  l2_name?: string;
+};
 
-export interface PaymentItem {
-  id: string | number;
-  mtmId: string;
-  receiverAccount: string;
-  receiverAccountName: string;
-  transactionList: TransactionList[];
-}
-
-// ---------------- Initial State ----------------
-
-interface BankPaymentState {
-  bankPayment: PaymentItem[];
+type Coal4State = {
+  ddl: Coal4Item[];
   loading: boolean;
   error: string | null;
-}
+};
 
-const initialState: BankPaymentState = {
-  bankPayment: [],
+const initialState: Coal4State = {
+  ddl: [],
   loading: false,
   error: null,
 };
 
-// types for the server response you showed
-type SaveBankPaymentResponse = {
-  success: boolean;
-  message: number;
-  data: { data: string[]; transaction_date: string };
-  success_code: { code: number };
-  error: { code: number };
-};
+// ===== Thunk =====
+// inputValue + acType দুইটাই পাঠাবেন
+export const getCoal4DdlNext = createAsyncThunk<
+  Coal4Item[],
+  { searchName: string; acType?: string },
+  { rejectValue: string }
+>(
+  'employeeLoan/getCoal4DdlNext',
+  async ({ searchName }, thunkAPI) => {
+    try {
+      // ✅ যদি httpService এ token interceptor থাকে, headers লাগবে না
+      const response = await httpService.get(API_CHART_OF_ACCOUNTS_DDL_L4_URL, {
+        params: {
+          searchName: searchName
+        },
+      });
 
-// ---------------- Async Thunks ----------------
+      const raw = response.data;
 
-// 📌 Fetch Bank Payment list
-export const getEmployeeDDL = createAsyncThunk<PaymentItem[],void,{ rejectValue: string }>('bankPayment/getEmployeeDDL', async (_, thunkAPI) => {
-  try {
-    const response = await httpService.get(API_EMPLOYEE_DDL_SEARCH_URL);
-    return response.data;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.message || 'Failed to fetch data');
+      // ✅ Safely unwrap
+      const list: any[] = raw?.data?.data ?? raw?.data ?? raw ?? [];
+
+      // যদি API থেকে id/name আসে কিন্তু value/label না আসে, তাহলে map করে দিন
+      const normalized: Coal4Item[] = list.map((x: any) => {
+        // already value/label থাকলে রাখুন
+        if (x?.value !== undefined && x?.label !== undefined) return x;
+
+        // না থাকলে id/name দিয়ে বানান
+        return {
+          value: x?.id,
+          label:
+            x?.label ??
+            (x?.l3_name || x?.l2_name
+              ? `${x?.name} (${x?.l3_name ?? ''}${x?.l2_name ? ' / ' + x?.l2_name : ''})`
+              : x?.name),
+          ...x,
+        };
+      });
+
+      return normalized;
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to fetch COA L4 DDL';
+      return thunkAPI.rejectWithValue(message);
+    }
   }
-});
+);
 
-// 📌 Save Bank Payment
-export const saveBankPayment = createAsyncThunk<PaymentItem, SaveBankPaymentResponse,{ rejectValue: string }>('bankPayment/saveBankPayment', async (payload, thunkAPI) => {
-  try {
-    const response = await httpService.post(API_BANK_PAYMENT_URL, payload);
-    return response.data as SaveBankPaymentResponse;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.message || 'Failed to save data');
-  }
-});
-
-// 📌 Edit Bank Payment
-export const editBankPayment = createAsyncThunk<PaymentItem,PaymentItem,{ rejectValue: string }>('bankPayment/editBankPayment', async (payload, thunkAPI) => {
-  try {
-    const response = await httpService.get(`${API_BANK_GENERAL_EDIT_URL}/${payload.id}`,);
-    return response.data;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(
-      error.message || 'Failed to update bank payment',
-    );
-  }
-});
-
-// 📌 Update Bank Payment
-export const updateBankPayment = createAsyncThunk<PaymentItem,PaymentItem,{ rejectValue: string }>('bankPayment/updateBankPayment', async (payload, thunkAPI) => {
-  try {
-    const response = await httpService.post(API_BANK_GENERAL_UPDATE_URL, payload);
-    return response.data;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(
-      error.message || 'Failed to update bank payment',
-    );
-  }
-});
-
-// ---------------- Slice ----------------
-
+// ===== Slice =====
 const employeeLoanSlice = createSlice({
-  name: 'bankPayment',
+  name: 'employeeLoan',
   initialState,
   reducers: {
-    addBankPayment(state, action: PayloadAction<PaymentItem>) {
-      state.bankPayment.push(action.payload);
-    },
-
-    deleteBankPayment(state, action: PayloadAction<string | number>) {
-      state.bankPayment = state.bankPayment.filter(
-        (item) => item.id !== action.payload,
-      );
+    clearCoal4Ddl(state) {
+      state.ddl = [];
+      state.error = null;
+      state.loading = false;
     },
   },
   extraReducers: (builder) => {
     builder
-      // 📌 Fetch
-      
-
-      // 📌 Save
-      .addCase(saveBankPayment.pending, (state) => {
+      .addCase(getCoal4DdlNext.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        saveBankPayment.fulfilled,
-        (state, action: PayloadAction<PaymentItem>) => {
-          state.loading = false;
-          state.bankPayment.push(action.payload);
-        },
-      )
-      .addCase(saveBankPayment.rejected, (state, action) => {
+      .addCase(getCoal4DdlNext.fulfilled, (state, action: PayloadAction<Coal4Item[]>) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.ddl = action.payload;
       })
-
-      // 📌 Edit
-      .addCase(editBankPayment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(
-        editBankPayment.fulfilled,
-        (state, action: PayloadAction<PaymentItem>) => {
-          state.loading = false;
-          const index = state.bankPayment.findIndex(
-            (item) => item.id === action.payload.id,
-          );
-          if (index !== -1) {
-            state.bankPayment[index] = action.payload;
-          }
-        },
-      )
-      .addCase(editBankPayment.rejected, (state, action) => {
+      .addCase(getCoal4DdlNext.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
-      })
-
-      // 📌 Update
-      .addCase(updateBankPayment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(
-        updateBankPayment.fulfilled,
-        (state, action: PayloadAction<PaymentItem>) => {
-          state.loading = false;
-          const index = state.bankPayment.findIndex(
-            (item) => item.id === action.payload.id,
-          );
-          if (index !== -1) {
-            state.bankPayment[index] = action.payload;
-          }
-        },
-      )
-      .addCase(updateBankPayment.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.ddl = [];
+        state.error = (action.payload as string) || 'Failed to fetch data';
       });
   },
 });
 
-// ---------------- Export Actions & Reducer ----------------
-
-export const { addBankPayment, deleteBankPayment } = employeeLoanSlice.actions;
+export const { clearCoal4Ddl } = employeeLoanSlice.actions;
 export default employeeLoanSlice.reducer;
+
+

@@ -14,8 +14,8 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import Link from '../../../utils/others/Link';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { toast } from 'react-toastify';
-import { editBankPayment, saveBankPayment, updateBankPayment } from './employeeLoanSlice';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
+import { editBankPayment, saveBankPayment, updateBankPayment } from '../../transactions/bankpayment/bankPaymentSlice';
 
 interface TransactionList {
   id: string | number;
