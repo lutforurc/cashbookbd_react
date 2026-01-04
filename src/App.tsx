@@ -85,6 +85,7 @@ import Employees from './components/modules/hrms/employee/Employees';
 import EmployeeEdit from './components/modules/hrms/employee/EmployeeEdit';
 import SalarySheetGenerate from './components/modules/hrms/salary/SalarySheetGenerate';
 import SalarySheet from './components/modules/hrms/salary/SalarySheet';
+import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
 
 
 
@@ -159,6 +160,7 @@ function App() {
             <Route path={routes.cash_payment} element={<CashPaymentIndex />} />
             <Route path={routes.bank_receive} element={<BankReceived />} />
             <Route path={routes.bank_payment} element={<BankPayment />} />
+            <Route path={routes.employee_loan} element={<EmployeeLoan />} />
             <Route path={routes.journal} element={<Journal />} />
 
             {/* Products */}

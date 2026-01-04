@@ -32,6 +32,8 @@ const ROUTES = {
   cash_payment: '/accounts/cash/payment',
   bank_payment: '/accounts/bank/payment',
 
+  employee_loan: '/accounts/employee-loan', 
+
   journal: '/accounts/journal',
 
   // Role Routes
