@@ -36,6 +36,11 @@ const Employees = ({ user }: any) => {
   const [branchId, setBranchId] = useState<number | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
   const [designation, setDesignation] = useState<any[]>([]);
+  const [ddlDesignation, setDdlDesignation] = useState<any[]>([]);
+  const [ddlDesignationLevel, setDdlDesignationLevel] = useState<any[]>([]);
+  
+    const [designationId, setDesignationId] = useState<number | undefined>(undefined);
+    const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
 
   const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
@@ -48,23 +53,16 @@ const Employees = ({ user }: any) => {
     setBranchId(user?.branch_id);
   }, []);
 
-  //   useEffect(() => {
-  //   if (
-  //     employees?.employeeSettings?.data?.data?.designation?.length > 0 &&
-  //     branchId
-  //   ) {
-  //     dispatch(fetchEmployees({
-  //       page: 1,
-  //       per_page: perPage,
-  //       search,
-  //       branch_id: branchId,
-  //     }));
-  //   }
-  // }, [employees?.employeeSettings, branchId]);
+
+  console.log('====================================');
+  console.log(employees?.employeeSettings?.data?.data);
+  console.log('====================================');
 
   useEffect(() => {
-    const list = employees?.employeeSettings?.data?.data?.designation || [];
-    setDesignation(list);
+    const list = employees?.employeeSettings?.data?.data || [];
+    setDesignation(list?.designation);
+    setDdlDesignation(list?.designation);
+    setDdlDesignationLevel(list?.designationLevels);
   }, [employees?.employeeSettings]);
 
   useEffect(() => {
@@ -97,8 +95,7 @@ const Employees = ({ user }: any) => {
   const handleSearchButton = (e: any) => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(fetchEmployees({ page, per_page: perPage, search, branch_id: branchId }));
-
+    dispatch(fetchEmployees({ page, per_page: perPage, branch_id: branchId, level_id: designationLevelId, designation_id: designationId }));
     if (employees?.data?.total >= 0) {
       setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));
       setTableData(employees?.employees?.data?.data?.data || []);
@@ -119,7 +116,7 @@ const Employees = ({ user }: any) => {
 
     dispatch(
       fetchEmployees({
-        page: newPage,              // 🔥 IMPORTANT
+        page: newPage,
         per_page: perPage,
         search,
         branch_id: branchId,
@@ -175,37 +172,6 @@ const Employees = ({ user }: any) => {
       });
   };
 
-  // const handleInputBlur = (row: any, field: string) => {
-  //   dispatch(
-  //     updateEmployeeFromUI({
-  //       id: row.id,
-  //       data: { [field]: row[field], },
-  //     })
-  //   ).unwrap()
-  //     .then(() => {
-  //       // dispatch(
-  //       //   fetchEmployees({
-  //       //     page,
-  //       //     per_page: perPage,
-  //       //     search,
-  //       //     branch_id: branchId,
-  //       //   })
-  //       // );
-  //     })
-  //     .catch(console.error);
-  // };
-
-
-  // useEffect(() => {
-  //   setTableData(employees?.employees?.data?.data?.data || []);
-  // }, [employees]);
-
-  const employeeGroupMap = Object.fromEntries(
-    employeeGroup
-      .filter(g => g.id !== "") // "Select All" বাদ দিন
-      .map(g => [g.id.toString(), g.name])
-  );
-
   const columns = [
     {
       key: 'serial',
@@ -245,33 +211,7 @@ const Employees = ({ user }: any) => {
       ),
     },
 
-    {
-      key: 'employee_group',
-      header: 'Employee Group',
-      render: (row: any) => (
-        <DropdownCommon
-          key={row.id}
-          id={`employee_group-${row.id}`}
-          name="employee_group"
-          className="h-[2.1rem]"
-          data={employeeGroup}
-          value={row.employee_group?.toString() ?? ""}   // ✅ API field
-          onChange={(e) =>
-            handleInputChange(
-              row.id,
-              "employee_group",       // ✅ SAME field
-              e.target.value
-            )
-          }
-          onBlur={() =>
-            handleInputBlur(
-              row,
-              "employee_group"        // ✅ SAME field
-            )
-          }
-        />
-      ),
-    },
+    
     {
       key: 'name',
       header: 'Employee Name',
@@ -384,6 +324,15 @@ const Employees = ({ user }: any) => {
     setBranchId(e.target.value);
   };
 
+  const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const numVal = value === "" ? undefined : Number(value);
+    if (name === "designation") {
+      setDesignationId(numVal);
+    } else if (name === "designation_level") {
+      setDesignationLevelId(numVal);
+    }
+  };
 
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -418,6 +367,15 @@ const Employees = ({ user }: any) => {
     removeAfterPrint: true,
   });
 
+const designationLevelAll = [
+  { id: '', name: 'All Level' },
+  ...(Array.isArray(ddlDesignationLevel) ? ddlDesignationLevel : []),
+];
+  const designationAll = [
+    { id: '', name: 'All Designation' },
+    ...(Array.isArray(ddlDesignation) ? ddlDesignation : []),
+  ];
+
   return (
     <div>
       <HelmetTitle title={'Employee List'} />
@@ -425,7 +383,6 @@ const Employees = ({ user }: any) => {
         <div className='flex'>
           <div className='mr-2'>
             <div className="w-full">
-              {/* {branchDdlData.isLoading == true ? <Loader /> : ''} */}
               <BranchDropdown
                 defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
@@ -434,16 +391,36 @@ const Employees = ({ user }: any) => {
               />
             </div>
           </div>
+          <div className='mr-2'>
+            <DropdownCommon
+            id="designation_level"
+            name="designation_level"
+            label=""
+            onChange={handleOnSelectChange}
+            className="h-[2.4rem] bg-transparent"
+            data={designationLevelAll}
+          />
+          </div>
+          <div className='mr-2'>
+            <DropdownCommon
+            id="designation"
+            name="designation"
+            label=""
+            onChange={handleOnSelectChange}
+            className="h-[2.4rem] bg-transparent"
+            data={designationAll}
+          />
+          </div>
           <div className="flex">
             <SelectOption
               onChange={handleSelectChange}
               className="mr-1 md:mr-2"
             />
-            <SearchInput
+            {/* <SearchInput
               search={search}
               setSearchValue={setSearchValue}
               className="text-nowrap"
-            />
+            /> */}
             <ButtonLoading
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
@@ -479,7 +456,7 @@ const Employees = ({ user }: any) => {
           </div>
           <PrintButton
             onClick={handlePrint}
-            label="Print"
+            label=""
             className="ml-2 mr-2"
           />
           <Link to="/hrms/employee/add" className="text-nowrap">

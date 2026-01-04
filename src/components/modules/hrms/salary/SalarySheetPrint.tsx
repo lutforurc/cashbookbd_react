@@ -64,9 +64,9 @@ const getHistory = (history?: string | EmployeeHistory): EmployeeHistory => {
 type Meta = {
   branch_id?: number;
   branch_name?: string;
-  group_id?: number;
+  level_id?: number;
   month_id?: string;
-  group_name?: string;
+  level_name?: string;
   generated_by?: number;
 };
 
@@ -179,7 +179,7 @@ const getMeta = (meta?: string | Meta): Meta => {
                 </div>
                 <div className='flex justify-between'>
                   <div className="text-sm text-right">
-                    <span>Salary for</span> <span className="font-semibold">{ metaInfo.group_name}</span>
+                    <span>Salary for</span> <span className="font-semibold">{ metaInfo.level_name}</span>
                   </div>
                   <div className="text-sm text-right">
                     <span>Salary for the Month of <span className="font-semibold">{ formatPaymentMonth(metaInfo.month_id)}</span></span>

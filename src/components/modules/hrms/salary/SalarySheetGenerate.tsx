@@ -14,6 +14,7 @@ import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { employeeGroup } from "../../../utils/fields/DataConstant";
 import MonthDropdown from "../../../utils/components/MonthDropdown";
 import { toast } from 'react-toastify';
+import { fetchEmployeeSettings } from "../employee/employeeSlice";
 
 /* ================= TYPES ================= */
 interface SalaryRow {
@@ -39,21 +40,35 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
+  const employeeSettings = useSelector((state: any) => state.employees);
 
   const [employees, setEmployees] = useState<SalaryRow[]>([]);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
-
+  const [designation, setDesignation] = useState<any[]>([]);
+  const [designationLevel, setDesignationLevel] = useState<any[]>([]);
+  const [sex, setSex] = useState<any[]>([]);
   const [groupId, setGroupId] = useState<number | undefined>(undefined);
   const [monthId, setMonthId] = useState<string>("");
   const [searched, setSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [designationId, setDesignationId] = useState<number | undefined>(undefined);
+  const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
+
 
   /* ================= INIT ================= */
+
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-  }, [dispatch]);
+    dispatch(fetchEmployeeSettings());
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    setDesignation(employeeSettings?.employeeSettings?.data?.data?.designation || []);
+    setDesignationLevel(employeeSettings?.employeeSettings?.data?.data?.designationLevels || []);
+  }, [employeeSettings, user]);
 
   /* ================= FETCH DATA ================= */
   const handleSearchButton = async () => {
@@ -69,8 +84,8 @@ const SalarySheetGenerate = ({ user }: any) => {
     try {
       const response = await dispatch(
         salaryView({
-          branch_id: branchId,
-          group_id: Number(groupId),
+          branch_id: Number(branchId) ,
+          level_id: Number(designationLevelId),
           month_id: monthId,
         })
       ).unwrap();
@@ -266,14 +281,21 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   // ✅ keep your dropdown handler (same behavior)
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setGroupId(value === '' ? undefined : Number(value));
+    const { name, value } = e.target;
+    const numVal = value === "" ? undefined : Number(value);
+    if (name === "designation") {
+      setDesignationId(numVal);
+    } else if (name === "designation_level") {
+      setDesignationLevelId(numVal);
+    }
   };
 
   const handleOnMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setMonthId(value.toString());
   };
+
+
 
   const handleSalaryGenerate = async () => {
     if (!branchId || !monthId) return;
@@ -283,10 +305,9 @@ const SalarySheetGenerate = ({ user }: any) => {
       const response = await dispatch(
         salaryGenerate({
           branch_id: Number(branchId),
-          group_id: Number(groupId),
+          level_id: Number(designationLevelId), 
           month_id: monthId,
-          employees: employees,
-          group: employeeGroupWithAll
+          employees: employees, 
         })
       ).unwrap();
 
@@ -320,9 +341,9 @@ const SalarySheetGenerate = ({ user }: any) => {
     }
   }, [branchDdlData?.protectedData?.data]);
 
-  const employeeGroupWithAll = [
-    { id: '', name: 'All Groups' },
-    ...employeeGroup,
+  const designationLevelAll = [
+    { id: '', name: 'All Level' },
+    ...designationLevel,
   ];
   /* ================= UI ================= */
   return (
@@ -342,14 +363,18 @@ const SalarySheetGenerate = ({ user }: any) => {
             className="w-60 font-medium text-sm p-2 mr-2 "
             branchDdl={dropdownData}
           />
-          <DropdownCommon
-            value={groupId?.toString() ?? ''}
-            id="employee_group"
-            name="employee_group"
-            onChange={handleOnSelectChange}
-            className="h-[2.3rem] bg-transparent"
-            data={employeeGroupWithAll}
-          />
+
+          <div className="mr-2 w-full">
+            <DropdownCommon
+              id="designation_level"
+              name="designation_level"
+              label=""
+              onChange={handleOnSelectChange}
+              className="h-[2.3rem] bg-transparent"
+              data={designationLevelAll}
+            />
+
+          </div>
 
           <div className="mr-2">
             <MonthDropdown
@@ -365,7 +390,7 @@ const SalarySheetGenerate = ({ user }: any) => {
             buttonLoading={searchLoading}
             disabled={searchLoading}
             label="Search"
-            className="whitespace-nowrap p-2 ml-2"
+            className="whitespace-nowrap p-2 ml-2 mr-2"
           />
         </div>
 

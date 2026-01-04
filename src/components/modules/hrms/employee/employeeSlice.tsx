@@ -46,9 +46,10 @@ export interface EmployeeListResponse {
 export interface EmployeeListParams {
   page?: number;
   per_page?: number;
-  branch_id?: number;
-  status?: string;
+  branch_id?: number; 
   search?: string;
+  level_id?: number | string;
+  designation_id?: number | string;
 }
 
 /* ---------- Employee Settings (Dropdown) ---------- */
@@ -183,8 +184,8 @@ export const fetchEmployees = createAsyncThunk<EmployeeListResponse, EmployeeLis
         page: params.page ?? 1,
         per_page: params.per_page ?? 10,
         branch_id: params.branch_id ?? "",
-        status: params.status ?? "",
-        search: params.search ?? "",
+        level_id: params.level_id ?? "",
+        designation_id: params.designation_id ?? ""
       },
     });
     return response.data as EmployeeListResponse;

@@ -38,7 +38,7 @@ class EmployeeFormModel {
       loan_deduction: '',
       others_deduction: '',
       salary_payable: '',
-      employee_group: '',
+      
       employee_serial: '',
     };
   }
@@ -55,7 +55,7 @@ const EmployeeCreate = ({ user }: any) => {
 
   const [branchId, setBranchId] = useState<number | null>(null);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [designation, setDesignation] = useState<any[]>([]);
+  const [designation, setDesignation] = useState<any[]>([]); 
   const [sex, setSex] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
   const [saveLoading, setSaveLoading] = useState(false);
@@ -77,7 +77,7 @@ const EmployeeCreate = ({ user }: any) => {
   useEffect(() => {
     // ✅ mapping same as you wrote (not changing your structure)
     setDropdownData(employeeSettings?.employeeSettings?.data?.data?.branchs || []);
-    setDesignation(employeeSettings?.employeeSettings?.data?.data?.designation || []);
+    setDesignation(employeeSettings?.employeeSettings?.data?.data?.designation || []); 
     setSex(employeeSettings?.employeeSettings?.data?.data?.sex || []);
 
     const bId = user?.branch_id ?? user?.user?.branch_id ?? null;
@@ -180,7 +180,6 @@ const EmployeeCreate = ({ user }: any) => {
       loan_deduction: formData.loan_deduction || '0',
       others_deduction: formData.others_deduction || '0',
       salary_payable: formData.salary_payable || '1',
-      employee_group: formData.employee_group || '1',
       employee_serial: formData.employee_serial || '0',
     };
 
@@ -387,19 +386,10 @@ const EmployeeCreate = ({ user }: any) => {
             data={isPayable}
           />
 
-          <DropdownCommon
-            id="employee_group"
-            name="employee_group"
-            label="Employee Group"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.employee_group?.toString() ?? ''}
-            data={[
-              { id: '', name: 'Select Employee Group' },
-              ...employeeGroup
-            ]}
-          />
-  
+
+
+       
+          
           <DropdownCommon
             id="status"
             name="status"
