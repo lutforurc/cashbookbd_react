@@ -190,9 +190,7 @@ const GeneralCashPayment = () => {
         ? { ...product, index: productIndex }
         : prevState.currentProduct || null,
     }));
-    console.log('====================================');
-    console.log(formData);
-    console.log('====================================');
+
     setIsUpdating(true);
     setIsUpdating(true);
     setUpdateId(productIndex);

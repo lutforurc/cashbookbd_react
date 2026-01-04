@@ -15,6 +15,7 @@ import Link from '../../../utils/others/Link';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { toast } from 'react-toastify';
 import { editBankPayment, saveBankPayment, updateBankPayment } from './employeeLoanSlice';
+import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
 
 interface TransactionList {
   id: string | number;
@@ -440,7 +441,7 @@ const EmployeeLoan = () => {
 
               <div className="mt-0 mb-2">
                 <label htmlFor="" className="text-black dark:text-white">Select Employee</label>
-                <DdlMultiline
+                <EmployeeDropdownSearch
                   id="account"
                   name="account"
                   placeholder="Select Employee"

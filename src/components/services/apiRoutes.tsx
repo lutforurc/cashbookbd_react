@@ -345,8 +345,7 @@ export const API_CUSTOMER_LOGIN_URL = `${API_CUSTOMER_BASE_URL}/login`;
 export const API_CUSTOMER_AUTH_CHECK_URL = `${API_CUSTOMER_BASE_URL}/me`;
 
 
-// Employee Routes
-export const API_EMPLOYEE_DDL_LIST_URL = `${API_BASE_URL}/hrms/employee/ddl-list`;
+
 
 
 
@@ -378,6 +377,10 @@ export const API_CHANGE_HISTORY_URL = `${API_BASE_URL}/history/information`;
 
 
 // Employee Routes
+// Dropdown List URL
+export const API_EMPLOYEE_DDL_LIST_URL = `${API_BASE_URL}/hrms/employee/ddl-list`;
+export const API_EMPLOYEE_DDL_SEARCH_URL = `${API_BASE_URL}/hrms/employee/ddl/list`;
+
 export const API_EMPLOYEE_LIST_URL = `${API_BASE_URL}/hrms/employees`;
 export const API_EMPLOYEE_SETTINGS_URL = `${API_BASE_URL}/hrms/employee/settings`;
 export const API_EMPLOYEE_STORE_URL = `${API_BASE_URL}/hrms/employee/store`;

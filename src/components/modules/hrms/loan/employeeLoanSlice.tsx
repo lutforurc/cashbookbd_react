@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import {API_BANK_GENERAL_EDIT_URL, API_BANK_GENERAL_UPDATE_URL, API_BANK_PAYMENT_URL, API_BANK_RECEIVED_LIST_URL, API_BANK_RECEIVED_URL, } from '../../../services/apiRoutes';
+import {API_BANK_GENERAL_EDIT_URL, API_BANK_GENERAL_UPDATE_URL, API_BANK_PAYMENT_URL, API_BANK_RECEIVED_LIST_URL, API_BANK_RECEIVED_URL, API_EMPLOYEE_DDL_SEARCH_URL, } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
 // ---------------- Interfaces ----------------
@@ -46,9 +46,9 @@ type SaveBankPaymentResponse = {
 // ---------------- Async Thunks ----------------
 
 // 📌 Fetch Bank Payment list
-export const fetchBankPayment = createAsyncThunk<PaymentItem[],void,{ rejectValue: string }>('bankPayment/fetchBankPayment', async (_, thunkAPI) => {
+export const getEmployeeDDL = createAsyncThunk<PaymentItem[],void,{ rejectValue: string }>('bankPayment/getEmployeeDDL', async (_, thunkAPI) => {
   try {
-    const response = await httpService.get(API_BANK_RECEIVED_LIST_URL);
+    const response = await httpService.get(API_EMPLOYEE_DDL_SEARCH_URL);
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.message || 'Failed to fetch data');
@@ -108,21 +108,7 @@ const employeeLoanSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // 📌 Fetch
-      .addCase(fetchBankPayment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(
-        fetchBankPayment.fulfilled,
-        (state, action: PayloadAction<PaymentItem[]>) => {
-          state.loading = false;
-          state.bankPayment = action.payload;
-        },
-      )
-      .addCase(fetchBankPayment.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
+      
 
       // 📌 Save
       .addCase(saveBankPayment.pending, (state) => {
