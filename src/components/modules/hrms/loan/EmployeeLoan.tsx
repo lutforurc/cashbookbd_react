@@ -77,9 +77,13 @@ const EmployeeLoan = () => {
       setDdlBankList(coal3?.coal4 || []);
       setBankId(coal3?.coal4[0]?.id ?? null);
     }
+
+
   }, [coal3]);
 
-
+    console.log('====================================');
+    console.log("coal3", coal3);
+    console.log('====================================');
 
   const transactionAccountHandler = (option: any) => {
     const currentTransaction = formData.transactionList?.[0];
@@ -445,7 +449,7 @@ const EmployeeLoan = () => {
                   id="account"
                   name="account"
                   placeholder="Select Employee"
-                  onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
+                  onSelect={transactionAccountHandler}
                   value={
                     formData.transactionList &&
                       formData.transactionList[0]?.account

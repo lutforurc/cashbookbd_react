@@ -4,6 +4,7 @@ import AsyncSelect from 'react-select/async';
 import { getCoal4DdlNext } from '../../modules/chartofaccounts/levelfour/coal4DdlSlicer';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
+import { employeeLoan } from '../../modules/hrms/loan/employeeLoanSlice';
 
 interface OptionType {
   value: string;
@@ -50,8 +51,7 @@ const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
   ) => {
     if (inputValue.length >= 3) {
       try {
-        const response: any = await dispatch(getCoal4DdlNext(inputValue, acType),
-        );
+        const response: any = await dispatch(employeeLoan({ searchName: inputValue }));
 
         if (Array.isArray(response.payload)) {
           const formattedOptions: OptionType[] = response.payload.map(

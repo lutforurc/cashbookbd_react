@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import httpService from '../../../services/httpService';
-import { API_CHART_OF_ACCOUNTS_DDL_L4_URL } from '../../../services/apiRoutes';
+import { API_CHART_OF_ACCOUNTS_DDL_L4_URL, API_EMPLOYEE_DDL_SEARCH_URL } from '../../../services/apiRoutes';
 
 
 // ===== Types =====
@@ -28,16 +28,12 @@ const initialState: Coal4State = {
 
 // ===== Thunk =====
 // inputValue + acType দুইটাই পাঠাবেন
-export const getCoal4DdlNext = createAsyncThunk<
-  Coal4Item[],
-  { searchName: string; acType?: string },
-  { rejectValue: string }
->(
+export const employeeLoan = createAsyncThunk<Coal4Item[],{ searchName: string },{ rejectValue: string }>(
   'employeeLoan/getCoal4DdlNext',
   async ({ searchName }, thunkAPI) => {
     try {
       // ✅ যদি httpService এ token interceptor থাকে, headers লাগবে না
-      const response = await httpService.get(API_CHART_OF_ACCOUNTS_DDL_L4_URL, {
+      const response = await httpService.get(API_EMPLOYEE_DDL_SEARCH_URL, {
         params: {
           searchName: searchName
         },
@@ -89,15 +85,15 @@ const employeeLoanSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getCoal4DdlNext.pending, (state) => {
+      .addCase(employeeLoan.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getCoal4DdlNext.fulfilled, (state, action: PayloadAction<Coal4Item[]>) => {
+      .addCase(employeeLoan.fulfilled, (state, action: PayloadAction<Coal4Item[]>) => {
         state.loading = false;
         state.ddl = action.payload;
       })
-      .addCase(getCoal4DdlNext.rejected, (state, action) => {
+      .addCase(employeeLoan.rejected, (state, action) => {
         state.loading = false;
         state.ddl = [];
         state.error = (action.payload as string) || 'Failed to fetch data';
