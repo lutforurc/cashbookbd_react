@@ -21,13 +21,13 @@ const CompanyPad = () => {
       </div>
       <div className="border-t-2 border-gray-900 -mt-4"></div>
       <div className='flex justify-between'>
-        <h3 className="">Branch: {settings?.branch?.name}</h3>
+        <h3 className="">Branch: <span className='font-bold'>{settings?.branch?.name}</span></h3>
         <div >
-          <span className="font-semibold text-xs">Printed At:</span>{' '}
-          {new Date().toLocaleString()}
+          <span className="font-semibold text-xs">Printed At:</span>{' '} <span>{new Date().toLocaleString()}</span>
+          
         </div>
       </div>
-      <div className="">Address: {settings?.branch?.address}</div>
+      <div className="">Address: <span className='font-bold'>{settings?.branch?.address}</span></div>
     </div>
   );
 };

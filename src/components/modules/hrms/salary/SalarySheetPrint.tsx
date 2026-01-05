@@ -113,7 +113,7 @@ const getMeta = (meta?: string | Meta): Meta => {
       const pages = chunkRows(safeRows, rowsPerPage);
       const fs = fontSize;
       const lastPageIndex = pages.length - 1;
-
+      const hasMultiplePages = pages.length > 1;
       /* Grand totals */
       const grandBasic = sum(safeRows.map(r => Number(r.basic_salary || 0)));
       const grandAllowance = sum(safeRows.map(r => Number(r.others_allowance || 0)));
@@ -174,7 +174,7 @@ const getMeta = (meta?: string | Meta): Meta => {
               <React.Fragment key={pageIndex}>
                 {/* ===== Page Header ===== */}
                 <PadPrinting />
-                <div className="text-center mb-2">
+                <div className="text-center">
                   <h1 className="text-xl font-bold">{title}</h1>
                 </div>
                 <div className='flex justify-between'>
@@ -193,12 +193,12 @@ const getMeta = (meta?: string | Meta): Meta => {
                       <th style={{ fontSize: fs }}>SL</th>
                       <th className='text-left' style={{ fontSize: fs }}>Employee Name</th>
                       <th className='text-left' style={{ fontSize: fs }}>Designation</th>
-                      <th style={{ fontSize: fs, textAlign: 'right' }}>Salary</th>
-                      <th style={{ fontSize: fs, textAlign: 'right' }}>Mobile</th>
-                      <th style={{ fontSize: fs, textAlign: 'right' }}>Total</th>
-                      <th style={{ fontSize: fs, textAlign: 'right' }}>Loan</th>
-                      <th style={{ fontSize: fs, textAlign: 'right' }}>Net Salary</th>
-                      <th style={{ fontSize: fs, textAlign: 'right' }}>Payment</th>
+                      <th style={{ fontSize: fs, textAlign: 'center' }}>Salary</th>
+                      <th style={{ fontSize: fs, textAlign: 'center' }}>Mobile</th>
+                      <th style={{ fontSize: fs, textAlign: 'center' }}>Total</th>
+                      <th style={{ fontSize: fs, textAlign: 'center' }}>Loan</th>
+                      <th style={{ fontSize: fs, textAlign: 'center' }}>Net Salary</th>
+                      <th style={{ fontSize: fs, textAlign: 'center' }}>Payment</th>
                       <th style={{ fontSize: fs }}>Signature</th>
                     </tr>
                   </thead>
@@ -253,6 +253,8 @@ const getMeta = (meta?: string | Meta): Meta => {
 
                     {isLastPage && (
                       <>
+                        {/* ✅ Page Total শুধু multiple pages হলে */}
+                      {hasMultiplePages && (
                         <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
                           <td colSpan={3}>Page Total</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic, 0)}</td>
@@ -263,6 +265,7 @@ const getMeta = (meta?: string | Meta): Meta => {
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment, 0)}</td>
                           <td></td>
                         </tr>
+                      )}
                         <tr style={{ fontSize: fs, fontWeight: 700, background: '#e5e5e5' }}>
                           <td colSpan={3}>Grand Total</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(grandBasic, 0)}</td>
