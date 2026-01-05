@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Link from '../../../utils/others/Link';
-import { FiHome, FiSave, FiArrowLeft } from 'react-icons/fi';
+import { FiSave, FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { employeeGroup, isPayable, status } from '../../../utils/fields/DataConstant';
+import { isPayable, status } from '../../../utils/fields/DataConstant';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
@@ -40,7 +40,6 @@ class EmployeeFormModel {
       loan_deduction: '',
       others_deduction: '',
       salary_payable: '',
-      employee_group: '',
       employee_serial: '',
     };
   }
@@ -53,7 +52,6 @@ const EmployeeEdit = ({ user }: any) => {
 
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const employeeState = useSelector((state: any) => state.employees);
-  const settings = useSelector((state: any) => state.settings);
 
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -106,7 +104,6 @@ const EmployeeEdit = ({ user }: any) => {
       loan_deduction: emp.loan_deduction,
       others_deduction: emp.others_deduction,
       salary_payable: emp.salary_payable,
-      employee_group: emp.employee_group,
       employee_serial: emp.employee_serial,
     });
 
@@ -164,16 +161,8 @@ const EmployeeEdit = ({ user }: any) => {
       const response = await dispatch(updateEmployee({ id: Number(id), data: payload })).unwrap();
 
       if (response?.success === true) {
-
-        // console.log('====================================');
-        // console.log("response", response);
-        // console.log('====================================');
         toast.success('Employee updated successfully');
         setTimeout(() => navigate('/hrms/employees'), 300);
-        // setTimeout(() => {
-        //   // navigate('/hrms/employees');
-        // }, 500);
-        // navigate('/hrms/employees');
       } else {
         toast.info('something went wrong');
       }
@@ -282,7 +271,6 @@ const EmployeeEdit = ({ user }: any) => {
             onChange={handleChange}
           />
 
-
           <InputElement
             placeholder='Enter basic salary'
             id="basic_salary"
@@ -336,15 +324,7 @@ const EmployeeEdit = ({ user }: any) => {
             value={formData.others_deduction}
             onChange={handleChange}
           />
-          {/* <DropdownCommon
-            id="designation"
-            name="designation"
-            label="Select Designation"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.designation?.toString() ?? ''}
-            data={designation}
-          /> */}
+       
           <DropdownCommon
             id="designation"
             name="designation"
@@ -389,35 +369,6 @@ const EmployeeEdit = ({ user }: any) => {
             value={formData.salary_payable?.toString() ?? ''}
             data={isPayable}
           />
-          {/* <DropdownCommon
-            id="salary_payable"
-            name="salary_payable"
-            label="Is Payable?"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.salary_payable?.toString() ?? ''}
-            data={isPayable}
-          /> */}
-          <DropdownCommon
-            id="employee_group"
-            name="employee_group"
-            label="Employee Group"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            value={formData.employee_group?.toString() ?? ''}
-            data={employeeGroup}
-          />
-
-          {/* <DropdownCommon
-            id="employee_group"
-            name="employee_group"
-            label="Employee Group"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.employee_group?.toString() ?? ''}
-            data={employeeGroup}
-          /> */}
-
           <DropdownCommon
             id="status"
             name="status"
@@ -427,15 +378,7 @@ const EmployeeEdit = ({ user }: any) => {
             value={formData.status?.toString() ?? ''}
             data={status}
           />
-          {/* <DropdownCommon
-            id="status"
-            name="status"
-            label="Status"
-            onChange={handleOnSelectChange}
-            className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.status !== null ? String(formData.status) : ''}
-            data={status}
-          /> */}
+          
           <InputElement
             id="employee_serial"
             label="Salary Sheet Serial Number"
