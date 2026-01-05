@@ -1121,10 +1121,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <NavLink
                       to="#"
                       className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                        pathname === '/hrms/employee/add' ||
                         pathname === '/hrms/employees' ||
                         pathname === '/hrms/salary/salary-generate' || 
-                         pathname.includes('/hrms/employee/add')
+                         pathname.includes('/hrms/salary-sheet')
                         ) &&
                         'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                         }`}

@@ -16,6 +16,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { toast } from 'react-toastify';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
 import { editBankPayment, saveBankPayment, updateBankPayment } from '../../transactions/bankpayment/bankPaymentSlice';
+import { employeeLoanDisbursement } from './employeeLoanSlice';
 
 interface TransactionList {
   id: string | number;
@@ -290,7 +291,7 @@ const EmployeeLoan = () => {
         bankPaymentAccountName: formData.bankPaymentAccountName,
         transactions,
       };
-      const response = await dispatch(saveBankPayment(payload)).unwrap();
+      const response = await dispatch(employeeLoanDisbursement(payload)).unwrap();
       // console.log('Save Response:', response);
 
       // server sample:

@@ -391,6 +391,10 @@ export const API_EMPLOYEE_STATUS_URL = `${API_BASE_URL}/hrms/employee/status`;
 export const API_FULL_SALARY_PAYMENT_URL = `${API_BASE_URL}/hrms/salary-payment-full`;
 
 
+// Employee Loan Routes
+export const API_EMPLOYEE_LOAN_DISBURSEMENT_URL = `${API_BASE_URL}/hrms/loan/disbursement`;
+
+
 // Salary Routes
 export const API_SALARY_VIEW_URL = `${API_BASE_URL}/hrms/salary-view`;
 export const API_SALARY_GENERATE_URL = `${API_BASE_URL}/hrms/salary-generate`;
