@@ -33,14 +33,14 @@ const Employees = ({ user }: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [branchId, setBranchId] = useState<number | null>(null);
+  const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const printRef = useRef<HTMLDivElement>(null);
   const [designation, setDesignation] = useState<any[]>([]);
   const [ddlDesignation, setDdlDesignation] = useState<any[]>([]);
   const [ddlDesignationLevel, setDdlDesignationLevel] = useState<any[]>([]);
-  
-    const [designationId, setDesignationId] = useState<number | undefined>(undefined);
-    const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
+
+  const [designationId, setDesignationId] = useState<number | undefined>(undefined);
+  const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
 
   const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
@@ -211,7 +211,7 @@ const Employees = ({ user }: any) => {
       ),
     },
 
-    
+
     {
       key: 'name',
       header: 'Employee Name',
@@ -367,10 +367,10 @@ const Employees = ({ user }: any) => {
     removeAfterPrint: true,
   });
 
-const designationLevelAll = [
-  { id: '', name: 'All Level' },
-  ...(Array.isArray(ddlDesignationLevel) ? ddlDesignationLevel : []),
-];
+  const designationLevelAll = [
+    { id: '', name: 'All Level' },
+    ...(Array.isArray(ddlDesignationLevel) ? ddlDesignationLevel : []),
+  ];
   const designationAll = [
     { id: '', name: 'All Designation' },
     ...(Array.isArray(ddlDesignation) ? ddlDesignation : []),
@@ -383,33 +383,43 @@ const designationLevelAll = [
         <div className='flex'>
           <div className='mr-2'>
             <div className="w-full">
-              <BranchDropdown
+              {/* <BranchDropdown
                 defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
                 className="w-60 font-medium text-sm p-2 "
+                branchDdl={dropdownData}
+              /> */}
+
+              <BranchDropdown
+                defaultValue={branchId?.toString()}
+                onChange={(e: any) => {
+                  const value = e.target.value;
+                  setBranchId(value === "" ? "" : Number(value));
+                }}
+                className="w-60 font-medium text-sm p-2 mr-2 "
                 branchDdl={dropdownData}
               />
             </div>
           </div>
           <div className='mr-2'>
             <DropdownCommon
-            id="designation_level"
-            name="designation_level"
-            label=""
-            onChange={handleOnSelectChange}
-            className="h-[2.4rem] bg-transparent"
-            data={designationLevelAll}
-          />
+              id="designation_level"
+              name="designation_level"
+              label=""
+              onChange={handleOnSelectChange}
+              className="h-[2.4rem] bg-transparent"
+              data={designationLevelAll}
+            />
           </div>
           <div className='mr-2'>
             <DropdownCommon
-            id="designation"
-            name="designation"
-            label=""
-            onChange={handleOnSelectChange}
-            className="h-[2.4rem] bg-transparent"
-            data={designationAll}
-          />
+              id="designation"
+              name="designation"
+              label=""
+              onChange={handleOnSelectChange}
+              className="h-[2.4rem] bg-transparent"
+              data={designationAll}
+            />
           </div>
           <div className="flex">
             <SelectOption

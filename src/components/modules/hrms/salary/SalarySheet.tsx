@@ -30,7 +30,7 @@ const SalarySheet = ({ user }: any) => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any[]>([]);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [branchId, setBranchId] = useState<number | null>(null);
+  const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const printRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
@@ -266,11 +266,14 @@ const SalarySheet = ({ user }: any) => {
         <div className='flex'>
           <div className='mr-2'>
             <div className="w-full">
-              {/* {branchDdlData.isLoading == true ? <Loader /> : ''} */}
+             
               <BranchDropdown
-                defaultValue={user?.user?.branch_id}
-                onChange={handleBranchChange}
-                className="w-60 font-medium text-sm p-2 "
+                defaultValue={branchId?.toString()}
+                onChange={(e: any) => {
+                  const value = e.target.value;
+                  setBranchId(value === "" ? "" : Number(value));
+                }}
+                className="w-60 font-medium text-sm p-2 mr-2 "
                 branchDdl={dropdownData}
               />
             </div>
