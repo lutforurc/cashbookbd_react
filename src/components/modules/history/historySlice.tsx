@@ -65,6 +65,7 @@ interface VoucherChangeHistoryResponse {
 
 // Params
 interface HistoryParams {
+  branch: number;
   voucher_no: number;
   page?: number;
   per_page?: number;
@@ -91,6 +92,7 @@ export const fetchVoucherChangeHistory = createAsyncThunk<VoucherChangeHistoryRe
       const response = await httpService.post(
         API_CHANGE_HISTORY_URL,
         {
+          branch: params.branch,
           voucher_no: params.voucher_no
         }
       );

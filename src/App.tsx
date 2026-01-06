@@ -212,7 +212,7 @@ function App() {
             <Route path={routes.installment_delete} element={<InstallmentDelete />} />
             <Route path={routes.voucher_delete} element={<VoucherDelete />} />
             <Route path={routes.recyclebin} element={<Recyclebin />} />
-            <Route path={routes.voucher_history} element={<ChangeHistory />} />
+            <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />
 
 
             {/* Invoices */}
