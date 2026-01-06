@@ -4,11 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { fetchVoucherChangeHistory } from './historySlice';
-import { chartDateTime } from '../../utils/utils-functions/formatDate';
+
 import JournalSection from '../../utils/history/JournalSection';
 import InvoiceChangesTable from '../../utils/history/InvoiceChangesTable';
 import HistorySearchForm from '../../utils/history/HistorySearchForm';
 import HistoryHeader from '../../utils/history/HistoryHeader';
+import PurchaseDetailsTable from '../../utils/history/PurchaseDetailsTable';
+import PurchaseSummary from '../../utils/history/PurchaseSummary';
+
 
 /* =====================================================
    Helper: Safe JSON Parse (string OR object)
@@ -22,14 +25,26 @@ const normalizeData = (val) => {
       return {};
     }
   }
-  return val; // already object/array
+  return val;
+};
+
+const getVoucherType = (vrNo) => {
+  if (!vrNo) return 0;
+  const first = String(vrNo).split('-')[0];
+  return Number(first) || 0;
+};
+
+const num = (v) => {
+  if (v === null || v === undefined || v === '') return 0;
+  const n = parseFloat(v);
+  return Number.isNaN(n) ? 0 : n;
 };
 
 /* =====================================================
-   Helper: Invoice Changes
+   Helper: Invoice Changes (Sales)
 ===================================================== */
 const extractInvoiceChanges = (oldData, newData) => {
-  if (!oldData.sales_master || !newData.sales_master) return [];
+  if (!oldData?.sales_master || !newData?.sales_master) return [];
 
   const changes = [];
   const oldSales = oldData.sales_master;
@@ -39,7 +54,7 @@ const extractInvoiceChanges = (oldData, newData) => {
     changes.push({ field: 'Customer', old: oldSales.customer_id, new: newSales.customer_id });
   }
 
-  if (oldSales.netpayment !== newSales.netpayment) {
+  if (num(oldSales.netpayment) !== num(newSales.netpayment)) {
     changes.push({ field: 'Net Payment', old: oldSales.netpayment, new: newSales.netpayment });
   }
 
@@ -47,10 +62,10 @@ const extractInvoiceChanges = (oldData, newData) => {
   const newItem = newSales.details?.[0];
 
   if (oldItem && newItem) {
-    if (oldItem.quantity !== newItem.quantity) {
+    if (num(oldItem.quantity) !== num(newItem.quantity)) {
       changes.push({ field: 'Quantity', old: oldItem.quantity, new: newItem.quantity });
     }
-    if (oldItem.sales_price !== newItem.sales_price) {
+    if (num(oldItem.sales_price) !== num(newItem.sales_price)) {
       changes.push({ field: 'Sales Price', old: oldItem.sales_price, new: newItem.sales_price });
     }
   }
@@ -58,60 +73,74 @@ const extractInvoiceChanges = (oldData, newData) => {
   return changes;
 };
 
-/* =====================================================
-   Small Component: History Header (✅ action_by_user.name)
-===================================================== */
-// const HistoryHeader = ({ title, actionByName, createdAt }) => {
-//   const formattedDate = createdAt ? chartDateTime(new Date(createdAt).toLocaleString('en-US')): '';
-
-//   return (
-//     <div className="flex justify-between mb-3">
-//       <div className="font-semibold text-gray-700 dark:text-gray-200">
-//         {title}
-//         {actionByName ? (
-//           <span className="ml-2 text-sm font-medium text-red-500 dark:text-gray-400">
-//             (Updated by: {actionByName})
-//           </span>
-//         ) : null}
-//       </div>
-
-//       <div className="text-sm text-gray-500 dark:text-gray-400">
-//         {formattedDate}
-//       </div>
-//     </div>
-//   );
-// };
 
 /* =====================================================
-   History Card (✅ fixed action_by_user display)
+   History Card
 ===================================================== */
 const HistoryCard = ({ item, coaNameMap }) => {
   const oldData = useMemo(() => normalizeData(item.old_data), [item.old_data]);
   const newData = useMemo(() => normalizeData(item.new_data), [item.new_data]);
+
+  const vrNo = newData?.vr_no || oldData?.vr_no || '';
+  const type = getVoucherType(vrNo); // 4 = purchase, 3 = sales
+
+  const isInvoice = !!newData?.sales_master;
+  const isPurchase = !!(newData?.purchase_master || oldData?.purchase_master);
 
   const invoiceChanges = useMemo(
     () => extractInvoiceChanges(oldData, newData),
     [oldData, newData]
   );
 
-  const isInvoice = !!newData.sales_master;
-
-
   const actionByName =
     item?.action_by_user?.name ||
     item?.actionByUser?.name ||
     '';
 
+  const title = type === 4 || isPurchase ? 'Purchase Update' : isInvoice ? 'Invoice Update' : 'Voucher Update';
+
+  const oldPurchase = oldData?.purchase_master;
+  const newPurchase = newData?.purchase_master;
+
   return (
     <div className="border rounded-lg p-4 mb-4 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
       <HistoryHeader
-  title={isInvoice ? "Invoice Update" : "Voucher Update"}
-  actionByName={actionByName}
-  createdAt={item?.created_at}
-/>
+        title={title}
+        actionByName={actionByName}
+        createdAt={item?.created_at}
+      />
 
+      {/* Sales Invoice Changes */}
       <InvoiceChangesTable changes={invoiceChanges} />
 
+      {/* ✅ Purchase Info + Product Details */}
+      {isPurchase ? (
+        <>
+          <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-400">
+            Purchase Information
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300 underline">
+                Before
+              </p>
+              <PurchaseSummary purchase={oldPurchase} />
+              <PurchaseDetailsTable details={oldPurchase?.details} />
+            </div>
+
+            <div>
+              <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300 underline">
+                After
+              </p>
+              <PurchaseSummary purchase={newPurchase} />
+              <PurchaseDetailsTable details={newPurchase?.details} />
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {/* Accounting Journal */}
       <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">
         Accounting Journal
       </h4>
@@ -131,8 +160,6 @@ const ChangeHistory = () => {
   const dispatch = useDispatch();
   const historyState = useSelector((state) => state.history);
 
-  // ✅ আপনার response structure অনুযায়ী:
-  // data: { data: [ ... ] }
   const historyList = historyState?.history?.data?.data || [];
 
   const [voucherNo, setVoucherNo] = useState('');

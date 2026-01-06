@@ -48,10 +48,10 @@ const HistoryHeader: React.FC<Props> = ({ title, actionByName, createdAt }) => {
 
   return (
     <div className="flex justify-between mb-3">
-      <div className="font-semibold text-gray-700 dark:text-gray-200">
+      <div className="font-semibold text-gray-700 dark:text-gray-200 ">
         {title}
         {actionByName ? (
-          <span className="ml-2 text-sm font-medium text-red-500 dark:text-gray-400">
+          <span className="ml-2 text-sm font-medium text-red-600 dark:text-red-400">
             (Updated by: {actionByName})
           </span>
         ) : null}

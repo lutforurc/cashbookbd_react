@@ -1,15 +1,13 @@
 import thousandSeparator from "../utils-functions/thousandSeparator";
 
-/* =====================================================
-   Small Component: Invoice Changes Table
-===================================================== */
-const InvoiceChangesTable = ({ changes }) => {
-  if (!changes?.length) return null;
+// PurchaseChangesTable.jsx
+const PurchaseChangesTable = ({ summary }) => {
+  if (!summary?.length) return null;
 
   return (
     <>
       <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-400">
-        Invoice Changes
+        Purchase Summary Changes
       </h4>
 
       <table className="w-full text-sm border mb-4 border-gray-200 dark:border-gray-700">
@@ -20,9 +18,8 @@ const InvoiceChangesTable = ({ changes }) => {
             <th className="border px-2 py-1 dark:border-gray-700">After</th>
           </tr>
         </thead>
-
         <tbody>
-          {changes.map((c, i) => (
+          {summary.map((c, i) => (
             <tr key={i}>
               <td className="border px-2 py-1 dark:border-gray-700">{c.field}</td>
               <td className="border px-2 py-1 text-red-600 dark:border-gray-700">{ thousandSeparator( c.old, 0)}</td>
@@ -34,4 +31,5 @@ const InvoiceChangesTable = ({ changes }) => {
     </>
   );
 };
-export default InvoiceChangesTable;
+
+export default PurchaseChangesTable;

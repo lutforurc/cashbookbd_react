@@ -1,3 +1,4 @@
+import thousandSeparator from "../utils-functions/thousandSeparator";
 
 /* =====================================================
    Small Component: Journal Table (per master)
@@ -28,10 +29,10 @@ const JournalTable = ({ details, coaNameMap, tableKey }) => {
             <tr key={d?.id ?? `${tableKey}-${di}`}>
               <td className="border px-2 py-1 dark:border-gray-700">{coaTitle}</td>
               <td className="border px-2 py-1 text-right dark:border-gray-700">
-                {d?.debit && d.debit !== '0' ? d.debit : ''}
+                { thousandSeparator(d.debit, 0) }
               </td>
               <td className="border px-2 py-1 text-right dark:border-gray-700">
-                {d?.credit && d.credit !== '0' ? d.credit : ''}
+                { thousandSeparator(d.credit, 0) }
               </td>
             </tr>
           );

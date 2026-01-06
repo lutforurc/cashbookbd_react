@@ -5,7 +5,7 @@ const JournalSection = ({ label, data, coaNameMap }) => {
 
   return (
     <div>
-      <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300">
+      <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300 underline">
         {label}
       </p>
 
