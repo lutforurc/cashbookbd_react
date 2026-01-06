@@ -1,15 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import InputElement from '../../utils/fields/InputElement';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import { FiFileText } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { fetchVoucherChangeHistory } from './historySlice';
 import { chartDateTime } from '../../utils/utils-functions/formatDate';
-import JournalTable from '../../utils/history/JournalTable';
 import JournalSection from '../../utils/history/JournalSection';
+import InvoiceChangesTable from '../../utils/history/InvoiceChangesTable';
+import HistorySearchForm from '../../utils/history/HistorySearchForm';
+import HistoryHeader from '../../utils/history/HistoryHeader';
 
 /* =====================================================
    Helper: Safe JSON Parse (string OR object)
@@ -62,86 +61,23 @@ const extractInvoiceChanges = (oldData, newData) => {
 /* =====================================================
    Small Component: History Header (✅ action_by_user.name)
 ===================================================== */
-const HistoryHeader = ({ title, actionByName, createdAt }) => {
-  const formattedDate = createdAt ? chartDateTime(new Date(createdAt).toLocaleString('en-US')): '';
-
-  return (
-    <div className="flex justify-between mb-3">
-      <div className="font-semibold text-gray-700 dark:text-gray-200">
-        {title}
-        {actionByName ? (
-          <span className="ml-2 text-sm font-medium text-red-500 dark:text-gray-400">
-            (Updated by: {actionByName})
-          </span>
-        ) : null}
-      </div>
-
-      <div className="text-sm text-gray-500 dark:text-gray-400">
-        {formattedDate}
-      </div>
-    </div>
-  );
-};
-
-/* =====================================================
-   Small Component: Invoice Changes Table
-===================================================== */
-const InvoiceChangesTable = ({ changes }) => {
-  if (!changes?.length) return null;
-
-  return (
-    <>
-      <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-400">
-        Invoice Changes
-      </h4>
-
-      <table className="w-full text-sm border mb-4 border-gray-200 dark:border-gray-700">
-        <thead className="bg-gray-100 dark:bg-gray-800">
-          <tr>
-            <th className="border px-2 py-1 dark:border-gray-700">Field</th>
-            <th className="border px-2 py-1 dark:border-gray-700">Before</th>
-            <th className="border px-2 py-1 dark:border-gray-700">After</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {changes.map((c, i) => (
-            <tr key={i}>
-              <td className="border px-2 py-1 dark:border-gray-700">{c.field}</td>
-              <td className="border px-2 py-1 text-red-600 dark:border-gray-700">{c.old}</td>
-              <td className="border px-2 py-1 text-green-600 dark:border-gray-700">{c.new}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  );
-};
-
-/* =====================================================
-   Small Component: Journal Section (Before/After)
-===================================================== */
-// const JournalSection = ({ label, data, coaNameMap }) => {
-//   const masters = data?.acc_transaction_master || [];
+// const HistoryHeader = ({ title, actionByName, createdAt }) => {
+//   const formattedDate = createdAt ? chartDateTime(new Date(createdAt).toLocaleString('en-US')): '';
 
 //   return (
-//     <div>
-//       <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300">
-//         {label}
-//       </p>
+//     <div className="flex justify-between mb-3">
+//       <div className="font-semibold text-gray-700 dark:text-gray-200">
+//         {title}
+//         {actionByName ? (
+//           <span className="ml-2 text-sm font-medium text-red-500 dark:text-gray-400">
+//             (Updated by: {actionByName})
+//           </span>
+//         ) : null}
+//       </div>
 
-//       {!masters.length ? (
-//         <p className="text-sm text-gray-500 dark:text-gray-400">No entries</p>
-//       ) : (
-//         masters.map((m, mi) => (
-//           <JournalTable
-//             key={m?.id ?? mi}
-//             tableKey={m?.id ?? mi}
-//             details={m?.acc_transaction_details || []}
-//             coaNameMap={coaNameMap}
-//           />
-//         ))
-//       )}
+//       <div className="text-sm text-gray-500 dark:text-gray-400">
+//         {formattedDate}
+//       </div>
 //     </div>
 //   );
 // };
@@ -169,10 +105,10 @@ const HistoryCard = ({ item, coaNameMap }) => {
   return (
     <div className="border rounded-lg p-4 mb-4 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
       <HistoryHeader
-        title={isInvoice ? 'Invoice Update' : 'Voucher Update'}
-        actionByName={actionByName}
-        createdAt={item?.created_at}
-      />
+  title={isInvoice ? "Invoice Update" : "Voucher Update"}
+  actionByName={actionByName}
+  createdAt={item?.created_at}
+/>
 
       <InvoiceChangesTable changes={invoiceChanges} />
 
@@ -184,37 +120,6 @@ const HistoryCard = ({ item, coaNameMap }) => {
         <JournalSection label="Before" data={oldData} coaNameMap={coaNameMap} />
         <JournalSection label="After" data={newData} coaNameMap={coaNameMap} />
       </div>
-    </div>
-  );
-};
-
-/* =====================================================
-   Search Form (small component)
-===================================================== */
-const HistorySearchForm = ({
-  voucherNo,
-  setVoucherNo,
-  loading,
-  onSubmit,
-}) => {
-  return (
-    <div className="grid grid-cols-1 gap-2 w-full md:w-1/3 mx-auto mt-5">
-      <InputElement
-        id="voucherNo"
-        name="voucherNo"
-        value={voucherNo}
-        label="Voucher Number"
-        placeholder="Enter Voucher Number"
-        onChange={(e) => setVoucherNo(e.target.value)}
-      />
-
-      <ButtonLoading
-        label="View History"
-        buttonLoading={loading}
-        className="p-2 dark:text-gray-200"
-        icon={<FiFileText />}
-        onClick={onSubmit}
-      />
     </div>
   );
 };
@@ -276,7 +181,7 @@ const ChangeHistory = () => {
 
   return (
     <>
-      <HelmetTitle title="Voucher Change History" />
+      <HelmetTitle title="Log History" />
 
       <HistorySearchForm
         voucherNo={voucherNo}
