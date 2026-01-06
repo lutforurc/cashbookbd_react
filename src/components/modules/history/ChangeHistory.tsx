@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -7,6 +7,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { fetchVoucherChangeHistory } from './historySlice';
+import { chartDateTime } from '../../utils/utils-functions/formatDate';
+
+/* =====================================================
+   Helper: Safe JSON Parse (string OR object)
+===================================================== */
+const normalizeData = (val) => {
+  if (!val) return {};
+  if (typeof val === 'string') {
+    try {
+      return JSON.parse(val);
+    } catch (e) {
+      return {};
+    }
+  }
+  // already object/array
+  return val;
+};
 
 /* =====================================================
    Helper: Invoice Changes (UNCHANGED)
@@ -59,7 +76,7 @@ const extractInvoiceChanges = (oldData, newData) => {
 };
 
 /* =====================================================
-   Helper: Accounting Journal (OLD DATA + GLOBAL MAP)
+   Helper: Accounting Journal (FIXED)
 ===================================================== */
 const renderJournal = (data, coaNameMap = {}) => {
   const masters = data?.acc_transaction_master || [];
@@ -72,51 +89,64 @@ const renderJournal = (data, coaNameMap = {}) => {
     );
   }
 
-  return masters.map((m, mi) => (
-    <table
-      key={mi}
-      className="w-full text-sm border mb-3
-                 border-gray-200 dark:border-gray-700
-                 bg-white dark:bg-gray-900"
-    >
-      <thead className="bg-gray-100 dark:bg-gray-800">
-        <tr>
-          <th className="border px-2 py-1 dark:border-gray-700 text-left">
-            COA
-          </th>
-          <th className="border px-2 py-1 dark:border-gray-700 text-right">
-            Debit
-          </th>
-          <th className="border px-2 py-1 dark:border-gray-700 text-right">
-            Credit
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {m.acc_transaction_details.map((d) => (
-          <tr key={d.id}>
-            <td className="border px-2 py-1 dark:border-gray-700">
-              {coaNameMap[d.coa4_id] || d.coa4_id}
-            </td>
-            <td className="border px-2 py-1 text-right dark:border-gray-700">
-              {d.debit !== '0' ? d.debit : ''}
-            </td>
-            <td className="border px-2 py-1 text-right dark:border-gray-700">
-              {d.credit !== '0' ? d.credit : ''}
-            </td>
+  return masters.map((m, mi) => {
+    const details = m?.acc_transaction_details || [];
+
+    return (
+      <table
+        key={m?.id ?? mi}
+        className="w-full text-sm border mb-3
+                   border-gray-200 dark:border-gray-700
+                   bg-white dark:bg-gray-900"
+      >
+        <thead className="bg-gray-100 dark:bg-gray-800">
+          <tr>
+            <th className="border px-2 py-1 dark:border-gray-700 text-left">
+              COA
+            </th>
+            <th className="border px-2 py-1 dark:border-gray-700 text-right">
+              Debit
+            </th>
+            <th className="border px-2 py-1 dark:border-gray-700 text-right">
+              Credit
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  ));
+        </thead>
+
+        <tbody>
+          {details.map((d, di) => {
+            const coaTitle =
+              d?.coa_l4?.name ||
+              (d?.coa4_id ? coaNameMap[d.coa4_id] : null) ||
+              d?.coa4_id ||
+              '';
+
+            return (
+              <tr key={d?.id ?? `${mi}-${di}`}>
+                <td className="border px-2 py-1 dark:border-gray-700">
+                  {coaTitle}
+                </td>
+                <td className="border px-2 py-1 text-right dark:border-gray-700">
+                  {d?.debit && d.debit !== '0' ? d.debit : ''}
+                </td>
+                <td className="border px-2 py-1 text-right dark:border-gray-700">
+                  {d?.credit && d.credit !== '0' ? d.credit : ''}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
+  });
 };
 
 /* =====================================================
-   History Card
+   History Card (FIXED)
 ===================================================== */
 const HistoryCard = ({ item, coaNameMap }) => {
-  const oldData = JSON.parse(item.old_data);
-  const newData = JSON.parse(item.new_data);
+  const oldData = useMemo(() => normalizeData(item.old_data), [item.old_data]);
+  const newData = useMemo(() => normalizeData(item.new_data), [item.new_data]);
 
   const invoiceChanges = extractInvoiceChanges(oldData, newData);
   const isInvoice = !!newData.sales_master;
@@ -133,7 +163,7 @@ const HistoryCard = ({ item, coaNameMap }) => {
           {isInvoice ? 'Invoice Update' : 'Voucher Update'}
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          {new Date(item.created_at).toLocaleString()}
+          {  item.created_at ? chartDateTime(new Date(item.created_at).toLocaleString()) : ''}
         </div>
       </div>
 
@@ -205,7 +235,7 @@ const HistoryCard = ({ item, coaNameMap }) => {
 };
 
 /* =====================================================
-   Main Component
+   Main Component (FIXED COA MAP)
 ===================================================== */
 const ChangeHistory = () => {
   const dispatch = useDispatch();
@@ -218,17 +248,22 @@ const ChangeHistory = () => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   /* ---------------------------------------------------
-     GLOBAL COA ID → NAME MAP (FROM ALL HISTORY)
+     GLOBAL COA ID → NAME MAP (FROM old_data + new_data)
   --------------------------------------------------- */
   const coaNameMap = useMemo(() => {
     const map = {};
 
     historyList.forEach((item) => {
-      item.main_transaction?.acc_transaction_master?.forEach((m) => {
-        m.acc_transaction_details.forEach((d) => {
-          if (d.coa4_id && d.coa_l4?.name) {
-            map[d.coa4_id] = d.coa_l4.name;
-          }
+      const oldData = normalizeData(item.old_data);
+      const newData = normalizeData(item.new_data);
+
+      [oldData, newData].forEach((d) => {
+        (d?.acc_transaction_master || []).forEach((m) => {
+          (m?.acc_transaction_details || []).forEach((row) => {
+            if (row?.coa4_id && row?.coa_l4?.name) {
+              map[row.coa4_id] = row.coa_l4.name;
+            }
+          });
         });
       });
     });
@@ -262,10 +297,11 @@ const ChangeHistory = () => {
   return (
     <>
       <HelmetTitle title="Voucher Change History" />
+
       <div className="grid grid-cols-1 gap-2 w-full md:w-1/3 mx-auto mt-5">
         <InputElement
-          id='voucherNo'
-          name='voucherNo'
+          id="voucherNo"
+          name="voucherNo"
           value={voucherNo}
           label="Voucher Number"
           placeholder="Enter Voucher Number"
@@ -275,7 +311,7 @@ const ChangeHistory = () => {
         <ButtonLoading
           label="View History"
           buttonLoading={loading}
-          className='p-2  dark:text-gray-200'
+          className="p-2  dark:text-gray-200"
           icon={<FiFileText />}
           onClick={() => {
             if (!voucherNo) {
@@ -289,11 +325,7 @@ const ChangeHistory = () => {
 
       <div className="max-w-5xl mx-auto mt-6">
         {historyList.map((item) => (
-          <HistoryCard
-            key={item.id}
-            item={item}
-            coaNameMap={coaNameMap}
-          />
+          <HistoryCard key={item.id} item={item} coaNameMap={coaNameMap} />
         ))}
       </div>
 
