@@ -8,6 +8,8 @@ import { toast } from 'react-toastify';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { fetchVoucherChangeHistory } from './historySlice';
 import { chartDateTime } from '../../utils/utils-functions/formatDate';
+import JournalTable from '../../utils/history/JournalTable';
+import JournalSection from '../../utils/history/JournalSection';
 
 /* =====================================================
    Helper: Safe JSON Parse (string OR object)
@@ -61,9 +63,7 @@ const extractInvoiceChanges = (oldData, newData) => {
    Small Component: History Header (✅ action_by_user.name)
 ===================================================== */
 const HistoryHeader = ({ title, actionByName, createdAt }) => {
-  const formattedDate = createdAt
-    ? chartDateTime(new Date(createdAt).toLocaleString('en-US'))
-    : '';
+  const formattedDate = createdAt ? chartDateTime(new Date(createdAt).toLocaleString('en-US')): '';
 
   return (
     <div className="flex justify-between mb-3">
@@ -119,74 +119,32 @@ const InvoiceChangesTable = ({ changes }) => {
 };
 
 /* =====================================================
-   Small Component: Journal Table (per master)
-===================================================== */
-const JournalTable = ({ details, coaNameMap, tableKey }) => {
-  return (
-    <table
-      key={tableKey}
-      className="w-full text-sm border mb-3 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-    >
-      <thead className="bg-gray-100 dark:bg-gray-800">
-        <tr>
-          <th className="border px-2 py-1 dark:border-gray-700 text-left">COA</th>
-          <th className="border px-2 py-1 dark:border-gray-700 text-right">Debit</th>
-          <th className="border px-2 py-1 dark:border-gray-700 text-right">Credit</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {(details || []).map((d, di) => {
-          const coaTitle =
-            d?.coa_l4?.name ||
-            (d?.coa4_id ? coaNameMap[d.coa4_id] : null) ||
-            d?.coa4_id ||
-            '';
-
-          return (
-            <tr key={d?.id ?? `${tableKey}-${di}`}>
-              <td className="border px-2 py-1 dark:border-gray-700">{coaTitle}</td>
-              <td className="border px-2 py-1 text-right dark:border-gray-700">
-                {d?.debit && d.debit !== '0' ? d.debit : ''}
-              </td>
-              <td className="border px-2 py-1 text-right dark:border-gray-700">
-                {d?.credit && d.credit !== '0' ? d.credit : ''}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-};
-
-/* =====================================================
    Small Component: Journal Section (Before/After)
 ===================================================== */
-const JournalSection = ({ label, data, coaNameMap }) => {
-  const masters = data?.acc_transaction_master || [];
+// const JournalSection = ({ label, data, coaNameMap }) => {
+//   const masters = data?.acc_transaction_master || [];
 
-  return (
-    <div>
-      <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300">
-        {label}
-      </p>
+//   return (
+//     <div>
+//       <p className="font-semibold text-sm mb-1 text-gray-700 dark:text-gray-300">
+//         {label}
+//       </p>
 
-      {!masters.length ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400">No entries</p>
-      ) : (
-        masters.map((m, mi) => (
-          <JournalTable
-            key={m?.id ?? mi}
-            tableKey={m?.id ?? mi}
-            details={m?.acc_transaction_details || []}
-            coaNameMap={coaNameMap}
-          />
-        ))
-      )}
-    </div>
-  );
-};
+//       {!masters.length ? (
+//         <p className="text-sm text-gray-500 dark:text-gray-400">No entries</p>
+//       ) : (
+//         masters.map((m, mi) => (
+//           <JournalTable
+//             key={m?.id ?? mi}
+//             tableKey={m?.id ?? mi}
+//             details={m?.acc_transaction_details || []}
+//             coaNameMap={coaNameMap}
+//           />
+//         ))
+//       )}
+//     </div>
+//   );
+// };
 
 /* =====================================================
    History Card (✅ fixed action_by_user display)
@@ -202,8 +160,7 @@ const HistoryCard = ({ item, coaNameMap }) => {
 
   const isInvoice = !!newData.sales_master;
 
-  // ✅ backend থেকে আসে: action_by_user: {id, name}
-  // fallback: relation name অন্যভাবে আসলে
+
   const actionByName =
     item?.action_by_user?.name ||
     item?.actionByUser?.name ||
