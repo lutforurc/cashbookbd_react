@@ -58,7 +58,7 @@ export { formatDateUsdToBd };
 
 
 function formatLongDateUsdToBd(dateString: string) {
-  if (!dateString) return "-";
+  if (!dateString) return "";
 
   try {
     const [day, month, year] = dateString.split("/");

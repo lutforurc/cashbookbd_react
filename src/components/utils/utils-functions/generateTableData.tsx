@@ -7,6 +7,7 @@ export interface TableRow {
   name: string;
   remarks: string | null;
   branch_id: string | null;
+  branch_name?: string | null;
   debit: number;
   credit: number;
   voucher_image: string | null;
@@ -33,6 +34,7 @@ export const generateTableData = (data: any): TableRow[] => {
     name: 'Opening',
     remarks: '',
     branch_id: '',
+    branch_name: '',
     debit: Math.max(totalDebit - totalCredit, 0),
     credit: Math.max(totalCredit - totalDebit, 0),
     voucher_image: '',
@@ -46,6 +48,7 @@ export const generateTableData = (data: any): TableRow[] => {
   name: trx.name, // এখন coa_l4 relation লোড হচ্ছে না, তাই placeholder
   remarks: trx.remarks || '-',
   branch_id: String(trx.branch_id).padStart(4, '0'), // 4-digit format
+  branch_name: trx.branch_name || '',
   debit: parseFloat(trx.debit || 0),
   credit: parseFloat(trx.credit || 0),
   voucher_image: trx.voucher_image || null,

@@ -13,6 +13,7 @@ export type LedgerRow = {
   debit?: number; // money out
   credit?: number; // money in
   branchPad?: string;
+  branch_name?: string;
   is_approved?: boolean;
 };
 
@@ -24,6 +25,7 @@ export type Props = {
   coal4?: any; // new prop for coal4 data
   rowsPerPage?: number; // default 8 (fits the provided layout)
   fontSize?: number; // default 9 (px)
+  showBranchName?: boolean;
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -47,6 +49,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
       coal4,
       rowsPerPage = 8,
       fontSize,
+      showBranchName = false,
     },
     ref,
   ) => {
@@ -100,7 +103,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                   {/* বাম পাশ */}
                   <div>
                     <span className="block font-semibold">
-                      <span>{coal4?.name } { coal4?.cust_party_infos?.idfr_code && <span className=''>({coal4?.cust_party_infos?.idfr_code})</span> }</span>
+                      <span>{coal4?.name} {coal4?.cust_party_infos?.idfr_code && <span className=''>({coal4?.cust_party_infos?.idfr_code})</span>}</span>
                     </span>
                     {coal4?.cust_party_infos?.address || coal4?.cust_party_infos?.manual_address && (
                       <span className='block'>
@@ -170,11 +173,12 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                           </td>
                           <td
                             style={{ fontSize: fs }}
-                            className="border border-gray-900 px-2 py-1 text-center leading-normal"
+                            className="border border-gray-900 px-2 py-1 text-center leading-normal "
                           >
-                            <div className={`text-[${fs}px]`}>
+                            <div className={`flex justify-center text-[${fs}px]`}>
                               {row?.vr_no ? row.vr_no : ''}
                             </div>
+
                             <div className={`text-[${fs}px]`}>
                               {formatDateUsdToBd(dayjs(row?.vr_date).format('YYYY-MM-DD'))}
                               {/* { row?.vr_date } */}
@@ -195,6 +199,11 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                                   className={`text-[${fs}px] break-words whitespace-normal text-gray-700`}
                                 >
                                   {row.remarks}
+                                </div>
+                              )}
+                              {showBranchName && row?.branch_name && (
+                                <div className={`text-[${fs}px] break-words whitespace-normal font-semibold`}>
+                                  {row.branch_name}
                                 </div>
                               )}
                             </div>

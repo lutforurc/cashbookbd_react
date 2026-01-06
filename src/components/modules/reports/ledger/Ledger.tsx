@@ -11,7 +11,6 @@ import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { getLedger } from './ledgerSlice';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
-import { API_REMOTE_URL } from '../../../services/apiRoutes';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { generateTableData } from '../../../utils/utils-functions/generateTableData';
@@ -26,17 +25,17 @@ const Ledger = (user: any) => {
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.ledger);
   const coal4 = useSelector((state) => state.coal4);
+    const settings = useSelector((state: any) => state.settings);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
-
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
-    const printRef = useRef<HTMLDivElement>(null);
-      const [perPage, setPerPage] = useState<number>(12);
+  const printRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
 
   useEffect(() => {
@@ -44,6 +43,7 @@ const Ledger = (user: any) => {
     setBranchId(user.user.branch_id);
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
   }, []);
+
 
 
 
@@ -56,8 +56,9 @@ const Ledger = (user: any) => {
     }
   }, [ledgerData]);
 
-  const handleBranchChange = (e: any) => {
-    setBranchId(e.target.value);
+  const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setBranchId(val === '' ? null : Number(val));
   };
 
   const handleStartDate = (e: any) => {
@@ -78,7 +79,7 @@ const Ledger = (user: any) => {
     dispatch(
       getLedger({ branchId, ledgerId, startDate: startD, endDate: endD }),
     );
-    dispatch(getCoal4ById(Number(ledgerId))); 
+    dispatch(getCoal4ById(Number(ledgerId)));
   };
 
 
@@ -133,7 +134,21 @@ const Ledger = (user: any) => {
       render: (row: any) => (
         <>
           <p>{row.name}</p>
-          <div className="text-sm text-gray-500 lg:max-w-150 break-words whitespace-normal">{row.remarks === "-" ? "" : row.remarks}</div>
+          <div className="text-sm text-gray-500 lg:max-w-150 break-words whitespace-normal block">
+            {row.remarks === '-' ? '' : row.remarks}
+          </div>
+          {branchId === null && (
+            <div
+              className={`text-sm font-bold lg:max-w-150 break-words whitespace-normal ${branchColorClass(row.branch_name)}`}
+            >
+              {row.branch_name}
+            </div>
+          )}
+          {/* {branchId === null && (
+            <div className="text-sm dark:text-green-500 text-gray-950 font-bold lg:max-w-150 break-words whitespace-normal">
+              {row.branch_name}
+            </div>
+          )} */}
         </>
       ),
     },
@@ -176,20 +191,42 @@ const Ledger = (user: any) => {
     },
   ];
 
-    const handlePrint = useReactToPrint({
-      content: () => {
-        if (!printRef.current) {
-          // alert("Nothing to print: Ref not ready");
-          return null;
-        }
-        return printRef.current;
-      },
-      documentTitle: 'Due Report',
-      // onAfterPrint: () => alert('Printed successfully!'),
-      removeAfterPrint: true,
-    });
 
-      const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const COLOR_CLASSES = [
+    'text-red-700 dark:text-red-400',
+    'text-blue-700 dark:text-blue-400',
+    'text-emerald-700 dark:text-emerald-400',
+    'text-purple-700 dark:text-purple-400',
+    'text-amber-700 dark:text-amber-400',
+    'text-cyan-700 dark:text-cyan-400',
+    'text-pink-700 dark:text-pink-400',
+    'text-lime-700 dark:text-lime-400',
+  ];
+
+  const hashString = (s: string) => {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h;
+  };
+
+  const branchColorClass = (name?: string) => {
+    if (!name) return 'text-gray-950 dark:text-green-500';
+    return COLOR_CLASSES[hashString(name) % COLOR_CLASSES.length];
+  };
+
+
+  const handlePrint = useReactToPrint({
+    content: () => {
+      if (!printRef.current) {
+        return null;
+      }
+      return printRef.current;
+    },
+    documentTitle: 'Due Report',
+    removeAfterPrint: true,
+  });
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value)) {
       setPerPage(value);
@@ -206,7 +243,11 @@ const Ledger = (user: any) => {
       setFontSize(10); // Reset if input is invalid
     }
   };
- 
+
+  const branchOptions = settings?.data?.branch?.branch_types_id === 1
+    ? [{ id: "", name: "Select All Branch" }, ...(dropdownData ?? [])]
+    : [...(dropdownData ?? [])];
+
 
   return (
     <div className="">
@@ -221,9 +262,10 @@ const Ledger = (user: any) => {
             <div>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
+              defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
                 className="w-full font-medium text-sm p-2"
-                branchDdl={dropdownData}
+                branchDdl={branchOptions}
               />
             </div>
           </div>
@@ -254,7 +296,7 @@ const Ledger = (user: any) => {
           </div>
 
           <div className="mt-2 md:mt-0 flex">
-            <div className="mr-2"> 
+            <div className="mr-2">
               <InputElement
                 id="perPage"
                 name="perPage"
@@ -265,7 +307,7 @@ const Ledger = (user: any) => {
                 className="font-medium text-sm h-9 w-12"
               />
             </div>
-            <div className="mr-2"> 
+            <div className="mr-2">
               <InputElement
                 id="fontSize"
                 name="fontSize"
@@ -305,6 +347,7 @@ const Ledger = (user: any) => {
             coal4={coal4.coal4ById || undefined}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
+            showBranchName={branchId === null}
           />
         </div>
       </div>
