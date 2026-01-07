@@ -374,6 +374,7 @@ export const API_RESTORE_RECYCLEBIN_URL = `${API_BASE_URL}/voucher-settings/rest
 
 
 export const API_CHANGE_HISTORY_URL = `${API_BASE_URL}/history/information`;
+export const API_TRANSACTION_HISTORY_URL = `${API_BASE_URL}/history/information`;
 
 
 // Employee Routes
