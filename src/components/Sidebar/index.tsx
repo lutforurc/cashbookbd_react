@@ -1020,6 +1020,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         pathname === '/vr-settings/installment-delete' ||
                         pathname === '/admin/voucher/date-change' ||
                         pathname === '/vr-settings/recyclebin' ||
+                        pathname === '/vr-settings/voucher-history' ||
+                        pathname === '/vr-settings/voucher-activity' ||
                          pathname.includes('/vr-settings/voucher-delete')
                         ) &&
                         'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
@@ -1097,6 +1099,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             }
                           >
                             History
+                          </NavLink>
+                        </li>
+                        <li>
+                          <NavLink
+                            to={routes.voucher_activity}
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
+                            }
+                          >
+                             
+                            Log Changes
                           </NavLink>
                         </li>
                       </ul>

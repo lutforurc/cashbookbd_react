@@ -158,6 +158,7 @@ const ROUTES = {
 
   // Voucher history
   voucher_history: '/vr-settings/voucher-history',
+  voucher_activity: '/vr-settings/voucher-activity',
 
   // Real Estate Area
   real_estate_area_list: '/real-estate/area-list',

@@ -86,6 +86,7 @@ import EmployeeEdit from './components/modules/hrms/employee/EmployeeEdit';
 import SalarySheetGenerate from './components/modules/hrms/salary/SalarySheetGenerate';
 import SalarySheet from './components/modules/hrms/salary/SalarySheet';
 import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
+import ChangeList from './components/modules/history/ChangeList';
 
 
 
@@ -213,7 +214,8 @@ function App() {
             <Route path={routes.voucher_delete} element={<VoucherDelete />} />
             <Route path={routes.recyclebin} element={<Recyclebin />} />
             <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />
-
+            <Route path={routes.voucher_activity} element={<ChangeList />} />
+ {/* voucher_activity: '/vr-settings/voucher-activity', */}
 
             {/* Invoices */}
             <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
