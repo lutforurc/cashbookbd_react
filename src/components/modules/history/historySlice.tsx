@@ -216,15 +216,14 @@ export const fetchTransactionHistories = createAsyncThunk<
   "history/fetchTransactionHistories",
   async (params, thunkAPI) => {
     try {
-      const response = await httpService.get<TransactionHistoryApiResponse>(
-        API_TRANSACTION_HISTORY_URL,
-        {
-          params: {
+      const response =
+        await httpService.post<TransactionHistoryApiResponse>(
+          API_TRANSACTION_HISTORY_URL,
+          {
             page: params.page ?? 1,
             per_page: params.per_page ?? 10,
-          },
-        }
-      );
+          }
+        );
 
       return {
         transactionHistories: response.data.data.data,
