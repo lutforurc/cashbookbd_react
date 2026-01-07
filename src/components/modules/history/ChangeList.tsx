@@ -5,10 +5,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
-import { useNavigate } from 'react-router-dom'; 
-import { getBranch } from '../branch/branchSlice';
 import { fetchTransactionHistories } from './historySlice';
-import { render } from 'react-dom';
 import { chartDate, chartDateTime } from '../../utils/utils-functions/formatDate';
 
 const ChangeList = () => {
@@ -113,10 +110,6 @@ const ChangeList = () => {
           { row.branch?.name || '' }
         </div>
       ),
-    },
-    {
-      key: 'phone',
-      header: 'Contact Number',
     },
     {
       key: 'status_label',
