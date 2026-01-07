@@ -132,10 +132,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 {(handleClick, open) => (
                   <React.Fragment>
                     <NavLink
-                      to="#"
+                      to="/dashboard"
                       className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/' || pathname.includes('dashboard')) && 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'}`}
                       onClick={(e) => {
-                        e.preventDefault();
+                        // e.preventDefault();
                         sidebarExpanded
                           ? handleClick()
                           : setSidebarExpanded(true);
@@ -144,7 +144,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       <FiGrid />
                       Dashboard
                     </NavLink>
-                    <div
+                    {/* <div
                       className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
                         }`}
                     >
@@ -161,7 +161,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </NavLink>
                         </li>
                       </ul>
-                    </div>
+                    </div> */}
                   </React.Fragment>
                 )}
               </SidebarLinkGroup>
@@ -761,7 +761,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Date Wise Total
+                            Datewise Total
                           </NavLink>
                         </li>
                         <li>
@@ -783,7 +783,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Cat Wise In Out
+                            Cat-wise In/Out
                           </NavLink>
                         </li>
                         <li>
@@ -1173,7 +1173,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                              Salary Sheet
+                              Salary Reports
                             </NavLink>
                           </li>
                   
@@ -1340,7 +1340,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Coa L1
+                            CoA L1
                           </NavLink>
                         </li>
                         <li>
@@ -1351,7 +1351,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Coa L2
+                            CoA L2
                           </NavLink>
                         </li>
                         <li>
@@ -1362,7 +1362,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Coa L3
+                            CoA L3
                           </NavLink>
                         </li>
                         <li>
@@ -1373,7 +1373,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Coa L4
+                            CoA L4
                           </NavLink>
                         </li>
                       </ul>
@@ -1427,7 +1427,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Item
+                            Comparison
                           </NavLink>
                         </li>
                       </ul>

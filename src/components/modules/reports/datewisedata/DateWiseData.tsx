@@ -188,13 +188,13 @@ const DateWiseData = (user: any) => {
   // -----------------------------------------------------
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: "Date Wise Total",
+    documentTitle: "Datewise Total",
     removeAfterPrint: true,
   });
 
   return (
     <div>
-      <HelmetTitle title={"Date Wise Total"} />
+      <HelmetTitle title={"Datewise Total"} />
 
       {/* FILTER SECTION */}
       {/* FULL RESPONSIVE SINGLE ROW BAR */}
@@ -297,7 +297,7 @@ const DateWiseData = (user: any) => {
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
           rowsPerPage={perPage}
           fontSize={fontSize}
-          title="Date Wise Total"
+          title="Datewise Total"
         />
       </div>
     </div>
