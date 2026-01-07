@@ -117,22 +117,23 @@ const formatPaymentMonth = (value: string) => {
 
 export { formatPaymentMonth };
 
-
 function chartDateTime(dateString: string) {
   if (!dateString) return "";
 
-  // ইনপুট: "1/6/2026, 3:47:55 PM"  => আউটপুট: "01/06/2026, 3:47:55 PM"
-  const [datePartRaw, timePartRaw] = dateString.split(",").map(s => s.trim());
-  if (!datePartRaw) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
 
-  const [m, d, y] = datePartRaw.split("/").map(s => s.trim());
-  if (!m || !d || !y) return dateString;
+  const pad = (n: number) => n.toString().padStart(2, "0");
 
-  const mm = m.padStart(2, "0");
-  const dd = d.padStart(2, "0");
+  const dd = pad(date.getDate());
+  const mm = pad(date.getMonth() + 1);
+  const yyyy = date.getFullYear();
 
-  // timePartRaw থাকলে 그대로 রেখে দিচ্ছি
-  return timePartRaw ? `${dd}/${mm}/${y}, ${timePartRaw}` : `${dd}/${mm}/${y}`;
+  const hh = pad(date.getHours());
+  const min = pad(date.getMinutes());
+  const ss = pad(date.getSeconds());
+
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
 }
 
 export { chartDateTime };

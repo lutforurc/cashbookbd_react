@@ -1,5 +1,7 @@
+import { longDateFormat } from 'moment';
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { chartDateTime } from './formatDate';
 
 const BranchPad = () => {
   const settings = useSelector((state: any) => state.settings.data);
@@ -21,8 +23,8 @@ const BranchPad = () => {
       <div className='flex justify-between'>
        <div></div>
         <div >
-          <span className="font-semibold text-xs">Printed At:</span>{' '}
-          {new Date().toLocaleString()}
+          <span className="text-xs">Printed At:</span>{' '}
+          <span className="text-xs">{chartDateTime(new Date().toISOString())}</span>
         </div>
       </div>
     </div>

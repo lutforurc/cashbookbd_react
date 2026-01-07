@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { chartDateTime } from './formatDate';
 
 const CompanyPad = () => {
   const settings = useSelector((state: any) => state.settings.data);
@@ -23,7 +24,8 @@ const CompanyPad = () => {
       <div className='flex justify-between'>
         <h3 className="">Branch: <span className='font-bold'>{settings?.branch?.name}</span></h3>
         <div >
-          <span className="font-semibold text-xs">Printed At:</span>{' '} <span>{new Date().toLocaleString()}</span>
+          <span className="text-xs">Printed At:</span>{' '}
+          <span className="text-xs">{chartDateTime(new Date().toISOString())}</span>
           
         </div>
       </div>
