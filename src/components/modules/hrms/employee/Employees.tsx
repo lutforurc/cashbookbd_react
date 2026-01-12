@@ -54,10 +54,6 @@ const Employees = ({ user }: any) => {
   }, []);
 
 
-  console.log('====================================');
-  console.log(employees?.employeeSettings?.data?.data);
-  console.log('====================================');
-
   useEffect(() => {
     const list = employees?.employeeSettings?.data?.data || [];
     setDesignation(list?.designation);

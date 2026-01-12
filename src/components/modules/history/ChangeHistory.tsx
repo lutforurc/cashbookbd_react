@@ -20,7 +20,7 @@ const normalizeData = (val) => {
   return val;
 };
 
-const ChangeHistory = ( user:any ) => {
+const ChangeHistory = (user: any) => {
   const dispatch = useDispatch();
   const historyState = useSelector((state) => state.history);
   const historyList = historyState?.history?.data?.data || [];
@@ -31,12 +31,12 @@ const ChangeHistory = ( user:any ) => {
 
   const coaNameMap = useMemo(() => {
     const map = {};
-    historyList.forEach((item:any) => {
+    historyList.forEach((item: any) => {
       const oldData = normalizeData(item.old_data);
       const newData = normalizeData(item.new_data);
       [oldData, newData].forEach((d) => {
         (d?.acc_transaction_master || []).forEach((m) => {
-          (m?.acc_transaction_details || []).forEach((row:any) => {
+          (m?.acc_transaction_details || []).forEach((row: any) => {
             if (row?.coa4_id && row?.coa_l4?.name) {
               map[row.coa4_id] = row.coa_l4.name;
             }
@@ -56,7 +56,7 @@ const ChangeHistory = ( user:any ) => {
     try {
       const result = await dispatch(
         fetchVoucherChangeHistory({
-          branch: branchId,      
+          branch: branchId,
           voucher_no: voucherNo,
         })
       );
@@ -82,8 +82,8 @@ const ChangeHistory = ( user:any ) => {
         setVoucherNo={setVoucherNo}
         loading={loading}
         user={user}
-        branchId={branchId}           
-        setBranchId={setBranchId}     
+        branchId={branchId}
+        setBranchId={setBranchId}
         onSubmit={() => {
           if (!voucherNo) {
             toast.error('Please enter voucher number');
@@ -95,15 +95,31 @@ const ChangeHistory = ( user:any ) => {
 
       <div className="max-w-5xl mx-auto mt-6">
         {/* {branchName && ( */}
-        { historyList.length > 0 && <div className="border rounded-lg pl-4 pt-2 pb-2 mb-4 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+        {historyList.length > 0 && <div className="border rounded-lg pl-4 pt-2 pb-2 mb-4 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
 
-        <p className="text-green-600 dark:text-green-400 font-semibold">Branch: {historyList[0]?.branch_info?.name}</p>
+          <p className="text-green-600 dark:text-green-400 font-semibold">Branch: {historyList[0]?.branch_info?.name}</p>
         </div>}
-      {/* )} */}
+
+        
+
+
         {historyList.map((item) => (
           <HistoryCard key={item.id} item={item} coaNameMap={coaNameMap} />
         ))}
       </div>
+
+        <div className="max-w-5xl mx-auto mt-6">
+          {historyList.length > 0 && <div className="border rounded-lg pl-4 pt-2 pb-2 mb-4 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+            {historyList.map((item, index) => (
+              <div key={index} className="text-sm text-gray-700 dark:text-gray-300">
+                <pre className="whitespace-pre-wrap break-words">
+                  {JSON.stringify(item.changed_only, null, 2)}
+                </pre>
+              </div>
+            ))}
+          </div>}
+        </div>
+
 
       <ConfirmModal
         show={showConfirm}

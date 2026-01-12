@@ -214,7 +214,7 @@ function App() {
             <Route path={routes.voucher_delete} element={<VoucherDelete />} />
             <Route path={routes.recyclebin} element={<Recyclebin />} />
             <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />
-            <Route path={routes.voucher_activity} element={<ChangeList />} />
+            <Route path={routes.voucher_activity} element={<ChangeList  user={me} />} />
  {/* voucher_activity: '/vr-settings/voucher-activity', */}
 
             {/* Invoices */}

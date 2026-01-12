@@ -103,12 +103,12 @@ const EmployeeLoan = () => {
     <>
       <HelmetTitle title="Employee Loan" />
 
-      <div className="flex justify-center w-full !min-w-[1000px]">
+      <div className="flex justify-center ">
         <div className="grid">
           {isLoading && <Loader />}
 
-          <div className="col-span-1">
-            <div className="grid grid-cols-1 gap-y-2">
+          <div className="">
+            <div className="">
               <div className="w-full">
                 <div className="relative w-full flex items-center">
                   {hasPermission(settings?.data?.permissions, 'cash.received.edit') && (
@@ -170,7 +170,6 @@ const EmployeeLoan = () => {
                     onKeyDown={(e) => handleInputKeyDown(e, 'amount')}
                   />
                 </div>
-
                 <InputElement
                   id="amount"
                   value={String(tx.amount)}
@@ -184,7 +183,7 @@ const EmployeeLoan = () => {
               </div>
 
               <div>
-                <div className="grid grid-cols-3 gap-x-1 gap-y-1">
+                <div className="grid grid-cols-3 gap-x-1 gap-y-1 mt-3">
                   <ButtonLoading
                     id="save_button"
                     disabled={saveButtonLoading}
@@ -201,7 +200,6 @@ const EmployeeLoan = () => {
                   </Link>
                 </div>
               </div>
-
             </div>
           </div>
         </div>

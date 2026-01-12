@@ -149,6 +149,7 @@ export interface TransactionHistoryApiResponse {
 export interface TransactionHistoryParams {
   page?: number;
   per_page?: number;
+  branchId?: number;
 }
 
 /* ================= STATE ================= */
@@ -222,6 +223,7 @@ export const fetchTransactionHistories = createAsyncThunk<
           {
             page: params.page ?? 1,
             per_page: params.per_page ?? 10,
+            branchId: params.branchId,
           }
         );
 
