@@ -57,31 +57,35 @@ const EmployeeLoan = () => {
   };
 
   const handleSave = useCallback(async () => {
-    if (saveButtonLoading) return;
+  if (saveButtonLoading) return;
 
-    // ✅ validations
-    if (!tx.account) return toast.warning('Please select employee');
-    if (!tx.amount || Number(tx.amount) <= 0) return toast.warning('Please enter amount');
+  if (!tx.account) return toast.warning('Please select employee');
+  if (!tx.amount || Number(tx.amount) <= 0)
+    return toast.warning('Please enter amount');
 
-    setIsLoading(true);
-    setSaveButtonLoading(true);
+  setIsLoading(true);
+  setSaveButtonLoading(true);
 
-    try {
-      // ✅ ONLY এই অবজেক্টটাই যাবে (NO ARRAY)
-      const payload = {
-        id: tx.id,
-        account: tx.account,
-        accountName: tx.accountName,
-        remarks: tx.remarks ?? '',
-        amount: Number(tx.amount),
-      };
+  try {
+    const payload = {
+      id: tx.id,
+      account: tx.account,
+      accountName: tx.accountName,
+      remarks: tx.remarks ?? '',
+      amount: Number(tx.amount),
+    };
 
-      const response = await dispatch(employeeLoanDisbursement(payload)).unwrap();
+    const response = await dispatch(
+      employeeLoanDisbursement(payload)
+    ).unwrap();
 
-      const msg = response?.data?.message || response?.message || response?.data?.data?.[0];
-      toast.success(msg || 'Saved successfully');
+    if (response?.success === false) {
+      toast.info(response?.error?.message || response?.message);
+      return;
+    }
 
-      // ✅ reset after save
+    if (response?.message) {
+      toast.success(response.message);
       setTx({
         id: Date.now(),
         account: '',
@@ -89,13 +93,14 @@ const EmployeeLoan = () => {
         remarks: '',
         amount: '',
       });
-    } catch (error: any) {
-      toast.error(error?.message || 'Something went wrong while saving.');
-    } finally {
-      setSaveButtonLoading(false);
-      setIsLoading(false);
     }
-  }, [saveButtonLoading, tx, dispatch]);
+  } catch (error: any) {
+    toast.error(error?.message || 'Something went wrong while saving.');
+  } finally {
+    setSaveButtonLoading(false);
+    setIsLoading(false);
+  }
+}, [saveButtonLoading, tx, dispatch]);
 
   useCtrlS(handleSave);
 
@@ -103,7 +108,7 @@ const EmployeeLoan = () => {
     <>
       <HelmetTitle title="Employee Loan" />
 
-      <div className="flex justify-center ">
+      <div className=" w-2/5 items-center mx-auto mt-10 mb-10">
         <div className="grid">
           {isLoading && <Loader />}
 
