@@ -108,7 +108,7 @@ const EmployeeLoan = () => {
     <>
       <HelmetTitle title="Employee Loan" />
 
-      <div className=" w-2/5 items-center mx-auto mt-10 mb-10">
+      <div className="w-full md:w-4/5 lg:w-3/5 xl:w-2/5 items-center mx-auto mt-10 mb-10">
         <div className="grid">
           {isLoading && <Loader />}
 

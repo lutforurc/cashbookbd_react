@@ -492,7 +492,7 @@ const GeneralBusinessSales = () => {
                 name="vehicleNumber"
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
-                className={'py-1.5 -mt-1'}
+                className={'py-1.5 '}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')} // Pass the next field's ID
               />
