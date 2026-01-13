@@ -34,7 +34,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
         <div className="mb-4">{message}</div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-center gap-3">
           {/* Cancel Button */}
           <ButtonLoading
             onClick={onCancel}

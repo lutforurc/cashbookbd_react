@@ -15,6 +15,7 @@ import { employeeGroup } from "../../../utils/fields/DataConstant";
 import MonthDropdown from "../../../utils/components/MonthDropdown";
 import { toast } from 'react-toastify';
 import { fetchEmployeeSettings } from "../employee/employeeSlice";
+import ConfirmModal from "../../../utils/components/ConfirmModalProps";
 
 /* ================= TYPES ================= */
 interface SalaryRow {
@@ -46,15 +47,16 @@ const SalarySheetGenerate = ({ user }: any) => {
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const [designation, setDesignation] = useState<any[]>([]);
   const [designationLevel, setDesignationLevel] = useState<any[]>([]);
-  const [sex, setSex] = useState<any[]>([]);
-  const [groupId, setGroupId] = useState<number | undefined>(undefined);
   const [monthId, setMonthId] = useState<string>("");
+  const [monthText, setMonthText] = useState<string>("");
   const [searched, setSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [designationId, setDesignationId] = useState<number | undefined>(undefined);
   const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
 
 
   /* ================= INIT ================= */
@@ -84,7 +86,7 @@ const SalarySheetGenerate = ({ user }: any) => {
     try {
       const response = await dispatch(
         salaryView({
-          branch_id: Number(branchId) ,
+          branch_id: Number(branchId),
           level_id: Number(designationLevelId),
           month_id: monthId,
         })
@@ -107,6 +109,8 @@ const SalarySheetGenerate = ({ user }: any) => {
   };
 
 
+
+  
 
 
   /* ================= MAP API DATA ================= */
@@ -293,6 +297,7 @@ const SalarySheetGenerate = ({ user }: any) => {
   const handleOnMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setMonthId(value.toString());
+    setMonthText(e.target.selectedOptions[0]?.text || ""); 
   };
 
 
@@ -300,14 +305,15 @@ const SalarySheetGenerate = ({ user }: any) => {
   const handleSalaryGenerate = async () => {
     if (!branchId || !monthId) return;
 
+    setSaveButtonLoading(true);
     setSaveLoading(true);
     try {
       const response = await dispatch(
         salaryGenerate({
           branch_id: Number(branchId),
-          level_id: Number(designationLevelId), 
+          level_id: Number(designationLevelId),
           month_id: monthId,
-          employees: employees, 
+          employees: employees,
         })
       ).unwrap();
 
@@ -322,6 +328,10 @@ const SalarySheetGenerate = ({ user }: any) => {
       toast.error(error?.message || "Failed to generate salary");
     } finally {
       setSaveLoading(false);
+
+      setSaveButtonLoading(false);
+      setShowConfirm(false);
+
     }
   };
 
@@ -397,14 +407,22 @@ const SalarySheetGenerate = ({ user }: any) => {
         <div className="flex gap-2">
           {branchId &&
             <ButtonLoading
-              onClick={handleSalaryGenerate}
-              buttonLoading={saveLoading}
-              disabled={saveLoading}
+              onClick={() => {
+                if (!branchId || !monthId) {
+                  toast.info(!branchId ? 'Please select branch' : 'Please select month');
+                  return;
+                }
+
+                setShowConfirm(true);
+              }}
+              buttonLoading={saveButtonLoading}
               label="Generate Salary"
+              className="whitespace-nowrap h-8"
               icon={<FiSave className="mr-2" />}
-              className="whitespace-nowrap p-2"
             />
           }
+
+
           <ButtonLoading
             onClick={() => window.print()}
             label="Print"
@@ -442,6 +460,21 @@ const SalarySheetGenerate = ({ user }: any) => {
         </div>
       </div>
 
+      <ConfirmModal
+        show={showConfirm}
+        title="Confirm Deletion"
+        message={
+          <>
+            Proceed with salary for {' '}
+            <span className="font-bold mt-1">
+             { monthText}
+            </span>
+          </>
+        }
+        loading={saveButtonLoading}
+        onCancel={() => setShowConfirm(false)}
+        onConfirm={handleSalaryGenerate}
+      />
     </div>
   );
 };
