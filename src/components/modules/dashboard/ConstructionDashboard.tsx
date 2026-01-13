@@ -9,32 +9,21 @@ import { toast } from 'react-toastify';
 
 import {
   getBranchChart,
-  getHeadOfficePaymentChart,
   getHeadOfficeReceivedChart,
 } from './chartSlice';
 import HeadOfficePaymentChart from './HeadOfficePaymentChart';
-import HeadOfficeReceivedChart from './HeadOfficeReceivedChart';
-import InputOnly from '../../utils/fields/InputOnly';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
-import Loader from '../../../common/Loader';
 import { formatDate } from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
-import LoaderDots from '../../utils/LoaderDots';
 import CompareSingleItem from './CompareSingleItem';
 
 const ConstructionDashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
-  const branchDdlData = useSelector((state) => state.branchDdl);
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   const [displayMonth, setDisplayMonth] = useState<number | ''>('');
-  const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [loadingItems, setLoadingItems] = useState<{ [key: string]: boolean }>(
     {},
   ); // Track loading state per item
@@ -145,9 +134,9 @@ const ConstructionDashboard = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.debit > 0
                       ? thousandSeparator(
-                          dashboard?.data?.todayReceived?.debit,
-                          0,
-                        )
+                        dashboard?.data?.todayReceived?.debit,
+                        0,
+                      )
                       : 0}
                   </span>
                 </div>
@@ -157,9 +146,9 @@ const ConstructionDashboard = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.credit > 0
                       ? thousandSeparator(
-                          dashboard?.data?.todayReceived?.credit,
-                          0,
-                        )
+                        dashboard?.data?.todayReceived?.credit,
+                        0,
+                      )
                       : 0}
                   </span>
                 </div>
@@ -172,8 +161,8 @@ const ConstructionDashboard = () => {
                       thousandSeparator(
                         (Number(dashboard?.data?.totalTransaction?.debit) ||
                           0) -
-                          (Number(dashboard?.data?.totalTransaction?.credit) ||
-                            0),
+                        (Number(dashboard?.data?.totalTransaction?.credit) ||
+                          0),
                         0,
                       )}
                   </span>
@@ -186,7 +175,7 @@ const ConstructionDashboard = () => {
               </div>
             </div>
 
-                  {dashboard?.data?.topProductsPurchase?.length > 0 && (
+            {dashboard?.data?.topProductsPurchase?.length > 0 && (
               <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
                 {/* Header */}
                 <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
@@ -221,7 +210,7 @@ const ConstructionDashboard = () => {
                               </div>
                               <div className="ml-2">
                                 <span className={`font-bold ${fontClass}`}>
-                                  { thousandSeparator((Number(item.qty)), 0)}
+                                  {thousandSeparator((Number(item.qty)), 0)}
                                 </span>
                               </div>
                             </li>
@@ -244,70 +233,72 @@ const ConstructionDashboard = () => {
       </div>
 
       {!dashboard.isLoading &&
-      currentBranch?.business_type_id === 7 &&
-      Object.values(
-        dashboard?.data?.receiveDetails?.receivedDetails || {},
-      ).some(
-        (items): items is any[] => Array.isArray(items) && items.length > 0,
-      ) ? (
-        <div className="grid grid-cols-1 xl:grid-cols-2 mt-6 ">
-          <div className="bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
-            <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 flex justify-between">
-              <span className="text-sm font-bold">
-                {!dashboard.isLoading && dashboard?.data?.transactionText}
-              </span>
-              <span>
-                {totalDebit ? `Tk. ${thousandSeparator(totalDebit, 0)}` : '-'}
-              </span>
-            </div>
-            <div className="max-h-96 overflow-y-auto">
-              {' '}
-              {!dashboard.isLoading &&
-                dashboard?.data?.receiveDetails?.receivedDetails &&
-                dashboard?.data?.receiveDetails?.receivedDetails[
-                  dashboard?.data?.branch?.id
-                ]?.map((item: any, index: number) => (
-                  <div className="p-2 flex items-center" key={item.vr_no}>
-                    <div className="text-sm ml-6 w-6">{++index}</div>
-                    <div className="text-sm font-medium w-24">
-                      {formatDate(item.vr_date)}
+        currentBranch?.business_type_id === 7 &&
+        Object.values(
+          dashboard?.data?.receiveDetails?.receivedDetails || {},
+        ).some(
+          (items): items is any[] => Array.isArray(items) && items.length > 0,
+        ) ? (
+        <>
+          <div className="grid grid-cols-1 xl:grid-cols-2 mt-6 ">
+            <div className="bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
+              <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 flex justify-between">
+                <span className="text-sm font-bold">
+                  {!dashboard.isLoading && dashboard?.data?.transactionText}
+                </span>
+                <span>
+                  {totalDebit ? `Tk. ${thousandSeparator(totalDebit, 0)}` : '-'}
+                </span>
+              </div>
+              <div className="max-h-96 overflow-y-auto">
+                {' '}
+                {!dashboard.isLoading &&
+                  dashboard?.data?.receiveDetails?.receivedDetails &&
+                  dashboard?.data?.receiveDetails?.receivedDetails[
+                    dashboard?.data?.branch?.id
+                  ]?.map((item: any, index: number) => (
+                    <div className="p-2 flex items-center" key={item.vr_no}>
+                      <div className="text-xs min-[462px]:text-sm text-center w-6">{++index}</div>
+                      <div className="text-xs min-[462px]:text-sm w-20 min-[462px]:w-24 font-medium ">
+                        {formatDate(item.vr_date)}
+                      </div>
+                      <div className="text-xs min-[462px]:text-sm min-[462px]:w-10 font-medium flex-1">
+                        {item.vr_no}
+                      </div>
+                      <div className="text-xs min-[462px]:text-sm w-20 text-right">
+                        {thousandSeparator(item.debit, 0)}
+                      </div>
+                      <div className="text-xs min-[462px]:text-sm w-6 min-[462px]:w-10 mr-4 text-right">
+                        {item.remittance === '0' ? (
+                          <div
+                            onClick={() =>
+                              !loadingItems[item.vr_no] &&
+                              handleCheckCircleClick(item)
+                            } // Disable click when loading
+                            className="inline-block cursor-pointer"
+                          >
+                            {loadingItems[item.vr_no] ? (
+                              <FaSpinner className="text-red-500 text-sm animate-spin" />
+                            ) : successItems[item.vr_no] ? (
+                              <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                            ) : (
+                              <FaRightToBracket className="text-red-500 text-sm" />
+                            )}
+                          </div>
+                        ) : (
+                          <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm font-medium flex-1">
-                      {item.vr_no}
-                    </div>
-                    <div className="text-sm w-20 text-right">
-                      {thousandSeparator(item.debit, 0)}
-                    </div>
-                    <div className="text-sm w-20 mr-4 text-right">
-                      {item.remittance === '0' ? (
-                        <div
-                          onClick={() =>
-                            !loadingItems[item.vr_no] &&
-                            handleCheckCircleClick(item)
-                          } // Disable click when loading
-                          className="inline-block cursor-pointer"
-                        >
-                          {loadingItems[item.vr_no] ? (
-                            <FaSpinner className="text-red-500 text-sm animate-spin" />
-                          ) : successItems[item.vr_no] ? (
-                            <FaCheckCircle className="inline-block text-green-500 text-sm" />
-                          ) : (
-                            <FaRightToBracket className="text-red-500 text-sm" />
-                          )}
-                        </div>
-                      ) : (
-                        <FaCheckCircle className="inline-block text-green-500 text-sm" />
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
           </div>
-        </div>
+        </>
       ) : (
         ''
       )}
-      
+
 
       <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-2"></div>
       {!dashboard.isLoading == true ? (
