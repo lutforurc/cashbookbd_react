@@ -605,7 +605,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                       ? { label: productData.product_name, value: productData.product }
                       : null
                   }
-                  className={"py-1"}
+                  className={""}
                 />
               </div>
 
@@ -616,7 +616,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   name="qty"
                   placeholder={"Quantity"}
                   label={"Quantity"}
-                  className={"py-1 mt-1 h-9.5"}
+                  className={"py-1 h-9.5"}
                   type="number"
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, "price")}
@@ -631,7 +631,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   name="price"
                   placeholder={"Price"}
                   label={"Price"}
-                  className={"py-1 mt-1 h-9.5"}
+                  className={"py-1 h-9.5"}
                   type="number"
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, "addProduct")}
