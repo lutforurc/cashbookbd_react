@@ -104,7 +104,7 @@ const CustomerSupplier = () => {
     },
     {
       key: 'ledger_page',
-      header: 'Ledger',
+      header: 'Ledger Page',
       render: (row: any) => (
         <InputElement
           type="text"   // 🔥 FIX HERE
