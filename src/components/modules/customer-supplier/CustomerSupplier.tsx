@@ -9,7 +9,9 @@ import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
 import Table from "../../utils/others/Table";
 import Link from "../../utils/others/Link";
-import { getCustomer } from "./customerSlice";
+import { getCustomer, updateCustomerFromUI } from "./customerSlice";
+import InputElement from "../../utils/fields/InputElement";
+import { toast } from "react-toastify";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -25,7 +27,7 @@ const CustomerSupplier = () => {
 
   // 🔥 First API Call and on pagination change
   useEffect(() => {
-    dispatch(getCustomer({ page, per_page:perPage, search }));
+    dispatch(getCustomer({ page, per_page: perPage, search }));
   }, [page, perPage]);
 
   // 🔥 Update table when redux updates
@@ -40,8 +42,11 @@ const CustomerSupplier = () => {
   const handleSearchButton = () => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(getCustomer({ page, per_page:perPage, search }));
+    dispatch(getCustomer({ page, per_page: perPage, search }));
   };
+
+
+
 
   // 🔥 Per Page Change
   const handleSelectChange = (e) => {
@@ -50,17 +55,45 @@ const CustomerSupplier = () => {
   };
 
   // 🔥 Page Change
-  const handlePageChange = (newPage:number) => {
+  const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
+
+  const handleInputChange = (id: number, field: string, value: string) => {
+    setTableData(prev => prev.map(row => row.id === id ? { ...row, [field]: value } : row)
+    );
+  };
+
+
+  const handleInputBlur = (row: any, field: string) => {
+
+
+    dispatch(
+      updateCustomerFromUI({
+        id: row.id,
+        data: { [field]: row[field] },
+      })
+    )
+      .unwrap()
+      .then((res) => {
+        if (res?.message) {
+          toast.success(res.message); // ✅ SUCCESS MESSAGE
+        }
+      })
+      .catch((err) => {
+        toast.error(err?.message || 'Update failed');
+      });
+  };
+
+
   const columns = [
-       {
-            key: 'serial',
-            header: 'Sl. No.', 
-            headerClass: 'text-center',
-            cellClass: 'text-center',
-        },
+    {
+      key: 'serial',
+      header: 'Sl. No.',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+    },
     {
       key: "name",
       header: "Name",
@@ -70,16 +103,60 @@ const CustomerSupplier = () => {
       header: "Address",
     },
     {
-      key: "mobile",
-      header: "Mobile",
-      render: (row) => {
-        const m = row.mobile;
-        if (/^01\d{9}$/.test(m)) {
-          return `${m.slice(0, 5)}-${m.slice(5)}`;
-        }
-        return m || "N/A";
-      },
+      key: 'ledger_page',
+      header: 'Ledger',
+      render: (row: any) => (
+        <InputElement
+          type="text"   // 🔥 FIX HERE
+          placeholder="Ledger Page"
+          value={row.ledger_page ?? ""}
+          className="text-center w-35"
+          onChange={(e) =>
+            handleInputChange(row.id, "ledger_page", e.target.value)
+          }
+          onBlur={() => handleInputBlur(row, "ledger_page")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.currentTarget.blur();
+            }
+          }}
+        />
+      ),
     },
+
+    {
+      key: 'mobile',
+      header: 'Mobile',
+      render: (row: any) => (
+        <>
+          <InputElement
+            type="number"
+            placeholder="Mobile Number"
+            value={row.mobile ?? ""}
+            className="text-center w-35"
+            onChange={(e) =>
+              handleInputChange(
+                row.id,
+                "mobile",
+                e.target.value
+              )
+            }
+            onBlur={() =>
+              handleInputBlur(
+                row,
+                "mobile"
+              )
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.currentTarget.blur(); // 🔥 Enter = Save
+              }
+            }}
+          />
+        </>
+      ),
+    },
+
     {
       key: "action",
       header: "Action",

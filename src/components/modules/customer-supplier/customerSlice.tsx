@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import httpService from '../../services/httpService';
 import {
   API_CONTACT_DETAILS_LIST_URL,
+  API_CUSTOMER_FROM_UI_URL,
   API_STORE_CUSTOMER_URL,
 } from '../../services/apiRoutes';
 
@@ -30,6 +31,7 @@ type Customer = {
   mobile: string;
   email: string;
   manual_address: string;
+  ledger_page: string;
 };
 
 type PaginatedCustomerResponse = {
@@ -83,6 +85,25 @@ export const storeCustomer = createAsyncThunk<any,StoreCustomerPayload,{ rejectV
     return rejectWithValue({ message: 'Failed to store customer' });
   }
 });
+
+
+
+/* ---------- Update From UI ---------- */
+export const updateCustomerFromUI = createAsyncThunk<{ message: string }, { id: number; data: any }, { rejectValue: string }>("employee/updateEmployeeFromUI",
+  async ({ id, data }, thunkAPI) => {
+    try {
+      const response = await httpService.post(`${API_CUSTOMER_FROM_UI_URL}${id}`, data);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update employee"
+      );
+    }
+  }
+);
+
 
 const customerSlice = createSlice({
   name: 'customer',

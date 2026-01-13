@@ -5,7 +5,7 @@ import { FiHome, FiSave } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { employeeGroup, isPayable, status } from '../../../utils/fields/DataConstant';
+import { isPayable, status } from '../../../utils/fields/DataConstant';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
@@ -167,12 +167,12 @@ const EmployeeCreate = ({ user }: any) => {
       qualification: formData.qualification,
       date_of_birth: formData.dob,
       joning_dt: formData.joining_date,
-      present_address: formData.present_address,
+      present_address: formData.present_address,   
       permanent_address: formData.permanent_address, // ✅ typo fix
       mobile: formData.mobile,
       sex: formData.sex,
       project_id: branchId,
-      status: formData.status === 'Active' ? 1 : 0,
+      status: formData.status === '' ? 0 : Number(formData.status),
       basic_salary: formData.basic_salary || '0',
       house_rent: formData.house_rent || '0',
       medical_allowance: formData.medical || '0',
@@ -396,7 +396,7 @@ const EmployeeCreate = ({ user }: any) => {
             label="Status"
             onChange={handleOnSelectChange}
             className="h-[2.1rem] bg-transparent"
-            defaultValue={formData?.status}
+            defaultValue={formData?.status.toString() ?? ''}
             data={status}
           />
           <InputElement

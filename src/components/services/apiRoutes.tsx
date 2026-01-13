@@ -108,6 +108,7 @@ export const API_AUTH_CHECK_URL = `${API_BASE_URL}/me`;
 
 // Customer
 export const API_CUSTOMER_BASE_URL = `${API_BASE_URL}/customer`;
+export const API_CUSTOMER_FROM_UI_URL = `${API_BASE_URL}/contact/customer/update/ui/`;
 
 // Settings url
 export const API_APP_SETTING_URL = `${API_BASE_URL}/settings/get-settings`;

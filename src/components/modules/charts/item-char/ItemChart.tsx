@@ -25,9 +25,7 @@ const ItemChart = (user) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [ledgerId, setLedgerAccount] = useState(null);
 
-  /* ===============================
-   ✅ INITIAL LOAD
-  ================================= */
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
 
