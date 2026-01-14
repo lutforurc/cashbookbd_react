@@ -11,6 +11,7 @@ import { bulkUploadImages } from './imageUploadSlice';
 import dayjs from 'dayjs';
 import { FiX } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 
 export default function BulkImageUpload(user: any): JSX.Element {
   const [files, setFiles] = useState<File[]>([]);
@@ -35,6 +36,11 @@ export default function BulkImageUpload(user: any): JSX.Element {
       setFiles(selectedFiles);
     }
   };
+
+  useEffect(() => {
+  dispatch(getDdlProtectedBranch());
+  setBranchId(user.user.branch_id);
+}, []);
 
   const [voucherImageFormData, setVoucherImageFormData] = useState({
     branch_id: user.user.branch_id,
@@ -153,6 +159,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
       setFiles(updatedFiles);
     }
   };
+
 
   return (
     <div className="mx-auto p-4">
