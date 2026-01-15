@@ -21,7 +21,8 @@ jobs:
             cashbookbdaccountsnibirnirman,
             cashbookbdaccountsrmr,
             cashbookbdaccountsscn,
-            cashbookbdaccountssinthia
+            cashbookbdaccountssinthia,
+            cashbookbdaccountsstaging
           ]
 
     steps:

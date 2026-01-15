@@ -389,7 +389,6 @@ const AddBranch = () => {
                 icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
               />
             )}
-
             <ButtonLoading
               onClick={handleBranchSave}
               buttonLoading={buttonLoading}
