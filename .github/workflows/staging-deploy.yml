@@ -7,148 +7,97 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
-    name: Build and Deploy React App
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        site:
+          [
+            cashbookbdaccountsstaging
+          ]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
+      # 1) Checkout
+      - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      # 2) Setup Node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 3) Install deps
+      - run: npm ci
+
+      # 4) Resolve API URL (No Secret - No Masking - Always Works)
+      - name: Resolve API URL
+        id: api
         run: |
-          set -Eeuo pipefail
-          npm ci
+          case "${{ matrix.site }}" in
+            cashbookbdaccountsstaging) URL="https://staging.cashbookbd.com" ;;
+            *) echo "Unknown site"; exit 1 ;;
+          esac
 
-      # ✅ Build-time এ API URL inject (কোন .env দরকার নেই)
-      - name: Build React app
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
+      # 5) Build
+      - name: Build
         env:
-          CI: true
-          VITE_API_URL: ${{ secrets.REACT_STAGING_API_URL }}   # e.g. https://staging.cashbookbd.com
-        run: |
-          set -Eeuo pipefail
-          echo "🌐 VITE_API_URL=${VITE_API_URL:-<empty>}"
-          [ -n "${VITE_API_URL-}" ] || { echo "❌ REACT_STAGING_API_URL secret missing"; exit 1; }
-          npm run build
+          VITE_SITE_NAME: ${{ matrix.site }}
+          VITE_API_URL: ${{ steps.api.outputs.url }}
+        run: npm run build -- --mode production
 
-      # (ঐচ্ছিক) dist এ API URL bake হয়েছে কি না যাচাই
-      - name: Verify baked API URL
-        continue-on-error: true
-        run: |
-          set -Eeuo pipefail
-          grep -R "staging\.cashbookbd\.com" dist -n || echo "ℹ️ API URL not found in dist (maybe minified)."
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+      # 6) Upload artifact
+      - uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ github.sha }}
+          name: dist-${{ matrix.site }}
           path: dist
-          if-no-files-found: error
-          retention-days: 5
 
-      # ---- Deploy Section ----
+      # 7) Resolve Host
+      - name: Resolve host
+        id: tgt
+        run: echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
 
-      - name: Validate deploy secrets
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}
-          SSH_USER:        ${{ secrets.REACT_STAGING_SSH_USER }}
-          SSH_HOST:        ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT:        ${{ secrets.REACT_STAGING_PORT }}
-          REMOTE_DIR:      ${{ secrets.REACT_STAGING_REMOTE_DIR }}
+      # 8) Resolve Deploy Path
+      - name: Resolve deploy path
+        id: path
         run: |
-          set -Eeuo pipefail
-          : "${SSH_PORT:=22}"
-          KEYLEN=$(printf '%s' "${SSH_PRIVATE_KEY-}" | wc -c | tr -d '[:space:]')
-          echo "🔍 user=${SSH_USER:-<empty>} host=${SSH_HOST:-<empty>} port=${SSH_PORT:-<empty>}"
-          echo "🔍 private_key_length=${KEYLEN}"
-          echo "🔍 remote_dir=${REMOTE_DIR:-<empty>}"
-          [ -n "${SSH_PRIVATE_KEY-}" ] || { echo "❌ REACT_STAGING_SSH_PRIVATE_KEY is empty"; exit 1; }
-          [ -n "${SSH_USER-}" ]        || { echo "❌ REACT_STAGING_SSH_USER is empty"; exit 1; }
-          [ -n "${SSH_HOST-}" ]        || { echo "❌ REACT_STAGING_HOST is empty"; exit 1; }
-          [ -n "${REMOTE_DIR-}" ]      || { echo "❌ REACT_STAGING_REMOTE_DIR is empty"; exit 1; }
+          case "${{ matrix.site }}" in
+            cashbookbdaccountsstaging)
+              echo "dir=/home/cashbookbdaccountsstaging/htdocs/accounts.staging.cashbookbd.com" ;;
+            *) echo "Unknown site"; exit 1 ;;
+          esac >> $GITHUB_OUTPUT
 
-      - name: Prepare SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.REACT_STAGING_SSH_PRIVATE_KEY }}
-          SSH_HOST:        ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT:        ${{ secrets.REACT_STAGING_PORT }}
+      # 9) Setup SSH
+      - name: Setup SSH
         run: |
-          set -Eeuo pipefail
-          : "${SSH_PORT:=22}"
-
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo '${{ secrets.REACT_MAIN_PRIVATE_KEY }}' > ~/.ssh/key
+          chmod 600 ~/.ssh/key
+          echo -e "Host *\n  IdentityFile ~/.ssh/key\n  StrictHostKeyChecking=accept-new" > ~/.ssh/config
 
-          # Host key add (non-22 port safe)
-          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" \
-            | sed "s/^$SSH_HOST/[${SSH_HOST}]:${SSH_PORT}/" >> ~/.ssh/known_hosts
+      # 10) Download artifact
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ matrix.site }}
+          path: dist
 
-          echo "✅ SSH key and host added."
-
-      - name: Debug SSH connection (optional)
-        continue-on-error: true
-        env:
-          SSH_USER: ${{ secrets.REACT_STAGING_SSH_USER }}
-          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
+      # 11) Deploy
+      - name: Deploy
         run: |
-          ssh -vvv -o BatchMode=yes -o IdentitiesOnly=yes -p "${SSH_PORT:-22}" \
-            "$SSH_USER@$SSH_HOST" "echo '✅ SSH Connected'; whoami; echo HOME=$HOME; hostname"
+          rsync -avz --delete \
+            -e "ssh -p 22" \
+            dist/ \
+            "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}:${{ steps.path.outputs.dir }}/"
 
-      - name: Deploy to VPS via rsync (keep .env safe)
-        env:
-          SSH_USER:   ${{ secrets.REACT_STAGING_SSH_USER }}
-          SSH_HOST:   ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT:   ${{ secrets.REACT_STAGING_PORT }}
-          REMOTE_DIR: ${{ secrets.REACT_STAGING_REMOTE_DIR }}
-        run: |
-          set -Eeuo pipefail
-          : "${SSH_PORT:=22}"
+      # 12) Reload nginx
+      - name: Reload nginx
+        run: ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}" \
+               "systemctl reload nginx"
 
-          echo "📦 Local build contents:"
-          ls -la dist/ || { echo "❌ dist/ not found. Did the build produce a different outDir?"; exit 1; }
-
-          # Ensure remote target exists
-          ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "mkdir -p '$REMOTE_DIR'"
-
-          # 🚀 Deploy — exclude .env files to keep server config intact
-          rsync -avz --delete-delay \
-            --exclude='.env*' \
-            -e "ssh -o IdentitiesOnly=yes -p ${SSH_PORT}" \
-            dist/ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
-
-          echo "🚀 Deployment completed (kept .env files untouched)."
-
-      - name: Restart web server on VPS
-        env:
-          SSH_USER: ${{ secrets.REACT_STAGING_SSH_USER }}
-          SSH_HOST: ${{ secrets.REACT_STAGING_HOST }}
-          SSH_PORT: ${{ secrets.REACT_STAGING_PORT }}
-        run: |
-          set -Eeuo pipefail
-          : "${SSH_PORT:=22}"
-          ssh -o IdentitiesOnly=yes -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "sudo -n systemctl reload nginx || sudo -n systemctl restart nginx"
-          echo "🔄 Nginx reloaded."
-
-      - name: Smoke test
-        env:
-          DEPLOY_URL: ${{ secrets.REACT_STAGING_DEPLOY_URL }}
-        run: |
-          set -Eeuo pipefail
-          test -n "${DEPLOY_URL-}" || { echo "❌ REACT_STAGING_DEPLOY_URL is empty"; exit 1; }
-          curl -I -L --max-time 20 "$DEPLOY_URL" | tee /tmp/headers.txt
-          grep -E '^HTTP/.* (200|301|302) ' /tmp/headers.txt >/dev/null || {
-            echo '❌ Smoke test failed'; exit 1;
-          }
+      # 13) Smoke Test
+      - name: Smoke Test
+        run: curl -I "${{ steps.api.outputs.url }}" | grep -q "200"
