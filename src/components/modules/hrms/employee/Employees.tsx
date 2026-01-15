@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import SelectOption from '../../../utils/utils-functions/SelectOption';
-import SearchInput from '../../../utils/fields/SearchInput';
+import SelectOption from '../../../utils/utils-functions/SelectOption'; 
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import Loader from '../../../../common/Loader';
@@ -13,7 +12,6 @@ import ActionButtons from '../../../utils/fields/ActionButton';
 import { employeeStatus, fetchEmployees, fetchEmployeeSettings, updateEmployeeFromUI } from './employeeSlice';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { employeeGroup } from '../../../utils/fields/DataConstant';
 import InputElement from '../../../utils/fields/InputElement';
 import { useReactToPrint } from 'react-to-print';
 import EmployeePrint from './EmployeePrint';
@@ -38,7 +36,6 @@ const Employees = ({ user }: any) => {
   const [designation, setDesignation] = useState<any[]>([]);
   const [ddlDesignation, setDdlDesignation] = useState<any[]>([]);
   const [ddlDesignationLevel, setDdlDesignationLevel] = useState<any[]>([]);
-
   const [designationId, setDesignationId] = useState<number | undefined>(undefined);
   const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
 

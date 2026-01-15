@@ -57,7 +57,7 @@ const AreaList = () => {
   
   return (
     <div>
-      <HelmetTitle title={'Area List'} />
+      <HelmetTitle title={'Projects area list'} />
       {realEstateArea.isLoading ? <Loader /> : ''}
         <Table columns={columns} data={tableData || []} />
     </div>

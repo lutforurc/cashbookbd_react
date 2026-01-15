@@ -746,7 +746,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Area List
+                            Projects Area List
                           </NavLink>
                         </li>
                         {hasPermission(permissions, 'cashbook.view') && (
@@ -758,7 +758,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                              Area Add
+                              Projects Area Add
                             </NavLink>
                           </li>
                         )}
