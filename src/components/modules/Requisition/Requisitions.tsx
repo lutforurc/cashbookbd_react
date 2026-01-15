@@ -192,8 +192,6 @@ const Requisitions = (user: any) => {
     },
   ];
 
-  console.log(tableData);
-
   return (
     <div>
       <HelmetTitle title={'Requisition List'} />

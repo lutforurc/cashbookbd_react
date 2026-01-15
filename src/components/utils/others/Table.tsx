@@ -14,11 +14,12 @@ interface TableProps {
   columns: Column[];
   data: any[];
   className?: string;
+  noDataMessage ?: string;
 }
 
 /* ================= COMPONENT ================= */
 
-const Table: React.FC<TableProps> = ({ columns, data, className }) => {
+const Table: React.FC<TableProps> = ({ columns, data, className, noDataMessage=""  }) => {
   return (
     <div className={`overflow-x-auto rounded-sm shadow-sm ${className || ""}`}>
       <table className="min-w-full table-fixed text-sm text-left text-gray-700 dark:text-gray-300">
@@ -68,7 +69,7 @@ const Table: React.FC<TableProps> = ({ columns, data, className }) => {
                 colSpan={columns.length}
                 className="text-center py-4 text-gray-500 dark:text-gray-400"
               >
-                No data found
+                {noDataMessage   || "No data found"}
               </td>
             </tr>
           )}

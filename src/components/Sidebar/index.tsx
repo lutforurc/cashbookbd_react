@@ -49,6 +49,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     setOpenMenu(openMenu === menuId ? null : menuId); // Toggle the clicked menu, close others
   };
 
+
+
   useEffect(() => {
     setPermissions(settings.data.permissions);
   }, [settings.data.permissions]);
@@ -222,7 +224,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </NavLink>
                           </li>
                         )}
-                        {currentBranch?.business_type_id == 4 && (
+                        {currentBranch?.business_type_id === 4 && (
                           <li>
                             <NavLink
                               to="/admin/installment-details"
@@ -704,7 +706,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
 
               {/* Real Estate */}
-              <SidebarLinkGroup
+
+              { settings?.data?.branch?.business_type_id == 9 && (
+                <SidebarLinkGroup
                 activeCondition={
                   pathname === '/real-estate/add-area' ||
                   pathname === '/real-estate/area-list' ||
@@ -746,27 +750,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               (isActive && 'text-gray-900 font-bold dark:text-white')
                             }
                           >
-                            Projects Area List
+                            Projects Area
                           </NavLink>
                         </li>
-                        {hasPermission(permissions, 'cashbook.view') && (
-                          <li>
-                            <NavLink
-                              to="/real-estate/add-area"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Projects Area Add
-                            </NavLink>
-                          </li>
-                        )}
+                        
                       </ul>
                     </div>
                   </React.Fragment>
                 )}
               </SidebarLinkGroup>
+              )}
+              
 
               {/* Products */}
               <SidebarLinkGroup
