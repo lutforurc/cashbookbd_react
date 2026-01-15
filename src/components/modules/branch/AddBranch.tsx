@@ -169,7 +169,7 @@ const AddBranch = () => {
                 onChange={handleOnSelectChange}
                 defaultValue={formData?.business_type_id || ''}
                 className="h-[2.1rem] bg-transparent mt-1"
-                data={businessTypes}
+                data={branchEditData?.editData?.businessType}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">

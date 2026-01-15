@@ -70,6 +70,7 @@ export const businessTypes = [
   { id: 6, name: 'Commission Agent' },
   { id: 7, name: 'Construction' },
   { id: 8, name: 'Trading Business' },
+  { id: 9, name: 'Real Estate' },
 ];
 
 export const officeTypes = [
