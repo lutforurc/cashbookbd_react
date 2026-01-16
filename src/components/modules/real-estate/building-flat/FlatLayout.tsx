@@ -65,9 +65,9 @@ const FlatLayout = () => {
             onClick={() => setActiveFloor(floor.floor_no)}
             className={`px-4 py-1 rounded border text-sm font-medium
               ${activeFloor === floor.floor_no
-  ? "bg-gray-800 text-white"
-  : "bg-white text-gray-600 border"
-}`}
+                ? "bg-gray-800 text-white"
+                : "bg-white text-gray-600 border"
+              }`}
           >
             Floor {floor.floor_no}
           </button>
@@ -121,7 +121,7 @@ const FlatLayout = () => {
                       ${STATUS_MAP[unit.status]}`}
                     title={`Size: ${unit.size_sqft} sqft`}
                   >
-                    <span className="font-semibold text-gray-700 dark:text-gray-100">{unit.unit_no}</span>
+                    <span className="font-semibold text-gray-100 dark:text-gray-100">{unit.unit_no}</span>
                   </div>
                 ))
               )}
