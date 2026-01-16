@@ -19,6 +19,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { fetchAreaDdl } from '../area/projectAreaSlice';
 import ProjectAreaDropdown from '../../../utils/utils-functions/ProjectAreaDropdown';
+import { projectStore } from './projectSlice';
 
 const AddEditProject = (user: any) => {
     const dispatch = useDispatch();
@@ -28,16 +29,16 @@ const AddEditProject = (user: any) => {
     const branchDdlData = useSelector((state) => state.branchDdl);
     const [branchId, setBranchId] = useState<number | null>(null);
     const [dropdownData, setDropdownData] = useState<any[]>([]);
-      const [ledgerId, setLedgerAccount] = useState<number | null>(null);
+    const [ledgerId, setLedgerAccount] = useState<number | null>(null);
+    const [salesDate, setSalesDate] = useState<Date | null>(null); // Define state with type
+    const [purchaseDate, setPurchaseDate] = useState<Date | null>(null); // Define state with type
 
     // ✅ initial state ONLY from initial.ts
-    const [formData, setFormData] = useState<ProjectItem>(    
+    const [formData, setFormData] = useState<ProjectItem>(
         getInitialProject(areaId)
     );
 
     const [buttonLoading, setButtonLoading] = useState(false);
-
- 
 
     // EDIT MODE
     useEffect(() => {
@@ -47,9 +48,17 @@ const AddEditProject = (user: any) => {
     useEffect(() => {
         dispatch(getDdlProtectedBranch());
         dispatch(fetchAreaDdl());
-        // setIsSelected(user.user.branch_id);
-        setBranchId(user.user.branch_id);
-        // setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
+
+        const branch = user?.user?.branch_id;
+
+        if (branch) {
+            setBranchId(branch);
+
+            setFormData((prev) => ({
+                ...prev,
+                branch_id: branch, // 🔥 MUST
+            }));
+        }
     }, []);
 
 
@@ -81,19 +90,69 @@ const AddEditProject = (user: any) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSave = () => {
-        // id ? dispatch(updateProject(formData)) : dispatch(storeProject(formData));
+    const handleSave = async () => {
+        console.log("FINAL PAYLOAD", formData); // 🔍 MUST CHECK
+
+        setButtonLoading(true);
+
+        const resultAction = await dispatch(projectStore(formData));
+
+        setButtonLoading(false);
+
+        if (projectStore.fulfilled.match(resultAction)) {
+            alert("Project created successfully");
+        } else {
+            alert(resultAction.payload);
+        }
     };
 
     const handleReset = () => {
         setFormData(getInitialProject(areaId));
     };
     const handleBranchChange = (e: any) => {
-        setBranchId(e.target.value);
+        const value = e.target.value;
+        setBranchId(value);
+
+        setFormData((prev) => ({
+            ...prev,
+            branch_id: value,
+        }));
+    };
+
+    const handleAreaSelect = (option: any) => {
+        setFormData((prev) => ({
+            ...prev,
+            area_id: option.value,
+        }));
     };
 
     const selectedLedgerOptionHandler = (option: any) => {
         setLedgerAccount(option.value);
+
+        setFormData((prev) => ({
+            ...prev,
+            customer_id: option.value,
+        }));
+    };
+
+
+    const handleSalesDate = (date: Date | null) => {
+        setSalesDate(date);
+        setFormData((prev) => ({
+            ...prev,
+            sale_date: date
+                ? date.toISOString().split("T")[0]
+                : "",
+        }));
+    };
+    const handlePurchaseDate = (date: Date | null) => {
+        setPurchaseDate(date);
+        setFormData((prev) => ({
+            ...prev,
+            purchase_date: date
+                ? date.toISOString().split("T")[0]
+                : "",
+        }));
     };
 
 
@@ -122,17 +181,8 @@ const AddEditProject = (user: any) => {
                 </div>
                 <div className="">
                     <label htmlFor="">Select Location</label>
-                <ProjectAreaDropdown onSelect={selectedLedgerOptionHandler} />
+                    <ProjectAreaDropdown onSelect={handleAreaSelect} />
                 </div>
-                {/* <DropdownCommon
-                    id="area"
-                    name="area"
-                    label="Select Location"
-                    data={[]}
-                    defaultValue={formData.status?.toString()}
-                    className="h-[2.45rem] bg-transparent"
-                    onChange={handleSelectChange}
-                /> */}
                 <div className="">
                     <label htmlFor="">Select Land Owner</label>
                     <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='h-1' />
@@ -174,19 +224,6 @@ const AddEditProject = (user: any) => {
                     value={formData.purchase_price}
                     onChange={handleOnChange}
                 />
-                <div className="w-full">
-                    <label htmlFor="">Purchase Date</label>
-                    <InputDatePicker
-                        //   setCurrentDate={handleStartDate}
-                        className="font-medium text-sm w-full h-9"
-                    //   selectedDate={startDate}
-                    //   setSelectedDate={setStartDate}
-                    />
-                </div>
-            </div>
-
-            {/* SALE INFO */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                 <InputElement
                     id="sale_price"
                     name="sale_price"
@@ -195,15 +232,37 @@ const AddEditProject = (user: any) => {
                     value={formData.sale_price ?? ''}
                     onChange={handleOnChange}
                 />
+            </div>
+
+            {/* SALE INFO */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                <div className="w-full">
+                    <label htmlFor="">Purchase Date</label>
+                    <InputDatePicker
+                        setCurrentDate={handlePurchaseDate}
+                        className="font-medium text-sm w-full h-8.5"
+                        selectedDate={purchaseDate}
+                        setSelectedDate={setPurchaseDate}
+                    />
+                </div>
                 <div className="w-full">
                     <label htmlFor="">Sales Date</label>
                     <InputDatePicker
-                        //   setCurrentDate={handleStartDate}
+                        setCurrentDate={handleSalesDate}
                         className="font-medium text-sm w-full h-9"
-                    //   selectedDate={startDate}
-                    //   setSelectedDate={setStartDate}
+                        selectedDate={salesDate}
+                        setSelectedDate={setSalesDate}
                     />
                 </div>
+                <DropdownCommon
+                    id="status"
+                    name="status"
+                    label="Select Status"
+                    data={status}
+                    defaultValue={formData.status?.toString()}
+                    className="h-[2.2rem] bg-transparent"
+                    onChange={handleSelectChange}
+                />
             </div>
 
             {/* NOTES */}
@@ -217,15 +276,7 @@ const AddEditProject = (user: any) => {
                     onChange={handleOnChange}
                 />
             </div>
-            <DropdownCommon
-                id="status"
-                name="status"
-                label="Select Status"
-                data={status}
-                defaultValue={formData.status?.toString()}
-                className="h-[2.1rem] bg-transparent"
-                onChange={handleSelectChange}
-            />
+
 
             {/* ACTIONS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-4">
@@ -233,6 +284,7 @@ const AddEditProject = (user: any) => {
                     onClick={handleSave}
                     buttonLoading={buttonLoading}
                     label={id ? 'Update' : 'Save'}
+                    className='h-9'
                     icon={<FiSave className="ml-2 text-lg" />}
                 />
                 <ButtonLoading

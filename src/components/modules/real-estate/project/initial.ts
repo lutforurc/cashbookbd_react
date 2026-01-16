@@ -7,7 +7,6 @@ import { ProjectItem } from "./types";
 export const getInitialProject = (
   areaId?: string | number
 ): ProjectItem => ({
-  company_id: '',
   branch_id: '',
   area_id: areaId || '',
   customer_id: null,

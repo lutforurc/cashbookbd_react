@@ -1,8 +1,6 @@
 // types.ts
 export interface ProjectItem {
   id?: number | string;
-
-  company_id: number | string;
   branch_id: number | string;
   area_id: number | string;
   customer_id?: number | string | null;

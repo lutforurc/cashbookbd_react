@@ -52,6 +52,7 @@ import voucherSettings from './components/modules/vr_settings/voucherSettingsSli
 import historySlice from './components/modules/history/historySlice';
 import salarySlice from './components/modules/hrms/salary/salarySlice';
 import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice'; 
+import flatSlice from './components/modules/real-estate/building-flat/flatSlice';
 
 
 const store = configureStore({
@@ -109,6 +110,7 @@ const store = configureStore({
     history: historySlice,
     salary: salarySlice,
     employeeLoan: employeeLoanSlice, 
+    flat: flatSlice, 
   },
 });
 

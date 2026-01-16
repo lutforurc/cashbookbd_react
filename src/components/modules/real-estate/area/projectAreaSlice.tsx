@@ -1,5 +1,5 @@
 // src/store/slices/areaSlice.ts
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import httpService from '../../../services/httpService';
 import {
   API_AREA_LIST_URL,

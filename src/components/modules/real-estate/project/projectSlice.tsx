@@ -12,25 +12,6 @@ import { ProjectItem } from "./types";
 
 /* ================= TYPES ================= */
 
-// export interface ProjectItem {
-//   id?: number;
-//   company_id: number | string;
-//   branch_id: number | string;
-//   area_id: number | string;
-//   customer_id?: number | string | null;
-
-//   name: string;
-//   location_details?: string;
-//   area_sqft: number | string;
-//   purchase_price: number | string;
-//   purchase_date: string;
-//   sale_price?: number | string | null;
-//   sale_date?: string | null;
-
-//   notes?: string;
-//   status: number | string;
-// }
-
 interface ProjectListRequest {
   page: number;
   per_page: number;
@@ -68,18 +49,12 @@ const initialState: ProjectState = {
 /* ================= ASYNC THUNKS ================= */
 
 /* ---- Project List ---- */
-export const projectList = createAsyncThunk<
-  any,
-  ProjectListRequest,
-  { rejectValue: string }
->("project/projectList", async (params, { rejectWithValue }) => {
+export const projectList = createAsyncThunk<any, ProjectListRequest, { rejectValue: string } >("project/projectList", async (params, { rejectWithValue }) => {
   try {
     const res = await httpService.get(API_PROJECT_LIST_URL, { params });
-
     if (res.data?.success === true) {
       return res.data.data.data;
     }
-
     return rejectWithValue(res.data?.message || "Failed to fetch projects");
   } catch (error: any) {
     return rejectWithValue(
@@ -100,9 +75,7 @@ export const projectDdl = createAsyncThunk<ProjectDdlItem[], string | undefined,
         Authorization: `Bearer ${token}`,
       },
     });
-
     const data = await res.json();
-
     if (data?.success === true) {
       return data.data;
     }
@@ -119,11 +92,9 @@ export const projectDdl = createAsyncThunk<ProjectDdlItem[], string | undefined,
 export const projectStore = createAsyncThunk<any, ProjectItem, { rejectValue: string } >("project/projectStore", async (payload, { rejectWithValue }) => {
   try {
     const res = await httpService.post(API_PROJECT_STORE_URL, payload);
-
     if (res.data?.success === true) {
       return res.data;
     }
-
     return rejectWithValue(res.data?.message || "Project create failed");
   } catch (error: any) {
     return rejectWithValue(

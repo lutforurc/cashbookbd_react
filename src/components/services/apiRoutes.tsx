@@ -405,3 +405,19 @@ export const API_SALARY_SHEET_URL = `${API_BASE_URL}/hrms/salary-sheet`;
 export const API_SALARY_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/salary-sheet-print`;
 
 
+// Real Estate Area url
+export const API_PROJECT_STORE_URL = `${API_BASE_URL}/real-estate/projects`;
+export const API_PROJECT_EDIT_URL = `${API_BASE_URL}/real-estate/projects/edit`; 
+export const API_PROJECT_UPDATE_URL = `${API_BASE_URL}/real-estate/projects/update`;
+export const API_PROJECT_LIST_URL = `${API_BASE_URL}/real-estate/projects/list`;
+export const API_PROJECT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/project-areas/ddl`;
+
+
+
+// Real Estate Area url
+export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;
+export const API_FLAT_EDIT_URL = `${API_BASE_URL}/real-estate/flats/edit`; 
+export const API_FLAT_UPDATE_URL = `${API_BASE_URL}/real-estate/flats/update`;
+export const API_FLAT_LIST_URL = `${API_BASE_URL}/real-estate/flats/list`;
+export const API_FLAT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/flats/ddl`;
+export const API_FLAT_LAYOUT_URL = `${API_BASE_URL}/real-estate/buildings/`;

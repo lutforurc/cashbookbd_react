@@ -713,6 +713,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   pathname === '/real-estate/add-area' ||
                   pathname === '/real-estate/area-list' ||
                   pathname === '/real-estate/project-activities' ||
+                  pathname === '/real-estate/flat-layout' ||
                   pathname.includes('forms')
                 }
                 menuId="real-estate"
@@ -763,6 +764,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             }
                           >
                             Project Activities
+                          </NavLink>
+                        </li>
+                        
+                        <li>
+                          <NavLink
+                            to="/real-estate/flat-layout"
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                              (isActive && 'text-gray-900 font-bold dark:text-white')
+                            }
+                          >
+                            Floor Layout
                           </NavLink>
                         </li>
                         

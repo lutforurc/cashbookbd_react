@@ -85,6 +85,7 @@ import SalarySheet from './components/modules/hrms/salary/SalarySheet';
 import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
 import ChangeList from './components/modules/history/ChangeList';
 import AddEditProject from './components/modules/real-estate/project/AddEditProject';
+import FlatLayout from './components/modules/real-estate/building-flat/FlatLayout';
 
 
 
@@ -228,6 +229,7 @@ function App() {
             <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
             <Route path={routes.real_estate_area_list} element={<AreaList />} />
             <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me}  />} />
+            <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
 
             {/* HRM */}
             <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
