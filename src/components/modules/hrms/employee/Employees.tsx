@@ -17,6 +17,7 @@ import { useReactToPrint } from 'react-to-print';
 import EmployeePrint from './EmployeePrint';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { toast } from 'react-toastify';
+import MultiSelectDropdown from '../../../utils/utils-functions/MultiSelectDropdown';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
@@ -34,10 +35,16 @@ const Employees = ({ user }: any) => {
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const printRef = useRef<HTMLDivElement>(null);
   const [designation, setDesignation] = useState<any[]>([]);
+    const [designationLevel, setDesignationLevel] = useState<any[]>([]);
   const [ddlDesignation, setDdlDesignation] = useState<any[]>([]);
   const [ddlDesignationLevel, setDdlDesignationLevel] = useState<any[]>([]);
   const [designationId, setDesignationId] = useState<number | undefined>(undefined);
   const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
+  const [designationLevels, setDesignationLevels] = useState<any[]>([]);
+  const designationLevelOptions = designationLevel.map((d: any) => ({
+    value: d.id,
+    label: d.name,
+  }));
 
   const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
@@ -52,11 +59,13 @@ const Employees = ({ user }: any) => {
 
 
   useEffect(() => {
-    const list = employees?.employeeSettings?.data?.data || [];
-    setDesignation(list?.designation);
-    setDdlDesignation(list?.designation);
-    setDdlDesignationLevel(list?.designationLevels);
-  }, [employees?.employeeSettings]);
+  const list = employees?.employeeSettings?.data?.data || [];
+
+  setDesignation(list?.designation || []);
+  setDesignationLevel(list?.designationLevels || []); // ✅ THIS LINE
+  setDdlDesignation(list?.designation || []);
+  setDdlDesignationLevel(list?.designationLevels || []);
+}, [employees?.employeeSettings]);
 
   useEffect(() => {
     const list = employees?.employees?.data?.data?.data || [];
@@ -88,7 +97,7 @@ const Employees = ({ user }: any) => {
   const handleSearchButton = (e: any) => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(fetchEmployees({ page, per_page: perPage, branch_id: branchId, level_id: designationLevelId, designation_id: designationId }));
+    dispatch(fetchEmployees({ page, per_page: perPage, branch_id: branchId, level_ids: designationLevels.map(l => l.value), designation_id: designationId }));
     if (employees?.data?.total >= 0) {
       setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));
       setTableData(employees?.employees?.data?.data?.data || []);
@@ -372,17 +381,10 @@ const Employees = ({ user }: any) => {
   return (
     <div>
       <HelmetTitle title={'Employee List'} />
-      <div className="flex overflow-x-auto justify-between mb-1">
+      <div className="flex  justify-between mb-1">
         <div className='flex'>
           <div className='mr-2'>
             <div className="w-full">
-              {/* <BranchDropdown
-                defaultValue={user?.user?.branch_id}
-                onChange={handleBranchChange}
-                className="w-60 font-medium text-sm p-2 "
-                branchDdl={dropdownData}
-              /> */}
-
               <BranchDropdown
                 defaultValue={branchId?.toString()}
                 onChange={(e: any) => {
@@ -395,14 +397,12 @@ const Employees = ({ user }: any) => {
             </div>
           </div>
           <div className='mr-2'>
-            <DropdownCommon
-              id="designation_level"
-              name="designation_level"
-              label=""
-              onChange={handleOnSelectChange}
-              className="h-[2.4rem] bg-transparent"
-              data={designationLevelAll}
-            />
+            <MultiSelectDropdown
+              options={designationLevelOptions}
+              value={designationLevels}
+              onChange={setDesignationLevels} 
+              className="w-60"
+            /> 
           </div>
           <div className='mr-2'>
             <DropdownCommon
@@ -418,12 +418,7 @@ const Employees = ({ user }: any) => {
             <SelectOption
               onChange={handleSelectChange}
               className="mr-1 md:mr-2"
-            />
-            {/* <SearchInput
-              search={search}
-              setSearchValue={setSearchValue}
-              className="text-nowrap"
-            /> */}
+            /> 
             <ButtonLoading
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
@@ -432,8 +427,6 @@ const Employees = ({ user }: any) => {
             />
           </div>
         </div>
-
-
         <div className='flex'>
           <div className="mr-2">
             <InputElement
