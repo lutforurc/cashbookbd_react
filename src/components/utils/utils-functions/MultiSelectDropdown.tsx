@@ -82,6 +82,7 @@ const MultiSelectDropdown = ({
       backgroundColor: darkMode ? '#1f2937' : '#fff',
       boxShadow: 'none',
       fontSize: '0.875rem',
+      cursor: 'pointer',
     }),
 
     /* ===== Value Container ===== */
@@ -129,6 +130,7 @@ const MultiSelectDropdown = ({
       margin: 0,
       padding: 0,
       color: darkMode ? '#fff' : '#111827',
+      cursor: 'pointer',
     }),
 
     menu: (base) => ({
@@ -150,6 +152,8 @@ const MultiSelectDropdown = ({
         : 'transparent',
       color: darkMode ? '#e5e7eb' : '#111827',
       fontSize: '0.875rem',
+
+      cursor: 'pointer',
     }),
   };
 
