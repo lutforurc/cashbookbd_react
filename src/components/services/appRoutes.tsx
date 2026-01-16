@@ -163,7 +163,7 @@ const ROUTES = {
   // Real Estate Area
   real_estate_area_list: '/real-estate/area-list',
   real_estate_area_add: '/real-estate/add-area',
-  
+  real_estate_project_activities: '/real-estate/project-activities', 
   
   // HRM
   hrms_employee_list: '/hrms/employees',

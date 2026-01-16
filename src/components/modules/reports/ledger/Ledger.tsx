@@ -271,7 +271,7 @@ const Ledger = (user: any) => {
           </div>
 
           <div className="">
-            <label htmlFor="">Select Account</label>
+            <label htmlFor="">Select Ledger</label>
             <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} />
           </div>
 
