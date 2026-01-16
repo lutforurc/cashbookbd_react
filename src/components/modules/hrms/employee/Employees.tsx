@@ -383,7 +383,7 @@ const Employees = ({ user }: any) => {
       <HelmetTitle title={'Employee List'} />
       <div className="flex  justify-between mb-1">
         <div className='flex'>
-          <div className='mr-2'>
+          <div className='mr-1'>
             <div className="w-full">
               <BranchDropdown
                 defaultValue={branchId?.toString()}
@@ -396,7 +396,7 @@ const Employees = ({ user }: any) => {
               />
             </div>
           </div>
-          <div className='mr-2'>
+          <div className='mr-1'>
             <MultiSelectDropdown
               options={designationLevelOptions}
               value={designationLevels}
@@ -404,7 +404,7 @@ const Employees = ({ user }: any) => {
               className="w-60"
             /> 
           </div>
-          <div className='mr-2'>
+          <div className='mr-1'>
             <DropdownCommon
               id="designation"
               name="designation"
@@ -417,7 +417,7 @@ const Employees = ({ user }: any) => {
           <div className="flex">
             <SelectOption
               onChange={handleSelectChange}
-              className="mr-1 md:mr-2"
+              className="mr-1"
             /> 
             <ButtonLoading
               onClick={handleSearchButton}
@@ -427,8 +427,8 @@ const Employees = ({ user }: any) => {
             />
           </div>
         </div>
-        <div className='flex'>
-          <div className="mr-2">
+        <div className='flex ml-1'>
+          <div className="mr-1">
             <InputElement
               id="perPage"
               name="perPage"
@@ -436,10 +436,10 @@ const Employees = ({ user }: any) => {
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type='text'
-              className="font-medium text-sm h-9 w-12"
+              className="font-medium text-sm h-10 w-12"
             />
           </div>
-          <div className="mr-2">
+          <div className="">
             <InputElement
               id="fontSize"
               name="fontSize"
@@ -447,16 +447,16 @@ const Employees = ({ user }: any) => {
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type='text'
-              className="font-medium text-sm h-9 w-12"
+              className="font-medium text-sm h-10 w-12"
             />
           </div>
           <PrintButton
             onClick={handlePrint}
             label=""
-            className="ml-2 mr-2"
+            className="ml-1 mr-1"
           />
           <Link to="/hrms/employee/add" className="text-nowrap">
-            New Employee
+            (+) Employee
           </Link>
         </div>
       </div>
