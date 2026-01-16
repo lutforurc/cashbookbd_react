@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAreas } from './areaSlice';
+import { fetchAreas } from './projectAreaSlice';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import HelmetTitle from '../../../utils/others/HelmetTitle';

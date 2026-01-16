@@ -47,11 +47,12 @@ import electronicsSalesSlice from './components/modules/invoices/sales/electroni
 import labourLedgerSlice from './components/modules/reports/ledger-labour/labourLedgerSlice';
 import requisitionSlice from './components/modules/Requisition/requisitionSlice';
 import bankReceivedReducer from './components/modules/transactions/bankreceived/bankReceivedSlice';
-import realEstateArea from './components/modules/real-estate/area/areaSlice';
+import realEstateArea from './components/modules/real-estate/area/projectAreaSlice';
 import voucherSettings from './components/modules/vr_settings/voucherSettingsSlice';
 import historySlice from './components/modules/history/historySlice';
 import salarySlice from './components/modules/hrms/salary/salarySlice';
-import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice';
+import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice'; 
+
 
 const store = configureStore({
   reducer: {
@@ -107,7 +108,7 @@ const store = configureStore({
     voucherSettings: voucherSettings,
     history: historySlice,
     salary: salarySlice,
-    employeeLoan: employeeLoanSlice,
+    employeeLoan: employeeLoanSlice, 
   },
 });
 

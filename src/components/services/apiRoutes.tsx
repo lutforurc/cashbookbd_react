@@ -239,6 +239,7 @@ export const API_AREA_SAVE_URL = `${API_BASE_URL}/real-estate/area/store`;
 export const API_AREA_EDIT_URL = `${API_BASE_URL}/real-estate/area/edit`;
 export const API_AREA_UPDATE_URL = `${API_BASE_URL}/real-estate/area/update`;
 export const API_AREA_LIST_URL = `${API_BASE_URL}/real-estate/area/list`;
+export const API_AREA_DDL_URL = `${API_BASE_URL}/real-estate/project-areas/ddl`;
 
 
 // Installment url

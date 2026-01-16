@@ -17,22 +17,27 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
+import { fetchAreaDdl } from '../area/projectAreaSlice';
+import ProjectAreaDropdown from '../../../utils/utils-functions/ProjectAreaDropdown';
 
 const AddEditProject = (user: any) => {
     const dispatch = useDispatch();
     const { id, areaId } = useParams();
     const projectState = useSelector((state: any) => state.projectList);
+
     const branchDdlData = useSelector((state) => state.branchDdl);
     const [branchId, setBranchId] = useState<number | null>(null);
     const [dropdownData, setDropdownData] = useState<any[]>([]);
       const [ledgerId, setLedgerAccount] = useState<number | null>(null);
 
     // ✅ initial state ONLY from initial.ts
-    const [formData, setFormData] = useState<ProjectItem>(
+    const [formData, setFormData] = useState<ProjectItem>(    
         getInitialProject(areaId)
     );
 
     const [buttonLoading, setButtonLoading] = useState(false);
+
+ 
 
     // EDIT MODE
     useEffect(() => {
@@ -41,6 +46,7 @@ const AddEditProject = (user: any) => {
 
     useEffect(() => {
         dispatch(getDdlProtectedBranch());
+        dispatch(fetchAreaDdl());
         // setIsSelected(user.user.branch_id);
         setBranchId(user.user.branch_id);
         // setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
@@ -91,7 +97,6 @@ const AddEditProject = (user: any) => {
     };
 
 
-
     return (
         <>
             <HelmetTitle title={id ? 'Edit Project' : 'Add Project'} />
@@ -115,7 +120,11 @@ const AddEditProject = (user: any) => {
                         />
                     </div>
                 </div>
-                <DropdownCommon
+                <div className="">
+                    <label htmlFor="">Select Location</label>
+                <ProjectAreaDropdown onSelect={selectedLedgerOptionHandler} />
+                </div>
+                {/* <DropdownCommon
                     id="area"
                     name="area"
                     label="Select Location"
@@ -123,7 +132,7 @@ const AddEditProject = (user: any) => {
                     defaultValue={formData.status?.toString()}
                     className="h-[2.45rem] bg-transparent"
                     onChange={handleSelectChange}
-                />
+                /> */}
                 <div className="">
                     <label htmlFor="">Select Land Owner</label>
                     <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='h-1' />

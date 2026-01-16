@@ -40,7 +40,7 @@ interface SalaryRow {
 
 interface SalaryViewRequest {
   branch_id: number;
-  level_id?: number; 
+  level_ids?: number[]
   month_id: string; // "YYYY-MM"
 }
 
@@ -54,7 +54,7 @@ interface SalaryState {
 
 interface SalaryGenerateRequest {
   branch_id: number;
-  level_id?: number;
+  level_ids?: number[]; 
   designation_id?: number;
   month_id: string;
   employees: SalaryRow[]; // ✅ অবশ্যই এখানে

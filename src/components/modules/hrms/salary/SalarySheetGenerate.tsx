@@ -16,6 +16,7 @@ import MonthDropdown from "../../../utils/components/MonthDropdown";
 import { toast } from 'react-toastify';
 import { fetchEmployeeSettings } from "../employee/employeeSlice";
 import ConfirmModal from "../../../utils/components/ConfirmModalProps";
+import MultiSelectDropdown from "../../../utils/utils-functions/MultiSelectDropdown";
 
 /* ================= TYPES ================= */
 interface SalaryRow {
@@ -28,6 +29,7 @@ interface SalaryRow {
   loan_deduction: number;
   net_deduction: number;
 }
+
 
 
 
@@ -57,10 +59,15 @@ const SalarySheetGenerate = ({ user }: any) => {
   const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
   const [showConfirm, setShowConfirm] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [designationLevels, setDesignationLevels] = useState<any[]>([]);
 
 
   /* ================= INIT ================= */
 
+  const designationLevelOptions = designationLevel.map((d: any) => ({
+    value: d.id,
+    label: d.name,
+  }));
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -87,7 +94,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       const response = await dispatch(
         salaryView({
           branch_id: Number(branchId),
-          level_id: Number(designationLevelId),
+          level_ids: designationLevels.map(l => l.value),
           month_id: monthId,
         })
       ).unwrap();
@@ -110,7 +117,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
 
 
-  
+
 
 
   /* ================= MAP API DATA ================= */
@@ -297,7 +304,7 @@ const SalarySheetGenerate = ({ user }: any) => {
   const handleOnMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setMonthId(value.toString());
-    setMonthText(e.target.selectedOptions[0]?.text || ""); 
+    setMonthText(e.target.selectedOptions[0]?.text || "");
   };
 
 
@@ -311,7 +318,8 @@ const SalarySheetGenerate = ({ user }: any) => {
       const response = await dispatch(
         salaryGenerate({
           branch_id: Number(branchId),
-          level_id: Number(designationLevelId),
+          // level_id: Number(designationLevelId),
+          level_ids: designationLevels.map(l => Number(l.value)),
           month_id: monthId,
           employees: employees,
         })
@@ -375,15 +383,13 @@ const SalarySheetGenerate = ({ user }: any) => {
           />
 
           <div className="mr-2 w-full">
-            <DropdownCommon
-              id="designation_level"
-              name="designation_level"
-              label=""
-              onChange={handleOnSelectChange}
-              className="h-[2.3rem] bg-transparent"
-              data={designationLevelAll}
+ 
+            <MultiSelectDropdown
+              options={designationLevelOptions}
+              value={designationLevels}
+              onChange={setDesignationLevels} 
+              className="w-60"
             />
-
           </div>
 
           <div className="mr-2">
@@ -467,7 +473,7 @@ const SalarySheetGenerate = ({ user }: any) => {
           <>
             Proceed with salary for {' '}
             <span className="font-bold mt-1">
-             { monthText}
+              {monthText}
             </span>
           </>
         }

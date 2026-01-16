@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import Loader from '../../../../common/Loader';
 import { status } from '../../../utils/fields/DataConstant';
-import { saveArea } from './areaSlice';
+import { saveArea } from './projectAreaSlice';
 import { FaArrowLeft } from 'react-icons/fa6';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { toast } from 'react-toastify';
