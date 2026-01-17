@@ -23,7 +23,7 @@ import {
 import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
 import { getInitialFlat } from "./getInitialFloor";
 
-const AddEditFloor = () => {
+const AddEditFlat = () => {
   const dispatch = useDispatch();
   const { id, buildingId } = useParams();
 
@@ -54,10 +54,11 @@ const AddEditFloor = () => {
   /* ================= HANDLERS ================= */
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "number" ? Number(value) : value,
     }));
   };
 
@@ -123,11 +124,11 @@ const AddEditFloor = () => {
         </div>
 
         <InputElement
-          id="flat_no"
-          name="flat_no"
-          label="Flat No"
+          id="flat_name"
+          name="flat_name"
+          label="Flat Name"
           placeholder="A-1"
-          value={formData.flat_no}
+          value={formData.flat_name}
           onChange={handleOnChange}
         />
 
@@ -231,4 +232,4 @@ const AddEditFloor = () => {
   );
 };
 
-export default AddEditFloor;
+export default AddEditFlat;

@@ -1,13 +1,12 @@
 import { FlatItem } from "./types";
 
-
 export const getInitialFlat = (
   buildingId?: string | number
 ): FlatItem => ({
   building_id: buildingId ? Number(buildingId) : null,
 
   floor_no: 0,
-  flat_no: "",
+  flat_name: "",   // ✅ changed
 
   total_units: 1,
 

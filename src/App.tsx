@@ -86,8 +86,8 @@ import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
 import ChangeList from './components/modules/history/ChangeList';
 import AddEditProject from './components/modules/real-estate/project/AddEditProject';
 import FlatLayout from './components/modules/real-estate/building-flat/FlatLayout';
-import AddEditBuilding from './components/modules/real-estate/buildings/AddEditBuilding';
-import AddEditFloor from './components/modules/real-estate/building-flat/AddEditFloor';
+import AddEditBuilding from './components/modules/real-estate/buildings/AddEditBuilding'; 
+import AddEditFlat from './components/modules/real-estate/building-flat/AddEditFlat';
 
 
 
@@ -233,7 +233,7 @@ function App() {
             <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me}  />} />
             <Route path={routes.real_estate_buildings} element={<AddEditBuilding />} />
             <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
-            <Route path={routes.real_estate_add_building_floor} element={<AddEditFloor />} />
+            <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
 
             {/* HRM */}
             <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />

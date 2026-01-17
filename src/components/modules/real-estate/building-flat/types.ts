@@ -9,7 +9,7 @@ export interface FlatItem {
   customer_id?: number | null;
 
   floor_no: number;
-  flat_no: string;
+  flat_name: string;   // ✅ changed
 
   total_units: number;
 
