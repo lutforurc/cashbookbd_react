@@ -66,7 +66,7 @@ export const projectList = createAsyncThunk<any, ProjectListRequest, { rejectVal
 });
 
 /* ---- Project DDL ---- */
-export const projectDdl = createAsyncThunk<ProjectDdlItem[], string | undefined, { rejectValue: string }>("project/projectDdl", async (search = "", { rejectWithValue }) => {
+export const fetchProjectDdl = createAsyncThunk<ProjectDdlItem[], string | undefined, { rejectValue: string }>("project/fetchProjectDdl", async (search = "", { rejectWithValue }) => {
   try {
     const token = getToken();
     const res = await fetch(API_PROJECT_DDL_LIST_URL + `?q=${search}`, {
@@ -166,17 +166,17 @@ const projectSlice = createSlice({name: "project", initialState, reducers: {
       })
 
       /* ===== Project DDL ===== */
-      .addCase(projectDdl.pending, (state) => {
+      .addCase(fetchProjectDdl.pending, (state) => {
         state.loading = true;
       })
       .addCase(
-        projectDdl.fulfilled,
+        fetchProjectDdl.fulfilled,
         (state, action: PayloadAction<ProjectDdlItem[]>) => {
           state.loading = false;
           state.projectDdl = action.payload;
         }
       )
-      .addCase(projectDdl.rejected, (state, action) => {
+      .addCase(fetchProjectDdl.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load project ddl";
       })

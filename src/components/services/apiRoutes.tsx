@@ -410,7 +410,7 @@ export const API_PROJECT_STORE_URL = `${API_BASE_URL}/real-estate/projects`;
 export const API_PROJECT_EDIT_URL = `${API_BASE_URL}/real-estate/projects/edit`; 
 export const API_PROJECT_UPDATE_URL = `${API_BASE_URL}/real-estate/projects/update`;
 export const API_PROJECT_LIST_URL = `${API_BASE_URL}/real-estate/projects/list`;
-export const API_PROJECT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/project-areas/ddl`;
+export const API_PROJECT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/projects/ddl`;
 
 
 
@@ -427,6 +427,5 @@ export const API_FLAT_LAYOUT_URL = `${API_BASE_URL}/real-estate/buildings/`;
 export const API_BUILDING_STORE_URL = `${API_BASE_URL}/real-estate/buildings`;
 export const API_BUILDING_EDIT_URL = `${API_BASE_URL}/real-estate/buildings/edit`; 
 export const API_BUILDING_UPDATE_URL = `${API_BASE_URL}/real-estate/buildings/update`;
-export const API_BUILDING_DDL_LIST_URL = `${API_BASE_URL}/real-estate/buildings/list`;
-export const API_BUILDING_LIST_URL = `${API_BASE_URL}/real-estate/buildings/ddl`;
-// export const API_FLAT_LAYOUT_URL = `${API_BASE_URL}/real-estate/buildings/`;
+export const API_BUILDING_LIST_URL = `${API_BASE_URL}/real-estate/buildings/list`;
+export const API_BUILDING_DDL_LIST_URL = `${API_BASE_URL}/real-estate/buildings/ddl`;

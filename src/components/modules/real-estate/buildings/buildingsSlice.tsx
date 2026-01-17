@@ -79,11 +79,7 @@ export const buildingList = createAsyncThunk<
 });
 
 /* ---- Building DDL ---- */
-export const buildingDdl = createAsyncThunk<
-  BuildingDdlItem[],
-  string | undefined,
-  { rejectValue: string }
->("building/buildingDdl", async (search = "", { rejectWithValue }) => {
+export const fetchBuildingDdl = createAsyncThunk<BuildingDdlItem[],string | undefined,{ rejectValue: string }>("building/fetchBuildingDdl", async (search = "", { rejectWithValue }) => {
   try {
     const token = getToken();
     const res = await fetch(API_BUILDING_DDL_LIST_URL + `?q=${search}`, {
@@ -198,17 +194,17 @@ const buildingSlice = createSlice({
       })
 
       /* ===== Building DDL ===== */
-      .addCase(buildingDdl.pending, (state) => {
+      .addCase(fetchBuildingDdl.pending, (state) => {
         state.loading = true;
       })
       .addCase(
-        buildingDdl.fulfilled,
+        fetchBuildingDdl.fulfilled,
         (state, action: PayloadAction<BuildingDdlItem[]>) => {
           state.loading = false;
           state.buildingDdl = action.payload;
         }
       )
-      .addCase(buildingDdl.rejected, (state, action) => {
+      .addCase(fetchBuildingDdl.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load building ddl";
       })

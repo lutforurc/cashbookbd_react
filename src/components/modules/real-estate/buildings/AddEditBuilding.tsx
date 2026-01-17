@@ -17,6 +17,7 @@ import { BuildingItem } from "./types";
 import { getInitialBuilding } from "./initial";
 import { buildingEdit, buildingStore, buildingUpdate } from "./buildingsSlice";
 import ProjectAreaDropdown from "../../../utils/utils-functions/ProjectAreaDropdown";
+import ProjectDropdown from "../../../utils/utils-functions/ProjectDropdown";
 // import {
 //   buildingStore,
 //   buildingUpdate,
@@ -116,7 +117,7 @@ const AddEditBuilding = () => {
 
   /* ================= RENDER ================= */
 
-  const handleAreaSelect = (option: any) => {
+  const handleProjectSelect = (option: any) => {
     setFormData((prev) => ({
       ...prev,
       project_id: option.value,
@@ -133,8 +134,8 @@ const AddEditBuilding = () => {
       {/* BASIC INFO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <div className="">
-          <label htmlFor="">Select Location hobe na <span className="text-red-600"> hobe (Project)</span></label>
-          <ProjectAreaDropdown onSelect={handleAreaSelect} className="" />
+          <label htmlFor="">Select Project</label>
+          <ProjectDropdown onSelect={handleProjectSelect} className="" />
         </div>
         <InputElement
           id="name"
