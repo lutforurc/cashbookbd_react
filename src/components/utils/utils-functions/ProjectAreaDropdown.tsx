@@ -79,7 +79,7 @@ const ProjectAreaDropdown: React.FC<DropdownProps> = ({
 
       callback(formattedOptions);
     } catch (error) {
-      console.error('Error loading project areas:', error);
+      console.error('Error loading project location:', error);
       callback([]);
     }
   };

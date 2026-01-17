@@ -71,7 +71,7 @@ const AreaList = () => {
   };
   return (
     <div>
-      <HelmetTitle title={'List of Project Areas'} />
+      <HelmetTitle title={'List of Project Locations'} />
       <div className="flex justify-between mb-1">
         <SelectOption
           onChange={handleSelectChange}

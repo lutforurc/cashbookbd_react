@@ -53,7 +53,7 @@ const FlatLayout = () => {
           {layout.building}
         </h2> */}
         <p className="text-sm text-gray-800 dark:text-gray-300 text-center">
-          Floor-wise flat & unit availability
+          Building-wise floor & unit availability
         </p>
       </div>
 
@@ -65,8 +65,8 @@ const FlatLayout = () => {
             onClick={() => setActiveFloor(floor.floor_no)}
             className={`px-4 py-1 rounded border text-sm font-medium
               ${activeFloor === floor.floor_no
-                ? "bg-gray-800 text-white"
-                : "bg-white text-gray-600 border"
+                ? "bg-cyan-600  text-white"
+                : "bg-gray-800 text-gray-600 border"
               }`}
           >
             Floor {floor.floor_no}
@@ -102,8 +102,11 @@ const FlatLayout = () => {
               <h3 className="font-semibold dark:text-white">
                 Floor {flat.flat_no}
               </h3>
-              <span className="text-xs text-gray-500 dark:text-white">
-                {flat.units.length} Units
+              <span className="text-xs text-gray-400 dark:text-white">
+                {flat.units.length === 0
+                  ? "No units"
+                  : `${flat.units.length} ${flat.units.length === 1 ? "unit" : "units"}`
+                }
               </span>
             </div>
 

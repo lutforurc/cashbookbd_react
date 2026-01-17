@@ -414,10 +414,19 @@ export const API_PROJECT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/project-are
 
 
 
-// Real Estate Area url
+// Real Estate Flat url
 export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;
 export const API_FLAT_EDIT_URL = `${API_BASE_URL}/real-estate/flats/edit`; 
 export const API_FLAT_UPDATE_URL = `${API_BASE_URL}/real-estate/flats/update`;
 export const API_FLAT_LIST_URL = `${API_BASE_URL}/real-estate/flats/list`;
 export const API_FLAT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/flats/ddl`;
 export const API_FLAT_LAYOUT_URL = `${API_BASE_URL}/real-estate/buildings/`;
+
+
+// Real Estate Flat url
+export const API_BUILDING_STORE_URL = `${API_BASE_URL}/real-estate/buildings`;
+export const API_BUILDING_EDIT_URL = `${API_BASE_URL}/real-estate/buildings/edit`; 
+export const API_BUILDING_UPDATE_URL = `${API_BASE_URL}/real-estate/buildings/update`;
+export const API_BUILDING_DDL_LIST_URL = `${API_BASE_URL}/real-estate/buildings/list`;
+export const API_BUILDING_LIST_URL = `${API_BASE_URL}/real-estate/buildings/ddl`;
+// export const API_FLAT_LAYOUT_URL = `${API_BASE_URL}/real-estate/buildings/`;
