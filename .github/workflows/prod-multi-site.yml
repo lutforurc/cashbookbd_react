@@ -22,6 +22,7 @@ jobs:
             cashbookbdaccountsrmr,
             cashbookbdaccountsscn,
             cashbookbdaccountssinthia,
+            cashbookbdaccountssadia,
             cashbookbdaccountsstaging
           ]
 
@@ -52,6 +53,7 @@ jobs:
             cashbookbdaccountsrmr) URL="https://rmr.cashbookbd.com" ;;
             cashbookbdaccountsscn) URL="https://scn.cashbookbd.com" ;;
             cashbookbdaccountssinthia) URL="https://sinthia.cashbookbd.com" ;;
+            cashbookbdaccountssadia) URL="https://sadia.cashbookbd.com" ;;
             cashbookbdaccountsstaging) URL="https://staging.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac
@@ -97,6 +99,8 @@ jobs:
               echo "dir=/home/cashbookbdaccountsscn/htdocs/accounts.scn.cashbookbd.com" ;;
             cashbookbdaccountssinthia)
               echo "dir=/home/cashbookbdaccountssinthia/htdocs/accounts.sinthia.cashbookbd.com" ;;
+            cashbookbdaccountssadia)
+              echo "dir=/home/cashbookbdaccountssadia/htdocs/accounts.sadia.cashbookbd.com" ;;
             cashbookbdaccountsstaging)
               echo "dir=/home/cashbookbdaccountsstaging/htdocs/accounts.staging.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
