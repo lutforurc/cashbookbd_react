@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { projectList } from './projectSlice';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
@@ -8,11 +7,14 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
+import { buildingList } from './buildingsSlice'; 
 
 
-const ProjectsList = ({ user }: any) => { 
-  const branchDdlData = useSelector((state) => state.branchDdl); 
+const BuildingList = ({ user }: any) => {
+  const branchDdlData = useSelector((state) => state.branchDdl);
+  const historyState = useSelector((state) => state.history);
   const realEstateProjects = useSelector((state) => state.realEstateProjects);
+  const buildings = useSelector((state) => state.buildings);
   const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
   const [page, setPage] = useState(1);
@@ -21,6 +23,7 @@ const ProjectsList = ({ user }: any) => {
   const [totalPages, setTotalPages] = useState(0);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+const [expandedBuildingIds, setExpandedBuildingIds] = useState<Record<number, boolean>>({});
 
 
 
@@ -29,7 +32,9 @@ const ProjectsList = ({ user }: any) => {
     setBranchId(user?.branch_id);
   }, []);
 
-
+const toggleBuilding = (id: number) => {
+  setExpandedBuildingIds((prev) => ({ ...prev, [id]: !prev[id] }));
+};
 
   useEffect(() => {
     if (branchDdlData?.protectedData?.data) if (branchDdlData?.protectedData?.data) {
@@ -47,17 +52,17 @@ const ProjectsList = ({ user }: any) => {
 
 
   useEffect(() => {
-    const total = realEstateProjects?.projects?.total;
+    const total = buildings?.buildings?.total;
     if (total) {
       setTotalPages(Math.ceil(total / perPage));
     } else {
       setTotalPages(0);
     }
-  }, [realEstateProjects?.projects?.total, perPage]);
+  }, [buildings?.buildings?.total, perPage]);
 
   useEffect(() => {
     dispatch(
-      projectList({
+      buildingList({
         page,
         per_page: perPage,
         branchId: branchId ? Number(branchId) : undefined,
@@ -70,72 +75,118 @@ const ProjectsList = ({ user }: any) => {
     setPerPage(perPage);
     setPage(page);
     setCurrentPage(page);
-    setTotalPages(Math.ceil(realEstateProjects?.projects.total / perPage));
+    setTotalPages(Math.ceil(buildings?.buildings.total / perPage));
   };
 
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);
     setPage(1);
     setCurrentPage(1);
-    setTotalPages(Math.ceil(realEstateProjects?.projects.total / page.target.value));
+    setTotalPages(Math.ceil(buildings?.buildings.total / page.target.value));
   };
 
 
   console.log('====================================');
-  console.log("realEstateProjects",  realEstateProjects?.projects);
+  console.log("buildings", buildings?.buildings);
   console.log('====================================');
 
 
-
-  const columns = [
+  const columns = useMemo(
+  () => [
     {
       key: 'serial_no',
       header: 'Sl. No.',
-      headerClass: 'text-center',
+      headerClass: 'text-center w-20',
       cellClass: 'text-center',
     },
     {
-      key: 'name',
-      header: 'Name of Project',
-      render: (row: any) => (
-        <div>
-          {row.name || ''}
-        </div>
-      ),
+      key: "name",
+      header: "Name of Building",
+      render: (row: any) => {
+        const flats = row?.flats ?? [];
+        const buildingId = row?.id;
+        const isExpanded = !!expandedBuildingIds[buildingId];
+
+        return (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {/* (+) / (-) */}
+              {flats.length > 0 ? (
+                <></>
+              ) : (
+                // flats না থাকলে placeholder space
+                <span style={{ width: 22, display: "inline-block" }} />
+              )}
+
+              <div>{row?.name || ""}</div>
+            </div>
+
+            {/* Details (hidden by default) */}
+            {isExpanded && (
+              <div style={{ marginTop: 8, marginLeft: 30, fontSize: 12 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Flats:</div>
+
+                <ul style={{ margin: 0, paddingLeft: 18 }}>
+                  {flats.map((f: any) => (
+                    <li key={f.id}>
+                      {f.flat_name || "N/A"}
+                      {f.floor_no !== undefined && f.floor_no !== null
+                        ? ` (Floor ${f.floor_no})`
+                        : ""}
+                      {f.total_units !== undefined && f.total_units !== null
+                        ? ` • Units: ${f.total_units}`
+                        : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* flats আছে কিন্তু collapsed থাকলে optional hint */}
+            {!isExpanded && flats.length > 0 && (
+              <div >
+                {flats.length} flat(s)
+              </div>
+            )}
+
+            {flats.length === 0 && (
+              <div >
+                No flats
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
-      key: 'area',
-      header: 'Area',
+      key: 'projects',
+      header: 'Project Name',
       render: (row: any) => (
         <div>
-          {row.area_sqft || ''} Sft
+          {row.project.name || ''}
         </div>
       ),
     },
+
     {
       key: 'location',
       header: 'Location',
       render: (row: any) => (
         <div>
-          {row.area.name || ''}
+          {row.project.area.name || ''}
         </div>
       ),
     },
-    
-    {
-      key: 'branch',
-      header: 'Branch',
-      render: (row: any) => (
-        <div>
-          {row.area.branch.name || ''}
-        </div>
-      ),
-    },
-  ];
+  ],
+  [expandedBuildingIds]
+);
+
+
+ 
 
   return (
     <div className=''>
-      <HelmetTitle title={'Real Estate Project List'} />
+      <HelmetTitle title={'Real Estate Building List'} />
       <div className="flex mb-1">
         <SelectOption onChange={handleSelectChange} className='mr-2' />
         <BranchDropdown
@@ -150,8 +201,8 @@ const ProjectsList = ({ user }: any) => {
       </div>
       <div className="relative no-scrollbar">
         <div className="relative h-full">
-          {realEstateProjects.loading == true ? <Loader /> : ''}
-          <Table columns={columns} data={realEstateProjects?.projects?.data || []} className="" />
+          {historyState.loading == true ? <Loader /> : ''}
+          <Table columns={columns} data={buildings?.buildings?.data || []} className="" />
         </div>
         {/* Pagination Controls */}
         {totalPages > 1 ? (
@@ -168,4 +219,4 @@ const ProjectsList = ({ user }: any) => {
   );
 };
 
-export default ProjectsList;
+export default BuildingList;

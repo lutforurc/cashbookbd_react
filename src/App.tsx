@@ -90,6 +90,7 @@ import AddEditBuilding from './components/modules/real-estate/buildings/AddEditB
 import AddEditFlat from './components/modules/real-estate/building-flat/AddEditFlat';
 import AddEditUnit from './components/modules/real-estate/units/AddEditUnit';
 import ProjectsList from './components/modules/real-estate/project/ProjectsList';
+import BuildingList from './components/modules/real-estate/buildings/BuildingList';
 
 
 
@@ -238,6 +239,8 @@ function App() {
 
 
             <Route path={routes.real_estate_buildings} element={<AddEditBuilding />} />
+            <Route path={routes.real_estate_buildings_list} element={<BuildingList user={me} />} />
+            
             <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
             <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
             <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />

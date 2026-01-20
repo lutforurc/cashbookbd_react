@@ -166,6 +166,7 @@ const ROUTES = {
   real_estate_project_activities: '/real-estate/project-activities', 
   real_estate_project_list: '/real-estate/project-list', 
   real_estate_buildings: '/real-estate/buildings', 
+  real_estate_buildings_list: '/real-estate/building/list', 
   real_estate_flat_layout: '/real-estate/flat-layout', 
   real_estate_add_building_floor: '/real-estate/building/floor', 
   real_estate_add_floor_unit: '/real-estate/add-unit',  

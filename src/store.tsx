@@ -54,6 +54,7 @@ import salarySlice from './components/modules/hrms/salary/salarySlice';
 import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice'; 
 import flatSlice from './components/modules/real-estate/building-flat/flatSlice'; 
 import realEstateProjects from './components/modules/real-estate/project/projectSlice';
+import buildingsSlice from './components/modules/real-estate/buildings/buildingsSlice';
 
 
 const store = configureStore({
@@ -113,6 +114,7 @@ const store = configureStore({
     employeeLoan: employeeLoanSlice, 
     realEstateProjects: realEstateProjects, 
     flat: flatSlice, 
+    buildings: buildingsSlice,
   },
 });
 

@@ -50,13 +50,7 @@ const initialState: ProjectState = {
 /* ================= ASYNC THUNKS ================= */
 
 /* ---- Project List ---- */
-export const projectList = createAsyncThunk<
-  any,
-  ProjectListRequest,
-  { rejectValue: string }
->(
-  "project/projectList",
-  async (params, thunkAPI) => {
+export const projectList = createAsyncThunk<any, ProjectListRequest, { rejectValue: string }>("project/projectList",async (params, thunkAPI) => {
     try {
       const queryParams: any = {
         page: params.page,
@@ -65,8 +59,7 @@ export const projectList = createAsyncThunk<
 
       if (params.search) queryParams.search = params.search;
       if (params.area_id !== undefined) queryParams.area_id = params.area_id;
-
-      // branchId পাঠালে backend-এ branch_id হিসেবে যাবে
+      
       if (params.branchId !== undefined) queryParams.branch_id = params.branchId;
 
       const res = await httpService.get(API_PROJECT_LIST_URL, { params: queryParams });

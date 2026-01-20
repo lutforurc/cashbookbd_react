@@ -23,6 +23,8 @@ interface BuildingListRequest {
   page: number;
   per_page: number;
   search?: string;
+  project_id?: number | string;
+  branchId?: number; // <-- add this
 }
 
 /* ---- DDL ---- */
@@ -58,25 +60,39 @@ const initialState: BuildingState = {
 /* ================= ASYNC THUNKS ================= */
 
 /* ---- Building List ---- */
-export const buildingList = createAsyncThunk<
-  BuildingItem[],
-  BuildingListRequest,
-  { rejectValue: string }
->("building/buildingList", async (params, { rejectWithValue }) => {
-  try {
-    const res = await httpService.get(API_BUILDING_LIST_URL, { params });
-    if (res.data?.success === true) {
-      return res.data.data.data;
+export const buildingList = createAsyncThunk<any, BuildingListRequest, { rejectValue: string } >("building/buildingList",
+  async (params, thunkAPI) => {
+    try {
+      const queryParams: any = {
+        page: params.page,
+        per_page: params.per_page,
+      };
+
+      // search -> q (backend যদি q নেয়)
+      if (params.search) queryParams.q = params.search;
+
+      if (params.project_id !== undefined) queryParams.project_id = params.project_id;
+
+      if (params.branchId !== undefined) queryParams.branch_id = params.branchId;
+
+      const res = await httpService.get(API_BUILDING_LIST_URL, { params: queryParams });
+
+      if (res.data?.success === true) {
+        return res.data.data.data;
+      }
+
+      return thunkAPI.rejectWithValue(
+        res.data?.message || "Failed to fetch buildings"
+      );
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error?.response?.data?.message ||
+          error.message ||
+          "Failed to fetch buildings"
+      );
     }
-    return rejectWithValue(res.data?.message || "Failed to fetch buildings");
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-        error.message ||
-        "Failed to fetch buildings"
-    );
   }
-});
+);
 
 /* ---- Building DDL ---- */
 export const fetchBuildingDdl = createAsyncThunk<BuildingDdlItem[],string | undefined,{ rejectValue: string }>("building/fetchBuildingDdl", async (search = "", { rejectWithValue }) => {
