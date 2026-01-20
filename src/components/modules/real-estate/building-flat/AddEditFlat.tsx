@@ -127,7 +127,7 @@ const AddEditFlat = () => {
           id="flat_name"
           name="flat_name"
           label="Flat Name"
-          placeholder="A-1"
+          placeholder="Floor # 01 / First Floor"
           value={formData.flat_name}
           onChange={handleOnChange}
         />

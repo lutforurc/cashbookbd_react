@@ -731,7 +731,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             pathname === '/real-estate/buildings' ||
                             pathname === '/real-estate/flat-layout' ||
                             pathname === '/real-estate/building/floor' ||
-
                             pathname.includes('/real-estate/add-area')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
