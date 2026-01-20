@@ -176,6 +176,31 @@ export const unitEdit = createAsyncThunk<
   }
 });
 
+
+
+/* ---- Unit DDL ---- */
+export const fetchBuildingDdl = createAsyncThunk<UnitDdlItem[],string | undefined,{ rejectValue: string }>("building/fetchBuildingDdl", async (search = "", { rejectWithValue }) => {
+  try {
+    const token = getToken();
+    const res = await fetch(API_UNIT_DDL_LIST_URL + `?q=${search}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+
+    if (data?.success === true) {
+      return data.data;
+    }
+
+    return rejectWithValue(data?.message || "Failed to load building ddl");
+  } catch (error: any) {
+    return rejectWithValue(error?.message || "Failed to load building ddl");
+  }
+});
+
+
 /* ================= SLICE ================= */
 
 const unitSlice = createSlice({

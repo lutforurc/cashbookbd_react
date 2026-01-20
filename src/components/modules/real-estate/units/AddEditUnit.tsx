@@ -20,6 +20,7 @@ import {
 
 import { UnitItem } from "./types";
 import { getInitialUnit } from "./getInitialUnit";
+import BuildingFloorDropdown from "../../../utils/utils-functions/BuildingFloorDropdown";
 
 const AddEditUnit = () => {
   const dispatch = useDispatch();
@@ -102,6 +103,12 @@ const AddEditUnit = () => {
     setSaleDate(null);
   };
 
+    const handleBuildingSelect = (option: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      building_id: option.value,
+    }));
+  };
   /* ================= RENDER ================= */
 
   return (
@@ -110,6 +117,11 @@ const AddEditUnit = () => {
 
       {/* BASIC INFO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+        <div>
+          <label>Select Building</label>
+          
+          <BuildingFloorDropdown onSelect={handleBuildingSelect}  />
+        </div>
         <InputElement
           id="unit_no"
           name="unit_no"
