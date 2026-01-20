@@ -11,45 +11,45 @@ import Link from "../../../utils/others/Link";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 
 import { status } from "../../../utils/fields/DataConstant";
-import { FlatItem } from "./types";
-
 
 import {
-  flatEdit,
-  flatStore,
-  flatUpdate,
-} from "./flatSlice";
+  unitEdit,
+  unitStore,
+  unitUpdate,
+} from "./unitSlice";
 
-import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
-import { getInitialFlat } from "./getInitialFloor";
+// import { UnitItem } from "./types";
+import { getInitialUnit } from "./getInitialUnit";
+import { UnitItem } from "./types";
+// import { getInitialUnit } from "./getInitialUnit";
 
-const AddEditFlat = () => {
+const AddEditUnit = () => {
   const dispatch = useDispatch();
-  const { id, buildingId } = useParams();
+  const { id, flatId } = useParams();
 
-  const flatState = useSelector((state: any) => state.flat);
+  const unitState = useSelector((state: any) => state.buildingUnit);
 
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saleDate, setSaleDate] = useState<Date | null>(null);
 
-  const [formData, setFormData] = useState<FlatItem>(
-    getInitialFlat(buildingId)
+  const [formData, setFormData] = useState<UnitItem>(
+    getInitialUnit(Number(flatId))
   );
 
   /* ================= EDIT MODE ================= */
   useEffect(() => {
     if (id) {
-      dispatch(flatEdit(Number(id)) as any);
+      dispatch(unitEdit(Number(id)) as any);
     }
   }, [id, dispatch]);
 
   useEffect(() => {
-    if (flatState?.editFlat) {
-      const f = flatState.editFlat;
-      setFormData(f);
-      setSaleDate(f.sale_date ? new Date(f.sale_date) : null);
+    if (unitState?.editUnit) {
+      const u = unitState.editUnit;
+      setFormData(u);
+      setSaleDate(u.sale_date ? new Date(u.sale_date) : null);
     }
-  }, [flatState?.editFlat]);
+  }, [unitState?.editUnit]);
 
   /* ================= HANDLERS ================= */
 
@@ -71,7 +71,7 @@ const AddEditFlat = () => {
   };
 
   const handleDate =
-    (field: keyof FlatItem, setter: any) => (date: Date | null) => {
+    (field: keyof UnitItem, setter: any) => (date: Date | null) => {
       setter(date);
       setFormData((prev) => ({
         ...prev,
@@ -79,34 +79,27 @@ const AddEditFlat = () => {
       }));
     };
 
-  const handleBuildingSelect = (option: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      building_id: option.value,
-    }));
-  };
-
   const handleSave = async () => {
     setButtonLoading(true);
 
     const action = id
-      ? await dispatch(flatUpdate(formData) as any)
-      : await dispatch(flatStore(formData) as any);
+      ? await dispatch(unitUpdate(formData) as any)
+      : await dispatch(unitStore(formData) as any);
 
     setButtonLoading(false);
 
     if (
-      flatStore.fulfilled.match(action) ||
-      flatUpdate.fulfilled.match(action)
+      unitStore.fulfilled.match(action) ||
+      unitUpdate.fulfilled.match(action)
     ) {
-      alert(id ? "Flat updated successfully" : "Flat created successfully");
+      alert(id ? "Unit updated successfully" : "Unit created successfully");
     } else {
       alert(action.payload || "Operation failed");
     }
   };
 
   const handleReset = () => {
-    setFormData(getInitialFlat(buildingId));
+    setFormData(getInitialUnit(Number(flatId)));
     setSaleDate(null);
   };
 
@@ -114,42 +107,25 @@ const AddEditFlat = () => {
 
   return (
     <>
-      <HelmetTitle title={id ? "Edit Flat" : "Add Flat"} />
+      <HelmetTitle title={id ? "Edit Unit" : "Add Unit"} />
 
       {/* BASIC INFO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        <div>
-          <label>Select Building</label>
-          <BuildingDropdown onSelect={handleBuildingSelect} />
-        </div>
-
         <InputElement
-          id="flat_name"
-          name="flat_name"
-          label="Flat Name"
-          placeholder="Floor # 01 / First Floor"
-          value={formData.flat_name}
+          id="unit_no"
+          name="unit_no"
+          label="Unit No"
+          placeholder="Unit A / 101"
+          value={formData.unit_no}
           onChange={handleOnChange}
         />
 
         <InputElement
-          id="floor_no"
-          name="floor_no"
-          label="Floor No"
-          placeholder="0"
-          value={formData.floor_no}
-          onChange={handleOnChange}
-        />
-      </div>
-
-      {/* COST & UNITS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        <InputElement
-          id="total_units"
-          name="total_units"
-          label="Total Units"
-          placeholder="1"
-          value={formData.total_units}
+          id="size_sqft"
+          name="size_sqft"
+          label="Size (sqft)"
+          placeholder="1200"
+          value={formData.size_sqft}
           onChange={handleOnChange}
         />
 
@@ -161,7 +137,10 @@ const AddEditFlat = () => {
           value={formData.allocated_cost}
           onChange={handleOnChange}
         />
+      </div>
 
+      {/* SALE INFO */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <InputElement
           id="sale_price"
           name="sale_price"
@@ -170,10 +149,7 @@ const AddEditFlat = () => {
           value={formData.sale_price ?? ""}
           onChange={handleOnChange}
         />
-      </div>
 
-      {/* SALE DATE */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <div>
           <label>Sale Date</label>
           <InputDatePicker
@@ -185,8 +161,8 @@ const AddEditFlat = () => {
         </div>
       </div>
 
-      {/* NOTES & STATUS */}
-      <div className="grid grid-cols-3 gap-2 mb-2">
+      {/* STATUS & NOTES */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <DropdownCommon
           id="status"
           name="status"
@@ -224,7 +200,7 @@ const AddEditFlat = () => {
         />
 
         <Link
-          to={`/real-estate/buildings/${buildingId}/flats`}
+          to={`/real-estate/flats/${flatId}/units`}
           className="flex items-center justify-center"
         >
           <FiArrowLeft className="mr-2" /> Back
@@ -234,4 +210,4 @@ const AddEditFlat = () => {
   );
 };
 
-export default AddEditFlat;
+export default AddEditUnit;

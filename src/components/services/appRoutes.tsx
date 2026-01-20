@@ -167,7 +167,7 @@ const ROUTES = {
   real_estate_buildings: '/real-estate/buildings', 
   real_estate_flat_layout: '/real-estate/flat-layout', 
   real_estate_add_building_floor: '/real-estate/building/floor', 
-  
+  real_estate_add_floor_unit: '/real-estate/add-unit',  
   // HRM
   hrms_employee_list: '/hrms/employees',
   hrms_employee_add: '/hrms/employee/add', 

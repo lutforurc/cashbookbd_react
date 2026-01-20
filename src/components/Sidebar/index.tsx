@@ -797,6 +797,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                           <li>
                             <NavLink
+                              to="/real-estate/add-unit"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                             Add Floor
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
                               to="/real-estate/flat-layout"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +

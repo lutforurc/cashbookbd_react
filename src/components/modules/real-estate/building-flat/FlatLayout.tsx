@@ -27,7 +27,7 @@ const FlatLayout = () => {
 
   /* ===== Load Layout ===== */
   useEffect(() => {
-    dispatch(flatLayout(2)); // 🔴 building_id এখানে dynamic করবে
+    dispatch(flatLayout(1));
   }, []);
 
   /* ===== Set default floor ===== */
@@ -61,15 +61,15 @@ const FlatLayout = () => {
       <div className="flex flex-wrap gap-2 mb-6">
         {layout.floors.map((floor: any) => (
           <button
-            key={floor.floor_no}
-            onClick={() => setActiveFloor(floor.floor_no)}
+            key={floor.flat_name}
+            onClick={() => setActiveFloor(floor.flat_name)}
             className={`px-4 py-1 rounded border text-sm font-medium
-              ${activeFloor === floor.floor_no
+              ${activeFloor === floor.flat_name
                 ? "bg-cyan-600  text-white"
                 : "bg-gray-800 text-gray-600 border"
               }`}
           >
-            Floor {floor.floor_no}
+            {floor.flat_name}
           </button>
         ))}
       </div>
@@ -94,13 +94,13 @@ const FlatLayout = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {currentFloor?.flats.map((flat: any) => (
           <div
-            key={flat.flat_no}
+            key={flat.flat_name}
             className="border rounded p-4 bg-white dark:bg-gray-800 shadow"
           >
             {/* Flat Header */}
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-semibold dark:text-white">
-                Floor {flat.flat_no}
+                {flat.flat_name}
               </h3>
               <span className="text-xs text-gray-400 dark:text-white">
                 {flat.units.length === 0
