@@ -17,6 +17,7 @@ interface ProjectListRequest {
   per_page: number;
   search?: string;
   area_id?: number | string;
+  branchId?: number; // <-- add this
 }
 
 interface ProjectDdlItem {
@@ -49,21 +50,43 @@ const initialState: ProjectState = {
 /* ================= ASYNC THUNKS ================= */
 
 /* ---- Project List ---- */
-export const projectList = createAsyncThunk<any, ProjectListRequest, { rejectValue: string } >("project/projectList", async (params, { rejectWithValue }) => {
-  try {
-    const res = await httpService.get(API_PROJECT_LIST_URL, { params });
-    if (res.data?.success === true) {
-      return res.data.data.data;
-    }
-    return rejectWithValue(res.data?.message || "Failed to fetch projects");
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
+export const projectList = createAsyncThunk<
+  any,
+  ProjectListRequest,
+  { rejectValue: string }
+>(
+  "project/projectList",
+  async (params, thunkAPI) => {
+    try {
+      const queryParams: any = {
+        page: params.page,
+        per_page: params.per_page,
+      };
+
+      if (params.search) queryParams.search = params.search;
+      if (params.area_id !== undefined) queryParams.area_id = params.area_id;
+
+      // branchId পাঠালে backend-এ branch_id হিসেবে যাবে
+      if (params.branchId !== undefined) queryParams.branch_id = params.branchId;
+
+      const res = await httpService.get(API_PROJECT_LIST_URL, { params: queryParams });
+
+      if (res.data?.success === true) {
+        return res.data.data.data;
+      }
+
+      return thunkAPI.rejectWithValue(
+        res.data?.message || "Failed to fetch projects"
+      );
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error?.response?.data?.message ||
         error.message ||
         "Failed to fetch projects"
-    );
+      );
+    }
   }
-});
+);
 
 /* ---- Project DDL ---- */
 export const fetchProjectDdl = createAsyncThunk<ProjectDdlItem[], string | undefined, { rejectValue: string }>("project/fetchProjectDdl", async (search = "", { rejectWithValue }) => {
@@ -89,7 +112,7 @@ export const fetchProjectDdl = createAsyncThunk<ProjectDdlItem[], string | undef
 });
 
 /* ---- Store Project ---- */
-export const projectStore = createAsyncThunk<any, ProjectItem, { rejectValue: string } >("project/projectStore", async (payload, { rejectWithValue }) => {
+export const projectStore = createAsyncThunk<any, ProjectItem, { rejectValue: string }>("project/projectStore", async (payload, { rejectWithValue }) => {
   try {
     const res = await httpService.post(API_PROJECT_STORE_URL, payload);
     if (res.data?.success === true) {
@@ -104,7 +127,7 @@ export const projectStore = createAsyncThunk<any, ProjectItem, { rejectValue: st
 });
 
 /* ---- Update Project ---- */
-export const projectUpdate = createAsyncThunk<any, ProjectItem, { rejectValue: string } >("project/projectUpdate", async (payload, { rejectWithValue }) => {
+export const projectUpdate = createAsyncThunk<any, ProjectItem, { rejectValue: string }>("project/projectUpdate", async (payload, { rejectWithValue }) => {
   try {
     const res = await httpService.post(API_PROJECT_UPDATE_URL, payload);
     if (res.data?.success === true) {
@@ -119,7 +142,7 @@ export const projectUpdate = createAsyncThunk<any, ProjectItem, { rejectValue: s
 });
 
 /* ---- Edit Project ---- */
-export const projectEdit = createAsyncThunk<ProjectItem, number, { rejectValue: string } >("project/projectEdit", async (id, { rejectWithValue }) => {
+export const projectEdit = createAsyncThunk<ProjectItem, number, { rejectValue: string }>("project/projectEdit", async (id, { rejectWithValue }) => {
   try {
     const res = await httpService.get(API_PROJECT_EDIT_URL + id);
     if (res.data?.success === true) {
@@ -136,7 +159,8 @@ export const projectEdit = createAsyncThunk<ProjectItem, number, { rejectValue: 
 
 /* ================= SLICE ================= */
 
-const projectSlice = createSlice({name: "project", initialState, reducers: {
+const projectSlice = createSlice({
+  name: "project", initialState, reducers: {
     clearProjectState(state) {
       state.projects = [];
       state.projectDdl = [];

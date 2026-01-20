@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Loader from '../../../common/Loader';
-import SelectOption from '../../utils/utils-functions/SelectOption';
-import Pagination from '../../utils/utils-functions/Pagination';
-import HelmetTitle from '../../utils/others/HelmetTitle';
-import Table from '../../utils/others/Table';
-import { fetchTransactionHistories } from './historySlice';
-import { chartDate, chartDateTime } from '../../utils/utils-functions/formatDate';
-import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
-import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
+import { projectList } from './projectSlice';
+import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
+import HelmetTitle from '../../../utils/others/HelmetTitle';
+import SelectOption from '../../../utils/utils-functions/SelectOption';
+import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
+import Loader from '../../../../common/Loader';
+import Table from '../../../utils/others/Table';
+import Pagination from '../../../utils/utils-functions/Pagination';
 
-const ChangeList = ({ user }: any) => {
+
+const ProjectsList = ({ user }: any) => {
   const branchList = useSelector((state) => state.branchList);
-  const historyState = useSelector((state) => state.history);
   const branchDdlData = useSelector((state) => state.branchDdl);
+  const historyState = useSelector((state) => state.history);
+  const realEstateProjects = useSelector((state) => state.realEstateProjects);
   const settings = useSelector((state: any) => state.settings);
-  const dispatch = useDispatch(); 
+  const dispatch = useDispatch();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,9 +35,7 @@ const ChangeList = ({ user }: any) => {
 
   useEffect(() => {
     if (branchDdlData?.protectedData?.data) if (branchDdlData?.protectedData?.data) {
-
       const baseData = branchDdlData.protectedData.data;
-
       if (settings?.data?.branch?.branch_types_id === 1) {
         setDropdownData([
           { id: "", name: 'All Projects' },
@@ -50,27 +49,44 @@ const ChangeList = ({ user }: any) => {
 
 
   useEffect(() => {
-    // dispatch(getBranch({ page, perPage, searchValue }));
-    if (historyState?.transactionHistories?.total) {
-      setTotalPages(Math.ceil(historyState?.transactionHistories?.total / perPage));
+    const total = realEstateProjects?.projects?.total;
+    if (total) {
+      setTotalPages(Math.ceil(total / perPage));
+    } else {
+      setTotalPages(0);
     }
-    dispatch(fetchTransactionHistories({ page, per_page: perPage, branchId: branchId ? Number(branchId) : undefined }));
-  }, [page, perPage, branchId, historyState?.transactionHistories?.total]);
+  }, [realEstateProjects?.projects?.total, perPage]);
+
+  useEffect(() => {
+    dispatch(
+      projectList({
+        page,
+        per_page: perPage,
+        branchId: branchId ? Number(branchId) : undefined,
+      })
+    );
+  }, [dispatch, page, perPage, branchId]);
 
 
   const handlePageChange = (page: any) => {
     setPerPage(perPage);
     setPage(page);
     setCurrentPage(page);
-    setTotalPages(Math.ceil(branchList.data.total / perPage));
+    setTotalPages(Math.ceil(realEstateProjects?.projects.total / perPage));
   };
 
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);
     setPage(1);
     setCurrentPage(1);
-    setTotalPages(Math.ceil(branchList.data.total / page.target.value));
+    setTotalPages(Math.ceil(realEstateProjects?.projects.total / page.target.value));
   };
+
+
+  console.log('====================================');
+  console.log("realEstateProjects",  realEstateProjects?.projects);
+  console.log('====================================');
+
 
 
   const columns = [
@@ -81,68 +97,47 @@ const ChangeList = ({ user }: any) => {
       cellClass: 'text-center',
     },
     {
-      key: 'main_transaction',
-      header: 'Vr No',
+      key: 'name',
+      header: 'Name of Project',
       render: (row: any) => (
         <div>
-          {row.main_transaction?.vr_no || ''}
+          {row.name || ''}
         </div>
       ),
     },
     {
-      key: 'vr_date',
-      header: 'Vr Date',
+      key: 'area',
+      header: 'Area',
       render: (row: any) => (
         <div>
-          {chartDate(row.main_transaction?.vr_date)}
+          {row.area_sqft || ''} Sft
         </div>
       ),
     },
     {
-      key: 'action',
-      header: 'Action',
+      key: 'location',
+      header: 'Location',
       render: (row: any) => (
         <div>
-          {row.action.charAt(0).toUpperCase() + row.action.slice(1)}
+          {row.area.name || ''}
         </div>
       ),
     },
-    {
-      key: 'action_time',
-      header: 'Action Time',
-      render: (row: any) => (
-        <div>
-          {chartDateTime(row.created_at)}
-        </div>
-      ),
-    },
-    {
-      key: 'action_by',
-      header: 'Action By',
-      render: (row: any) => (
-        <div>
-          {row.action_by_user?.name || ''}
-        </div>
-      ),
-    },
+    
     {
       key: 'branch',
       header: 'Branch',
       render: (row: any) => (
         <div>
-          {row.branch?.name || ''}
+          {row.area.branch.name || ''}
         </div>
       ),
     },
-    {
-      key: 'status_label',
-      header: 'status',
-    }
   ];
 
   return (
     <div className=''>
-      <HelmetTitle title={'Log Changes'} />
+      <HelmetTitle title={'Real Estate Project List'} />
       <div className="flex mb-1">
         <SelectOption onChange={handleSelectChange} className='mr-2' />
         <BranchDropdown
@@ -152,13 +147,13 @@ const ChangeList = ({ user }: any) => {
             setBranchId(value === "" ? "" : Number(value));
           }}
           className="!w-64 font-medium text-sm p-2 mr-2 "
-        branchDdl={dropdownData}
+          branchDdl={dropdownData}
         />
       </div>
       <div className="relative no-scrollbar">
         <div className="relative h-full">
           {historyState.loading == true ? <Loader /> : ''}
-          <Table columns={columns} data={historyState?.transactionHistories?.data || []} className="" />
+          <Table columns={columns} data={realEstateProjects?.projects?.data || []} className="" />
         </div>
         {/* Pagination Controls */}
         {totalPages > 1 ? (
@@ -175,4 +170,4 @@ const ChangeList = ({ user }: any) => {
   );
 };
 
-export default ChangeList;
+export default ProjectsList;

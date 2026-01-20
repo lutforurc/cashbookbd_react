@@ -89,6 +89,7 @@ import FlatLayout from './components/modules/real-estate/building-flat/FlatLayou
 import AddEditBuilding from './components/modules/real-estate/buildings/AddEditBuilding'; 
 import AddEditFlat from './components/modules/real-estate/building-flat/AddEditFlat';
 import AddEditUnit from './components/modules/real-estate/units/AddEditUnit';
+import ProjectsList from './components/modules/real-estate/project/ProjectsList';
 
 
 
@@ -231,7 +232,11 @@ function App() {
             {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
             <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
             <Route path={routes.real_estate_area_list} element={<AreaList />} />
+            
             <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me}  />} />
+            <Route path={routes.real_estate_project_list} element={<ProjectsList user={me}  />} />
+
+
             <Route path={routes.real_estate_buildings} element={<AddEditBuilding />} />
             <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
             <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />

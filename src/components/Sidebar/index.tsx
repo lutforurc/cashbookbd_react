@@ -731,6 +731,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             pathname === '/real-estate/buildings' ||
                             pathname === '/real-estate/flat-layout' ||
                             pathname === '/real-estate/building/floor' ||
+                            pathname === '/real-estate/project-list' ||
                             pathname.includes('/real-estate/add-area')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -772,6 +773,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </NavLink>
                           </li>
 
+                          <li>
+                            <NavLink
+                              to="/real-estate/project-list"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              Projects
+                            </NavLink>
+                          </li>
                           <li>
                             <NavLink
                               to="/real-estate/buildings"
