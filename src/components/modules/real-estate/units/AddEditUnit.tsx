@@ -18,30 +18,32 @@ import {
   unitUpdate,
 } from "./unitSlice";
 
-// import { UnitItem } from "./types";
-import { getInitialUnit } from "./getInitialUnit";
 import { UnitItem } from "./types";
-// import { getInitialUnit } from "./getInitialUnit";
+import { getInitialUnit } from "./getInitialUnit";
 
 const AddEditUnit = () => {
   const dispatch = useDispatch();
   const { id, flatId } = useParams();
 
-  const unitState = useSelector((state: any) => state.buildingUnit);
+  const isEdit = Boolean(id);
+
+  // ⚠️ IMPORTANT: reducer key must match store
+  const unitState = useSelector((state: any) => state.unit);
 
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saleDate, setSaleDate] = useState<Date | null>(null);
 
   const [formData, setFormData] = useState<UnitItem>(
-    getInitialUnit(Number(flatId))
+    getInitialUnit(flatId ? Number(flatId) : 0)
   );
 
   /* ================= EDIT MODE ================= */
+
   useEffect(() => {
-    if (id) {
+    if (isEdit) {
       dispatch(unitEdit(Number(id)) as any);
     }
-  }, [id, dispatch]);
+  }, [id, isEdit, dispatch]);
 
   useEffect(() => {
     if (unitState?.editUnit) {
@@ -82,24 +84,21 @@ const AddEditUnit = () => {
   const handleSave = async () => {
     setButtonLoading(true);
 
-    const action = id
+    const action = isEdit
       ? await dispatch(unitUpdate(formData) as any)
       : await dispatch(unitStore(formData) as any);
 
     setButtonLoading(false);
 
-    if (
-      unitStore.fulfilled.match(action) ||
-      unitUpdate.fulfilled.match(action)
-    ) {
-      alert(id ? "Unit updated successfully" : "Unit created successfully");
+    if (action.type.endsWith("/fulfilled")) {
+      alert(isEdit ? "Unit updated successfully" : "Unit created successfully");
     } else {
       alert(action.payload || "Operation failed");
     }
   };
 
   const handleReset = () => {
-    setFormData(getInitialUnit(Number(flatId)));
+    setFormData(getInitialUnit(flatId ? Number(flatId) : 0));
     setSaleDate(null);
   };
 
@@ -107,7 +106,7 @@ const AddEditUnit = () => {
 
   return (
     <>
-      <HelmetTitle title={id ? "Edit Unit" : "Add Unit"} />
+      <HelmetTitle title={isEdit ? "Edit Unit" : "Add Unit"} />
 
       {/* BASIC INFO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -188,7 +187,7 @@ const AddEditUnit = () => {
         <ButtonLoading
           onClick={handleSave}
           buttonLoading={buttonLoading}
-          label={id ? "Update" : "Save"}
+          label={isEdit ? "Update" : "Save"}
           icon={<FiSave className="ml-2 text-lg" />}
         />
 
