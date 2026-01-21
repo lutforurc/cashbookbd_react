@@ -85,10 +85,7 @@ const toggleBuilding = (id: number) => {
     setTotalPages(Math.ceil(buildings?.buildings.total / page.target.value));
   };
 
-
-  console.log('====================================');
-  console.log("buildings", buildings?.buildings);
-  console.log('====================================');
+ 
 
 
   const columns = useMemo(

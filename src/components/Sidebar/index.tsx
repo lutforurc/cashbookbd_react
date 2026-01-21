@@ -759,7 +759,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                              Projects Location
+                              Location
                             </NavLink>
                           </li>
                           <li>

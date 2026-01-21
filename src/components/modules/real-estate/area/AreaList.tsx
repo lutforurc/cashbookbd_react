@@ -79,7 +79,7 @@ const AreaList = () => {
         <ButtonLoading
           onClick={handleSearchButton}
           buttonLoading={buttonLoading}
-          label="Add Area"
+          label="New Location"
         />
       </div>
       {realEstateArea.isLoading ? <Loader /> : ''}

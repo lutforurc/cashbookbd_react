@@ -8,10 +8,11 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
+import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 
-const ProjectsList = ({ user }: any) => { 
-  const branchDdlData = useSelector((state) => state.branchDdl); 
+const ProjectsList = ({ user }: any) => {
+  const branchDdlData = useSelector((state) => state.branchDdl);
   const realEstateProjects = useSelector((state) => state.realEstateProjects);
   const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
@@ -80,13 +81,6 @@ const ProjectsList = ({ user }: any) => {
     setTotalPages(Math.ceil(realEstateProjects?.projects.total / page.target.value));
   };
 
-
-  console.log('====================================');
-  console.log("realEstateProjects",  realEstateProjects?.projects);
-  console.log('====================================');
-
-
-
   const columns = [
     {
       key: 'serial_no',
@@ -121,7 +115,7 @@ const ProjectsList = ({ user }: any) => {
         </div>
       ),
     },
-    
+
     {
       key: 'branch',
       header: 'Branch',
@@ -136,17 +130,26 @@ const ProjectsList = ({ user }: any) => {
   return (
     <div className=''>
       <HelmetTitle title={'Real Estate Project List'} />
-      <div className="flex mb-1">
-        <SelectOption onChange={handleSelectChange} className='mr-2' />
-        <BranchDropdown
-          defaultValue={branchId?.toString()}
-          onChange={(e: any) => {
-            const value = e.target.value;
-            setBranchId(value === "" ? "" : Number(value));
-          }}
-          className="!w-64 font-medium text-sm p-2 mr-2 "
-          branchDdl={dropdownData}
+      <div className="flex mb-1 justify-between">
+        <div>
+          <SelectOption onChange={handleSelectChange} className='mr-2' />
+          <BranchDropdown
+            defaultValue={branchId?.toString()}
+            onChange={(e: any) => {
+              const value = e.target.value;
+              setBranchId(value === "" ? "" : Number(value));
+            }}
+            className="!w-64 font-medium text-sm p-2 mr-2 "
+            branchDdl={dropdownData}
+          />
+        </div>
+        <ButtonLoading
+        className='h-9'
+          // onClick={handleSearchButton}
+          // buttonLoading={buttonLoading}
+          label="New Project"
         />
+        {/* <link rel="stylesheet" to="/real-estate/project-activities" /> */}
       </div>
       <div className="relative no-scrollbar">
         <div className="relative h-full">
