@@ -7,7 +7,9 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
-import { buildingList } from './buildingsSlice'; 
+import { buildingList } from './buildingsSlice';
+import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { useNavigate } from 'react-router-dom';
 
 
 const BuildingList = ({ user }: any) => {
@@ -23,7 +25,8 @@ const BuildingList = ({ user }: any) => {
   const [totalPages, setTotalPages] = useState(0);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-const [expandedBuildingIds, setExpandedBuildingIds] = useState<Record<number, boolean>>({});
+  const [expandedBuildingIds, setExpandedBuildingIds] = useState<Record<number, boolean>>({});
+  const navigate = useNavigate();
 
 
 
@@ -32,9 +35,9 @@ const [expandedBuildingIds, setExpandedBuildingIds] = useState<Record<number, bo
     setBranchId(user?.branch_id);
   }, []);
 
-const toggleBuilding = (id: number) => {
-  setExpandedBuildingIds((prev) => ({ ...prev, [id]: !prev[id] }));
-};
+  const toggleBuilding = (id: number) => {
+    setExpandedBuildingIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   useEffect(() => {
     if (branchDdlData?.protectedData?.data) if (branchDdlData?.protectedData?.data) {
@@ -85,115 +88,126 @@ const toggleBuilding = (id: number) => {
     setTotalPages(Math.ceil(buildings?.buildings.total / page.target.value));
   };
 
- 
+  const handleSearchButton = (e: any) => { 
+    navigate('/real-estate/buildings'); // Replace with your desired URL
+  };
 
 
   const columns = useMemo(
-  () => [
-    {
-      key: 'serial_no',
-      header: 'Sl. No.',
-      headerClass: 'text-center w-20',
-      cellClass: 'text-center',
-    },
-    {
-      key: "name",
-      header: "Name of Building",
-      render: (row: any) => {
-        const flats = row?.flats ?? [];
-        const buildingId = row?.id;
-        const isExpanded = !!expandedBuildingIds[buildingId];
+    () => [
+      {
+        key: 'serial_no',
+        header: 'Sl. No.',
+        headerClass: 'text-center w-20',
+        cellClass: 'text-center',
+      },
+      {
+        key: "name",
+        header: "Name of Building",
+        render: (row: any) => {
+          const flats = row?.flats ?? [];
+          const buildingId = row?.id;
+          const isExpanded = !!expandedBuildingIds[buildingId];
 
-        return (
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {/* (+) / (-) */}
-              {flats.length > 0 ? (
-                <></>
-              ) : (
-                // flats না থাকলে placeholder space
-                <span style={{ width: 22, display: "inline-block" }} />
+          return (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {/* (+) / (-) */}
+                {flats.length > 0 ? (
+                  <></>
+                ) : (
+                  // flats না থাকলে placeholder space
+                  <span style={{ width: 22, display: "inline-block" }} />
+                )}
+
+                <div>{row?.name || ""}</div>
+              </div>
+
+              {/* Details (hidden by default) */}
+              {isExpanded && (
+                <div style={{ marginTop: 8, marginLeft: 30, fontSize: 12 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Flats:</div>
+
+                  <ul style={{ margin: 0, paddingLeft: 18 }}>
+                    {flats.map((f: any) => (
+                      <li key={f.id}>
+                        {f.flat_name || "N/A"}
+                        {f.floor_no !== undefined && f.floor_no !== null
+                          ? ` (Floor ${f.floor_no})`
+                          : ""}
+                        {f.total_units !== undefined && f.total_units !== null
+                          ? ` • Units: ${f.total_units}`
+                          : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
 
-              <div>{row?.name || ""}</div>
+              {/* flats আছে কিন্তু collapsed থাকলে optional hint */}
+              {!isExpanded && flats.length > 0 && (
+                <div >
+                  {flats.length} flat(s)
+                </div>
+              )}
+
+              {flats.length === 0 && (
+                <div >
+                  No flats
+                </div>
+              )}
             </div>
-
-            {/* Details (hidden by default) */}
-            {isExpanded && (
-              <div style={{ marginTop: 8, marginLeft: 30, fontSize: 12 }}>
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>Flats:</div>
-
-                <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  {flats.map((f: any) => (
-                    <li key={f.id}>
-                      {f.flat_name || "N/A"}
-                      {f.floor_no !== undefined && f.floor_no !== null
-                        ? ` (Floor ${f.floor_no})`
-                        : ""}
-                      {f.total_units !== undefined && f.total_units !== null
-                        ? ` • Units: ${f.total_units}`
-                        : ""}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* flats আছে কিন্তু collapsed থাকলে optional hint */}
-            {!isExpanded && flats.length > 0 && (
-              <div >
-                {flats.length} flat(s)
-              </div>
-            )}
-
-            {flats.length === 0 && (
-              <div >
-                No flats
-              </div>
-            )}
-          </div>
-        );
+          );
+        },
       },
-    },
-    {
-      key: 'projects',
-      header: 'Project Name',
-      render: (row: any) => (
-        <div>
-          {row.project.name || ''}
-        </div>
-      ),
-    },
+      {
+        key: 'projects',
+        header: 'Project Name',
+        render: (row: any) => (
+          <div>
+            {row.project.name || ''}
+          </div>
+        ),
+      },
 
-    {
-      key: 'location',
-      header: 'Location',
-      render: (row: any) => (
-        <div>
-          {row.project.area.name || ''}
-        </div>
-      ),
-    },
-  ],
-  [expandedBuildingIds]
-);
+      {
+        key: 'location',
+        header: 'Location',
+        render: (row: any) => (
+          <div>
+            {row.project.area.name || ''}
+          </div>
+        ),
+      },
+    ],
+    [expandedBuildingIds]
+  );
 
 
- 
+
 
   return (
     <div className=''>
       <HelmetTitle title={'Real Estate Building List'} />
-      <div className="flex mb-1">
-        <SelectOption onChange={handleSelectChange} className='mr-2' />
-        <BranchDropdown
-          defaultValue={branchId?.toString()}
-          onChange={(e: any) => {
-            const value = e.target.value;
-            setBranchId(value === "" ? "" : Number(value));
-          }}
-          className="!w-64 font-medium text-sm p-2 mr-2 "
-          branchDdl={dropdownData}
+      <div className="flex mb-1 justify-between">
+        <div className='flex'>
+          <SelectOption onChange={handleSelectChange} className='mr-2' />
+          <BranchDropdown
+            defaultValue={branchId?.toString()}
+            onChange={(e: any) => {
+              const value = e.target.value;
+              setBranchId(value === "" ? "" : Number(value));
+            }}
+            className="!w-64 font-medium text-sm p-2 mr-2 "
+            branchDdl={dropdownData}
+          />
+        </div>
+
+        <ButtonLoading
+          // className='h-9 mt-9.5'
+          onClick={handleSearchButton}
+          // buttonLoading={buttonLoading}
+          label="New Project"
         />
       </div>
       <div className="relative no-scrollbar">

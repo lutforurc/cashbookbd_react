@@ -158,7 +158,7 @@ const AddEditProject = (user: any) => {
 
     return (
         <>
-            <HelmetTitle title={id ? 'Edit Project' : 'Add Project'} />
+            <HelmetTitle title={id ? 'Edit Project' : 'Add New Project'} />
 
             {/* {projectState.isLoading && <Loader />} */}
 

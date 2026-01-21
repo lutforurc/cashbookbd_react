@@ -9,6 +9,7 @@ import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { useNavigate } from 'react-router-dom';
 
 
 const ProjectsList = ({ user }: any) => {
@@ -22,6 +23,7 @@ const ProjectsList = ({ user }: any) => {
   const [totalPages, setTotalPages] = useState(0);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const navigate = useNavigate();
 
 
 
@@ -80,7 +82,9 @@ const ProjectsList = ({ user }: any) => {
     setCurrentPage(1);
     setTotalPages(Math.ceil(realEstateProjects?.projects.total / page.target.value));
   };
-
+  const handleSearchButton = (e: any) => { 
+    navigate('/real-estate/project-activities'); // Replace with your desired URL
+  };
   const columns = [
     {
       key: 'serial_no',
@@ -144,8 +148,8 @@ const ProjectsList = ({ user }: any) => {
           />
         </div>
         <ButtonLoading
-        className='h-9'
-          // onClick={handleSearchButton}
+        className='h-9 mt-9.5'
+          onClick={handleSearchButton}
           // buttonLoading={buttonLoading}
           label="New Project"
         />
