@@ -242,8 +242,10 @@ function App() {
             <Route path={routes.real_estate_buildings_list} element={<BuildingList user={me} />} />
             
             <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
-            <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
             <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
+
+            <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
+            
 
             {/* HRM */}
             <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />

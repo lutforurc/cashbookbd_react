@@ -11,6 +11,15 @@ import { getToken } from "../../../../features/authReducer";
 
 /* ================= TYPES ================= */
 
+export interface BuildingUnitListRequest {
+  page: number;
+  per_page: number;
+  search?: string;
+  flat_id?: number;
+  customer_id?: number;
+  status?: number; // 0=Inactive,1=Active,2=UnderDev,3=Completed,4=Sold
+}
+
 export interface UnitItem {
   id?: number;
   building_id?: number | string;
@@ -65,26 +74,41 @@ const initialState: UnitState = {
 
 /* ================= ASYNC THUNKS ================= */
 
-/* ---- Unit List ---- */
-export const unitList = createAsyncThunk<
-  UnitItem[],
-  UnitListRequest,
-  { rejectValue: string }
->("unit/unitList", async (params, { rejectWithValue }) => {
-  try {
-    const res = await httpService.get(API_UNIT_LIST_URL, { params });
-    if (res.data?.success === true) {
-      return res.data.data.data;
+/* ---- Building Unit List ---- */
+export const buildingUnitList = createAsyncThunk<any, BuildingUnitListRequest, { rejectValue: string } >( "buildingUnit/buildingUnitList", async (params, thunkAPI) => {
+    try {
+      const queryParams: any = {
+        page: params.page,
+        per_page: params.per_page,
+      };
+
+      // Optional filters
+      if (params.search) queryParams.search = params.search;
+      if (params.flat_id !== undefined) queryParams.flat_id = params.flat_id;
+      if (params.customer_id !== undefined) queryParams.customer_id = params.customer_id;
+      if (params.status !== undefined) queryParams.status = params.status;
+
+      const res = await httpService.get(API_UNIT_LIST_URL, {
+        params: queryParams,
+      });
+
+      if (res.data?.success === true) { 
+        return res.data.data.data;
+      }
+
+      return thunkAPI.rejectWithValue(
+        res.data?.message || "Failed to fetch building units"
+      );
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error?.response?.data?.message ||
+          error.message ||
+          "Failed to fetch building units"
+      );
     }
-    return rejectWithValue(res.data?.message || "Failed to fetch units");
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-        error.message ||
-        "Failed to fetch units"
-    );
   }
-});
+);
+
 
 /* ---- Unit DDL ---- */
 export const unitDdl = createAsyncThunk<
@@ -135,11 +159,7 @@ export const unitStore = createAsyncThunk<
 });
 
 /* ---- Update Unit ---- */
-export const unitUpdate = createAsyncThunk<
-  any,
-  UnitItem,
-  { rejectValue: string }
->("unit/unitUpdate", async (payload, { rejectWithValue }) => {
+export const unitUpdate = createAsyncThunk<any, UnitItem, { rejectValue: string } >("unit/unitUpdate", async (payload, { rejectWithValue }) => {
   try {
     const res = await httpService.post(API_UNIT_UPDATE_URL, payload);
     if (res.data?.success === true) {
@@ -219,18 +239,18 @@ const unitSlice = createSlice({
   extraReducers: (builder) => {
     builder
       /* ===== Unit List ===== */
-      .addCase(unitList.pending, (state) => {
+      .addCase(buildingUnitList.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(
-        unitList.fulfilled,
+        buildingUnitList.fulfilled,
         (state, action: PayloadAction<UnitItem[]>) => {
           state.loading = false;
           state.units = action.payload;
         }
       )
-      .addCase(unitList.rejected, (state, action) => {
+      .addCase(buildingUnitList.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load units";
       })
