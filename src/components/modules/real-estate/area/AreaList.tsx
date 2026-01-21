@@ -28,8 +28,7 @@ const AreaList = () => {
     {
       key: 'id',
       header: 'Sl. No',
-      width: '80px',
-      headerClass: 'text-center',
+      headerClass: 'text-center w-20',
       cellClass: 'text-center',
       render: (row: any) => <div>{row?.id ? row.id : '-'}</div>,
     },

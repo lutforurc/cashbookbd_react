@@ -87,7 +87,7 @@ const BuildingUnitsList = ({ user }: any) => {
     {
       key: 'serial_no',
       header: 'Sl. No.',
-      headerClass: 'text-center',
+      headerClass: 'text-center w-20',
       cellClass: 'text-center',
     },
     {
@@ -104,6 +104,11 @@ const BuildingUnitsList = ({ user }: any) => {
       key: 'building_name',
       header: 'Building Name',
       render: (row: any) => <div>{row.flat.building.name}</div>,
+    },
+    {
+      key: 'location',
+      header: 'Location',
+      render: (row: any) => <div>{row.flat.building.project.area.name}</div>,
     },
     {
       key: 'size_sqft',

@@ -89,7 +89,7 @@ const ProjectsList = ({ user }: any) => {
     {
       key: 'serial_no',
       header: 'Sl. No.',
-      headerClass: 'text-center',
+      headerClass: 'text-center w-20',
       cellClass: 'text-center',
     },
     {
