@@ -144,7 +144,7 @@ const BuildingUnitsList = ({ user }: any) => {
 
       <div className="relative no-scrollbar">
         <div className="relative h-full">
-          {buildingUnits.loading && <Loader />}
+          {/* {buildingUnits.loading && <Loader />} */}
           <Table
             columns={columns}
             data={buildingUnits?.units?.data || []}
