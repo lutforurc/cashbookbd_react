@@ -169,7 +169,8 @@ const ROUTES = {
   real_estate_buildings_list: '/real-estate/building/list', 
   real_estate_flat_layout: '/real-estate/flat-layout', 
   real_estate_add_building_floor: '/real-estate/building/floor', 
-  real_estate_add_floor_unit: '/real-estate/add-unit',  
+  real_estate_floor_list: '/real-estate/building/floor/list', 
+  real_estate_add_floor_unit: '/real-estate/add-unit',
   real_estate_floor_unit_list: '/real-estate/unit/list',  
   // HRM
   hrms_employee_list: '/hrms/employees',

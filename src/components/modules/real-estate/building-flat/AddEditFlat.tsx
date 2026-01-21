@@ -224,7 +224,7 @@ const AddEditFlat = () => {
         />
 
         <Link
-          to={`/real-estate/buildings/${buildingId}/flats`}
+          to={`/real-estate/building/floor/list`}
           className="flex items-center justify-center"
         >
           <FiArrowLeft className="mr-2" /> Back

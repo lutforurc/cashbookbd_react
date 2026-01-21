@@ -106,7 +106,7 @@ const AddEditUnit = () => {
     const handleBuildingSelect = (option: any) => {
     setFormData((prev) => ({
       ...prev,
-      building_id: option.value,
+      flat_id: option.value,
     }));
   };
   /* ================= RENDER ================= */

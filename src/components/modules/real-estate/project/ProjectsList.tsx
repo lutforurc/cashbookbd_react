@@ -133,7 +133,7 @@ const ProjectsList = ({ user }: any) => {
 
   return (
     <div className=''>
-      <HelmetTitle title={'Real Estate Project List'} />
+      <HelmetTitle title={'List of Projects'} />
       <div className="flex mb-1 justify-between">
         <div className='flex'>
           <SelectOption onChange={handleSelectChange} className='mr-2' />

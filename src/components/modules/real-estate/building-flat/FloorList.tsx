@@ -3,28 +3,31 @@ import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
-import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useNavigate } from 'react-router-dom';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { buildingUnitList } from './unitSlice';
-import routes from '../../../services/appRoutes';
 
-const BuildingUnitsList = ({ user }: any) => {
+import routes from '../../../services/appRoutes';
+import { floorList } from './flatSlice';
+
+const FloorList = ({ user }: any) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const branchDdlData = useSelector((state: any) => state.branchDdl);
-  const buildingUnits = useSelector((state: any) => state.buildingUnits);
+  const floors = useSelector((state: any) => state.flats);
+  const flats = useSelector((state: any) => state.flats);
   const settings = useSelector((state: any) => state.settings);
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? '');
+  const [branchId, setBranchId] = useState<string | number>(
+    user?.branch_id ?? ''
+  );
   const [dropdownData, setDropdownData] = useState<any[]>([]);
 
   /* ---- Initial Load ---- */
@@ -48,26 +51,20 @@ const BuildingUnitsList = ({ user }: any) => {
 
   /* ---- Pagination Count ---- */
   useEffect(() => {
-    const total = buildingUnits?.units?.total;
+    const total = flats?.flats?.data?.total;
     setTotalPages(total ? Math.ceil(total / perPage) : 0);
-  }, [buildingUnits?.units?.total, perPage]);
+  }, [flats?.flats?.data?.total, perPage]);
 
   /* ---- Fetch List ---- */
   useEffect(() => {
     dispatch(
-      buildingUnitList({
+      floorList({
         page,
         per_page: perPage,
         branch_id: branchId ? Number(branchId) : undefined,
       })
     );
   }, [dispatch, page, perPage, branchId]);
-
-
-  console.log('====================================');
-  console.log("buildingUnits", buildingUnits);
-  console.log('====================================');
-
 
   /* ---- Handlers ---- */
   const handlePageChange = (page: number) => {
@@ -82,8 +79,8 @@ const BuildingUnitsList = ({ user }: any) => {
     setCurrentPage(1);
   };
 
-  const handleCreateUnit = () => {
-    navigate(routes.real_estate_add_floor_unit);
+  const handleCreateFloor = () => {
+    navigate(routes.real_estate_add_building_floor);
   };
 
   /* ---- Table Columns ---- */
@@ -91,23 +88,38 @@ const BuildingUnitsList = ({ user }: any) => {
     {
       key: 'serial_no',
       header: 'Sl. No.',
-      headerClass: 'text-center',
+      headerClass: 'text-center w-20',
       cellClass: 'text-center',
     },
     {
-      key: 'unit_no',
-      header: 'Unit No',
-      render: (row: any) => <div>{row.unit_no}</div>,
+      key: 'floor_no',
+      header: 'Floor No',
+      headerClass: 'text-center w-30',
+      cellClass: 'text-center',
+      render: (row: any) => <div>{row.floor_no}</div>,
+    },
+     {
+      key: 'flat_name',
+      header: 'Flat Name', 
+      render: (row: any) => <div>{row.flat_name}</div>,
     },
     {
-      key: 'size_sqft',
-      header: 'Size',
-      render: (row: any) => <div>{row.size_sqft} Sft</div>,
+      key: 'building',
+      header: 'Building Name', 
+      render: (row: any) => <div>{row.building.name}</div>,
+    },
+   
+    {
+      key: 'location',
+      header: 'Location', 
+      render: (row: any) => <div>{row.building.project.area.name}</div>,
     },
     {
-      key: 'sale_price',
-      header: 'Sale Price',
-      render: (row: any) => <div>{row.sale_price ?? '-'}</div>,
+      key: 'total_units',
+      header: 'Units',
+      headerClass: 'text-center w-30',
+      cellClass: 'text-center',
+      render: (row: any) => <div>{row.total_units ?? '-'}</div>,
     },
     {
       key: 'status',
@@ -115,9 +127,6 @@ const BuildingUnitsList = ({ user }: any) => {
       render: (row: any) => (
         <span className="font-medium">
           {row.status === 1 && 'Active'}
-          {row.status === 2 && 'Under Development'}
-          {row.status === 3 && 'Completed'}
-          {row.status === 4 && 'Sold'}
           {row.status === 0 && 'Inactive'}
         </span>
       ),
@@ -126,10 +135,10 @@ const BuildingUnitsList = ({ user }: any) => {
 
   return (
     <div>
-      <HelmetTitle title="List of Units" />
+      <HelmetTitle title="Floor List" />
 
       <div className="flex mb-1 justify-between">
-        <div className='flex'>
+        <div className="flex">
           <SelectOption onChange={handleSelectChange} className="mr-2" />
           <BranchDropdown
             defaultValue={branchId?.toString()}
@@ -144,18 +153,14 @@ const BuildingUnitsList = ({ user }: any) => {
 
         <ButtonLoading
           className="h-9"
-          onClick={handleCreateUnit}
-          label="New Unit"
+          onClick={handleCreateFloor}
+          label="New Floor"
         />
       </div>
 
       <div className="relative no-scrollbar">
         <div className="relative h-full">
-          {/* {buildingUnits.loading && <Loader />} */}
-          <Table
-            columns={columns}
-            data={buildingUnits?.units?.data || []}
-          />
+          <Table columns={columns} data={flats?.flats?.data || []} />
         </div>
 
         {totalPages > 1 && (
@@ -170,4 +175,4 @@ const BuildingUnitsList = ({ user }: any) => {
   );
 };
 
-export default BuildingUnitsList;
+export default FloorList;

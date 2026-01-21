@@ -83,7 +83,7 @@ const initialState: FlatState = {
 /* ================= ASYNC THUNKS ================= */
 
 /* ---- Flat List ---- */
-export const flatList = createAsyncThunk<
+export const floorList = createAsyncThunk<
   FlatItem[],
   FlatListRequest,
   { rejectValue: string }
@@ -230,18 +230,18 @@ const flatSlice = createSlice({
   extraReducers: (builder) => {
     builder
       /* ===== Flat List ===== */
-      .addCase(flatList.pending, (state) => {
+      .addCase(floorList.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(
-        flatList.fulfilled,
+        floorList.fulfilled,
         (state, action: PayloadAction<FlatItem[]>) => {
           state.loading = false;
           state.flats = action.payload;
         }
       )
-      .addCase(flatList.rejected, (state, action) => {
+      .addCase(floorList.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load flats";
       })
