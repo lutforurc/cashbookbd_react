@@ -87,6 +87,12 @@ const FlatLayout = () => {
     return viewLayout.floors.find((f: any) => f.floor_no === activeFloor) ?? null;
   }, [viewLayout, activeFloor]);
 
+
+const handleUnitClick = (e: React.MouseEvent, unit: any) => {
+  console.log("event", e);
+  console.log("unit", unit);
+};
+
   return (
     <>
       <HelmetTitle title="Building Floor Layout" />
@@ -182,7 +188,9 @@ const FlatLayout = () => {
                     <h3 className="font-semibold text-gray-900 dark:text-white">
                       {flat.flat_name}
                     </h3>
-                    <span className="text-xs text-gray-500 dark:text-gray-300">
+                    <span className="text-xs text-gray-500 dark:text-gray-300"
+                    
+                    >
                       {flat.units?.length === 0
                         ? "No units"
                         : `${flat.units.length} unit${
@@ -197,6 +205,7 @@ const FlatLayout = () => {
                       flat.units.map((unit: any) => (
                         <div
                           key={unit.id}
+                          onClick={(e) => handleUnitClick(e, unit)}
                           className={`text-white text-sm text-center py-2 rounded cursor-pointer ${
                             STATUS_MAP[unit.status] ?? "bg-gray-400"
                           }`}
