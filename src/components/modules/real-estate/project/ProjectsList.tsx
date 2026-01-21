@@ -135,7 +135,7 @@ const ProjectsList = ({ user }: any) => {
     <div className=''>
       <HelmetTitle title={'Real Estate Project List'} />
       <div className="flex mb-1 justify-between">
-        <div>
+        <div className='flex'>
           <SelectOption onChange={handleSelectChange} className='mr-2' />
           <BranchDropdown
             defaultValue={branchId?.toString()}
@@ -148,7 +148,7 @@ const ProjectsList = ({ user }: any) => {
           />
         </div>
         <ButtonLoading
-        className='h-9 mt-9.5'
+        className='h-9'
           onClick={handleSearchButton}
           // buttonLoading={buttonLoading}
           label="New Project"
