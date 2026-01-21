@@ -63,11 +63,7 @@ const BuildingUnitsList = ({ user }: any) => {
     );
   }, [dispatch, page, perPage, branchId]);
 
-
-  console.log('====================================');
-  console.log("buildingUnits", buildingUnits);
-  console.log('====================================');
-
+ 
 
   /* ---- Handlers ---- */
   const handlePageChange = (page: number) => {
@@ -98,6 +94,16 @@ const BuildingUnitsList = ({ user }: any) => {
       key: 'unit_no',
       header: 'Unit No',
       render: (row: any) => <div>{row.unit_no}</div>,
+    },
+    {
+      key: 'flat_name',
+      header: 'Flat Name',
+      render: (row: any) => <div>{row.flat.flat_name}</div>,
+    },
+    {
+      key: 'building_name',
+      header: 'Building Name',
+      render: (row: any) => <div>{row.flat.building.name}</div>,
     },
     {
       key: 'size_sqft',
