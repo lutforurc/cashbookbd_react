@@ -812,7 +812,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                              Unit List
                             </NavLink>
                           </li>
-                          <li>
+                          {/* <li>
                             <NavLink
                               to={routes.real_estate_add_floor_unit}
                               className={({ isActive }) =>
@@ -822,7 +822,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             >
                              Unit
                             </NavLink>
-                          </li>
+                          </li> */}
                           <li>
                             <NavLink
                               to="/real-estate/flat-layout"
@@ -831,7 +831,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                              Floor Layout
+                              Building Layout
                             </NavLink>
                           </li>
 
