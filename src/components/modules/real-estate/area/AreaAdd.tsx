@@ -55,10 +55,10 @@ const AreaAdd = (user: any) => {
     try {
       // Call API to save area
       const response = await dispatch(saveArea(formData)).unwrap();
-      console.log(response?.message);
+      console.log("Response", response);
 
       const voucherText = response?.message;
-      // console.log(voucherText);
+      console.log("Message", voucherText);
       
       if (voucherText) {
         // Use a stable toastId so it can't render twice for the same save

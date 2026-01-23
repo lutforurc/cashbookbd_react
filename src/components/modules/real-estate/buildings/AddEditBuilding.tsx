@@ -18,6 +18,7 @@ import { getInitialBuilding } from "./initial";
 import { buildingEdit, buildingStore, buildingUpdate } from "./buildingsSlice";
 import ProjectAreaDropdown from "../../../utils/utils-functions/ProjectAreaDropdown";
 import ProjectDropdown from "../../../utils/utils-functions/ProjectDropdown";
+import { toast } from "react-toastify";
 // import {
 //   buildingStore,
 //   buildingUpdate,
@@ -87,8 +88,9 @@ const AddEditBuilding = () => {
       buildingUpdate.fulfilled.match(action)
     ) {
       alert(id ? "Building updated successfully" : "Building created successfully");
+      toast.success(id ? "Building updated successfully" : "Building created successfully");
     } else {
-      alert(action.payload);
+      toast.error("Failed to save building");
     }
   };
 

@@ -9,7 +9,7 @@ import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import Link from "../../../utils/others/Link";
 import InputDatePicker from "../../../utils/fields/DatePicker";
-
+import { toast } from "react-toastify";
 import { status } from "../../../utils/fields/DataConstant";
 
 import {
@@ -92,9 +92,9 @@ const AddEditUnit = () => {
     setButtonLoading(false);
 
     if (action.type.endsWith("/fulfilled")) {
-      alert(isEdit ? "Unit updated successfully" : "Unit created successfully");
+      toast.success(isEdit ? "Unit updated successfully" : "Unit created successfully");
     } else {
-      alert(action.payload || "Operation failed");
+      toast.error("Failed to save unit");
     }
   };
 

@@ -20,6 +20,7 @@ import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { fetchAreaDdl } from '../area/projectAreaSlice';
 import ProjectAreaDropdown from '../../../utils/utils-functions/ProjectAreaDropdown';
 import { projectStore } from './projectSlice';
+import { toast } from 'react-toastify';
 
 const AddEditProject = (user: any) => {
     const dispatch = useDispatch();
@@ -100,9 +101,10 @@ const AddEditProject = (user: any) => {
         setButtonLoading(false);
 
         if (projectStore.fulfilled.match(resultAction)) {
-            alert("Project created successfully");
+            toast.success("Project created successfully");
         } else {
-            alert(resultAction.payload);
+            toast.error("Failed to create project"); 
+            
         }
     };
 

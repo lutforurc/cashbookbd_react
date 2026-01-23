@@ -9,9 +9,8 @@ import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import Link from "../../../utils/others/Link";
 import InputDatePicker from "../../../utils/fields/DatePicker";
-
 import { status } from "../../../utils/fields/DataConstant";
-import { FlatItem } from "./types";
+import { FlatItem } from "./types"; 
 
 
 import {
@@ -22,6 +21,7 @@ import {
 
 import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
 import { getInitialFlat } from "./getInitialFloor";
+import { toast } from "react-toastify";
 
 const AddEditFlat = () => {
   const dispatch = useDispatch();
@@ -98,10 +98,10 @@ const AddEditFlat = () => {
     if (
       flatStore.fulfilled.match(action) ||
       flatUpdate.fulfilled.match(action)
-    ) {
-      alert(id ? "Flat updated successfully" : "Flat created successfully");
+          ) {
+      toast.success(id ? "Flat updated successfully" : "Flat created successfully");
     } else {
-      alert(action.payload || "Operation failed");
+      toast.error("Failed to save flat");
     }
   };
 
