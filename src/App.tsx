@@ -95,6 +95,7 @@ import BuildingUnitsList from './components/modules/real-estate/units/BuildingUn
 import FloorList from './components/modules/real-estate/building-flat/FloorList';
 import AddEditUnitPrice from './components/modules/real-estate/units/AddEditUnitChargeType';
 import AddEditUnitChargeType from './components/modules/real-estate/units/AddEditUnitChargeType';
+import ChargeTypeList from './components/modules/real-estate/charge-types/ChargeTypeList';
 
 
 
@@ -251,7 +252,9 @@ function App() {
 
             <Route path={routes.real_estate_floor_unit_list} element={<BuildingUnitsList user={me} />} />
             <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
-            <Route path={routes.real_estate_unite_prices_add } element={<AddEditUnitChargeType />} />
+            <Route path={ routes.real_estate_unit_types_create } element={<AddEditUnitChargeType />} />
+
+            <Route path={routes.real_estate_unit_types_list } element={<ChargeTypeList user={me} />} />
             
 
             {/* HRM */}

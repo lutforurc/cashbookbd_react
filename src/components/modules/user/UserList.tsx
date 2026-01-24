@@ -24,7 +24,7 @@ const UserList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
-      const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('');
 
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);

@@ -1,12 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
-import {
-  API_UNIT_LIST_URL,
-  API_UNIT_STORE_URL,
-  API_UNIT_UPDATE_URL,
-  API_UNIT_EDIT_URL,
-  API_UNIT_DDL_LIST_URL,
-} from "../../../services/apiRoutes";
+import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL } from "../../../services/apiRoutes";
 import { getToken } from "../../../../features/authReducer";
 import { UnitChargeTypeItem } from "./types";
 
@@ -68,6 +62,15 @@ interface UnitState {
   message: string | null;
 }
 
+export interface UnitChargeTypeListRequest {
+  page: number;
+  per_page?: number;   // primary
+  limit?: number;      // fallback
+  q?: string;
+  branch_id?: number;
+  is_active?: number;  // 1/0
+}
+
 /* ================= INITIAL STATE ================= */
 
 const initialState: UnitState = {
@@ -85,12 +88,37 @@ const initialState: UnitState = {
 
 /* ================= UNIT CHARGE TYPE (DDL + CRUD) ================= */
 
-/* ---- Unit Charge Types DDL ---- */
-export const unitChargeTypeDdl = createAsyncThunk<
-  UnitChargeTypeItem[],
-  void,
+export const unitChargeTypeList = createAsyncThunk<
+  any, // paginator object
+  UnitChargeTypeListRequest,
   { rejectValue: string }
->("unit/unitChargeTypeDdl", async (_, { rejectWithValue }) => {
+>("unit/unitChargeTypeList", async (params, thunkAPI) => {
+  try {
+    const queryParams: any = {
+      page: params.page,
+      per_page: params.per_page ?? params.limit ?? 50,
+    };
+
+    if (params.q) queryParams.q = params.q;
+    if (params.branch_id !== undefined) queryParams.branch_id = params.branch_id;
+    if (params.is_active !== undefined) queryParams.is_active = params.is_active;
+
+    const res = await httpService.get(API_UNIT_CHARGE_TYPE_LIST_URL, { params: queryParams });
+
+    // ✅ API response: { data: { current_page, data: [], total, ... } }
+    if (res.data?.data?.data) {
+      return res.data.data; // <-- paginator object
+    }
+
+    return thunkAPI.rejectWithValue(res.data?.message || "Failed to fetch unit charge types");
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(error.message);
+  }
+});
+
+
+/* ---- Unit Charge Types DDL ---- */
+export const unitChargeTypeDdl = createAsyncThunk<UnitChargeTypeItem[], void, { rejectValue: string }>("unit/unitChargeTypeDdl", async (_, { rejectWithValue }) => {
   try {
     const token = getToken();
     const res = await fetch("/api/units/charge-types/ddl", {
@@ -110,11 +138,7 @@ export const unitChargeTypeDdl = createAsyncThunk<
 });
 
 /* ---- Fetch Single Charge Type (Edit) ---- */
-export const fetchUnitChargeType = createAsyncThunk<
-  UnitChargeTypeItem,
-  number,
-  { rejectValue: string }
->("unit/fetchUnitChargeType", async (id, { rejectWithValue }) => {
+export const fetchUnitChargeType = createAsyncThunk<UnitChargeTypeItem, number, { rejectValue: string }>("unit/fetchUnitChargeType", async (id, { rejectWithValue }) => {
   try {
     const res = await httpService.get(`/api/units/charge-types/${id}`);
     if (res.data?.success === true) {
@@ -127,13 +151,9 @@ export const fetchUnitChargeType = createAsyncThunk<
 });
 
 /* ---- Store Charge Type ---- */
-export const storeUnitChargeType = createAsyncThunk<
-  any,
-  Partial<UnitChargeTypeItem>,
-  { rejectValue: string }
->("unit/storeUnitChargeType", async (payload, { rejectWithValue }) => {
+export const storeUnitChargeType = createAsyncThunk<any, Partial<UnitChargeTypeItem>, { rejectValue: string }>("unit/storeUnitChargeType", async (payload, { rejectWithValue }) => {
   try {
-    const res = await httpService.post("/api/units/charge-types", payload);
+    const res = await httpService.post(API_UNIT_CHARGE_TYPE_STORE_URL, payload);
     if (res.data?.success === true) {
       return res.data;
     }
@@ -144,14 +164,9 @@ export const storeUnitChargeType = createAsyncThunk<
 });
 
 /* ---- Update Charge Type ---- */
-export const updateUnitChargeType = createAsyncThunk<
-  any,
-  Partial<UnitChargeTypeItem>,
-  { rejectValue: string }
->("unit/updateUnitChargeType", async (payload, { rejectWithValue }) => {
+export const updateUnitChargeType = createAsyncThunk<any, Partial<UnitChargeTypeItem>, { rejectValue: string }>("unit/updateUnitChargeType", async (payload, { rejectWithValue }) => {
   try {
-    const res = await httpService.put(
-      `/api/units/charge-types/${payload.id}`,
+    const res = await httpService.put(`${API_UNIT_CHARGE_TYPE_LIST_URL}/${payload.id}`,
       payload
     );
     if (res.data?.success === true) {
@@ -166,13 +181,9 @@ export const updateUnitChargeType = createAsyncThunk<
 /* ================= UNIT PRICE CRUD ================= */
 
 /* ---- List Unit Prices ---- */
-export const fetchUnitPrices = createAsyncThunk<
-  UnitPriceItem[],
-  number,
-  { rejectValue: string }
->("unit/fetchUnitPrices", async (unitId, { rejectWithValue }) => {
+export const fetchUnitPrices = createAsyncThunk<UnitPriceItem[], number, { rejectValue: string }>("unit/fetchUnitPrices", async (unitId, { rejectWithValue }) => {
   try {
-    const res = await httpService.get(`/api/units/unit-prices/${unitId}`);
+    const res = await httpService.get(`/api/real-estate/units/unit-prices/${unitId}`);
     if (res.data?.success === true) {
       return res.data.data.breakdowns;
     }
@@ -183,20 +194,9 @@ export const fetchUnitPrices = createAsyncThunk<
 });
 
 /* ---- Store Unit Prices ---- */
-export const storeUnitPrices = createAsyncThunk<
-  any,
-  {
-    unit_id: number;
-    items: {
-      charge_type_id: number;
-      amount: number;
-      note?: string;
-    }[];
-  },
-  { rejectValue: string }
->("unit/storeUnitPrices", async (payload, { rejectWithValue }) => {
+export const storeUnitPrices = createAsyncThunk<any, { unit_id: number; items: { charge_type_id: number; amount: number; note?: string; }[] }, { rejectValue: string }>("unit/storeUnitPrices", async (payload, { rejectWithValue }) => {
   try {
-    const res = await httpService.post("/api/units/unit-prices", payload);
+    const res = await httpService.post(API_UNIT_CHARGE_TYPE_LIST_URL, payload);
     if (res.data?.success === true) {
       return res.data;
     }
@@ -207,16 +207,9 @@ export const storeUnitPrices = createAsyncThunk<
 });
 
 /* ---- Update Unit Price ---- */
-export const updateUnitPrice = createAsyncThunk<
-  any,
-  { id: number; amount: number; note?: string },
-  { rejectValue: string }
->("unit/updateUnitPrice", async (payload, { rejectWithValue }) => {
+export const updateUnitPrice = createAsyncThunk<any, { id: number; amount: number; note?: string }, { rejectValue: string }>("unit/updateUnitPrice", async (payload, { rejectWithValue }) => {
   try {
-    const res = await httpService.put(
-      `/api/units/unit-prices/${payload.id}`,
-      payload
-    );
+    const res = await httpService.put(`${API_UNIT_CHARGE_TYPE_LIST_URL}/${payload.id}`, payload);
     if (res.data?.success === true) {
       return res.data;
     }
@@ -227,13 +220,9 @@ export const updateUnitPrice = createAsyncThunk<
 });
 
 /* ---- Delete Unit Price ---- */
-export const deleteUnitPrice = createAsyncThunk<
-  number,
-  number,
-  { rejectValue: string }
->("unit/deleteUnitPrice", async (id, { rejectWithValue }) => {
+export const deleteUnitPrice = createAsyncThunk<number, number, { rejectValue: string }>("unit/deleteUnitPrice", async (id, { rejectWithValue }) => {
   try {
-    const res = await httpService.delete(`/api/units/unit-prices/${id}`);
+    const res = await httpService.delete(`${API_UNIT_CHARGE_TYPE_LIST_URL}/${id}`);
     if (res.data?.success === true) {
       return id;
     }
@@ -246,11 +235,7 @@ export const deleteUnitPrice = createAsyncThunk<
 /* ================= EXISTING THUNKS ================= */
 
 /* ---- Building Unit List ---- */
-export const buildingUnitList = createAsyncThunk<
-  any,
-  BuildingUnitListRequest,
-  { rejectValue: string }
->("buildingUnit/buildingUnitList", async (params, thunkAPI) => {
+export const buildingUnitList = createAsyncThunk<any, BuildingUnitListRequest, { rejectValue: string }>("buildingUnit/buildingUnitList", async (params, thunkAPI) => {
   try {
     const queryParams: any = {
       page: params.page,
@@ -280,11 +265,7 @@ export const buildingUnitList = createAsyncThunk<
 });
 
 /* ---- Unit DDL ---- */
-export const unitDdl = createAsyncThunk<
-  UnitDdlItem[],
-  string | undefined,
-  { rejectValue: string }
->("unit/unitDdl", async (search = "", { rejectWithValue }) => {
+export const unitDdl = createAsyncThunk<UnitDdlItem[], string | undefined, { rejectValue: string }>("unit/unitDdl", async (search = "", { rejectWithValue }) => {
   try {
     const token = getToken();
     const res = await fetch(API_UNIT_DDL_LIST_URL + `?q=${search}`, {
@@ -307,11 +288,7 @@ export const unitDdl = createAsyncThunk<
 });
 
 /* ---- Store Unit ---- */
-export const unitStore = createAsyncThunk<
-  any,
-  UnitItem,
-  { rejectValue: string }
->("unit/unitStore", async (payload, { rejectWithValue }) => {
+export const unitStore = createAsyncThunk<any, UnitItem, { rejectValue: string }>("unit/unitStore", async (payload, { rejectWithValue }) => {
   try {
     const res = await httpService.post(API_UNIT_STORE_URL, payload);
     if (res.data?.success === true) {
@@ -324,11 +301,7 @@ export const unitStore = createAsyncThunk<
 });
 
 /* ---- Update Unit ---- */
-export const unitUpdate = createAsyncThunk<
-  any,
-  UnitItem,
-  { rejectValue: string }
->("unit/unitUpdate", async (payload, { rejectWithValue }) => {
+export const unitUpdate = createAsyncThunk<any, UnitItem, { rejectValue: string }>("unit/unitUpdate", async (payload, { rejectWithValue }) => {
   try {
     const res = await httpService.post(API_UNIT_UPDATE_URL, payload);
     if (res.data?.success === true) {
@@ -341,11 +314,7 @@ export const unitUpdate = createAsyncThunk<
 });
 
 /* ---- Edit Unit ---- */
-export const unitEdit = createAsyncThunk<
-  UnitItem,
-  number,
-  { rejectValue: string }
->("unit/unitEdit", async (id, { rejectWithValue }) => {
+export const unitEdit = createAsyncThunk<UnitItem, number, { rejectValue: string }>("unit/unitEdit", async (id, { rejectWithValue }) => {
   try {
     const res = await httpService.get(API_UNIT_EDIT_URL + id);
     if (res.data?.success === true) {
@@ -429,6 +398,19 @@ const unitSlice = createSlice({
       .addCase(updateUnitChargeType.fulfilled, (state, action) => {
         state.message =
           action.payload?.message || "Charge type updated successfully";
+      })
+      /* ===== Unit Charge Type List ===== */
+      .addCase(unitChargeTypeList.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(unitChargeTypeList.fulfilled, (state, action) => {
+        state.loading = false;
+        state.unitChargeTypes = action.payload;
+      })
+      .addCase(unitChargeTypeList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to load unit charge types";
       });
   },
 });

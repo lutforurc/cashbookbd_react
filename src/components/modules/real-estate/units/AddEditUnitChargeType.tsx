@@ -105,7 +105,7 @@ const AddEditUnitChargeType = () => {
     <>
       <HelmetTitle title={isEdit ? "Edit Charge Type" : "Add Charge Type"} />
 
-      <div className="grid grid-cols-1 gap-2 mb-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <InputElement
           label="Charge Name"
           name="name"
@@ -126,23 +126,16 @@ const AddEditUnitChargeType = () => {
           onChange={handleChange}
         />
 
+
+      </div>
+
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <InputElement
           label="Sort Order"
           name="sort_order"
           type="number"
           value={form.sort_order}
-          onChange={handleChange}
-          className="h-8.5"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-2 mb-3">
-        
-
-        <InputElement
-          label="Notes"
-          name="notes"
-          value={form.notes ?? ""}
           onChange={handleChange}
           className="h-8.5"
         />
@@ -154,6 +147,16 @@ const AddEditUnitChargeType = () => {
             { id: 0, name: "Inactive" },
           ]}
           value={form.is_active}
+          onChange={handleChange}
+          className="h-8.5"
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-2 mb-3">
+
+       <InputElement
+          label="Notes"
+          name="notes"
+          value={form.notes ?? ""}
           onChange={handleChange}
           className="h-8.5"
         />

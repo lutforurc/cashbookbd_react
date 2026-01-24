@@ -732,9 +732,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             pathname === '/real-estate/flat-layout' ||
                             pathname === '/real-estate/building/floor' ||
                             pathname === '/real-estate/add-unit' ||
-                            pathname === routes.real_estate_unite_prices_add ||
+                            pathname === routes.real_estate_unit_types_create ||
                             pathname === routes.real_estate_buildings_list ||
                             pathname === routes.real_estate_floor_list ||
+                            pathname === routes.real_estate_unit_types_list ||
                             pathname === routes.real_estate_floor_unit_list || 
                             pathname === '/real-estate/project-list' ||
                             pathname.includes('/real-estate/add-area')) &&
@@ -765,12 +766,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             >
                               Location
                             </NavLink>
-                          </li>
-                         
-
+                          </li> 
                           <li>
                             <NavLink
-                               to={routes.real_estate_project_list}
+                            to={routes.real_estate_project_list}
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
@@ -815,15 +814,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                           <li>
                             <NavLink
-                              to={routes.real_estate_unite_prices_add}
+                              to={routes.real_estate_unit_types_list}
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                             Unit Prices
+                             Unit Types
                             </NavLink>
                           </li>
+                          
                           <li>
                             <NavLink
                               to="/real-estate/flat-layout"
