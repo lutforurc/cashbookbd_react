@@ -8,6 +8,7 @@ import {
   API_UNIT_DDL_LIST_URL,
 } from "../../../services/apiRoutes";
 import { getToken } from "../../../../features/authReducer";
+import { UnitChargeTypeItem } from "./types";
 
 /* ================= TYPES ================= */
 
@@ -17,7 +18,7 @@ export interface BuildingUnitListRequest {
   search?: string;
   flat_id?: number;
   customer_id?: number;
-  status?: number; // 0=Inactive,1=Active,2=UnderDev,3=Completed,4=Sold
+  status?: number;
 }
 
 export interface UnitItem {
@@ -25,20 +26,24 @@ export interface UnitItem {
   building_id?: number | string;
   floor_no?: number | string;
   flat_id?: number | string;
-
   unit_no: string;
   size_sqft?: string;
   status?: number;
 }
 
-/* ---- List Request ---- */
-interface UnitListRequest {
-  page: number;
-  per_page: number;
-  search?: string;
-  building_id?: number | string;
-  floor_no?: number | string;
-  flat_id?: number | string;
+/* ---- Unit Price Breakdown ---- */
+export interface UnitPriceItem {
+  id: number;
+  unit_id: number;
+  charge_type_id: number;
+  amount: number;
+  note?: string;
+  charge_type?: {
+    id: number;
+    name: string;
+    effect: "+" | "-";
+    sort_order: number;
+  };
 }
 
 /* ---- DDL ---- */
@@ -55,6 +60,9 @@ interface UnitState {
   unitDdl: UnitDdlItem[];
   editUnit: UnitItem | null;
 
+  unitChargeTypes: UnitChargeTypeItem[];
+  unitPrices: UnitPriceItem[];
+
   loading: boolean;
   error: string | null;
   message: string | null;
@@ -67,48 +75,209 @@ const initialState: UnitState = {
   unitDdl: [],
   editUnit: null,
 
+  unitChargeTypes: [],
+  unitPrices: [],
+
   loading: false,
   error: null,
   message: null,
 };
 
-/* ================= ASYNC THUNKS ================= */
+/* ================= UNIT CHARGE TYPE (DDL + CRUD) ================= */
+
+/* ---- Unit Charge Types DDL ---- */
+export const unitChargeTypeDdl = createAsyncThunk<
+  UnitChargeTypeItem[],
+  void,
+  { rejectValue: string }
+>("unit/unitChargeTypeDdl", async (_, { rejectWithValue }) => {
+  try {
+    const token = getToken();
+    const res = await fetch("/api/units/charge-types/ddl", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    if (data?.success === true) {
+      return data.data;
+    }
+    return rejectWithValue(data?.message || "Failed to load unit charge types");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
+/* ---- Fetch Single Charge Type (Edit) ---- */
+export const fetchUnitChargeType = createAsyncThunk<
+  UnitChargeTypeItem,
+  number,
+  { rejectValue: string }
+>("unit/fetchUnitChargeType", async (id, { rejectWithValue }) => {
+  try {
+    const res = await httpService.get(`/api/units/charge-types/${id}`);
+    if (res.data?.success === true) {
+      return res.data.data;
+    }
+    return rejectWithValue(res.data?.message || "Failed to load charge type");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
+/* ---- Store Charge Type ---- */
+export const storeUnitChargeType = createAsyncThunk<
+  any,
+  Partial<UnitChargeTypeItem>,
+  { rejectValue: string }
+>("unit/storeUnitChargeType", async (payload, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post("/api/units/charge-types", payload);
+    if (res.data?.success === true) {
+      return res.data;
+    }
+    return rejectWithValue(res.data?.message || "Failed to create charge type");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
+/* ---- Update Charge Type ---- */
+export const updateUnitChargeType = createAsyncThunk<
+  any,
+  Partial<UnitChargeTypeItem>,
+  { rejectValue: string }
+>("unit/updateUnitChargeType", async (payload, { rejectWithValue }) => {
+  try {
+    const res = await httpService.put(
+      `/api/units/charge-types/${payload.id}`,
+      payload
+    );
+    if (res.data?.success === true) {
+      return res.data;
+    }
+    return rejectWithValue(res.data?.message || "Failed to update charge type");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
+/* ================= UNIT PRICE CRUD ================= */
+
+/* ---- List Unit Prices ---- */
+export const fetchUnitPrices = createAsyncThunk<
+  UnitPriceItem[],
+  number,
+  { rejectValue: string }
+>("unit/fetchUnitPrices", async (unitId, { rejectWithValue }) => {
+  try {
+    const res = await httpService.get(`/api/units/unit-prices/${unitId}`);
+    if (res.data?.success === true) {
+      return res.data.data.breakdowns;
+    }
+    return rejectWithValue(res.data?.message || "Failed to load unit prices");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
+/* ---- Store Unit Prices ---- */
+export const storeUnitPrices = createAsyncThunk<
+  any,
+  {
+    unit_id: number;
+    items: {
+      charge_type_id: number;
+      amount: number;
+      note?: string;
+    }[];
+  },
+  { rejectValue: string }
+>("unit/storeUnitPrices", async (payload, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post("/api/units/unit-prices", payload);
+    if (res.data?.success === true) {
+      return res.data;
+    }
+    return rejectWithValue(res.data?.message || "Failed to save unit prices");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
+/* ---- Update Unit Price ---- */
+export const updateUnitPrice = createAsyncThunk<
+  any,
+  { id: number; amount: number; note?: string },
+  { rejectValue: string }
+>("unit/updateUnitPrice", async (payload, { rejectWithValue }) => {
+  try {
+    const res = await httpService.put(
+      `/api/units/unit-prices/${payload.id}`,
+      payload
+    );
+    if (res.data?.success === true) {
+      return res.data;
+    }
+    return rejectWithValue(res.data?.message || "Update failed");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
+/* ---- Delete Unit Price ---- */
+export const deleteUnitPrice = createAsyncThunk<
+  number,
+  number,
+  { rejectValue: string }
+>("unit/deleteUnitPrice", async (id, { rejectWithValue }) => {
+  try {
+    const res = await httpService.delete(`/api/units/unit-prices/${id}`);
+    if (res.data?.success === true) {
+      return id;
+    }
+    return rejectWithValue(res.data?.message || "Delete failed");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
+  }
+});
+
+/* ================= EXISTING THUNKS ================= */
 
 /* ---- Building Unit List ---- */
-export const buildingUnitList = createAsyncThunk<any, BuildingUnitListRequest, { rejectValue: string } >( "buildingUnit/buildingUnitList", async (params, thunkAPI) => {
-    try {
-      const queryParams: any = {
-        page: params.page,
-        per_page: params.per_page,
-      };
+export const buildingUnitList = createAsyncThunk<
+  any,
+  BuildingUnitListRequest,
+  { rejectValue: string }
+>("buildingUnit/buildingUnitList", async (params, thunkAPI) => {
+  try {
+    const queryParams: any = {
+      page: params.page,
+      per_page: params.per_page,
+    };
 
-      // Optional filters
-      if (params.search) queryParams.search = params.search;
-      if (params.flat_id !== undefined) queryParams.flat_id = params.flat_id;
-      if (params.customer_id !== undefined) queryParams.customer_id = params.customer_id;
-      if (params.status !== undefined) queryParams.status = params.status;
+    if (params.search) queryParams.search = params.search;
+    if (params.flat_id !== undefined) queryParams.flat_id = params.flat_id;
+    if (params.customer_id !== undefined)
+      queryParams.customer_id = params.customer_id;
+    if (params.status !== undefined) queryParams.status = params.status;
 
-      const res = await httpService.get(API_UNIT_LIST_URL, {
-        params: queryParams,
-      });
+    const res = await httpService.get(API_UNIT_LIST_URL, {
+      params: queryParams,
+    });
 
-      if (res.data?.success === true) { 
-        return res.data.data.data;
-      }
-
-      return thunkAPI.rejectWithValue(
-        res.data?.message || "Failed to fetch building units"
-      );
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error?.response?.data?.message ||
-          error.message ||
-          "Failed to fetch building units"
-      );
+    if (res.data?.success === true) {
+      return res.data.data.data;
     }
-  }
-);
 
+    return thunkAPI.rejectWithValue(
+      res.data?.message || "Failed to fetch building units"
+    );
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(error.message);
+  }
+});
 
 /* ---- Unit DDL ---- */
 export const unitDdl = createAsyncThunk<
@@ -133,7 +302,7 @@ export const unitDdl = createAsyncThunk<
 
     return rejectWithValue(data?.message || "Failed to load unit ddl");
   } catch (error: any) {
-    return rejectWithValue(error?.message || "Failed to load unit ddl");
+    return rejectWithValue(error.message);
   }
 });
 
@@ -150,16 +319,16 @@ export const unitStore = createAsyncThunk<
     }
     return rejectWithValue(res.data?.message || "Unit create failed");
   } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-        error.message ||
-        "Unit create failed"
-    );
+    return rejectWithValue(error.message);
   }
 });
 
 /* ---- Update Unit ---- */
-export const unitUpdate = createAsyncThunk<any, UnitItem, { rejectValue: string } >("unit/unitUpdate", async (payload, { rejectWithValue }) => {
+export const unitUpdate = createAsyncThunk<
+  any,
+  UnitItem,
+  { rejectValue: string }
+>("unit/unitUpdate", async (payload, { rejectWithValue }) => {
   try {
     const res = await httpService.post(API_UNIT_UPDATE_URL, payload);
     if (res.data?.success === true) {
@@ -167,11 +336,7 @@ export const unitUpdate = createAsyncThunk<any, UnitItem, { rejectValue: string 
     }
     return rejectWithValue(res.data?.message || "Unit update failed");
   } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-        error.message ||
-        "Unit update failed"
-    );
+    return rejectWithValue(error.message);
   }
 });
 
@@ -188,38 +353,9 @@ export const unitEdit = createAsyncThunk<
     }
     return rejectWithValue(res.data?.message || "Failed to load unit");
   } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-        error.message ||
-        "Failed to load unit"
-    );
+    return rejectWithValue(error.message);
   }
 });
-
-
-
-/* ---- Unit DDL ---- */
-export const fetchBuildingDdl = createAsyncThunk<UnitDdlItem[],string | undefined,{ rejectValue: string }>("building/fetchBuildingDdl", async (search = "", { rejectWithValue }) => {
-  try {
-    const token = getToken();
-    const res = await fetch(API_UNIT_DDL_LIST_URL + `?q=${search}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const data = await res.json();
-
-    if (data?.success === true) {
-      return data.data;
-    }
-
-    return rejectWithValue(data?.message || "Failed to load building ddl");
-  } catch (error: any) {
-    return rejectWithValue(error?.message || "Failed to load building ddl");
-  }
-});
-
 
 /* ================= SLICE ================= */
 
@@ -231,6 +367,10 @@ const unitSlice = createSlice({
       state.units = [];
       state.unitDdl = [];
       state.editUnit = null;
+
+      state.unitChargeTypes = [];
+      state.unitPrices = [];
+
       state.loading = false;
       state.error = null;
       state.message = null;
@@ -256,63 +396,39 @@ const unitSlice = createSlice({
       })
 
       /* ===== Unit DDL ===== */
-      .addCase(unitDdl.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(
-        unitDdl.fulfilled,
-        (state, action: PayloadAction<UnitDdlItem[]>) => {
-          state.loading = false;
-          state.unitDdl = action.payload;
-        }
-      )
-      .addCase(unitDdl.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to load unit ddl";
+      .addCase(unitDdl.fulfilled, (state, action) => {
+        state.unitDdl = action.payload;
       })
 
-      /* ===== Store Unit ===== */
-      .addCase(unitStore.pending, (state) => {
-        state.loading = true;
+      /* ===== Unit Charge Types ===== */
+      .addCase(unitChargeTypeDdl.fulfilled, (state, action) => {
+        state.unitChargeTypes = action.payload;
       })
-      .addCase(unitStore.fulfilled, (state, action) => {
-        state.loading = false;
+
+      /* ===== Unit Price ===== */
+      .addCase(fetchUnitPrices.fulfilled, (state, action) => {
+        state.unitPrices = action.payload;
+      })
+      .addCase(storeUnitPrices.fulfilled, (state, action) => {
+        state.message = action.payload?.message || "Unit price saved";
+      })
+      .addCase(updateUnitPrice.fulfilled, (state) => {
+        state.message = "Unit price updated";
+      })
+      .addCase(deleteUnitPrice.fulfilled, (state, action) => {
+        state.unitPrices = state.unitPrices.filter(
+          (item) => item.id !== action.payload
+        );
+      })
+
+      /* ===== Unit Charge Type CRUD (Message only) ===== */
+      .addCase(storeUnitChargeType.fulfilled, (state, action) => {
         state.message =
-          action.payload?.message || "Unit created successfully";
+          action.payload?.message || "Charge type created successfully";
       })
-      .addCase(unitStore.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Unit create failed";
-      })
-
-      /* ===== Update Unit ===== */
-      .addCase(unitUpdate.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(unitUpdate.fulfilled, (state, action) => {
-        state.loading = false;
+      .addCase(updateUnitChargeType.fulfilled, (state, action) => {
         state.message =
-          action.payload?.message || "Unit updated successfully";
-      })
-      .addCase(unitUpdate.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Unit update failed";
-      })
-
-      /* ===== Edit Unit ===== */
-      .addCase(unitEdit.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(
-        unitEdit.fulfilled,
-        (state, action: PayloadAction<UnitItem>) => {
-          state.loading = false;
-          state.editUnit = action.payload;
-        }
-      )
-      .addCase(unitEdit.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to load unit";
+          action.payload?.message || "Charge type updated successfully";
       });
   },
 });

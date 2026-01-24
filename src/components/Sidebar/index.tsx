@@ -732,6 +732,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             pathname === '/real-estate/flat-layout' ||
                             pathname === '/real-estate/building/floor' ||
                             pathname === '/real-estate/add-unit' ||
+                            pathname === routes.real_estate_unite_prices_add ||
                             pathname === routes.real_estate_buildings_list ||
                             pathname === routes.real_estate_floor_list ||
                             pathname === routes.real_estate_floor_unit_list || 
@@ -803,7 +804,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                           <li>
                             <NavLink
-                              to="/real-estate/unit/list"
+                              to={routes.real_estate_floor_unit_list}
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
@@ -812,17 +813,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                              Unit List
                             </NavLink>
                           </li>
-                          {/* <li>
+                          <li>
                             <NavLink
-                              to={routes.real_estate_add_floor_unit}
+                              to={routes.real_estate_unite_prices_add}
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                             Unit
+                             Unit Prices
                             </NavLink>
-                          </li> */}
+                          </li>
                           <li>
                             <NavLink
                               to="/real-estate/flat-layout"

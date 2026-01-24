@@ -10,3 +10,11 @@ export interface UnitItem {
   status: number;
   notes?: string | null;
 }
+
+/* ---- Unit Charge Type ---- */
+export interface UnitChargeTypeItem {
+  id: number;
+  name: string;
+  effect: "+" | "-";
+  sort_order: number;
+}
