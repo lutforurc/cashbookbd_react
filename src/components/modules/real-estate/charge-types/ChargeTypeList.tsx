@@ -8,11 +8,11 @@ import Table from "../../../utils/others/Table";
 import Pagination from "../../../utils/utils-functions/Pagination";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import { useNavigate } from "react-router-dom";
-import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
-// import { unitChargeTypeList } from "./unitSlice";
+import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider"; 
 import routes from "../../../services/appRoutes";
 import { unitChargeTypeList } from "../units/unitSlice";
 import SearchInput from "../../../utils/fields/SearchInput";
+import ActionButtons from "../../../utils/fields/ActionButton";
 
 const ChargeTypeList = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -90,10 +90,6 @@ const ChargeTypeList = ({ user }: any) => {
     }));
   }, [rawChargeTypes, isPaginator, page, perPage]);
 
-
-
-
-
   /* ---- Pagination Count ---- */
   useEffect(() => {
     if (isPaginator) {
@@ -156,14 +152,14 @@ const ChargeTypeList = ({ user }: any) => {
       headerClass: "text-center w-28",
       cellClass: "text-center",
       render: (row: any) => (
-        <span className="font-semibold">{row.effect === "-" ? "-" : "+"}</span>
+        <span className={`font-semibold text-md ${row.effect === "+" ? "text-green-600" : "text-red-600"}`}>{row.effect}</span>
       ),
     },
     
     {
       key: "notes",
       header: "Notes",
-      render: (row: any) => <div>{row.notes ?? "-"}</div>,
+      render: (row: any) => <div>{row.notes}</div>,
     },
     {
       key: "is_active",
@@ -171,7 +167,7 @@ const ChargeTypeList = ({ user }: any) => {
       headerClass: "text-center w-28",
       cellClass: "text-center",
       render: (row: any) => (
-        <span className="font-medium">{row.is_active === 1 ? "Active" : "Inactive"}</span>
+        <span className="font-medium">{row.is_active === true ? "Active" : "Inactive"}</span>
       ),
     },
     {
@@ -188,16 +184,27 @@ const ChargeTypeList = ({ user }: any) => {
       headerClass: "text-center w-28",
       cellClass: "text-center",
       render: (row: any) => (
-        <button
-          onClick={() => handleEdit(row.id)}
-          className="px-3 py-1 rounded border text-sm font-medium hover:bg-gray-50"
-        >
-          Edit
-        </button>
+        <div>
+            <ActionButtons
+              row={row}
+              showEdit={true}
+              handleEdit={handleChargeTypeEdit}
+              showDelete={false}
+              // handleDelete={handleBranchDelete}
+              showToggle={true}
+              // handleToggle={() => handleToggle(row)}
+
+              // showConfirmId={showConfirmId}
+              // setShowConfirmId={setShowConfirmId}
+            />
+          </div>
       ),
     },
   ];
 
+  const handleChargeTypeEdit = (row: any) => {
+    navigate(`/real-estate/charge-types/edit/${row.id}`);
+  };
   // (optional) client-side slice if raw array returned (only)
   const tableData = useMemo(() => {
     if (!isPaginator && Array.isArray(rawChargeTypes)) {
@@ -206,11 +213,6 @@ const ChargeTypeList = ({ user }: any) => {
     }
     return listData;
   }, [listData, rawChargeTypes, isPaginator, page, perPage]);
-
-
-  console.log('====================================');
-  console.log("buildingUnits", buildingUnits);
-  console.log('====================================');
 
   return (
     <div>
@@ -245,16 +247,6 @@ const ChargeTypeList = ({ user }: any) => {
               className="whitespace-nowrap"
             />
           </div>
-          {/* <input
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              setPage(1);
-              setCurrentPage(1);
-            }}
-            placeholder="Search (name/notes)..."
-            className="w-64 border rounded px-3 py-2 text-sm"
-          /> */}
         </div>
 
         <ButtonLoading className="h-9" onClick={handleCreate} label="New Charge Type" />

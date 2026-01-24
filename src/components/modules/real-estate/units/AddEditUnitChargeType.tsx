@@ -10,6 +10,7 @@ import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import Link from "../../../utils/others/Link";
 import { toast } from "react-toastify";
 import { fetchUnitChargeType, storeUnitChargeType, updateUnitChargeType } from "./unitSlice";
+import routes from "../../../services/appRoutes";
 
 // import {
 //   fetchUnitChargeType,
@@ -179,8 +180,8 @@ const AddEditUnitChargeType = () => {
           className="p-2"
         />
 
-        <Link
-          to="/real-estate/unit-charge-types"
+        <Link 
+          to={(routes as any).real_estate_unit_types_list} 
           className="flex items-center justify-center"
         >
           <FiArrowLeft className="!mr-2" /> Back
