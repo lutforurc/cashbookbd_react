@@ -761,9 +761,6 @@ const ElectronicsBusinessSales = () => {
     documentTitle: `Invoice-${sales?.data?.vr_no ?? ''}`,
   });
 
-  console.log('====================================');
-  console.log("sales?.data", sales?.data);
-  console.log('====================================');
 
 
   return (
@@ -1134,7 +1131,7 @@ const ElectronicsBusinessSales = () => {
                 <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-x-1 gap-y-1">
+            <div className="flex gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProduct}
@@ -1190,46 +1187,38 @@ const ElectronicsBusinessSales = () => {
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
               />
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2 mr-2" />
-                <span className="hidden md:block">Home</span>
-              </Link>
-              {/* <PrintButton
-                onClick={handlePrint}
-                label="Print"
-                className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
-              /> */}
+              <div className="flex w-full">
+                <div className="mr-2">
+                  <InputElement
+                    id="perPage"
+                    name="perPage"
+                    // label="Rows"
+                    value={perPage.toString()}
+                    onChange={handlePerPageChange}
+                    type='text'
+                    className="font-medium text-sm h-9 w-12"
+                  />
+                </div>
+                <div className="mr-2">
+                  <InputElement
+                    id="fontSize"
+                    name="fontSize"
+                    // label="Font"
+                    value={fontSize.toString()}
+                    onChange={handleFontSizeChange}
+                    type='text'
+                    className="font-medium text-sm h-9 w-12"
+                  />
+                </div>
+
+                <PrintButton
+                  onClick={handlePrint}
+                  label=""
+                  className="pt-[0.45rem] pb-[0.45rem] h-9"
+                />
+              </div>
             </div>
-            <div className="flex w-full">
-            <div className="mr-2"> 
-              <InputElement
-                id="perPage"
-                name="perPage"
-                label="Rows"
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type='text'
-                className="font-medium text-sm h-9 w-12"
-              />
-            </div>
-            <div className="mr-2"> 
-              <InputElement
-                id="fontSize"
-                name="fontSize"
-                label="Font"
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type='text'
-                className="font-medium text-sm h-9 w-12"
-              />
-            </div>
-           
-            <PrintButton 
-              onClick={handlePrint}
-              label=""
-              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
-            />
-          </div>
+
           </div>
         </div>
       </div>
