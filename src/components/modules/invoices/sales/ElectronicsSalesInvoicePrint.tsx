@@ -46,10 +46,15 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
     .find((d: any) => d.coa4_id === 17);
   const receivedAmount = received ? Number(received.debit) : 0;
 
-  const discount = transactions
-    .flatMap((t: any) => t.acc_transaction_details)
-    .find((d: any) => d.coa4_id === 23);
+  const discount = transactions.flatMap((t: any) => t.acc_transaction_details).find((d: any) => d.coa4_id === 23);
   const discountAmount = discount ? Number(discount.debit) : 0;
+  const tds = transactions.flatMap((t: any) => t.acc_transaction_details).find((d: any) => d.coa4_id === 41);
+  const tdsName = tds ? tds.coa_l4?.name : '';
+  const tdsAmount = tds ? Number(tds.credit) : 0;
+
+  const serviceCharge = transactions.flatMap((t: any) => t.acc_transaction_details).find((d: any) => d.coa4_id === 42);
+  const serviceChargeName = serviceCharge ? serviceCharge.coa_l4?.name : '';
+  const serviceChargeAmount = serviceCharge ? Number(serviceCharge.credit) : 0;
 
   const customer =
     data?.acc_transaction_master?.[0]?.acc_transaction_details?.find(
@@ -214,13 +219,34 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
               <table className="border-collapse">
                 <tbody>
                   <tr>
-                    <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                    <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
                       Total Tk.
                     </td>
-                    <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                    <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
                       {thousandSeparator(grandTotal, 0)}
                     </td>
                   </tr>
+ 
+                  {tdsName && tdsAmount !== 0 && (
+                    <tr>
+                      <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                        {tdsName} Tk.
+                      </td>
+                      <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                        {thousandSeparator(tdsAmount, 0)}
+                      </td>
+                    </tr>
+                  )}
+                  {serviceChargeName && serviceChargeAmount !== 0 && (
+                    <tr>
+                      <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                        {serviceChargeName} Tk.
+                      </td>
+                      <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                        {thousandSeparator(serviceChargeAmount, 0)}
+                      </td>
+                    </tr>
+                  )}
 
                   {discountAmount !== 0 && (
                     <tr>
@@ -228,27 +254,31 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                         Discount Tk.
                       </td>
                       <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                        {thousandSeparator(discountAmount, 0)}
+                        (-) {thousandSeparator(discountAmount, 0)}
                       </td>
                     </tr>
                   )}
+                  
                   <tr>
                     <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
                       Net Tk.
                     </td>
                     <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
-                      {thousandSeparator(grandTotal - discountAmount, 0)}
+                      {thousandSeparator( (grandTotal + tdsAmount + serviceChargeAmount - discountAmount), 0)}
                     </td>
                   </tr>
+
+                  
+
                   {receivedAmount !== 0 && (
-                  <tr>
-                    <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
-                      Received Tk.
-                    </td>
-                    <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                      {thousandSeparator(receivedAmount, 0)}
-                    </td>
-                  </tr>
+                    <tr>
+                      <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                        Received Tk.
+                      </td>
+                      <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                        {thousandSeparator(receivedAmount, 0)}
+                      </td>
+                    </tr>
                   )}
 
                   <tr>
@@ -257,7 +287,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                     </td>
                     <td className="border-black px-1 py-1 text-right w-32 font-bold" style={{ fontSize: fs }}>
                       {thousandSeparator(
-                        grandTotal - discountAmount - receivedAmount,
+                        (grandTotal + tdsAmount + serviceChargeAmount) - discountAmount - receivedAmount,
                         0,
                       )}
                     </td>

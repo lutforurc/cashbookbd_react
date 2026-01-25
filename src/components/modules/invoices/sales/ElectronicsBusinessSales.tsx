@@ -3,8 +3,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
-import { toast } from 'react-toastify';
-import Link from '../../../utils/others/Link';
+import { toast } from 'react-toastify'; 
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { userCurrentBranch } from '../../branch/branchSlice';
@@ -674,6 +673,10 @@ const ElectronicsBusinessSales = () => {
       }));
     }
   };
+
+  console.log('====================================');
+  console.log("sales", sales);
+  console.log('====================================');
 
   const handleEarlyPaymentDateChange = (date: Date | null) => {
     const selectedDate = dayjs(date).tz('Asia/Dhaka').startOf('day');
