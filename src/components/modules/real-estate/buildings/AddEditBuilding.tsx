@@ -238,23 +238,27 @@ const AddEditBuilding = () => {
       {/* NOTES */}
 
       <div className="grid grid-cols-3 gap-2 mb-2">
-        <DropdownCommon
-          id="status"
-          name="status"
-          label="Select Status"
-          data={status}
-          className="h-9"
-          defaultValue={formData.status?.toString()}
-          onChange={handleSelectChange}
-        />
-        <InputElement
-          id="notes"
-          name="notes"
-          label="Notes"
-          placeholder="Optional notes"
-          value={formData.notes ?? ""}
-          onChange={handleOnChange}
-        />
+        <div className="col-span-2">
+          <InputElement
+            id="notes"
+            name="notes"
+            label="Notes"
+            placeholder="Optional notes"
+            value={formData.notes ?? ""}
+            onChange={handleOnChange}
+          />
+        </div>
+        <div className="col-span-1">
+          <DropdownCommon
+            id="status"
+            name="status"
+            label="Select Status"
+            data={status}
+            className="h-8.5"
+            defaultValue={formData.status?.toString()}
+            onChange={handleSelectChange}
+          />
+        </div>
       </div>
 
       {/* ACTIONS */}
