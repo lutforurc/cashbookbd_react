@@ -188,7 +188,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                       {row.product?.name}
                       {row.serial_no && (
                         <div
-                          className="text-gray-600"
+                          className="text-black"
                           style={{ fontSize: fs - 1, lineHeight: 1.2 }}
                         >
                           SN: {row.serial_no}
