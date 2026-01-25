@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import { toast } from 'react-toastify';
 import Link from '../../../utils/others/Link';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
@@ -14,7 +14,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import Loader from '../../../../common/Loader';
-import {FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2, } from 'react-icons/fi';
+import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2, } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
@@ -31,6 +31,8 @@ import {
   electronicsSalesUpdate,
 } from './electronicsSalesSlice';
 import { getServiceList } from '../../settings/settingsSlice';
+import ElectronicsSalesInvoicePrint from './ElectronicsSalesInvoicePrint';
+import { useReactToPrint } from 'react-to-print';
 
 interface Product {
   id: number;
@@ -86,6 +88,9 @@ const ElectronicsBusinessSales = () => {
   const [showInstallmentPopup, setShowInstallmentPopup] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [editedInstallments, setEditedInstallments] = useState<editInstallmentData[]>([]);
+  const printRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
   const [installmentData, setInstallmentData] = useState<InstallmentData>({
     amount: 0,
     startDate: null,
@@ -106,11 +111,6 @@ const ElectronicsBusinessSales = () => {
   }, []);
 
 
-  console.log('====================================');
-  console.log("settings", settings?.serviceList);
-  console.log('====================================');
-
-
   useEffect(() => {
     if (productData.qty) {
       const qty = parseFloat(productData.qty) || 0;
@@ -118,6 +118,26 @@ const ElectronicsBusinessSales = () => {
       setLineTotal(qty * price);
     }
   }, [productData.qty]);
+
+
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setPerPage(value);
+    } else {
+      setPerPage(10); // Reset if input is invalid
+    }
+  };
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+
+    if (!isNaN(value)) {
+      setFontSize(value);
+    } else {
+      setFontSize(10); // Reset if input is invalid
+    }
+  };
 
   interface FormData {
     mtmId: string;
@@ -225,31 +245,31 @@ const ElectronicsBusinessSales = () => {
   };
 
 
- function findCoaCredit(items: any[], target = 41, fallback = 23) {
+  function findCoaCredit(items: any[], target = 41, fallback = 23) {
     const found =
-        items.find(item => item.coa4_id === target) ||
-        items.find(item => item.coa4_id === fallback);
+      items.find(item => item.coa4_id === target) ||
+      items.find(item => item.coa4_id === fallback);
 
     // যদি না পায় → null
     if (!found) return null;
 
     // "65" কে number 65 এ convert করে রিটার্ন
     return Number(found.credit);
-}
+  }
 
 
   useEffect(() => {
     if (sales.data.transaction) {
       const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
-          id: detail.id,
-          product: detail.product.id,
-          product_name: detail.product.name,
-          serial_no: detail.serial_no,
-          unit: detail.product.unit.name,
-          qty: detail.quantity,
-          price: detail.sales_price,
-          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-        }),
+        id: detail.id,
+        product: detail.product.id,
+        product_name: detail.product.name,
+        serial_no: detail.serial_no,
+        unit: detail.product.unit.name,
+        qty: detail.quantity,
+        price: detail.sales_price,
+        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+      }),
       );
 
       // Find accountName
@@ -270,7 +290,7 @@ const ElectronicsBusinessSales = () => {
         }
       }
 
-      const details =sales?.data?.transaction?.acc_transaction_master?.[0]?.acc_transaction_details || [];
+      const details = sales?.data?.transaction?.acc_transaction_master?.[0]?.acc_transaction_details || [];
 
 
       // Update formData using previous state to maintain integrity
@@ -300,17 +320,11 @@ const ElectronicsBusinessSales = () => {
           }),
         ),
       };
-      console.log('====================================');
-      console.log("Search", sales);
-      console.log('====================================');
       setFormData(updatedFormData);
       setEditedInstallments(updatedFormData.editInstallmentData);
     }
   }, [sales.data.transaction]);
 
-  // useEffect(() => {
-  //   console.log('Updated formData:', formData);
-  // }, [formData]);
 
 
   const totalAmount = formData.products.reduce(
@@ -418,6 +432,8 @@ const ElectronicsBusinessSales = () => {
     }));
   }, [sales.isUpdated]);
 
+
+
   const handleInvoiceSave = async () => {
     setSaveButtonLoading(true);
     const validationMessages = validateForm(formData, invoiceMessage);
@@ -447,18 +463,18 @@ const ElectronicsBusinessSales = () => {
 
     const formattedInstallmentData = isInstallment
       ? {
-          ...installmentData,
-          startDate: installmentData.startDate
-            ? dayjs(installmentData.startDate)
-                .tz('Asia/Dhaka')
-                .format('YYYY-MM-DD')
-            : null,
-          earlyPaymentDate: installmentData.earlyPaymentDate
-            ? dayjs(installmentData.earlyPaymentDate)
-                .tz('Asia/Dhaka')
-                .format('YYYY-MM-DD')
-            : null,
-        }
+        ...installmentData,
+        startDate: installmentData.startDate
+          ? dayjs(installmentData.startDate)
+            .tz('Asia/Dhaka')
+            .format('YYYY-MM-DD')
+          : null,
+        earlyPaymentDate: installmentData.earlyPaymentDate
+          ? dayjs(installmentData.earlyPaymentDate)
+            .tz('Asia/Dhaka')
+            .format('YYYY-MM-DD')
+          : null,
+      }
       : null;
 
     const payload = {
@@ -634,10 +650,10 @@ const ElectronicsBusinessSales = () => {
       );
       const newEarlyPaymentDate = isEarlyPayment
         ? new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate() + 90,
-          )
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate() + 90,
+        )
         : null;
 
       setStartDate(selectedDate);
@@ -681,15 +697,13 @@ const ElectronicsBusinessSales = () => {
       const barcodes = value.trim().split(/\s+/).filter(Boolean);
       updatedProduct.qty = barcodes.length;
     }
-
     setProductData(updatedProduct);
   };
 
-  console.log("Service Charge", formData )
   useEffect(() => {
-    const serviceCharge = Number(formData?.serviceCharge) || 0; 
+    const serviceCharge = Number(formData?.serviceCharge) || 0;
     const tdsAmount = Number(formData?.tdsAmount) || 0;
-    const transportationAmt = Number(formData?.transportationAmt) || 0; 
+    const transportationAmt = Number(formData?.transportationAmt) || 0;
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
       const price = parseFloat(product.price?.toString() || '0') || 0;
@@ -730,9 +744,27 @@ const ElectronicsBusinessSales = () => {
   }, [formData.account, formData.discountAmt, formData.products, formData.serviceCharge, formData.tdsAmount, formData.transportationAmt]);
 
 
-const serviceList = (id: number, list: any[]) => {
-  return list.find((item) => item.id === id)?.name || "";
-};
+  const serviceList = (id: number, list: any[]) => {
+    return list.find((item) => item.id === id)?.name || "";
+  };
+
+
+  const handlePrint = useReactToPrint({
+    content: () => {
+      if (!printRef.current) {
+        toast.info('Invoice data not ready');
+        return null;
+      }
+      return printRef.current;
+    },
+
+    documentTitle: `Invoice-${sales?.data?.vr_no ?? ''}`,
+  });
+
+  console.log('====================================');
+  console.log("sales?.data", sales?.data);
+  console.log('====================================');
+
 
   return (
     <>
@@ -962,17 +994,17 @@ const serviceList = (id: number, list: any[]) => {
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
-              
+
             </div>
           </div>
           {/* Installment Popup */}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
             <div className="mt-4">
-                <p className="text-sm font-bold dark:text-white">
-                  Total Tk. {thousandSeparator(  (totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) -  Number(formData?.discountAmt)  ), 0)}  {Number(formData?.receivedAmt) > 0 ? `(${ (totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) -  Number(formData?.discountAmt)  ) - Number(formData?.receivedAmt)})` : ""}
-                </p>
-              </div>
+              <p className="text-sm font-bold dark:text-white">
+                Total Tk. {thousandSeparator((totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)), 0)}  {Number(formData?.receivedAmt) > 0 ? `(${(totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)) - Number(formData?.receivedAmt)})` : ""}
+              </p>
+            </div>
             {hasPermission(permissions, 'sales.edit') && (
               <>
                 <div className="mt-2">
@@ -1025,17 +1057,17 @@ const serviceList = (id: number, list: any[]) => {
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                 />
@@ -1097,7 +1129,7 @@ const serviceList = (id: number, list: any[]) => {
                   label="Enter Price"
                   className="py-1"
                   onChange={handleProductChange}
-                  // onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
+                // onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
                 />
                 <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
               </div>
@@ -1162,7 +1194,42 @@ const serviceList = (id: number, list: any[]) => {
                 <FiHome className="text-white text-lg ml-2 mr-2" />
                 <span className="hidden md:block">Home</span>
               </Link>
+              {/* <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
+              /> */}
             </div>
+            <div className="flex w-full">
+            <div className="mr-2"> 
+              <InputElement
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type='text'
+                className="font-medium text-sm h-9 w-12"
+              />
+            </div>
+            <div className="mr-2"> 
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type='text'
+                className="font-medium text-sm h-9 w-12"
+              />
+            </div>
+           
+            <PrintButton 
+              onClick={handlePrint}
+              label=""
+              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
+            />
+          </div>
           </div>
         </div>
       </div>
@@ -1245,12 +1312,12 @@ const serviceList = (id: number, list: any[]) => {
                   const nextInstallmentNo =
                     editedInstallments.length > 0
                       ? editedInstallments[editedInstallments.length - 1]
-                          .installment_no + 1
+                        .installment_no + 1
                       : 1;
                   const lastDueDate =
                     editedInstallments.length > 0
                       ? editedInstallments[editedInstallments.length - 1]
-                          .due_date
+                        .due_date
                       : new Date();
                   const nextDueDate = lastDueDate
                     ? dayjs(lastDueDate).add(1, 'month').toDate()
@@ -1368,6 +1435,14 @@ const serviceList = (id: number, list: any[]) => {
             })}
         </div>
       )}
+      <div className="hidden">
+        <ElectronicsSalesInvoicePrint
+          ref={printRef}
+          data={sales?.data}
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+        />
+      </div>
     </>
   );
 };

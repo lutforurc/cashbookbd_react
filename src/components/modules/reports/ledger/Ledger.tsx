@@ -340,7 +340,7 @@ const Ledger = (user: any) => {
         <div className="hidden">
           <LedgerPrint
             ref={printRef}
-            rows={tableData || []} // আপনার data
+            rows={tableData || []}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Ledger"
