@@ -27,19 +27,34 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
   }
 
   const details = data.sales_master.details || [];
+  if (!details.length) {
+    return (
+      <div ref={ref} className="print-root">
+        <PadPrinting />
+        <div className="text-center mt-20 text-sm">
+          No item found in this invoice
+        </div>
+      </div>
+    );
+  }
+
   const pages = chunkRows(details, rowsPerPage);
 
   const transactions = data?.acc_transaction_master || [];
-  const received = transactions.flatMap(t => t.acc_transaction_details).find(d => d.coa4_id === 17);
+  const received = transactions
+    .flatMap((t: any) => t.acc_transaction_details)
+    .find((d: any) => d.coa4_id === 17);
   const receivedAmount = received ? Number(received.debit) : 0;
-   
-  const discount = transactions.flatMap(t => t.acc_transaction_details).find(d => d.coa4_id === 23);
+
+  const discount = transactions
+    .flatMap((t: any) => t.acc_transaction_details)
+    .find((d: any) => d.coa4_id === 23);
   const discountAmount = discount ? Number(discount.debit) : 0;
 
-  // customer info (from coa)
-  const customer = data?.acc_transaction_master?.[0]?.acc_transaction_details?.find(
-    (d: any) => d.coa_l4?.cust_party_infos,
-  )?.coa_l4?.cust_party_infos;
+  const customer =
+    data?.acc_transaction_master?.[0]?.acc_transaction_details?.find(
+      (d: any) => d.coa_l4?.cust_party_infos,
+    )?.coa_l4?.cust_party_infos;
 
   const fs = fontSize;
 
@@ -58,9 +73,13 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
             margin: 5mm 4mm 8mm 8mm;
           }
 
+          thead { display: table-header-group; }
+          tfoot { display: table-footer-group; }
+
           .print-root { padding: 0 !important; }
+
           .print-page {
-            padding: 8mm !important;
+            padding: 5mm 8mm !important;
             min-height: calc(297mm - 5mm - 4mm - 8mm - 8mm);
             display: flex;
             flex-direction: column;
@@ -78,19 +97,29 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
 
           {/* ================= INVOICE HEADER ================= */}
           <div className="mt-3 mb-3">
-            <h1 className="text-2xl font-bold text-center" style={{ fontSize: fs + 4 }}>
+            <h1
+              className="text-center font-bold leading-tight"
+              style={{ fontSize: fs + 4 }}
+            >
               SALES INVOICE
             </h1>
 
-            <div className="grid grid-cols-2 gap-2 text-xs mt-2">
-              <div>
+            <div
+              className="grid grid-cols-3 gap-2 text-xs mt-2"
+              style={{ lineHeight: 1.25 }}
+            >
+              <div className="space-y-1 col-span-2">
                 <div style={{ fontSize: fs }}>
-                  <span className="font-semibold" >Customer:</span>{' '}
+                  <span className="font-semibold">Name:</span>{' '}
                   {customer?.name}
                 </div>
+
                 {customer?.mobile && (
-                  <div style={{ fontSize: fs }} >Mobile: {customer.mobile}</div>
+                  <div style={{ fontSize: fs }}>
+                    Mobile: {customer.mobile}
+                  </div>
                 )}
+
                 {(customer?.address || customer?.manual_address) && (
                   <div style={{ fontSize: fs }}>
                     Address:{' '}
@@ -98,12 +127,14 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                   </div>
                 )}
               </div>
-              <div className="text-right">
-                <div>
+
+              <div className="text-right space-y-1 col-span-1">
+                <div style={{ fontSize: fs }}>
                   <span className="font-semibold">Invoice No:</span>{' '}
                   {data.vr_no}
                 </div>
-                <div>
+
+                <div style={{ fontSize: fs }}>
                   <span className="font-semibold">Date:</span>{' '}
                   {dayjs(data.vr_date).format('DD/MM/YYYY')}
                 </div>
@@ -115,19 +146,19 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
           <table className="w-full border-collapse table-fixed">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border px-2 py-1 w-10 text-center" style={{ fontSize: fs }}>
+                <th className="border border-black px-2 py-1 w-10 text-center" style={{ fontSize: fs }}>
                   #
                 </th>
-                <th className="border px-2 py-1" style={{ fontSize: fs }}>
+                <th className="border border-black px-2 py-1" style={{ fontSize: fs }}>
                   Product
                 </th>
-                <th className="border px-2 py-1 w-20 text-center" style={{ fontSize: fs }}>
+                <th className="border border-black px-2 py-1 w-20 text-center" style={{ fontSize: fs }}>
                   Qty
                 </th>
-                <th className="border px-2 py-1 w-24 text-right" style={{ fontSize: fs }}>
+                <th className="border border-black px-2 py-1 w-24 text-right" style={{ fontSize: fs }}>
                   Rate
                 </th>
-                <th className="border px-2 py-1 w-28 text-right" style={{ fontSize: fs }}>
+                <th className="border border-black px-2 py-1 w-28 text-right" style={{ fontSize: fs }}>
                   Amount
                 </th>
               </tr>
@@ -141,24 +172,34 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
 
                 return (
                   <tr key={idx} className="avoid-break">
-                    <td className="border px-1 text-center" style={{ fontSize: fs }}>
+                    <td className="border border-black px-1 text-center" style={{ fontSize: fs }}>
                       {pageIndex * rowsPerPage + idx + 1}
                     </td>
-                    <td className="border px-1" style={{ fontSize: fs }}>
+
+                    <td
+                      className="border border-black px-1"
+                      style={{ fontSize: fs, lineHeight: 2 }}
+                    >
                       {row.product?.name}
                       {row.serial_no && (
-                        <div className="text-gray-600" style={{ fontSize: fs }}>
+                        <div
+                          className="text-gray-600"
+                          style={{ fontSize: fs - 1, lineHeight: 1.2 }}
+                        >
                           SN: {row.serial_no}
                         </div>
                       )}
                     </td>
-                    <td className="border px-1 text-center" style={{ fontSize: fs }}>
+
+                    <td className="border border-black px-1 text-center" style={{ fontSize: fs }}>
                       {qty}
                     </td>
-                    <td className="border px-1 text-right" style={{ fontSize: fs }}>
+
+                    <td className="border border-black px-1 text-right" style={{ fontSize: fs }}>
                       {thousandSeparator(rate, 0)}
                     </td>
-                    <td className="border px-1 text-right" style={{ fontSize: fs }}>
+
+                    <td className="border border-black px-1 text-right" style={{ fontSize: fs }}>
                       {thousandSeparator(total, 0)}
                     </td>
                   </tr>
@@ -167,60 +208,70 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
             </tbody>
           </table>
 
-          {/* ================= TOTAL (LAST PAGE ONLY) ================= */}
+          {/* ================= TOTALS (LAST PAGE ONLY) ================= */}
           {pageIndex === pages.length - 1 && (
             <div className="mt-3 flex justify-end">
               <table className="border-collapse">
                 <tbody>
-                  <tr className="">
-                    <td className="border px-1 py-1 text-right" style={{ fontSize: fs }}>
+                  <tr>
+                    <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
                       Total Tk.
                     </td>
-                    <td className="border px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                    <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
                       {thousandSeparator(grandTotal, 0)}
                     </td>
                   </tr>
-                  <tr className="">
-                    <td className="border px-1 py-1 text-right" style={{ fontSize: fs }}>
-                      Discount Tk.
-                    </td>
-                    <td className="border px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                      {thousandSeparator(discountAmount, 0)}
-                    </td>
-                  </tr>
-                  <tr className="">
-                    <td className="border px-1 py-1 text-right" style={{ fontSize: fs }}>
+
+                  {discountAmount !== 0 && (
+                    <tr>
+                      <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                        Discount Tk.
+                      </td>
+                      <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                        {thousandSeparator(discountAmount, 0)}
+                      </td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
                       Net Tk.
                     </td>
-                    <td className="border px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                    <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
                       {thousandSeparator(grandTotal - discountAmount, 0)}
                     </td>
                   </tr>
-                  <tr className="">
-                    <td className="border px-1 py-1 text-right" style={{ fontSize: fs }}>
+                  {receivedAmount !== 0 && (
+                  <tr>
+                    <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
                       Received Tk.
                     </td>
-                    <td className="border px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                    <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
                       {thousandSeparator(receivedAmount, 0)}
                     </td>
                   </tr>
-                  <tr className="">
-                    <td className="border px-1 py-1 text-right" style={{ fontSize: fs }}>
+                  )}
+
+                  <tr>
+                    <td className="border-black px-1 py-1 text-right font-bold" style={{ fontSize: fs }}>
                       Due Tk.
                     </td>
-                    <td className="border px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                      {thousandSeparator(grandTotal - discountAmount - receivedAmount, 0)}
+                    <td className="border-black px-1 py-1 text-right w-32 font-bold" style={{ fontSize: fs }}>
+                      {thousandSeparator(
+                        grandTotal - discountAmount - receivedAmount,
+                        0,
+                      )}
                     </td>
                   </tr>
-                  
                 </tbody>
               </table>
             </div>
           )}
 
-
           {/* ================= FOOTER ================= */}
-          <div className="mt-auto text-xs text-right">
+          <div
+            className="mt-auto text-xs text-right"
+            style={{ lineHeight: 1.2 }}
+          >
             Page {pageIndex + 1} of {pages.length}
           </div>
 
