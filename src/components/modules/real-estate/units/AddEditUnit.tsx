@@ -148,10 +148,7 @@ const AddEditUnit = () => {
           value={formData.allocated_cost}
           onChange={handleOnChange}
         />
-      </div>
 
-      {/* SALE INFO */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <InputElement
           id="sale_price"
           name="sale_price"
@@ -174,6 +171,20 @@ const AddEditUnit = () => {
 
       {/* STATUS & NOTES */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+        
+        <div className="col-span-2">
+          <InputElement
+          id="notes"
+          name="notes"
+          label="Notes"
+          placeholder="Optional notes"
+          value={formData.notes ?? ""}
+          onChange={handleOnChange}
+        />
+        </div>
+        <div className="col-span-1">
+
+        
         <DropdownCommon
           id="status"
           name="status"
@@ -183,15 +194,7 @@ const AddEditUnit = () => {
           defaultValue={formData.status.toString()}
           onChange={handleSelectChange}
         />
-
-        <InputElement
-          id="notes"
-          name="notes"
-          label="Notes"
-          placeholder="Optional notes"
-          value={formData.notes ?? ""}
-          onChange={handleOnChange}
-        />
+        </div>
       </div>
 
       {/* ACTIONS */}

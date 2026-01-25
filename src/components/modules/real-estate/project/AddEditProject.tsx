@@ -103,8 +103,8 @@ const AddEditProject = (user: any) => {
         if (projectStore.fulfilled.match(resultAction)) {
             toast.success("Project created successfully");
         } else {
-            toast.error("Failed to create project"); 
-            
+            toast.error("Failed to create project");
+
         }
     };
 
@@ -197,19 +197,7 @@ const AddEditProject = (user: any) => {
                     value={formData.name}
                     onChange={handleOnChange}
                 />
-                <InputElement
-                    id="area_sqft"
-                    name="area_sqft"
-                    label="Area (Sq. Ft)"
-                    placeholder="Enter Area Size"
-                    value={formData.area_sqft}
-                    onChange={handleOnChange}
-                />
-
-            </div>
-
-            {/* LOCATION & PURCHASE */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                
                 <InputElement
                     id="location_details"
                     name="location_details"
@@ -218,6 +206,19 @@ const AddEditProject = (user: any) => {
                     value={formData.location_details}
                     onChange={handleOnChange}
                 />
+                <InputElement
+                    id="area_sqft"
+                    name="area_sqft"
+                    label="Area (Sq. Ft)"
+                    placeholder="Enter Area Size"
+                    value={formData.area_sqft}
+                    onChange={handleOnChange}
+                />
+            </div>
+
+            {/* LOCATION & PURCHASE */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+
                 <InputElement
                     id="purchase_price"
                     name="purchase_price"
@@ -232,6 +233,14 @@ const AddEditProject = (user: any) => {
                     label="Sale Price"
                     placeholder="0.00"
                     value={formData.sale_price ?? ''}
+                    onChange={handleOnChange}
+                />
+                <InputElement
+                    id="notes"
+                    name="notes"
+                    label="Notes"
+                    placeholder="Optional notes"
+                    value={formData.notes}
                     onChange={handleOnChange}
                 />
             </div>
@@ -267,19 +276,7 @@ const AddEditProject = (user: any) => {
                 />
             </div>
 
-            {/* NOTES */}
-            <div className="grid grid-cols-1 mb-2">
-                <InputElement
-                    id="notes"
-                    name="notes"
-                    label="Notes"
-                    placeholder="Optional notes"
-                    value={formData.notes}
-                    onChange={handleOnChange}
-                />
-            </div>
-
-
+           
             {/* ACTIONS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-4">
                 <ButtonLoading

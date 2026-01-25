@@ -10,7 +10,7 @@ import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import Link from "../../../utils/others/Link";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import { status } from "../../../utils/fields/DataConstant";
-import { FlatItem } from "./types"; 
+import { FlatItem } from "./types";
 
 
 import {
@@ -98,7 +98,7 @@ const AddEditFlat = () => {
     if (
       flatStore.fulfilled.match(action) ||
       flatUpdate.fulfilled.match(action)
-          ) {
+    ) {
       toast.success(id ? "Flat updated successfully" : "Flat created successfully");
     } else {
       toast.error("Failed to save flat");
@@ -183,10 +183,16 @@ const AddEditFlat = () => {
             setCurrentDate={handleDate("sale_date", setSaleDate)}
           />
         </div>
-      </div>
 
-      {/* NOTES & STATUS */}
-      <div className="grid grid-cols-3 gap-2 mb-2">
+
+        <InputElement
+          id="notes"
+          name="notes"
+          label="Notes"
+          placeholder="Optional notes"
+          value={formData.notes ?? ""}
+          onChange={handleOnChange}
+        />
         <DropdownCommon
           id="status"
           name="status"
@@ -197,14 +203,6 @@ const AddEditFlat = () => {
           onChange={handleSelectChange}
         />
 
-        <InputElement
-          id="notes"
-          name="notes"
-          label="Notes"
-          placeholder="Optional notes"
-          value={formData.notes ?? ""}
-          onChange={handleOnChange}
-        />
       </div>
 
       {/* ACTIONS */}

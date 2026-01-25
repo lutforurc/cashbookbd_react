@@ -11,12 +11,7 @@ import Link from "../../../utils/others/Link";
 import { toast } from "react-toastify";
 import { fetchUnitChargeType, storeUnitChargeType, updateUnitChargeType } from "./unitSlice";
 import routes from "../../../services/appRoutes";
-
-// import {
-//   fetchUnitChargeType,
-//   storeUnitChargeType,
-//   updateUnitChargeType,
-// } from "./unitChargeTypeSlice";
+ 
 
 /* ================= TYPES ================= */
 
@@ -108,7 +103,7 @@ const AddEditUnitChargeType = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <InputElement
-          label="Charge Name"
+          label="Charge Type Name"
           name="name"
           className="h-8.5"
           value={form.name}
@@ -126,11 +121,17 @@ const AddEditUnitChargeType = () => {
           value={form.effect}
           onChange={handleChange}
         />
-
-
       </div>
 
-      
+      <div className="grid grid-cols-1 gap-2 mb-3">
+       <InputElement
+          label="Notes"
+          name="notes"
+          value={form.notes ?? ""}
+          onChange={handleChange}
+          className="h-8.5"
+        />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <InputElement
           label="Sort Order"
@@ -152,16 +153,7 @@ const AddEditUnitChargeType = () => {
           className="h-8.5"
         />
       </div>
-      <div className="grid grid-cols-1 gap-2 mb-3">
 
-       <InputElement
-          label="Notes"
-          name="notes"
-          value={form.notes ?? ""}
-          onChange={handleChange}
-          className="h-8.5"
-        />
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-4">
         <ButtonLoading
