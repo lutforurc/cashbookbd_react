@@ -293,6 +293,7 @@ export const API_TRADING_SALES_UPDATE_URL = `${API_BASE_URL}/trading/sales/api-u
 export const API_ELECTRONICS_SALES_STORE_URL = `${API_BASE_URL}/electronics/sales/store`;
 export const API_ELECTRONICS_SALES_EDIT_URL = `${API_BASE_URL}/electronics/sales/edit`;
 export const API_ELECTRONICS_SALES_UPDATE_URL = `${API_BASE_URL}/electronics/sales/update`;
+export const API_ELECTRONICS_SALES_INVOICE_PRINT_URL = `${API_BASE_URL}/electronics/sales/invoice-print`;
 
 //
 export const API_CONSTRUCTION_DDL_LABOUR_URL =  `${API_BASE_URL}/construction/ddl/labour-list`;
