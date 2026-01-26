@@ -77,8 +77,11 @@ const CustomerSupplier = () => {
     )
       .unwrap()
       .then((res) => {
-        if (res?.message) {
+        if (res?.message && res?.success) {
           toast.success(res.message); // ✅ SUCCESS MESSAGE
+        }else{
+          toast.info(res.message); // ✅ SUCCESS MESSAGE
+
         }
       })
       .catch((err) => {
@@ -98,6 +101,31 @@ const CustomerSupplier = () => {
       key: "name",
       header: "Name",
     },
+    {
+      key: 'openingbalance',
+      header: 'Balance',
+      headerClass: 'text-center',
+      cellClass: 'text-right',
+      render: (row: any) => (
+        <InputElement
+          type="number"   // 🔥 FIX HERE
+          placeholder="Balance"
+          value={row.openingbalance ?? ""}
+          className="text-right w-20"
+          onChange={(e) =>
+            handleInputChange(row.id, "openingbalance", e.target.value)
+          }
+          onBlur={() => handleInputBlur(row, "openingbalance")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.currentTarget.blur();
+            }
+          }}
+        />
+      ),
+    },
+
+
     {
       key: "manual_address",
       header: "Address",
