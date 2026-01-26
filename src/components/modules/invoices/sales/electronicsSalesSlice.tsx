@@ -1,6 +1,6 @@
-import { SALES_TRADING_EDIT_ERROR, SALES_TRADING_EDIT_PENDING, SALES_TRADING_EDIT_SUCCESS, SALES_ELECTRONICS_STORE_ERROR, SALES_ELECTRONICS_STORE_PENDING, SALES_ELECTRONICS_STORE_SUCCESS, SALES_TRADING_UPDATE_ERROR, SALES_TRADING_UPDATE_PENDING, SALES_TRADING_UPDATE_SUCCESS, SALES_ELECTRONICS_EDIT_PENDING, SALES_ELECTRONICS_EDIT_SUCCESS, SALES_ELECTRONICS_EDIT_ERROR, SALES_ELECTRONICS_UPDATE_PENDING, SALES_ELECTRONICS_UPDATE_SUCCESS, SALES_ELECTRONICS_UPDATE_ERROR } from '../../../constant/constant/constant';
+import {  SALES_ELECTRONICS_STORE_ERROR, SALES_ELECTRONICS_STORE_PENDING, SALES_ELECTRONICS_STORE_SUCCESS, SALES_TRADING_UPDATE_ERROR, SALES_TRADING_UPDATE_PENDING, SALES_TRADING_UPDATE_SUCCESS, SALES_ELECTRONICS_EDIT_PENDING, SALES_ELECTRONICS_EDIT_SUCCESS, SALES_ELECTRONICS_EDIT_ERROR, SALES_ELECTRONICS_UPDATE_PENDING, SALES_ELECTRONICS_UPDATE_SUCCESS, SALES_ELECTRONICS_UPDATE_ERROR, SALES_ELECTRONICS_INVOICE_PRINT_PENDING, SALES_ELECTRONICS_INVOICE_PRINT_SUCCESS, SALES_ELECTRONICS_INVOICE_PRINT_ERROR } from '../../../constant/constant/constant';
 import httpService from '../../../services/httpService';
-import { API_ELECTRONICS_SALES_EDIT_URL, API_ELECTRONICS_SALES_STORE_URL, API_ELECTRONICS_SALES_UPDATE_URL, API_TRADING_SALES_EDIT_URL, API_TRADING_SALES_STORE_URL, API_TRADING_SALES_UPDATE_URL } from '../../../services/apiRoutes';
+import { API_ELECTRONICS_SALES_EDIT_URL, API_ELECTRONICS_SALES_STORE_URL, API_ELECTRONICS_SALES_UPDATE_URL } from '../../../services/apiRoutes';
 
 interface Product {
     id: number;
@@ -138,6 +138,41 @@ export const electronicsSalesEdit = (data: editData, callback?: (message: string
     });
 };
 
+// Not ready for electronics sales edit action
+export const electronicsSalesPrint = (data: editData, callback?: (message: string) => void) => (dispatch: any) => {
+  dispatch({ type: SALES_ELECTRONICS_INVOICE_PRINT_PENDING });
+  httpService.post(API_ELECTRONICS_SALES_EDIT_URL, data)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: SALES_ELECTRONICS_INVOICE_PRINT_SUCCESS,
+          payload: _data.data.data,
+        });
+        if ('function' == typeof callback) {
+          callback(_data.message);
+        }
+      } else {
+        dispatch({
+          type: SALES_ELECTRONICS_INVOICE_PRINT_ERROR,
+          payload: _data.message,
+        });
+        if ('function' == typeof callback) {
+          callback(_data.message);
+        }
+      }
+    })
+    .catch((err) => {
+      dispatch({
+        type: SALES_ELECTRONICS_INVOICE_PRINT_ERROR,
+        payload: err.message,
+      });
+      if ('function' == typeof callback) {
+        callback(err.message);
+      }
+    });
+};
+
 
 const initialState = {
   isLoading: false,
@@ -153,6 +188,7 @@ const electronicsSalesSlice = (state = initialState, action: any) => {
     case SALES_ELECTRONICS_STORE_PENDING:
     case SALES_TRADING_UPDATE_PENDING:
     case SALES_ELECTRONICS_EDIT_PENDING:
+    case SALES_ELECTRONICS_INVOICE_PRINT_PENDING:
       return {
         ...state,
         isLoading: true,

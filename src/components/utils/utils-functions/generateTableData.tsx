@@ -3,6 +3,7 @@ import { number } from 'yup';
 export interface TableRow {
   sl_number: number | '';
   vr_date: string;
+  mid: number | string;
   vr_no: string;
   name: string;
   remarks: string | null;
@@ -30,6 +31,7 @@ export const generateTableData = (data: any): TableRow[] => {
   const openingRow: TableRow = {
     sl_number: '',
     vr_date: '',
+    mid: '',
     vr_no: '',
     name: 'Opening',
     remarks: '',
@@ -44,6 +46,7 @@ export const generateTableData = (data: any): TableRow[] => {
   const detailsRows: TableRow[] = details.map((trx: any, index: number) => ({
   sl_number: index + 1,
   vr_date: trx.vr_date,
+  mid: trx.mid || '',
   vr_no: trx.vr_no,
   name: trx.name, // এখন coa_l4 relation লোড হচ্ছে না, তাই placeholder
   remarks: trx.remarks || '-',

@@ -19,13 +19,15 @@ import { useReactToPrint } from 'react-to-print';
 import LedgerPrint from './LedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
+import ElectronicsSalesInvoicePrint from '../../invoices/sales/ElectronicsSalesInvoicePrint';
+import { electronicsSalesEdit, electronicsSalesPrint } from '../../invoices/sales/electronicsSalesSlice';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.ledger);
   const coal4 = useSelector((state) => state.coal4);
-    const settings = useSelector((state: any) => state.settings);
+  const settings = useSelector((state: any) => state.settings);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
@@ -37,6 +39,7 @@ const Ledger = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const invoicePrintRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -44,7 +47,10 @@ const Ledger = (user: any) => {
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
   }, []);
 
-
+const handleInvoicePrintNow = useReactToPrint({
+  content: () => invoicePrintRef.current,
+  documentTitle: 'Sales Invoice',
+});
 
 
   useEffect(() => {
@@ -55,6 +61,8 @@ const Ledger = (user: any) => {
       setTableData([]); // safety fallback
     }
   }, [ledgerData]);
+
+
 
   const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -105,6 +113,34 @@ const Ledger = (user: any) => {
     setLedgerAccount(option.value);
   };
 
+const handleInvoicePrint = (row: any) => {
+  console.log('====================================');
+  console.log("row", row);
+  console.log('====================================');
+  if (!row?.vr_no) {
+    toast.info('Invalid invoice number');
+    return;
+  }
+
+  dispatch(
+    electronicsSalesPrint(
+      {
+        mt: row.mid, 
+      },
+      (message: string) => {
+        if (message) {
+          toast.error(message);
+        } else {
+          setTimeout(() => {
+            handleInvoicePrintNow();
+          }, 300);
+        }
+      },
+    ),
+  );
+};
+
+
   const columns = [
     {
       key: 'sl_number',
@@ -125,7 +161,14 @@ const Ledger = (user: any) => {
     {
       key: 'vr_no',
       header: 'Vr No',
-      render: (row: any) => <div className="">{row.vr_no}</div>,
+      render: (row: any) => (
+        <div
+          className="cursor-pointer hover:underline"
+          onClick={() => handleInvoicePrint(row)}
+        >
+          {row.vr_no}
+        </div>
+      ),
       width: '100px',
     },
     {
@@ -262,7 +305,7 @@ const Ledger = (user: any) => {
             <div>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
-              defaultValue={user?.user?.branch_id}
+                defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
                 className="w-full font-medium text-sm p-2"
                 branchDdl={branchOptions}
@@ -350,6 +393,15 @@ const Ledger = (user: any) => {
             showBranchName={branchId === null}
           />
         </div>
+      </div>
+
+      <div className="hidden">
+        <ElectronicsSalesInvoicePrint
+          ref={invoicePrintRef}
+          data={useSelector((s: any) => s.electronicsSales.data)}
+          rowsPerPage={10}
+          fontSize={10}
+        />
       </div>
     </div>
   );

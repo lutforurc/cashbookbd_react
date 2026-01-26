@@ -175,6 +175,11 @@ export const SALES_ELECTRONICS_EDIT_PENDING = 'ELECTRONICS/SALES/edit/pending';
 export const SALES_ELECTRONICS_EDIT_SUCCESS = 'ELECTRONICS/SALES/edit/success';
 export const SALES_ELECTRONICS_EDIT_ERROR = 'ELECTRONICS/SALES/edit/error';
 
+// Electronics Sales Invoice Print
+export const SALES_ELECTRONICS_INVOICE_PRINT_PENDING = 'ELECTRONICS/SALES/invoice/print/pending';
+export const SALES_ELECTRONICS_INVOICE_PRINT_SUCCESS = 'ELECTRONICS/SALES/invoice/print/success';
+export const SALES_ELECTRONICS_INVOICE_PRINT_ERROR = 'ELECTRONICS/SALES/invoice/print/error';
+
 // Electronics Sales Update
 export const SALES_ELECTRONICS_UPDATE_PENDING = 'ELECTRONICS/SALES/update/pending';
 export const SALES_ELECTRONICS_UPDATE_SUCCESS = 'ELECTRONICS/SALES/update/success';
