@@ -103,13 +103,13 @@ const CustomerSupplier = () => {
     },
     {
       key: 'openingbalance',
-      header: 'Balance',
+      header: 'Opening',
       headerClass: 'text-center',
       cellClass: 'text-right',
       render: (row: any) => (
         <InputElement
           type="number"   // 🔥 FIX HERE
-          placeholder="Balance"
+          placeholder="Opening"
           value={row.openingbalance ?? ""}
           className="text-right w-20"
           onChange={(e) =>

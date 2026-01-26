@@ -244,6 +244,13 @@ export const PRODUCT_UPDATE_PENDING = 'PRODUCT/update/pending';
 export const PRODUCT_UPDATE_SUCCESS = 'PRODUCT/update/success';
 export const PRODUCT_UPDATE_ERROR = 'PRODUCT/update/error';
 
+
+export const PRODUCT_UPDATE_BY_RATE_PENDING = 'PRODUCT/update-by-rate/pending';
+export const PRODUCT_UPDATE_BY_RATE_SUCCESS = 'PRODUCT/update-by-rate/success';
+export const PRODUCT_UPDATE_BY_RATE_ERROR = 'PRODUCT/update-by-rate/error';
+
+
+
 export const PRODUCT_STORE_PENDING = 'PRODUCT/store/pending';
 export const PRODUCT_STORE_SUCCESS = 'PRODUCT/store/success';
 export const PRODUCT_STORE_ERROR = 'PRODUCT/store/error';

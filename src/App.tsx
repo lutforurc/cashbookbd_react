@@ -174,7 +174,7 @@ function App() {
             <Route path={routes.journal} element={<Journal />} />
 
             {/* Products */}
-            <Route path={routes.product_list} element={<Product />} />
+            <Route path={routes.product_list} element={<Product user={me}  />} />
             <Route path={routes.product_create} element={<AddProduct />} />
             <Route path={routes.product_edit} element={<AddProduct />} />
 

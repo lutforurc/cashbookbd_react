@@ -92,7 +92,7 @@ const DueList = (user: any) => {
     },
     {
       key: 'coa4_name',
-      header: 'coa4_name',
+      header: 'Customer/Supplier',
       render: (row: any) => (
         <>
           <p>{row.coa4_name}</p>
