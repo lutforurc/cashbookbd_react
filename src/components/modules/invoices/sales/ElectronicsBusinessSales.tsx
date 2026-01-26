@@ -674,9 +674,7 @@ const ElectronicsBusinessSales = () => {
     }
   };
 
-  console.log('====================================');
-  console.log("sales", sales);
-  console.log('====================================');
+
 
   const handleEarlyPaymentDateChange = (date: Date | null) => {
     const selectedDate = dayjs(date).tz('Asia/Dhaka').startOf('day');
@@ -717,10 +715,7 @@ const ElectronicsBusinessSales = () => {
       if (Number(formData.account) === 17) {
         setFormData((prev) => ({
           ...prev,
-          receivedAmt: Math.max(
-            0,
-            total - parseFloat(prev.discountAmt?.toString() || '0') + serviceCharge + tdsAmount + transportationAmt,
-          ).toFixed(0),
+          receivedAmt: Math.max(0, total - parseFloat(prev.discountAmt?.toString() || '0') + serviceCharge + tdsAmount + transportationAmt).toFixed(0),
         }));
       } else {
         setFormData((prev) => ({
@@ -732,19 +727,13 @@ const ElectronicsBusinessSales = () => {
       if (Number(formData.account) === 17) {
         setFormData((prev) => ({
           ...prev,
-          receivedAmt: Math.max(
-            0,
-            total - parseFloat(prev.discountAmt?.toString() || '0'),
-          ).toFixed(0),
+          receivedAmt: Math.max(0, total - parseFloat(prev.discountAmt?.toString() || '0')).toFixed(0),
         }));
       } else {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: sales.data.transaction.sales_master.netpayment.toString(),
-        }));
+        setFormData((prev) => ({...prev,receivedAmt: sales.data.transaction.sales_master.netpayment.toString()}));
       }
     }
-  }, [formData.account, formData.discountAmt, formData.products, formData.serviceCharge, formData.tdsAmount, formData.transportationAmt]);
+  }, [formData.account]);
 
 
   const serviceList = (id: number, list: any[]) => {
