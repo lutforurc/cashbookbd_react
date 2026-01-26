@@ -198,6 +198,8 @@ const electronicsSalesSlice = (state = initialState, action: any) => {
       };
 
     case SALES_ELECTRONICS_STORE_SUCCESS:
+    case SALES_ELECTRONICS_INVOICE_PRINT_SUCCESS:
+
       return {
         ...state,
         isLoading: false,
@@ -234,6 +236,7 @@ const electronicsSalesSlice = (state = initialState, action: any) => {
     case SALES_ELECTRONICS_STORE_ERROR:
     case SALES_ELECTRONICS_EDIT_ERROR:
     case SALES_TRADING_UPDATE_ERROR:
+    case SALES_ELECTRONICS_INVOICE_PRINT_ERROR:
       return {
         ...state,
         isLoading: false,

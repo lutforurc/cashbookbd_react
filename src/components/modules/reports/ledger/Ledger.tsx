@@ -28,6 +28,7 @@ const Ledger = (user: any) => {
   const ledgerData = useSelector((state) => state.ledger);
   const coal4 = useSelector((state) => state.coal4);
   const settings = useSelector((state: any) => state.settings);
+    const sales = useSelector((s: any) => s.electronicsSales);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
@@ -90,6 +91,11 @@ const handleInvoicePrintNow = useReactToPrint({
     dispatch(getCoal4ById(Number(ledgerId)));
   };
 
+
+
+  console.log('====================================');
+  console.log("sales", sales);
+  console.log('====================================');
 
 
   useEffect(() => {
