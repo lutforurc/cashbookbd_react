@@ -21,6 +21,8 @@ import { hasPermission } from '../utils/permissionChecker';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
+import { hasMenuPermission } from './hasMenuPermission';
+import { MENU_PERMISSIONS } from './menuPermissions';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -169,514 +171,519 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               </SidebarLinkGroup>
 
               {/* Transaction */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/accounts/cash/receive' ||
-                  pathname === '/accounts/cash/payment' ||
-                  pathname === '/accounts/bank/receive' ||
-                  pathname === '/accounts/bank/payment' ||
-                  pathname === '/accounts/journal' ||
-                  pathname.includes('forms')
-                }
-                menuId="transaction"
-                open={openMenu === 'transaction'}
-                handleClick={() => handleMenuClick('transaction')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/accounts/cash/receive' ||
-                        pathname === '/accounts/cash/payment' ||
-                        pathname === '/admin/installment-details' ||
-                        pathname === '/accounts/bank/receive' ||
-                        pathname === '/accounts/bank/payment' ||
-                        pathname === '/accounts/employee-loan' ||
-                        pathname === '/accounts/journal' ||
-                        pathname.includes('/accounts/cash/receive')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FaGear />
-                      Transaction
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        {hasPermission(permissions, 'cash.received.create') && (
-                          <li>
-                            <NavLink
-                              to="/accounts/cash/receive"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Cash Received
-                            </NavLink>
-                          </li>
-                        )}
-                        {currentBranch?.business_type_id === 4 && (
-                          <li>
-                            <NavLink
-                              to="/admin/installment-details"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Installments
-                            </NavLink>
-                          </li>
-                        )}
+              {hasMenuPermission(permissions, 'transaction') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/accounts/cash/receive' ||
+                    pathname === '/accounts/cash/payment' ||
+                    pathname === '/accounts/bank/receive' ||
+                    pathname === '/accounts/bank/payment' ||
+                    pathname === '/accounts/journal' ||
+                    pathname.includes('forms')
+                  }
+                  menuId="transaction"
+                  open={openMenu === 'transaction'}
+                  handleClick={() => handleMenuClick('transaction')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/accounts/cash/receive' ||
+                          pathname === '/accounts/cash/payment' ||
+                          pathname === '/admin/installment-details' ||
+                          pathname === '/accounts/bank/receive' ||
+                          pathname === '/accounts/bank/payment' ||
+                          pathname === '/accounts/employee-loan' ||
+                          pathname === '/accounts/journal' ||
+                          pathname.includes('/accounts/cash/receive')) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FaGear />
+                        Transaction
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'cash.received.create') && (
+                            <li>
+                              <NavLink
+                                to="/accounts/cash/receive"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Cash Received
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'cash.received.create') && currentBranch?.business_type_id === 4 && (
+                            <li>
+                              <NavLink
+                                to="/admin/installment-details"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Installments
+                              </NavLink>
+                            </li>
+                          )}
 
-                        {hasPermission(permissions, 'cash.payment.create') && (
-                          <li>
-                            <NavLink
-                              to="/accounts/cash/payment"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Cash Payment
-                            </NavLink>
-                          </li>
-                        )}
-                        {hasPermission(permissions, 'bank.received.create') && (
-                          <li>
-                            <NavLink
-                              to="/accounts/bank/receive"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Bank Received
-                            </NavLink>
-                          </li>
-                        )}
-                        {hasPermission(permissions, 'bank.payment.create') && (
-                          <li>
-                            <NavLink
-                              to="/accounts/bank/payment"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Bank Payment
-                            </NavLink>
-                          </li>
-                        )}
-                        <li>
-                          <NavLink
-                            to="/accounts/employee-loan"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Employee Loan
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/accounts/journal"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Journal
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
+                          {hasPermission(permissions, 'cash.payment.create') && (
+                            <li>
+                              <NavLink
+                                to="/accounts/cash/payment"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Cash Payment
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'bank.received.create') && (
+                            <li>
+                              <NavLink
+                                to="/accounts/bank/receive"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Bank Received
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'bank.payment.create') && (
+                            <li>
+                              <NavLink
+                                to="/accounts/bank/payment"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Bank Payment
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'hrm.loan.create') && (
+                            <li>
+                              <NavLink
+                                to="/accounts/employee-loan"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Employee Loan
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'journal.create') && (
+                            <li>
+                              <NavLink
+                                to="/accounts/journal"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Journal
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
               {/* Invoice */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/invoice/purchase' ||
-                  pathname === '/invoice/sales' ||
-                  pathname.includes('forms')
-                }
-                menuId="invoice"
-                open={openMenu === 'invoice'}
-                handleClick={() => handleMenuClick('invoice')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/invoice/purchase' ||
-                        pathname === '/invoice/sales' ||
-                        pathname === '/invoice/labour-invoice' ||
-                        pathname.includes('/invoice/sales')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiShoppingCart />
-                      Invoice
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        {hasPermission(permissions, 'purchase.create') && (
-                          <li>
-                            <NavLink
-                              to="/invoice/purchase"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Purchase
-                            </NavLink>
-                          </li>
-                        )}
-                        {hasPermission(permissions, 'sales.create') && (
-                          <li>
-                            <NavLink
-                              to="/invoice/sales"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Sales
-                            </NavLink>
-                          </li>
-                        )}
-                        <li>
-                          <NavLink
-                            to="/invoice/labour-invoice"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Labour Invoice
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
-
+              {hasMenuPermission(permissions, 'invoice') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/invoice/purchase' ||
+                    pathname === '/invoice/sales' ||
+                    pathname.includes('forms')
+                  }
+                  menuId="invoice"
+                  open={openMenu === 'invoice'}
+                  handleClick={() => handleMenuClick('invoice')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/invoice/purchase' ||
+                          pathname === '/invoice/sales' ||
+                          pathname === '/invoice/labour-invoice' ||
+                          pathname.includes('/invoice/sales')) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiShoppingCart />
+                        Invoice
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'purchase.create') && (
+                            <li>
+                              <NavLink
+                                to="/invoice/purchase"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Purchase
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'sales.create') && (
+                            <li>
+                              <NavLink
+                                to="/invoice/sales"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Sales
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'labour.invoice.create') && (
+                            <li>
+                              <NavLink
+                                to="/invoice/labour-invoice"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Labour Invoice
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
               {/* Reports */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/reports/cashbook' ||
-                  pathname === '/reports/employee-installment' ||
-                  pathname === '/reports/ledger' ||
-                  pathname === '/reports/due-installments' ||
-                  pathname === '/reports/date-wise-total-data' ||
-                  pathname === '/reports/due-list' ||
-                  pathname === '/reports/purchase-ledger' ||
-                  pathname === '/reports/sales-ledger' ||
-                  pathname === '/reports/group-report' ||
-                  pathname === '/reports/mitch-match' ||
-                  pathname.includes('forms')
-                }
-                menuId="reports"
-                open={openMenu === 'reports'}
-                handleClick={() => handleMenuClick('reports')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/reports/date-wise-total-data' ||
-                        pathname.includes('reports/cashbook') ||
-                        pathname === '/reports/employee-installment' ||
-                        pathname === '/reports/due-installments' ||
-                        pathname.includes('/reports/due-list') ||
-                        pathname.includes('/reports/product/stock') ||
-                        pathname.includes('/reports/cat-wise/in-out') ||
-                        pathname.includes('/reports/purchase-ledger') ||
-                        pathname.includes('/reports/sales-ledger') ||
-                        pathname.includes('/reports/group-report') ||
-                        pathname.includes('/reports/labour/ledger') ||
-                        pathname.includes('/reports/mitch-match') ||
-                        pathname.includes('reports/ledger')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiBook />
-                      Reports
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        {hasPermission(permissions, 'cashbook.view') && (
-                          <li>
-                            <NavLink
-                              to="/reports/cashbook"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Cash Book
-                            </NavLink>
-                          </li>
-                        )}
-                        {/* {hasPermission(permissions, 'cashbook.view') && ( */}
-                        {currentBranch?.business_type_id == 4 && (
-                          <li>
-                            <NavLink
-                              to="/reports/due-installments"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Due Installments
-                            </NavLink>
-                          </li>
-                        )}
+              {hasMenuPermission(permissions, 'invoice') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/reports/cashbook' ||
+                    pathname === '/reports/employee-installment' ||
+                    pathname === '/reports/ledger' ||
+                    pathname === '/reports/due-installments' ||
+                    pathname === '/reports/date-wise-total-data' ||
+                    pathname === '/reports/due-list' ||
+                    pathname === '/reports/purchase-ledger' ||
+                    pathname === '/reports/sales-ledger' ||
+                    pathname === '/reports/group-report' ||
+                    pathname === '/reports/mitch-match' ||
+                    pathname.includes('forms')
+                  }
+                  menuId="reports"
+                  open={openMenu === 'reports'}
+                  handleClick={() => handleMenuClick('reports')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/reports/date-wise-total-data' ||
+                          pathname.includes('reports/cashbook') ||
+                          pathname === '/reports/employee-installment' ||
+                          pathname === '/reports/due-installments' ||
+                          pathname.includes('/reports/due-list') ||
+                          pathname.includes('/reports/product/stock') ||
+                          pathname.includes('/reports/cat-wise/in-out') ||
+                          pathname.includes('/reports/purchase-ledger') ||
+                          pathname.includes('/reports/sales-ledger') ||
+                          pathname.includes('/reports/group-report') ||
+                          pathname.includes('/reports/labour/ledger') ||
+                          pathname.includes('/reports/mitch-match') ||
+                          pathname.includes('reports/ledger')) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiBook />
+                        Reports
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li>
+                              <NavLink
+                                to="/reports/cashbook"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Cash Book
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'installment.create') && currentBranch?.business_type_id == 4 && (
+                            <li>
+                              <NavLink
+                                to="/reports/due-installments"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Due Installments
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'installment.create') && currentBranch?.business_type_id == 4 && (
+                            <li>
+                              <NavLink
+                                to="/reports/employee-installment"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Employee Installments
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'ledger.view') && (
+                            <li>
+                              <NavLink
+                                to="/reports/ledger"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Ledger
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'ledger.labour') && (
+                            <li>
+                              <NavLink
+                                to="/reports/labour/ledger"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Labour Ledger
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'ledger.due.view') && (
+                            <li>
+                              <NavLink
+                                to="/reports/due-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Due List
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'date.wise.total') && (
+                            <li>
+                              <NavLink
+                                to="/reports/date-wise-total-data"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Datewise Total
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.stock.view') && (
+                            <li>
+                              <NavLink
+                                to="/reports/product/stock"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product Stock
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* product.in.out */}
+                          {hasPermission(permissions, 'product.in.out') && (
+                            <li>
+                              <NavLink
+                                to="/reports/cat-wise/in-out"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Cat-wise In/Out
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'purchase.ledger') && (
+                            <li>
+                              <NavLink
+                                to="/reports/purchase-ledger"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Purchase Ledger
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'sales.ledger') && (
+                            <li>
+                              <NavLink
+                                to="/reports/sales-ledger"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Sales Ledger
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'group.report') && (
+                            <li>
+                              <NavLink
+                                to="/reports/group-report"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Group Report
+                              </NavLink>
+                            </li>
+                          )}
 
-                        {currentBranch?.business_type_id == 4 && (
-                          <li>
-                            <NavLink
-                              to="/reports/employee-installment"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Employee Installments
-                            </NavLink>
-                          </li>
-                        )}
-
-                        {hasPermission(permissions, 'ledger.view') && (
-                          <li>
-                            <NavLink
-                              to="/reports/ledger"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Ledger
-                            </NavLink>
-                          </li>
-                        )}
-
-                        <li>
-                          <NavLink
-                            to="/reports/labour/ledger"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Labour Ledger
-                          </NavLink>
-                        </li>
-
-                        {hasPermission(permissions, 'due.list.view') && (
-                          <li>
-                            <NavLink
-                              to="/reports/due-list"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Due List
-                            </NavLink>
-                          </li>
-                        )}
-                        <li>
-                          <NavLink
-                            to="/reports/date-wise-total-data"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Datewise Total
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/reports/product/stock"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Product Stock
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/reports/cat-wise/in-out"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Cat-wise In/Out
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/reports/purchase-ledger"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Purchase Ledger
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/reports/sales-ledger"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Sales Ledger
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/reports/group-report"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Group Report
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/reports/mitch-match"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Mismatch
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/reports/mitch-match"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Mismatch
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/reports/mitch-match"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Mismatch
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
-
+                          {hasPermission(permissions, 'mitch.match') && (
+                            <li>
+                              <NavLink
+                                to="/reports/mitch-match"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Mismatch
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
 
 
               {/* Requisition */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/requisition/comparison' ||
-                  pathname === '/requisition/create' ||
-                  pathname.includes('forms')
-                }
-                menuId="requisition"
-                open={openMenu === 'requisition'}
-                handleClick={() => handleMenuClick('requisition')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                        pathname === '/requisitions' ||
-                        pathname === '/requisition/create' ||
-                        pathname === '/requisition/comparison' ||
-                        pathname.includes('/requisition/comparison')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
+              {hasMenuPermission(permissions, 'requisition') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/requisition/comparison' ||
+                    pathname === '/requisition/create' ||
+                    pathname.includes('forms')
+                  }
+                  menuId="requisition"
+                  open={openMenu === 'requisition'}
+                  handleClick={() => handleMenuClick('requisition')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
+                          pathname === '/requisitions' ||
+                          pathname === '/requisition/create' ||
+                          pathname === '/requisition/comparison' ||
+                          pathname.includes('/requisition/comparison')) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiServer />
-                      Requisition
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/requisitions"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Requisitions
-                          </NavLink>
-                        </li>
-                        {/* <li>
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiServer />
+                        Requisition
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {/* requisition.create */}
+                          {hasPermission(permissions, 'requisition.create') && (
+                            <li>
+                              <NavLink
+                                to="/requisitions"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Requisitions
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* <li>
                           <NavLink
                             to="/requisition/create"
                             className={({ isActive }) =>
@@ -687,23 +694,25 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             Create
                           </NavLink>
                         </li> */}
-                        <li>
-                          <NavLink
-                            to="/requisition/comparison"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Comparison
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
-
+                          {hasPermission(permissions, 'requisition.comparison') && (
+                            <li>
+                              <NavLink
+                                to="/requisition/comparison"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Comparison
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
               {/* Real Estate */}
 
@@ -736,7 +745,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             pathname === routes.real_estate_buildings_list ||
                             pathname === routes.real_estate_floor_list ||
                             pathname === routes.real_estate_unit_types_list ||
-                            pathname === routes.real_estate_floor_unit_list || 
+                            pathname === routes.real_estate_floor_unit_list ||
                             pathname === '/real-estate/project-list' ||
                             pathname.includes('/real-estate/add-area')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
@@ -766,10 +775,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             >
                               Location
                             </NavLink>
-                          </li> 
+                          </li>
                           <li>
                             <NavLink
-                            to={routes.real_estate_project_list}
+                              to={routes.real_estate_project_list}
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
@@ -789,7 +798,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               Buildings
                             </NavLink>
                           </li>
-                          
+
                           <li>
                             <NavLink
                               to={routes.real_estate_floor_list}
@@ -809,7 +818,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                             Unit List
+                              Unit List
                             </NavLink>
                           </li>
                           <li>
@@ -820,10 +829,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && 'text-gray-900 font-bold dark:text-white')
                               }
                             >
-                             Charege Types
+                              Charege Types
                             </NavLink>
                           </li>
-                          
+
                           <li>
                             <NavLink
                               to="/real-estate/flat-layout"
@@ -845,366 +854,404 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
 
               {/* Products */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/category/category-list' ||
-                  pathname === '/category/edit' ||
-                  pathname === '/product/product-list' ||
-                  pathname === '/product/edit' ||
-                  pathname.includes('forms')
-                }
-                menuId="products"
-                open={openMenu === 'products'}
-                handleClick={() => handleMenuClick('products')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/product/product-list' ||
-                        pathname === '/category/category-list') &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiLayers />
-                      Products
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/category/category-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Category List
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/product/product-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Product List
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
-
+              {hasMenuPermission(permissions, 'products') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/category/category-list' ||
+                    pathname === '/category/edit' ||
+                    pathname === '/product/product-list' ||
+                    pathname === '/product/edit' ||
+                    pathname.includes('forms')
+                  }
+                  menuId="products"
+                  open={openMenu === 'products'}
+                  handleClick={() => handleMenuClick('products')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/product/product-list' ||
+                          pathname === '/category/category-list') &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiLayers />
+                        Products
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'category.view') && (
+                            <li>
+                              <NavLink
+                                to="/category/category-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Category List
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'products.view') && (
+                            <li>
+                              <NavLink
+                                to="/product/product-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product List
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
               {/* Admin */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/branch/branch-list' ||
-                  pathname === '/user/user-list' ||
-                  pathname === '/admin/dayclose' ||
-                  pathname === '/order/order-list' ||
-                  pathname.includes('forms')
-                }
-                menuId="admin"
-                open={openMenu === 'admin'}
-                handleClick={() => handleMenuClick('admin')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
-                        pathname === '/user/user-list' ||
-                        pathname === '/admin/dayclose' ||
-                        pathname === '/order/order-list' ||
-                        pathname === '/admin/voucher-approval' ||
-                        pathname === '/admin/remove-approval' ||
-                        pathname === '/admin/voucher/type-change' ||
-                        pathname === '/admin/image-upload' ||
-                        pathname === '/admin/bulk-upload' ||
-                        pathname === '/admin/jumpdate' ||
-                        pathname === '/orders/avg-price' ||
-                        pathname.includes('/branch/branch-list')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FaGear />
-                      Admin
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        {hasPermission(permissions, 'branch.view') && (
-                          <li>
-                            <NavLink
-                              to="/branch/branch-list"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Branch List
-                            </NavLink>
-                          </li>
-                        )}
+              {hasMenuPermission(permissions, 'admin') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/branch/branch-list' ||
+                    pathname === '/user/user-list' ||
+                    pathname === '/admin/dayclose' ||
+                    pathname === '/order/order-list' ||
+                    pathname.includes('forms')
+                  }
+                  menuId="admin"
+                  open={openMenu === 'admin'}
+                  handleClick={() => handleMenuClick('admin')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
+                          pathname === '/user/user-list' ||
+                          pathname === '/admin/dayclose' ||
+                          pathname === '/order/order-list' ||
+                          pathname === '/admin/voucher-approval' ||
+                          pathname === '/admin/remove-approval' ||
+                          pathname === '/admin/voucher/type-change' ||
+                          pathname === '/admin/image-upload' ||
+                          pathname === '/admin/bulk-upload' ||
+                          pathname === '/admin/jumpdate' ||
+                          pathname === '/orders/avg-price' ||
+                          pathname.includes('/branch/branch-list')) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FaGear />
+                        Admin
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'branch.view') && (
+                            <li>
+                              <NavLink
+                                to="/branch/branch-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch List
+                              </NavLink>
+                            </li>
+                          )}
 
-                        {hasPermission(permissions, 'user.all.view') && (
-                          <li>
-                            <NavLink
-                              to="/user/user-list"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              User List
-                            </NavLink>
-                          </li>
-                        )}
-                        {hasPermission(permissions, 'dayclose.all.view') && (
-                          <li>
-                            <NavLink
-                              to="/admin/dayclose"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Day Close
-                            </NavLink>
-                          </li>
-                        )}
-                        {hasPermission(permissions, 'order.view') && (
-                          <li>
-                            <NavLink
-                              to="/order/order-list"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Orders
-                            </NavLink>
-                          </li>
-                        )}
-                        <li>
-                          <NavLink
-                            to="/orders/avg-price"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Average Price
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/admin/voucher-approval"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Voucher Approval
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/admin/remove-approval"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Approval Remove
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/admin/voucher/type-change"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Change Voucher Type
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/admin/image-upload"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Voucher Upload
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/admin/bulk-upload"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Bulk Upload
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
+                          {hasPermission(permissions, 'all.user.view') && (
+                            <li>
+                              <NavLink
+                                to="/user/user-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                User List
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'dayclose.create') && (
+                            <li>
+                              <NavLink
+                                to="/admin/dayclose"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Day Close
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'order.view') && (
+                            <li>
+                              <NavLink
+                                to="/order/order-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Orders
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* order.avg.price */}
+                          {hasPermission(permissions, 'order.avg.price') && (
+                            <li>
+                              <NavLink
+                                to="/orders/avg-price"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Average Price
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* voucher.approval */}
+                          {hasPermission(permissions, 'voucher.approval') && (
+                            <li>
+                              <NavLink
+                                to="/admin/voucher-approval"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Voucher Approval
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* remove.approval */}
+                          {hasPermission(permissions, 'remove.approval') && (
+                            <li>
+                              <NavLink
+                                to="/admin/remove-approval"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Approval Remove
+                              </NavLink>
+                            </li>
+                          )}
 
+                          {hasPermission(permissions, 'change.vourcher.type') && (
+                            <li>
+                              <NavLink
+                                to="/admin/voucher/type-change"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Change Voucher Type
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {/* voucher.photo.upload */}
+                          {hasPermission(permissions, 'voucher.photo.upload') && (
+                            <li>
+                              <NavLink
+                                to="/admin/image-upload"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Voucher Upload
+                              </NavLink>
+                            </li>
+                          )}
+                          {/* bulk.photo.upload */}
+                          {hasPermission(permissions, 'bulk.photo.upload') && (
+                            <li>
+                              <NavLink
+                                to="/admin/bulk-upload"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Bulk Upload
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
               {/* VR Settings */}
+              {hasMenuPermission(permissions, 'voucher_settings') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/vr-settings/voucher-delete' ||
+                    pathname === '/admin/voucher/date-change' ||
+                    pathname.includes('forms')
+                  }
+                  menuId="vr_settings"
+                  open={openMenu === 'vr_settings'}
+                  handleClick={() => handleMenuClick('vr_settings')}
+                >
+
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
+                          pathname === '/vr-settings/voucher-delete' ||
+                          pathname === '/vr-settings/installment-delete' ||
+                          pathname === '/admin/voucher/date-change' ||
+                          pathname === '/vr-settings/recyclebin' ||
+                          pathname === '/vr-settings/voucher-history' ||
+                          pathname === '/vr-settings/voucher-activity' ||
+                          pathname.includes('/vr-settings/voucher-delete')
+                        ) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiLayers />
+                        VR Settings
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'voucher.delete') && (
+                            <li>
+                              <NavLink
+                                to="/vr-settings/voucher-delete"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Voucher Delete
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'installment.delete') && (
+                            <li>
+                              <NavLink
+                                to="/vr-settings/installment-delete"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Installment Delete
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'voucher.date.change') && (
+                            <li>
+                              <NavLink
+                                to={routes.admin_change_date}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Voucher Date Change
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'voucher.recycle') && (
+                            <li>
+                              <NavLink
+                                to={routes.recyclebin}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Recycle Bin
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'voucher.history') && (
+                            <li>
+                              <NavLink
+                                to={routes.voucher_history}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                History
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'voucher.changes') && (
+                            <li>
+                              <NavLink
+                                to={routes.voucher_activity}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+
+                                Log Changes
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
+              {/* HRM */}
+              {hasMenuPermission(permissions, 'hrm') && (
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === '/vr-settings/voucher-delete' ||
-                  pathname === '/admin/voucher/date-change' ||
-                  pathname.includes('forms')
-                }
-                menuId="vr_settings"
-                open={openMenu === 'vr_settings'}
-                handleClick={() => handleMenuClick('vr_settings')}
-              >
-
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                        pathname === '/vr-settings/voucher-delete' ||
-                        pathname === '/vr-settings/installment-delete' ||
-                        pathname === '/admin/voucher/date-change' ||
-                        pathname === '/vr-settings/recyclebin' ||
-                        pathname === '/vr-settings/voucher-history' ||
-                        pathname === '/vr-settings/voucher-activity' ||
-                        pathname.includes('/vr-settings/voucher-delete')
-                      ) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiLayers />
-                      VR Settings
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        {hasPermission(permissions, 'dayclose.all.view') && (
-                          <li>
-                            <NavLink
-                              to="/vr-settings/voucher-delete"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Voucher Delete
-                            </NavLink>
-                          </li>
-                        )}
-                        {hasPermission(permissions, 'dayclose.all.view') && (
-                          <li>
-                            <NavLink
-                              to="/vr-settings/installment-delete"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Installment Delete
-                            </NavLink>
-                          </li>
-                        )}
-
-                        <li>
-                          <NavLink
-                            to={routes.admin_change_date}
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Voucher Date Change
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to={routes.recyclebin}
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Recycle Bin
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to={routes.voucher_history}
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            History
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to={routes.voucher_activity}
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-
-                            Log Changes
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
-
-              {/* VR Settings */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/admin/voucher/date-change' ||
-                  pathname.includes('forms')
+                  pathname === '/hrms/employees' ||
+                  pathname === '/hrms/salary/salary-generate' ||
+                  pathname.includes('/hrms/salary-sheet')
                 }
                 menuId="hrm"
                 open={openMenu === 'hrm'}
@@ -1237,47 +1284,53 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/hrms/employees"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Employees
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/hrms/salary/salary-generate"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Salary Generate
-                          </NavLink>
-                        </li>
+                        {/* hrm.employee.view */}
+                        {hasPermission(permissions, 'employee.view') && (
+                          <li>
+                            <NavLink
+                              to="/hrms/employees"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              Employees
+                            </NavLink>
+                          </li>
+                        )}
+                        {hasPermission(permissions, 'salary.generate') && (
+                          <li>
+                            <NavLink
+                              to="/hrms/salary/salary-generate"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              Salary Generate
+                            </NavLink>
+                          </li>
+                        )}
 
-                        <li>
-                          <NavLink
-                            to="/hrms/salary-sheet"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Salary Reports
-                          </NavLink>
-                        </li>
-
+                        {hasPermission(permissions, 'salary.sheet.view') && (
+                          <li>
+                            <NavLink
+                              to="/hrms/salary-sheet"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              Salary Reports
+                            </NavLink>
+                          </li>
+                        )}
                       </ul>
                     </div>
                   </React.Fragment>
                 )}
               </SidebarLinkGroup>
-
+              )}
 
               {/* User Management */}
               <SidebarLinkGroup

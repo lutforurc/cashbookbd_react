@@ -257,11 +257,11 @@ const AddCustomerSupplier = () => {
                   {formik.values.guarantors.map((g: any, index: number) => (
                     <div key={index} className="border p-3 mb-2 ">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        <InputElement name={`guarantors.${index}.name`} label="Name" value={g.name} onChange={formik.handleChange} />
-                        <InputElement name={`guarantors.${index}.father_name`} label="Father Name" value={g.father_name} onChange={formik.handleChange} />
-                        <InputElement name={`guarantors.${index}.mobile`} label="Mobile" value={g.mobile} onChange={formik.handleChange} />
-                        <InputElement name={`guarantors.${index}.national_id`} label="National ID" value={g.national_id} onChange={formik.handleChange} />
-                        <InputElement name={`guarantors.${index}.address`} label="Address" value={g.address} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.name`} label="Name" placeholder='Enter Name' value={g.name} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.father_name`} label="Father Name" placeholder='Enter Father Name' value={g.father_name} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.mobile`} label="Mobile" placeholder='Enter Mobile Number'  value={g.mobile} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.national_id`} label="National ID" placeholder='Enter National ID' value={g.national_id} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.address`} label="Address" placeholder='Enter Address' value={g.address} onChange={formik.handleChange} />
                       </div>
 
                       <button type="button" className="text-red-600 mt-2" onClick={() => remove(index)}>
