@@ -8,7 +8,7 @@ const CompanyPad = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-center">
+        <h1 className="text-2xl font-bold text-center uppercase">
           {settings?.company?.name}
         </h1>
         <div className="text-center">

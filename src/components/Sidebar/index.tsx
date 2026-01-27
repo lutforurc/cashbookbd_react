@@ -217,7 +217,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           {hasPermission(permissions, 'cash.received.create') && (
                             <li>
                               <NavLink
-                                to="/accounts/cash/receive"
+                                to={ routes.cash_receive }
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
@@ -230,7 +230,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           {hasPermission(permissions, 'cash.received.create') && currentBranch?.business_type_id === 4 && (
                             <li>
                               <NavLink
-                                to="/admin/installment-details"
+                                to={ routes.installment_list }
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')

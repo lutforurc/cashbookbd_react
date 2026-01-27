@@ -9,7 +9,7 @@ const BranchPad = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-center">{settings?.branch?.name}</h1>
+        <h1 className="text-2xl font-bold text-center uppercase">{settings?.branch?.name}</h1>
         <div className="mt-2 text-center">
           <div>
             <span className=""> {settings?.branch?.address}</span>
