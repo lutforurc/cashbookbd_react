@@ -16,7 +16,6 @@ jobs:
         site:
           [
             cashbookbdaccountsstaging,
-            cashbookbdaccountseworld
           ]
 
     steps:
@@ -39,7 +38,6 @@ jobs:
         run: |
           case "${{ matrix.site }}" in
             cashbookbdaccountsstaging) URL="https://staging.cashbookbd.com" ;;
-            cashbookbdaccountseworld) URL="https://eworld.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac
 
