@@ -23,7 +23,8 @@ jobs:
             cashbookbdaccountsscn,
             cashbookbdaccountssinthia,
             cashbookbdaccountssadia,
-            cashbookbdaccountsstaging
+            cashbookbdaccountsstaging,
+            cashbookbdaccountseworld
           ]
 
     steps:
