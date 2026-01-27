@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useFormik } from 'formik';
+import { FieldArray, useFormik, FormikProvider } from 'formik';
 import * as Yup from 'yup';
-import { FiHome, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
@@ -23,7 +23,7 @@ const AddCustomerSupplier = () => {
 
   useEffect(() => {
     dispatch(getDdlArea());
-      dispatch(getSettings());
+    dispatch(getSettings());
   }, [dispatch]);
 
   const formattedAreaData = useMemo(
@@ -49,6 +49,17 @@ const AddCustomerSupplier = () => {
     type_id: Yup.string().required('Customer or Supplier type is required'),
     area_id: Yup.string(), //.required('Area is required'),
     customerLogin: Yup.boolean(),
+
+    /* 🔥 GUARANTORS */
+    guarantors: Yup.array().of(
+      Yup.object().shape({
+        name: Yup.string().required('Guarantor name required'),
+        father_name: Yup.string().required('Father name required'),
+        mobile: Yup.string().required('Mobile required'),
+        national_id: Yup.string().required('National ID required'),
+        address: Yup.string().required('Address required'),
+      }),
+    ),
   });
 
   const formik = useFormik({
@@ -63,6 +74,9 @@ const AddCustomerSupplier = () => {
       area_id: '',
       areaName: '',
       customerLogin: false,
+
+      /* 🔥 GUARANTORS */
+      guarantors: [],
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -101,7 +115,7 @@ const AddCustomerSupplier = () => {
           Customer List
         </Link>
       </div>
-
+    <FormikProvider value={formik}>
       <form onSubmit={formik.handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
           <div>
@@ -205,21 +219,21 @@ const AddCustomerSupplier = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
           <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
             <InputElement
-            id="national_id"
-            name="national_id"
-            value={formik.values.national_id}
-            placeholder="Enter National ID"
-            label="National ID"
-            onChange={formik.handleChange}
-          />
+              id="national_id"
+              name="national_id"
+              value={formik.values.national_id}
+              placeholder="Enter National ID"
+              label="National ID"
+              onChange={formik.handleChange}
+            />
             <InputElement
-            id="idfr_code"
-            name="idfr_code"
-            value={formik.values.idfr_code}
-            placeholder="Enter Customer Number"
-            label="Customer Number"
-            onChange={formik.handleChange}
-          />
+              id="idfr_code"
+              name="idfr_code"
+              value={formik.values.idfr_code}
+              placeholder="Enter Customer Number"
+              label="Customer Number"
+              onChange={formik.handleChange}
+            />
           </div>
           <DropdownCommon
             id="customerLogin"
@@ -232,13 +246,52 @@ const AddCustomerSupplier = () => {
             data={TrueFalse}
           />
         </div>
-        { settings?.data?.branch?.have_is_guaranter === "1" && (
-        <div className="mb-2">
-          <label className="dark:text-white text-sm text-gray-900 mb-1">
-            Guaranter Details
-          </label>
-          </div>
+        {/* ================= GUARANTORS ================= */}
+        {settings?.data?.branch?.have_is_guaranter === '1' && (
+          <>
+            <h3 className="mt-4 mb-2 font-semibold">Guarantor Details</h3>
+
+            <FieldArray name="guarantors">
+              {({ push, remove }) => (
+                <>
+                  {formik.values.guarantors.map((g: any, index: number) => (
+                    <div key={index} className="border p-3 mb-2 ">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <InputElement name={`guarantors.${index}.name`} label="Name" value={g.name} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.father_name`} label="Father Name" value={g.father_name} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.mobile`} label="Mobile" value={g.mobile} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.national_id`} label="National ID" value={g.national_id} onChange={formik.handleChange} />
+                        <InputElement name={`guarantors.${index}.address`} label="Address" value={g.address} onChange={formik.handleChange} />
+                      </div>
+
+                      <button type="button" className="text-red-600 mt-2" onClick={() => remove(index)}>
+                       <div className='flex'> <FiTrash2 /> <span className='ml-2 -mt-1'>Remove</span></div>
+                      </button>
+                    </div>
+                  ))}
+
+                  <ButtonLoading
+                    type="button"
+                    label="Add Guarantor"
+                    className="flex items-center gap-2 text-blue-600 mb-4 p-2"
+                    onClick={() =>
+                      push({
+                        name: '',
+                        father_name: '',
+                        mobile: '',
+                        national_id: '',
+                        address: '',
+                      })
+                    }
+                  
+                    icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+                  />
+                </>
+              )}
+            </FieldArray>
+          </>
         )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
           <ButtonLoading
             onClick={formik.handleSubmit}
@@ -263,6 +316,7 @@ const AddCustomerSupplier = () => {
           />
         </div>
       </form>
+    </FormikProvider>
     </div>
   );
 };
