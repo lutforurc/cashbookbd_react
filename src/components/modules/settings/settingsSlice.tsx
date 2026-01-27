@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { API_APP_SETTING_URL, API_SERVICE_LIST_URL } from '../../services/apiRoutes';
+import { API_APP_BRANCH_SETTING_URL, API_APP_SETTING_URL, API_SERVICE_LIST_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 
 // ---------------- Types ----------------
 
 interface SettingsState {
   data: any;
+  branchSettings: any;
   serviceList: any[];
   loading: boolean;
   serviceLoading: boolean;
@@ -23,6 +24,7 @@ interface SettingsResponse {
 
 const initialState: SettingsState = {
   data: {},
+  branchSettings: {},
   serviceList: [],
   loading: false,
   serviceLoading: false,
@@ -33,9 +35,24 @@ const initialState: SettingsState = {
 // ---------------- Async Thunks ----------------
 
 // 🔵 Existing (Settings)
-export const getSettings = createAsyncThunk<any, any, { rejectValue: string }>(
-  'settings/getSettings',
-  async (payload, thunkAPI) => {
+export const getBranchSettings = createAsyncThunk<any, any, { rejectValue: string }>('settings/getBranchSettings',async (payload, thunkAPI) => {
+    try {
+      const res = await httpService.post(API_APP_BRANCH_SETTING_URL, payload);
+      const _data: SettingsResponse = res.data;
+
+      if (_data.success) {
+        return _data.data.data;
+      } else {
+        return thunkAPI.rejectWithValue(_data.error.message);
+      }
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.message || 'Something went wrong.');
+    }
+  },
+);
+
+// 🔵 Existing (Settings)
+export const getSettings = createAsyncThunk<any, any, { rejectValue: string }>('settings/getSettings',async (payload, thunkAPI) => {
     try {
       const res = await httpService.post(API_APP_SETTING_URL, payload);
       const _data: SettingsResponse = res.data;
@@ -90,6 +107,19 @@ const settingsSlice = createSlice({
         state.data = action.payload;
       })
       .addCase(getSettings.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // ---------------- Settings ----------------
+      .addCase(getBranchSettings.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getBranchSettings.fulfilled, (state, action) => {
+        state.loading = false;
+        state.branchSettings = action.payload;
+      })
+      .addCase(getBranchSettings.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

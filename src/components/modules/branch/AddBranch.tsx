@@ -12,12 +12,13 @@ import {
 } from '../../utils/fields/DataConstant';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FiArrowLeft, FiHome, FiRefreshCcw, FiSave } from 'react-icons/fi';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Checkbox from '../../utils/fields/Checkbox';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../common/Loader';
-import Link from '../../utils/others/Link';
+import Link from '../../utils/others/Link'; 
+import { getBranchSettings } from '../settings/settingsSlice';
 interface branchItem {
   id: string | number;
   branch_id?: string | number;
@@ -44,13 +45,17 @@ interface branchItem {
   share_product_with_other_branch: boolean;
   share_customer_with_other_branch: boolean;
   have_customer_sl: boolean;
+  have_is_guaranter: boolean;
+  is_opening: boolean;
   use_bangla: boolean;
   report_zero_bal: boolean;
   manufactur_control: boolean;
 }
 
 const AddBranch = () => {
+  const navigate = useNavigate();
   const branchEditData = useSelector((state: any) => state.branchList);
+  const settings = useSelector((state: any) => state.settings);
   const initialBranch: branchItem = {
     id: '',
     branch_id: '',
@@ -77,18 +82,32 @@ const AddBranch = () => {
     share_product_with_other_branch: false,
     share_customer_with_other_branch: false,
     have_customer_sl: false,
+    have_is_guaranter: false,
+    is_opening: false,
     use_bangla: false,
     report_zero_bal: false,
     manufactur_control: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const dispatch = useDispatch();
 
   const { id } = useParams();
-  useEffect(() => {
+
+useEffect(() => {
+  if (id) {
     dispatch(editBranch(id));
-  }, [id]);
+  }
+}, [id]);
+
+useEffect(() => {
+  dispatch(getBranchSettings());
+}, []);
+
+console.log('====================================');
+console.log("settings", settings?.branchSettings);
+console.log('====================================');
+
+
   useEffect(() => {
     if (branchEditData?.editData?.branch) {
       setFormData((prev) => ({
@@ -117,24 +136,24 @@ const AddBranch = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleBack = () => {
-    window.location.href = '/branch/branch-list';
-  };
-  const handleBranchUpdate = () => {
-    try {
-      dispatch(updateBranch(formData));
-      setFormData(initialBranch);
-    } catch (error) {
-      console.error('Error saving transactions:', error);
-    }
-  };
-  const handleBranchSave = () => {
-    try {
-      dispatch(storeBranch(formData));
-    } catch (error) {
-      console.error('Error saving transactions:', error);
-    }
-  };
+const handleBranchUpdate = () => {
+  dispatch(
+    updateBranch(formData, (res: any) => {
+      if (res?.success) {
+        navigate('/branch/branch-list');
+      }
+    })
+  );
+};
+
+const handleBranchSave = async () => {
+  try {
+    await dispatch(storeBranch(formData)).unwrap();
+    setFormData(initialBranch); // ✔ এখানে ঠিক আছে
+  } catch (error) {
+    console.error(error);
+  }
+};
   return (
     <>
       <HelmetTitle title={formData?.id ? 'Edit Branch' : 'Add New Branch'} />
@@ -158,18 +177,18 @@ const AddBranch = () => {
                 name={'branch_types_id'}
                 label="Select Branch Type"
                 onChange={handleOnSelectChange}
-                defaultValue={formData?.branch_types_id || ''}
+                value={formData?.branch_types_id || ''}
                 className="h-[2.1rem] bg-transparent mt-1"
-                data={officeTypes}
+                data={settings?.branchSettings?.branchType}
               />
               <DropdownCommon
                 id="business_type_id"
                 name={'business_type_id'}
                 label="Select Business Type"
                 onChange={handleOnSelectChange}
-                defaultValue={formData?.business_type_id || ''}
+                value={formData?.business_type_id || ''}
                 className="h-[2.1rem] bg-transparent mt-1"
-                data={branchEditData?.editData?.businessType}
+                data={settings?.branchSettings?.businessType}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -370,6 +389,27 @@ const AddBranch = () => {
                 className="mb-4" // Add any additional styling if needed
               />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+              <Checkbox
+                id="is_opening"
+                name="is_opening"
+                checked={formData.is_opening}
+                onChange={handleOnChange}
+                label="Opening ongoing?"
+                className="mb-4" // Add any additional styling if needed
+              />
+              <Checkbox
+                id="have_is_guaranter"
+                name="have_is_guaranter"
+                checked={formData.have_is_guaranter}
+                onChange={handleOnChange}
+                label="Use Guarantor?"
+                className="mb-4" // Add any additional styling if needed
+              />
+
+            </div>
+
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
             {branchEditData.editData?.branch ? (
