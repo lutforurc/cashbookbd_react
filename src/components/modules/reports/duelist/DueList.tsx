@@ -118,7 +118,6 @@ const DueList = (user: any) => {
         </>
       )
     },
-    
     {
       key: 'debit',
       header: 'Debit',
