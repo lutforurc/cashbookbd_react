@@ -15,7 +15,7 @@ jobs:
       matrix:
         site:
           [
-            cashbookbdaccountsstaging,
+            cashbookbdaccountsstaging
           ]
 
     steps:
