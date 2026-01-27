@@ -15,7 +15,8 @@ jobs:
       matrix:
         site:
           [
-            cashbookbdaccountsstaging
+            cashbookbdaccountsstaging,
+            cashbookbdaccountseworld
           ]
 
     steps:
@@ -66,8 +67,8 @@ jobs:
         id: path
         run: |
           case "${{ matrix.site }}" in
-            cashbookbdaccountsstaging)
-              echo "dir=/home/cashbookbdaccountsstaging/htdocs/accounts.staging.cashbookbd.com" ;;
+            cashbookbdaccountsstaging) echo "dir=/home/cashbookbdaccountsstaging/htdocs/accounts.staging.cashbookbd.com" ;;
+            cashbookbdaccountseworld) echo "dir=/home/cashbookbdaccountseworld/htdocs/accounts.eworld.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac >> $GITHUB_OUTPUT
 
