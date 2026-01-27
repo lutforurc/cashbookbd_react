@@ -14,13 +14,16 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Link from '../../utils/others/Link';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
+import { getSettings } from '../settings/settingsSlice';
 
 const AddCustomerSupplier = () => {
   const area = useSelector((state: any) => state.area);
+  const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(getDdlArea());
+      dispatch(getSettings());
   }, [dispatch]);
 
   const formattedAreaData = useMemo(
@@ -80,6 +83,14 @@ const AddCustomerSupplier = () => {
   const selectedArea = formattedAreaData.find(
     (opt: any) => opt.value === formik.values.area_id?.toString(),
   );
+
+
+
+  console.log('====================================');
+  console.log("settings", settings?.data?.branch?.have_is_guaranter);
+  console.log('====================================');
+
+
 
   return (
     <div>
@@ -221,7 +232,13 @@ const AddCustomerSupplier = () => {
             data={TrueFalse}
           />
         </div>
-
+        { settings?.data?.branch?.have_is_guaranter === "1" && (
+        <div className="mb-2">
+          <label className="dark:text-white text-sm text-gray-900 mb-1">
+            Guaranter Details
+          </label>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
           <ButtonLoading
             onClick={formik.handleSubmit}
