@@ -304,14 +304,14 @@ const AddCustomerSupplier = () => {
             onClick={formik.handleReset}
             buttonLoading={false}
             label="Reset"
-            className="whitespace-nowrap text-center"
+            className="whitespace-nowrap text-center pt-2 pb-2"
             icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
           />
           <ButtonLoading
             onClick={() => console.log('Back clicked')}
             buttonLoading={false}
             label="Back"
-            className="whitespace-nowrap text-center"
+            className="whitespace-nowrap text-center pt-2 pb-2"
             icon={<FiHome className="text-white text-lg ml-2 mr-2" />}
           />
         </div>
