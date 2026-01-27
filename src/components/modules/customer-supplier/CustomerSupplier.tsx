@@ -102,6 +102,10 @@ const CustomerSupplier = () => {
       header: "Name",
     },
     {
+      key: "national_id",
+      header: "National ID",
+    },
+    {
       key: 'openingbalance',
       header: 'Opening',
       headerClass: 'text-center',

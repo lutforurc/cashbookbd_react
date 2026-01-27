@@ -42,6 +42,7 @@ const AddCustomerSupplier = () => {
     mobile: Yup.string().required('Mobile number is required'),
     ledger_page: Yup.string(), // ✅ no `.required()`
     idfr_code: Yup.string(), // ✅ no `.required()`
+    national_id: Yup.string(), // ✅ no `.required()`
     type_id: Yup.string().required('Customer or Supplier type is required'),
     area_id: Yup.string(), //.required('Area is required'),
     customerLogin: Yup.boolean(),
@@ -54,6 +55,7 @@ const AddCustomerSupplier = () => {
       mobile: '',
       ledger_page: '',
       idfr_code: '',
+      national_id: '',
       type_id: '',
       area_id: '',
       areaName: '',
@@ -190,7 +192,16 @@ const AddCustomerSupplier = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-          <InputElement
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+            <InputElement
+            id="national_id"
+            name="national_id"
+            value={formik.values.national_id}
+            placeholder="Enter National ID"
+            label="National ID"
+            onChange={formik.handleChange}
+          />
+            <InputElement
             id="idfr_code"
             name="idfr_code"
             value={formik.values.idfr_code}
@@ -198,6 +209,7 @@ const AddCustomerSupplier = () => {
             label="Customer Number"
             onChange={formik.handleChange}
           />
+          </div>
           <DropdownCommon
             id="customerLogin"
             name="customerLogin"
