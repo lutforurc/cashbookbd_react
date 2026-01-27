@@ -17,7 +17,7 @@ import Checkbox from '../../utils/fields/Checkbox';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../common/Loader';
-import Link from '../../utils/others/Link'; 
+import Link from '../../utils/others/Link';
 import { getBranchSettings } from '../settings/settingsSlice';
 interface branchItem {
   id: string | number;
@@ -93,26 +93,41 @@ const AddBranch = () => {
 
   const { id } = useParams();
 
-useEffect(() => {
-  if (id) {
-    dispatch(editBranch(id));
-  }
-}, [id]);
+  useEffect(() => {
+    if (id) {
+      dispatch(editBranch(id));
+    }
+  }, [id]);
 
-useEffect(() => {
-  dispatch(getBranchSettings());
-}, []);
+  useEffect(() => {
+    dispatch(getBranchSettings());
+  }, []);
 
-console.log('====================================');
-console.log("settings", settings?.branchSettings);
-console.log('====================================');
 
 
   useEffect(() => {
     if (branchEditData?.editData?.branch) {
-      setFormData((prev) => ({
+      const b = branchEditData.editData.branch;
+
+      setFormData(prev => ({
         ...prev,
-        ...branchEditData.editData.branch,
+        ...b,
+
+        // 🔑 CHECKBOX FIX
+        is_opening: b.is_opening == 1 || b.is_opening === '1',
+        have_is_guaranter: b.have_is_guaranter == 1 || b.have_is_guaranter === '1',
+        report_zero_bal: b.report_zero_bal == 1 || b.report_zero_bal === '1',
+        manufactur_control: b.manufactur_control == 1 || b.manufactur_control === '1',
+        warranty_controll: b.warranty_controll == 1 || b.warranty_controll === '1',
+        have_warehouse: b.have_warehouse == 1 || b.have_warehouse === '1',
+        share_product_with_other_branch:
+          b.share_product_with_other_branch == 1 ||
+          b.share_product_with_other_branch === '1',
+        share_customer_with_other_branch:
+          b.share_customer_with_other_branch == 1 ||
+          b.share_customer_with_other_branch === '1',
+        have_customer_sl: b.have_customer_sl == 1 || b.have_customer_sl === '1',
+        use_bangla: b.use_bangla == 1 || b.use_bangla === '1',
       }));
     }
   }, [branchEditData?.editData]);
@@ -136,24 +151,24 @@ console.log('====================================');
     setFormData({ ...formData, [name]: value });
   };
 
-const handleBranchUpdate = () => {
-  dispatch(
-    updateBranch(formData, (res: any) => {
-      if (res?.success) {
-        navigate('/branch/branch-list');
-      }
-    })
-  );
-};
+  const handleBranchUpdate = () => {
+    dispatch(
+      updateBranch(formData, (res: any) => {
+        if (res?.success) {
+          navigate('/branch/branch-list');
+        }
+      })
+    );
+  };
 
-const handleBranchSave = async () => {
-  try {
-    await dispatch(storeBranch(formData)).unwrap();
-    setFormData(initialBranch); // ✔ এখানে ঠিক আছে
-  } catch (error) {
-    console.error(error);
-  }
-};
+  const handleBranchSave = async () => {
+    try {
+      await dispatch(storeBranch(formData)).unwrap();
+      setFormData(initialBranch); // ✔ এখানে ঠিক আছে
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <>
       <HelmetTitle title={formData?.id ? 'Edit Branch' : 'Add New Branch'} />

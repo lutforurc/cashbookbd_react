@@ -14,9 +14,11 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { useNavigate } from 'react-router-dom';
 import InputElement from '../../utils/fields/InputElement';
 import { toast } from 'react-toastify';
+import { getSettings } from '../settings/settingsSlice';
 
 const Product = (user: any) => {
   const product = useSelector((state: any) => state.product);
+  const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -33,6 +35,12 @@ const Product = (user: any) => {
     dispatch(getProduct({ page, perPage, search }));
   }, [page, perPage]);
 
+
+  useEffect(() => {
+    setPerPage(perPage);
+    dispatch(getSettings());
+  }, []);
+
   useEffect(() => {
     if (product?.data?.data) {
       setTableData(product.data.data);
@@ -42,7 +50,7 @@ const Product = (user: any) => {
 
 
   console.log('====================================');
-  console.log("user", user);
+  console.log("settings", settings?.data?.branch?.is_opening);
   console.log('====================================');
 
 
@@ -163,26 +171,7 @@ const Product = (user: any) => {
 
   /* ================= TABLE ================= */
 
-  const columns = [
-    {
-      key: 'serial',
-      header: 'Sl',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-    },
-    {
-      key: 'name',
-      header: 'Product',
-    },
-    {
-      key: 'category',
-      header: 'Category',
-    },
-    {
-      key: 'unit',
-      header: 'Unit',
-    },
-
+  const serialQtyRateColumns = [
     /* ===== IMEI / SERIAL ===== */
     {
       key: 'serial_no',
@@ -262,7 +251,29 @@ const Product = (user: any) => {
         />
       ),
     },
+  ];
 
+
+  const columns = [
+    {
+      key: 'serial',
+      header: 'Sl',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+    },
+    {
+      key: 'name',
+      header: 'Product',
+    },
+    {
+      key: 'category',
+      header: 'Category',
+    },
+    {
+      key: 'unit',
+      header: 'Unit',
+    },
+    ...(settings?.data?.branch?.is_opening == 1 ? serialQtyRateColumns : []),
     {
       key: 'purchase',
       header: 'P. Price',
