@@ -174,6 +174,8 @@ const ROUTES = {
   real_estate_floor_unit_list: '/real-estate/unit/list',  
   real_estate_unit_types_create: '/real-estate/unit-types/create',
   real_estate_unit_types_list: '/real-estate/unit-types/list',  
+  real_estate_unit_sales: '/real-estate/unit-sales',  
+  
   // HRM
   hrms_employee_list: '/hrms/employees',
   hrms_employee_add: '/hrms/employee/add', 
