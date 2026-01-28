@@ -95,6 +95,10 @@ const ROUTES = {
   product_edit: '/product/edit/:id',
   product_store: '/product/store',
 
+
+  // Brand Route
+  brand_list: '/brand/brand-list',
+
   // Category Route
   category_list: '/category/category-list',
   category_create: '/category/create',

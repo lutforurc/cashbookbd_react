@@ -97,6 +97,7 @@ import AddEditUnitPrice from './components/modules/real-estate/units/AddEditUnit
 import AddEditUnitChargeType from './components/modules/real-estate/units/AddEditUnitChargeType';
 import ChargeTypeList from './components/modules/real-estate/charge-types/ChargeTypeList';
 import SalePricingPage from './components/modules/real-estate/sales/SalePricingPage';
+import AddBranding from './components/modules/product/brand/AddBranding';
 
 
 
@@ -178,6 +179,9 @@ function App() {
             <Route path={routes.product_list} element={<Product user={me}  />} />
             <Route path={routes.product_create} element={<AddProduct />} />
             <Route path={routes.product_edit} element={<AddProduct />} />
+
+            
+            <Route path={routes.brand_list} element={<AddBranding />} />
 
             {/* Reports */}
             <Route path={routes.report_date_wise_total} element={<DateWiseData user={me} />} />

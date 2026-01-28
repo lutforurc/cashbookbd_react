@@ -260,6 +260,13 @@ export const API_PRODUCT_UPDATE_URL = `${API_BASE_URL}/product/update`;
 export const API_PRODUCT_CHECK = `${API_BASE_URL}/product/product-check`;
 export const API_PRODUCT_UPDATE_BY_RATE_URL = `${API_BASE_URL}/product/update-qty-rate`;
 
+
+// Brand Route
+export const API_BRAND_LIST_URL = `${API_BASE_URL}/product/brands`;
+export const API_BRAND_SAVE_URL = `${API_BASE_URL}/product/brands/store`;
+export const API_BRAND_EDIT_URL = `${API_BASE_URL}/product/brands/edit`;
+export const API_BRAND_UPDATE_URL = `${API_BASE_URL}/product/brands/update`;
+export const API_BRAND_DDL_URL = `${API_BASE_URL}/product/brands/ddl`;
 // Category Route
 export const API_CATEGORY_DDL_URL = `${API_BASE_URL}/category/category-ddl`;
 export const API_CATEGORY_LIST_URL = `${API_BASE_URL}/category/category-list`;
