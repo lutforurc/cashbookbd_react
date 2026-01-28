@@ -100,27 +100,26 @@ const AddBranding = () => {
     return true;
   };
 
-  const handleSave = (e: any) => {
+   const handleSave = async (e: any) => {
     e.preventDefault();
     if (!validate()) return;
 
+    console.log('====================================');
+    console.log("formData", formData);
+    console.log('====================================');
     setButtonLoading(true);
 
-    dispatch(
-      saveBrand(formData, (d: any) => {
-        setButtonLoading(false);
 
-        if (d?.success) {
-          toast.success(d?.message || 'Brand created successfully');
-          setTimeout(() => {
-            setFormData(initialBrand);
-            navigate('/product-brand/brand-list');
-          }, 700);
-        } else {
-          toast.error(d?.message || 'Failed to save brand');
+    try {
+              const response = await dispatch(saveBrand(formData)).unwrap();
+          toast.success('Employee saved successfully');
+   
+        } catch (err: any) {
+          toast.error(err?.message || 'Failed to save employee');
+        } finally {
+         setButtonLoading(false);
         }
-      }),
-    );
+    
   };
 
   const handleUpdate = (e: any) => {

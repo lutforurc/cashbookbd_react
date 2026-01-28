@@ -56,6 +56,7 @@ import flatSlice from './components/modules/real-estate/building-flat/flatSlice'
 import realEstateProjects from './components/modules/real-estate/project/projectSlice';
 import buildingsSlice from './components/modules/real-estate/buildings/buildingsSlice';
 import unitSlice from './components/modules/real-estate/units/unitSlice';
+import brandSlice from './components/modules/product/brand/brandSlice';
 
 
 const store = configureStore({
@@ -117,6 +118,7 @@ const store = configureStore({
     flats: flatSlice, 
     buildings: buildingsSlice,
     buildingUnits: unitSlice,
+    brand: brandSlice,
   },
 });
 
