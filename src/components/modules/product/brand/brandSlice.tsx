@@ -41,7 +41,7 @@ const initialState: BrandState = {
 /* ================= ASYNC THUNKS ================= */
 
 // 📌 Fetch Brand list
-export const fetchBrands = createAsyncThunk<any,{ search?: string; page?: number; per_page?: number },{ rejectValue: string }>('brand/fetchBrands', async (params, thunkAPI) => {
+export const fetchBrands = createAsyncThunk<any, { search?: string; page?: number; per_page?: number }, { rejectValue: string }>('brand/fetchBrands', async (params, thunkAPI) => {
   try {
     const res = await httpService.get(API_BRAND_LIST_URL, { params });
     return res.data?.data ?? res.data;
@@ -86,14 +86,21 @@ export const updateBrand = createAsyncThunk<any, Brand, { rejectValue: string }>
 );
 
 // 📌 Brand DDL (for dropdown)
-export const fetchBrandDdl = createAsyncThunk<BrandDdlItem[], string | undefined, { rejectValue: string }>('brand/fetchBrandDdl', async (search = '', thunkAPI) => {
-  try {
-    const res = await httpService.get(`${API_BRAND_DDL_URL}?q=${search}`);
-    return res.data?.data ?? res.data;
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err?.message || 'Failed to fetch brand dropdown');
+export const fetchBrandDdl = createAsyncThunk<BrandDdlItem[],string | undefined,{ rejectValue: string }>('brand/fetchBrandDdl', async (search = '', thunkAPI) => {
+    try {
+      const res = await httpService.get(API_BRAND_DDL_URL, {
+        params: { search }, // ✅ backend expects "search"
+      });
+
+      return res.data?.data ?? res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.response?.data?.message || err?.message || 'Failed to fetch brand dropdown'
+      );
+    }
   }
-});
+);
+
 
 /* ================= SLICE ================= */
 

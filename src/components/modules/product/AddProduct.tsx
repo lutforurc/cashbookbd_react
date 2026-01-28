@@ -14,12 +14,14 @@ import { Navigate, useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
 import { FiSave } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { fetchBrandDdl } from './brand/brandSlice';
 
 interface productItem {
   id: string | number;
   product_id: string;
   name: string;
   description: string;
+  manufacture_id: string | number;
   category_id: string | number;
   product_type: string | number;
   purchase_price: string | number;
@@ -34,6 +36,7 @@ const AddProduct = () => {
   const [search, setSearch] = useState('');
   const category = useSelector((state) => state.category);
   const product = useSelector((state) => state.product);
+  const brand = useSelector((state) => state.brand);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // const [themeMode, setThemeMode] = useState(string | null);
@@ -42,6 +45,7 @@ const AddProduct = () => {
     product_id: '',
     name: '',
     description: '',
+    manufacture_id: '',
     category_id: '',
     product_type: '',
     purchase_price: '',
@@ -51,7 +55,6 @@ const AddProduct = () => {
     order_level: '',
     warranty_type: '0', // Default to 'Not Applicable'
   };
-
   const [formData, setFormData] = useState<productItem>(initialProduct);
   const { id } = useParams();
 
@@ -71,11 +74,12 @@ const AddProduct = () => {
     }
   }, [product?.editData]);
 
-  console.log('id', id);
-
   useEffect(() => {
-    dispatch(editProduct(id));
-  }, [id]);
+    if (id) {
+      dispatch(editProduct(id));
+    }
+  }, [id, dispatch]);
+
 
   const handleBranchUpdate = () => {
     try {
@@ -90,10 +94,9 @@ const AddProduct = () => {
     }
   };
 
-  console.log('product', product?.editData);
-
   useEffect(() => {
     dispatch(getCategoryDdl({ search }));
+    dispatch(fetchBrandDdl());
   }, []);
 
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -115,37 +118,42 @@ const AddProduct = () => {
   };
 
 
-  const handleButtonClick = (e) => {
+  const handleButtonClick = async (e: any) => {
     e.preventDefault();
+
     if (!(formData.category_id || '').trim()) {
-      toast.error('Please enter category.');
+      toast.info('Please enter category.');
       return;
     } else if (!(formData.product_type || '').trim()) {
-      toast.error('Please enter product type.');
+      toast.info('Please enter product type.');
       return;
     } else if (!(formData.name || '').trim()) {
-      toast.error('Please enter valid name.');
+      toast.info('Please enter valid name.');
       return;
     } else if (!(formData.description || '').trim()) {
-      toast.error('Please enter description.');
+      toast.info('Please enter description.');
       return;
     } else if (!(formData.unit_id || '').trim()) {
-      toast.error('Please select unit.');
+      toast.info('Please select unit.');
       return;
-    } else {
-      dispatch(
-        storeProduct(formData, (d) => {
-          if (d.success) {
-            toast.success(d.message);
-            setTimeout(() => {
-              Navigate('/branch/branch-list');
-            }, 300);
-          } else {
-            toast.error(d.message);
-          }
-        }),
-      );
     }
+
+    // ✅ async/await
+    const result = await dispatch(
+      storeProduct(formData, (d: any) => {
+        if (d?.success) {
+          toast.success(d?.message);
+          setTimeout(() => {
+            Navigate('/branch/branch-list');
+          }, 300);
+        } else {
+          toast.error(d?.message || 'Failed');
+        }
+      }),
+    );
+
+    // result চাইলে এখানে use করতে পারবেন
+    // console.log('storeProduct result:', result);
   };
 
   const handleProductCreate = (e) => {
@@ -159,7 +167,7 @@ const AddProduct = () => {
       setFormData({
         ...formData,
         warranty_type: value,
-        warranty_days: '', // নতুন type হলে দিন আবার দিতে হবে
+        warranty_days: '',
       });
       return;
     }
@@ -195,13 +203,25 @@ const AddProduct = () => {
     }
   };
 
-  console.log('formData?.warranty_days?', formData?.warranty_days?.['1']);
+  const brandOptions = [
+    { id: '', name: 'Not applicable' },
+    ...(brand?.brandDdl?.data || []),
+  ];
 
   return (
     <div>
       <HelmetTitle title={formData?.id ? 'Edit Product' : 'Add New Product'} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {category.isLoading == true ? <Loader /> : ''}
+        <DropdownCommon
+          id="manufacture_id"
+          name={'manufacture_id'}
+          label="Select Brand"
+          onChange={handleOnChange}
+          className="h-[2.20rem]"
+          data={brandOptions}
+          defaultValue={formData?.manufacture_id?.toString() ?? ''}
+        />
         <DropdownCommon
           id="category_id"
           name={'category_id'}
@@ -211,16 +231,6 @@ const AddProduct = () => {
           data={category?.ddlData?.data?.category}
           defaultValue={formData?.category_id?.toString() ?? ''}
         />
-        <DropdownCommon
-          id="product_type"
-          label="Select Product Type"
-          onChange={handleOnChange}
-          name={'product_type'}
-          className="h-[2.20rem]"
-          data={category?.ddlData?.data?.product_type}
-          defaultValue={formData?.product_type?.toString() ?? ''}
-        />
-
         <InputElement
           id="name"
           value={formData.name}
@@ -296,15 +306,31 @@ const AddProduct = () => {
         ) : (
           ''
         )}
-        <DropdownCommon
-          id="unit_id"
-          label="Select Unit"
-          onChange={handleOnChange}
-          name={'unit_id'}
-          className="h-[2.20rem]"
-          data={category?.ddlData?.data?.unit}
-          defaultValue={formData?.unit_id?.toString() ?? ''}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <div className="w-full">
+            <DropdownCommon
+              id="product_type"
+              label="Select Product Type"
+              onChange={handleOnChange}
+              name="product_type"
+              className="h-[2.20rem] w-full"
+              data={category?.ddlData?.data?.product_type}
+              defaultValue={formData?.product_type?.toString() ?? ''}
+            />
+          </div>
+
+          <div className="w-full">
+            <DropdownCommon
+              id="unit_id"
+              label="Select Unit"
+              onChange={handleOnChange}
+              name="unit_id"
+              className="h-[2.20rem] w-full"
+              data={category?.ddlData?.data?.unit}
+              defaultValue={formData?.unit_id?.toString() ?? ''}
+            />
+          </div>
+        </div>
         <InputElement
           id="order_level"
           // value={formData.order_level.toString()}
@@ -317,7 +343,7 @@ const AddProduct = () => {
         />
       </div>
       <div className="flex mt-4 justify-center items-center">
-        {product?.editData ? (
+        {id ? (
           <ButtonLoading
             onClick={handleBranchUpdate}
             buttonLoading={buttonLoading}
@@ -329,8 +355,8 @@ const AddProduct = () => {
             onClick={handleButtonClick}
             buttonLoading={buttonLoading}
             label="Save"
-            className="whitespace-nowrap text-center mr-0 p-2"
-            icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
+            className="whitespace-nowrap mr-2 py-1.5"
+            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
           />
         )}
         <Link to="/product/product-list" className="text-nowrap py-1.5">

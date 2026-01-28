@@ -264,6 +264,16 @@ const Product = (user: any) => {
     {
       key: 'name',
       header: 'Product',
+      render: (row: any) => (
+        <div>
+          
+          <div className="text-sm text-gray-500">
+            {row.brand && <>{row.brand}. </>}
+          </div>
+          <div>{row.name}</div>
+        </div>
+      ),
+
     },
     {
       key: 'category',
