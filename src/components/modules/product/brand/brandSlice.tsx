@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import httpService from '../../../services/httpService';
+
 import { API_BRAND_LIST_URL, API_BRAND_SAVE_URL, API_BRAND_EDIT_URL,  API_BRAND_UPDATE_URL,  API_BRAND_DDL_URL} from '../../../services/apiRoutes';
+import httpService from '../../../services/httpService';
 
 /* ================= TYPES ================= */
 
