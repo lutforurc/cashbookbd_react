@@ -98,6 +98,7 @@ const ROUTES = {
 
   // Brand Route
   brand_list: '/brand/brand-list',
+  brand_create: '/brand/brand-create',
 
   // Category Route
   category_list: '/category/category-list',

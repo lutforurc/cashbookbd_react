@@ -915,6 +915,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
+                          
                           {hasPermission(permissions, 'category.view') && (
                             <li>
                               <NavLink
