@@ -13,6 +13,7 @@ import { getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { render } from "react-dom";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -107,6 +108,11 @@ const CustomerSupplier = () => {
     {
       key: "national_id",
       header: "National ID",
+      render: (row: any) => (
+      <>
+        { row.national_id && row.national_id !== "0" ? row.national_id : "" }
+      </>
+      )
     },
     {
       key: 'openingbalance',
