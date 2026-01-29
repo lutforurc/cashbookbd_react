@@ -16,6 +16,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import { editBrand, saveBrand, updateBrand } from './brandSlice';
+import ROUTES from '../../../services/appRoutes';
 
 
 interface Brand {
@@ -207,7 +208,7 @@ const AddBranding = () => {
           />
         )}
 
-        <Link to="/product-brand/brand-list" className="text-nowrap py-1.5">
+        <Link to={ROUTES.brand_list} className="text-nowrap py-1.5">
           Go to back
         </Link>
       </div>

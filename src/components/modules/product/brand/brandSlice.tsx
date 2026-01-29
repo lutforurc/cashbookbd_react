@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
-import { API_BRAND_LIST_URL, API_BRAND_SAVE_URL, API_BRAND_EDIT_URL,  API_BRAND_UPDATE_URL,  API_BRAND_DDL_URL} from '../../../services/apiRoutes';
+import { API_BRAND_LIST_URL, API_BRAND_SAVE_URL, API_BRAND_EDIT_URL, API_BRAND_UPDATE_URL, API_BRAND_DDL_URL } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
 /* ================= TYPES ================= */
@@ -41,57 +41,66 @@ const initialState: BrandState = {
 /* ================= ASYNC THUNKS ================= */
 
 // 📌 Fetch Brand list
-export const fetchBrands = createAsyncThunk<Brand[], void, { rejectValue: string }>('brand/fetchBrands',async (_, thunkAPI) => {try {
-      const res = await httpService.get(API_BRAND_LIST_URL);
-      return res.data?.data ?? res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err?.message || 'Failed to fetch brands');
-    }
+export const fetchBrands = createAsyncThunk<any, { search?: string; page?: number; per_page?: number }, { rejectValue: string }>('brand/fetchBrands', async (params, thunkAPI) => {
+  try {
+    const res = await httpService.get(API_BRAND_LIST_URL, { params });
+    return res.data?.data ?? res.data;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message || err?.message || 'Failed to fetch brands'
+    );
   }
-);
+});
 
 // 📌 Save Brand
-export const saveBrand = createAsyncThunk<any, Partial<Brand>, { rejectValue: string }>('brand/saveBrand',async (payload, thunkAPI) => {
-    try {
-      const res = await httpService.post(API_BRAND_SAVE_URL, payload);
-      return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err?.message || 'Failed to save brand');
-    }
+export const saveBrand = createAsyncThunk<any, Partial<Brand>, { rejectValue: string }>('brand/saveBrand', async (payload, thunkAPI) => {
+  try {
+    const res = await httpService.post(API_BRAND_SAVE_URL, payload);
+    return res.data;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(err?.message || 'Failed to save brand');
   }
+}
 );
 
 // 📌 Edit Brand
 export const editBrand = createAsyncThunk<any, string | number, { rejectValue: string }>('brand/editBrand', async (id, thunkAPI) => {
-    try {
-      const res = await httpService.get(`${API_BRAND_EDIT_URL}/${id}`);
-      return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err?.message || 'Failed to fetch brand');
-    }
+  try {
+    const res = await httpService.get(`${API_BRAND_EDIT_URL}/${id}`);
+    return res.data;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(err?.message || 'Failed to fetch brand');
   }
+}
 );
 
 // 📌 Update Brand
 export const updateBrand = createAsyncThunk<any, Brand, { rejectValue: string }>('brand/updateBrand', async (payload, thunkAPI) => {
-    try {
-      const res = await httpService.post(API_BRAND_UPDATE_URL, payload);
-      return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err?.message || 'Failed to update brand');
-    }
+  try {
+    const res = await httpService.post(API_BRAND_UPDATE_URL, payload);
+    return res.data;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(err?.message || 'Failed to update brand');
   }
+}
 );
 
 // 📌 Brand DDL (for dropdown)
 export const fetchBrandDdl = createAsyncThunk<BrandDdlItem[],string | undefined,{ rejectValue: string }>('brand/fetchBrandDdl', async (search = '', thunkAPI) => {
-  try {
-    const res = await httpService.get(`${API_BRAND_DDL_URL}?q=${search}`);
-    return res.data?.data ?? res.data;
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err?.message || 'Failed to fetch brand dropdown');
+    try {
+      const res = await httpService.get(API_BRAND_DDL_URL, {
+        params: { search }, // ✅ backend expects "search"
+      });
+
+      return res.data?.data ?? res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.response?.data?.message || err?.message || 'Failed to fetch brand dropdown'
+      );
+    }
   }
-});
+);
+
 
 /* ================= SLICE ================= */
 

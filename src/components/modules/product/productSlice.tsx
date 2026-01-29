@@ -128,33 +128,56 @@ export const getDdlProduct =
       }
     };
 
-export const storeProduct = (data: productStoreData, callback: any) => (dispatch: any) => {
-  dispatch({ type: PRODUCT_STORE_PENDING });
-  httpService.post(API_PRODUCT_STORE_URL, data)
-    .then((res) => {
-      let _data = res.data;
-      if (_data.success) {
-        dispatch({
-          type: PRODUCT_STORE_SUCCESS,
-          payload: _data.data.data,
-        });
-      } else {
+export const storeProduct =
+  (data: productStoreData, callback?: (d: any) => void) =>
+    async (dispatch: any) => {
+      dispatch({ type: PRODUCT_STORE_PENDING });
+
+      try {
+        const res = await httpService.post(API_PRODUCT_STORE_URL, data);
+        const _data = res.data;
+
+        if (_data?.success) {
+          dispatch({
+            type: PRODUCT_STORE_SUCCESS,
+            payload: _data?.data?.data,
+          });
+        } else {
+          dispatch({
+            type: PRODUCT_STORE_ERROR,
+            payload: _data?.error?.message || _data?.message || 'Store failed',
+          });
+        }
+
+        if (typeof callback === 'function') {
+          callback(_data);
+        }
+
+        return _data; // চাইলে component থেকে await করা যাবে
+      } catch (err: any) {
         dispatch({
           type: PRODUCT_STORE_ERROR,
-          payload: _data.error.message,
+          payload:
+            err?.response?.data?.message ||
+            err?.message ||
+            'Something went wrong.',
         });
+
+        const fallback = {
+          success: false,
+          message:
+            err?.response?.data?.message ||
+            err?.message ||
+            'Something went wrong.',
+        };
+
+        if (typeof callback === 'function') {
+          callback(fallback);
+        }
+
+        return fallback;
       }
-      if ('function' === typeof callback) {
-        callback(_data);
-      }
-    })
-    .catch((er) => {
-      dispatch({
-        type: PRODUCT_STORE_ERROR,
-        payload: 'Something went wrong.',
-      });
-    });
-};
+    };
 
 
 
@@ -216,7 +239,7 @@ const initialState = {
   errors: null,
   data: {},
   dataByRate: {},
-  editData: {},
+  editData: null,
   updateData: {},
   isLoading: false,
   isUpdate: false,
@@ -233,7 +256,7 @@ const productReducer = (state = initialState, action: any) => {
         ...state,
         isLoading: true,
         isUpdate: false,
-        editData: {},
+        editData: null,
       };
     case PRODUCT_STORE_PENDING:
       return {
@@ -329,7 +352,7 @@ const productReducer = (state = initialState, action: any) => {
         isLoading: false,
         errors: action.payload,
         updateData: {},
-        editData: {},
+        editData: null,
 
       };
     default:
