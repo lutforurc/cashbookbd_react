@@ -91,31 +91,6 @@ const CustomerSupplier = () => {
       });
   };
 
-  const guarantorColumns = [
-    {
-      key: "name",
-      header: "Name",
-    },
-    {
-      key: "father_name",
-      header: "Father",
-    },
-    {
-      key: "mobile",
-      header: "Mobile",
-      cellClass: "text-center",
-    },
-    {
-      key: "address",
-      header: "Address",
-    },
-    {
-      key: "national_id",
-      header: "National ID",
-      cellClass: "text-center",
-    },
-  ];
-
   const columns = [
     {
       key: 'serial',
@@ -221,29 +196,44 @@ const CustomerSupplier = () => {
       render: (row: any) => (
         <div className="flex justify-center items-center gap-2">
 
-          {/* 🔹 Guarantor Icon (only if exists) */}
-          {row.guarantors?.length > 0 && (
+          {/* ===== Guarantor Slot (fixed) ===== */}
+          <div className="w-4 flex justify-center">
+            {row.guarantors?.length > 0 && (
+              <button
+                title="View guarantors"
+                onClick={() => {
+                  setSelectedGuarantors(row.guarantors);
+                  setShowGuarantorModal(true);
+                }}
+                className="text-indigo-600 hover:text-indigo-800"
+              >
+                <FiUsers size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* ===== Edit Slot ===== */}
+          <div className="w-4 flex justify-center">
             <button
-              title="View Guarantors"
-              onClick={() => {
-                setSelectedGuarantors(row.guarantors);
-                setShowGuarantorModal(true);
-              }}
-              className="text-indigo-600 hover:text-indigo-800"
+              title="Edit"
+              className="text-blue-600 hover:text-blue-800"
             >
-              <FiUsers className="cursor-pointer text-lg" />
+              <FiEdit2 size={15} />
             </button>
-          )}
+          </div>
 
-          <button className="text-blue-500">
-            <FiEdit2 className="cursor-pointer" />
-          </button>
+          {/* ===== Delete Slot ===== */}
+          <div className="w-4 flex justify-center">
+            <button
+              title="Delete"
+              className="text-red-600 hover:text-red-800"
+            >
+              <FiTrash2 size={15} />
+            </button>
+          </div>
 
-          <button className="text-red-500">
-            <FiTrash2 className="cursor-pointer" />
-          </button>
         </div>
-      ),
+      )
     },
   ];
 
@@ -368,7 +358,7 @@ const CustomerSupplier = () => {
                         <td className="px-3 py-2 truncate">{g.father_name}</td>
                         <td className="px-3 py-2 text-center">{g.mobile}</td>
                         <td className="px-3 py-2 truncate">{g.address}</td>
-                        <td className="px-3 py-2 text-center">{g.national_id}</td>
+                        <td className="px-3 py-2 text-center">{g.national_id == 0 ? '' : g.national_id}</td>
                       </tr>
                     ))
                   ) : (
