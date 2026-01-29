@@ -104,9 +104,6 @@ const AddBranding = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    console.log('====================================');
-    console.log("formData", formData);
-    console.log('====================================');
     setButtonLoading(true);
 
 

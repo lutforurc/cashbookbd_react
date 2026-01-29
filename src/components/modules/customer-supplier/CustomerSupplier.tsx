@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiBook, FiEdit2, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -24,6 +24,8 @@ const CustomerSupplier = () => {
   const [tableData, setTableData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [showGuarantorModal, setShowGuarantorModal] = useState(false);
+  const [selectedGuarantors, setSelectedGuarantors] = useState<any[]>([]);
 
   // 🔥 First API Call and on pagination change
   useEffect(() => {
@@ -79,7 +81,7 @@ const CustomerSupplier = () => {
       .then((res) => {
         if (res?.message && res?.success) {
           toast.success(res.message); // ✅ SUCCESS MESSAGE
-        }else{
+        } else {
           toast.info(res.message); // ✅ SUCCESS MESSAGE
 
         }
@@ -89,6 +91,30 @@ const CustomerSupplier = () => {
       });
   };
 
+  const guarantorColumns = [
+    {
+      key: "name",
+      header: "Name",
+    },
+    {
+      key: "father_name",
+      header: "Father",
+    },
+    {
+      key: "mobile",
+      header: "Mobile",
+      cellClass: "text-center",
+    },
+    {
+      key: "address",
+      header: "Address",
+    },
+    {
+      key: "national_id",
+      header: "National ID",
+      cellClass: "text-center",
+    },
+  ];
 
   const columns = [
     {
@@ -192,15 +218,28 @@ const CustomerSupplier = () => {
     {
       key: "action",
       header: "Action",
-      render: (row) => (
-        <div className="flex justify-center items-center">
+      render: (row: any) => (
+        <div className="flex justify-center items-center gap-2">
+
+          {/* 🔹 Guarantor Icon (only if exists) */}
+          {row.guarantors?.length > 0 && (
+            <button
+              title="View Guarantors"
+              onClick={() => {
+                setSelectedGuarantors(row.guarantors);
+                setShowGuarantorModal(true);
+              }}
+              className="text-indigo-600 hover:text-indigo-800"
+            >
+              <FiUsers className="cursor-pointer text-lg" />
+            </button>
+          )}
+
           <button className="text-blue-500">
-            <FiBook className="cursor-pointer" />
-          </button>
-          <button className="text-blue-500 ml-2">
             <FiEdit2 className="cursor-pointer" />
           </button>
-          <button className="text-red-500 ml-2">
+
+          <button className="text-red-500">
             <FiTrash2 className="cursor-pointer" />
           </button>
         </div>
@@ -253,6 +292,105 @@ const CustomerSupplier = () => {
           />
         )}
       </div>
+
+      {showGuarantorModal && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-40 pt-50">
+
+          {/* ===== Modal Box ===== */}
+          <div
+            className="
+        bg-white dark:bg-gray-800
+        rounded-sm
+        w-[800px] max-h-[85vh]
+        overflow-hidden
+        shadow-xl
+        border border-gray-300 dark:border-gray-600
+      "
+          >
+
+            {/* ===== Header ===== */}
+            <div
+              className="
+          flex justify-between items-center
+          px-4 py-3
+          bg-gray-300 dark:bg-gray-700
+          border-b border-gray-300 dark:border-gray-600
+        "
+            >
+              <h2 className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-200">
+                Guarantor Details
+              </h2>
+
+              <button
+                onClick={() => setShowGuarantorModal(false)}
+                className="text-gray-600 dark:text-gray-300 hover:text-red-500"
+              >
+                <FiX className="text-lg cursor-pointer" />
+              </button>
+            </div>
+
+            {/* ===== Body ===== */}
+            <div className="overflow-auto max-h-[75vh]">
+              <table className="min-w-full table-fixed text-sm text-left text-gray-700 dark:text-gray-300">
+
+                {/* ===== Table Head ===== */}
+                <thead
+                  className="
+              text-xs uppercase
+              bg-gray-200 dark:bg-gray-700
+              text-gray-800 dark:text-gray-300
+              border-b border-gray-300 dark:border-gray-600
+            "
+                >
+                  <tr>
+                    <th className="px-3 py-2">Name</th>
+                    <th className="px-3 py-2">Father</th>
+                    <th className="px-3 py-2 text-center">Mobile</th>
+                    <th className="px-3 py-2">Address</th>
+                    <th className="px-3 py-2 text-center">National ID</th>
+                  </tr>
+                </thead>
+
+                {/* ===== Table Body ===== */}
+                <tbody
+                  className="
+              bg-white dark:bg-gray-800
+              divide-y divide-gray-200 dark:divide-gray-700
+            "
+                >
+                  {selectedGuarantors.length > 0 ? (
+                    selectedGuarantors.map((g, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <td className="px-3 py-2 truncate">{g.name}</td>
+                        <td className="px-3 py-2 truncate">{g.father_name}</td>
+                        <td className="px-3 py-2 text-center">{g.mobile}</td>
+                        <td className="px-3 py-2 truncate">{g.address}</td>
+                        <td className="px-3 py-2 text-center">{g.national_id}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="text-center py-4 text-gray-500 dark:text-gray-400"
+                      >
+                        No guarantor found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+
+              </table>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 };
