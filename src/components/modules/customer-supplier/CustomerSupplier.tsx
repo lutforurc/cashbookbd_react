@@ -105,6 +105,11 @@ const CustomerSupplier = () => {
     {
       key: "national_id",
       header: "National ID",
+      render: (row: any) => (
+        <>
+          { row.national_id == 0 ? '' : row.national_id }
+        </>
+      )
     },
     {
       key: 'openingbalance',
@@ -335,9 +340,9 @@ const CustomerSupplier = () => {
                   <tr>
                     <th className="px-3 py-2">Name</th>
                     <th className="px-3 py-2">Father</th>
-                    <th className="px-3 py-2 text-center">Mobile</th>
+                    <th className="px-3 py-2">Mobile</th>
                     <th className="px-3 py-2">Address</th>
-                    <th className="px-3 py-2 text-center">National ID</th>
+                    <th className="px-3 py-2">National ID</th>
                   </tr>
                 </thead>
 
@@ -356,9 +361,9 @@ const CustomerSupplier = () => {
                       >
                         <td className="px-3 py-2 truncate">{g.name}</td>
                         <td className="px-3 py-2 truncate">{g.father_name}</td>
-                        <td className="px-3 py-2 text-center">{g.mobile}</td>
+                        <td className="px-3 py-2">{g.mobile}</td>
                         <td className="px-3 py-2 truncate">{g.address}</td>
-                        <td className="px-3 py-2 text-center">{g.national_id == 0 ? '' : g.national_id}</td>
+                        <td className="px-3 py-2">{g.national_id == 0 ? '' : g.national_id}</td>
                       </tr>
                     ))
                   ) : (
