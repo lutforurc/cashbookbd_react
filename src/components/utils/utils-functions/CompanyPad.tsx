@@ -22,14 +22,13 @@ const CompanyPad = () => {
       </div>
       <div className="border-t-2 border-gray-900 -mt-4"></div>
       <div className='flex justify-between'>
-        <h3 className="">Branch: <span className='font-bold'>{settings?.branch?.name}</span></h3>
+        <h3 className="text-xs"> Branch: <span className='font-bold text-xs'>{settings?.branch?.name}</span></h3>
         <div >
           <span className="text-xs">Printed At:</span>{' '}
           <span className="text-xs">{chartDateTime(new Date().toISOString())}</span>
-          
         </div>
       </div>
-      <div className="">Address: <span className='font-bold'>{settings?.branch?.address}</span></div>
+      <div className="-mt-2 text-xs">Address: <span className='font-bold text-xs'>{settings?.branch?.address}</span></div>
     </div>
   );
 };

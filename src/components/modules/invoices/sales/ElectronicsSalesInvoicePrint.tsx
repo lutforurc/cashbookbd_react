@@ -121,7 +121,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
 
                 {customer?.mobile && (
                   <div style={{ fontSize: fs }}>
-                    Mobile: {customer.mobile}
+                    Mobile: {customer.mobile.replace(/^(\d{5})(\d+)/, "$1-$2")}
                   </div>
                 )}
 
@@ -154,7 +154,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                 <th className="border border-black px-2 py-1 w-10 text-center" style={{ fontSize: fs }}>
                   #
                 </th>
-                <th className="border border-black px-2 py-1" style={{ fontSize: fs }}>
+                <th className="border border-black px-2 py-1 text-left" style={{ fontSize: fs }}>
                   Product
                 </th>
                 <th className="border border-black px-2 py-1 w-20 text-center" style={{ fontSize: fs }}>
@@ -183,15 +183,33 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
 
                     <td
                       className="border border-black px-1"
-                      style={{ fontSize: fs, lineHeight: 2 }}
+                      style={{ fontSize: fs, lineHeight: 1.25 }}
                     >
-                      {row.product?.name}
+
                       {row.serial_no && (
                         <div
                           className="text-black"
-                          style={{ fontSize: fs - 1, lineHeight: 1.2 }}
+                          style={{ fontSize: fs - 1, lineHeight: 1.5 }}
                         >
-                          SN: {row.serial_no}
+                          {/* Category (optional) */}
+                          {row.product?.category?.name && (
+                            <span>{row.product.category.name}</span>
+                          )}
+
+                          {row.product?.category?.name && <br />}
+
+                          {/* Brand + Product Name */}
+                          <span>
+                            {row.product?.brand?.name && (
+                              <>{row.product.brand.name} </>
+                            )}
+                            {row.product?.name}
+                          </span>
+
+                          <br />
+
+                          {/* Serial */}
+                          <span>SN: {row.serial_no}</span>
                         </div>
                       )}
                     </td>
@@ -226,7 +244,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                       {thousandSeparator(grandTotal, 0)}
                     </td>
                   </tr>
- 
+
                   {tdsName && tdsAmount !== 0 && (
                     <tr>
                       <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
@@ -258,17 +276,17 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                       </td>
                     </tr>
                   )}
-                  
+
                   <tr>
                     <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
                       Net Tk.
                     </td>
                     <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
-                      {thousandSeparator( (grandTotal + tdsAmount + serviceChargeAmount - discountAmount), 0)}
+                      {thousandSeparator((grandTotal + tdsAmount + serviceChargeAmount - discountAmount), 0)}
                     </td>
                   </tr>
 
-                  
+
 
                   {receivedAmount !== 0 && (
                     <tr>

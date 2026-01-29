@@ -15,11 +15,12 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from './../../../utils/utils-functions/thousandSeparator';
-import DueInstallmentsPrint from '../../installment/DueInstallmentsPrint';
-import CashBooPrint from './CashBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import CashBookPrint from './CashBookPrint';
+import { useVoucherPrint } from '../../vouchers';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+
 
 const CashBook = (user: any) => {
   const dispatch = useDispatch();
@@ -37,6 +38,9 @@ const CashBook = (user: any) => {
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
+  // const salesPrintRef = useRef<any>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   interface OptionType {
     value: string;
@@ -90,8 +94,8 @@ const CashBook = (user: any) => {
     }
   }, [branchDdlData?.protectedData?.data]);
 
-  const handleCheckBtnClick = () => {};
-  
+  const handleCheckBtnClick = () => { };
+
   const handlePrint = useReactToPrint({
     content: () => {
       if (!printRef.current) {
@@ -147,6 +151,14 @@ const CashBook = (user: any) => {
       width: '80px',
       headerClass: 'text-center',
       cellClass: 'text-center !px-2',
+      render: (row: any) => (
+        <div
+          className="cursor-pointer hover:underline"
+          onClick={() => handleVoucherPrint(row)}
+        >
+          {row.vr_no}
+        </div>
+      ),
     },
     {
       key: 'nam',
@@ -262,6 +274,7 @@ const CashBook = (user: any) => {
     },
   ];
 
+
   return (
     <div className="">
       <HelmetTitle title={'Cash Book'} />
@@ -307,7 +320,7 @@ const CashBook = (user: any) => {
             />
           </div>
           <div className="flex w-full">
-            <div className="mr-2"> 
+            <div className="mr-2">
               <InputElement
                 id="perPage"
                 name="perPage"
@@ -318,7 +331,7 @@ const CashBook = (user: any) => {
                 className="font-medium text-sm h-9 w-12"
               />
             </div>
-            <div className="mr-2"> 
+            <div className="mr-2">
               <InputElement
                 id="fontSize"
                 name="fontSize"
@@ -335,7 +348,7 @@ const CashBook = (user: any) => {
               label="Run"
               className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
             />
-            <PrintButton 
+            <PrintButton
               onClick={handlePrint}
               label=""
               className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
@@ -351,10 +364,16 @@ const CashBook = (user: any) => {
         <div className="hidden">
           <CashBookPrint
             ref={printRef}
-            rows={tableData || []} 
+            rows={tableData || []}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Cash Book"
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
+          />
+
+          <VoucherPrintRegistry
+            ref={voucherRegistryRef}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
           />

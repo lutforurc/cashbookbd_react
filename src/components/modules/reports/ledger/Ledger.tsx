@@ -19,8 +19,8 @@ import { useReactToPrint } from 'react-to-print';
 import LedgerPrint from './LedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
-import ElectronicsSalesInvoicePrint from '../../invoices/sales/ElectronicsSalesInvoicePrint';
-import { electronicsSalesEdit, electronicsSalesPrint } from '../../invoices/sales/electronicsSalesSlice';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
@@ -28,7 +28,7 @@ const Ledger = (user: any) => {
   const ledgerData = useSelector((state) => state.ledger);
   const coal4 = useSelector((state) => state.coal4);
   const settings = useSelector((state: any) => state.settings);
-    const sales = useSelector((s: any) => s.electronicsSales);
+  const sales = useSelector((s: any) => s.electronicsSales);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
@@ -40,7 +40,8 @@ const Ledger = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
-  const invoicePrintRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -48,10 +49,6 @@ const Ledger = (user: any) => {
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
   }, []);
 
-const handleInvoicePrintNow = useReactToPrint({
-  content: () => invoicePrintRef.current,
-  documentTitle: 'Sales Invoice',
-});
 
 
   useEffect(() => {
@@ -93,10 +90,6 @@ const handleInvoicePrintNow = useReactToPrint({
 
 
 
-  console.log('====================================');
-  console.log("sales", sales);
-  console.log('====================================');
-
 
   useEffect(() => {
     if (
@@ -119,32 +112,6 @@ const handleInvoicePrintNow = useReactToPrint({
     setLedgerAccount(option.value);
   };
 
-const handleInvoicePrint = (row: any) => {
-  console.log('====================================');
-  console.log("row", row);
-  console.log('====================================');
-  if (!row?.vr_no) {
-    toast.info('Invalid invoice number');
-    return;
-  }
-
-  dispatch(
-    electronicsSalesPrint(
-      {
-        mt: row.mid, 
-      },
-      (message: string) => {
-        if (message) {
-          toast.error(message);
-        } else {
-          setTimeout(() => {
-            handleInvoicePrintNow();
-          }, 300);
-        }
-      },
-    ),
-  );
-};
 
 
   const columns = [
@@ -167,15 +134,20 @@ const handleInvoicePrint = (row: any) => {
     {
       key: 'vr_no',
       header: 'Vr No',
+      width: '100px',
       render: (row: any) => (
         <div
           className="cursor-pointer hover:underline"
-          onClick={() => handleInvoicePrint(row)}
+          onClick={() =>
+            handleVoucherPrint({
+              ...row,
+              mtm_id: row.mid,
+            })
+          }
         >
           {row.vr_no}
         </div>
       ),
-      width: '100px',
     },
     {
       key: 'name',
@@ -402,11 +374,10 @@ const handleInvoicePrint = (row: any) => {
       </div>
 
       <div className="hidden">
-        <ElectronicsSalesInvoicePrint
-          ref={invoicePrintRef}
-          data={useSelector((s: any) => s.electronicsSales.data)}
-          rowsPerPage={10}
-          fontSize={10}
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
         />
       </div>
     </div>
