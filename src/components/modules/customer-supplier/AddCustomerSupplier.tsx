@@ -45,8 +45,7 @@ const AddCustomerSupplier = () => {
     manual_address: Yup.string().required('Address is required'),
     mobile: Yup.string().required('Mobile number is required'),
     ledger_page: Yup.string(), // ✅ no `.required()`
-    idfr_code: Yup.string(), // ✅ no `.required()`
-    national_id: Yup.string(), // ✅ no `.required()`
+    idfr_code: Yup.string(), // ✅ no `.required()` 
     type_id: Yup.string().required('Customer or Supplier type is required'),
     area_id: Yup.string(), //.required('Area is required'),
     customerLogin: Yup.boolean(),
@@ -57,7 +56,7 @@ const AddCustomerSupplier = () => {
         name: Yup.string().required('Guarantor name required'),
         father_name: Yup.string().required('Father name required'),
         mobile: Yup.string().required('Mobile required'),
-        national_id: Yup.string().required('National ID required'),
+        national_id: Yup.string(),
         address: Yup.string().required('Address required'),
       }),
     ),

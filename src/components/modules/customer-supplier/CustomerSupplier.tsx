@@ -12,6 +12,7 @@ import Link from "../../utils/others/Link";
 import { getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -26,6 +27,7 @@ const CustomerSupplier = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
   const [selectedGuarantors, setSelectedGuarantors] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   // 🔥 First API Call and on pagination change
   useEffect(() => {
@@ -105,11 +107,6 @@ const CustomerSupplier = () => {
     {
       key: "national_id",
       header: "National ID",
-      render: (row: any) => (
-        <>
-          { row.national_id == 0 ? '' : row.national_id }
-        </>
-      )
     },
     {
       key: 'openingbalance',
@@ -222,6 +219,7 @@ const CustomerSupplier = () => {
             <button
               title="Edit"
               className="text-blue-600 hover:text-blue-800"
+              onClick={() => navigate(`/customer-supplier/edit/${row.id}`)}
             >
               <FiEdit2 size={15} />
             </button>
@@ -340,9 +338,9 @@ const CustomerSupplier = () => {
                   <tr>
                     <th className="px-3 py-2">Name</th>
                     <th className="px-3 py-2">Father</th>
-                    <th className="px-3 py-2">Mobile</th>
+                    <th className="px-3 py-2 text-center">Mobile</th>
                     <th className="px-3 py-2">Address</th>
-                    <th className="px-3 py-2">National ID</th>
+                    <th className="px-3 py-2 text-center">National ID</th>
                   </tr>
                 </thead>
 
@@ -361,9 +359,9 @@ const CustomerSupplier = () => {
                       >
                         <td className="px-3 py-2 truncate">{g.name}</td>
                         <td className="px-3 py-2 truncate">{g.father_name}</td>
-                        <td className="px-3 py-2">{g.mobile}</td>
+                        <td className="px-3 py-2 text-center">{g.mobile}</td>
                         <td className="px-3 py-2 truncate">{g.address}</td>
-                        <td className="px-3 py-2">{g.national_id == 0 ? '' : g.national_id}</td>
+                        <td className="px-3 py-2 text-center">{g.national_id == 0 ? '' : g.national_id}</td>
                       </tr>
                     ))
                   ) : (

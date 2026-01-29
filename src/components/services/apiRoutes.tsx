@@ -113,8 +113,8 @@ export const API_CUSTOMER_FROM_UI_URL = `${API_BASE_URL}/contact/customer/update
 // Settings url
 export const API_APP_SETTING_URL = `${API_BASE_URL}/settings/get-settings`;
 export const API_APP_BRANCH_SETTING_URL = `${API_BASE_URL}/settings/get-branch-settings`;
-export const API_APP_SETTING_VOCHER_TYPE_URL =  `${API_BASE_URL}/settings/voucher-types`;
-export const API_SERVICE_LIST_URL =  `${API_BASE_URL}/settings/service-list`;
+export const API_APP_SETTING_VOCHER_TYPE_URL = `${API_BASE_URL}/settings/voucher-types`;
+export const API_SERVICE_LIST_URL = `${API_BASE_URL}/settings/service-list`;
 
 // dashboard Routes
 export const API_DASHBOARD_URL = `${API_BASE_URL}/dashboard/data`;
@@ -203,16 +203,16 @@ export const API_REPORT_MITCH_MATCH_URL = `${API_BASE_URL}/reports/mitch-match/d
 export const API_CHART_OF_ACCOUNTS_L1_URL = `${API_BASE_URL}/coal1/coal1-list`;
 export const API_CHART_OF_ACCOUNTS_L2_URL = `${API_BASE_URL}/coal2/coal2-list`;
 export const API_CHART_OF_ACCOUNTS_L3_URL = `${API_BASE_URL}/coal3/coal3-list`;
-export const API_COAL3_ID_BY_L4_URL =  `${API_BASE_URL}/coal3/l4-list/`;
+export const API_COAL3_ID_BY_L4_URL = `${API_BASE_URL}/coal3/l4-list/`;
 export const API_CHART_OF_ACCOUNTS_L4_URL = `${API_BASE_URL}/coal4/coal4-list`;
-export const API_CHART_OF_ACCOUNTS_DDL_L4_URL =  `${API_BASE_URL}/chart_of_accounts/ddl/l4-list`;
-export const API_CHART_OF_ACCOUNTS_BY_ID_L4_URL =  `${API_BASE_URL}/coal4/`;
+export const API_CHART_OF_ACCOUNTS_DDL_L4_URL = `${API_BASE_URL}/chart_of_accounts/ddl/l4-list`;
+export const API_CHART_OF_ACCOUNTS_BY_ID_L4_URL = `${API_BASE_URL}/coal4/`;
 
 
 // Cash Received url
 export const API_CASH_RECEIVED_URL = `${API_BASE_URL}/trading/cash/received`;
-export const API_CASH_RECEIVED_EDIT_URL =`${API_BASE_URL}/trading/cash/received/api-edit`;
-export const API_CASH_RECEIVED_UPDATE_URL =`${API_BASE_URL}/trading/cash/received/api-update`;
+export const API_CASH_RECEIVED_EDIT_URL = `${API_BASE_URL}/trading/cash/received/api-edit`;
+export const API_CASH_RECEIVED_UPDATE_URL = `${API_BASE_URL}/trading/cash/received/api-update`;
 
 // Cash Payment url
 export const API_CASH_PAYMENT_STORE_URL = `${API_BASE_URL}/trading/cash/payment`;
@@ -305,11 +305,11 @@ export const API_ELECTRONICS_SALES_UPDATE_URL = `${API_BASE_URL}/electronics/sal
 export const API_ELECTRONICS_SALES_INVOICE_PRINT_URL = `${API_BASE_URL}/electronics/sales/invoice-print`;
 
 //
-export const API_CONSTRUCTION_DDL_LABOUR_URL =  `${API_BASE_URL}/construction/ddl/labour-list`;
+export const API_CONSTRUCTION_DDL_LABOUR_URL = `${API_BASE_URL}/construction/ddl/labour-list`;
 // Purchase Route
-export const API_CONSTRUCTION_LABOUR_STORE_URL =`${API_BASE_URL}/construction/labour/api-store`;
-export const API_CONSTRUCTION_LABOUR_EDIT_URL =`${API_BASE_URL}/construction/labour/api-edit`;
-export const API_CONSTRUCTION_LABOUR_UPDATE_URL =`${API_BASE_URL}/construction/labour/api-update`;
+export const API_CONSTRUCTION_LABOUR_STORE_URL = `${API_BASE_URL}/construction/labour/api-store`;
+export const API_CONSTRUCTION_LABOUR_EDIT_URL = `${API_BASE_URL}/construction/labour/api-edit`;
+export const API_CONSTRUCTION_LABOUR_UPDATE_URL = `${API_BASE_URL}/construction/labour/api-update`;
 
 // Orders Route
 export const API_ORDERS_DDL_URL = `${API_BASE_URL}/invoice/order/search`;
@@ -323,6 +323,9 @@ export const API_DAYCLOSE_STORE_URL = `${API_BASE_URL}/admin/dayclose`;
 // Contact Details Route
 export const API_CONTACT_DETAILS_LIST_URL = `${API_BASE_URL}/contact/details`;
 export const API_STORE_CUSTOMER_URL = `${API_BASE_URL}/contact/store`;
+export const API_CONTACT_EDIT_URL = `${API_BASE_URL}/contact/edit/`;
+export const API_CONTACT_UPDATE_URL = `${API_BASE_URL}/contact/update/`;
+
 
 // Area Route
 export const API_DDL_AREA_LIST_URL = `${API_BASE_URL}/area/ddl-list`;
@@ -417,21 +420,21 @@ export const API_SALARY_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/salary-sheet-pri
 
 // Real Estate Area url
 export const API_PROJECT_STORE_URL = `${API_BASE_URL}/real-estate/projects`;
-export const API_PROJECT_EDIT_URL = `${API_BASE_URL}/real-estate/projects/edit`; 
+export const API_PROJECT_EDIT_URL = `${API_BASE_URL}/real-estate/projects/edit`;
 export const API_PROJECT_UPDATE_URL = `${API_BASE_URL}/real-estate/projects/update`;
 export const API_PROJECT_LIST_URL = `${API_BASE_URL}/real-estate/projects/list`;
 export const API_PROJECT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/projects/ddl`;
 
 // Real Estate Building url
 export const API_BUILDING_STORE_URL = `${API_BASE_URL}/real-estate/buildings`;
-export const API_BUILDING_EDIT_URL = `${API_BASE_URL}/real-estate/buildings/edit`; 
+export const API_BUILDING_EDIT_URL = `${API_BASE_URL}/real-estate/buildings/edit`;
 export const API_BUILDING_UPDATE_URL = `${API_BASE_URL}/real-estate/buildings/update`;
 export const API_BUILDING_LIST_URL = `${API_BASE_URL}/real-estate/buildings/list`;
 export const API_BUILDING_DDL_LIST_URL = `${API_BASE_URL}/real-estate/buildings/ddl`;
 
 // Real Estate Flat url
 export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;
-export const API_FLAT_EDIT_URL = `${API_BASE_URL}/real-estate/flats/edit`; 
+export const API_FLAT_EDIT_URL = `${API_BASE_URL}/real-estate/flats/edit`;
 export const API_FLAT_UPDATE_URL = `${API_BASE_URL}/real-estate/flats/update`;
 export const API_FLAT_LIST_URL = `${API_BASE_URL}/real-estate/flats/list`;
 export const API_FLAT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/flats/ddl`;
@@ -440,14 +443,14 @@ export const API_FLAT_LAYOUT_URL = `${API_BASE_URL}/real-estate/buildings/`;
 // Real Estate Flat url
 export const API_UNIT_LIST_URL = `${API_BASE_URL}/real-estate/units/list`;
 export const API_UNIT_STORE_URL = `${API_BASE_URL}/real-estate/units`;
-export const API_UNIT_EDIT_URL = `${API_BASE_URL}/real-estate/units/edit`; 
+export const API_UNIT_EDIT_URL = `${API_BASE_URL}/real-estate/units/edit`;
 export const API_UNIT_UPDATE_URL = `${API_BASE_URL}/real-estate/units/update`;
-export const API_UNIT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/units/ddl`; 
+export const API_UNIT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/units/ddl`;
 
 // Real Estate Unit Charge Types url
 export const API_UNIT_CHARGE_TYPE_STORE_URL = `${API_BASE_URL}/real-estate/units/unit-charge-types`;
 export const API_UNIT_CHARGE_TYPE_LIST_URL = `${API_BASE_URL}/real-estate/units/unit-charge-types/list`;
 // export const API_UNIT_STORE_URL = `${API_BASE_URL}/real-estate/units`;
-// export const API_UNIT_EDIT_URL = `${API_BASE_URL}/real-estate/units/edit`; 
+// export const API_UNIT_EDIT_URL = `${API_BASE_URL}/real-estate/units/edit`;
 // export const API_UNIT_UPDATE_URL = `${API_BASE_URL}/real-estate/units/update`;
 // export const API_UNIT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/units/ddl`; 

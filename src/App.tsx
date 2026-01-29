@@ -99,6 +99,7 @@ import ChargeTypeList from './components/modules/real-estate/charge-types/Charge
 import SalePricingPage from './components/modules/real-estate/sales/SalePricingPage';
 import AddBranding from './components/modules/product/brand/AddBranding';
 import Brands from './components/modules/product/brand/Brands';
+import EditCustomerSupplier from './components/modules/customer-supplier/EditCustomerSupplier';
 
 
 
@@ -146,6 +147,7 @@ function App() {
             <Route path={routes.coal4_list} element={<CoaL4 />} />
             <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
             <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
+            <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
 
             {/* UI */}
             <Route path={routes.buttons} element={<Buttons />} />

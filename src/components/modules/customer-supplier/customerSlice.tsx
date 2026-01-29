@@ -2,6 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import httpService from '../../services/httpService';
 import {
   API_CONTACT_DETAILS_LIST_URL,
+  API_CONTACT_EDIT_URL,
+  API_CONTACT_UPDATE_URL,
   API_CUSTOMER_FROM_UI_URL,
   API_STORE_CUSTOMER_URL,
 } from '../../services/apiRoutes';
@@ -46,23 +48,35 @@ interface CustomerState {
   customer: Customer[];
   currentPage: number;
   total: number;
+  /* 🔥 NEW */
+  editCustomer: any | null;
+  editLoading: boolean;
+
   loading: boolean;
   error: string | null;
 }
+type EditCustomerResponse = {
+  success: boolean;
+  data: any;
+};
+
+type UpdateCustomerPayload = {
+  id: number;
+  data: any;
+};
 
 const initialState: CustomerState = {
   customer: [],
   currentPage: 1,
   total: 0,
+  editCustomer: null,
+  editLoading: false,
+
   loading: false,
   error: null,
 };
 
-export const getCustomer = createAsyncThunk<
-  PaginatedCustomerResponse,
-  CustomerRequestPayload,
-  { rejectValue: ErrorResponse }
->('getCustomer/fetch', async (payload, { rejectWithValue }) => {
+export const getCustomer = createAsyncThunk<PaginatedCustomerResponse, CustomerRequestPayload, { rejectValue: ErrorResponse }>('getCustomer/fetch', async (payload, { rejectWithValue }) => {
   try {
     const { data } = await httpService.post(API_CONTACT_DETAILS_LIST_URL, {
       per_page: payload.per_page,
@@ -77,7 +91,7 @@ export const getCustomer = createAsyncThunk<
     });
   }
 });
-export const storeCustomer = createAsyncThunk<any,StoreCustomerPayload,{ rejectValue: ErrorResponse }>('customer/store', async (payload, { rejectWithValue }) => {
+export const storeCustomer = createAsyncThunk<any, StoreCustomerPayload, { rejectValue: ErrorResponse }>('customer/store', async (payload, { rejectWithValue }) => {
   try {
     const { data } = await httpService.post(API_STORE_CUSTOMER_URL, payload);
     return data;
@@ -85,8 +99,44 @@ export const storeCustomer = createAsyncThunk<any,StoreCustomerPayload,{ rejectV
     return rejectWithValue({ message: 'Failed to store customer' });
   }
 });
+export const getCustomerForEdit = createAsyncThunk<any,number,{ rejectValue: ErrorResponse }>("customer/getCustomerForEdit", async (id, { rejectWithValue }) => {
+    try {
+      const { data } = await httpService.get(
+        `${API_CONTACT_EDIT_URL}${id}`
+      );
 
+      return data.data;
+    } catch (error) {
+      return rejectWithValue({
+        message: "Failed to load customer",
+      });
+    }
+  }
+);
 
+export const updateCustomerFromEdit = createAsyncThunk<
+  { message: string },
+  UpdateCustomerPayload,
+  { rejectValue: ErrorResponse }
+>(
+  "customer/updateCustomerFromEdit",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const response = await httpService.post(
+        `${API_CONTACT_UPDATE_URL}${id}`,
+        data
+      );
+
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue({
+        message:
+          error.response?.data?.message ||
+          "Failed to update customer",
+      });
+    }
+  }
+);
 
 /* ---------- Update From UI ---------- */
 export const updateCustomerFromUI = createAsyncThunk<{ message: string }, { id: number; data: any }, { rejectValue: string }>("employee/updateEmployeeFromUI",
@@ -140,7 +190,33 @@ const customerSlice = createSlice({
       .addCase(storeCustomer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Store failed!';
-      });
+      })
+
+      /* ================= EDIT LOAD ================= */
+      .addCase(getCustomerForEdit.pending, (state) => {
+        state.editLoading = true;
+        state.editCustomer = null;
+      })
+      .addCase(getCustomerForEdit.fulfilled, (state, action) => {
+        state.editLoading = false;
+        state.editCustomer = action.payload;
+      })
+      .addCase(getCustomerForEdit.rejected, (state, action) => {
+        state.editLoading = false;
+        state.error = action.payload?.message || "Failed to load customer";
+      })
+
+      /* ================= EDIT UPDATE ================= */
+      .addCase(updateCustomerFromEdit.pending, (state) => {
+        state.editLoading = true;
+      })
+      .addCase(updateCustomerFromEdit.fulfilled, (state) => {
+        state.editLoading = false;
+      })
+      .addCase(updateCustomerFromEdit.rejected, (state, action) => {
+        state.editLoading = false;
+        state.error = action.payload?.message || "Update failed";
+      })
   },
 });
 
