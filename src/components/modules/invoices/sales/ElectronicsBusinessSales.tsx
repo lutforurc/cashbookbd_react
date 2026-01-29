@@ -3,7 +3,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { userCurrentBranch } from '../../branch/branchSlice';
@@ -32,6 +32,8 @@ import {
 import { getServiceList } from '../../settings/settingsSlice';
 import ElectronicsSalesInvoicePrint from './ElectronicsSalesInvoicePrint';
 import { useReactToPrint } from 'react-to-print';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 
 interface Product {
   id: number;
@@ -90,6 +92,8 @@ const ElectronicsBusinessSales = () => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const [installmentData, setInstallmentData] = useState<InstallmentData>({
     amount: 0,
     startDate: null,
@@ -730,7 +734,7 @@ const ElectronicsBusinessSales = () => {
           receivedAmt: Math.max(0, total - parseFloat(prev.discountAmt?.toString() || '0')).toFixed(0),
         }));
       } else {
-        setFormData((prev) => ({...prev,receivedAmt: sales.data.transaction.sales_master.netpayment.toString()}));
+        setFormData((prev) => ({ ...prev, receivedAmt: sales.data.transaction.sales_master.netpayment.toString() }));
       }
     }
   }, [formData.account]);
@@ -741,17 +745,20 @@ const ElectronicsBusinessSales = () => {
   };
 
 
-  const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) {
-        toast.info('Invoice data not ready');
-        return null;
-      }
-      return printRef.current;
-    },
+  // const handlePrint = useReactToPrint({
+  //   content: () => {
+  //     if (!printRef.current) {
+  //       toast.info('Invoice data not ready');
+  //       return null;
+  //     }
+  //     return printRef.current;
+  //   },
 
-    documentTitle: `Invoice-${sales?.data?.vr_no ?? ''}`,
-  });
+  //   documentTitle: `Invoice-${sales?.data?.vr_no ?? ''}`,
+  // });
+
+
+
 
 
 
@@ -1204,7 +1211,12 @@ const ElectronicsBusinessSales = () => {
                 </div>
 
                 <PrintButton
-                  onClick={handlePrint}
+                  onClick={() =>
+                    handleVoucherPrint({
+                      ...sales.data,
+                      mtm_id: sales.data.id,
+                    })
+                  }
                   label=""
                   className="pt-[0.45rem] pb-[0.45rem] h-9"
                 />
@@ -1417,9 +1429,8 @@ const ElectronicsBusinessSales = () => {
         </div>
       )}
       <div className="hidden">
-        <ElectronicsSalesInvoicePrint
-          ref={printRef}
-          data={sales?.data}
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
           rowsPerPage={Number(perPage)}
           fontSize={Number(fontSize)}
         />

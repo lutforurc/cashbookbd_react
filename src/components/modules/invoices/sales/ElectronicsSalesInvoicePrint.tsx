@@ -186,7 +186,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                       style={{ fontSize: fs, lineHeight: 1.25 }}
                     >
 
-                      {row.serial_no && (
+                      {/* {row.serial_no && ( */}
                         <div
                           className="text-black"
                           style={{ fontSize: fs - 1, lineHeight: 1.5 }}
@@ -209,9 +209,11 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                           <br />
 
                           {/* Serial */}
-                          <span>SN: {row.serial_no}</span>
+                          { row.serial_no && (
+                            <span>SN: {row.serial_no}</span>
+                          )}
                         </div>
-                      )}
+                      {/* )} */}
                     </td>
 
                     <td className="border border-black px-1 text-center" style={{ fontSize: fs }}>
