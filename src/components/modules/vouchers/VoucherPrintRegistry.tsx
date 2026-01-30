@@ -12,6 +12,7 @@ import { electronicsSalesPrint } from '../invoices/sales/electronicsSalesSlice';
 import ElectronicsSalesInvoicePrint from '../invoices/sales/ElectronicsSalesInvoicePrint';
 import PurchaseInvoicePrint from './print_items/PurchaseInvoicePrint';
 import CashPaymentPrint from './print_items/CashPaymentPrint';
+import CashReceivedPrint from './print_items/CashReceivedPrint';
 
 type Props = {
   rowsPerPage: number;
@@ -30,6 +31,7 @@ export const VoucherPrintRegistry = forwardRef(
     /* ================= PRINT REFS ================= */
     const salesRef = useRef<HTMLDivElement | null>(null);
     const cashPaymentRef = useRef<HTMLDivElement | null>(null);
+    const cashReceivedRef = useRef<HTMLDivElement | null>(null);
     const purchaseRef = useRef<HTMLDivElement | null>(null);
 
     /* 👉 ACTIVE REF (KEY FIX) */
@@ -53,6 +55,23 @@ export const VoucherPrintRegistry = forwardRef(
         const voucherType = row.vr_no.split('-')[0];
 
         switch (voucherType) {
+          /* ================= CASH PAYMENT ================= */
+          case '1':
+            activePrintRef.current = cashReceivedRef.current;
+
+            dispatch(
+              electronicsSalesPrint(
+                { mt: row.mtm_id },
+                (message?: string) => {
+                  if (message) {
+                    toast.error(message);
+                  } else {
+                    setTimeout(printVoucherDoc, 300);
+                  }
+                }
+              )
+            );
+            break;
           /* ================= CASH PAYMENT ================= */
           case '2':
             activePrintRef.current = cashPaymentRef.current;
@@ -109,6 +128,13 @@ export const VoucherPrintRegistry = forwardRef(
           ref={salesRef}
           data={voucherData}
           rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
+        />
+
+        {/* CASH RECEIVED */}
+        <CashReceivedPrint
+          ref={cashReceivedRef}
+          data={voucherData}
           fontSize={fontSize}
         />
 
