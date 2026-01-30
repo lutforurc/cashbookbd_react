@@ -1,9 +1,14 @@
-import React, { useRef } from 'react';
+import React, {
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-hot-toast';
 
 import { electronicsSalesPrint } from '../invoices/sales/electronicsSalesSlice';
+
 import ElectronicsSalesInvoicePrint from '../invoices/sales/ElectronicsSalesInvoicePrint';
 import PurchaseInvoicePrint from './print_items/PurchaseInvoicePrint';
 import CashPaymentPrint from './print_items/CashPaymentPrint';
@@ -13,71 +18,81 @@ type Props = {
   fontSize: number;
 };
 
-export const VoucherPrintRegistry = React.forwardRef(
+export const VoucherPrintRegistry = forwardRef(
   ({ rowsPerPage, fontSize }: Props, ref: any) => {
     const dispatch = useDispatch();
 
-    /* ================= REFS ================= */
-    const salesRef = useRef<any>(null);
-    // future:
-    // const purchaseRef = useRef<any>(null);
-    // const cashReceiveRef = useRef<any>(null);
-    // const cashPaymentRef = useRef<any>(null);
+    /* ================= STORE DATA ================= */
+    const voucherData = useSelector(
+      (s: any) => s.electronicsSales.data
+    );
 
-    /* ================= PRINT ================= */
-    const printSales = useReactToPrint({
-      content: () => salesRef.current,
-      documentTitle: 'Sales Voucher',
+    /* ================= PRINT REFS ================= */
+    const salesRef = useRef<HTMLDivElement | null>(null);
+    const cashPaymentRef = useRef<HTMLDivElement | null>(null);
+    const purchaseRef = useRef<HTMLDivElement | null>(null);
+
+    /* 👉 ACTIVE REF (KEY FIX) */
+    const activePrintRef = useRef<HTMLDivElement | null>(null);
+
+    /* ================= PRINT HANDLER ================= */
+    const printVoucherDoc = useReactToPrint({
+      content: () => activePrintRef.current,
+      documentTitle: 'Voucher Print',
+      removeAfterPrint: true,
     });
 
     /* ================= PUBLIC METHOD ================= */
-    React.useImperativeHandle(ref, () => ({
+    useImperativeHandle(ref, () => ({
       printVoucher(row: any) {
-        const voucherType = row?.vr_no?.split('-')[0];
+        if (!row?.mtm_id || !row?.vr_no) {
+          toast.error('Invalid voucher data');
+          return;
+        }
+
+        const voucherType = row.vr_no.split('-')[0];
 
         switch (voucherType) {
-          case '1':
-            console.log('Cash Receive – future');
-            dispatch(
-              electronicsSalesPrint({ mt: row.mtm_id }, (message?: string) => {
-                if (message) {
-                  toast.error(message);
-                } else {
-                  setTimeout(printSales, 300);
-                }
-              })
-            );
-
-            break;
-
+          /* ================= CASH PAYMENT ================= */
           case '2':
+            activePrintRef.current = cashPaymentRef.current;
+
             dispatch(
-              electronicsSalesPrint({ mt: row.mtm_id }, (message?: string) => {
-                if (message) {
-                  toast.error(message);
-                } else {
-                  setTimeout(printSales, 300);
+              electronicsSalesPrint(
+                { mt: row.mtm_id },
+                (message?: string) => {
+                  if (message) {
+                    toast.error(message);
+                  } else {
+                    setTimeout(printVoucherDoc, 300);
+                  }
                 }
-              })
+              )
             );
             break;
 
-          case '3': // SALES
+          /* ================= SALES ================= */
+          case '3':
+            activePrintRef.current = salesRef.current;
+
             dispatch(
-              electronicsSalesPrint({ mt: row.mtm_id }, (message?: string) => {
-                if (message) {
-                  toast.error(message);
-                } else {
-                  setTimeout(printSales, 300);
+              electronicsSalesPrint(
+                { mt: row.mtm_id },
+                (message?: string) => {
+                  if (message) {
+                    toast.error(message);
+                  } else {
+                    setTimeout(printVoucherDoc, 300);
+                  }
                 }
-              })
+              )
             );
             break;
 
-
-
+          /* ================= PURCHASE (FUTURE) ================= */
           case '4':
-            console.log('Purchase – future');
+            activePrintRef.current = purchaseRef.current;
+            toast.error('Purchase print not implemented yet');
             break;
 
           default:
@@ -86,30 +101,34 @@ export const VoucherPrintRegistry = React.forwardRef(
       },
     }));
 
-
-    /* ================= HIDDEN PRINTS ================= */
+    /* ================= HIDDEN PRINT COMPONENTS ================= */
     return (
       <div className="hidden">
+        {/* SALES */}
         <ElectronicsSalesInvoicePrint
           ref={salesRef}
-          data={useSelector((s: any) => s.electronicsSales.data)}
+          data={voucherData}
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
         />
 
-        {/* Future vouchers */}
-        <PurchaseInvoicePrint 
-          ref={salesRef}
-          data={useSelector((s: any) => s.electronicsSales.data)}
-          rowsPerPage={rowsPerPage}
-          fontSize={fontSize} />
-        {/* <CashReceivePrint ref={cashReceiveRef} /> */}
+        {/* CASH PAYMENT */}
         <CashPaymentPrint
-         ref={salesRef}
-          data={useSelector((s: any) => s.electronicsSales.data)}
+          ref={cashPaymentRef}
+          data={voucherData}
+          fontSize={fontSize}
+        />
+
+        {/* PURCHASE (FUTURE) */}
+        <PurchaseInvoicePrint
+          ref={purchaseRef}
+          data={voucherData}
           rowsPerPage={rowsPerPage}
-          fontSize={fontSize} />
+          fontSize={fontSize}
+        />
       </div>
     );
   }
 );
+
+VoucherPrintRegistry.displayName = 'VoucherPrintRegistry';

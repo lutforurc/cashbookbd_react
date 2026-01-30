@@ -4,7 +4,7 @@ import { chartDateTime } from './formatDate';
 
 const CompanyPad = () => {
   const settings = useSelector((state: any) => state.settings.data);
-  console.log(settings?.company?.name);
+  console.log(settings);
   return (
     <div>
       <div className="mb-6">
