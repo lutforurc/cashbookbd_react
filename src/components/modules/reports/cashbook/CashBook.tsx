@@ -37,8 +37,7 @@ const CashBook = (user: any) => {
   const [fontSize, setFontSize] = useState<number>(12);
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
-  const printRef = useRef<HTMLDivElement>(null);
-  // const salesPrintRef = useRef<any>(null);
+  const printRef = useRef<HTMLDivElement>(null); 
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 

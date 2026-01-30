@@ -2,9 +2,11 @@ import React, { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-hot-toast';
- 
+
 import { electronicsSalesPrint } from '../invoices/sales/electronicsSalesSlice';
 import ElectronicsSalesInvoicePrint from '../invoices/sales/ElectronicsSalesInvoicePrint';
+import PurchaseInvoicePrint from './print_items/PurchaseInvoicePrint';
+import CashPaymentPrint from './print_items/CashPaymentPrint';
 
 type Props = {
   rowsPerPage: number;
@@ -34,6 +36,32 @@ export const VoucherPrintRegistry = React.forwardRef(
         const voucherType = row?.vr_no?.split('-')[0];
 
         switch (voucherType) {
+          case '1':
+            console.log('Cash Receive – future');
+            dispatch(
+              electronicsSalesPrint({ mt: row.mtm_id }, (message?: string) => {
+                if (message) {
+                  toast.error(message);
+                } else {
+                  setTimeout(printSales, 300);
+                }
+              })
+            );
+
+            break;
+
+          case '2':
+            dispatch(
+              electronicsSalesPrint({ mt: row.mtm_id }, (message?: string) => {
+                if (message) {
+                  toast.error(message);
+                } else {
+                  setTimeout(printSales, 300);
+                }
+              })
+            );
+            break;
+
           case '3': // SALES
             dispatch(
               electronicsSalesPrint({ mt: row.mtm_id }, (message?: string) => {
@@ -46,13 +74,7 @@ export const VoucherPrintRegistry = React.forwardRef(
             );
             break;
 
-          case '1':
-            console.log('Cash Receive – future');
-            break;
 
-          case '2':
-            console.log('Cash Payment – future');
-            break;
 
           case '4':
             console.log('Purchase – future');
@@ -63,6 +85,7 @@ export const VoucherPrintRegistry = React.forwardRef(
         }
       },
     }));
+
 
     /* ================= HIDDEN PRINTS ================= */
     return (
@@ -75,9 +98,17 @@ export const VoucherPrintRegistry = React.forwardRef(
         />
 
         {/* Future vouchers */}
-        {/* <PurchaseInvoicePrint ref={purchaseRef} /> */}
+        <PurchaseInvoicePrint 
+          ref={salesRef}
+          data={useSelector((s: any) => s.electronicsSales.data)}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize} />
         {/* <CashReceivePrint ref={cashReceiveRef} /> */}
-        {/* <CashPaymentPrint ref={cashPaymentRef} /> */}
+        <CashPaymentPrint
+         ref={salesRef}
+          data={useSelector((s: any) => s.electronicsSales.data)}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize} />
       </div>
     );
   }
