@@ -8,6 +8,7 @@ import {
   FiTrash2,
   FiSearch,
 } from "react-icons/fi";
+import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
 
 /** ---------- Types ---------- */
 type ChargeType =
@@ -85,6 +86,7 @@ export default function SalesPricingBuilderPage() {
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(101);
   const [selectedParkingId, setSelectedParkingId] = useState<number | null>(12);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(1);
+  const [ledgerId, setLedgerAccount] = useState<number | null>(null);
 
   /** Search (demo) */
   const [unitQuery, setUnitQuery] = useState("");
@@ -241,10 +243,10 @@ export default function SalesPricingBuilderPage() {
       return prev.map((it) =>
         it.type === "PARKING"
           ? {
-              ...it,
-              linkedTo: { kind: "parking", label: parking.label, parkingId: parking.id },
-              amount: parking.price,
-            }
+            ...it,
+            linkedTo: { kind: "parking", label: parking.label, parkingId: parking.id },
+            amount: parking.price,
+          }
           : it
       );
     });
@@ -345,6 +347,16 @@ export default function SalesPricingBuilderPage() {
     return demoCustomers.filter((c) => c.name.toLowerCase().includes(q));
   }, [customerQuery]);
 
+
+  const selectedLedgerOptionHandler = (option: any) => {
+    if (!option) {
+      setSelectedCustomerId(null);
+      return;
+    }
+
+    setSelectedCustomerId(option.value);
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 p-6">
       <div className="mx-auto max-w-7xl">
@@ -375,17 +387,7 @@ export default function SalesPricingBuilderPage() {
             <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
               <div className="mb-2 text-sm font-semibold text-zinc-100">Customer</div>
 
-              <div className="mb-2 flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 px-2 py-2">
-                <FiSearch className="text-zinc-500" />
-                <input
-                  value={customerQuery}
-                  onChange={(e) => setCustomerQuery(e.target.value)}
-                  placeholder="Search customer..."
-                  className="w-full bg-transparent text-sm text-zinc-200 outline-none"
-                />
-              </div>
-
-              <select
+              {/* <select
                 value={selectedCustomerId ?? ""}
                 onChange={(e) => setSelectedCustomerId(e.target.value ? Number(e.target.value) : null)}
                 className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
@@ -395,7 +397,18 @@ export default function SalesPricingBuilderPage() {
                     {c.name} {c.phone ? `(${c.phone})` : ""}
                   </option>
                 ))}
-              </select>
+              </select> */}
+
+
+
+              <div className="">
+                <label htmlFor="">Select Ledger</label>
+                <DdlMultiline
+                  onSelect={selectedLedgerOptionHandler}
+                  acType={''}
+                />
+              </div>
+
 
               <div className="mt-2 text-xs text-zinc-500">
                 Selected:{" "}
@@ -408,16 +421,6 @@ export default function SalesPricingBuilderPage() {
             {/* Unit Select */}
             <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
               <div className="mb-2 text-sm font-semibold text-zinc-100">Select Unit</div>
-
-              <div className="mb-2 flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 px-2 py-2">
-                <FiSearch className="text-zinc-500" />
-                <input
-                  value={unitQuery}
-                  onChange={(e) => setUnitQuery(e.target.value)}
-                  placeholder="Search unit e.g. B-7"
-                  className="w-full bg-transparent text-sm text-zinc-200 outline-none"
-                />
-              </div>
 
               <select
                 value={selectedUnitId ?? ""}
@@ -452,15 +455,6 @@ export default function SalesPricingBuilderPage() {
                 </button>
               </div>
 
-              <div className="mb-2 flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 px-2 py-2">
-                <FiSearch className="text-zinc-500" />
-                <input
-                  value={parkingQuery}
-                  onChange={(e) => setParkingQuery(e.target.value)}
-                  placeholder="Search slot e.g. P-12"
-                  className="w-full bg-transparent text-sm text-zinc-200 outline-none"
-                />
-              </div>
 
               <select
                 value={selectedParkingId ?? ""}

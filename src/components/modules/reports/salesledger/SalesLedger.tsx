@@ -150,8 +150,6 @@ const SalesLedger = (user: any) => {
                   ?.remarks
               }
             </div>
-
-
           </div>
         );
       },
