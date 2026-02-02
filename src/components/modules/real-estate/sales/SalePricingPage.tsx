@@ -1,7 +1,17 @@
 import React, { useMemo, useState } from "react";
-import { FiLock, FiEdit2, FiCheck, FiX, FiPlus, FiTrash2 } from "react-icons/fi";
+import {
+  FiLock,
+  FiEdit2,
+  FiCheck,
+  FiX,
+  FiPlus,
+  FiTrash2,
+  FiSend,
+} from "react-icons/fi";
 import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
 import BuildingUnitDropdown from "../../../utils/utils-functions/BuildingUnitDropdown";
+import BuildingParkingDropdown from "../../../utils/utils-functions/BuildingParkingDropdown";
+import HelmetTitle from "../../../utils/others/HelmetTitle";
 
 /* ================= TYPES ================= */
 
@@ -25,76 +35,62 @@ type PriceItem = {
 
 /* ================= HELPERS ================= */
 
-function formatAmount(n: number) {
-  const sign = n < 0 ? "-" : "";
-  const abs = Math.abs(n);
-  return `${sign}${abs.toLocaleString("en-US")}`;
-}
+const formatAmount = (n: number) =>
+  `${n < 0 ? "-" : ""}${Math.abs(n).toLocaleString("en-US")}`;
 
-function sumTotal(items: PriceItem[]) {
-  return items.reduce((acc, it) => acc + Number(it.amount || 0), 0);
-}
+const sumTotal = (items: PriceItem[]) =>
+  items.reduce((a, b) => a + Number(b.amount || 0), 0);
 
-function linkedToText(linkedTo: LinkedTo) {
-  if (!linkedTo) return "-";
-  return linkedTo.kind === "unit"
-    ? `Unit: ${linkedTo.label}`
-    : `Slot: ${linkedTo.label}`;
-}
+const linkedToText = (l: LinkedTo) =>
+  !l ? "-" : l.kind === "unit" ? `Unit: ${l.label}` : `Slot: ${l.label}`;
 
 /* ================= PAGE ================= */
 
-export default function SalesPricingBuilderPage() {
-  /* -------- Selected -------- */
-  const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
-  const [selectedParkingId, setSelectedParkingId] = useState<number | null>(null);
+export default function SalePricingPage() {
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [selectedUnit, setSelectedUnit] = useState<any>(null);
+  const [selectedParking, setSelectedParking] = useState<any>(null);
 
-  const [selectedCustomer, setSelectedCustomer] = useState<{
-    id: number;
-    name: string;
-  } | null>(null);
-
-  /* -------- Pricing Rows -------- */
   const [items, setItems] = useState<PriceItem[]>([]);
-
-  /* -------- Inline Edit -------- */
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [draftValue, setDraftValue] = useState<string>("");
+  const [draftValue, setDraftValue] = useState("");
 
-  /* -------- Add Custom -------- */
   const [newChargeTitle, setNewChargeTitle] = useState("");
   const [newChargeAmount, setNewChargeAmount] = useState("0");
   const [newChargeNote, setNewChargeNote] = useState("");
 
-  /* ================= HANDLERS ================= */
+  /* ================= UNIT ================= */
 
-  /** Unit select → Base Price add/update */
   const onUnitSelect = (option: any | null) => {
     if (!option) {
-      setSelectedUnitId(null);
+      setSelectedUnit(null);
       setItems([]);
       return;
     }
 
-    setSelectedUnitId(option.value);
+    setSelectedUnit(option);
 
     const size = Number(option.label_0 || 0);
     const rate = Number(option.label_1 || 0);
     const basePrice = size * rate;
 
     setItems((prev) => {
-      const hasBase = prev.some((x) => x.type === "BASE_PRICE");
+      const exists = prev.find((x) => x.type === "BASE_PRICE");
 
-      if (hasBase) {
-        return prev.map((it) =>
-          it.type === "BASE_PRICE"
+      if (exists) {
+        return prev.map((x) =>
+          x.type === "BASE_PRICE"
             ? {
-                ...it,
-                linkedTo: { kind: "unit", label: option.label, unitId: option.value },
+                ...x,
+                linkedTo: {
+                  kind: "unit",
+                  label: option.label,
+                  unitId: option.value,
+                },
                 amount: basePrice,
                 note: `Auto: ${size} × ${rate}`,
               }
-            : it
+            : x
         );
       }
 
@@ -103,7 +99,11 @@ export default function SalesPricingBuilderPage() {
           id: Date.now(),
           type: "BASE_PRICE",
           title: "Base Price",
-          linkedTo: { kind: "unit", label: option.label, unitId: option.value },
+          linkedTo: {
+            kind: "unit",
+            label: option.label,
+            unitId: option.value,
+          },
           amount: basePrice,
           note: `Auto: ${size} × ${rate}`,
           editMode: "LOCKED",
@@ -112,28 +112,38 @@ export default function SalesPricingBuilderPage() {
     });
   };
 
-  /** Parking select/remove */
-  const onParkingChange = (parking: { id: number; label: string; price: number } | null) => {
-    if (!parking) {
-      setSelectedParkingId(null);
-      setItems((prev) => prev.filter((x) => x.type !== "PARKING"));
+  /* ================= PARKING ================= */
+
+  const onParkingSelect = (option: any | null) => {
+    if (!option) {
+      setSelectedParking(null);
+      setItems((p) => p.filter((x) => x.type !== "PARKING"));
       return;
     }
 
-    setSelectedParkingId(parking.id);
+    setSelectedParking(option);
+
+    const size = Number(option.label_0 || 0);
+    const rate = Number(option.label_1 || 0);
+    const basePrice = size * rate;
 
     setItems((prev) => {
-      const hasParking = prev.some((x) => x.type === "PARKING");
+      const exists = prev.find((x) => x.type === "PARKING");
 
-      if (hasParking) {
-        return prev.map((it) =>
-          it.type === "PARKING"
+      if (exists) {
+        return prev.map((x) =>
+          x.type === "PARKING"
             ? {
-                ...it,
-                linkedTo: { kind: "parking", label: parking.label, parkingId: parking.id },
-                amount: parking.price,
+                ...x,
+                linkedTo: {
+                  kind: "parking",
+                  label: option.label,
+                  parkingId: option.value,
+                },
+                amount: basePrice,
+                note: `Auto: ${size} × ${rate}`,
               }
-            : it
+            : x
         );
       }
 
@@ -143,16 +153,21 @@ export default function SalesPricingBuilderPage() {
           id: Date.now() + 1,
           type: "PARKING",
           title: "Parking",
-          linkedTo: { kind: "parking", label: parking.label, parkingId: parking.id },
-          amount: parking.price,
-          note: "Auto from parking",
+          linkedTo: {
+            kind: "parking",
+            label: option.label,
+            parkingId: option.value,
+          },
+          amount: basePrice,
+          note: `Auto: ${size} × ${rate}`,
           editMode: "LOCKED",
         },
       ];
     });
   };
 
-  /** Inline edit */
+  /* ================= EDIT ================= */
+
   const startEdit = (it: PriceItem) => {
     if (it.editMode !== "EDITABLE") return;
     setEditingId(it.id);
@@ -160,33 +175,29 @@ export default function SalesPricingBuilderPage() {
   };
 
   const saveEdit = (it: PriceItem) => {
-    const next = Number(draftValue);
-    if (Number.isNaN(next)) return;
+    const val = Number(draftValue);
+    if (Number.isNaN(val)) return;
 
-    if (it.type === "DISCOUNT" && next > 0) {
-      alert("Discount must be negative");
-      return;
-    }
-
-    setItems((prev) =>
-      prev.map((x) => (x.id === it.id ? { ...x, amount: next } : x))
+    setItems((p) =>
+      p.map((x) => (x.id === it.id ? { ...x, amount: val } : x))
     );
     setEditingId(null);
   };
 
-  /** Custom charge */
-  const addCustomCharge = () => {
+  /* ================= CUSTOM ================= */
+
+  const addCustom = () => {
     if (!newChargeTitle.trim()) return;
 
-    setItems((prev) => [
-      ...prev,
+    setItems((p) => [
+      ...p,
       {
         id: Date.now(),
         type: "CUSTOM",
         title: newChargeTitle,
         linkedTo: null,
-        amount: Number(newChargeAmount || 0),
-        note: newChargeNote || "Custom charge",
+        amount: Number(newChargeAmount),
+        note: newChargeNote,
         editMode: "EDITABLE",
       },
     ]);
@@ -198,122 +209,155 @@ export default function SalesPricingBuilderPage() {
 
   const total = useMemo(() => sumTotal(items), [items]);
 
+  /* ================= API ================= */
+
+  const apiPayload = {
+    customer: selectedCustomer
+      ? { id: selectedCustomer.value, name: selectedCustomer.label }
+      : null,
+
+    unit: selectedUnit
+      ? { id: selectedUnit.value, label: selectedUnit.label }
+      : null,
+
+    parking: selectedParking
+      ? { id: selectedParking.value, label: selectedParking.label }
+      : null,
+
+    items,
+    total,
+  };
+
+  const submitToApi = () => {
+    console.log("API PAYLOAD =>", apiPayload);
+  };
+
   /* ================= UI ================= */
 
   return (
     <div className="mx-auto max-w-7xl">
-      {/* Header */}
+      <HelmetTitle title="Unit Sales" />
+
       <div className="mb-4 flex justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-100">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
             Sales Pricing Builder
           </h1>
-          <p className="text-sm text-zinc-400">
-            Unit, Parking select করলে breakdown auto তৈরি হবে
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Unit + Parking auto calculation
           </p>
         </div>
 
         <div className="text-right">
-          <div className="text-xs text-zinc-400">Grand Total</div>
-          <div className="text-xl font-semibold text-zinc-100">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Grand Total
+          </div>
+          <div className="text-xl font-semibold text-gray-900 dark:text-white">
             {formatAmount(total)}
           </div>
         </div>
       </div>
 
-      {/* Selectors */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* LEFT */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="text-sm font-semibold text-zinc-100 mb-2">
-              Customer
-            </div>
-            <DdlMultiline onSelect={(o: any) => setSelectedCustomer(o ? { id: o.value, name: o.label } : null)} acType="" />
+          <div className="rounded border bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
+            <label className="text-sm font-semibold">Customer</label>
+            <DdlMultiline onSelect={setSelectedCustomer} acType="" />
 
-            <div className="mt-3 text-sm font-semibold text-zinc-100">
-              Unit
-            </div>
-            <BuildingUnitDropdown onSelect={onUnitSelect} placeholder="Select Unit" />
+            <label className="block mt-3 text-sm font-semibold">Select Unit</label>
+            <BuildingUnitDropdown onSelect={onUnitSelect} />
 
-            <div className="mt-3 text-sm font-semibold text-zinc-100">
-              Parking
-            </div>
-            <button
-              className="text-xs text-zinc-300"
-              onClick={() => onParkingChange(null)}
-            >
-              Remove Parking
-            </button>
+            <label className="block mt-3 text-sm font-semibold">
+              Select Parking
+            </label>
+            <BuildingParkingDropdown onSelect={onParkingSelect} />
           </div>
 
-          {/* Custom */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="text-sm font-semibold text-zinc-100 mb-2">
-              Add Custom Charge
-            </div>
-
+          <div className="rounded border bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
+            <label className="text-sm font-semibold">Add Custom Charge</label>
             <input
-              className="mb-2 w-full rounded border border-zinc-800 bg-zinc-950 p-2 text-sm"
-              placeholder="Charge name"
+              className="mt-2 w-full border rounded p-2 dark:bg-gray-700"
+              placeholder="Title"
               value={newChargeTitle}
               onChange={(e) => setNewChargeTitle(e.target.value)}
             />
             <input
-              className="mb-2 w-full rounded border border-zinc-800 bg-zinc-950 p-2 text-sm"
+              className="mt-2 w-full border rounded p-2 dark:bg-gray-700"
               placeholder="Amount"
               value={newChargeAmount}
               onChange={(e) => setNewChargeAmount(e.target.value)}
             />
             <button
-              className="flex items-center gap-2 text-sm text-zinc-100"
-              onClick={addCustomCharge}
+              onClick={addCustom}
+              className="mt-2 flex items-center gap-2 text-sm"
             >
               <FiPlus /> Add
             </button>
           </div>
+
+          <button
+            onClick={submitToApi}
+            className="w-full mt-2 flex items-center justify-center gap-2 rounded bg-blue-600 text-white py-2"
+          >
+            <FiSend /> Save
+          </button>
         </div>
 
-        {/* Table */}
+        {/* RIGHT */}
         <div className="lg:col-span-8">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950">
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-900 text-zinc-300">
-                <tr>
-                  <th className="p-3 text-left">Item</th>
-                  <th className="p-3 text-left">Linked To</th>
-                  <th className="p-3 text-right">Amount</th>
-                  <th className="p-3 text-left">Note</th>
-                  <th className="p-3">Action</th>
+          <table className="w-full text-sm bg-white dark:bg-gray-800 border dark:border-gray-700">
+            <thead className="bg-gray-300 dark:bg-gray-700">
+              <tr>
+                <th className="p-2 text-left">Item</th>
+                <th className="p-2">Linked</th>
+                <th className="p-2 text-right">Amount</th>
+                <th className="p-2 text-center w-24">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {items.map((it) => (
+                <tr key={it.id} className="border-t dark:border-gray-700">
+                  <td className="p-2">{it.title}</td>
+                  <td className="p-2">{linkedToText(it.linkedTo)}</td>
+                  <td className="p-2 text-right">
+                    {editingId === it.id ? (
+                      <div className="flex justify-end gap-1">
+                        <input
+                          value={draftValue}
+                          onChange={(e) => setDraftValue(e.target.value)}
+                          className="w-24 border rounded px-1"
+                        />
+                        <FiCheck onClick={() => saveEdit(it)} />
+                        <FiX onClick={() => setEditingId(null)} />
+                      </div>
+                    ) : (
+                      formatAmount(it.amount)
+                    )}
+                  </td>
+                  <td className="p-2 text-center">
+                    {it.editMode === "LOCKED" ? (
+                      <FiLock />
+                    ) : (
+                      <>
+                        <FiEdit2
+                          className="cursor-pointer text-blue-500"
+                          onClick={() => startEdit(it)}
+                        />
+                        <FiTrash2
+                          className="ml-2 cursor-pointer text-red-500"
+                          onClick={() =>
+                            setItems((p) => p.filter((x) => x.id !== it.id))
+                          }
+                        />
+                      </>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-
-              <tbody>
-                {items.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="p-4 text-center text-zinc-500">
-                      No items added yet
-                    </td>
-                  </tr>
-                )}
-
-                {items.map((it) => (
-                  <tr key={it.id} className="border-t border-zinc-800">
-                    <td className="p-3">{it.title}</td>
-                    <td className="p-3">{linkedToText(it.linkedTo)}</td>
-                    <td className="p-3 text-right">{formatAmount(it.amount)}</td>
-                    <td className="p-3">{it.note || "-"}</td>
-                    <td className="p-3">
-                      {it.type === "CUSTOM" && (
-                        <button onClick={() => setItems((p) => p.filter((x) => x.id !== it.id))}>
-                          <FiTrash2 />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
