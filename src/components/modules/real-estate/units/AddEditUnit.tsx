@@ -118,8 +118,7 @@ const AddEditUnit = () => {
       {/* BASIC INFO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <div>
-          <label>Select Building</label>
-          
+          <label>Select Floor</label>
           <BuildingFloorDropdown onSelect={handleBuildingSelect}  />
         </div>
         <InputElement
@@ -152,7 +151,7 @@ const AddEditUnit = () => {
         <InputElement
           id="sale_price"
           name="sale_price"
-          label="Sale Price"
+          label="Unite Rate"
           placeholder="0.00"
           value={formData.sale_price ?? ""}
           onChange={handleOnChange}

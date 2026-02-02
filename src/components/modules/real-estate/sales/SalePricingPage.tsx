@@ -1,13 +1,5 @@
 import React, { useMemo, useState } from "react";
-import {
-  FiLock,
-  FiEdit2,
-  FiCheck,
-  FiX,
-  FiPlus,
-  FiTrash2,
-  FiSearch,
-} from "react-icons/fi";
+import {FiLock, FiEdit2, FiCheck, FiX, FiPlus, FiTrash2, FiSearch } from "react-icons/fi";
 import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
 
 /** ---------- Types ---------- */
@@ -37,9 +29,6 @@ type PriceItem = {
   editMode: EditMode;
 };
 
-type Unit = { id: number; label: string; basePrice: number; floorPremium?: number };
-type Parking = { id: number; label: string; price: number };
-type Customer = { id: number; name: string; phone?: string };
 
 function formatAmount(n: number) {
   const sign = n < 0 ? "-" : "";
@@ -71,11 +60,7 @@ const demoParkings: Parking[] = [
   { id: 25, label: "P-25", price: 250000 },
 ];
 
-const demoCustomers: Customer[] = [
-  { id: 1, name: "Rahim Uddin", phone: "017XXXXXXXX" },
-  { id: 2, name: "Karim Ahmed", phone: "018XXXXXXXX" },
-  { id: 3, name: "Sadia Islam", phone: "019XXXXXXXX" },
-];
+ 
 
 /** ---------- Page ---------- */
 export default function SalesPricingBuilderPage() {
@@ -84,9 +69,11 @@ export default function SalesPricingBuilderPage() {
 
   /** Selected inventory + customer */
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(101);
-  const [selectedParkingId, setSelectedParkingId] = useState<number | null>(12);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(1);
-  const [ledgerId, setLedgerAccount] = useState<number | null>(null);
+  const [selectedParkingId, setSelectedParkingId] = useState<number | null>(12); 
+  const [selectedCustomer, setSelectedCustomer] = useState<{
+    id: number;
+    name: string;
+  } | null>(null); 
 
   /** Search (demo) */
   const [unitQuery, setUnitQuery] = useState("");
@@ -100,11 +87,7 @@ export default function SalesPricingBuilderPage() {
   const selectedParking = useMemo(
     () => demoParkings.find((p) => p.id === selectedParkingId) || null,
     [selectedParkingId]
-  );
-  const selectedCustomer = useMemo(
-    () => demoCustomers.find((c) => c.id === selectedCustomerId) || null,
-    [selectedCustomerId]
-  );
+  ); 
 
   /** Pricing items state */
   const [items, setItems] = useState<PriceItem[]>(() => {
@@ -340,22 +323,20 @@ export default function SalesPricingBuilderPage() {
     if (!q) return demoParkings;
     return demoParkings.filter((p) => p.label.toLowerCase().includes(q));
   }, [parkingQuery]);
-
-  const filteredCustomers = useMemo(() => {
-    const q = customerQuery.trim().toLowerCase();
-    if (!q) return demoCustomers;
-    return demoCustomers.filter((c) => c.name.toLowerCase().includes(q));
-  }, [customerQuery]);
-
+ 
 
   const selectedLedgerOptionHandler = (option: any) => {
     if (!option) {
-      setSelectedCustomerId(null);
+      setSelectedCustomer(null);
       return;
     }
 
-    setSelectedCustomerId(option.value);
+    setSelectedCustomer({
+      id: option.value,
+      name: option.label,
+    });
   };
+
 
   return (
     <div className="min-h-screen bg-zinc-950 p-6">
@@ -408,20 +389,7 @@ export default function SalesPricingBuilderPage() {
                   acType={''}
                 />
               </div>
-
-
-              <div className="mt-2 text-xs text-zinc-500">
-                Selected:{" "}
-                <span className="text-zinc-300">
-                  {selectedCustomer ? selectedCustomer.name : "-"}
-                </span>
-              </div>
-            </div>
-
-            {/* Unit Select */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <div className="mb-2 text-sm font-semibold text-zinc-100">Select Unit</div>
-
+              <div className="mb-2 mt-2 text-sm font-semibold text-zinc-100">Select Unit</div>
               <select
                 value={selectedUnitId ?? ""}
                 onChange={(e) => applyUnitSelection(e.target.value ? Number(e.target.value) : null)}
@@ -440,10 +408,7 @@ export default function SalesPricingBuilderPage() {
                   {selectedUnit ? `Unit ${selectedUnit.label}` : "-"}
                 </span>
               </div>
-            </div>
 
-            {/* Parking Select */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-sm font-semibold text-zinc-100">Parking</div>
                 <button
