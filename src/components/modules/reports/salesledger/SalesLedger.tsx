@@ -44,6 +44,11 @@ const SalesLedger = (user: any) => {
     setBranchId(e.target.value);
   };
 
+  console.log('====================================');
+  console.log("setTableData", tableData);
+  console.log('====================================');
+
+
   const handleStartDate = (e: any) => {
     setStartDate(e);
   };
@@ -88,6 +93,34 @@ const SalesLedger = (user: any) => {
     setProductId(option.value);
   };
 
+  const getRelevantCoaName = (row: any) => {
+    const masters = row?.acc_transaction_master ?? [];
+
+    let cashName: string | null = null;
+
+    for (const master of masters) {
+      const details = master?.acc_transaction_details ?? [];
+
+      // 1️⃣ First priority: other than Sales(15) & Cash(17)
+      const other = details.find(
+        (d: any) => d?.coa4_id !== 15 && d?.coa4_id !== 17
+      );
+
+      if (other?.coa_l4?.name) {
+        return other.coa_l4.name;
+      }
+
+      // 2️⃣ Fallback: Cash (17)
+      const cash = details.find((d: any) => d?.coa4_id === 17);
+      if (cash?.coa_l4?.name) {
+        cashName = cash.coa_l4.name;
+      }
+    }
+
+    return cashName;
+  };
+
+
   const columns = [
     {
       key: 'sl_number',
@@ -111,26 +144,41 @@ const SalesLedger = (user: any) => {
     },
     {
       key: 'product_name',
-      header: 'Description',
+      header: 'Product & Details',
       cellClass: 'align-center',
-      render: (row: any) => (
-        <div className="min-w-52 break-words align-center">
-          {(row?.sales_master?.details ?? []).map(
-            (detail: any, index: number) => (
-              <div key={index}>
-                <div>{detail?.product?.name}</div>
+      render: (row: any) => {
+        const coaName = getRelevantCoaName(row);
+
+        return (
+          <div className="min-w-52 break-words align-center">
+            {/* Product */}
+            {(row?.sales_master?.details ?? []).map(
+              (detail: any, index: number) => (
+                <div key={index}>
+                  {detail?.product?.name}
+                </div>
+              ),
+            )}
+
+            {/* ✅ Final COA name */}
+            {coaName && (
+              <div className="text-sm mt-1 font-semibold">
+                {coaName}
               </div>
-            ),
-          )}
-          {/* {row.product_name} */}
-          <div className="font-semibold">
-            {
-              row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]
-                ?.remarks
-            }
+            )}
+            {/* Remarks */}
+            <div className="">
+              {
+                row?.acc_transaction_master?.[0]
+                  ?.acc_transaction_details?.[0]
+                  ?.remarks
+              }
+            </div>
+
+
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'vhicle',
@@ -254,11 +302,11 @@ const SalesLedger = (user: any) => {
           (
             tm:
               | {
-                  acc_transaction_details?: {
-                    coa4_id?: number;
-                    debit?: string;
-                  }[];
-                }
+                acc_transaction_details?: {
+                  coa4_id?: number;
+                  debit?: string;
+                }[];
+              }
               | undefined,
           ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
         );
