@@ -15,6 +15,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import ImagePopup from '../../../utils/others/ImagePopup';
 import { FaRotateRight } from 'react-icons/fa6';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
+import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -131,6 +132,7 @@ const PurchaseLedger = (user: any) => {
       width: '100px',
       cellClass: 'align-center',
       render: (row: any) => {
+        const coaName = getRelevantCoaName(row);
         return (
           <div className="min-w-52 break-words align-top">
             {row?.purchase_master?.details?.map(
@@ -139,6 +141,11 @@ const PurchaseLedger = (user: any) => {
                   <div>{detail?.product?.name}</div>
                 </div>
               ),
+            )}
+            {coaName && (
+              <div className="text-sm mt-1 font-semibold">
+                {coaName}
+              </div>
             )}
             <div className="">{row?.purchase_master?.notes}</div>
           </div>
