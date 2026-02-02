@@ -10,6 +10,8 @@ import { unitDdl } from '../../modules/real-estate/units/unitSlice';
 interface OptionType {
   value: string;
   label: string;      // Unit No
+  label_0?: string;   // Flat
+  label_1?: string;   // Flat
   label_2?: string;   // Flat
   label_3?: string;   // Project / Area
   label_4?: string;   // Branch
@@ -72,6 +74,8 @@ const BuildingUnitDropdown: React.FC<DropdownProps> = ({
       const formattedOptions: OptionType[] = list.map((item: any) => ({
         value: item.value,
         label: item.label,       // Unit No
+        label_0: item.label_0,       // Unit No
+        label_1: item.label_1,       // Flat
         label_2: item.label_2,   // Flat
         label_3: item.label_3,   // Area / Project
         label_4: item.label_4,   // Branch
@@ -170,6 +174,16 @@ const BuildingUnitDropdown: React.FC<DropdownProps> = ({
               </div>
               {isMenu && (
                 <div className="mt-1 space-y-0.5">
+                  {option.label_0 && (
+                    <div className="text-xs text-gray-600 dark:text-gray-300">
+                      Size: {option.label_0}
+                    </div>
+                  )}
+                  {option.label_1 && (
+                    <div className="text-xs text-gray-600 dark:text-gray-300">
+                      Rate: {option.label_1}
+                    </div>
+                  )}
                   {option.label_2 && (
                     <div className="text-xs text-gray-600 dark:text-gray-300">
                       Flat: {option.label_2}
