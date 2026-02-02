@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
-import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL } from "../../../services/apiRoutes";
+import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL, API_UNIT_CHARGE_DDL_LIST_URL } from "../../../services/apiRoutes";
 import { getToken } from "../../../../features/authReducer";
 import { UnitChargeTypeItem } from "./types";
 
@@ -118,24 +118,35 @@ export const unitChargeTypeList = createAsyncThunk<
 
 
 /* ---- Unit Charge Types DDL ---- */
-export const unitChargeTypeDdl = createAsyncThunk<UnitChargeTypeItem[], void, { rejectValue: string }>("unit/unitChargeTypeDdl", async (_, { rejectWithValue }) => {
-  try {
-    const token = getToken();
-    const res = await fetch("/api/units/charge-types/ddl", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const data = await res.json();
-    if (data?.success === true) {
-      return data.data;
+
+export const unitChargeTypeDdl = createAsyncThunk<  UnitChargeTypeItem[], string | undefined, { rejectValue: string } >("unit/unitChargeTypeDdl",async (search = "", { rejectWithValue }) => {
+    try {
+      const token = getToken();
+      const res = await fetch(
+        API_UNIT_CHARGE_DDL_LIST_URL + `?q=${search}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (data?.success === true) {
+        return data.data;
+      }
+
+      return rejectWithValue(
+        data?.message || "Failed to load unit charge types"
+      );
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
-    return rejectWithValue(data?.message || "Failed to load unit charge types");
-  } catch (error: any) {
-    return rejectWithValue(error.message);
   }
-});
+);
+
 
 /* ---- Fetch Single Charge Type (Edit) ---- */
 export const fetchUnitChargeType = createAsyncThunk<UnitChargeTypeItem, number, { rejectValue: string }>("unit/fetchUnitChargeType", async (id, { rejectWithValue }) => {

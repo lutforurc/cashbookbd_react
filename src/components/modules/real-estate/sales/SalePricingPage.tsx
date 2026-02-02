@@ -8,14 +8,18 @@ import {
   FiTrash2,
   FiSend,
 } from "react-icons/fi";
+
 import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
 import BuildingUnitDropdown from "../../../utils/utils-functions/BuildingUnitDropdown";
 import BuildingParkingDropdown from "../../../utils/utils-functions/BuildingParkingDropdown";
+import BuildingUnitChargesDropdown from "../../../utils/utils-functions/BuildingUnitChargesDropdown";
+import InputElement from "../../../utils/fields/InputElement";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 
 /* ================= TYPES ================= */
 
-type ChargeType = "BASE_PRICE" | "PARKING" | "DISCOUNT" | "CUSTOM";
+type ChargeType = "BASE_PRICE" | "PARKING" | "CUSTOM";
+
 type EditMode = "LOCKED" | "EDITABLE";
 
 type LinkedTo =
@@ -23,10 +27,13 @@ type LinkedTo =
   | { kind: "parking"; label: string; parkingId: number }
   | null;
 
+type ChargeEffect = "+" | "-";
+
 type PriceItem = {
   id: number;
   type: ChargeType;
   title: string;
+  effect?: ChargeEffect;
   linkedTo: LinkedTo;
   amount: number;
   note?: string;
@@ -38,11 +45,14 @@ type PriceItem = {
 const formatAmount = (n: number) =>
   `${n < 0 ? "-" : ""}${Math.abs(n).toLocaleString("en-US")}`;
 
-const sumTotal = (items: PriceItem[]) =>
-  items.reduce((a, b) => a + Number(b.amount || 0), 0);
+const calculateTotal = (items: PriceItem[]) =>
+  items.reduce((sum, it) => {
+    if (it.effect === "-") return sum - Math.abs(it.amount);
+    return sum + Math.abs(it.amount);
+  }, 0);
 
 const linkedToText = (l: LinkedTo) =>
-  !l ? "-" : l.kind === "unit" ? `Unit: ${l.label}` : `Slot: ${l.label}`;
+  !l ? "-" : l.kind === "unit" ? `Unit: ${l.label}` : `Parking: ${l.label}`;
 
 /* ================= PAGE ================= */
 
@@ -55,9 +65,8 @@ export default function SalePricingPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draftValue, setDraftValue] = useState("");
 
-  const [newChargeTitle, setNewChargeTitle] = useState("");
-  const [newChargeAmount, setNewChargeAmount] = useState("0");
-  const [newChargeNote, setNewChargeNote] = useState("");
+  const [chargeType, setChargeType] = useState<any>(null);
+  const [chargeAmount, setChargeAmount] = useState("");
 
   /* ================= UNIT ================= */
 
@@ -72,7 +81,7 @@ export default function SalePricingPage() {
 
     const size = Number(option.label_0 || 0);
     const rate = Number(option.label_1 || 0);
-    const basePrice = size * rate;
+    const amount = size * rate;
 
     setItems((prev) => {
       const exists = prev.find((x) => x.type === "BASE_PRICE");
@@ -87,7 +96,7 @@ export default function SalePricingPage() {
                   label: option.label,
                   unitId: option.value,
                 },
-                amount: basePrice,
+                amount,
                 note: `Auto: ${size} × ${rate}`,
               }
             : x
@@ -99,12 +108,13 @@ export default function SalePricingPage() {
           id: Date.now(),
           type: "BASE_PRICE",
           title: "Base Price",
+          effect: "+",
           linkedTo: {
             kind: "unit",
             label: option.label,
             unitId: option.value,
           },
-          amount: basePrice,
+          amount,
           note: `Auto: ${size} × ${rate}`,
           editMode: "LOCKED",
         },
@@ -125,7 +135,7 @@ export default function SalePricingPage() {
 
     const size = Number(option.label_0 || 0);
     const rate = Number(option.label_1 || 0);
-    const basePrice = size * rate;
+    const amount = size * rate;
 
     setItems((prev) => {
       const exists = prev.find((x) => x.type === "PARKING");
@@ -140,7 +150,7 @@ export default function SalePricingPage() {
                   label: option.label,
                   parkingId: option.value,
                 },
-                amount: basePrice,
+                amount,
                 note: `Auto: ${size} × ${rate}`,
               }
             : x
@@ -153,12 +163,13 @@ export default function SalePricingPage() {
           id: Date.now() + 1,
           type: "PARKING",
           title: "Parking",
+          effect: "+",
           linkedTo: {
             kind: "parking",
             label: option.label,
             parkingId: option.value,
           },
-          amount: basePrice,
+          amount,
           note: `Auto: ${size} × ${rate}`,
           editMode: "LOCKED",
         },
@@ -166,7 +177,29 @@ export default function SalePricingPage() {
     });
   };
 
-  /* ================= EDIT ================= */
+  /* ================= CUSTOM CHARGE ================= */
+
+  const addCustomCharge = () => {
+    if (!chargeType || !chargeAmount) return;
+
+    setItems((p) => [
+      ...p,
+      {
+        id: Date.now(),
+        type: "CUSTOM",
+        title: chargeType.label,
+        effect: chargeType.effect as ChargeEffect,
+        linkedTo: null,
+        amount: Number(chargeAmount),
+        editMode: "EDITABLE",
+      },
+    ]);
+
+    setChargeType(null);
+    setChargeAmount("");
+  };
+
+  /* ================= INLINE EDIT ================= */
 
   const startEdit = (it: PriceItem) => {
     if (it.editMode !== "EDITABLE") return;
@@ -184,30 +217,9 @@ export default function SalePricingPage() {
     setEditingId(null);
   };
 
-  /* ================= CUSTOM ================= */
+  /* ================= TOTAL ================= */
 
-  const addCustom = () => {
-    if (!newChargeTitle.trim()) return;
-
-    setItems((p) => [
-      ...p,
-      {
-        id: Date.now(),
-        type: "CUSTOM",
-        title: newChargeTitle,
-        linkedTo: null,
-        amount: Number(newChargeAmount),
-        note: newChargeNote,
-        editMode: "EDITABLE",
-      },
-    ]);
-
-    setNewChargeTitle("");
-    setNewChargeAmount("0");
-    setNewChargeNote("");
-  };
-
-  const total = useMemo(() => sumTotal(items), [items]);
+  const total = useMemo(() => calculateTotal(items), [items]);
 
   /* ================= API ================= */
 
@@ -215,15 +227,12 @@ export default function SalePricingPage() {
     customer: selectedCustomer
       ? { id: selectedCustomer.value, name: selectedCustomer.label }
       : null,
-
     unit: selectedUnit
       ? { id: selectedUnit.value, label: selectedUnit.label }
       : null,
-
     parking: selectedParking
       ? { id: selectedParking.value, label: selectedParking.label }
       : null,
-
     items,
     total,
   };
@@ -238,13 +247,14 @@ export default function SalePricingPage() {
     <div className="mx-auto max-w-7xl">
       <HelmetTitle title="Unit Sales" />
 
+      {/* HEADER */}
       <div className="mb-4 flex justify-between">
         <div>
           <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
             Sales Pricing Builder
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Unit + Parking auto calculation
+            Unit + Parking + Discount calculation
           </p>
         </div>
 
@@ -261,38 +271,35 @@ export default function SalePricingPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* LEFT */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="rounded border bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
+          <div className="rounded border bg-white dark:bg-gray-800 p-4">
             <label className="text-sm font-semibold">Customer</label>
             <DdlMultiline onSelect={setSelectedCustomer} acType="" />
 
-            <label className="block mt-3 text-sm font-semibold">Select Unit</label>
+            <label className="block mt-3 text-sm font-semibold">Unit</label>
             <BuildingUnitDropdown onSelect={onUnitSelect} />
 
-            <label className="block mt-3 text-sm font-semibold">
-              Select Parking
-            </label>
+            <label className="block mt-3 text-sm font-semibold">Parking</label>
             <BuildingParkingDropdown onSelect={onParkingSelect} />
           </div>
 
-          <div className="rounded border bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
-            <label className="text-sm font-semibold">Add Custom Charge</label>
-            <input
-              className="mt-2 w-full border rounded p-2 dark:bg-gray-700"
-              placeholder="Title"
-              value={newChargeTitle}
-              onChange={(e) => setNewChargeTitle(e.target.value)}
+          <div className="rounded border bg-white dark:bg-gray-800 p-4">
+            <label className="text-sm font-semibold">Charge Type</label>
+            <BuildingUnitChargesDropdown onSelect={setChargeType} />
+
+            <InputElement
+              id="amount"
+              name="amount"
+              type="number"
+              label="Amount (Tk.)"
+              value={chargeAmount}
+              onChange={(e: any) => setChargeAmount(e.target.value)}
             />
-            <input
-              className="mt-2 w-full border rounded p-2 dark:bg-gray-700"
-              placeholder="Amount"
-              value={newChargeAmount}
-              onChange={(e) => setNewChargeAmount(e.target.value)}
-            />
+
             <button
-              onClick={addCustom}
+              onClick={addCustomCharge}
               className="mt-2 flex items-center gap-2 text-sm"
             >
-              <FiPlus /> Add
+              <FiPlus /> Add Charge
             </button>
           </div>
 
@@ -306,11 +313,11 @@ export default function SalePricingPage() {
 
         {/* RIGHT */}
         <div className="lg:col-span-8">
-          <table className="w-full text-sm bg-white dark:bg-gray-800 border dark:border-gray-700">
-            <thead className="bg-gray-300 dark:bg-gray-700">
+          <table className="w-full text-sm bg-white dark:bg-gray-800 border">
+            <thead className="bg-gray-200 dark:bg-gray-700">
               <tr>
                 <th className="p-2 text-left">Item</th>
-                <th className="p-2">Linked</th>
+                <th className="p-2 text-left">Linked</th>
                 <th className="p-2 text-right">Amount</th>
                 <th className="p-2 text-center w-24">Action</th>
               </tr>
@@ -318,7 +325,7 @@ export default function SalePricingPage() {
 
             <tbody>
               {items.map((it) => (
-                <tr key={it.id} className="border-t dark:border-gray-700">
+                <tr key={it.id} className="border-t">
                   <td className="p-2">{it.title}</td>
                   <td className="p-2">{linkedToText(it.linkedTo)}</td>
                   <td className="p-2 text-right">
@@ -333,10 +340,12 @@ export default function SalePricingPage() {
                         <FiX onClick={() => setEditingId(null)} />
                       </div>
                     ) : (
-                      formatAmount(it.amount)
+                      formatAmount(
+                        it.effect === "-" ? -it.amount : it.amount
+                      )
                     )}
                   </td>
-                  <td className="p-2 text-center">
+                  <td className="p-2 flex">
                     {it.editMode === "LOCKED" ? (
                       <FiLock />
                     ) : (
@@ -348,7 +357,9 @@ export default function SalePricingPage() {
                         <FiTrash2
                           className="ml-2 cursor-pointer text-red-500"
                           onClick={() =>
-                            setItems((p) => p.filter((x) => x.id !== it.id))
+                            setItems((p) =>
+                              p.filter((x) => x.id !== it.id)
+                            )
                           }
                         />
                       </>
