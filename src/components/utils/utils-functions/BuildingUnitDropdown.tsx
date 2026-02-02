@@ -3,17 +3,16 @@ import { useDispatch } from 'react-redux';
 import AsyncSelect from 'react-select/async';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
-import { flatDdl } from '../../modules/real-estate/building-flat/flatSlice';
+import { unitDdl } from '../../modules/real-estate/units/unitSlice';
 
 /* ================= TYPES ================= */
 
 interface OptionType {
   value: string;
-  label: string;
-  label_1?: string;
-  label_2?: string;
-  label_3?: string;
-  label_4?: string;
+  label: string;      // Unit No
+  label_2?: string;   // Flat
+  label_3?: string;   // Project / Area
+  label_4?: string;   // Branch
   label_5?: string;
   status?: number | string;
 }
@@ -31,7 +30,7 @@ interface DropdownProps {
 
 /* ================= COMPONENT ================= */
 
-const BuildingFloorDropdown: React.FC<DropdownProps> = ({
+const BuildingUnitDropdown: React.FC<DropdownProps> = ({
   id,
   name,
   onSelect,
@@ -59,9 +58,11 @@ const BuildingFloorDropdown: React.FC<DropdownProps> = ({
     }
 
     try {
-      const response = await dispatch(flatDdl(inputValue)).unwrap();
+      // ✅ FIXED: string pass করা হচ্ছে
+      const response = await dispatch(
+        unitDdl(inputValue)
+      ).unwrap();
 
-      // 🔴 IMPORTANT FIX
       const list = Array.isArray(response)
         ? response
         : Array.isArray(response?.data)
@@ -70,19 +71,20 @@ const BuildingFloorDropdown: React.FC<DropdownProps> = ({
 
       const formattedOptions: OptionType[] = list.map((item: any) => ({
         value: item.value,
-        label: item.label,
-        label_2: item.label_2,
-        label_3: item.label_3,
-        label_4: item.label_4,
+        label: item.label,       // Unit No
+        label_2: item.label_2,   // Flat
+        label_3: item.label_3,   // Area / Project
+        label_4: item.label_4,   // Branch
         label_5: item.label_5,
       }));
 
       callback(formattedOptions);
     } catch (error) {
-      console.error('Error loading project location:', error);
+      console.error('Error loading units:', error);
       callback([]);
     }
   };
+
 
   /* ================= STYLES ================= */
 
@@ -140,62 +142,57 @@ const BuildingFloorDropdown: React.FC<DropdownProps> = ({
   /* ================= RENDER ================= */
 
   return (
-    <div className="dark:bg-black focus:border-blue-500">
+    <div className="dark:bg-black">
       <AsyncSelect<OptionType>
         inputId={id}
         name={name}
-        className={`cash-react-select-container w-full dark:bg-black focus:border-blue-500 ${className}`}
+        className={`cash-react-select-container w-full ${className}`}
         classNamePrefix="cash-react-select"
         loadOptions={loadOptions}
         onChange={onSelect}
         onMenuOpen={() => setIsSelected(true)}
         onMenuClose={() => setIsSelected(false)}
         onKeyDown={onKeyDown}
-        getOptionLabel={(option) => option.label}
-        formatOptionLabel={(option) => (
-          <div>
-            <div className="text-sm text-gray-900 dark:text-white focus:border-blue-500">
-              {option.label}
-              {option?.label_4 && Number(option.label_4) > 0 && (
-                <span className="text-gray-600 dark:text-white text-sm">
-                  {' '}({option.label_4})
-                </span>
-              )}
-            </div>
-            {isSelected && (
-              <div className="additional-info">
-                {option.label_5 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
-                    {option.label_5 &&
-                      option.label_5.trim() !== '' &&
-                      option.label_5.trim() !== '0' && (
-                        <>C/O: {option.label_5.trim()}</>
-                      )}
-                  </div>
-                )}
-                {option.label_2 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
-                    {option.label_2}
-                  </div>
-                )}
-                {option.label_3 && (
-                  <div className="text-gray-600 dark:text-white text-sm">
-                    {option.label_3}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
         getOptionValue={(option) => option.value}
-        placeholder={placeholder || 'Select a building'}
+        placeholder={placeholder || 'Select Unit'}
         styles={customStyles}
         defaultValue={defaultValue}
         value={value}
-        menuPortalTarget={document.body} // Fix Dropdown Render Issue
+        menuPortalTarget={document.body}
+        formatOptionLabel={(option, { context }) => {
+          const isMenu = context === 'menu';     // dropdown list
+          const isValue = context === 'value';   // selected value
+
+          return (
+            <div>
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                {option.label}
+              </div>
+              {isMenu && (
+                <div className="mt-1 space-y-0.5">
+                  {option.label_2 && (
+                    <div className="text-xs text-gray-600 dark:text-gray-300">
+                      Flat: {option.label_2}
+                    </div>
+                  )}
+                  {option.label_3 && (
+                    <div className="text-xs text-gray-600 dark:text-gray-300">
+                      Building: {option.label_3}
+                    </div>
+                  )}
+                  {option.label_4 && (
+                    <div className="text-xs text-gray-600 dark:text-gray-300">
+                      Branch: {option.label_4}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        }}
       />
     </div>
   );
 };
 
-export default BuildingFloorDropdown;
+export default BuildingUnitDropdown;

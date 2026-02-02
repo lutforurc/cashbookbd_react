@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
-import {FiLock, FiEdit2, FiCheck, FiX, FiPlus, FiTrash2, FiSearch } from "react-icons/fi";
+import { FiLock, FiEdit2, FiCheck, FiX, FiPlus, FiTrash2, FiSearch } from "react-icons/fi";
 import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
+import BuildingUnitDropdown from "../../../utils/utils-functions/BuildingUnitDropdown";
 
 /** ---------- Types ---------- */
 type ChargeType =
@@ -60,7 +61,7 @@ const demoParkings: Parking[] = [
   { id: 25, label: "P-25", price: 250000 },
 ];
 
- 
+
 
 /** ---------- Page ---------- */
 export default function SalesPricingBuilderPage() {
@@ -69,11 +70,11 @@ export default function SalesPricingBuilderPage() {
 
   /** Selected inventory + customer */
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(101);
-  const [selectedParkingId, setSelectedParkingId] = useState<number | null>(12); 
+  const [selectedParkingId, setSelectedParkingId] = useState<number | null>(12);
   const [selectedCustomer, setSelectedCustomer] = useState<{
     id: number;
     name: string;
-  } | null>(null); 
+  } | null>(null);
 
   /** Search (demo) */
   const [unitQuery, setUnitQuery] = useState("");
@@ -87,7 +88,7 @@ export default function SalesPricingBuilderPage() {
   const selectedParking = useMemo(
     () => demoParkings.find((p) => p.id === selectedParkingId) || null,
     [selectedParkingId]
-  ); 
+  );
 
   /** Pricing items state */
   const [items, setItems] = useState<PriceItem[]>(() => {
@@ -323,7 +324,7 @@ export default function SalesPricingBuilderPage() {
     if (!q) return demoParkings;
     return demoParkings.filter((p) => p.label.toLowerCase().includes(q));
   }, [parkingQuery]);
- 
+
 
   const selectedLedgerOptionHandler = (option: any) => {
     if (!option) {
@@ -339,301 +340,296 @@ export default function SalesPricingBuilderPage() {
 
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-4 flex items-end justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-zinc-100">
-              Sales Pricing Builder
-            </h1>
-            <p className="text-sm text-zinc-400">
-              Unit + Parking + Customer select করে breakdown auto update হবে। Custom charges add করা যাবে।
-            </p>
+    // <div className="min-h-screen bg-zinc-950 p-6">
+    <div className="mx-auto max-w-7xl">
+      {/* Header */}
+      <div className="mb-4 flex items-end justify-between">
+        <div>
+          <h1 className="text-lg font-semibold text-zinc-100">
+            Sales Pricing Builder
+          </h1>
+          <p className="text-sm text-zinc-400">
+            Unit + Parking + Customer select করে breakdown auto update হবে। Custom charges add করা যাবে।
+          </p>
+        </div>
+
+        <div className="text-right">
+          <div className="text-xs text-zinc-400">Grand Total</div>
+          <div className="text-xl font-semibold text-zinc-100 tabular-nums">
+            {formatAmount(total)}
+          </div>
+        </div>
+      </div>
+
+      {/* 2-column layout */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        {/* Left column: selectors */}
+        <div className="lg:col-span-4 space-y-4">
+          {/* Customer Select */}
+          <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+            <div className="mb-2 text-sm font-semibold text-zinc-100">Customer</div>
+
+
+
+            <div className="">
+              <label htmlFor="">Select Customer</label>
+              <DdlMultiline
+                onSelect={selectedLedgerOptionHandler}
+                acType={''}
+              />
+            </div>
+          
+
+            <div className="mb-2 mt-2 text-sm font-semibold text-zinc-100">Select Unit</div>
+            <BuildingUnitDropdown />
+
+
+
+            <div className="mb-2 mt-2 text-sm font-semibold text-zinc-100">Select Unit</div>
+            <select
+              value={selectedUnitId ?? ""}
+              onChange={(e) => applyUnitSelection(e.target.value ? Number(e.target.value) : null)}
+              className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
+            >
+              {filteredUnits.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.label} — Base {formatAmount(u.basePrice)}
+                </option>
+              ))}
+            </select>
+
+            <div className="mt-2 text-xs text-zinc-500">
+              Selected:{" "}
+              <span className="text-zinc-300">
+                {selectedUnit ? `Unit ${selectedUnit.label}` : "-"}
+              </span>
+            </div>
+
+            <div className="mb-2 flex items-center justify-between">
+              <div className="text-sm font-semibold text-zinc-100">Parking</div>
+              <button
+                type="button"
+                className="text-xs text-zinc-300 hover:text-zinc-100"
+                onClick={() => applyParkingSelection(null)}
+              >
+                Remove Parking
+              </button>
+            </div>
+
+
+            <select
+              value={selectedParkingId ?? ""}
+              onChange={(e) => applyParkingSelection(e.target.value ? Number(e.target.value) : null)}
+              className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
+            >
+              {filteredParkings.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label} — {formatAmount(p.price)}
+                </option>
+              ))}
+            </select>
+
+            <div className="mt-2 text-xs text-zinc-500">
+              Selected:{" "}
+              <span className="text-zinc-300">
+                {selectedParking ? `Slot ${selectedParking.label}` : "No parking"}
+              </span>
+            </div>
           </div>
 
-          <div className="text-right">
-            <div className="text-xs text-zinc-400">Grand Total</div>
-            <div className="text-xl font-semibold text-zinc-100 tabular-nums">
-              {formatAmount(total)}
+          {/* Add Custom Charge */}
+          <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+            <div className="mb-3 text-sm font-semibold text-zinc-100">
+              Add Custom Charge
+            </div>
+
+            <div className="space-y-2">
+              <input
+                value={newChargeTitle}
+                onChange={(e) => setNewChargeTitle(e.target.value)}
+                placeholder="Charge name (e.g., Registry Fee)"
+                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
+              />
+              <input
+                value={newChargeAmount}
+                onChange={(e) => setNewChargeAmount(e.target.value)}
+                placeholder="Amount"
+                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
+              />
+              <input
+                value={newChargeNote}
+                onChange={(e) => setNewChargeNote(e.target.value)}
+                placeholder="Note (optional)"
+                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
+              />
+
+              <button
+                type="button"
+                onClick={addCustomCharge}
+                className="inline-flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-900"
+              >
+                <FiPlus /> Add Charge
+              </button>
             </div>
           </div>
         </div>
 
-        {/* 2-column layout */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          {/* Left column: selectors */}
-          <div className="lg:col-span-4 space-y-4">
-            {/* Customer Select */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <div className="mb-2 text-sm font-semibold text-zinc-100">Customer</div>
-
-              {/* <select
-                value={selectedCustomerId ?? ""}
-                onChange={(e) => setSelectedCustomerId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
-              >
-                {filteredCustomers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} {c.phone ? `(${c.phone})` : ""}
-                  </option>
-                ))}
-              </select> */}
-
-
-
-              <div className="">
-                <label htmlFor="">Select Ledger</label>
-                <DdlMultiline
-                  onSelect={selectedLedgerOptionHandler}
-                  acType={''}
-                />
+        {/* Right column: price table */}
+        <div className="lg:col-span-8">
+          <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+            <div className="px-4 py-3 border-b border-zinc-800">
+              <div className="text-sm font-semibold text-zinc-100">
+                Price Breakdown
               </div>
-              <div className="mb-2 mt-2 text-sm font-semibold text-zinc-100">Select Unit</div>
-              <select
-                value={selectedUnitId ?? ""}
-                onChange={(e) => applyUnitSelection(e.target.value ? Number(e.target.value) : null)}
-                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
-              >
-                {filteredUnits.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.label} — Base {formatAmount(u.basePrice)}
-                  </option>
-                ))}
-              </select>
+              <div className="text-xs text-zinc-400">
+                BASE_PRICE এবং PARKING locked থাকবে। Discount সবসময় negative হবে।
+              </div>
 
               <div className="mt-2 text-xs text-zinc-500">
-                Selected:{" "}
-                <span className="text-zinc-300">
-                  {selectedUnit ? `Unit ${selectedUnit.label}` : "-"}
-                </span>
-              </div>
-
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm font-semibold text-zinc-100">Parking</div>
-                <button
-                  type="button"
-                  className="text-xs text-zinc-300 hover:text-zinc-100"
-                  onClick={() => applyParkingSelection(null)}
-                >
-                  Remove Parking
-                </button>
-              </div>
-
-
-              <select
-                value={selectedParkingId ?? ""}
-                onChange={(e) => applyParkingSelection(e.target.value ? Number(e.target.value) : null)}
-                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
-              >
-                {filteredParkings.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label} — {formatAmount(p.price)}
-                  </option>
-                ))}
-              </select>
-
-              <div className="mt-2 text-xs text-zinc-500">
-                Selected:{" "}
-                <span className="text-zinc-300">
-                  {selectedParking ? `Slot ${selectedParking.label}` : "No parking"}
+                Customer:{" "}
+                <span className="text-zinc-200">
+                  {selectedCustomer ? selectedCustomer.name : "-"}
+                </span>{" "}
+                | Unit:{" "}
+                <span className="text-zinc-200">
+                  {selectedUnit ? selectedUnit.label : "-"}
+                </span>{" "}
+                | Parking:{" "}
+                <span className="text-zinc-200">
+                  {selectedParking ? selectedParking.label : "No parking"}
                 </span>
               </div>
             </div>
 
-            {/* Add Custom Charge */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <div className="mb-3 text-sm font-semibold text-zinc-100">
-                Add Custom Charge
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-sm">
+                <thead className="bg-zinc-900/60 text-zinc-300">
+                  <tr className="border-b border-zinc-800">
+                    <th className="px-4 py-3 text-left font-medium">Item</th>
+                    <th className="px-4 py-3 text-left font-medium">Linked To</th>
+                    <th className="px-4 py-3 text-right font-medium">Amount</th>
+                    <th className="px-4 py-3 text-left font-medium">Note</th>
+                    <th className="px-4 py-3 text-left font-medium">Lock</th>
+                    <th className="px-4 py-3 text-left font-medium">Action</th>
+                  </tr>
+                </thead>
 
-              <div className="space-y-2">
-                <input
-                  value={newChargeTitle}
-                  onChange={(e) => setNewChargeTitle(e.target.value)}
-                  placeholder="Charge name (e.g., Registry Fee)"
-                  className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
-                />
-                <input
-                  value={newChargeAmount}
-                  onChange={(e) => setNewChargeAmount(e.target.value)}
-                  placeholder="Amount"
-                  className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
-                />
-                <input
-                  value={newChargeNote}
-                  onChange={(e) => setNewChargeNote(e.target.value)}
-                  placeholder="Note (optional)"
-                  className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 outline-none"
-                />
+                <tbody className="text-zinc-200">
+                  {items.map((it) => {
+                    const showLock = it.editMode === "LOCKED" || it.editMode === "ROLE_EDITABLE";
+                    const showPencil = it.editMode === "EDITABLE" || it.editMode === "ROLE_EDITABLE";
+                    const pencilEnabled =
+                      it.editMode === "EDITABLE" ||
+                      (it.editMode === "ROLE_EDITABLE" && canEditRoleLocked);
 
-                <button
-                  type="button"
-                  onClick={addCustomCharge}
-                  className="inline-flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-2 text-sm text-zinc-100 hover:bg-zinc-900"
-                >
-                  <FiPlus /> Add Charge
-                </button>
-              </div>
+                    const isEditing = editingId === it.id;
+
+                    return (
+                      <tr
+                        key={it.id}
+                        className="border-b border-zinc-900 hover:bg-zinc-900/40"
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap">{it.title}</td>
+
+                        <td className="px-4 py-3 whitespace-nowrap text-zinc-300">
+                          {linkedToText(it.linkedTo)}
+                        </td>
+
+                        <td className="px-4 py-3 text-right tabular-nums">
+                          {!isEditing ? (
+                            formatAmount(it.amount)
+                          ) : (
+                            <div className="flex items-center justify-end gap-2">
+                              <input
+                                value={draftValue}
+                                onChange={(e) => setDraftValue(e.target.value)}
+                                className="w-36 rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1 text-right text-zinc-100 outline-none focus:border-zinc-500"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => saveEdit(it)}
+                                className="rounded-md p-2 hover:bg-zinc-800"
+                                title="Save"
+                              >
+                                <FiCheck className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelEdit}
+                                className="rounded-md p-2 hover:bg-zinc-800"
+                                title="Cancel"
+                              >
+                                <FiX className="h-4 w-4" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-3 text-zinc-300">{it.note || "-"}</td>
+
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            {showLock ? <FiLock className="h-4 w-4 text-zinc-300" /> : <span className="inline-block w-4" />}
+                            {showPencil ? (
+                              <button
+                                type="button"
+                                onClick={() => startEdit(it)}
+                                disabled={!pencilEnabled || isEditing}
+                                className={[
+                                  "inline-flex items-center justify-center rounded-md px-2 py-1",
+                                  pencilEnabled && !isEditing
+                                    ? "hover:bg-zinc-800 text-zinc-200"
+                                    : "text-zinc-500 cursor-not-allowed",
+                                ].join(" ")}
+                                title={pencilEnabled ? "Edit" : "Role permission required"}
+                              >
+                                <FiEdit2 className="h-4 w-4" />
+                              </button>
+                            ) : null}
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          {it.type === "CUSTOM" ? (
+                            <button
+                              type="button"
+                              onClick={() => removeCustomCharge(it.id)}
+                              className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-zinc-200 hover:bg-zinc-800"
+                              title="Remove custom charge"
+                            >
+                              <FiTrash2 />
+                              <span className="text-xs">Remove</span>
+                            </button>
+                          ) : (
+                            <span className="text-zinc-600">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+
+                <tfoot>
+                  <tr className="bg-zinc-900/40">
+                    <td className="px-4 py-3 font-medium text-zinc-200" colSpan={2}>
+                      Total
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-zinc-100 tabular-nums">
+                      {formatAmount(total)}
+                    </td>
+                    <td className="px-4 py-3" colSpan={3}></td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
 
-          {/* Right column: price table */}
-          <div className="lg:col-span-8">
-            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
-              <div className="px-4 py-3 border-b border-zinc-800">
-                <div className="text-sm font-semibold text-zinc-100">
-                  Price Breakdown
-                </div>
-                <div className="text-xs text-zinc-400">
-                  BASE_PRICE এবং PARKING locked থাকবে। Discount সবসময় negative হবে।
-                </div>
-
-                <div className="mt-2 text-xs text-zinc-500">
-                  Customer:{" "}
-                  <span className="text-zinc-200">
-                    {selectedCustomer ? selectedCustomer.name : "-"}
-                  </span>{" "}
-                  | Unit:{" "}
-                  <span className="text-zinc-200">
-                    {selectedUnit ? selectedUnit.label : "-"}
-                  </span>{" "}
-                  | Parking:{" "}
-                  <span className="text-zinc-200">
-                    {selectedParking ? selectedParking.label : "No parking"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[900px] text-sm">
-                  <thead className="bg-zinc-900/60 text-zinc-300">
-                    <tr className="border-b border-zinc-800">
-                      <th className="px-4 py-3 text-left font-medium">Item</th>
-                      <th className="px-4 py-3 text-left font-medium">Linked To</th>
-                      <th className="px-4 py-3 text-right font-medium">Amount</th>
-                      <th className="px-4 py-3 text-left font-medium">Note</th>
-                      <th className="px-4 py-3 text-left font-medium">Lock</th>
-                      <th className="px-4 py-3 text-left font-medium">Action</th>
-                    </tr>
-                  </thead>
-
-                  <tbody className="text-zinc-200">
-                    {items.map((it) => {
-                      const showLock = it.editMode === "LOCKED" || it.editMode === "ROLE_EDITABLE";
-                      const showPencil = it.editMode === "EDITABLE" || it.editMode === "ROLE_EDITABLE";
-                      const pencilEnabled =
-                        it.editMode === "EDITABLE" ||
-                        (it.editMode === "ROLE_EDITABLE" && canEditRoleLocked);
-
-                      const isEditing = editingId === it.id;
-
-                      return (
-                        <tr
-                          key={it.id}
-                          className="border-b border-zinc-900 hover:bg-zinc-900/40"
-                        >
-                          <td className="px-4 py-3 whitespace-nowrap">{it.title}</td>
-
-                          <td className="px-4 py-3 whitespace-nowrap text-zinc-300">
-                            {linkedToText(it.linkedTo)}
-                          </td>
-
-                          <td className="px-4 py-3 text-right tabular-nums">
-                            {!isEditing ? (
-                              formatAmount(it.amount)
-                            ) : (
-                              <div className="flex items-center justify-end gap-2">
-                                <input
-                                  value={draftValue}
-                                  onChange={(e) => setDraftValue(e.target.value)}
-                                  className="w-36 rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1 text-right text-zinc-100 outline-none focus:border-zinc-500"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => saveEdit(it)}
-                                  className="rounded-md p-2 hover:bg-zinc-800"
-                                  title="Save"
-                                >
-                                  <FiCheck className="h-4 w-4" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={cancelEdit}
-                                  className="rounded-md p-2 hover:bg-zinc-800"
-                                  title="Cancel"
-                                >
-                                  <FiX className="h-4 w-4" />
-                                </button>
-                              </div>
-                            )}
-                          </td>
-
-                          <td className="px-4 py-3 text-zinc-300">{it.note || "-"}</td>
-
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              {showLock ? <FiLock className="h-4 w-4 text-zinc-300" /> : <span className="inline-block w-4" />}
-                              {showPencil ? (
-                                <button
-                                  type="button"
-                                  onClick={() => startEdit(it)}
-                                  disabled={!pencilEnabled || isEditing}
-                                  className={[
-                                    "inline-flex items-center justify-center rounded-md px-2 py-1",
-                                    pencilEnabled && !isEditing
-                                      ? "hover:bg-zinc-800 text-zinc-200"
-                                      : "text-zinc-500 cursor-not-allowed",
-                                  ].join(" ")}
-                                  title={pencilEnabled ? "Edit" : "Role permission required"}
-                                >
-                                  <FiEdit2 className="h-4 w-4" />
-                                </button>
-                              ) : null}
-                            </div>
-                          </td>
-
-                          <td className="px-4 py-3">
-                            {it.type === "CUSTOM" ? (
-                              <button
-                                type="button"
-                                onClick={() => removeCustomCharge(it.id)}
-                                className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-zinc-200 hover:bg-zinc-800"
-                                title="Remove custom charge"
-                              >
-                                <FiTrash2 />
-                                <span className="text-xs">Remove</span>
-                              </button>
-                            ) : (
-                              <span className="text-zinc-600">-</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-
-                  <tfoot>
-                    <tr className="bg-zinc-900/40">
-                      <td className="px-4 py-3 font-medium text-zinc-200" colSpan={2}>
-                        Total
-                      </td>
-                      <td className="px-4 py-3 text-right font-semibold text-zinc-100 tabular-nums">
-                        {formatAmount(total)}
-                      </td>
-                      <td className="px-4 py-3" colSpan={3}></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-
-            <div className="mt-3 text-xs text-zinc-500">
-              ✅ Next step: এখানে API connect করলে unit/parking/customer dynamic load হবে এবং Save করলে sale quotation তৈরি হবে।
-            </div>
+          <div className="mt-3 text-xs text-zinc-500">
+            ✅ Next step: এখানে API connect করলে unit/parking/customer dynamic load হবে এবং Save করলে sale quotation তৈরি হবে।
           </div>
         </div>
       </div>
     </div>
+    // </div>
   );
 }
