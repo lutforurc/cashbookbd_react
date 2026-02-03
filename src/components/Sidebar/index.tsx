@@ -723,6 +723,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/real-estate/area-list' ||
                     pathname === '/real-estate/project-activities' ||
                     pathname === '/real-estate/flat-layout' ||
+                    pathname === '/real-estate/unit-sales' ||
                     pathname.includes('forms')
                   }
                   menuId="real-estate"
@@ -741,6 +742,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             pathname === '/real-estate/flat-layout' ||
                             pathname === '/real-estate/building/floor' ||
                             pathname === '/real-estate/add-unit' ||
+                            pathname === '/real-estate/unit-sales' ||
                             pathname === routes.real_estate_unit_types_create ||
                             pathname === routes.real_estate_buildings_list ||
                             pathname === routes.real_estate_floor_list ||
