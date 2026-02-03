@@ -176,7 +176,7 @@ const BuildingUnitChargesDropdown: React.FC<DropdownProps> = ({
                 )}
                 {option.label_2 && (
                   <div className="text-gray-600 dark:text-white text-sm">
-                    {option.label_2}
+                    Effect: ({option.label_2})
                   </div>
                 )}
                 {option.label_3 && (

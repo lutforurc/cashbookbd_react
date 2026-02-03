@@ -15,6 +15,7 @@ import BuildingParkingDropdown from "../../../utils/utils-functions/BuildingPark
 import BuildingUnitChargesDropdown from "../../../utils/utils-functions/BuildingUnitChargesDropdown";
 import InputElement from "../../../utils/fields/InputElement";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
+import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 
 /* ================= TYPES ================= */
 
@@ -90,15 +91,15 @@ export default function SalePricingPage() {
         return prev.map((x) =>
           x.type === "BASE_PRICE"
             ? {
-                ...x,
-                linkedTo: {
-                  kind: "unit",
-                  label: option.label,
-                  unitId: option.value,
-                },
-                amount,
-                note: `Auto: ${size} × ${rate}`,
-              }
+              ...x,
+              linkedTo: {
+                kind: "unit",
+                label: option.label,
+                unitId: option.value,
+              },
+              amount,
+              note: `Auto: ${size} × ${rate}`,
+            }
             : x
         );
       }
@@ -144,15 +145,15 @@ export default function SalePricingPage() {
         return prev.map((x) =>
           x.type === "PARKING"
             ? {
-                ...x,
-                linkedTo: {
-                  kind: "parking",
-                  label: option.label,
-                  parkingId: option.value,
-                },
-                amount,
-                note: `Auto: ${size} × ${rate}`,
-              }
+              ...x,
+              linkedTo: {
+                kind: "parking",
+                label: option.label,
+                parkingId: option.value,
+              },
+              amount,
+              note: `Auto: ${size} × ${rate}`,
+            }
             : x
         );
       }
@@ -182,22 +183,45 @@ export default function SalePricingPage() {
   const addCustomCharge = () => {
     if (!chargeType || !chargeAmount) return;
 
-    setItems((p) => [
-      ...p,
-      {
-        id: Date.now(),
-        type: "CUSTOM",
-        title: chargeType.label,
-        effect: chargeType.effect as ChargeEffect,
-        linkedTo: null,
-        amount: Number(chargeAmount),
-        editMode: "EDITABLE",
-      },
-    ]);
+    setItems((prev) => {
+      const exists = prev.find(
+        (x) =>
+          x.type === "CUSTOM" &&
+          x.title === chargeType.label // same charge type
+      );
+
+      // 🔁 If already exists → update amount
+      if (exists) {
+        return prev.map((x) =>
+          x.id === exists.id
+            ? {
+              ...x,
+              amount: Math.abs(Number(chargeAmount)),
+              effect: chargeType.label_2 === "-" ? "-" : "+",
+            }
+            : x
+        );
+      }
+
+      // ➕ Else add new
+      return [
+        ...prev,
+        {
+          id: Date.now(),
+          type: "CUSTOM",
+          title: chargeType.label,
+          effect: chargeType.label_2 === "-" ? "-" : "+",
+          linkedTo: null,
+          amount: Math.abs(Number(chargeAmount)),
+          editMode: "EDITABLE",
+        },
+      ];
+    });
 
     setChargeType(null);
     setChargeAmount("");
   };
+
 
   /* ================= INLINE EDIT ================= */
 
@@ -212,7 +236,9 @@ export default function SalePricingPage() {
     if (Number.isNaN(val)) return;
 
     setItems((p) =>
-      p.map((x) => (x.id === it.id ? { ...x, amount: val } : x))
+      p.map((x) =>
+        x.id === it.id ? { ...x, amount: Math.abs(val) } : x // ✅ FIX
+      )
     );
     setEditingId(null);
   };
@@ -247,7 +273,6 @@ export default function SalePricingPage() {
     <div className="mx-auto max-w-7xl">
       <HelmetTitle title="Unit Sales" />
 
-      {/* HEADER */}
       <div className="mb-4 flex justify-between">
         <div>
           <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -275,10 +300,10 @@ export default function SalePricingPage() {
             <label className="text-sm font-semibold">Customer</label>
             <DdlMultiline onSelect={setSelectedCustomer} acType="" />
 
-            <label className="block mt-3 text-sm font-semibold">Unit</label>
+            <label className="block mt-3 text-sm font-semibold">Select Unit</label>
             <BuildingUnitDropdown onSelect={onUnitSelect} />
 
-            <label className="block mt-3 text-sm font-semibold">Parking</label>
+            <label className="block mt-3 text-sm font-semibold">Select Parking</label>
             <BuildingParkingDropdown onSelect={onParkingSelect} />
           </div>
 
@@ -291,24 +316,26 @@ export default function SalePricingPage() {
               name="amount"
               type="number"
               label="Amount (Tk.)"
+              className="text-sm " 
               value={chargeAmount}
               onChange={(e: any) => setChargeAmount(e.target.value)}
             />
 
             <button
               onClick={addCustomCharge}
-              className="mt-2 flex items-center gap-2 text-sm"
+              className="mt-2 flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 "
             >
-              <FiPlus /> Add Charge
+              <FiPlus className="text-gray-800 dark:text-gray-200" /> Add Charge
             </button>
           </div>
 
-          <button
+          <ButtonLoading onClick={submitToApi} label="Save" icon={<FiSend className="mr-3" />} className="w-full mt-2 p-2" />
+          {/* <button
             onClick={submitToApi}
             className="w-full mt-2 flex items-center justify-center gap-2 rounded bg-blue-600 text-white py-2"
           >
             <FiSend /> Save
-          </button>
+          </button> */}
         </div>
 
         {/* RIGHT */}
@@ -329,19 +356,25 @@ export default function SalePricingPage() {
                   <td className="p-2">{linkedToText(it.linkedTo)}</td>
                   <td className="p-2 text-right">
                     {editingId === it.id ? (
-                      <div className="flex justify-end gap-1">
-                        <input
+                      <div className="flex justify-end gap-1 items-center">
+                        <InputElement
+                          className="w-24 text-right"
+                          type="number"
                           value={draftValue}
-                          onChange={(e) => setDraftValue(e.target.value)}
-                          className="w-24 border rounded px-1"
+                          onChange={(e: any) => setDraftValue(e.target.value)}
                         />
                         <FiCheck onClick={() => saveEdit(it)} />
                         <FiX onClick={() => setEditingId(null)} />
                       </div>
                     ) : (
-                      formatAmount(
-                        it.effect === "-" ? -it.amount : it.amount
-                      )
+                      <div className="flex justify-end items-center gap-1">
+                        <span>
+                          {it.effect === "-" ? "(-)" : "(+)"}
+                        </span>
+                        <span>
+                          {formatAmount(it.amount)}
+                        </span>
+                      </div>
                     )}
                   </td>
                   <td className="p-2 flex">

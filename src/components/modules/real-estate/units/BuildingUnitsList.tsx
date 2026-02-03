@@ -117,8 +117,13 @@ const BuildingUnitsList = ({ user }: any) => {
     },
     {
       key: 'sale_price',
-      header: 'Sale Price',
+      header: 'Unit Price',
       render: (row: any) => <div>{row.sale_price ?? '-'}</div>,
+    },
+    {
+      key: 'total_price',
+      header: 'Total Price',
+      render: (row: any) => <div>{ Number(row.size_sqft) * Number(row.sale_price) ?? '-'}</div>,
     },
     {
       key: 'status',
