@@ -322,7 +322,6 @@ export default function SalePricingPage() {
                 <th className="p-2 text-center w-24">Action</th>
               </tr>
             </thead>
-
             <tbody>
               {items.map((it) => (
                 <tr key={it.id} className="border-t">
