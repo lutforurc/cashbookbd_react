@@ -14,9 +14,11 @@ import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { render } from "react-dom";
+import { getSettings } from "../settings/settingsSlice";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
+  const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
 
   const [search, setSearchValue] = useState("");
@@ -29,6 +31,12 @@ const CustomerSupplier = () => {
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
   const [selectedGuarantors, setSelectedGuarantors] = useState<any[]>([]);
   const navigate = useNavigate();
+
+
+
+  useEffect(() => {
+    dispatch(getSettings());
+  }, []);
 
   // 🔥 First API Call and on pagination change
   useEffect(() => {
@@ -94,27 +102,9 @@ const CustomerSupplier = () => {
       });
   };
 
-  const columns = [
-    {
-      key: 'serial',
-      header: 'Sl. No.',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-    },
-    {
-      key: "name",
-      header: "Name",
-    },
-    {
-      key: "national_id",
-      header: "National ID",
-      render: (row: any) => (
-      <>
-        { row.national_id && row.national_id !== "0" ? row.national_id : "" }
-      </>
-      )
-    },
-    {
+
+  const isOpeningColumns = [
+      {
       key: 'openingbalance',
       header: 'Opening',
       headerClass: 'text-center',
@@ -137,7 +127,30 @@ const CustomerSupplier = () => {
         />
       ),
     },
+  ]
 
+  const columns = [
+    {
+      key: 'serial',
+      header: 'Sl. No.',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+    },
+    {
+      key: "name",
+      header: "Name",
+    },
+    {
+      key: "national_id",
+      header: "National ID",
+      render: (row: any) => (
+        <>
+          {row.national_id && row.national_id !== "0" ? row.national_id : ""}
+        </>
+      )
+    },
+  
+    ...(settings?.data?.branch?.is_opening == 1 ? isOpeningColumns : []),
 
     {
       key: "manual_address",
