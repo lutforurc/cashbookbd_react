@@ -34,21 +34,19 @@ const SalesLedger = (user: any) => {
     setBranchId(user.user.branch_id);
   }, []);
 
-  useEffect(() => {
-    if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
-      setTableData(ledgerData?.data);
+useEffect(() => {
+  if (!ledgerData.isLoading) {
+    if (Array.isArray(ledgerData?.data)) {
+      setTableData(ledgerData.data);
+    } else {
+      setTableData([]); // 🔥 CLEAR OLD DATA
     }
-    // console.log(ledgerData);
-  }, [ledgerData]);
+  }
+}, [ledgerData.isLoading, ledgerData.data]);
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
   };
-
-  console.log('====================================');
-  console.log("setTableData", tableData);
-  console.log('====================================');
-
 
   const handleStartDate = (e: any) => {
     setStartDate(e);
@@ -93,10 +91,6 @@ const SalesLedger = (user: any) => {
   const selectedProduct = (option: any) => {
     setProductId(option.value);
   };
-
-  
-
-
   const columns = [
     {
       key: 'sl_number',
