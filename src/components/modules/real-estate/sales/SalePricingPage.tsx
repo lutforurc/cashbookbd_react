@@ -7,6 +7,7 @@ import {
   FiPlus,
   FiTrash2,
   FiSend,
+  FiArrowLeft,
 } from "react-icons/fi";
 
 import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
@@ -16,6 +17,7 @@ import BuildingUnitChargesDropdown from "../../../utils/utils-functions/Building
 import InputElement from "../../../utils/fields/InputElement";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
+import { useNavigate } from "react-router";
 
 /* ================= TYPES ================= */
 
@@ -68,6 +70,7 @@ export default function SalePricingPage() {
 
   const [chargeType, setChargeType] = useState<any>(null);
   const [chargeAmount, setChargeAmount] = useState("");
+  const navigate = useNavigate();
 
   /* ================= UNIT ================= */
 
@@ -316,7 +319,7 @@ export default function SalePricingPage() {
               name="amount"
               type="number"
               label="Amount (Tk.)"
-              className="text-sm " 
+              className="text-sm "
               value={chargeAmount}
               onChange={(e: any) => setChargeAmount(e.target.value)}
             />
@@ -329,13 +332,20 @@ export default function SalePricingPage() {
             </button>
           </div>
 
-          <ButtonLoading onClick={submitToApi} label="Save" icon={<FiSend className="mr-3" />} className="w-full mt-2 p-2" />
-          {/* <button
-            onClick={submitToApi}
-            className="w-full mt-2 flex items-center justify-center gap-2 rounded bg-blue-600 text-white py-2"
-          >
-            <FiSend /> Save
-          </button> */}
+          <div className="flex gap-2">
+            <ButtonLoading
+              onClick={submitToApi}
+              label="Save"
+              icon={<FiSend className="mr-3" />}
+              className="mt-2 p-2 flex-1"
+            />
+            <ButtonLoading
+              onClick={() => navigate("../real-estate/unit/list")}
+              label="Back"
+              icon={<FiArrowLeft className="mr-3" />}
+              className="mt-2 p-2 flex-1"
+            />
+          </div>
         </div>
 
         {/* RIGHT */}

@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { buildingUnitList } from './unitSlice';
 import routes from '../../../services/appRoutes';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
 const BuildingUnitsList = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -63,7 +64,7 @@ const BuildingUnitsList = ({ user }: any) => {
     );
   }, [dispatch, page, perPage, branchId]);
 
- 
+
 
   /* ---- Handlers ---- */
   const handlePageChange = (page: number) => {
@@ -113,17 +114,20 @@ const BuildingUnitsList = ({ user }: any) => {
     {
       key: 'size_sqft',
       header: 'Size',
-      render: (row: any) => <div>{row.size_sqft} Sft</div>,
+      render: (row: any) => <div>{ thousandSeparator(row.size_sqft, 0)} Sft</div>,
     },
     {
       key: 'sale_price',
       header: 'Unit Price',
-      render: (row: any) => <div>{row.sale_price ?? '-'}</div>,
+      render: (row: any) => <div>{ thousandSeparator(row.sale_price, 0) ?? '-'}</div>,
     },
     {
       key: 'total_price',
       header: 'Total Price',
-      render: (row: any) => <div>{ Number(row.size_sqft) * Number(row.sale_price) ?? '-'}</div>,
+      render: (row: any) => {
+        const total = Number(row?.size_sqft) * Number(row?.sale_price);
+        return <div>{isNaN(total) ? "-" : thousandSeparator(total, 0)}</div>;
+      },
     },
     {
       key: 'status',
