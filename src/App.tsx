@@ -92,14 +92,13 @@ import AddEditUnit from './components/modules/real-estate/units/AddEditUnit';
 import ProjectsList from './components/modules/real-estate/project/ProjectsList';
 import BuildingList from './components/modules/real-estate/buildings/BuildingList';
 import BuildingUnitsList from './components/modules/real-estate/units/BuildingUnitsList';
-import FloorList from './components/modules/real-estate/building-flat/FloorList';
-import AddEditUnitPrice from './components/modules/real-estate/units/AddEditUnitChargeType';
+import FloorList from './components/modules/real-estate/building-flat/FloorList'; 
 import AddEditUnitChargeType from './components/modules/real-estate/units/AddEditUnitChargeType';
-import ChargeTypeList from './components/modules/real-estate/charge-types/ChargeTypeList';
-import SalePricingPage from './components/modules/real-estate/sales/SalePricingPage';
+import ChargeTypeList from './components/modules/real-estate/charge-types/ChargeTypeList'; 
 import AddBranding from './components/modules/product/brand/AddBranding';
 import Brands from './components/modules/product/brand/Brands';
 import EditCustomerSupplier from './components/modules/customer-supplier/EditCustomerSupplier';
+import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
 
 
 
@@ -264,7 +263,7 @@ function App() {
             <Route path={ routes.real_estate_unit_types_create } element={<AddEditUnitChargeType />} />
 
             <Route path={routes.real_estate_unit_types_list } element={<ChargeTypeList user={me} />} />
-            <Route path={routes.real_estate_unit_sales } element={<SalePricingPage />} />
+            <Route path={routes.real_estate_unit_sales } element={<UnitSalePage />} />
             
 
             {/* HRM */}

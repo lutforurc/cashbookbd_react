@@ -455,3 +455,6 @@ export const API_UNIT_CHARGE_TYPE_LIST_URL = `${API_BASE_URL}/real-estate/units/
 // export const API_UNIT_EDIT_URL = `${API_BASE_URL}/real-estate/units/edit`;
 // export const API_UNIT_UPDATE_URL = `${API_BASE_URL}/real-estate/units/update`;
 // export const API_UNIT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/units/ddl`; 
+
+// Unit Sale Routes
+export const API_UNIT_SALE_STORE_URL = `${API_BASE_URL}/real-estate/unit/sales`;

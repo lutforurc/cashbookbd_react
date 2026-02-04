@@ -18,10 +18,12 @@ import InputElement from "../../../utils/fields/InputElement";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import { useNavigate } from "react-router";
+import { storeSalePricing } from "./unitSaleSlice";
+import { useDispatch } from "react-redux";
 
 /* ================= TYPES ================= */
 
-type ChargeType = "BASE_PRICE" | "PARKING" | "CUSTOM";
+type ChargeType = "UNIT_PRICE" | "PARKING" | "CUSTOM";
 
 type EditMode = "LOCKED" | "EDITABLE";
 
@@ -59,7 +61,7 @@ const linkedToText = (l: LinkedTo) =>
 
 /* ================= PAGE ================= */
 
-export default function SalePricingPage() {
+export default function UnitSalePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [selectedUnit, setSelectedUnit] = useState<any>(null);
   const [selectedParking, setSelectedParking] = useState<any>(null);
@@ -71,7 +73,7 @@ export default function SalePricingPage() {
   const [chargeType, setChargeType] = useState<any>(null);
   const [chargeAmount, setChargeAmount] = useState("");
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   /* ================= UNIT ================= */
 
   const onUnitSelect = (option: any | null) => {
@@ -88,11 +90,11 @@ export default function SalePricingPage() {
     const amount = size * rate;
 
     setItems((prev) => {
-      const exists = prev.find((x) => x.type === "BASE_PRICE");
+      const exists = prev.find((x) => x.type === "UNIT_PRICE");
 
       if (exists) {
         return prev.map((x) =>
-          x.type === "BASE_PRICE"
+          x.type === "UNIT_PRICE"
             ? {
               ...x,
               linkedTo: {
@@ -101,7 +103,7 @@ export default function SalePricingPage() {
                 unitId: option.value,
               },
               amount,
-              note: `Auto: ${size} × ${rate}`,
+              note: `Size: ${size} × ${rate}`,
             }
             : x
         );
@@ -110,8 +112,8 @@ export default function SalePricingPage() {
       return [
         {
           id: Date.now(),
-          type: "BASE_PRICE",
-          title: "Base Price",
+          type: "UNIT_PRICE",
+          title: "Unit Price",
           effect: "+",
           linkedTo: {
             kind: "unit",
@@ -252,23 +254,37 @@ export default function SalePricingPage() {
 
   /* ================= API ================= */
 
-  const apiPayload = {
-    customer: selectedCustomer
-      ? { id: selectedCustomer.value, name: selectedCustomer.label }
-      : null,
-    unit: selectedUnit
-      ? { id: selectedUnit.value, label: selectedUnit.label }
-      : null,
-    parking: selectedParking
-      ? { id: selectedParking.value, label: selectedParking.label }
-      : null,
-    items,
-    total,
-  };
+const apiPayload = {
+  customer: selectedCustomer,      // FULL dropdown object
+  unit: selectedUnit,              // FULL dropdown object
+  parking: selectedParking,        // FULL dropdown object (or null)
 
-  const submitToApi = () => {
-    console.log("API PAYLOAD =>", apiPayload);
-  };
+  items: items.map((it) => ({
+    id: it.id,
+    type: it.type,                 // UNIT_PRICE | PARKING | CUSTOM
+    title: it.title,
+    effect: it.effect,             // "+" | "-"
+    linkedTo: it.linkedTo,          // { kind, unitId | parkingId } | null
+    amount: it.amount,
+    note: it.note ?? null,
+    editMode: it.editMode,          // LOCKED | EDITABLE
+  })),
+
+  total,                            // calculated total
+};
+
+  const submitToApi = async () => {
+  console.log("API PAYLOAD =>", apiPayload);
+
+  const response = await dispatch(
+    storeSalePricing(apiPayload)
+  );
+
+  // optional: response handle
+  if (storeSalePricing.fulfilled.match(response)) {
+    console.log("Sale saved, ID:", response.payload?.sale_id);
+  }
+};
 
   /* ================= UI ================= */
 
