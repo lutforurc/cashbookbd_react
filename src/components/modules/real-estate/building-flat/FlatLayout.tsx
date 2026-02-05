@@ -21,12 +21,12 @@ type LayoutType = any; // চাইলে এখানে আপনার proper
 
 const FlatLayout = () => {
   const dispatch = useDispatch<any>();
- 
+
   const storeLayout = useSelector((state: any) => state.flat?.flatLayout);
 
   const [buildingId, setBuildingId] = useState<number | null>(null);
   const [activeFloor, setActiveFloor] = useState<number | null>(null);
- 
+
   const [viewLayout, setViewLayout] = useState<LayoutType | null>(null);
   const [pageLoading, setPageLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -37,7 +37,7 @@ const FlatLayout = () => {
 
     const nextId = Number(option.value);
     if (nextId === buildingId) return;
- 
+
     setBuildingId(nextId);
     setViewLayout(null);
     setActiveFloor(null);
@@ -52,21 +52,21 @@ const FlatLayout = () => {
 
     dispatch(flatLayout(buildingId))
       .unwrap()
-      .then((res: any) => { 
+      .then((res: any) => {
         const nextLayout = res?.data ?? res ?? null;
 
         // ✅ না পেলে ফাঁকা
         setViewLayout(nextLayout && nextLayout.floors ? nextLayout : nextLayout ?? null);
- 
+
       })
-      .catch(() => { 
+      .catch(() => {
         setViewLayout(null);
         setErrorMsg("No data found for this selection.");
       })
       .finally(() => setPageLoading(false));
   }, [buildingId, dispatch]);
- 
-  useEffect(() => { 
+
+  useEffect(() => {
     if (!viewLayout && storeLayout && buildingId) {
       setViewLayout(storeLayout);
     }
@@ -88,10 +88,10 @@ const FlatLayout = () => {
   }, [viewLayout, activeFloor]);
 
 
-const handleUnitClick = (e: React.MouseEvent, unit: any) => {
-  console.log("event", e);
-  console.log("unit", unit);
-};
+  const handleUnitClick = (e: React.MouseEvent, unit: any) => {
+    console.log("event", e);
+    console.log("unit", unit);
+  };
 
   return (
     <>
@@ -143,10 +143,9 @@ const handleUnitClick = (e: React.MouseEvent, unit: any) => {
                   key={floor.floor_no}
                   onClick={() => setActiveFloor(floor.floor_no)}
                   className={`px-4 py-1 rounded text-sm font-medium border
-                    ${
-                      activeFloor === floor.floor_no
-                        ? "bg-cyan-600 text-white"
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+                    ${activeFloor === floor.floor_no
+                      ? "bg-cyan-600 text-white"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
                     }`}
                 >
                   Floor {floor.floor_no}
@@ -189,13 +188,12 @@ const handleUnitClick = (e: React.MouseEvent, unit: any) => {
                       {flat.flat_name}
                     </h3>
                     <span className="text-xs text-gray-500 dark:text-gray-300"
-                    
+
                     >
                       {flat.units?.length === 0
                         ? "No units"
-                        : `${flat.units.length} unit${
-                            flat.units.length > 1 ? "s" : ""
-                          }`}
+                        : `${flat.units.length} unit${flat.units.length > 1 ? "s" : ""
+                        }`}
                     </span>
                   </div>
 
@@ -206,12 +204,41 @@ const handleUnitClick = (e: React.MouseEvent, unit: any) => {
                         <div
                           key={unit.id}
                           onClick={(e) => handleUnitClick(e, unit)}
-                          className={`text-white text-sm text-center py-2 rounded cursor-pointer ${
-                            STATUS_MAP[unit.status] ?? "bg-gray-400"
-                          }`}
-                          title={`Size: ${unit.size_sqft} sqft`}
+                          className={`relative group text-white text-sm text-center py-2 rounded cursor-pointer ${STATUS_MAP[unit.status] ?? "bg-gray-400"
+                            }`}
                         >
                           <span className="font-semibold">{unit.unit_no}</span>
+
+                          {/* 🔽 Tooltip */}
+                          <div
+                            className="pointer-events-none absolute z-50 hidden group-hover:block
+                     bottom-full left-1/2 -translate-x-1/2 mb-2
+                     bg-gray-900 text-gray-200 dark:bg-gray-200 dark:text-gray-900
+                     text-xs rounded px-3 py-2 shadow-lg min-w-max text-left"
+                          >
+                            <div className="flex flex-col gap-0.5">
+                              {unit.size_sqft && (
+                                <span>
+                                  <span className="font-semibold">Size:</span>{" "}
+                                  {unit.size_sqft} sqft
+                                </span>
+                              )}
+
+                              {unit?.customer?.name && (
+                                <span>
+                                  <span className="font-semibold">Customer:</span>{" "}
+                                  {unit.customer.name}
+                                </span>
+                              )}
+
+                              {unit?.customer?.mobile && (
+                                <span>
+                                  <span className="font-semibold">Mobile:</span>{" "}
+                                  {unit.customer.mobile}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       ))
                     ) : (
@@ -220,6 +247,7 @@ const handleUnitClick = (e: React.MouseEvent, unit: any) => {
                       </div>
                     )}
                   </div>
+
                 </div>
               ))
             ) : (
