@@ -178,38 +178,44 @@ const CustomerSupplier = () => {
       ),
     },
 
-    {
+     {
       key: 'mobile',
       header: 'Mobile',
-      render: (row: any) => (
-        <>
-          <InputElement
-            type="number"
-            placeholder="Mobile Number"
-            value={row.mobile ?? ""}
-            className="text-center w-35"
-            onChange={(e) =>
-              handleInputChange(
-                row.id,
-                "mobile",
-                e.target.value
-              )
-            }
-            onBlur={() =>
-              handleInputBlur(
-                row,
-                "mobile"
-              )
-            }
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.currentTarget.blur(); // 🔥 Enter = Save
-              }
-            }}
-          />
-        </>
-      ),
+      headerClass: 'text-center',
+      cellClass: 'text-center',
     },
+    // {
+    //   key: 'mobile',
+    //   header: 'Mobile',
+    //   render: (row: any) => (
+    //     <>
+    //       <InputElement
+    //         type="number"
+    //         placeholder="Mobile Number"
+    //         value={row.mobile ?? ""}
+    //         className="text-center w-35"
+    //         onChange={(e) =>
+    //           handleInputChange(
+    //             row.id,
+    //             "mobile",
+    //             e.target.value
+    //           )
+    //         }
+    //         onBlur={() =>
+    //           handleInputBlur(
+    //             row,
+    //             "mobile"
+    //           )
+    //         }
+    //         onKeyDown={(e) => {
+    //           if (e.key === "Enter") {
+    //             e.currentTarget.blur(); // 🔥 Enter = Save
+    //           }
+    //         }}
+    //       />
+    //     </>
+    //   ),
+    // },
 
     {
       key: "action",

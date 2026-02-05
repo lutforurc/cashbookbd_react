@@ -97,6 +97,24 @@ const BuildingUnitsList = ({ user }: any) => {
       render: (row: any) => <div>{row.unit_no}</div>,
     },
     {
+      key: "unit_type",
+      header: "Unit Type",
+      render: (row: any) => {
+        const type = (row.unit_type ?? "").trim().toLowerCase();
+        const label =
+          (row.unit_type ?? "")
+            .trim()
+            .replace(/^./, (c: string) => c.toUpperCase());
+
+        const cls =
+          type === "parking"
+            ? "inline-flex rounded px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+            : "inline-flex rounded px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
+
+        return <span className={cls}>{label}</span>;
+      },
+    },
+    {
       key: 'flat_name',
       header: 'Flat Name',
       render: (row: any) => <div>{row.flat.flat_name}</div>,
@@ -114,12 +132,12 @@ const BuildingUnitsList = ({ user }: any) => {
     {
       key: 'size_sqft',
       header: 'Size',
-      render: (row: any) => <div>{ thousandSeparator(row.size_sqft, 0)} Sft</div>,
+      render: (row: any) => <div>{thousandSeparator(row.size_sqft, 0)} Sft</div>,
     },
     {
       key: 'sale_price',
       header: 'Unit Price',
-      render: (row: any) => <div>{ thousandSeparator(row.sale_price, 0) ?? '-'}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.sale_price, 0) ?? '-'}</div>,
     },
     {
       key: 'total_price',
