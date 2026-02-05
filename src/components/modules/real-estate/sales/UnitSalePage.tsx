@@ -20,6 +20,7 @@ import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import { useNavigate } from "react-router";
 import { storeSalePricing } from "./unitSaleSlice";
 import { useDispatch } from "react-redux";
+import { toast } from 'react-toastify';
 
 /* ================= TYPES ================= */
 
@@ -276,9 +277,12 @@ const apiPayload = {
   const submitToApi = async () => {
   console.log("API PAYLOAD =>", apiPayload);
 
-  const response = await dispatch(
-    storeSalePricing(apiPayload)
-  );
+  if (!selectedCustomer || !selectedUnit) {
+    toast.info("Please select customer and unit before saving.");
+    return;
+  }
+
+  const response = await dispatch(storeSalePricing(apiPayload));
 
   // optional: response handle
   if (storeSalePricing.fulfilled.match(response)) {
@@ -316,7 +320,7 @@ const apiPayload = {
         {/* LEFT */}
         <div className="lg:col-span-4 space-y-4">
           <div className="rounded border bg-white dark:bg-gray-800 p-4">
-            <label className="text-sm font-semibold">Customer</label>
+            <label className="text-sm font-semibold">Select Customer</label>
             <DdlMultiline onSelect={setSelectedCustomer} acType="" />
 
             <label className="block mt-3 text-sm font-semibold">Select Unit</label>
