@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
-import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL, API_UNIT_CHARGE_DDL_LIST_URL } from "../../../services/apiRoutes";
+import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL, API_UNIT_CHARGE_DDL_LIST_URL, API_PARKING_DDL_LIST_URL } from "../../../services/apiRoutes";
 import { getToken } from "../../../../features/authReducer";
 import { UnitChargeTypeItem } from "./types";
 
@@ -52,6 +52,7 @@ interface UnitDdlItem {
 interface UnitState {
   units: UnitItem[];
   unitDdl: UnitDdlItem[];
+  parkingDdl: UnitDdlItem[];
   editUnit: UnitItem | null;
 
   unitChargeTypes: UnitChargeTypeItem[];
@@ -76,6 +77,7 @@ export interface UnitChargeTypeListRequest {
 const initialState: UnitState = {
   units: [],
   unitDdl: [],
+  parkingDdl: [],
   editUnit: null,
 
   unitChargeTypes: [],
@@ -298,6 +300,31 @@ export const unitDdl = createAsyncThunk<UnitDdlItem[], string | undefined, { rej
   }
 });
 
+
+/* ---- Parking DDL ---- */
+export const parkingDdl = createAsyncThunk<UnitDdlItem[],string | undefined, { rejectValue: string }>("unit/parkingDdl", async (search = "", { rejectWithValue }) => {
+    try {
+      const token = getToken();
+      const res = await fetch(API_PARKING_DDL_LIST_URL + `?q=${search}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (data?.success === true) {
+        return data.data;
+      }
+
+      return rejectWithValue(data?.message || "Failed to load parking ddl");
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 /* ---- Store Unit ---- */
 export const unitStore = createAsyncThunk<any, UnitItem, { rejectValue: string }>("unit/unitStore", async (payload, { rejectWithValue }) => {
   try {
@@ -346,6 +373,7 @@ const unitSlice = createSlice({
     clearUnitState(state) {
       state.units = [];
       state.unitDdl = [];
+      state.parkingDdl = [];
       state.editUnit = null;
 
       state.unitChargeTypes = [];
@@ -378,6 +406,11 @@ const unitSlice = createSlice({
       /* ===== Unit DDL ===== */
       .addCase(unitDdl.fulfilled, (state, action) => {
         state.unitDdl = action.payload;
+      })
+      
+      /* ===== Parking DDL ===== */
+      .addCase(parkingDdl.fulfilled, (state, action) => {
+        state.parkingDdl = action.payload;
       })
 
       /* ===== Unit Charge Types ===== */

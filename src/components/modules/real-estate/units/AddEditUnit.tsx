@@ -103,13 +103,25 @@ const AddEditUnit = () => {
     setSaleDate(null);
   };
 
-    const handleBuildingSelect = (option: any) => {
+  const handleBuildingSelect = (option: any) => {
     setFormData((prev) => ({
       ...prev,
       flat_id: option.value,
     }));
   };
   /* ================= RENDER ================= */
+const handleUnitTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+  const unitTypes = [
+    { id: "unit", name: "Unit" },
+    { id: "parking", name: "Parking" },
+  ];
 
   return (
     <>
@@ -119,7 +131,7 @@ const AddEditUnit = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <div>
           <label>Select Floor</label>
-          <BuildingFloorDropdown onSelect={handleBuildingSelect}  />
+          <BuildingFloorDropdown onSelect={handleBuildingSelect} />
         </div>
         <InputElement
           id="unit_no"
@@ -170,29 +182,38 @@ const AddEditUnit = () => {
 
       {/* STATUS & NOTES */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        
-        <div className="col-span-2">
+
+        <div className="col-span-1">
           <InputElement
-          id="notes"
-          name="notes"
-          label="Notes"
-          placeholder="Optional notes"
-          value={formData.notes ?? ""}
-          onChange={handleOnChange}
-        />
+            id="notes"
+            name="notes"
+            label="Notes"
+            placeholder="Optional notes"
+            value={formData.notes ?? ""}
+            onChange={handleOnChange}
+          />
         </div>
         <div className="col-span-1">
-
-        
-        <DropdownCommon
-          id="status"
-          name="status"
-          label="Select Status"
-          data={status}
-          className="h-8.5"
-          defaultValue={formData.status.toString()}
-          onChange={handleSelectChange}
-        />
+          <DropdownCommon
+            id="unit_type"
+            name="unit_type"
+            label="Select Unit Type"
+            data={unitTypes}
+            className="h-8.5"
+            defaultValue={formData.unit_type ?? "unit"}
+            onChange={handleUnitTypeChange}
+          />
+        </div>
+        <div className="col-span-1">
+          <DropdownCommon
+            id="status"
+            name="status"
+            label="Select Status"
+            data={status}
+            className="h-8.5"
+            defaultValue={formData.status.toString()}
+            onChange={handleSelectChange}
+          />
         </div>
       </div>
 

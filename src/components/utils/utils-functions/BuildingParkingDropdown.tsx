@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import AsyncSelect from 'react-select/async';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
-import { unitDdl } from '../../modules/real-estate/units/unitSlice';
+import { parkingDdl, unitDdl } from '../../modules/real-estate/units/unitSlice';
 
 /* ================= TYPES ================= */
 
@@ -62,7 +62,7 @@ const BuildingParkingDropdown: React.FC<DropdownProps> = ({
     try {
       // ✅ FIXED: string pass করা হচ্ছে
       const response = await dispatch(
-        unitDdl(inputValue)
+        parkingDdl(inputValue)
       ).unwrap();
 
       const list = Array.isArray(response)

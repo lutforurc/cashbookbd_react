@@ -9,6 +9,7 @@ export interface UnitItem {
   sale_date?: string | null;
   status: number;
   notes?: string | null;
+  unit_type: "unit" | "parking";
 }
 
 /* ---- Unit Charge Type ---- */

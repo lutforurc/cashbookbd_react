@@ -446,6 +446,7 @@ export const API_UNIT_STORE_URL = `${API_BASE_URL}/real-estate/units`;
 export const API_UNIT_EDIT_URL = `${API_BASE_URL}/real-estate/units/edit`;
 export const API_UNIT_UPDATE_URL = `${API_BASE_URL}/real-estate/units/update`;
 export const API_UNIT_DDL_LIST_URL = `${API_BASE_URL}/real-estate/units/ddl`;
+export const API_PARKING_DDL_LIST_URL = `${API_BASE_URL}/real-estate/parking/ddl`;
 export const API_UNIT_CHARGE_DDL_LIST_URL = `${API_BASE_URL}/real-estate/units/charge-types/ddl`;
 
 // Real Estate Unit Charge Types url

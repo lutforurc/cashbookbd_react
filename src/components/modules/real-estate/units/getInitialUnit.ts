@@ -5,6 +5,7 @@ export const getInitialUnit = (flatId: number) => ({
   allocated_cost: 0,
   sale_price: null,
   sale_date: null,
-  status: 1,
   notes: "",
+  unit_type: "unit",
+  status: 1,
 });
