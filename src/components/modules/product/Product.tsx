@@ -214,14 +214,15 @@ const Product = (user: any) => {
         <InputElement
           type="number"
           className="text-right w-20"
-          placeholder='Qty'
-          value={editedRows[row.product_id]?.qty ?? row.qty ?? ''}
+          placeholder="Qty"
+          value={
+            editedRows[row.product_id]?.qty ??
+            row.qty ??
+            row.openingbalance ??
+            ""
+          }
           onChange={(e) =>
-            handleProductInputChange(
-              row.product_id,
-              'qty',
-              e.target.value
-            )
+            handleProductInputChange(row.product_id, "qty", e.target.value)
           }
           onBlur={(e) => handleProductBlur(e, row)}
         />
@@ -266,7 +267,7 @@ const Product = (user: any) => {
       header: 'Product',
       render: (row: any) => (
         <div>
-          
+
           <div className="text-sm text-gray-500">
             {row.brand && <>{row.brand}. </>}
           </div>
