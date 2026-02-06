@@ -20,12 +20,11 @@ import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import { useNavigate } from "react-router";
 import { storeSalePricing } from "./unitSaleSlice";
 import { useDispatch } from "react-redux";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 /* ================= TYPES ================= */
 
 type ChargeType = "UNIT_PRICE" | "PARKING" | "CUSTOM";
-
 type EditMode = "LOCKED" | "EDITABLE";
 
 type LinkedTo =
@@ -60,6 +59,11 @@ const calculateTotal = (items: PriceItem[]) =>
 const linkedToText = (l: LinkedTo) =>
   !l ? "-" : l.kind === "unit" ? `Unit: ${l.label}` : `Parking: ${l.label}`;
 
+const safeNumber = (v: any) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
 /* ================= PAGE ================= */
 
 export default function UnitSalePage() {
@@ -73,8 +77,13 @@ export default function UnitSalePage() {
 
   const [chargeType, setChargeType] = useState<any>(null);
   const [chargeAmount, setChargeAmount] = useState("");
+
+  // ✅ NEW: Booking money state (separate from chargeAmount)
+  const [bookingMoney, setBookingMoney] = useState<string>("");
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   /* ================= UNIT ================= */
 
   const onUnitSelect = (option: any | null) => {
@@ -183,33 +192,48 @@ export default function UnitSalePage() {
       ];
     });
   };
-
+  const removeParking = () => {
+    setSelectedParking(null);
+    setItems((p) => p.filter((x) => x.type !== "PARKING"));
+  };
   /* ================= CUSTOM CHARGE ================= */
 
   const addCustomCharge = () => {
-    if (!chargeType || !chargeAmount) return;
+    if (!chargeType) {
+      toast.info("Please select a charge type.");
+      return;
+    }
+
+    if (!chargeAmount) {
+      toast.info("Please enter amount.");
+      return;
+    }
+
+    const amt = safeNumber(chargeAmount);
+    if (amt <= 0) {
+      toast.info("Amount must be greater than 0.");
+      return;
+    }
 
     setItems((prev) => {
       const exists = prev.find(
-        (x) =>
-          x.type === "CUSTOM" &&
-          x.title === chargeType.label // same charge type
+        (x) => x.type === "CUSTOM" && x.title === chargeType.label
       );
 
-      // 🔁 If already exists → update amount
+      // If already exists → update
       if (exists) {
         return prev.map((x) =>
           x.id === exists.id
             ? {
               ...x,
-              amount: Math.abs(Number(chargeAmount)),
+              amount: Math.abs(amt),
               effect: chargeType.label_2 === "-" ? "-" : "+",
             }
             : x
         );
       }
 
-      // ➕ Else add new
+      // Else add new
       return [
         ...prev,
         {
@@ -218,7 +242,7 @@ export default function UnitSalePage() {
           title: chargeType.label,
           effect: chargeType.label_2 === "-" ? "-" : "+",
           linkedTo: null,
-          amount: Math.abs(Number(chargeAmount)),
+          amount: Math.abs(amt),
           editMode: "EDITABLE",
         },
       ];
@@ -227,7 +251,6 @@ export default function UnitSalePage() {
     setChargeType(null);
     setChargeAmount("");
   };
-
 
   /* ================= INLINE EDIT ================= */
 
@@ -239,56 +262,68 @@ export default function UnitSalePage() {
 
   const saveEdit = (it: PriceItem) => {
     const val = Number(draftValue);
-    if (Number.isNaN(val)) return;
+    if (Number.isNaN(val) || val <= 0) return;
 
-    setItems((p) =>
-      p.map((x) =>
-        x.id === it.id ? { ...x, amount: Math.abs(val) } : x // ✅ FIX
-      )
-    );
+    setItems((p) => p.map((x) => (x.id === it.id ? { ...x, amount: Math.abs(val) } : x)));
     setEditingId(null);
   };
 
-  /* ================= TOTAL ================= */
+  /* ================= TOTAL / DUE ================= */
 
   const total = useMemo(() => calculateTotal(items), [items]);
 
+  const bookingAmt = useMemo(() => {
+    const n = safeNumber(bookingMoney);
+    return n < 0 ? 0 : Math.floor(n); // INT field in DB
+  }, [bookingMoney]);
+
+  const due = useMemo(() => Math.max(total - bookingAmt, 0), [total, bookingAmt]);
+
   /* ================= API ================= */
 
-const apiPayload = {
-  customer: selectedCustomer,      // FULL dropdown object
-  unit: selectedUnit,              // FULL dropdown object
-  parking: selectedParking,        // FULL dropdown object (or null)
+  const apiPayload = {
+    customer: selectedCustomer,
+    unit: selectedUnit,
+    parking: selectedParking,
 
-  items: items.map((it) => ({
-    id: it.id,
-    type: it.type,                 // UNIT_PRICE | PARKING | CUSTOM
-    title: it.title,
-    effect: it.effect,             // "+" | "-"
-    linkedTo: it.linkedTo,          // { kind, unitId | parkingId } | null
-    amount: it.amount,
-    note: it.note ?? null,
-    editMode: it.editMode,          // LOCKED | EDITABLE
-  })),
+    // ✅ NEW
+    booking_amt: bookingAmt,
 
-  total,                            // calculated total
-};
+    items: items.map((it) => ({
+      id: it.id,
+      type: it.type,
+      title: it.title,
+      effect: it.effect,
+      linkedTo: it.linkedTo,
+      amount: it.amount,
+      note: it.note ?? null,
+      editMode: it.editMode,
+    })),
+
+    total,
+    due, // optional (frontend convenience)
+  };
 
   const submitToApi = async () => {
-  console.log("API PAYLOAD =>", apiPayload);
+    if (!selectedCustomer || !selectedUnit) {
+      toast.info("Please select customer and unit before saving.");
+      return;
+    }
 
-  if (!selectedCustomer || !selectedUnit) {
-    toast.info("Please select customer and unit before saving.");
-    return;
-  }
+    if (bookingAmt > total) {
+      toast.info("Booking money cannot be greater than grand total.");
+      return;
+    }
 
-  const response = await dispatch(storeSalePricing(apiPayload));
+    const response: any = await dispatch(storeSalePricing(apiPayload) as any);
 
-  // optional: response handle
-  if (storeSalePricing.fulfilled.match(response)) {
-    console.log("Sale saved, ID:", response.payload?.sale_id);
-  }
-};
+    if (storeSalePricing.fulfilled.match(response)) {
+      toast.success("Sale pricing saved successfully.");
+      console.log("Sale saved, ID:", response.payload?.sale_id);
+    } else {
+      toast.error(response?.payload || "Failed to save.");
+    }
+  };
 
   /* ================= UI ================= */
 
@@ -296,59 +331,99 @@ const apiPayload = {
     <div className="mx-auto max-w-7xl">
       <HelmetTitle title="Unit Sales" />
 
-      <div className="mb-4 flex justify-between">
+      <div className="mb-2 flex justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Sales Pricing Builder
+          <h1 className="text-md font-semibold text-gray-900 dark:text-white">
+            Unit Sales Pricing Builder
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Unit + Parking + Discount calculation
+            Unit & Parking with others calculation
           </p>
         </div>
 
-        <div className="text-right">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Grand Total
+        <div className="text-right space-y-1 text-sm">
+          <div className="text-gray-900 dark:text-white">
+            <span className="text-gray-700 dark:text-gray-200">Grand Total:</span>{" "}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">
+              {formatAmount(total)}
+            </span>
           </div>
-          <div className="text-xl font-semibold text-gray-900 dark:text-white">
-            {formatAmount(total)}
+
+          <div className="flex justify-end gap-4">
+            <div className="text-gray-700 dark:text-gray-200">
+              Booking: <span className="font-semibold">{formatAmount(bookingAmt)}</span>
+            </div>
+            <div className="text-gray-700 dark:text-gray-200">
+              Due: <span className="font-semibold">{formatAmount(due)}</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* LEFT */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="rounded border bg-white dark:bg-gray-800 p-4">
+        <div className="lg:col-span-4 space-y-1">
+          <div className="rounded border bg-white dark:bg-gray-800 py-3 px-4">
             <label className="text-sm font-semibold">Select Customer</label>
             <DdlMultiline onSelect={setSelectedCustomer} acType="" />
 
-            <label className="block mt-3 text-sm font-semibold">Select Unit</label>
+            <label className="block mt-1 text-sm font-semibold">Select Unit</label>
             <BuildingUnitDropdown onSelect={onUnitSelect} />
 
-            <label className="block mt-3 text-sm font-semibold">Select Parking</label>
+            <label className="block mt-1 text-sm font-semibold">Select Parking</label>
             <BuildingParkingDropdown onSelect={onParkingSelect} />
+
+            {/* ✅ Booking Money (new) */}
+            <div className="mt-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div>
+                <label className="block mt-1 text-sm font-semibold">Booking Money (Tk.)</label>
+                <InputElement
+                  id="bookingMoney"
+                  name="bookingMoney"
+                  type="number"
+                  label=""
+                  className="text-sm"
+                  value={bookingMoney}
+                  onChange={(e: any) => setBookingMoney(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block mt-1 text-sm font-semibold">Note</label>
+                {/* <InputElement
+                  id="note"
+                  name="note"
+                  type="text"
+                  label=""
+                  className="text-sm"
+                  value={note}
+                  onChange={(e: any) => setNote(e.target.value)}
+                /> */}
+              </div>
+            </div>
           </div>
 
-          <div className="rounded border bg-white dark:bg-gray-800 p-4">
+          <div className="rounded border bg-white dark:bg-gray-800 py-2 px-4">
             <label className="text-sm font-semibold">Charge Type</label>
             <BuildingUnitChargesDropdown onSelect={setChargeType} />
 
-            <InputElement
-              id="amount"
-              name="amount"
-              type="number"
-              label="Amount (Tk.)"
-              className="text-sm "
-              value={chargeAmount}
-              onChange={(e: any) => setChargeAmount(e.target.value)}
-            />
+            <div className="mt-2">
+              <InputElement
+                id="amount"
+                name="amount"
+                type="number"
+                label="Amount (Tk.)"
+                className="text-sm"
+                value={chargeAmount}
+                onChange={(e: any) => setChargeAmount(e.target.value)}
+              />
+            </div>
 
             <button
               onClick={addCustomCharge}
-              className="mt-2 flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 "
+              className="mt-2 inline-flex items-center gap-2 rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
             >
-              <FiPlus className="text-gray-800 dark:text-gray-200" /> Add Charge
+              <FiPlus className="text-gray-900 dark:text-gray-100" />
+              Add Charge
             </button>
           </div>
 
@@ -393,42 +468,59 @@ const apiPayload = {
                           value={draftValue}
                           onChange={(e: any) => setDraftValue(e.target.value)}
                         />
-                        <FiCheck onClick={() => saveEdit(it)} />
-                        <FiX onClick={() => setEditingId(null)} />
+                        <FiCheck className="cursor-pointer" onClick={() => saveEdit(it)} />
+                        <FiX className="cursor-pointer" onClick={() => setEditingId(null)} />
                       </div>
                     ) : (
-                      <div className="flex justify-end items-center gap-1">
-                        <span>
+                      <div className="flex justify-end items-center gap-2">
+                        <span className="text-xs text-gray-500 dark:text-gray-300">
                           {it.effect === "-" ? "(-)" : "(+)"}
                         </span>
-                        <span>
-                          {formatAmount(it.amount)}
-                        </span>
+                        <span className="font-medium">{formatAmount(it.amount)}</span>
                       </div>
                     )}
                   </td>
-                  <td className="p-2 flex">
+                  <td className="p-2">
                     {it.editMode === "LOCKED" ? (
-                      <FiLock />
+                      <div className="flex items-center justify-center gap-3">
+                        <FiLock />
+
+                        {/* ✅ Allow deleting Parking even if locked */}
+                        {it.type === "PARKING" && (
+                          <FiTrash2
+                            className="cursor-pointer text-red-500"
+                            title="Remove Parking"
+                            onClick={() => {
+                              if (confirm("Remove parking from this sale?")) {
+                                removeParking();
+                              }
+                            }}
+                          />
+                        )}
+                      </div>
                     ) : (
-                      <>
+                      <div className="flex items-center justify-center gap-3">
                         <FiEdit2
                           className="cursor-pointer text-blue-500"
                           onClick={() => startEdit(it)}
                         />
                         <FiTrash2
-                          className="ml-2 cursor-pointer text-red-500"
-                          onClick={() =>
-                            setItems((p) =>
-                              p.filter((x) => x.id !== it.id)
-                            )
-                          }
+                          className="cursor-pointer text-red-500"
+                          onClick={() => setItems((p) => p.filter((x) => x.id !== it.id))}
                         />
-                      </>
+                      </div>
                     )}
                   </td>
                 </tr>
               ))}
+
+              {!items.length && (
+                <tr>
+                  <td className="py-2 px-4 text-center text-gray-500 dark:text-gray-400" colSpan={4}>
+                    No pricing items yet. Select Unit to start.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
