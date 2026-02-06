@@ -57,6 +57,7 @@ import realEstateProjects from './components/modules/real-estate/project/project
 import buildingsSlice from './components/modules/real-estate/buildings/buildingsSlice';
 import unitSlice from './components/modules/real-estate/units/unitSlice';
 import brandSlice from './components/modules/product/brand/brandSlice';
+import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice';
 
 
 const store = configureStore({
@@ -119,6 +120,7 @@ const store = configureStore({
     buildings: buildingsSlice,
     buildingUnits: unitSlice,
     brand: brandSlice,
+    unitSale: unitSaleSlice,
   },
 });
 

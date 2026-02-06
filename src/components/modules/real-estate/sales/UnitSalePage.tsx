@@ -8,6 +8,8 @@ import {
   FiTrash2,
   FiSend,
   FiArrowLeft,
+  FiSave,
+  FiLoader,
 } from "react-icons/fi";
 
 import DdlMultiline from "../../../utils/utils-functions/DdlMultiline";
@@ -19,7 +21,7 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import { useNavigate } from "react-router";
 import { storeSalePricing } from "./unitSaleSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 /* ================= TYPES ================= */
@@ -67,6 +69,8 @@ const safeNumber = (v: any) => {
 /* ================= PAGE ================= */
 
 export default function UnitSalePage() {
+  const { loading } = useSelector((state: any) => state.unitSale ?? { loading: false });
+
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [selectedUnit, setSelectedUnit] = useState<any>(null);
   const [selectedParking, setSelectedParking] = useState<any>(null);
@@ -80,6 +84,7 @@ export default function UnitSalePage() {
 
   // ✅ NEW: Booking money state (separate from chargeAmount)
   const [bookingMoney, setBookingMoney] = useState<string>("");
+  const [note, setNote] = useState<string>("");
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -288,6 +293,7 @@ export default function UnitSalePage() {
 
     // ✅ NEW
     booking_amt: bookingAmt,
+    note: note || null,
 
     items: items.map((it) => ({
       id: it.id,
@@ -305,8 +311,15 @@ export default function UnitSalePage() {
   };
 
   const submitToApi = async () => {
+    if (loading) return; // ✅ block double click
+
     if (!selectedCustomer || !selectedUnit) {
       toast.info("Please select customer and unit before saving.");
+      return;
+    }
+
+    if (!bookingAmt || bookingAmt < 0 || Number.isNaN(bookingAmt)) {
+      toast.info("Booking money cannot be zero or negative.");
       return;
     }
 
@@ -316,14 +329,27 @@ export default function UnitSalePage() {
     }
 
     const response: any = await dispatch(storeSalePricing(apiPayload) as any);
+    console.log('====================================');
+    console.log("response", response?.payload?.message);
+    console.log('====================================');
 
     if (storeSalePricing.fulfilled.match(response)) {
-      toast.success("Sale pricing saved successfully.");
-      console.log("Sale saved, ID:", response.payload?.sale_id);
+      toast.success(response?.payload?.message || "Unit sale transaction saved successfully");
+      // console.log("Sale saved, ID:", response.payload?.sale_id);
+
+      // ✅ clear only the table part + inputs
+      setItems([]);
+      setBookingMoney("");
+      setChargeType(null);
+      setChargeAmount("");
+      setEditingId(null);
+      setDraftValue("");
+      setNote("");
     } else {
-      toast.error(response?.payload || "Failed to save.");
+      toast.info(response?.payload || "Failed to save.");
     }
   };
+
 
   /* ================= UI ================= */
 
@@ -381,6 +407,7 @@ export default function UnitSalePage() {
                   id="bookingMoney"
                   name="bookingMoney"
                   type="number"
+                  placeholder="Enter booking money"
                   label=""
                   className="text-sm"
                   value={bookingMoney}
@@ -389,15 +416,16 @@ export default function UnitSalePage() {
               </div>
               <div>
                 <label className="block mt-1 text-sm font-semibold">Note</label>
-                {/* <InputElement
+                <InputElement
                   id="note"
                   name="note"
                   type="text"
                   label=""
+                  placeholder="Enter note"
                   className="text-sm"
                   value={note}
                   onChange={(e: any) => setNote(e.target.value)}
-                /> */}
+                />
               </div>
             </div>
           </div>
@@ -420,7 +448,7 @@ export default function UnitSalePage() {
 
             <button
               onClick={addCustomCharge}
-              className="mt-2 inline-flex items-center gap-2 rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+              className="mt-2 inline-flex items-center gap-2  bg-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
             >
               <FiPlus className="text-gray-900 dark:text-gray-100" />
               Add Charge
@@ -430,9 +458,10 @@ export default function UnitSalePage() {
           <div className="flex gap-2">
             <ButtonLoading
               onClick={submitToApi}
-              label="Save"
-              icon={<FiSend className="mr-3" />}
+              label={"Save"}
+              icon={loading ? <FiLoader className="animate-spin text-white text-lg ml-2 mr-2 hidden xl:block" /> : <FiSave className="text-white text-lg ml-2 mr-2 hidden xl:block" />}
               className="mt-2 p-2 flex-1"
+              disabled={!items.length || loading}
             />
             <ButtonLoading
               onClick={() => navigate("../real-estate/unit/list")}
