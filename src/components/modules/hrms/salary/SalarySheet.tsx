@@ -17,6 +17,7 @@ import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import SalarySheetPrint from "./SalarySheetPrint";
 import { salarySheetPrint, salaryView } from "./salarySlice";
+import { FiCreditCard, FiFileText, FiType } from "react-icons/fi";
 
 
 const SalarySheet = ({ user }: any) => {
@@ -43,7 +44,8 @@ const SalarySheet = ({ user }: any) => {
     setMeta(salary?.salarySheet?.meta || []);
     setTableData(salary?.salarySheet?.data);
     console.log('====================================');
-    console.log("meta", meta);
+    console.log("tableData", tableData);
+    console.log("salary", salary?.salarySheet?.vr_no);
     console.log('====================================');
   }, [salary]);
 
@@ -179,7 +181,9 @@ const SalarySheet = ({ user }: any) => {
                 onClick={() => salaryPaymentDetails(row)}
                 className="text-blue-600 hover:underline"
               >
-                Details
+                {/* <FiType className="text-base" /> */}
+                <FiFileText size={18} title="Make payment?" />
+                {/* Payment */}
               </button>
             )}
           </>
@@ -351,6 +355,8 @@ const SalarySheet = ({ user }: any) => {
             rowsPerPage={perPage}
             fontSize={fontSize}
             branchName={dropdownData?.find(b => b.id == branchId)?.name}
+            vr_no={salary?.salarySheet?.vr_no}
+            vr_date={salary?.salarySheet?.vr_date}
           />
         </div>
       </div>

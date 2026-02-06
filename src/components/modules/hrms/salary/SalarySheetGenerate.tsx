@@ -26,7 +26,7 @@ interface SalaryRow {
   designation_name: string;
   basic_salary: number;
   others_allowance: number;
-  loan_deduction: number;
+  loan_balance: number;
   net_deduction: number;
 }
 
@@ -256,10 +256,10 @@ const SalarySheetGenerate = ({ user }: any) => {
       render: (row: SalaryRow) => (
         <InputElement
           type="number"
-          value={row.loan_deduction}
-          className="text-right w-24 !md:w-20"
+          value={row.loan_balance}
+          className="text-right w-24 !md:w-20 font-semibold text-red-600 dark:text-red-400"
           onChange={(e) =>
-            handleInputChange(row.id, "loan_deduction", e.target.value)
+            handleInputChange(row.id, "loan_balance", e.target.value)
           }
         />
       ),
