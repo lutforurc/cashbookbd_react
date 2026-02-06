@@ -10,6 +10,7 @@ import {
   FiGrid,
   FiHome,
   FiLayers,
+  FiMapPin,
   FiPieChart,
   FiServer,
   FiShoppingCart,
@@ -759,7 +760,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiHome />
+                        <FiMapPin className='-ml-1' />
                         Real Estate
                       </NavLink>
                       <div

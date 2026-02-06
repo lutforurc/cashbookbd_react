@@ -132,33 +132,47 @@ const BuildingUnitsList = ({ user }: any) => {
     {
       key: 'size_sqft',
       header: 'Size',
+      headerClass: 'text-center',
+      cellClass: 'text-right',
       render: (row: any) => <div>{thousandSeparator(row.size_sqft, 0)} Sft</div>,
     },
     {
       key: 'sale_price',
       header: 'Unit Price',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
       render: (row: any) => <div>{thousandSeparator(row.sale_price, 0) ?? '-'}</div>,
     },
     {
       key: 'total_price',
       header: 'Total Price',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
       render: (row: any) => {
         const total = Number(row?.size_sqft) * Number(row?.sale_price);
         return <div>{isNaN(total) ? "-" : thousandSeparator(total, 0)}</div>;
       },
     },
     {
-      key: 'status',
-      header: 'Status',
-      render: (row: any) => (
-        <span className="font-medium">
-          {row.status === 1 && 'Active'}
-          {row.status === 2 && 'Under Development'}
-          {row.status === 3 && 'Completed'}
-          {row.status === 4 && 'Sold'}
-          {row.status === 0 && 'Inactive'}
-        </span>
-      ),
+      key: "status",
+      header: "Status",
+      render: (row: any) => {
+        const map: Record<number, { text: string; cls: string }> = {
+          1: { text: "Available", cls: "bg-green-100 text-green-800" },
+          2: { text: "Under Development", cls: "bg-yellow-100 text-yellow-800" },
+          3: { text: "Completed", cls: "bg-blue-100 text-blue-800" },
+          4: { text: "Sold", cls: "bg-red-100 text-red-800" },
+          0: { text: "Inactive", cls: "bg-gray-100 text-gray-700" },
+        };
+
+        const s = map[row.status] ?? { text: "Unknown", cls: "bg-gray-100 text-gray-700" };
+
+        return (
+          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${s.cls}`}>
+            {s.text}
+          </span>
+        );
+      },
     },
   ];
 
