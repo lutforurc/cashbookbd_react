@@ -8,7 +8,7 @@ import Profile from './pages/Profile';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
-import { authCheck } from './features/authReducer'; 
+import { authCheck } from './features/authReducer';
 import { useDispatch, useSelector } from 'react-redux';
 import routes from './components/services/appRoutes';
 import BranchList from './components/modules/branch/BranchList';
@@ -65,10 +65,10 @@ import ConstructionLabourInvoice from './components/modules/invoices/labour/Cons
 import RemoveApproval from './components/modules/voucher_approval/RemoveApproval';
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
-import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales'; 
+import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
 import RequisitionForm from './components/modules/Requisition/RequisitionForm';
 import VoucherDelete from './components/modules/vr_settings/VoucherDelete';
-import Comparison from './components/modules/Requisition/Comparison'; 
+import Comparison from './components/modules/Requisition/Comparison';
 import Requisitions from './components/modules/Requisition/Requisitions';
 import AreaAdd from './components/modules/real-estate/area/AreaAdd';
 import AreaList from './components/modules/real-estate/area/AreaList';
@@ -86,19 +86,23 @@ import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
 import ChangeList from './components/modules/history/ChangeList';
 import AddEditProject from './components/modules/real-estate/project/AddEditProject';
 import FlatLayout from './components/modules/real-estate/building-flat/FlatLayout';
-import AddEditBuilding from './components/modules/real-estate/buildings/AddEditBuilding'; 
+import AddEditBuilding from './components/modules/real-estate/buildings/AddEditBuilding';
 import AddEditFlat from './components/modules/real-estate/building-flat/AddEditFlat';
 import AddEditUnit from './components/modules/real-estate/units/AddEditUnit';
 import ProjectsList from './components/modules/real-estate/project/ProjectsList';
 import BuildingList from './components/modules/real-estate/buildings/BuildingList';
 import BuildingUnitsList from './components/modules/real-estate/units/BuildingUnitsList';
-import FloorList from './components/modules/real-estate/building-flat/FloorList'; 
+import FloorList from './components/modules/real-estate/building-flat/FloorList';
 import AddEditUnitChargeType from './components/modules/real-estate/units/AddEditUnitChargeType';
-import ChargeTypeList from './components/modules/real-estate/charge-types/ChargeTypeList'; 
+import ChargeTypeList from './components/modules/real-estate/charge-types/ChargeTypeList';
 import AddBranding from './components/modules/product/brand/AddBranding';
 import Brands from './components/modules/product/brand/Brands';
 import EditCustomerSupplier from './components/modules/customer-supplier/EditCustomerSupplier';
 import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
+import RequirePermission from "./components/auth/RequirePermission";
+import NoAccess from './components/modules/pages/NoAccess';
+import { MENU_PERMISSIONS } from './components/Sidebar/menuPermissions';
+
 
 
 
@@ -109,11 +113,21 @@ function App() {
   const { isLoggedIn, isLoading, me } = useSelector((s: any) => s.auth);
   const currentBranch = useSelector((s: any) => s.branchList);
   const companyName = currentBranch?.currentBranch?.company?.name;
+  const settings = useSelector((s: any) => s.settings);
+
+  const userPermissions = settings?.data?.permissions ?? [];
+  const permissionsLoading = settings?.loading ?? false;
+
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
     dispatch(authCheck());
   }, []);
+
+  console.log('====================================');
+  console.log("settings from app page", settings);
+  console.log('====================================');
+
 
   return (
     <>
@@ -178,11 +192,11 @@ function App() {
             <Route path={routes.journal} element={<Journal />} />
 
             {/* Products */}
-            <Route path={routes.product_list} element={<Product user={me}  />} />
+            <Route path={routes.product_list} element={<Product user={me} />} />
             <Route path={routes.product_create} element={<AddProduct />} />
             <Route path={routes.product_edit} element={<AddProduct />} />
 
-            
+
             <Route path={routes.brand_create} element={<AddBranding />} />
             <Route path={routes.brand_list} element={<Brands />} />
 
@@ -217,8 +231,11 @@ function App() {
             <Route path={routes.admin_change_date} element={<ChangeDate />} />
 
             {/* Roles & Permissions */}
-            <Route path={routes.roles} element={<Roles />} />
-            <Route path={routes.add_role} element={<AddRole />} />
+            {/* Fully menu protected, please implement for all menus */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.roles} loading={permissionsLoading} />}>
+              <Route path={routes.roles} element={<Roles />} />
+              <Route path={routes.add_role} element={<AddRole />} />
+            </Route>
 
 
             <Route path={routes.requisition} element={<Requisitions user={me} />} />
@@ -231,8 +248,8 @@ function App() {
             <Route path={routes.voucher_delete} element={<VoucherDelete />} />
             <Route path={routes.recyclebin} element={<Recyclebin />} />
             <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />
-            <Route path={routes.voucher_activity} element={<ChangeList  user={me} />} />
- {/* voucher_activity: '/vr-settings/voucher-activity', */}
+            <Route path={routes.voucher_activity} element={<ChangeList user={me} />} />
+            {/* voucher_activity: '/vr-settings/voucher-activity', */}
 
             {/* Invoices */}
             <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
@@ -246,25 +263,25 @@ function App() {
             {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
             <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
             <Route path={routes.real_estate_area_list} element={<AreaList />} />
-            
-            <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me}  />} />
-            <Route path={routes.real_estate_project_list} element={<ProjectsList user={me}  />} />
+
+            <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me} />} />
+            <Route path={routes.real_estate_project_list} element={<ProjectsList user={me} />} />
 
 
             <Route path={routes.real_estate_buildings} element={<AddEditBuilding />} />
             <Route path={routes.real_estate_buildings_list} element={<BuildingList user={me} />} />
-            
+
             <Route path={routes.real_estate_floor_list} element={<FloorList user={me} />} />
             <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
             <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
 
             <Route path={routes.real_estate_floor_unit_list} element={<BuildingUnitsList user={me} />} />
             <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
-            <Route path={ routes.real_estate_unit_types_create } element={<AddEditUnitChargeType />} />
+            <Route path={routes.real_estate_unit_types_create} element={<AddEditUnitChargeType />} />
 
-            <Route path={routes.real_estate_unit_types_list } element={<ChargeTypeList user={me} />} />
-            <Route path={routes.real_estate_unit_sales } element={<UnitSalePage />} />
-            
+            <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
+            <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />
+
 
             {/* HRM */}
             <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
@@ -272,7 +289,7 @@ function App() {
             <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
             <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
 
- 
+
 
             <Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
 
@@ -285,6 +302,9 @@ function App() {
           {/* Public Routes */}
           <Route path={routes.login} element={<SignIn />} />
           <Route path={routes.customerLogin} element={<CustomerLogin />} />
+
+          {/* No Access Route */}
+          <Route path="no-access" element={<NoAccess />} />
         </Routes>
       </BrowserRouter>
     </>

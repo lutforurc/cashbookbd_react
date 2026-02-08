@@ -54,10 +54,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
 
   useEffect(() => {
-    setPermissions(settings.data.permissions);
-    console.log('====================================');
-    console.log("settings.data.permissions", settings.data.permissions);
-    console.log('====================================');
+    setPermissions(settings.data.permissions); 
   }, [settings.data.permissions]);
 
   useEffect(() => {

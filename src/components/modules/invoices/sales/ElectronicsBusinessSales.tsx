@@ -29,9 +29,7 @@ import {
   electronicsSalesStore,
   electronicsSalesUpdate,
 } from './electronicsSalesSlice';
-import { getServiceList } from '../../settings/settingsSlice';
-import ElectronicsSalesInvoicePrint from './ElectronicsSalesInvoicePrint';
-import { useReactToPrint } from 'react-to-print';
+import { getServiceList } from '../../settings/settingsSlice'; 
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 
