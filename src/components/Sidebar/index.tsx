@@ -149,10 +149,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Dashboard
                     </NavLink>
                     {/* <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                         }`}
                     >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                      <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
                           <NavLink
                             to="/dashboard"
@@ -210,10 +210,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         Transaction
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {hasPermission(permissions, 'cash.received.create') && (
                             <li>
                               <NavLink
@@ -346,10 +346,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         Invoice
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {hasPermission(permissions, 'purchase.create') && (
                             <li>
                               <NavLink
@@ -446,10 +446,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         Reports
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {hasPermission(permissions, 'cashbook.view') && (
                             <li>
                               <NavLink
@@ -665,10 +665,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         Requisition
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {/* requisition.create */}
                           {hasPermission(permissions, 'requisition.create') && (
                             <li>
@@ -763,10 +763,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         Real Estate
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           <li>
                             <NavLink
                               to="/real-estate/area-list"
@@ -900,10 +900,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         Products
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {hasPermission(permissions, 'category.view') && (
                             <li>
                               <NavLink
@@ -994,10 +994,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         Admin
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {hasPermission(permissions, 'branch.view') && (
                             <li>
                               <NavLink
@@ -1181,10 +1181,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         VR Settings
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {hasPermission(permissions, 'voucher.delete') && (
                             <li>
                               <NavLink
@@ -1308,10 +1308,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         HRM
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {/* hrm.employee.view */}
                           {hasPermission(permissions, 'employee.view') && (
                             <li>
@@ -1391,10 +1391,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         User Management
                       </NavLink>
                       <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {hasPermission(permissions, 'roles.view') && (
                             <li>
                               <NavLink
@@ -1460,10 +1460,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           Customer & Supplier
                         </NavLink>
                         <div
-                          className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                             }`}
                         >
-                          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                             <li>
                               <NavLink
                                 to="/customer-supplier/list"
@@ -1516,10 +1516,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Chart of Accounts
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                         }`}
                     >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                      <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
                           <NavLink
                             to="/coal1/coal1-list"
@@ -1602,10 +1602,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Analytics
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                         }`}
                     >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                      <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
                         <li>
                           <NavLink
                             to="/item/item-chart"
@@ -1739,7 +1739,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       </svg>
                     </NavLink>
                     <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                         }`}
                     >
                       <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
