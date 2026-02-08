@@ -26,6 +26,8 @@ const Roles = () => {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [roleId, setRoleId] = useState<number>(0);
+  const [updating, setUpdating] = useState(false);
+  const [addingRole, setAddingRole] = useState(false);
 
   useEffect(() => {
     dispatch(getRoles());
@@ -95,15 +97,19 @@ const Roles = () => {
 
   // Update permissions of the selected role
   const handleUpdatePermissions = async () => {
+    if (updating) return; // double click block
     if (!selectedRole) return toast.info("No role selected");
     if (selectedPermissions.length === 0) return toast.info("No permissions selected");
 
+    setUpdating(true);
     try {
       await dispatch(updateRolePermissions({ roleId, selectedPermissions })).unwrap();
       // console.log(rolesPermissions?.updatePermission?.message);
       toast.success(rolesPermissions?.updatePermission?.message || "Permissions updated successfully");
     } catch (error) {
       toast.error(error.message || "Failed to update permissions");
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -114,11 +120,9 @@ const Roles = () => {
       <HelmetTitle title="Role List" />
 
       <div className="flex justify-end mb-1 gap-2">
-       
-        <ButtonLoading onClick={handleUpdatePermissions} label="Update" />
-        <ButtonLoading onClick={() => {}} buttonLoading={true} label="Add Role" />
+        <ButtonLoading className="p-1 w-30" onClick={handleUpdatePermissions}  buttonLoading={updating} label="Update" />
+        <ButtonLoading className="p-1 w-30" onClick={() => { }} buttonLoading={addingRole} label="Add Role" />
       </div>
-
       <div className="overflow-y-auto">
         <DropdownCommon
           className="h-10 px-2"

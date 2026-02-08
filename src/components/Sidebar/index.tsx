@@ -23,7 +23,6 @@ import { useSelector } from 'react-redux';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
-import { MENU_PERMISSIONS } from './menuPermissions';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -56,6 +55,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   useEffect(() => {
     setPermissions(settings.data.permissions);
+    console.log('====================================');
+    console.log("settings.data.permissions", settings.data.permissions);
+    console.log('====================================');
   }, [settings.data.permissions]);
 
   useEffect(() => {
@@ -218,7 +220,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           {hasPermission(permissions, 'cash.received.create') && (
                             <li>
                               <NavLink
-                                to={ routes.cash_receive }
+                                to={routes.cash_receive}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
@@ -231,7 +233,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           {hasPermission(permissions, 'cash.received.create') && currentBranch?.business_type_id === 4 && (
                             <li>
                               <NavLink
-                                to={ routes.installment_list }
+                                to={routes.installment_list}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
@@ -918,7 +920,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          
+
                           {hasPermission(permissions, 'category.view') && (
                             <li>
                               <NavLink
@@ -1276,202 +1278,214 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               )}
               {/* HRM */}
               {hasMenuPermission(permissions, 'hrm') && (
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/hrms/employees' ||
-                  pathname === '/hrms/salary/salary-generate' ||
-                  pathname.includes('/hrms/salary-sheet')
-                }
-                menuId="hrm"
-                open={openMenu === 'hrm'}
-                handleClick={() => handleMenuClick('hrm')}
-              >
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/hrms/employees' ||
+                    pathname === '/hrms/salary/salary-generate' ||
+                    pathname.includes('/hrms/salary-sheet')
+                  }
+                  menuId="hrm"
+                  open={openMenu === 'hrm'}
+                  handleClick={() => handleMenuClick('hrm')}
+                >
 
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                        pathname === '/hrms/employees' ||
-                        pathname === '/hrms/salary/salary-generate' ||
-                        pathname.includes('/hrms/salary-sheet')
-                      ) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiClipboard />
-                      HRM
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        {/* hrm.employee.view */}
-                        {hasPermission(permissions, 'employee.view') && (
-                          <li>
-                            <NavLink
-                              to="/hrms/employees"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Employees
-                            </NavLink>
-                          </li>
-                        )}
-                        {hasPermission(permissions, 'salary.generate') && (
-                          <li>
-                            <NavLink
-                              to="/hrms/salary/salary-generate"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Salary Generate
-                            </NavLink>
-                          </li>
-                        )}
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
+                          pathname === '/hrms/employees' ||
+                          pathname === '/hrms/salary/salary-generate' ||
+                          pathname.includes('/hrms/salary-sheet')
+                        ) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiClipboard />
+                        HRM
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {/* hrm.employee.view */}
+                          {hasPermission(permissions, 'employee.view') && (
+                            <li>
+                              <NavLink
+                                to="/hrms/employees"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Employees
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'salary.generate') && (
+                            <li>
+                              <NavLink
+                                to="/hrms/salary/salary-generate"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Salary Generate
+                              </NavLink>
+                            </li>
+                          )}
 
-                        {hasPermission(permissions, 'salary.sheet.view') && (
-                          <li>
-                            <NavLink
-                              to="/hrms/salary-sheet"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Salary Reports
-                            </NavLink>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
+                          {hasPermission(permissions, 'salary.sheet.view') && (
+                            <li>
+                              <NavLink
+                                to="/hrms/salary-sheet"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Salary Reports
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
               )}
 
               {/* User Management */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/user-management/roles' ||
-                  pathname.includes('forms')
-                }
-                menuId="user-management"
-                open={openMenu === 'user-management'}
-                handleClick={() => handleMenuClick('user-management')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/user-management/roles' ||
-                        pathname === '/user-management/create-role' ||
-                        pathname.includes('/user-management/roles')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiUsers />
-                      User Management
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/user-management/roles"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Roles
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/user-management/create-role"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Add Roles
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
+              {hasMenuPermission(permissions, 'roles') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/user-management/roles' ||
+                    pathname.includes('forms')
+                  }
+                  menuId="user-management"
+                  open={openMenu === 'user-management'}
+                  handleClick={() => handleMenuClick('user-management')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/user-management/roles' ||
+                          pathname === '/user-management/create-role' ||
+                          pathname.includes('/user-management/roles')) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiUsers />
+                        User Management
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'roles.view') && (
+                            <li>
+                              <NavLink
+                                to="/user-management/roles"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Roles
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'roles.create') && (
+                            <li>
+                              <NavLink
+                                to="/user-management/create-role"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Add Roles
+                              </NavLink>
+                            </li>
+                          )}
+
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
               {/* Customer & Supplier */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/customer-supplier/list' ||
-                  pathname.includes('forms')
-                }
-                menuId="customer-supplier"
-                open={openMenu === 'customer-supplier'}
-                handleClick={() => handleMenuClick('customer-supplier')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/customer-supplier/list' ||
-                        pathname.includes('/customer-supplier/list')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiUsers />
-                      Customer & Supplier
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/customer-supplier/list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Customer & Supplier List
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
+              {hasMenuPermission(permissions, 'customer') && (
+                <>
+                  <SidebarLinkGroup
+                    activeCondition={
+                      pathname === '/customer-supplier/list' ||
+                      pathname.includes('forms')
+                    }
+                    menuId="customer-supplier"
+                    open={openMenu === 'customer-supplier'}
+                    handleClick={() => handleMenuClick('customer-supplier')}
+                  >
+                    {(handleClick, open) => (
+                      <React.Fragment>
+                        <NavLink
+                          to="#"
+                          className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/customer-supplier/list' ||
+                            pathname.includes('/customer-supplier/list')) &&
+                            'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                            }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            sidebarExpanded
+                              ? handleClick()
+                              : setSidebarExpanded(true);
+                          }}
+                        >
+                          <FiUsers />
+                          Customer & Supplier
+                        </NavLink>
+                        <div
+                          className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96' : 'max-h-0'
+                            }`}
+                        >
+                          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                            <li>
+                              <NavLink
+                                to="/customer-supplier/list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Customer & Supplier List
+                              </NavLink>
+                            </li>
+                          </ul>
+                        </div>
+                      </React.Fragment>
+                    )}
+                  </SidebarLinkGroup>
+
+                </>
+              )}
 
 
               {/* Chart of Accounts */}

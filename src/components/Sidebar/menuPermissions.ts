@@ -46,4 +46,17 @@ export const MENU_PERMISSIONS = {
     'voucher.changes',
   ],
   hrm: ['employee.view', 'salary.generate', 'salary.sheet.view'],
+  roles: ['roles.view', 'roles.create', 'roles.edit', 'roles.delete'],
+  customer: [
+    'cs.delete',
+    'cs.edit',
+    'cs.information',
+    'cs.ledger',
+    'cs.photo.delete',
+    'cs.photo.edit',
+    'cs.photo.update',
+    'cs.photo.view',
+    'cs.update',
+    'cs.view',
+  ],
 };

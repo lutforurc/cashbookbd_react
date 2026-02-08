@@ -515,6 +515,8 @@ const ElectronicsBusinessPurchase = () => {
       setLineTotal(qty * price);
     }
   }, [productData.qty]);
+  
+const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center justify-center";
 
   const handlePurchaseType = (e: any) => {
     setPurchaseType(e.target.value);
@@ -628,7 +630,7 @@ const ElectronicsBusinessPurchase = () => {
                 placeholder={'Payment Amount'}
                 disabled={Number(formData.account) === 17}
                 label={'Payment Amount'}
-                className={'py-1'}
+                className={'py-1 text-right'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')} // Pass the next field's ID
               />
@@ -637,7 +639,7 @@ const ElectronicsBusinessPurchase = () => {
                   Total Tk. {thousandSeparator(totalAmount, 0)}
                 </p>
               </div>
-              {hasPermission(permissions, 'sales.edit') && (
+              {hasPermission(permissions, 'purchase.edit') && (
                 <>
                   <div className="relative ">
                     <DropdownCommon
@@ -785,7 +787,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={editProduct}
                 buttonLoading={buttonLoading}
                 label="Update"
-                className="whitespace-nowrap text-center mr-0 py-1.5"
+                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
                 icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
               />
             ) : (
@@ -794,7 +796,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={addProduct}
                 buttonLoading={buttonLoading}
                 label="Add New"
-                className="whitespace-nowrap text-center mr-0 py-1.5"
+                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
                 icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -813,7 +815,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={handleInvoiceUpdate}
                 buttonLoading={buttonLoading}
                 label="Update"
-                className="whitespace-nowrap text-center mr-0"
+                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
                 icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
               />
             ) : (
@@ -821,7 +823,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={handlePurchaseInvoiceSave}
                 buttonLoading={saveButtonLoading}
                 label="Save"
-                className="whitespace-nowrap text-center mr-0"
+                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
                 icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                 disabled={saveButtonLoading}
               />
@@ -831,10 +833,10 @@ const ElectronicsBusinessPurchase = () => {
               onClick={resetProducts}
               buttonLoading={buttonLoading}
               label="Reset"
-              className="whitespace-nowrap text-center mr-0"
+              className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
               icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
             />
-            <Link to="/dashboard" className="text-nowrap justify-center mr-0">
+            <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-9 py-1.5">
               <FiHome className="text-white text-lg ml-2  mr-2" />
               <span className="hidden md:block">{'Home'}</span>
             </Link>
