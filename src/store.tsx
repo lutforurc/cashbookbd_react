@@ -52,6 +52,7 @@ import voucherSettings from './components/modules/vr_settings/voucherSettingsSli
 import historySlice from './components/modules/history/historySlice';
 import salarySlice from './components/modules/hrms/salary/salarySlice';
 import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice';
+import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
 
 const store = configureStore({
   reducer: {
@@ -87,6 +88,7 @@ const store = configureStore({
     trasingSales: tradingSalesReducer,
     generalSales: generalSalesSlice,
     electronicsSales: electronicsSalesSlice,
+    electronicsPurchase: electronicsPurchaseSlice,
     dayclose: dayCloseReducer,
     orders: orderReducer,
     mitchMatch: mitchMatchReducer,

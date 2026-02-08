@@ -30,13 +30,10 @@ import { validateProductData } from '../../../utils/utils-functions/productValid
 import InputOnly from '../../../utils/fields/InputOnly.tsx';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown.tsx';
 import { hasPermission } from '../../../utils/permissionChecker.tsx';
-import {
-  constructionPurchaseEdit,
-  constructionPurchaseStore,
-  constructionPurchaseUpdate,
-} from './constructionPurchaseSlice.tsx';
-import { electronicsPurchaseStore } from './electronicsPurchaseSlice.tsx';
+import { electronicsPurchaseEdit, electronicsPurchaseStore, electronicsPurchaseUpdate } from './electronicsPurchaseSlice.tsx';
 import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon.tsx';
+import { PurchaseType } from '../../../../common/dropdownData.tsx';
 
 interface Product {
   id: number;
@@ -51,7 +48,7 @@ interface Product {
 
 const ElectronicsBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
-  const purchase = useSelector((s: any) => s.constructionPurchase);
+  const purchase = useSelector((s: any) => s.electronicsPurchase);
   const settings = useSelector((s: any) => s.settings);
   const dispatch = useDispatch<any>();
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -62,10 +59,13 @@ const ElectronicsBusinessPurchase = () => {
   const [productData, setProductData] = useState<any>({});
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateId, setUpdateId] = useState<any>(null);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
+  const [purchaseType, setPurchaseType] = useState('2'); // Define state with type
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -162,68 +162,104 @@ const ElectronicsBusinessPurchase = () => {
     setFormData(initialFormData); // Reset to the initial state
   };
 
+  // const searchInvoice = () => {
+  //   if (!search) {
+  //     toast.info('Please enter an invoice number');
+  //     return;
+  //   }
+  //   dispatch(
+  //     electronicsPurchaseEdit({ invoiceNo: search, purchaseType: purchaseType }, (message: string) => {
+  //       if (message) {
+  //         toast.error(message);
+  //       }
+  //     }),
+  //   );
+  //   setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
+  //   setIsInvoiceUpdate(true);
+  // };
+
   const searchInvoice = () => {
     if (!search) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
-      constructionPurchaseEdit({ invoiceNo: search }, (message: string) => {
-        if (message) {
-          toast.error(message);
-        }
-      }),
+      electronicsPurchaseEdit(
+        { invoiceNo: search, purchaseType: purchaseType },
+        (message: string) => {
+          if (message) {
+            toast.info(message);
+          }
+        },
+      ),
     );
+    if (purchase.isEdit === true) {
+      setIsUpdateButton(true);
+    }
     setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
 
   // Process `purchase.data` when it updates
   useEffect(() => {
-    if (purchase?.data?.invoice_date) {
-      const parsedDate = new Date(purchase.data.invoice_date);
-      if (!isNaN(parsedDate.getTime())) {
-        setStartDate(parsedDate);
-      } else {
-        console.warn(
-          'Invalid date format in invoice_date:',
-          purchase.data.invoice_date,
-        );
-        setStartDate(null);
+    const trx = purchase?.data?.transaction;
+    if (!trx) return;
+
+    // 1) products mapping (Electronics fields)
+    const products = (trx.purchase_master?.details || []).map((detail: any) => ({
+      id: detail.id,
+      product: detail.product?.id,
+      product_name: detail.product?.name,
+      serial_no: detail.serial_no || '',
+      unit: detail.product?.unit?.name || '',
+      qty: detail.quantity ?? 0,
+      price: detail.purchase_price ?? 0,
+      warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+    }));
+
+    // 2) accountName বের করা (supplier name)
+    let accountName = '-';
+    const supplierId = trx.purchase_master?.supplier_id;
+
+    if (trx.acc_transaction_master?.length) {
+      for (const m of trx.acc_transaction_master) {
+        for (const d of m.acc_transaction_details || []) {
+          if (d.coa_l4?.id === supplierId) {
+            accountName = d.coa_l4?.name;
+            break;
+          }
+        }
+        if (accountName !== '-') break;
       }
+    }
+
+    // 3) invoice date => DatePicker state
+    const invDate = trx.purchase_master?.invoice_date;
+    if (invDate) {
+      const parsed = new Date(invDate);
+      setStartDate(!isNaN(parsed.getTime()) ? parsed : null);
     } else {
       setStartDate(null);
     }
-    if (purchase?.data?.products) {
-      const products: Product[] = purchase.data.products.map(
-        (product: any) => ({
-          id: product.id,
-          product: product.product,
-          product_name: product.product_name,
-          serial_no: product.serial_no,
-          unit: product.unit,
-          qty: product.quantity,
-          price: product.price,
-          warehouse: product.warehouse ? product.warehouse.toString() : '',
-        }),
-      );
 
-      if (products && products.length > 0) {
-        setFormData({
-          ...purchase.data,
-          products,
-        });
-        toast.success('Thank you for finding the invoice!');
-      } else {
-        setFormData({
-          ...purchase.data,
-          products: [],
-        });
-        toast.success('Something went wrong!');
-      }
-    }
-    console.log(purchase.data);
-  }, [purchase?.data]);
+    // 4) formData fill
+    setFormData((prev) => ({
+      ...prev,
+      mtmId: purchase?.data?.mtmId?.toString() || '',
+      account: supplierId ? supplierId.toString() : '',
+      accountName: accountName,
+      vehicleNumber: trx.purchase_master?.vehicle_no || '',
+      invoice_no: trx.purchase_master?.invoice_no || '',
+      invoice_date: trx.purchase_master?.invoice_date || '',
+      paymentAmt: trx.purchase_master?.netpayment?.toString() || '',
+      discountAmt: Number(trx.purchase_master?.discount || 0),
+      notes: trx.purchase_master?.notes || '',
+      products: products,
+    }));
+
+    toast.success('Invoice loaded successfully!');
+  }, [purchase?.data?.transaction]);
+
 
   const addProduct = () => {
     const isValid = validateProductData(productData);
@@ -252,7 +288,7 @@ const ElectronicsBusinessPurchase = () => {
     const isValid = validateProductData(productData);
     if (!isValid) return;
 
- 
+
     let newItem: Product = {
       id: Date.now(), // Use timestamp as a unique ID
       product: productData.product || 0,
@@ -263,7 +299,7 @@ const ElectronicsBusinessPurchase = () => {
       price: productData.price || '',
       warehouse: productData.warehouse || '',
     };
- 
+
     // Add the product to the formData.products array
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -284,7 +320,7 @@ const ElectronicsBusinessPurchase = () => {
     if (formData.account == '17') {
       setFormData((prevState) => ({
         ...prevState,
-        paymentAmt: 
+        paymentAmt:
           totalAmount > 0
             ? (totalAmount - prevState.discountAmt).toString()
             : '0',
@@ -354,7 +390,7 @@ const ElectronicsBusinessPurchase = () => {
   useEffect(() => {
     const voucherNo = purchase?.data?.vr_no || '';
     if (voucherNo !== '') {
-      toast.success(`Voucher No.: ${voucherNo}`);
+      // toast.success(`Voucher No.: ${voucherNo}`);
       setFormData((prevState) => ({
         ...prevState, // Spread the previous state to retain all other properties
         products: [], // Reset only the `products` array
@@ -362,31 +398,35 @@ const ElectronicsBusinessPurchase = () => {
     }
   }, [purchase?.data?.vr_no, purchase?.isUpdated]);
 
-  useEffect(() => {
-    setFormData((prevState) => ({
-      ...prevState, // Spread the previous state to retain all other properties
-      products: [], // Reset only the `products` array
-    }));
-  }, [purchase.isUpdated]);
+  // useEffect(() => {
+  //   setFormData((prevState) => ({
+  //     ...prevState, // Spread the previous state to retain all other properties
+  //     products: [], // Reset only the `products` array
+  //   }));
+  // }, [purchase.isUpdated]);
 
   const handlePurchaseInvoiceSave = async () => {
+    setSaveButtonLoading(true);
     // Check Required fields are not empty
     const validationMessages = validateForm(formData, invoiceMessage);
     if (validationMessages) {
       toast.info(validationMessages);
+      setSaveButtonLoading(false);
       return;
     }
 
     if (!formData.account || formData.products.length === 0) {
       toast.error('Please add products information!');
+      setSaveButtonLoading(false);
       return;
     }
 
     dispatch(
       electronicsPurchaseStore(formData, function (message) {
         if (message) {
-          toast.error(message);
+          toast.success(message);
         }
+        setSaveButtonLoading(false);
       }),
     );
   };
@@ -406,7 +446,7 @@ const ElectronicsBusinessPurchase = () => {
 
     // Save Invoice
     dispatch(
-      constructionPurchaseUpdate(formData, function (message) {
+      electronicsPurchaseUpdate(formData, function (message) {
         if (message) {
           toast.info(message);
         }
@@ -422,7 +462,7 @@ const ElectronicsBusinessPurchase = () => {
   };
 
   const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setProductData({ ...productData, [e.target.name]: e.target.value });
+    setProductData((prev: any) => ({ ...prev, warehouse: e.target.value }));
   };
 
   const editProductItem = (productId: number) => {
@@ -451,24 +491,24 @@ const ElectronicsBusinessPurchase = () => {
     setUpdateId(productIndex);
   };
 
-useEffect(() => {
-  const total = formData.products.reduce((acc, product) => {
-    const qty = parseFloat(product.qty?.toString() || '0') || 0;
-    const price = parseFloat(product.price?.toString() || '0') || 0;
-    return acc + qty * price;
-  }, 0);
+  useEffect(() => {
+    const total = formData.products.reduce((acc, product) => {
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
+    }, 0);
 
-  const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-  let netTotal = 0;
-  if( total > 0){
-    netTotal = total - discount;
-  } 
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    let netTotal = 0;
+    if (total > 0) {
+      netTotal = total - discount;
+    }
 
-  setFormData((prev) => ({
-    ...prev,
-    paymentAmt: netTotal.toFixed(2),
-  }));
-}, [formData.products, formData.discountAmt]);
+    setFormData((prev) => ({
+      ...prev,
+      paymentAmt: netTotal.toFixed(2),
+    }));
+  }, [formData.products, formData.discountAmt]);
 
   useEffect(() => {
     if (productData.qty) {
@@ -477,6 +517,11 @@ useEffect(() => {
       setLineTotal(qty * price);
     }
   }, [productData.qty]);
+
+  const handlePurchaseType = (e: any) => {
+    setPurchaseType(e.target.value);
+  };
+
   useCtrlS(handlePurchaseInvoiceSave);
   return (
     <>
@@ -499,17 +544,17 @@ useEffect(() => {
                   defaultValue={
                     formData.account
                       ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
-                        }
+                        value: formData.account,
+                        label: formData.accountName, //productData.accountName
+                      }
                       : null
                   }
                   value={
                     formData.account
                       ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
-                        }
+                        value: formData.account,
+                        label: formData.accountName, //productData.accountName
+                      }
                       : null
                   }
                   onKeyDown={(e) =>
@@ -593,35 +638,46 @@ useEffect(() => {
                   Total Tk. {thousandSeparator(totalAmount, 0)}
                 </p>
               </div>
-              {hasPermission(permissions, 'purchase.edit') && (
-                <div className="relative col-span-2 ">
-                  <label className="text-black dark:text-white" htmlFor="">
-                    Search Invoice
-                  </label>
-                  <div className="w-full">
-                    <InputOnly
-                      id="search"
-                      value={search}
-                      name="search"
-                      placeholder={'Search Invoice'}
-                      label={''}
-                      className={'py-1.1 w-full'}
-                      onChange={(e) => setSearch(e.target.value)}
-                      onKeyDown={(e) => handleInputKeyDown(e, 'btnSearch')} // Pass the next field's ID
+              {hasPermission(permissions, 'sales.edit') && (
+                <>
+                  <div className="mt-2">
+                    <DropdownCommon
+                      id="saleType"
+                      name="saleType"
+                      onChange={handlePurchaseType}
+                      defaultValue={productData?.variance_type || ''}
+                      data={PurchaseType}
+                      className="w-full h-8.5"
                     />
                   </div>
-                  <ButtonLoading
-                    id="btnSearch"
-                    name="btnSearch"
-                    onClick={searchInvoice}
-                    buttonLoading={buttonLoading}
-                    label=""
-                    className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute right-0 top-6 background-red-500 !pr-2 !pl-2"
-                    icon={
-                      <FiSearch className="text-white text-lg ml-2  mr-2" />
-                    }
-                  />
-                </div>
+                  <>
+                    <div className="relative mt-2">
+                      <div className="w-full ">
+                        <InputOnly
+                          id="search"
+                          value={search}
+                          name="search"
+                          placeholder={'Search Invoice'}
+                          label={''}
+                          className={'py-1 w-full bg-white'}
+                          onChange={(e) => setSearch(e.target.value)}
+                          onKeyDown={(e) => handleInputKeyDown(e, 'btnSearch')} // Pass the next field's ID
+                        />
+                      </div>
+                      <ButtonLoading
+                        id="btnSearch"
+                        name="btnSearch"
+                        onClick={searchInvoice}
+                        buttonLoading={buttonLoading}
+                        label=""
+                        className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 -mt-6 absolute -right-2 top-6 background-red-500 !pr-2 !pl-2"
+                        icon={
+                          <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
+                        }
+                      />
+                    </div>
+                  </>
+                </>
               )}
             </div>
           </div>
@@ -640,17 +696,17 @@ useEffect(() => {
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')} // Pass the next field's ID
@@ -764,10 +820,11 @@ useEffect(() => {
             ) : (
               <ButtonLoading
                 onClick={handlePurchaseInvoiceSave}
-                buttonLoading={buttonLoading}
+                buttonLoading={saveButtonLoading}
                 label="Save"
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                disabled={saveButtonLoading}
               />
             )}
 
