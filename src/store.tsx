@@ -58,6 +58,7 @@ import buildingsSlice from './components/modules/real-estate/buildings/buildings
 import unitSlice from './components/modules/real-estate/units/unitSlice';
 import brandSlice from './components/modules/product/brand/brandSlice';
 import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice';
+import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
 
 
 const store = configureStore({
@@ -94,6 +95,7 @@ const store = configureStore({
     trasingSales: tradingSalesReducer,
     generalSales: generalSalesSlice,
     electronicsSales: electronicsSalesSlice,
+    electronicsPurchase: electronicsPurchaseSlice,
     dayclose: dayCloseReducer,
     orders: orderReducer,
     mitchMatch: mitchMatchReducer,
