@@ -929,7 +929,7 @@ const ElectronicsBusinessSales = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="receivedAmt"
-                value={formData.receivedAmt}
+                value={formData.receivedAmt ?? ""}
                 name="receivedAmt"
                 placeholder="Received Amount"
                 disabled={Number(formData.account) === 17}
@@ -940,7 +940,7 @@ const ElectronicsBusinessSales = () => {
               />
               <InputElement
                 id="discountAmt"
-                value={formData.discountAmt.toString()}
+                value={formData.discountAmt ?? ""}
                 name="discountAmt"
                 placeholder="Discount Amount"
                 label="Discount Amount"
@@ -950,7 +950,7 @@ const ElectronicsBusinessSales = () => {
               />
               <InputElement
                 id="notes"
-                value={formData.notes}
+                value={formData.notes ?? ""}
                 name="notes"
                 placeholder="Notes"
                 label="Notes"
@@ -962,7 +962,8 @@ const ElectronicsBusinessSales = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="serviceCharge"
-                value={(formData.serviceCharge || 0).toString()}
+                value={formData.serviceCharge ?? ""}
+                
                 name="serviceCharge"
                 placeholder={serviceList(42, settings?.serviceList)}
                 label={serviceList(42, settings?.serviceList)}
@@ -972,7 +973,7 @@ const ElectronicsBusinessSales = () => {
               />
               <InputElement
                 id="tdsAmount"
-                value={(formData.tdsAmount || 0).toString()}
+                value={formData.tdsAmount ?? ""}
                 name="tdsAmount"
                 placeholder={serviceList(41, settings?.serviceList)}
                 label={serviceList(41, settings?.serviceList)}
@@ -982,7 +983,7 @@ const ElectronicsBusinessSales = () => {
               />
               <InputElement
                 id="transportationAmt"
-                value={(formData.transportationAmt || 0).toString()}
+                value={formData.transportationAmt ?? ""}
                 name="transportationAmt"
                 placeholder={serviceList(198, settings?.serviceList)}
                 label={serviceList(198, settings?.serviceList)}

@@ -203,7 +203,10 @@ const ElectronicsBusinessPurchase = () => {
   // Process `purchase.data` when it updates
   useEffect(() => {
     const trx = purchase?.data?.transaction;
-    if (!trx) return;
+    if (!trx){
+      setFormData(initialFormData);
+      return;
+    } 
 
     // 1) products mapping (Electronics fields)
     const products = (trx.purchase_master?.details || []).map((detail: any) => ({
@@ -324,11 +327,6 @@ const ElectronicsBusinessPurchase = () => {
           totalAmount > 0
             ? (totalAmount - prevState.discountAmt).toString()
             : '0',
-      }));
-    } else {
-      setFormData((prevState) => ({
-        ...prevState,
-        paymentAmt: '',
       }));
     }
   }, [formData.account]);
@@ -574,7 +572,7 @@ const ElectronicsBusinessPurchase = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'product')} // Dynamically pass the next element's ID
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="invoice_no"
                 value={formData.invoice_no}
@@ -609,6 +607,10 @@ const ElectronicsBusinessPurchase = () => {
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'paymentAmt')} // Pass the next field's ID
               />
+              
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="discountAmt"
                 value={formData.discountAmt.toString()}
@@ -619,9 +621,6 @@ const ElectronicsBusinessPurchase = () => {
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')} // Dynamically pass the next element's ID
               />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
               <InputElement
                 id="paymentAmt"
                 value={formData.paymentAmt}
@@ -640,7 +639,7 @@ const ElectronicsBusinessPurchase = () => {
               </div>
               {hasPermission(permissions, 'sales.edit') && (
                 <>
-                  <div className="mt-2">
+                  <div className="relative ">
                     <DropdownCommon
                       id="saleType"
                       name="saleType"
@@ -651,7 +650,7 @@ const ElectronicsBusinessPurchase = () => {
                     />
                   </div>
                   <>
-                    <div className="relative mt-2">
+                    <div className="relative">
                       <div className="w-full ">
                         <InputOnly
                           id="search"
