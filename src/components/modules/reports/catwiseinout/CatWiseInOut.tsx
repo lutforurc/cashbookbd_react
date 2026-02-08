@@ -81,12 +81,12 @@ const CatWiseInOut = (user: any) => {
   // }, [categoryData]);
 
 
-    useEffect(() => {
-      if (Array.isArray(categoryData?.ddlData?.data?.category)) {
-        setDdlCategory(categoryData?.ddlData?.data?.category || []);
-        setCategoryId(categoryData.ddlData[0]?.id ?? null);
-      }
-    }, [categoryData]);
+  useEffect(() => {
+    if (Array.isArray(categoryData?.ddlData?.data?.category)) {
+      setDdlCategory(categoryData?.ddlData?.data?.category || []);
+      setCategoryId(categoryData.ddlData[0]?.id ?? null);
+    }
+  }, [categoryData]);
 
   // Load table data
   useEffect(() => {
@@ -132,27 +132,43 @@ const CatWiseInOut = (user: any) => {
     {
       key: "product_name",
       header: "Product Name",
+      render: (row) => {
+        return (
+          <>
+            <div>{row.cat_name }</div>
+            <div>{row.product_name }</div> 
+          </>
+        )
+      }
     },
     {
       key: "cat_name",
-      header: "Category Name",
-    },
-    {
-      key: "unit",
-      header: "Unit",
-      headerClass: "text-center",
-      cellClass: "text-center",
+      header: "Brand Name / Manufacturer",
+      render: (row) => {
+        return (
+          <>
+            <div>{row.manufacturer_name }</div> 
+          </>
+        )
+      }
     },
     {
       key: "quantity",
       header: "Quantity",
-      headerClass: "text-right",
-      cellClass: "text-right",
-      render: (row) => thousandSeparator(row.quantity, 0),
+      headerClass: "text-center",
+      cellClass: "text-center",
+      render: (row) => {
+        return (
+          <>
+            { thousandSeparator(row.quantity, 0) } { row.unit || "-"}
+          </>
+        )
+      }
     },
+    
   ];
 
-    const handleCategoryChange = (selectedOption: any) => {
+  const handleCategoryChange = (selectedOption: any) => {
     if (selectedOption) {
       setCategoryId(selectedOption.value);
     } else {
@@ -161,19 +177,19 @@ const CatWiseInOut = (user: any) => {
   };
 
   const optionsWithAll = [
-  { id: '', name: 'All Product' },
-  ...(Array.isArray(ddlCategory) ? ddlCategory : []),
-];
+    { id: '', name: 'All Product' },
+    ...(Array.isArray(ddlCategory) ? ddlCategory : []),
+  ];
 
 
 
-// Report Type
+  // Report Type
   const reportTypeWithAll = [
-  { id: '', name: 'Select Type' },
-  ...(Array.isArray(orderType) ? orderType : []),
-];
+    { id: '', name: 'Select Type' },
+    ...(Array.isArray(orderType) ? orderType : []),
+  ];
 
-// orderType
+  // orderType
 
   return (
     <div>
@@ -181,112 +197,112 @@ const CatWiseInOut = (user: any) => {
 
       {/* FILTER BAR */}
       {/* ---- ROW 1 ---- */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
 
-  {/* Branch */}
-  <div className="flex flex-col">
-    <label>Select Branch</label>
-    <BranchDropdown
-      onChange={(e) => setBranchId(e.target.value)}
-      branchDdl={dropdownData}
-      className="w-full text-sm h-9.5"
-    />
-  </div>
+        {/* Branch */}
+        <div className="flex flex-col">
+          <label>Select Branch</label>
+          <BranchDropdown
+            onChange={(e) => setBranchId(e.target.value)}
+            branchDdl={dropdownData}
+            className="w-full text-sm h-9.5"
+          />
+        </div>
 
-  {/* Category */}
-  <div className="flex flex-col">
-    <label>Select Category</label>
-    {categoryData.isLoading ? (
-      <Loader />
-    ) : (
-      <CategoryDropdown
-        onChange={handleCategoryChange}
-        className="w-full text-sm "
-        categoryDdl={optionsWithAll}
-      />
-    )}
-  </div>
+        {/* Category */}
+        <div className="flex flex-col">
+          <label>Select Category</label>
+          {categoryData.isLoading ? (
+            <Loader />
+          ) : (
+            <CategoryDropdown
+              onChange={handleCategoryChange}
+              className="w-full text-sm "
+              categoryDdl={optionsWithAll}
+            />
+          )}
+        </div>
 
-  {/* Report Type */}
-  <div className="flex flex-col">
-    <label>Report Type</label>
-    <DropdownCommon
-      name="reportType"
-      onChange={(e) => setReportType(e.target.value)}
-      data={reportTypeWithAll}
-      className="h-9.5"
-    />
-  </div>
+        {/* Report Type */}
+        <div className="flex flex-col">
+          <label>Report Type</label>
+          <DropdownCommon
+            name="reportType"
+            onChange={(e) => setReportType(e.target.value)}
+            data={reportTypeWithAll}
+            className="h-9.5"
+          />
+        </div>
 
-</div>
+      </div>
 
 
-{/* ---- ROW 2 ---- */}
-<div className="flex flex-wrap gap-4 items-end mb-3">
+      {/* ---- ROW 2 ---- */}
+      <div className="flex flex-wrap gap-4 items-end mb-3">
 
-  {/* Start Date */}
-  <div className="flex flex-col min-w-[160px] flex-1">
-    <label>Start Date</label>
-    <InputDatePicker
-      selectedDate={startDate}
-      setSelectedDate={setStartDate}
-      setCurrentDate={setStartDate}
-      className="w-full h-8 text-sm"
-    />
-  </div>
+        {/* Start Date */}
+        <div className="flex flex-col min-w-[160px] flex-1">
+          <label>Start Date</label>
+          <InputDatePicker
+            selectedDate={startDate}
+            setSelectedDate={setStartDate}
+            setCurrentDate={setStartDate}
+            className="w-full h-8 text-sm"
+          />
+        </div>
 
-  {/* End Date */}
-  <div className="flex flex-col min-w-[160px] flex-1">
-    <label>End Date</label>
-    <InputDatePicker
-      selectedDate={endDate}
-      setSelectedDate={setEndDate}
-      setCurrentDate={setEndDate}
-      className="w-full h-8 text-sm"
-    />
-  </div>
+        {/* End Date */}
+        <div className="flex flex-col min-w-[160px] flex-1">
+          <label>End Date</label>
+          <InputDatePicker
+            selectedDate={endDate}
+            setSelectedDate={setEndDate}
+            setCurrentDate={setEndDate}
+            className="w-full h-8 text-sm"
+          />
+        </div>
 
-  {/* Rows */}
-  <div className="flex flex-col min-w-[100px]">
-    <label>Rows</label>
-    <InputElement
-      id="perPage"
-      label={""}
-      name="perPage"
-      value={perPage.toString()}
-      onChange={(e) => setPerPage(Number(e.target.value))}
-      className="h-8 text-sm"
-    />
-  </div>
+        {/* Rows */}
+        <div className="flex flex-col min-w-[100px]">
+          <label>Rows</label>
+          <InputElement
+            id="perPage"
+            label={""}
+            name="perPage"
+            value={perPage.toString()}
+            onChange={(e) => setPerPage(Number(e.target.value))}
+            className="h-8 text-sm"
+          />
+        </div>
 
-  {/* Font */}
-  <div className="flex flex-col min-w-[100px]">
-    <label>Font</label>
-    <InputElement
-      id="fontSize"
-      name="fontSize"
-      label={""}
-      value={fontSize.toString()}
-      onChange={(e) => setFontSize(Number(e.target.value))}
-      className="h-8 text-sm"
-    />
-  </div>
+        {/* Font */}
+        <div className="flex flex-col min-w-[100px]">
+          <label>Font</label>
+          <InputElement
+            id="fontSize"
+            name="fontSize"
+            label={""}
+            value={fontSize.toString()}
+            onChange={(e) => setFontSize(Number(e.target.value))}
+            className="h-8 text-sm"
+          />
+        </div>
 
-  {/* Buttons */}
-  <div className="flex gap-2 ml-auto">
-    <ButtonLoading
-      onClick={handleRun}
-      buttonLoading={buttonLoading}
-      label="Run"
-      className="h-9 px-4"
-    />
-    <PrintButton
-      onClick={handlePrint}
-      className="h-9 px-4"
-    />
-  </div>
+        {/* Buttons */}
+        <div className="flex gap-2 ml-auto">
+          <ButtonLoading
+            onClick={handleRun}
+            buttonLoading={buttonLoading}
+            label="Run"
+            className="h-9 px-4"
+          />
+          <PrintButton
+            onClick={handlePrint}
+            className="h-9 px-4"
+          />
+        </div>
 
-</div>
+      </div>
 
       {/* TABLE */}
       <div className="overflow-y-auto">
