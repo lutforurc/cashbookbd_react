@@ -4,6 +4,7 @@ import httpService from '../../../services/httpService';
 
 interface ledgerParam {
   branchId: number | null;
+  brandId: number | null;
   categoryId: number;
   search?: string;
   startDate: string;
@@ -11,9 +12,9 @@ interface ledgerParam {
 }
 
 
-export const getProductStock = ({ branchId, categoryId, search, startDate, endDate }: ledgerParam) => (dispatch: any) => {
+export const getProductStock = ({ branchId, brandId, categoryId, search, startDate, endDate }: ledgerParam) => (dispatch: any) => {
   dispatch({ type: PRODUCT_STOCK_DATA_LIST_PENDING });
-  httpService.post(API_REPORT_PRODUCT_STOCK_URL, { branch_id: branchId, category_id: categoryId, product_name: search, startdate: startDate, enddate: endDate })
+  httpService.post(API_REPORT_PRODUCT_STOCK_URL, { branch_id: branchId, brand_id: brandId, category_id: categoryId, product_name: search, startdate: startDate, enddate: endDate })
     .then((res) => {
       let _data = res.data;
       if (_data.success) {

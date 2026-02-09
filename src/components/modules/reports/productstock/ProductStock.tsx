@@ -19,12 +19,14 @@ import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { fetchBrandDdl } from '../../product/brand/brandSlice';
 
 const ProductStock = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const categoryData = useSelector((state) => state.category);
   const stock = useSelector((state) => state.stock);
+  const brand = useSelector((state) => state.brand);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -38,10 +40,12 @@ const ProductStock = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(20);
   const [fontSize, setFontSize] = useState<number>(12);
+const [brandId, setBrandId] = useState<number | string | null>(null);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(getCategoryDdl());
+    dispatch(fetchBrandDdl());
   }, []);
 
   useEffect(() => {
@@ -113,6 +117,7 @@ const ProductStock = (user: any) => {
     dispatch(
       getProductStock({
         branchId,
+        brandId,
         categoryId,
         search,
         startDate: startD,
@@ -147,6 +152,12 @@ const ProductStock = (user: any) => {
     {
       key: 'product_name',
       header: 'Product Name',
+       render: (row: any) => (
+        <>
+          <div>{ row.cat_name}</div>
+          <div>{ row.product_name}</div> 
+        </>
+      ),
     },
     {
       key: 'opening',
@@ -220,6 +231,16 @@ const optionsWithAll = [
   ...(Array.isArray(ddlCategory) ? ddlCategory : []),
 ];
 
+  const handleBrandChange = (selectedOption: any) => {
+    const selectedId = selectedOption?.value ?? '';
+    setBrandId(selectedId);
+  };
+
+    const brandOptions = [
+    { id: '', name: 'All Brand' },
+    ...(brand?.brandDdl?.data || []),
+  ];
+
   return (
     <div className="">
       <HelmetTitle title={'Product Stock'} />
@@ -242,15 +263,13 @@ const optionsWithAll = [
               <label htmlFor="">Select Brand</label>
             </div>
             <div>
-              {categoryData.isLoading ? (
-                <Loader />
-              ) : (
+             
                 <CategoryDropdown
-                  onChange={handleCategoryChange}
+                  onChange={handleBrandChange}
                   className="w-full font-medium text-sm"
-                  categoryDdl={optionsWithAll}
+                  categoryDdl={brandOptions}
                 />
-              )}
+   
             </div>
           </div>
           <div className="">
