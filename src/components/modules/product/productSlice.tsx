@@ -289,7 +289,6 @@ const productReducer = (state = initialState, action: any) => {
         ...state,
         isLoading: true,
         isUpdate: false,
-        data: { data: [], total: 0 },
       };
 
     case PRODUCT_STORE_SUCCESS:
