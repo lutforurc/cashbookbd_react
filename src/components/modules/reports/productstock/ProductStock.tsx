@@ -155,7 +155,7 @@ const ProductStock = (user: any) => {
       render: (row: any) => (
         <>
           <div>{row.cat_name}</div>
-          <div>{row.product_name}</div>
+          <div>{row.brand_name  && (<span className="">{row.brand_name} </span>)} {row.product_name}</div>
         </>
       ),
     },
