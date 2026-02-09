@@ -4,6 +4,8 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type StockRow = {
   sl_number?: number | string;
+  brand_name?: string;
+  cat_name?: string;
   product_name?: string;
   opening?: number;
   stock_in?: number;
@@ -59,10 +61,10 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tr>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-8 text-center">#</th>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">Product Name</th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-28 text-right">Opening</th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-28 text-right">Stock In</th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-28 text-right">Stock Out</th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-28 text-right">Balance</th>
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-26 text-right">Opening</th>
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-26 text-right">Stock In</th>
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-26 text-right">Stock Out</th>
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-26 text-right">Balance</th>
                   </tr>
                 </thead>
 
@@ -71,7 +73,14 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                     pageRows.map((row, idx) => (
                       <tr key={idx} className="avoid-break align-top">
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">{row?.sl_number || ''}</td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">{row.product_name || '-'}</td>
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                          {row.cat_name  && (<span className="text-xs text-gray-900 ">{row.cat_name} </span>)}
+                          
+                          <span className='block'>
+                            {row.brand_name  && (<span className="text-xs text-gray-900">{row.brand_name} </span>)} {row.product_name  && (<span className="text-xs text-gray-900">{row.product_name} </span>)}
+                          </span>
+
+                          </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                           {row.opening != null ? <span className="text-sm">{row.opening} {row.unit && `(${row.unit})`}</span> : '-'}
                         </td>

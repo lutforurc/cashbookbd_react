@@ -40,7 +40,7 @@ const ProductStock = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(20);
   const [fontSize, setFontSize] = useState<number>(12);
-const [brandId, setBrandId] = useState<number | string | null>(null);
+  const [brandId, setBrandId] = useState<number | string | null>(null);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -76,12 +76,12 @@ const [brandId, setBrandId] = useState<number | string | null>(null);
 
   const handlePrint = useReactToPrint({
     content: () => {
-      if (!printRef.current) { 
+      if (!printRef.current) {
         return null;
       }
       return printRef.current;
     },
-    documentTitle: 'Due Report', 
+    documentTitle: 'Due Report',
     removeAfterPrint: true,
   });
 
@@ -152,10 +152,10 @@ const [brandId, setBrandId] = useState<number | string | null>(null);
     {
       key: 'product_name',
       header: 'Product Name',
-       render: (row: any) => (
+      render: (row: any) => (
         <>
-          <div>{ row.cat_name}</div>
-          <div>{ row.product_name}</div> 
+          <div>{row.cat_name}</div>
+          <div>{row.product_name}</div>
         </>
       ),
     },
@@ -167,8 +167,8 @@ const [brandId, setBrandId] = useState<number | string | null>(null);
       render: (row: any) => (
         <>
           <p>
-            { thousandSeparator ( Math.floor(row.opening),0)}
-            { Math.floor(row.opening) ? <span className="text-sm "> ({row.unit})</span> : ''}
+            {thousandSeparator(Math.floor(row.opening), 0)}
+            {Math.floor(row.opening) ? <span className="text-sm "> ({row.unit})</span> : ''}
           </p>
         </>
       ),
@@ -182,7 +182,7 @@ const [brandId, setBrandId] = useState<number | string | null>(null);
         <>
           {row.stock_in ? (
             <span className="text-sm ">
-              { thousandSeparator( Math.floor(row.stock_in),0)} ({row.unit})
+              {thousandSeparator(Math.floor(row.stock_in), 0)} ({row.unit})
             </span>
           ) : (
             '-'
@@ -197,7 +197,7 @@ const [brandId, setBrandId] = useState<number | string | null>(null);
         <>
           {row.stock_out ? (
             <span className="text-sm ">
-              { thousandSeparator (Math.floor(row.stock_out),0)} ({row.unit})
+              {thousandSeparator(Math.floor(row.stock_out), 0)} ({row.unit})
             </span>
           ) : (
             '-'
@@ -216,7 +216,7 @@ const [brandId, setBrandId] = useState<number | string | null>(null);
         <>
           {Math.floor(row.balance) ? (
             <span className="text-sm ">
-              { thousandSeparator (Math.floor(row.balance),0)} ({row.unit})
+              {thousandSeparator(Math.floor(row.balance), 0)} ({row.unit})
             </span>
           ) : (
             '-'
@@ -226,17 +226,17 @@ const [brandId, setBrandId] = useState<number | string | null>(null);
     },
   ];
 
-const optionsWithAll = [
-  { id: '', name: 'All Categories' },
-  ...(Array.isArray(ddlCategory) ? ddlCategory : []),
-];
+  const optionsWithAll = [
+    { id: '', name: 'All Categories' },
+    ...(Array.isArray(ddlCategory) ? ddlCategory : []),
+  ];
 
   const handleBrandChange = (selectedOption: any) => {
     const selectedId = selectedOption?.value ?? '';
     setBrandId(selectedId);
   };
 
-    const brandOptions = [
+  const brandOptions = [
     { id: '', name: 'All Brand' },
     ...(brand?.brandDdl?.data || []),
   ];
@@ -263,13 +263,13 @@ const optionsWithAll = [
               <label htmlFor="">Select Brand</label>
             </div>
             <div>
-             
-                <CategoryDropdown
-                  onChange={handleBrandChange}
-                  className="w-full font-medium text-sm"
-                  categoryDdl={brandOptions}
-                />
-   
+
+              <CategoryDropdown
+                onChange={handleBrandChange}
+                className="w-full font-medium text-sm"
+                categoryDdl={brandOptions}
+              />
+
             </div>
           </div>
           <div className="">
@@ -289,7 +289,7 @@ const optionsWithAll = [
               )}
             </div>
           </div>
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-1">
             <div className='mr-2'>
               <div>{' '}<label htmlFor="">Search by Name</label>
               </div>
@@ -299,6 +299,9 @@ const optionsWithAll = [
                 className="text-nowrap h-8 bg-transparent w-full"
               />
             </div>
+          </div>
+
+          <div className="sm:grid md:flex gap-x-3 ">
             <div className="grid grid-cols-2 gap-2">
               <div className="w-full">
                 <label htmlFor="">Start Date</label>
@@ -346,11 +349,11 @@ const optionsWithAll = [
               </div>
               <div className='mt-6'>
                 <ButtonLoading
-                onClick={handleActionButtonClick}
-                buttonLoading={buttonLoading}
-                label="Run"
-                className="h-8 w-full"
-              />
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Run"
+                  className="h-8 w-full"
+                />
               </div>
               <PrintButton
                 onClick={handlePrint}
