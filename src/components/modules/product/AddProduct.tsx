@@ -15,6 +15,7 @@ import { warrantyType } from '../../utils/fields/DataConstant';
 import { FiSave } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { fetchBrandDdl } from './brand/brandSlice';
+import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 
 interface productItem {
   id: string | number;
@@ -37,6 +38,7 @@ const AddProduct = () => {
   const category = useSelector((state) => state.category);
   const product = useSelector((state) => state.product);
   const brand = useSelector((state) => state.brand);
+  const categoryData = useSelector((state) => state.category);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // const [themeMode, setThemeMode] = useState(string | null);
@@ -57,6 +59,8 @@ const AddProduct = () => {
   };
   const [formData, setFormData] = useState<productItem>(initialProduct);
   const { id } = useParams();
+  const [ddlCategory, setDdlCategory] = useState<any[]>([]);
+  const [categoryId, setCategoryId] = useState<number | string | null>(null);
 
   useEffect(() => {
     if (product?.editData) {
@@ -121,8 +125,8 @@ const AddProduct = () => {
   const handleButtonClick = async (e: any) => {
     e.preventDefault();
 
-    if (!(formData.category_id || '').trim()) {
-      toast.info('Please enter category.');
+    if (!formData.category_id) {
+      toast.info('Please select category.');
       return;
     } else if (!(formData.product_type || '').trim()) {
       toast.info('Please enter product type.');
@@ -187,6 +191,16 @@ const AddProduct = () => {
     }
   };
 
+  const handleCategoryChange = (selectedOption: any) => {
+    const selectedId = selectedOption?.value ?? '';
+
+    setCategoryId(selectedId);
+
+    setFormData((prev) => ({
+      ...prev,
+      category_id: selectedId,
+    }));
+  };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (formData.warranty_type === '1' || formData.warranty_type === '2') {
       // numeric only: allow digits, backspace, delete, arrows etc.
@@ -208,21 +222,56 @@ const AddProduct = () => {
     ...(brand?.brandDdl?.data || []),
   ];
 
+  const optionsWithAll = [
+    { id: '', name: 'All Product' },
+    ...(Array.isArray(ddlCategory) ? ddlCategory : []),
+  ];
+
+  useEffect(() => {
+    if (Array.isArray(categoryData?.ddlData?.data?.category)) {
+      setDdlCategory(categoryData?.ddlData?.data?.category || []);
+      setCategoryId(categoryData.ddlData[0]?.id ?? null);
+    }
+  }, [categoryData]);
+
+  const handleBrandChange = (selectedOption: any) => {
+  const selectedId = selectedOption?.value ?? '';
+
+  setFormData((prev) => ({
+    ...prev,
+    manufacture_id: selectedId,
+  }));
+};
+
   return (
     <div>
       <HelmetTitle title={formData?.id ? 'Edit Product' : 'Add New Product'} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {category.isLoading == true ? <Loader /> : ''}
-        <DropdownCommon
-          id="manufacture_id"
-          name={'manufacture_id'}
-          label="Select Brand"
-          onChange={handleOnChange}
-          className="h-[2.20rem]"
-          data={brandOptions}
-          defaultValue={formData?.manufacture_id?.toString() ?? ''}
-        />
-        <DropdownCommon
+
+        <div>
+          <label htmlFor="" className='text-sm'>Select Brand</label>
+          <CategoryDropdown
+            onChange={handleBrandChange}
+            className="w-full text-sm !h-7"
+            categoryDdl={brandOptions}
+            value={formData.manufacture_id}
+          />
+        </div>
+        {categoryData.isLoading ? (
+          <Loader />
+        ) : (
+          <div>
+            <label htmlFor="" className='text-sm'>Select Category</label>
+            <CategoryDropdown
+              onChange={handleCategoryChange}
+              className="w-full text-sm !h-7"
+              categoryDdl={optionsWithAll}
+              value={formData.category_id}
+            />
+          </div>
+        )}
+        {/* <DropdownCommon
           id="category_id"
           name={'category_id'}
           label="Select Category"
@@ -230,7 +279,7 @@ const AddProduct = () => {
           className="h-[2.20rem]"
           data={category?.ddlData?.data?.category}
           defaultValue={formData?.category_id?.toString() ?? ''}
-        />
+        /> */}
         <InputElement
           id="name"
           value={formData.name}

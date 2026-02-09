@@ -216,7 +216,7 @@ const ProductStock = (user: any) => {
   ];
 
 const optionsWithAll = [
-  { id: '', name: 'All Product' },
+  { id: '', name: 'All Categories' },
   ...(Array.isArray(ddlCategory) ? ddlCategory : []),
 ];
 
@@ -224,19 +224,33 @@ const optionsWithAll = [
     <div className="">
       <HelmetTitle title={'Product Stock'} />
       <div className="mb-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-4 gap-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 md:gap-x-4 gap-y-2">
           <div className="">
-            <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
-            </div>
+            <div><label htmlFor="">Select Branch</label></div>
             <div>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm pl-1.5 pt-3 pb-2"
+                className="w-full font-medium text-sm pl-1.5 pt-2 pb-2"
                 branchDdl={dropdownData}
               />
+            </div>
+          </div>
+          <div className="">
+            <div>
+              {' '}
+              <label htmlFor="">Select Brand</label>
+            </div>
+            <div>
+              {categoryData.isLoading ? (
+                <Loader />
+              ) : (
+                <CategoryDropdown
+                  onChange={handleCategoryChange}
+                  className="w-full font-medium text-sm"
+                  categoryDdl={optionsWithAll}
+                />
+              )}
             </div>
           </div>
           <div className="">

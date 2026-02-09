@@ -32,6 +32,8 @@ import { getToken } from '../../../features/authReducer';
 interface productParam {
   page: number;
   perPage: number;
+  categoryId: number | string | null;
+  brandId: number | string | null;
   search: string;
 }
 interface productStoreData {
@@ -45,14 +47,14 @@ interface productStoreData {
   order_level: string;
 }
 export const getProduct =
-  ({ page, perPage, search = '' }: productParam) =>
+  ({ page, perPage, categoryId, brandId, search = '' }: productParam) =>
     (dispatch: any) => {
       dispatch({ type: PRODUCT_LIST_PENDING });
 
       httpService
         .get(
           API_PRODUCT_LIST_URL +
-          `?page=${page}&per_page=${perPage}&search=${search}`,
+          `?page=${page}&per_page=${perPage}&category_id=${categoryId}&brand_id=${brandId}&search=${search}`,
         )
         .then((res) => {
           let _data = res.data;
@@ -287,6 +289,7 @@ const productReducer = (state = initialState, action: any) => {
         ...state,
         isLoading: true,
         isUpdate: false,
+        data: { data: [], total: 0 },
       };
 
     case PRODUCT_STORE_SUCCESS:

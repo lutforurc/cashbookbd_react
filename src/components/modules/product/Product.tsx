@@ -15,10 +15,15 @@ import { useNavigate } from 'react-router-dom';
 import InputElement from '../../utils/fields/InputElement';
 import { toast } from 'react-toastify';
 import { getSettings } from '../settings/settingsSlice';
+import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
+import { getCategoryDdl } from '../category/categorySlice';
+import { fetchBrandDdl } from './brand/brandSlice';
 
 const Product = (user: any) => {
   const product = useSelector((state: any) => state.product);
   const settings = useSelector((state: any) => state.settings);
+  const categoryData = useSelector((state) => state.category);
+  const brand = useSelector((state) => state.brand);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -29,37 +34,42 @@ const Product = (user: any) => {
   const [totalPages, setTotalPages] = useState(0);
   const [tableData, setTableData] = useState<any[]>([]);
   const [editedRows, setEditedRows] = useState<Record<number, any>>({});
+  const [ddlCategory, setDdlCategory] = useState<any[]>([]);
+  const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  const [brandId, setBrandId] = useState<number | string | null>(null);
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    dispatch(getProduct({ page, perPage, search }));
-  }, [page, perPage]);
+    dispatch(getProduct({ page, perPage, categoryId, brandId, search }));
+  }, [page, perPage, categoryId, brandId, search]);
 
 
   useEffect(() => {
     setPerPage(perPage);
     dispatch(getSettings());
+    dispatch(getCategoryDdl());
+    dispatch(fetchBrandDdl());
   }, []);
 
-  useEffect(() => {
-    if (product?.data?.data) {
-      setTableData(product.data.data);
-      setTotalPages(Math.ceil(product.data.total / perPage));
-    }
-  }, [product]);
+useEffect(() => {
+  if (product?.data) {
+    setTableData(product.data.data ?? []);
+    setTotalPages(Math.ceil((product.data.total ?? 0) / perPage));
+  }
+}, [product, perPage]);
 
-
-  console.log('====================================');
-  console.log("settings", settings?.data?.branch?.is_opening);
-  console.log('====================================');
+ 
 
 
   /* ================= HANDLERS ================= */
-  const handleSearchButton = () => {
-    setPage(1);
-    setCurrentPage(1);
-    dispatch(getProduct({ page: 1, perPage, search }));
-  };
+const handleSearchButton = () => {
+  setTableData([]);        // ✅ old data clear
+  setTotalPages(0);        // ✅ reset pagination
+  setPage(1);
+  setCurrentPage(1);
+
+  dispatch(getProduct({ page: 1, perPage, categoryId, brandId, search }));
+};
 
   const handlePageChange = (p: number) => {
     setPage(p);
@@ -160,10 +170,6 @@ const Product = (user: any) => {
       console.error(err);
     }
   };
-
-
-
-
 
   const handleProductEdit = (row: any) => {
     navigate(`/product/edit/${row.product_id}`);
@@ -327,15 +333,65 @@ const Product = (user: any) => {
 
   /* ================= RENDER ================= */
 
+  const handleCategoryChange = (selectedOption: any) => {
+    if (selectedOption) {
+      setCategoryId(selectedOption.value);
+    } else {
+      setCategoryId(null); // অথবা default value
+    }
+  };
+  const optionsWithAll = [
+    { id: '', name: 'All Categories' },
+    ...(Array.isArray(ddlCategory) ? ddlCategory : []),
+  ];
+
+  useEffect(() => {
+    if (Array.isArray(categoryData?.ddlData?.data?.category)) {
+      setDdlCategory(categoryData?.ddlData?.data?.category || []);
+      setCategoryId(categoryData.ddlData[0]?.id ?? null);
+    }
+  }, [categoryData]);
+
+  const handleBrandChange = (selectedOption: any) => {
+    const selectedId = selectedOption?.value ?? '';
+    setBrandId(selectedId);
+  };
+
+  const brandOptions = [
+    { id: '', name: 'All Brand' },
+    ...(brand?.brandDdl?.data || []),
+  ];
+
   return (
     <div>
       <HelmetTitle title="Product List" />
 
       <div className="flex justify-between mb-2">
-        <div className="flex gap-2">
-          <SelectOption onChange={(e: any) => setPerPage(e.target.value)} />
-          <SearchInput className='' search={search} setSearchValue={setSearchValue} />
-          <ButtonLoading label="Search" onClick={handleSearchButton} />
+        <div className='flex'>
+          <div className="flex flex-col w-50 mr-2">
+            <CategoryDropdown
+              onChange={handleBrandChange}
+              className="w-full text-sm !h-7"
+              categoryDdl={brandOptions}
+            />
+          </div>
+          <div className="flex flex-col w-50 mr-2">
+            {/* <label>Select Category</label> */}
+            {categoryData.isLoading ? (
+              <Loader />
+            ) : (
+              <CategoryDropdown
+                onChange={handleCategoryChange}
+                className="w-full text-sm "
+                categoryDdl={optionsWithAll}
+              />
+            )}
+          </div>
+          <div className="flex gap-2">
+            <SelectOption onChange={(e: any) => setPerPage(e.target.value)} />
+            <SearchInput className='' search={search} setSearchValue={setSearchValue} />
+            <ButtonLoading label="Search" onClick={handleSearchButton} className="h-9" />
+          </div>
         </div>
 
         <Link to="/product/add-product">New Product</Link>

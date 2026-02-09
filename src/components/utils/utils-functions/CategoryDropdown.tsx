@@ -5,7 +5,7 @@ interface CategoryDropdownProps {
   categoryDdl: { id: number | string; name: string }[];
   onChange: (selectedOption: any) => void;
   className?: string;
-  value?: { id: string | number; name: string } | null; // ✅ Optional value
+  value?: string | number | null;  
 }
 
 const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
@@ -28,18 +28,22 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
     [categoryDdl]
   );
 
-  // ✅ যদি value prop থাকে, সেটিকে select করবে
-  useEffect(() => {
-    if (value && options.length > 0) {
-      const match = options.find(
-        (opt) => opt.value.toString() === value.id.toString()
-      );
-      if (match && (!selectedOption || match.value.toString() !== selectedOption.value.toString())) {
-        // ✅ Optional: Avoid set if already matching (by value, not ref)
-        setSelectedOption(match);
-      }
+
+useEffect(() => {
+  if (value != null && options.length > 0) {
+    const match = options.find(
+      (opt) => opt.value.toString() === value.toString()
+    );
+
+    if (
+      match &&
+      (!selectedOption ||
+        match.value.toString() !== selectedOption.value.toString())
+    ) {
+      setSelectedOption(match);
     }
-  }, [value, options, selectedOption]); // ✅ Added selectedOption to deps for the check
+  }
+}, [value, options]);
 
   // ✅ যদি value না থাকে (optional), প্রথম option কে default সিলেক্ট করবে
   useEffect(() => {
