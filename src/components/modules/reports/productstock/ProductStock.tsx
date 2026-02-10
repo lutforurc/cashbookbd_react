@@ -290,7 +290,7 @@ const ProductStock = (user: any) => {
             </div>
           </div>
           <div className="grid grid-cols-1">
-            <div className='mr-2'>
+            <div className='mr-2 w-full'>
               <div>{' '}<label htmlFor="">Search by Name</label>
               </div>
               <SearchInput
@@ -371,7 +371,7 @@ const ProductStock = (user: any) => {
         <div className="hidden">
           <StockBookPrint
             ref={printRef}
-            rows={tableData || []} // আপনার data
+            rows={tableData || []}
             startDate={
               startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined
             }

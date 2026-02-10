@@ -51,25 +51,25 @@ const Product = (user: any) => {
     dispatch(fetchBrandDdl());
   }, []);
 
-useEffect(() => {
-  if (product?.data) {
-    setTableData(product.data.data ?? []);
-    setTotalPages(Math.ceil((product.data.total ?? 0) / perPage));
-  }
-}, [product, perPage]);
+  useEffect(() => {
+    if (product?.data) {
+      setTableData(product.data.data ?? []);
+      setTotalPages(Math.ceil((product.data.total ?? 0) / perPage));
+    }
+  }, [product, perPage]);
 
- 
+
 
 
   /* ================= HANDLERS ================= */
-const handleSearchButton = () => {
-  setTableData([]);        // ✅ old data clear
-  setTotalPages(0);        // ✅ reset pagination
-  setPage(1);
-  setCurrentPage(1);
+  const handleSearchButton = () => {
+    setTableData([]);        // ✅ old data clear
+    setTotalPages(0);        // ✅ reset pagination
+    setPage(1);
+    setCurrentPage(1);
 
-  dispatch(getProduct({ page: 1, perPage, categoryId, brandId, search }));
-};
+    dispatch(getProduct({ page: 1, perPage, categoryId, brandId, search }));
+  };
 
   const handlePageChange = (p: number) => {
     setPage(p);
@@ -366,36 +366,58 @@ const handleSearchButton = () => {
     <div>
       <HelmetTitle title="Product List" />
 
-      <div className="flex justify-between mb-2">
-        <div className='flex'>
-          <div className="flex flex-col w-50 mr-2">
+      <div className="mb-2 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        {/* Left: Filters */}
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-center">
+          {/* Brand */}
+          <div className="w-full sm:w-56">
             <CategoryDropdown
               onChange={handleBrandChange}
-              className="w-full text-sm !h-7"
+              className="w-full text-sm !h-9"
               categoryDdl={brandOptions}
             />
           </div>
-          <div className="flex flex-col w-50 mr-2">
-            {/* <label>Select Category</label> */}
+
+          {/* Category */}
+          <div className="w-full sm:w-56">
             {categoryData.isLoading ? (
               <Loader />
             ) : (
               <CategoryDropdown
                 onChange={handleCategoryChange}
-                className="w-full text-sm "
+                className="w-full text-sm !h-9"
                 categoryDdl={optionsWithAll}
               />
             )}
           </div>
-          <div className="flex gap-2">
-            <SelectOption onChange={(e: any) => setPerPage(e.target.value)} />
-            <SearchInput className='' search={search} setSearchValue={setSearchValue} />
-            <ButtonLoading label="Search" onClick={handleSearchButton} className="h-9" />
+
+          {/* Actions */}
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <div className="w-full ">
+              <SelectOption className="!w-full h-9" onChange={(e) => setPerPage(e.target.value)} />
+            </div>
+
+            <div className="w-full sm:w-64">
+              <SearchInput className="!w-full h-9" search={search} setSearchValue={setSearchValue} />
+            </div>
+
+            <ButtonLoading
+              label="Search"
+              onClick={handleSearchButton}
+              className="h-9 w-full sm:w-auto"
+            />
           </div>
         </div>
 
-        <Link to="/product/add-product">New Product</Link>
+        {/* Right: New Product */}
+        <div>
+          <Link
+          to="/product/add-product"
+          className="w-full rounded-md px-3 py-2 text-center text-sm sm:w-auto"
+        >New</Link>
+        </div>
       </div>
+
 
       <div className="relative overflow-x-auto">
         {product.isLoading && <Loader />}

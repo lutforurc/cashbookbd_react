@@ -223,7 +223,7 @@ const SignIn: React.FC = () => {
                 </form>
               </div>
 
-              <p className="mt-6 text-center text-xs text-black/50 dark:text-white/50">
+              <p className="mt-6 text-center text-xs text-black/80 dark:text-white/20">
                 © {new Date().getFullYear()} CashbookBD - All rights reserved.
               </p>
             </div>
