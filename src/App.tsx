@@ -123,10 +123,7 @@ function App() {
     setTimeout(() => setLoading(false), 1000);
     dispatch(authCheck());
   }, []);
-
-  console.log('====================================');
-  console.log("settings from app page", settings);
-  console.log('====================================');
+ 
 
 
   return (
