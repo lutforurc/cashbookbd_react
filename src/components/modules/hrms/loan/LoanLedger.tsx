@@ -82,12 +82,8 @@ const LoanLedger = (user: any) => {
       employeeLoanLedger({ branchId, ledgerId, startDate: startD, endDate: endD }),
     );
     // dispatch(getCoal4ById(Number(ledgerId)));
-    console.log('====================================');
-    console.log("employeeLoan", employeeLoan);
-    console.log('====================================');
+
   };
-
-
 
 
   useEffect(() => {
@@ -107,17 +103,24 @@ const LoanLedger = (user: any) => {
     }
   }, [branchDdlData?.protectedData]);
 
-
-
-
   const columns = [
     {
       key: 'sl',
       header: 'Sl. No', 
-      headerClass: 'items-center ',
-      cellClass: 'items-center ',
+      headerClass: 'text-center ',
+      cellClass: 'text-center ',
       render: (row: any) => (
         <div className="">{row.sl ? row.sl : ''}</div>
+      ),
+    }, 
+    {
+      key: 'vr_no',
+      header: 'VR No & Date',  
+      render: (row: any) => (
+        <div className=""> 
+          <div>{row.vr_no ? row.vr_no : ''}</div>
+          <div>{row.vr_date ? dayjs(row.vr_date).format('DD/MM/YYYY') : ''}</div> 
+        </div>
       ),
     }, 
     {
@@ -162,6 +165,9 @@ const LoanLedger = (user: any) => {
   ];
 
  
+      console.log('====================================');
+    console.log("employeeLoan", employeeLoan);
+    console.log('====================================');
  
 
   const handlePrint = useReactToPrint({
@@ -204,7 +210,7 @@ const LoanLedger = (user: any) => {
 
   return (
     <div className="">
-      <HelmetTitle title={'Ledger'} />
+      <HelmetTitle title={'Loan Ledger'} />
       <div className="mb-2">
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
           <div className="">
