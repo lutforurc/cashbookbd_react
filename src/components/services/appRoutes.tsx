@@ -33,6 +33,7 @@ const ROUTES = {
   bank_payment: '/accounts/bank/payment',
 
   employee_loan: '/accounts/employee-loan', 
+  employee_loan_ledger: '/accounts/employee-loan/ledger', 
 
   journal: '/accounts/journal',
 

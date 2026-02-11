@@ -409,6 +409,8 @@ export const API_FULL_SALARY_PAYMENT_URL = `${API_BASE_URL}/hrms/salary-payment-
 
 // Employee Loan Routes
 export const API_EMPLOYEE_LOAN_DISBURSEMENT_URL = `${API_BASE_URL}/hrms/loan/disbursement`;
+export const API_EMPLOYEE_LOAN_LEDGER_URL = `${API_BASE_URL}/hrms/loan/ledger`;
+
 
 
 // Salary Routes

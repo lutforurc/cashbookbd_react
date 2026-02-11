@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { FiHome, FiSave, FiSearch } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,7 +12,7 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import Link from '../../../utils/others/Link';
 import { toast } from 'react-toastify';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
-import { employeeLoanDisbursement } from './employeeLoanSlice';
+import { employeeLoan, employeeLoanDisbursement, employeeLoanLedger } from './employeeLoanSlice';
 
 interface LoanPayload {
   id: string | number;
@@ -39,6 +39,17 @@ const EmployeeLoan = () => {
     amount: '',
   });
 
+
+  useEffect(() => {
+    dispatch(
+      employeeLoanLedger({
+        ledger_id: 5,
+        startdate: '01/01/2015',
+        enddate: '31/12/2030',
+      })
+    );
+  }, [dispatch]);
+
   // Employee select -> tx update
   const transactionAccountHandler = (selectedOption: any) => {
     setTx((prev) => ({
@@ -57,50 +68,51 @@ const EmployeeLoan = () => {
   };
 
   const handleSave = useCallback(async () => {
-  if (saveButtonLoading) return;
+    if (saveButtonLoading) return;
 
-  if (!tx.account) return toast.warning('Please select employee');
-  if (!tx.amount || Number(tx.amount) <= 0)
-    return toast.warning('Please enter amount');
+    if (!tx.account) return toast.warning('Please select employee');
+    if (!tx.amount || Number(tx.amount) <= 0)
+      return toast.warning('Please enter amount');
 
-  setIsLoading(true);
-  setSaveButtonLoading(true);
+    setIsLoading(true);
+    setSaveButtonLoading(true);
 
-  try {
-    const payload = {
-      id: tx.id,
-      account: tx.account,
-      accountName: tx.accountName,
-      remarks: tx.remarks ?? '',
-      amount: Number(tx.amount),
-    };
+    try {
+      const payload = {
+        id: tx.id,
+        account: tx.account,
+        accountName: tx.accountName,
+        remarks: tx.remarks ?? '',
+        amount: Number(tx.amount),
+      };
 
-    const response = await dispatch(
-      employeeLoanDisbursement(payload)
-    ).unwrap();
 
-    if (response?.success === false) {
-      toast.info(response?.error?.message || response?.message);
-      return;
+      const response = await dispatch(
+        employeeLoanDisbursement(payload)
+      ).unwrap();
+
+      if (response?.success === false) {
+        toast.info(response?.error?.message || response?.message);
+        return;
+      }
+
+      if (response?.message) {
+        toast.success(response.message);
+        setTx({
+          id: Date.now(),
+          account: '',
+          accountName: '',
+          remarks: '',
+          amount: '',
+        });
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Something went wrong while saving.');
+    } finally {
+      setSaveButtonLoading(false);
+      setIsLoading(false);
     }
-
-    if (response?.message) {
-      toast.success(response.message);
-      setTx({
-        id: Date.now(),
-        account: '',
-        accountName: '',
-        remarks: '',
-        amount: '',
-      });
-    }
-  } catch (error: any) {
-    toast.error(error?.message || 'Something went wrong while saving.');
-  } finally {
-    setSaveButtonLoading(false);
-    setIsLoading(false);
-  }
-}, [saveButtonLoading, tx, dispatch]);
+  }, [saveButtonLoading, tx, dispatch]);
 
   useCtrlS(handleSave);
 
@@ -188,18 +200,18 @@ const EmployeeLoan = () => {
               </div>
 
               <div>
-                <div className="grid grid-cols-3 gap-x-1 gap-y-1 mt-3">
+                <div className="grid grid-cols-2 gap-x-1 gap-y-1 mt-3">
                   <ButtonLoading
                     id="save_button"
                     disabled={saveButtonLoading}
                     onClick={handleSave}
                     buttonLoading={saveButtonLoading}
                     label={saveButtonLoading ? 'Saving...' : 'Save'}
-                    className="whitespace-nowrap text-center mr-0"
+                    className="whitespace-nowrap text-center mr-0 p-2"
                     icon={<FiSave className="text-white text-lg ml-2 mr-2 hidden xl:block" />}
                   />
 
-                  <Link to="/dashboard" className="text-nowrap justify-center mr-0">
+                  <Link to="/dashboard" className="text-nowrap justify-center mr-0 p-2">
                     <FiHome className="text-white text-lg ml-2 mr-2 hidden xl:block" />
                     <span>Home</span>
                   </Link>

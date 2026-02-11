@@ -45,7 +45,7 @@ export const MENU_PERMISSIONS = {
     'voucher.history',
     'voucher.changes',
   ],
-  hrm: ['employee.view', 'salary.generate', 'salary.sheet.view'],
+  hrm: ['employee.view', 'salary.generate', 'salary.sheet.view', 'employee.loan.ledger.view'],
   roles: ['roles.view', 'roles.create', 'roles.edit', 'roles.delete'],
   customer: [
     'cs.delete',

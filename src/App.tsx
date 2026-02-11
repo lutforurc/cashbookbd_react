@@ -102,6 +102,7 @@ import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
 import RequirePermission from "./components/auth/RequirePermission";
 import NoAccess from './components/modules/pages/NoAccess';
 import { MENU_PERMISSIONS } from './components/Sidebar/menuPermissions';
+import LoanLedger from './components/modules/hrms/loan/LoanLedger';
 
 
 
@@ -186,6 +187,7 @@ function App() {
             <Route path={routes.bank_receive} element={<BankReceived />} />
             <Route path={routes.bank_payment} element={<BankPayment />} />
             <Route path={routes.employee_loan} element={<EmployeeLoan />} />
+            <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
             <Route path={routes.journal} element={<Journal />} />
 
             {/* Products */}

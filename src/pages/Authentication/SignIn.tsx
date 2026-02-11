@@ -113,15 +113,15 @@ const SignIn: React.FC = () => {
             <div className="w-full max-w-lg px-10 py-12 text-center">
               <Link className="mb-6 inline-block" to="/" />
 
-              <p className="mb-6 text-sm text-white/90 font-semibold">
+              <p className="mb-6 text-sm text-white/90 font-semibold text-left">
                 Accounting, Inventory and HRMS System.
               </p>
 
-              <img
+              {/* <img
                 src={coverImg}
                 alt="Inventory & Accounting Management System"
                 className="mx-auto w-full max-w-md shadow-sm object-contain"
-              />
+              /> */}
 
               <div className="mt-6 grid grid-cols-1 gap-2 text-left text-sm text-white/90">
                 <p>• Track Sales, Purchase, Stock</p>
