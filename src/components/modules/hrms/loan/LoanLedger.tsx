@@ -8,17 +8,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
-import { toast } from 'react-toastify';
-import ImagePopup from '../../../utils/others/ImagePopup';
-import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import { generateTableData } from '../../../utils/utils-functions/generateTableData';
-import { formatDate } from '../../../utils/utils-functions/formatDate';
+import { toast } from 'react-toastify';   
 import { useReactToPrint } from 'react-to-print';
-import InputElement from '../../../utils/fields/InputElement';  
-import { useVoucherPrint } from '../../vouchers';
-import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
-import LedgerPrint from '../../reports/ledger/LedgerPrint';
-import { employeeLoanLedger } from './employeeLoanSlice';
+import InputElement from '../../../utils/fields/InputElement';   
+import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch'; 
+import { employeeLoanLedger } from './employeeLoanSlice'; 
+import LoanLedgerPrint from './LoanLedgerPrint';
 
 const LoanLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -30,6 +25,7 @@ const LoanLedger = (user: any) => {
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
+  const [employeeData, setEmployeeData] = useState<any[]>([]); // Initialize as an empty array
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -38,8 +34,7 @@ const LoanLedger = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
-  const voucherRegistryRef = useRef<any>(null);
-  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const voucherRegistryRef = useRef<any>(null); 
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -50,14 +45,14 @@ const LoanLedger = (user: any) => {
 
 
   useEffect(() => {
-
-    
-
     if (employeeLoan.ledgerData) {
-      const tableRows = employeeLoan?.ledgerData;
+      const tableRows = employeeLoan?.ledgerData?.data;
+      const employeeRows = employeeLoan?.ledgerData?.employeeData;
       setTableData(tableRows);
+      setEmployeeData(employeeRows);
     } else {
       setTableData([]); // Clear table data if loading or no data
+      setEmployeeData([]); // Clear employee data if loading or no data
     } 
   }, [employeeLoan]);
 
@@ -112,9 +107,6 @@ const LoanLedger = (user: any) => {
     }
   }, [branchDdlData?.protectedData]);
 
-  const selectedLedgerOptionHandler = (option: any) => {
-    setLedgerAccount(option.value);
-  };
 
 
 
@@ -295,7 +287,7 @@ const LoanLedger = (user: any) => {
             />
             <PrintButton
               onClick={handlePrint}
-              label="Print"
+              label=""
               className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
             />
           </div>
@@ -304,19 +296,19 @@ const LoanLedger = (user: any) => {
       <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />{' '}
-        {/* Ensure data is always an array */}
 
         <div className="hidden">
-          <LedgerPrint
+          <LoanLedgerPrint
             ref={printRef}
             rows={tableData || []}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
-            title="Ledger"
+            title="Employee Salary and Loan Ledger"
             coal4={coal4.coal4ById || undefined}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
             showBranchName={branchId === null}
+            employeeData={employeeData || undefined}  
           />
         </div>
       </div>
