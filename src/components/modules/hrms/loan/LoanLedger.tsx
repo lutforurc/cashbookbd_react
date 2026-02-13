@@ -14,6 +14,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch'; 
 import { employeeLoanLedger } from './employeeLoanSlice'; 
 import LoanLedgerPrint from './LoanLedgerPrint';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
 const LoanLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -125,9 +126,7 @@ const LoanLedger = (user: any) => {
     }, 
     {
       key: 'remarks',
-      header: 'Remarks', 
-      headerClass: 'items-center ',
-      cellClass: 'items-center ',
+      header: 'Remarks',  
       render: (row: any) => (
         <div className="">{row.remarks ? row.remarks : ''}</div>
       ),
@@ -135,19 +134,19 @@ const LoanLedger = (user: any) => {
     {
       key: 'received_amt',
       header: 'Received', 
-      headerClass: 'items-center ',
-      cellClass: 'items-center ',
+      headerClass: 'text-right ',
+      cellClass: 'text-right ',
       render: (row: any) => (
-        <div className="">{row.received_amt ? row.received_amt : ''}</div>
+        <div className="">{row.received_amt ?  thousandSeparator( row.received_amt,0) : ''}</div>
       ),
     }, 
     {
       key: 'payment_amt',
       header: 'Payment', 
-      headerClass: 'items-center ',
-      cellClass: 'items-center ',
+      headerClass: 'text-right ',
+      cellClass: 'text-right ',
       render: (row: any) => (
-        <div className="">{row.payment_amt ? row.payment_amt : ''}</div>
+        <div className="">{row.payment_amt ?  thousandSeparator( row.payment_amt,0) : ''}</div>
       ),
     }, 
   ];
@@ -236,6 +235,7 @@ const LoanLedger = (user: any) => {
               name="account"
               placeholder="Select Employee"
               onSelect={transactionAccountHandler} 
+              className="w-full font-medium text-sm h-6"
               onKeyDown={(e: any) => {
                 if (e.key === 'Enter') document.getElementById('remarks')?.focus();
               }}
@@ -309,12 +309,12 @@ const LoanLedger = (user: any) => {
             rows={tableData || []}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
-            title="Employee Salary and Loan Ledger"
+            title="Loan Ledger"
             coal4={coal4.coal4ById || undefined}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
             showBranchName={branchId === null}
-            employeeData={employeeData || undefined}  
+            employeeData={employeeData as any || undefined}  
           />
         </div>
       </div>

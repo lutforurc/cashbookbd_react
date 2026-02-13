@@ -49,7 +49,7 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
       rows,
       startDate,
       endDate,
-      title = 'Employee Salary and Loan Ledger',
+      title = 'Loan Ledger',
       coal4,
       rowsPerPage = 12,
       fontSize,
@@ -202,12 +202,12 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                       </tr>
                     )}
                     {/* ✅ Final Balance row (only on last page) */}
-                    {pIdx === pages.length - 1 && pageRows.length > 0 && (
+                    {/* {pIdx === pages.length - 1 && pageRows.length > 0 && (
                       <tr className="font-semibold bg-gray-100">
                         <td
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-1 text-right"
-                          colSpan={4}
+                          colSpan={3}
                         >
                           Balance
                         </td>
@@ -216,9 +216,15 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                           className="border border-gray-900 px-2 py-1 text-right"
                         >
                           {thousandSeparator(grandBalance, 0)}
-                        </td>
+                        </td> 
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-1 text-right"
+                        >
+                          {thousandSeparator(grandBalance, 0)}
+                        </td> 
                       </tr>
-                    )}
+                    )} */}
                   </tbody>
                 </table>
               </div>
