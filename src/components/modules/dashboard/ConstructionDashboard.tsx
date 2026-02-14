@@ -106,6 +106,12 @@ const ConstructionDashboard = () => {
   };
 
 
+
+
+  console.log('====================================');
+  console.log("dashboard?.data?.receiveDetails?.receivedDetails", dashboard?.data?.receiveDetails?.receivedDetails);
+  console.log('====================================');
+
   return (
     <>
       <HelmetTitle title="Dashboard" />
@@ -269,12 +275,12 @@ const ConstructionDashboard = () => {
                         {thousandSeparator(item.debit, 0)}
                       </div>
                       <div className="text-xs min-[462px]:text-sm w-6 min-[462px]:w-10 mr-4 text-right">
-                        {item.remittance === '0' ? (
+                        {!item.remittance ? (
                           <div
                             onClick={() =>
                               !loadingItems[item.vr_no] &&
                               handleCheckCircleClick(item)
-                            } // Disable click when loading
+                            }
                             className="inline-block cursor-pointer"
                           >
                             {loadingItems[item.vr_no] ? (
