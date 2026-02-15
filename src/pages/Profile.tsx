@@ -42,7 +42,7 @@ const Profile = () => {
 
   // ✅ sync preview from me (if backend returns these)
   useEffect(() => {
-    if (me?.cover_url) setCoverPreview(me.cover_url);
+    if (me?.profile_photo) setCoverPreview(me.profile_photo);
     if (me?.photo_url) setProfilePreview(me.photo_url);
   }, [me]);
 
@@ -93,7 +93,7 @@ const Profile = () => {
     dispatch(
       uploadUserCover(file, (res: any) => {
         if (res?.success) {
-          const url = res?.url || res?.data?.url || res?.data?.cover_url;
+          const url = res?.url || res?.data?.url || res?.data?.profile_photo;
           if (url) setCoverPreview(url);
         } else {
           alert(res?.error?.message || res?.message || 'Cover upload failed');
@@ -101,6 +101,10 @@ const Profile = () => {
       })
     );
   };
+
+  console.log('====================================');
+  console.log("Cover upload triggered, file:", me);
+  console.log('====================================');
 
   // ✅ Profile photo upload
   const handleProfileChange = (e: any) => {
@@ -137,11 +141,11 @@ const Profile = () => {
 
       <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="relative z-20 h-35 md:h-65">
-          <img
-            src={coverPreview}
+          {/* <img
+            src={me.profile_photo || coverPreview}
             alt="profile cover"
             className="h-full w-full rounded-tl-sm rounded-tr-sm object-cover object-center"
-          />
+          /> */}
 
           <div className="absolute bottom-1 right-1 z-10 xsm:bottom-4 xsm:right-4">
             <label
@@ -166,7 +170,7 @@ const Profile = () => {
           <div className="relative z-30 mx-auto -mt-22 h-30 w-30 rounded-full bg-white/20 p-1 backdrop-blur sm:h-44 sm:w-44 sm:p-3">
             <div className="relative h-full w-full overflow-hidden rounded-full">
               <img
-                src={profilePreview}
+                src={me.profile_photo || profilePreview}
                 alt="profile"
                 className="h-full w-full rounded-full object-cover"
               />

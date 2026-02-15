@@ -47,7 +47,7 @@ const DropdownUser = () => {
         </span>
         <span className="h-9 w-9 overflow-hidden rounded-full">
           <img
-            src={UserOne}
+            src={me.profile_photo || UserOne}
             alt="User"
             className="h-full w-full object-cover"
           />
