@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-demo.png';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../features/authReducer'; 
+import { logout } from '../../features/authReducer';
 
 
 const DropdownUser = () => {
@@ -45,9 +45,14 @@ const DropdownUser = () => {
           </span>
           <span className="block text-xs text-black dark:text-white">Trx. Dt. {settings?.data?.trx_dt}</span>
         </span>
-        <span className="h-10 w-10 rounded-full">
-          <img src={UserOne} alt="User" />
+        <span className="h-9 w-9 overflow-hidden rounded-full">
+          <img
+            src={UserOne}
+            alt="User"
+            className="h-full w-full object-cover"
+          />
         </span>
+
         <svg
           className="hidden fill-current sm:block"
           width="12"

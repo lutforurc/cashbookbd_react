@@ -45,9 +45,7 @@ interface InitialLoginData {
   callback?: (response: any) => void;
 }
 
-export const login =
-  ({ email, password, remember, callback }: InitialLoginData) =>
-  async (dispatch: any) => {
+export const login = ({ email, password, remember, callback }: InitialLoginData) => async (dispatch: any) => {
     dispatch({ type: 'AUTH/login/pending' });
 
     try {
