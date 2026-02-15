@@ -45,7 +45,7 @@ const DropdownUser = () => {
           </span>
           <span className="block text-xs text-black dark:text-white">Trx. Dt. {settings?.data?.trx_dt}</span>
         </span>
-        <span className="h-12 w-12 rounded-full">
+        <span className="h-10 w-10 rounded-full">
           <img src={UserOne} alt="User" />
         </span>
         <svg

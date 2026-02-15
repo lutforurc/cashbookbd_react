@@ -4,11 +4,13 @@ import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import CoverOne from '../images/cover/cover-01.png';
 import userSix from '../images/user/user-06.png';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const Profile = () => {
   // ✅ preview states (default images)
   const [coverPreview, setCoverPreview] = useState(CoverOne);
   const [profilePreview, setProfilePreview] = useState(userSix);
+    const { me } = useSelector((state) => state.auth);
 
   // ✅ cleanup object URLs to avoid memory leak
   useEffect(() => {
@@ -24,6 +26,12 @@ const Profile = () => {
       }
     };
   }, [coverPreview, profilePreview]);
+
+
+  console.log('====================================');
+  console.log("me", me);
+  console.log('====================================');
+
 
   const validateImage = (file, maxMB = 3) => {
     if (!file) return { ok: false, msg: 'No file selected' };
@@ -147,10 +155,7 @@ const Profile = () => {
             </div>
 
             {/* ✅ camera outside clip */}
-            <label
-              htmlFor="profile"
-               className="absolute z-50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-opacity-90
-             bottom-[4px] right-[45px] sm:h-10 sm:w-10"
+            <label htmlFor="profile" className="absolute z-50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-opacity-90 bottom-[4px] right-[45px] sm:h-10 sm:w-10"
             >
               <FiCamera />
               <input
@@ -163,12 +168,9 @@ const Profile = () => {
               />
             </label>
           </div>
-
-
-
           <div className="mt-4">
             <h3 className="mb-1.5 text-2xl font-semibold text-black dark:text-white">
-              Danish Heilium
+              { me?.name || "User Name" }
             </h3>
             <p className="font-medium">Ui/Ux Designer</p>
 
