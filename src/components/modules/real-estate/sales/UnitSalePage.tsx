@@ -83,7 +83,7 @@ export default function UnitSalePage() {
 
   const [chargeType, setChargeType] = useState<any>(null);
   const [chargeAmount, setChargeAmount] = useState("");
-  const [paymentMode, setPaymentMode] = useState<string>("");
+  const [paymentMode, setPaymentMode] = useState<string>("CASH");
 
   // ✅ NEW: Booking money state (separate from chargeAmount)
   const [bookingMoney, setBookingMoney] = useState<string>("");
@@ -460,7 +460,7 @@ export default function UnitSalePage() {
                   type="text"
                   label=""
                   placeholder="Enter note"
-                  className="text-sm"
+                  className="text-sm h-8"
                   value={note}
                   onChange={(e: any) => setNote(e.target.value)}
                 />
@@ -482,7 +482,47 @@ export default function UnitSalePage() {
                   onChange={(e: any) => setBookingMoney(e.target.value)}
                 />
               </div>
-
+              <div>
+                <label className="block mt-1 text-sm font-semibold">Check Number</label>
+                <InputElement
+                  id="checkNumber"
+                  name="checkNumber"
+                  type="number"
+                  placeholder="Enter check number"
+                  label=""
+                  className="text-sm"
+                  // value={checkNumber}
+                  // onChange={(e: any) => setCheckNumber(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
+              <div>
+                <label className="block mt-1 text-sm font-semibold">Bank Name</label>
+                <InputElement
+                  id="bookingMoney"
+                  name="bookingMoney"
+                  type="number"
+                  placeholder="Enter booking money"
+                  label=""
+                  className="text-sm"
+                  value={bookingMoney}
+                  onChange={(e: any) => setBookingMoney(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block mt-1 text-sm font-semibold">Branch Name</label>
+                <InputElement
+                  id="checkNumber"
+                  name="checkNumber"
+                  type="number"
+                  placeholder="Enter check number"
+                  label=""
+                  className="text-sm"
+                  // value={checkNumber}
+                  // onChange={(e: any) => setCheckNumber(e.target.value)}
+                />
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
