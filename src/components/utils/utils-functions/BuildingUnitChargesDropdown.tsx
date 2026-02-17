@@ -189,7 +189,7 @@ const BuildingUnitChargesDropdown: React.FC<DropdownProps> = ({
           </div>
         )}
         getOptionValue={(option) => option.value}
-        placeholder={placeholder || 'Select a building'}
+        placeholder={placeholder || 'Select charege'}
         styles={customStyles}
         defaultValue={defaultValue}
         value={value}

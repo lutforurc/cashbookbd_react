@@ -23,6 +23,8 @@ import { useNavigate } from "react-router";
 import { storeSalePricing } from "./unitSaleSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
+import { UNIT_SALE_PAYMENT_MODES } from "../../../constant/constant/variables";
 
 /* ================= TYPES ================= */
 
@@ -81,6 +83,7 @@ export default function UnitSalePage() {
 
   const [chargeType, setChargeType] = useState<any>(null);
   const [chargeAmount, setChargeAmount] = useState("");
+  const [paymentMode, setPaymentMode] = useState<string>("");
 
   // ✅ NEW: Booking money state (separate from chargeAmount)
   const [bookingMoney, setBookingMoney] = useState<string>("");
@@ -292,6 +295,7 @@ export default function UnitSalePage() {
     parking: selectedParking,
 
     // ✅ NEW
+    payment_mode: paymentMode,
     booking_amt: bookingAmt,
     note: note || null,
 
@@ -329,9 +333,7 @@ export default function UnitSalePage() {
     }
 
     const response: any = await dispatch(storeSalePricing(apiPayload) as any);
-    console.log('====================================');
-    console.log("response", response?.payload?.message);
-    console.log('====================================');
+    
 
     if (storeSalePricing.fulfilled.match(response)) {
       toast.success(response?.payload?.message || "Unit sale transaction saved successfully");
@@ -389,29 +391,65 @@ export default function UnitSalePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* LEFT */}
         <div className="lg:col-span-4 space-y-1">
-          <div className="rounded border bg-white dark:bg-gray-800 py-3 px-4">
+          <div className="rounded  dark:bg-gray-800 py-3 px-4">
             <label className="text-sm font-semibold">Select Customer</label>
             <DdlMultiline onSelect={setSelectedCustomer} acType="" />
 
-            <label className="block mt-1 text-sm font-semibold">Select Unit</label>
-            <BuildingUnitDropdown onSelect={onUnitSelect} />
-
-            <label className="block mt-1 text-sm font-semibold">Select Parking</label>
-            <BuildingParkingDropdown onSelect={onParkingSelect} />
-
-            {/* ✅ Booking Money (new) */}
-            <div className="mt-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
               <div>
-                <label className="block mt-1 text-sm font-semibold">Booking Money (Tk.)</label>
+                <label className="block mt-1 text-sm font-semibold">Select Unit</label>
+                <BuildingUnitDropdown onSelect={onUnitSelect} />
+              </div>
+              <div>
+                <label className="block mt-1 text-sm font-semibold">Select Parking</label>
+                <BuildingParkingDropdown onSelect={onParkingSelect} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 mt-2" >
+
+              <div>
+                <label className="text-sm font-semibold">Charge Type</label>
+                <BuildingUnitChargesDropdown onSelect={setChargeType} />
+              </div>
+
+              <div className="">
+                <label className="text-sm font-semibold">Amount (Tk.)</label>
                 <InputElement
-                  id="bookingMoney"
-                  name="bookingMoney"
+                  id="amount"
+                  name="amount"
                   type="number"
-                  placeholder="Enter booking money"
                   label=""
-                  className="text-sm"
-                  value={bookingMoney}
-                  onChange={(e: any) => setBookingMoney(e.target.value)}
+                  className="text-sm h-9.5"
+                  value={chargeAmount}
+                  onChange={(e: any) => setChargeAmount(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={addCustomCharge}
+              className="mt-2 inline-flex items-center gap-2  bg-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+            >
+              <FiPlus className="text-gray-900 dark:text-gray-100" />
+              Add Charge
+            </button>
+          </div>
+          <div className="rounded  bg-white dark:bg-gray-800 pt-2 px-4">
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+              <div>
+                <label className="block mt-1 text-sm ">Payment Mode</label>
+                <DropdownCommon
+                  id="payment_mode"
+                  name="payment_mode"
+                  label=""
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setPaymentMode(e.target.value)
+                  }
+                  // defaultValue={values.payment_mode}
+                  className="w-60 font-medium text-sm p-1.5"
+                  data={UNIT_SALE_PAYMENT_MODES}
                 />
               </div>
               <div>
@@ -428,33 +466,25 @@ export default function UnitSalePage() {
                 />
               </div>
             </div>
-          </div>
 
-          <div className="rounded border bg-white dark:bg-gray-800 py-2 px-4">
-            <label className="text-sm font-semibold">Charge Type</label>
-            <BuildingUnitChargesDropdown onSelect={setChargeType} />
+            {/* ✅ Booking Money (new) */}
+            <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
+              <div>
+                <label className="block mt-1 text-sm font-semibold">Booking Tk.</label>
+                <InputElement
+                  id="bookingMoney"
+                  name="bookingMoney"
+                  type="number"
+                  placeholder="Enter booking money"
+                  label=""
+                  className="text-sm"
+                  value={bookingMoney}
+                  onChange={(e: any) => setBookingMoney(e.target.value)}
+                />
+              </div>
 
-            <div className="mt-2">
-              <InputElement
-                id="amount"
-                name="amount"
-                type="number"
-                label="Amount (Tk.)"
-                className="text-sm"
-                value={chargeAmount}
-                onChange={(e: any) => setChargeAmount(e.target.value)}
-              />
             </div>
-
-            <button
-              onClick={addCustomCharge}
-              className="mt-2 inline-flex items-center gap-2  bg-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
-            >
-              <FiPlus className="text-gray-900 dark:text-gray-100" />
-              Add Charge
-            </button>
           </div>
-
           <div className="flex gap-2">
             <ButtonLoading
               onClick={submitToApi}
@@ -474,7 +504,7 @@ export default function UnitSalePage() {
 
         {/* RIGHT */}
         <div className="lg:col-span-8">
-          <table className="w-full text-sm bg-white dark:bg-gray-800 border">
+          <table className="w-full text-sm  bg-white dark:bg-gray-800">
             <thead className="bg-gray-200 dark:bg-gray-700">
               <tr>
                 <th className="p-2 text-left">Item</th>
@@ -485,7 +515,7 @@ export default function UnitSalePage() {
             </thead>
             <tbody>
               {items.map((it) => (
-                <tr key={it.id} className="border-t">
+                <tr key={it.id} className="">
                   <td className="p-2">{it.title}</td>
                   <td className="p-2">{linkedToText(it.linkedTo)}</td>
                   <td className="p-2 text-right">
