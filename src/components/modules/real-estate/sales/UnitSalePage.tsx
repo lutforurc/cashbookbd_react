@@ -84,6 +84,9 @@ export default function UnitSalePage() {
   const [chargeType, setChargeType] = useState<any>(null);
   const [chargeAmount, setChargeAmount] = useState("");
   const [paymentMode, setPaymentMode] = useState<string>("CASH");
+  const [checkNumber, setCheckNumber] = useState<string>("");
+  const [bankName, setBankName] = useState<string>("");
+  const [branchName, setBranchName] = useState<string>("");
 
   // ✅ NEW: Booking money state (separate from chargeAmount)
   const [bookingMoney, setBookingMoney] = useState<string>("");
@@ -288,6 +291,7 @@ export default function UnitSalePage() {
   const due = useMemo(() => Math.max(total - bookingAmt, 0), [total, bookingAmt]);
 
   /* ================= API ================= */
+  const isCheque = paymentMode === "CHEQUE";
 
   const apiPayload = {
     customer: selectedCustomer,
@@ -298,6 +302,11 @@ export default function UnitSalePage() {
     payment_mode: paymentMode,
     booking_amt: bookingAmt,
     note: note || null,
+
+    // ✅ only if cheque
+    reference_no: isCheque ? checkNumber : null,
+    bank_name: isCheque ? bankName : null,
+    branch_name: isCheque ? branchName : null,
 
     items: items.map((it) => ({
       id: it.id,
@@ -333,7 +342,7 @@ export default function UnitSalePage() {
     }
 
     const response: any = await dispatch(storeSalePricing(apiPayload) as any);
-    
+
 
     if (storeSalePricing.fulfilled.match(response)) {
       toast.success(response?.payload?.message || "Unit sale transaction saved successfully");
@@ -352,6 +361,14 @@ export default function UnitSalePage() {
     }
   };
 
+  const onPaymentModeChange = (v: string) => {
+    setPaymentMode(v);
+    if (v !== "CHEQUE") {
+      setCheckNumber("");
+      setBankName("");
+      setBranchName("");
+    }
+  };
 
   /* ================= UI ================= */
 
@@ -444,10 +461,10 @@ export default function UnitSalePage() {
                   id="payment_mode"
                   name="payment_mode"
                   label=""
+                  value={paymentMode} // ✅ add this (default CASH show করবে)
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setPaymentMode(e.target.value)
                   }
-                  // defaultValue={values.payment_mode}
                   className="w-60 font-medium text-sm p-1.5"
                   data={UNIT_SALE_PAYMENT_MODES}
                 />
@@ -491,8 +508,8 @@ export default function UnitSalePage() {
                   placeholder="Enter check number"
                   label=""
                   className="text-sm"
-                  // value={checkNumber}
-                  // onChange={(e: any) => setCheckNumber(e.target.value)}
+                  value={checkNumber}
+                  onChange={(e: any) => setCheckNumber(e.target.value)}
                 />
               </div>
             </div>
@@ -500,27 +517,27 @@ export default function UnitSalePage() {
               <div>
                 <label className="block mt-1 text-sm font-semibold">Bank Name</label>
                 <InputElement
-                  id="bookingMoney"
-                  name="bookingMoney"
-                  type="number"
-                  placeholder="Enter booking money"
+                  id="bankName"
+                  name="bankName"
+                  type="text"
+                  placeholder="Enter bank name"
                   label=""
                   className="text-sm"
-                  value={bookingMoney}
-                  onChange={(e: any) => setBookingMoney(e.target.value)}
+                  value={bankName}
+                  onChange={(e: any) => setBankName(e.target.value)}
                 />
               </div>
               <div>
                 <label className="block mt-1 text-sm font-semibold">Branch Name</label>
                 <InputElement
-                  id="checkNumber"
-                  name="checkNumber"
-                  type="number"
-                  placeholder="Enter check number"
+                  id="branchName"
+                  name="branchName"
+                  type="text"
+                  placeholder="Enter branch name"
                   label=""
                   className="text-sm"
-                  // value={checkNumber}
-                  // onChange={(e: any) => setCheckNumber(e.target.value)}
+                  value={branchName}
+                  onChange={(e: any) => setBranchName(e.target.value)}
                 />
               </div>
             </div>
