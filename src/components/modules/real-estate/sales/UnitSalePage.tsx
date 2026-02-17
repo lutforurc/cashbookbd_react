@@ -291,7 +291,7 @@ export default function UnitSalePage() {
   const due = useMemo(() => Math.max(total - bookingAmt, 0), [total, bookingAmt]);
 
   /* ================= API ================= */
-  const isCheque = paymentMode === "CHEQUE";
+  const showBankFields = paymentMode === "CHEQUE" || paymentMode === "BANK_TRANSFER";
 
   const apiPayload = {
     customer: selectedCustomer,
@@ -304,9 +304,9 @@ export default function UnitSalePage() {
     note: note || null,
 
     // ✅ only if cheque
-    reference_no: isCheque ? checkNumber : null,
-    bank_name: isCheque ? bankName : null,
-    branch_name: isCheque ? branchName : null,
+    reference_no: showBankFields ? checkNumber : null,
+    bank_name: showBankFields ? bankName : null,
+    branch_name: showBankFields ? branchName : null,
 
     items: items.map((it) => ({
       id: it.id,
@@ -363,12 +363,14 @@ export default function UnitSalePage() {
 
   const onPaymentModeChange = (v: string) => {
     setPaymentMode(v);
-    if (v !== "CHEQUE") {
+
+    if (v !== "CHEQUE" && v !== "BANK_TRANSFER") {
       setCheckNumber("");
       setBankName("");
       setBranchName("");
     }
   };
+
 
   /* ================= UI ================= */
 
@@ -396,7 +398,8 @@ export default function UnitSalePage() {
 
           <div className="flex justify-end gap-4">
             <div className="text-gray-700 dark:text-gray-200">
-              Booking: <span className="font-semibold">{formatAmount(bookingAmt)}</span>
+              Booking:{" "}
+              <span className="font-semibold">{formatAmount(bookingAmt)}</span>
             </div>
             <div className="text-gray-700 dark:text-gray-200">
               Due: <span className="font-semibold">{formatAmount(due)}</span>
@@ -414,17 +417,20 @@ export default function UnitSalePage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
               <div>
-                <label className="block mt-1 text-sm font-semibold">Select Unit</label>
+                <label className="block mt-1 text-sm font-semibold">
+                  Select Unit
+                </label>
                 <BuildingUnitDropdown onSelect={onUnitSelect} />
               </div>
               <div>
-                <label className="block mt-1 text-sm font-semibold">Select Parking</label>
+                <label className="block mt-1 text-sm font-semibold">
+                  Select Parking
+                </label>
                 <BuildingParkingDropdown onSelect={onParkingSelect} />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 mt-2" >
-
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 mt-2">
               <div>
                 <label className="text-sm font-semibold">Charge Type</label>
                 <BuildingUnitChargesDropdown onSelect={setChargeType} />
@@ -452,8 +458,8 @@ export default function UnitSalePage() {
               Add Charge
             </button>
           </div>
-          <div className="rounded  bg-white dark:bg-gray-800 pt-2 px-4">
 
+          <div className="rounded  bg-white dark:bg-gray-800 pt-1 py-2 px-4">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
               <div>
                 <label className="block mt-1 text-sm ">Payment Mode</label>
@@ -461,14 +467,15 @@ export default function UnitSalePage() {
                   id="payment_mode"
                   name="payment_mode"
                   label=""
-                  value={paymentMode} // ✅ add this (default CASH show করবে)
+                  value={paymentMode}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                    setPaymentMode(e.target.value)
+                    onPaymentModeChange(e.target.value)
                   }
                   className="w-60 font-medium text-sm p-1.5"
                   data={UNIT_SALE_PAYMENT_MODES}
                 />
               </div>
+
               <div>
                 <label className="block mt-1 text-sm font-semibold">Note</label>
                 <InputElement
@@ -484,7 +491,7 @@ export default function UnitSalePage() {
               </div>
             </div>
 
-            {/* ✅ Booking Money (new) */}
+            {/* ✅ Booking Money (always visible) */}
             <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
               <div>
                 <label className="block mt-1 text-sm font-semibold">Booking Tk.</label>
@@ -499,57 +506,79 @@ export default function UnitSalePage() {
                   onChange={(e: any) => setBookingMoney(e.target.value)}
                 />
               </div>
-              <div>
-                <label className="block mt-1 text-sm font-semibold">Check Number</label>
-                <InputElement
-                  id="checkNumber"
-                  name="checkNumber"
-                  type="number"
-                  placeholder="Enter check number"
-                  label=""
-                  className="text-sm"
-                  value={checkNumber}
-                  onChange={(e: any) => setCheckNumber(e.target.value)}
-                />
-              </div>
+              {showBankFields && (
+                <div className="">
+                  <div>
+                    <label className="block mt-1 text-sm font-semibold">
+                      Check Number
+                    </label>
+                    <InputElement
+                      id="checkNumber"
+                      name="checkNumber"
+                      type="text"
+                      placeholder="Enter check number"
+                      label=""
+                      className="text-sm"
+                      value={checkNumber}
+                      onChange={(e: any) => setCheckNumber(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
-              <div>
-                <label className="block mt-1 text-sm font-semibold">Bank Name</label>
-                <InputElement
-                  id="bankName"
-                  name="bankName"
-                  type="text"
-                  placeholder="Enter bank name"
-                  label=""
-                  className="text-sm"
-                  value={bankName}
-                  onChange={(e: any) => setBankName(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block mt-1 text-sm font-semibold">Branch Name</label>
-                <InputElement
-                  id="branchName"
-                  name="branchName"
-                  type="text"
-                  placeholder="Enter branch name"
-                  label=""
-                  className="text-sm"
-                  value={branchName}
-                  onChange={(e: any) => setBranchName(e.target.value)}
-                />
-              </div>
-            </div>
+            {showBankFields && (
+              <>
+                <div className="mt-1 grid grid-cols-1 xl:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block mt-1 text-sm font-semibold">
+                      Bank Name
+                    </label>
+                    <InputElement
+                      id="bankName"
+                      name="bankName"
+                      type="text"
+                      placeholder="Enter bank name"
+                      label=""
+                      className="text-sm"
+                      value={bankName}
+                      onChange={(e: any) => setBankName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block mt-1 text-sm font-semibold">
+                      Branch Name
+                    </label>
+                    <InputElement
+                      id="branchName"
+                      name="branchName"
+                      type="text"
+                      placeholder="Enter branch name"
+                      label=""
+                      className="text-sm"
+                      value={branchName}
+                      onChange={(e: any) => setBranchName(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
+
           <div className="flex gap-2">
             <ButtonLoading
               onClick={submitToApi}
               label={"Save"}
-              icon={loading ? <FiLoader className="animate-spin text-white text-lg ml-2 mr-2 hidden xl:block" /> : <FiSave className="text-white text-lg ml-2 mr-2 hidden xl:block" />}
+              icon={
+                loading ? (
+                  <FiLoader className="animate-spin text-white text-lg ml-2 mr-2 hidden xl:block" />
+                ) : (
+                  <FiSave className="text-white text-lg ml-2 mr-2 hidden xl:block" />
+                )
+              }
               className="mt-2 p-2 flex-1"
               disabled={!items.length || loading}
             />
+
             <ButtonLoading
               onClick={() => navigate("../real-estate/unit/list")}
               label="Back"
@@ -570,11 +599,13 @@ export default function UnitSalePage() {
                 <th className="p-2 text-center w-24">Action</th>
               </tr>
             </thead>
+
             <tbody>
               {items.map((it) => (
                 <tr key={it.id} className="">
                   <td className="p-2">{it.title}</td>
                   <td className="p-2">{linkedToText(it.linkedTo)}</td>
+
                   <td className="p-2 text-right">
                     {editingId === it.id ? (
                       <div className="flex justify-end gap-1 items-center">
@@ -596,12 +627,12 @@ export default function UnitSalePage() {
                       </div>
                     )}
                   </td>
+
                   <td className="p-2">
                     {it.editMode === "LOCKED" ? (
                       <div className="flex items-center justify-center gap-3">
                         <FiLock />
 
-                        {/* ✅ Allow deleting Parking even if locked */}
                         {it.type === "PARKING" && (
                           <FiTrash2
                             className="cursor-pointer text-red-500"
@@ -632,7 +663,10 @@ export default function UnitSalePage() {
 
               {!items.length && (
                 <tr>
-                  <td className="py-2 px-4 text-center text-gray-500 dark:text-gray-400" colSpan={4}>
+                  <td
+                    className="py-2 px-4 text-center text-gray-500 dark:text-gray-400"
+                    colSpan={4}
+                  >
                     No pricing items yet. Select Unit to start.
                   </td>
                 </tr>
@@ -642,5 +676,6 @@ export default function UnitSalePage() {
         </div>
       </div>
     </div>
+
   );
 }
