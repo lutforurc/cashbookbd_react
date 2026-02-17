@@ -510,7 +510,7 @@ export default function UnitSalePage() {
                 <div className="">
                   <div>
                     <label className="block mt-1 text-sm font-semibold">
-                      Check Number
+                      Check/Ref. Number
                     </label>
                     <InputElement
                       id="checkNumber"
