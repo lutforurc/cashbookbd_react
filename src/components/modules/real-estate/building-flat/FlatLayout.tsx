@@ -89,8 +89,6 @@ const FlatLayout = () => {
 
 
   const handleUnitClick = (e: React.MouseEvent, unit: any) => {
-    console.log("event", e);
-    console.log("unit", unit);
   };
 
   return (

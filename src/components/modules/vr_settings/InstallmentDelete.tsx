@@ -44,7 +44,6 @@ const InstallmentDelete = () => {
     try {
       const result = await dispatch(deleteInstallment({ voucher_no: voucherNo }));
 
-      console.log("Delete Installment Result:", result);
 
       const response = result?.payload;
 

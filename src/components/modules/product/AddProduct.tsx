@@ -155,9 +155,7 @@ const AddProduct = () => {
         }
       }),
     );
-
-    // result চাইলে এখানে use করতে পারবেন
-    // console.log('storeProduct result:', result);
+ 
   };
 
   const handleProductCreate = (e) => {

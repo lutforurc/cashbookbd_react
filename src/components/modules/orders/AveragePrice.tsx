@@ -101,7 +101,6 @@ const AveragePrice = (user: any) => {
         setAverageData({ ...averageData, [reportType]: e.target.value });
     }
 
-    // console.log(orderData?.data?.others_expense)
     return (
         <>
             <HelmetTitle title={'Average Price'} />

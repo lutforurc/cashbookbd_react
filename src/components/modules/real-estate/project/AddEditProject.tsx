@@ -92,7 +92,6 @@ const AddEditProject = (user: any) => {
     };
 
     const handleSave = async () => {
-        console.log("FINAL PAYLOAD", formData); // 🔍 MUST CHECK
 
         setButtonLoading(true);
 

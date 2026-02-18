@@ -331,7 +331,6 @@ const BankReceived = () => {
         transactions,
       };
       const response = await dispatch(saveBankReceived(payload)).unwrap();
-      // console.log('Save Response:', response);
 
       // server sample:
       const voucherText = response?.data?.data?.[0];
@@ -409,7 +408,6 @@ const BankReceived = () => {
         })),
       };
 
-      console.log('📝 Update Payload:', payload);
 
       // ✅ API call or redux dispatch
       const response = await dispatch(updateBankReceived(payload)).unwrap();

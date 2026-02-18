@@ -50,7 +50,6 @@ const LabourLedger = (user: any) => {
     //  if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
     setTableData(ledgerData?.labourExpenses?.data?.data || []);
     // }
-    console.log('tableData', tableData);
   }, [ledgerData]);
 
   useEffect(() => {

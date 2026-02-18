@@ -499,7 +499,6 @@ const TradingBusinessSales = () => {
 
   const editProductItem = (productId: number) => {
     // Find the product by its unique id
-    console.log(formData.products);
     const productIndex = formData.products.findIndex(
       (item) => item.id === productId,
     );
@@ -663,7 +662,6 @@ const TradingBusinessSales = () => {
 
 
   const purchaseOrderNumberHandler = (option: any) => {
-    console.log(option.value);
     const purchaseOrderNumber = 'purchaseOrderNumber'; // Key for sales order number
     const purchaseOrderText = 'purchaseOrderText'; // Key for sales order text
 

@@ -90,7 +90,6 @@ const AddOrder = (user: any) => {
 
     const handleOrderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        console.log(name, value);
         setFormData((prevState) => ({
             ...prevState,
             [name]: value,
@@ -107,8 +106,6 @@ const AddOrder = (user: any) => {
         const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
         const key = 'last_delivery_date'; // Set the desired key dynamically
         setFormData({ ...formData, [key]: startD });
-
-        console.log(formData);
     };
 
     const resetOrder = () => {
@@ -123,7 +120,6 @@ const AddOrder = (user: any) => {
         setFormData({ ...formData, [key]: e.target.value });
     };
     const handleSave = () => {
-        console.log(formData);
         // Check Required fields are not empty
         // const validationMessages = validateForm(formData, invoiceMessage);
         // if (validationMessages) {

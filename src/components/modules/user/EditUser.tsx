@@ -21,7 +21,6 @@ const EditUser = (user: any) => {
     const [dropdownData, setDropdownData] = useState<any[]>([]);
 
     const { id } = useParams<{ id: string }>();
-    console.log( id );
 
     useEffect(() => {
         dispatch(getDdlAllBranch());
@@ -61,7 +60,6 @@ const EditUser = (user: any) => {
         }
     }, [showUser.editData]);
 
-    console.log( formData ); 
 
 
     const handleOnChange = (e) => {

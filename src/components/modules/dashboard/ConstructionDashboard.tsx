@@ -107,11 +107,7 @@ const ConstructionDashboard = () => {
 
 
 
-
-  console.log('====================================');
-  console.log("dashboard?.data?.receiveDetails?.receivedDetails", dashboard?.data?.receiveDetails?.receivedDetails);
-  console.log('====================================');
-
+ 
   return (
     <>
       <HelmetTitle title="Dashboard" />

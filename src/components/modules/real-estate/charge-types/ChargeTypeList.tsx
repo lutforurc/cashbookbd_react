@@ -125,7 +125,6 @@ const ChargeTypeList = ({ user }: any) => {
   };
 
   const handleSearchButton = () => {
-    console.log( search  ); 
     setQ(search);
     setCurrentPage(1);
     setPage(1);

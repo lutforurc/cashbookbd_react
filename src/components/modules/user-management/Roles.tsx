@@ -104,7 +104,6 @@ const Roles = () => {
     setUpdating(true);
     try {
       await dispatch(updateRolePermissions({ roleId, selectedPermissions })).unwrap();
-      // console.log(rolesPermissions?.updatePermission?.message);
       toast.success(rolesPermissions?.updatePermission?.message || "Permissions updated successfully");
     } catch (error) {
       toast.error(error.message || "Failed to update permissions");

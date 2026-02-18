@@ -16,7 +16,6 @@ export interface TableRow {
 
 export const generateTableData = (data: any): TableRow[] => {
 
-    // console.log(data);
   if (!data) return []; // safeguard if data is undefined
 
   

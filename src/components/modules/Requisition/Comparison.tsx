@@ -176,11 +176,7 @@ const Requisition = (user: any) => {
       width: '100px',
     },
   ];
-
-  console.log('====================================');
-  console.log('requisition.comparisonData', requisition.comparisonData);
-  console.log('====================================');
-
+ 
   return (
     <div className="">
       <HelmetTitle title={'Requisition Analysis'} />

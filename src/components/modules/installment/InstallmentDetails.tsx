@@ -113,7 +113,6 @@ const InstallmentDetails = () => {
 
   useEffect(() => {
     setTableData(installment?.customerInstallment?.data?.data);
-    console.log(installment);
   }, [installment]);
 
   const columns = [

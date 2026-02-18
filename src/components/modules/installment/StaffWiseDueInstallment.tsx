@@ -91,7 +91,6 @@ const StaffWiseDueInstallment = (user: any) => {
 
     if (responseData) {
       const totalInstallments = responseData.total_installments ?? 0; // fallback to 0 if undefined
-      console.log('Total Installments:', totalInstallments); // (optional) log if needed
       setTableData(responseData?.installments);
     } else {
       setTableData([]);

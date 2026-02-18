@@ -346,7 +346,6 @@ export default function UnitSalePage() {
 
     if (storeSalePricing.fulfilled.match(response)) {
       toast.success(response?.payload?.message || "Unit sale transaction saved successfully");
-      // console.log("Sale saved, ID:", response.payload?.sale_id);
 
       // ✅ clear only the table part + inputs
       setItems([]);

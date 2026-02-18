@@ -35,7 +35,6 @@ const UserList = () => {
   };
   
   const handleSearchButton = () => {
-    console.log( search  ); 
     setCurrentPage(1);
     setPage(1);
     dispatch(getUser({ page: 1, perPage,  search })); // Use 'search' instead

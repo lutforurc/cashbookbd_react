@@ -66,7 +66,6 @@ const DueList = (user: any) => {
   };
 
 
-  // console.log( branchList?.currentBranch?.branch_types_id  )
 
   useEffect(() => {
     if (

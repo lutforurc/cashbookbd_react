@@ -145,7 +145,6 @@ const Orders = () => {
     },
   ];
 
-  console.log(tableData);
 
   return (
     <div>

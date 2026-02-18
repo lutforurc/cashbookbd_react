@@ -5,7 +5,6 @@ import { chartDateTime } from './formatDate';
 
 const BranchPad = () => {
   const settings = useSelector((state: any) => state.settings.data);
-  console.log(settings?.branch);
   return (
     <div>
       <div className="mb-6">

@@ -55,7 +55,6 @@
 
 // export const API_BASE_URLs = import.meta.env.VITE_API_URL;
 
-// console.log("Env url", API_REMOTE_URLs);
 
 // export const API_REMOTE_URL = 'https://sonycybernet.cashbookbd.com';
 // export const API_REMOTE_URL = 'https://rmrs.cashbookbd.com';
@@ -72,7 +71,6 @@
 // export const API_REMOTE_URL  = import.meta.env.VITE_API_BASE_URL;
 
 // let API_REMOTE_URLs = window.location.origin;
-// console.log("Test Url", API_REMOTE_URLs ); 
 
 // const localHosts = ['localhost', '127.0.0.1', 'cashbook_api.test'];
 

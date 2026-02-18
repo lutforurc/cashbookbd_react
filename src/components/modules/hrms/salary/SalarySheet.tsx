@@ -42,11 +42,7 @@ const SalarySheet = ({ user }: any) => {
   useEffect(() => {
     
     setMeta(salary?.salarySheet?.meta || []);
-    setTableData(salary?.salarySheet?.data);
-    console.log('====================================');
-    console.log("tableData", tableData);
-    console.log("salary", salary?.salarySheet?.vr_no);
-    console.log('====================================');
+    setTableData(salary?.salarySheet?.data); 
   }, [salary]);
 
 
@@ -200,7 +196,6 @@ const SalarySheet = ({ user }: any) => {
       ).unwrap();
 
       dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
-      console.log(response);
     } catch (error) {
       console.error(error);
     }

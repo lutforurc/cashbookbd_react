@@ -87,7 +87,6 @@ const DueInstallment = (user: any) => {
 
     if (responseData) {
       const totalInstallments = responseData.total_installments ?? 0; // fallback to 0 if undefined
-      console.log('Total Installments:', totalInstallments); // (optional) log if needed
       setTableData(responseData?.installments);
     } else {
       setTableData([]);
@@ -151,7 +150,6 @@ const DueInstallment = (user: any) => {
 
   const handleOnStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    console.log('Selected Value:', value);
     setStatus(value || null);
   };
 

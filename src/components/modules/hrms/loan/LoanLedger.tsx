@@ -164,9 +164,6 @@ const LoanLedger = (user: any) => {
   ];
 
  
-      console.log('====================================');
-    console.log("employeeLoan", employeeLoan);
-    console.log('====================================');
  
 
   const handlePrint = useReactToPrint({

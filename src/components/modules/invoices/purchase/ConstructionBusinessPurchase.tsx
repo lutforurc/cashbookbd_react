@@ -289,7 +289,6 @@ const ConstructionBusinessPurchase = () => {
         toast.success('Something went wrong!');
       }
     }
-    console.log(purchase.data);
   }, [purchase?.data]);
 
   const addProduct = () => {

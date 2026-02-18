@@ -64,8 +64,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
       start_date: dayjs(date).format('YYYY-MM-DD'),
     }));
   };
-
-  // console.log( "Settings:", settings?.data?.trx_dt)
+ 
 
   const handleEndDate = (date: Date) => {
     setEndDate(date);
@@ -112,10 +111,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
       formData.append('images[]', file); // append all selected images
     });
 
-    // Logging FormData entries
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value); // Will log the key and value pairs
-    }
+ 
 
     // Continue with appending other fields to FormData
     formData.append('branch_id', voucherImageFormData.branch_id.toString());
@@ -128,13 +124,11 @@ export default function BulkImageUpload(user: any): JSX.Element {
       await dispatch(
         bulkUploadImages(formData, (message, success) => {
           if (success) {
-            console.log('Success Message:', message);
             toast.success(message);
 
             // Clear the files state after successful upload
             setFiles([]); // This should be fine now, as the upload is successful
           } else {
-            console.log('Error Message:', message);
             toast.info(message);
           }
         }),

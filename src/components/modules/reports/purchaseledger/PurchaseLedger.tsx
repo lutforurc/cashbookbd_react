@@ -271,7 +271,6 @@ const PurchaseLedger = (user: any) => {
       headerClass: 'text-center',
       cellClass: 'flex justify-center',
       render: (row: any) => {
-        console.log(row);
         return (
           <ImagePopup
             title={row?.remarks || ''}

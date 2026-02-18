@@ -68,7 +68,6 @@ const CashBook = (user: any) => {
     setEndDate(e);
   };
   const handleActionButtonClick = (e: any) => {
-    console.log(user.user.branch_id);
 
     const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed

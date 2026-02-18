@@ -69,10 +69,7 @@ const BranchList = () => {
     dispatch(branchStatus(row.id, newStatus)).then(() => {
       dispatch(getBranch({ page, perPage, searchValue }));
     });
-
-    console.log(
-      `Toggled row with ID ${row.id} to ${newStatus ? 'enabled' : 'disabled'}`,
-    );
+ 
   };
 
   const columns = [
@@ -127,14 +124,12 @@ const BranchList = () => {
       ),
     },
   ];
-  const handleBranchView = (row: any) => {
-    console.log('View =>' + row);
+  const handleBranchView = (row: any) => { 
   };
   const handleBranchEdit = (row: any) => {
     navigate(`/branch/branch-edit/${row.branch_id}`);
   };
-  const handleBranchDelete = (row: any) => {
-    console.log('Delete =>' + row);
+  const handleBranchDelete = (row: any) => { 
     navigate('/branch/branch-list');
   };
 

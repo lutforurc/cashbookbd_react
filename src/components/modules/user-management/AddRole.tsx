@@ -28,7 +28,6 @@ const AddRole = () => {
       .unwrap()
       .then((data:any) => {
         toast.success((data?.data?.data || "Role create success!")); 
-        console.log(data?.data?.data);
         setFormData(initialRoleItem); // Reset form
       })
       .catch((error:any) => { 

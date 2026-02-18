@@ -71,10 +71,7 @@ const CashReceivedPrint = React.forwardRef<HTMLDivElement, Props>(
             ? [accMastersRaw]
             : [];
 
-        const trxMaster = accMasters[0];
-        console.log('====================================');
-        console.log("trxMaster", trxMaster);
-        console.log('====================================');
+        const trxMaster = accMasters[0]; 
         const trxDetails = trxMaster?.acc_transaction_details ?? [];
 
         if (!trxDetails.length) {

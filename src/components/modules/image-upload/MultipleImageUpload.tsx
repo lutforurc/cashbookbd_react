@@ -138,7 +138,6 @@ export default function VoucherUpload(user: any): JSX.Element {
   };
 
   const handleUpload = async (id: number) => {
-    console.log(id);
     
     const selectedFiles = files[id];
     if (!selectedFiles?.length) {
@@ -158,10 +157,7 @@ export default function VoucherUpload(user: any): JSX.Element {
 
       formData.append('voucher_id', id.toString());
 
-      // Debug form data
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
+    
 
       await dispatch(uploadImage(formData, id));
 
@@ -210,7 +206,6 @@ export default function VoucherUpload(user: any): JSX.Element {
     const { name, value } = e.target;
     setVoucherImageFormData({ ...voucherImageFormData, [name]: value });
 
-    // console.log('Selected value:', voucherImageFormData);
   };
 
   const columns = [

@@ -319,7 +319,6 @@ const GeneralBusinessSales = () => {
         }),
       );
     } catch (error) {
-      console.log(error);
       toast.error('Failed to save invoice!');
     }
   };
@@ -364,7 +363,6 @@ const GeneralBusinessSales = () => {
 
   const editProductItem = (productId: number) => {
     // Find the product by its unique id
-    console.log(formData.products);
     const productIndex = formData.products.findIndex(
       (item) => item.id === productId,
     );

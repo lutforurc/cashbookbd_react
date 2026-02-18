@@ -82,10 +82,8 @@ const RemoveApproval = () => {
     await dispatch(
       removeVoucherApproval(formData, (message, success) => {
         if (success) {
-          console.log('Remove Approval Response:', message);
           toast.success(message);
         } else {
-          console.log('Remove Approval Response else:', message);
             toast.info(message);
         }
       }),

@@ -263,8 +263,6 @@ const GeneralCashPayment = () => {
 
 const handleInvoiceUpdate = async () => {
 
-//   console.log("formData.account =>", formData.account);
-// console.log("tableData =>", tableData);
 
 //   if (!formData.account || tableData.length === 0) {
 //     toast.error("Please add at least one transaction before updating!");

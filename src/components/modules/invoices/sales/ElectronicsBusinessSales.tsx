@@ -542,10 +542,7 @@ const ElectronicsBusinessSales = () => {
       setUpdateButtonLoading(false);
       setIsUpdateButton(false);
     }, 2000);
-    // }catch( error ){
-    //   console.log(error);
-    //   toast.error('Failed to Update invoice!');
-    // }
+ 
 
     setIsUpdating(false);
   };
@@ -609,9 +606,7 @@ const ElectronicsBusinessSales = () => {
       setShowInstallmentPopup(true);
       setInstallmentData((prev) => ({
         ...prev,
-        // startDate: new Date(),
       }));
-      // console.log(installmentData);
     } else {
       setShowInstallmentPopup(false);
       setIsEarlyPayment(false); // Reset early payment state
@@ -681,7 +676,6 @@ const ElectronicsBusinessSales = () => {
   const handleEarlyPaymentDateChange = (date: Date | null) => {
     const selectedDate = dayjs(date).tz('Asia/Dhaka').startOf('day');
     setEarlyPaymentDate(selectedDate.toDate());
-    console.log('Early Payment Date:', selectedDate.toDate());
     setInstallmentData((prev) => ({
       ...prev,
       earlyPaymentDate: selectedDate.toDate(),

@@ -101,10 +101,7 @@ const Profile = () => {
       })
     );
   };
-
-  console.log('====================================');
-  console.log("Cover upload triggered, file:", me);
-  console.log('====================================');
+ 
 
   // ✅ Profile photo upload
   const handleProfileChange = (e: any) => {
