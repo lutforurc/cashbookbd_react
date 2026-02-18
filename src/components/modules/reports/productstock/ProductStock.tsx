@@ -21,22 +21,68 @@ import InputElement from '../../../utils/fields/InputElement';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { fetchBrandDdl } from '../../product/brand/brandSlice';
 
+// ======================
+// ✅ Category-wise helper
+// ======================
+const isGroupRow = (row: any) => row?.__type === 'GROUP';
+
+const buildCategoryWiseRows = (rows: any[]) => {
+  if (!Array.isArray(rows)) return [];
+
+  // sort safe: category then product
+  const sorted = [...rows].sort((a, b) => {
+    const c1 = String(a.cat_name || '').localeCompare(String(b.cat_name || ''));
+    if (c1 !== 0) return c1;
+    return String(a.product_name || '').localeCompare(String(b.product_name || ''));
+  });
+
+  const map = new Map<string, any[]>();
+  for (const r of sorted) {
+    const key = r.cat_name || 'Uncategorized';
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(r);
+  }
+
+  const finalRows: any[] = [];
+  let serial = 1;
+
+  for (const [cat, items] of map.entries()) {
+    // category header row
+    finalRows.push({
+      __type: 'GROUP',
+      cat_name: cat,
+    });
+
+    // items under category
+    for (const it of items) {
+      finalRows.push({
+        ...it,
+        sl_number: serial++,
+      });
+    }
+  }
+
+  return finalRows;
+};
+
 const ProductStock = (user: any) => {
   const dispatch = useDispatch();
-  const branchDdlData = useSelector((state) => state.branchDdl);
-  const categoryData = useSelector((state) => state.category);
-  const stock = useSelector((state) => state.stock);
-  const brand = useSelector((state) => state.brand);
+  const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const categoryData = useSelector((state: any) => state.category);
+  const stock = useSelector((state: any) => state.stock);
+  const brand = useSelector((state: any) => state.brand);
+
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
+  const [tableData, setTableData] = useState<any[]>([]);
   const [search, setSearchValue] = useState('');
 
   const [branchId, setBranchId] = useState<number | string | null>(null);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(20);
   const [fontSize, setFontSize] = useState<number>(12);
@@ -60,34 +106,35 @@ const ProductStock = (user: any) => {
     if (!isNaN(value)) {
       setPerPage(value);
     } else {
-      setPerPage(10); // Reset if input is invalid
+      setPerPage(10);
     }
   };
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-
     if (!isNaN(value)) {
       setFontSize(value);
     } else {
-      setFontSize(10); // Reset if input is invalid
+      setFontSize(10);
     }
   };
 
   const handlePrint = useReactToPrint({
     content: () => {
-      if (!printRef.current) {
-        return null;
-      }
+      if (!printRef.current) return null;
       return printRef.current;
     },
-    documentTitle: 'Due Report',
+    documentTitle: 'Product Stock',
     removeAfterPrint: true,
   });
 
+  // ✅ stock data -> convert to category-wise rows
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
-      setTableData(stock?.data);
+      const grouped = buildCategoryWiseRows(stock.data);
+      setTableData(grouped);
+    } else if (!stock.isLoading) {
+      setTableData([]);
     }
   }, [stock]);
 
@@ -99,7 +146,7 @@ const ProductStock = (user: any) => {
     if (selectedOption) {
       setCategoryId(selectedOption.value);
     } else {
-      setCategoryId(null); // অথবা default value
+      setCategoryId(null);
     }
   };
 
@@ -112,8 +159,10 @@ const ProductStock = (user: any) => {
   };
 
   const handleActionButtonClick = () => {
-    const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
-    const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
+    setButtonLoading(true);
+    const startD = dayjs(startDate).format('YYYY-MM-DD');
+    const endD = dayjs(endDate).format('YYYY-MM-DD');
+
     dispatch(
       getProductStock({
         branchId,
@@ -123,7 +172,9 @@ const ProductStock = (user: any) => {
         startDate: startD,
         endDate: endD,
       }),
-    );
+    ) as any;
+
+    setTimeout(() => setButtonLoading(false), 500);
   };
 
   useEffect(() => {
@@ -133,9 +184,11 @@ const ProductStock = (user: any) => {
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
       setDdlCategory(categoryData?.data);
+
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+
       setStartDate(parsedDate);
       setEndDate(parsedDate);
       setBranchId(user.user.branch_id);
@@ -148,81 +201,96 @@ const ProductStock = (user: any) => {
       header: 'Sl. No',
       headerClass: 'text-center',
       cellClass: 'text-center',
+      render: (row: any) => (isGroupRow(row) ? '' : row.sl_number),
     },
     {
       key: 'product_name',
       header: 'Product Name',
-      render: (row: any) => (
-        <>
-          <div>{row.cat_name}</div>
-          <div>{row.brand_name  && (<span className="">{row.brand_name} </span>)} {row.product_name}</div>
-        </>
-      ),
+      render: (row: any) => {
+        if (isGroupRow(row)) {
+          return (
+            <div className="font-semibold py-1">
+              {row.cat_name}
+            </div>
+          );
+        }
+
+        return (
+          <>
+            <div>
+              {row.brand_name && <span className="">{row.brand_name} </span>}
+              {row.product_name}
+            </div>
+          </>
+        );
+      },
     },
     {
       key: 'opening',
       header: 'Opening',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => (
-        <>
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return (
           <p>
             {thousandSeparator(Math.floor(row.opening), 0)}
-            {Math.floor(row.opening) ? <span className="text-sm "> ({row.unit})</span> : ''}
+            {Math.floor(row.opening) ? (
+              <span className="text-sm "> ({row.unit})</span>
+            ) : (
+              ''
+            )}
           </p>
-        </>
-      ),
+        );
+      },
     },
     {
       key: 'stock_in',
       header: 'Stock In',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => (
-        <>
-          {row.stock_in ? (
-            <span className="text-sm ">
-              {thousandSeparator(Math.floor(row.stock_in), 0)} ({row.unit})
-            </span>
-          ) : (
-            '-'
-          )}
-        </>
-      ),
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return row.stock_in ? (
+          <span className="text-sm ">
+            {thousandSeparator(Math.floor(row.stock_in), 0)} ({row.unit})
+          </span>
+        ) : (
+          '-'
+        );
+      },
     },
     {
       key: 'stock_out',
       header: 'Stock Out',
-      render: (row: any) => (
-        <>
-          {row.stock_out ? (
-            <span className="text-sm ">
-              {thousandSeparator(Math.floor(row.stock_out), 0)} ({row.unit})
-            </span>
-          ) : (
-            '-'
-          )}
-        </>
-      ),
       headerClass: 'text-right',
       cellClass: 'text-right',
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return row.stock_out ? (
+          <span className="text-sm ">
+            {thousandSeparator(Math.floor(row.stock_out), 0)} ({row.unit})
+          </span>
+        ) : (
+          '-'
+        );
+      },
     },
     {
       key: 'balance',
-      header: 'balance',
+      header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => (
-        <>
-          {Math.floor(row.balance) ? (
-            <span className="text-sm ">
-              {thousandSeparator(Math.floor(row.balance), 0)} ({row.unit})
-            </span>
-          ) : (
-            '-'
-          )}
-        </>
-      ),
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+        return Math.floor(row.balance) ? (
+          <span className="text-sm ">
+            {thousandSeparator(Math.floor(row.balance), 0)} ({row.unit})
+          </span>
+        ) : (
+          '-'
+        );
+      },
     },
   ];
 
@@ -244,10 +312,13 @@ const ProductStock = (user: any) => {
   return (
     <div className="">
       <HelmetTitle title={'Product Stock'} />
+
       <div className="mb-2">
         <div className="grid grid-cols-1 md:grid-cols-3 md:gap-x-4 gap-y-2">
           <div className="">
-            <div><label htmlFor="">Select Branch</label></div>
+            <div>
+              <label htmlFor="">Select Branch</label>
+            </div>
             <div>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
@@ -257,24 +328,22 @@ const ProductStock = (user: any) => {
               />
             </div>
           </div>
+
           <div className="">
             <div>
-              {' '}
               <label htmlFor="">Select Brand</label>
             </div>
             <div>
-
               <CategoryDropdown
                 onChange={handleBrandChange}
                 className="w-full font-medium text-sm"
                 categoryDdl={brandOptions}
               />
-
             </div>
           </div>
+
           <div className="">
             <div>
-              {' '}
               <label htmlFor="">Select Category</label>
             </div>
             <div>
@@ -289,9 +358,11 @@ const ProductStock = (user: any) => {
               )}
             </div>
           </div>
+
           <div className="grid grid-cols-1">
-            <div className='mr-2 w-full'>
-              <div>{' '}<label htmlFor="">Search by Name</label>
+            <div className="mr-2 w-full">
+              <div>
+                <label htmlFor="">Search by Name</label>
               </div>
               <SearchInput
                 search={search}
@@ -323,6 +394,7 @@ const ProductStock = (user: any) => {
               </div>
             </div>
           </div>
+
           <div className="sm:grid md:flex gap-x-3 ">
             <div className="flex w-full">
               <div className="mr-2">
@@ -336,6 +408,7 @@ const ProductStock = (user: any) => {
                   className="font-medium text-sm h-8 w-12"
                 />
               </div>
+
               <div className="mr-2">
                 <InputElement
                   id="fontSize"
@@ -347,7 +420,8 @@ const ProductStock = (user: any) => {
                   className="font-medium text-sm h-8 w-12"
                 />
               </div>
-              <div className='mt-6'>
+
+              <div className="mt-6">
                 <ButtonLoading
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
@@ -355,6 +429,7 @@ const ProductStock = (user: any) => {
                   className="h-8 w-full"
                 />
               </div>
+
               <PrintButton
                 onClick={handlePrint}
                 label="Print"
@@ -364,17 +439,17 @@ const ProductStock = (user: any) => {
           </div>
         </div>
       </div>
+
       <div className="overflow-y-auto">
         {stock.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} />{' '}
+        <Table columns={columns} data={tableData || []} />
+
         {/* === Hidden Print Component === */}
         <div className="hidden">
           <StockBookPrint
             ref={printRef}
-            rows={tableData || []}
-            startDate={
-              startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined
-            }
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group row print এ যাবে না
+            startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Product Stock"
             rowsPerPage={Number(perPage)}
