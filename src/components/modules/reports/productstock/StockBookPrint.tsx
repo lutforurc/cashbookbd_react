@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
 type StockRow = {
   sl_number?: number | string;
@@ -182,16 +183,16 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                               Subtotal
                             </td>
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right font-semibold">
-                              {row.opening}
+                              {thousandSeparator(Number(row.opening), 0)}
                             </td>
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right font-semibold">
-                              {row.stock_in}
+                              {thousandSeparator(Number(row.stock_in), 0)}
                             </td>
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right font-semibold">
-                              {row.stock_out}
+                              {thousandSeparator(Number(row.stock_out), 0)}
                             </td>
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right font-semibold">
-                              {row.balance}
+                              {thousandSeparator(Number(row.balance), 0)}
                             </td>
                           </tr>
                         );
@@ -205,16 +206,16 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                               Grand Total
                             </td>
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right font-bold bg-gray-100">
-                              {row.opening}
+                              {thousandSeparator(Number(row.opening), 0)}
                             </td>
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right font-bold bg-gray-100">
-                              {row.stock_in}
+                              {thousandSeparator(Number(row.stock_in), 0)}
                             </td>
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right font-bold bg-gray-100">
-                              {row.stock_out}
+                              {thousandSeparator(Number(row.stock_out), 0)}
                             </td>
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right font-bold bg-gray-100">
-                              {row.balance}
+                              {thousandSeparator(Number(row.balance), 0)}
                             </td>
                           </tr>
                         );
@@ -234,32 +235,40 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                           </td>
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                            {row.opening != null ? (
-                              <span className="text-sm">{row.opening} {row.unit && `(${row.unit})`}</span>
+                            {Number(row?.opening) > 0 ? (
+                              <span className="text-sm">
+                                {thousandSeparator(Number(row.opening), 0)} {row.unit ? `(${row.unit})` : ''}
+                              </span>
                             ) : (
                               '-'
                             )}
                           </td>
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                            {row.stock_in != null ? (
-                              <span className="text-sm">{toNum(row.stock_in) !== 0 ? `${row.stock_in} ${row.unit ? `(${row.unit})` : ''}` : '-'}</span>
+                            {Number(row?.stock_in) > 0 ? (
+                              <span className="text-sm">
+                                {thousandSeparator(Number(row.stock_in), 0)} {row.unit ? `(${row.unit})` : ''}
+                              </span>
                             ) : (
                               '-'
                             )}
                           </td>
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                            {row.stock_out != null ? (
-                              <span className="text-sm">{toNum(row.stock_out) !== 0 ? `${row.stock_out} ${row.unit ? `(${row.unit})` : ''}` : '-'}</span>
+                            {Number(row?.stock_out) > 0 ? (
+                              <span className="text-sm">
+                                {thousandSeparator(Number(row.stock_out), 0)} {row.unit ? `(${row.unit})` : ''}
+                              </span>
                             ) : (
                               '-'
                             )}
                           </td>
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                            {row.balance != null ? (
-                              <span className="text-sm">{toNum(row.balance) !== 0 ? `${row.balance} ${row.unit ? `(${row.unit})` : ''}` : '-'}</span>
+                            {Number(row?.balance) !== 0 ? (  // balance 0 হলে "-"
+                              <span className="text-sm">
+                                {thousandSeparator(Number(row.balance), 0)} {row.unit ? `(${row.unit})` : ''}
+                              </span>
                             ) : (
                               '-'
                             )}
