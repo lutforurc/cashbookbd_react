@@ -95,7 +95,7 @@ const Product = (user: any) => {
 
   const printRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(12);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(12);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(25);
 
   /* ================= INIT ================= */
   useEffect(() => {
