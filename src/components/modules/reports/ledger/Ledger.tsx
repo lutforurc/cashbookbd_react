@@ -347,7 +347,7 @@ const Ledger = (user: any) => {
             />
             <PrintButton
               onClick={handlePrint}
-              label="Print"
+              label=""
               className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
             />
           </div>
