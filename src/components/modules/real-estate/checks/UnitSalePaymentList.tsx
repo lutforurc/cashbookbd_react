@@ -94,7 +94,7 @@ export default function UnitSalePaymentList() {
   const [pagination, setPagination] = useState<PaginationState>({
     current_page: 1,
     last_page: 1,
-    per_page: 20,
+    per_page: 10,
     total: 0,
   });
 
@@ -109,7 +109,7 @@ export default function UnitSalePaymentList() {
   const [dateTo, setDateTo] = useState<Date | null>(null);
 
   // per page
-  const [perPage, setPerPage] = useState<string>("20");
+  const [perPage, setPerPage] = useState<string>("10");
 
   // Date -> string
   const dateFromStr = useMemo(
@@ -122,7 +122,7 @@ export default function UnitSalePaymentList() {
     [dateTo]
   );
 
-  // ✅ backend keys only (withTrashed একদম বাদ)
+  // ✅ backend keys only
   const params = useMemo(() => {
     return {
       q: q || undefined,
@@ -130,9 +130,11 @@ export default function UnitSalePaymentList() {
       status: status || undefined,
       date_from: dateFromStr || undefined,
       date_to: dateToStr || undefined,
-      // NOTE: chequeStatus UI only, backend এ নাই
+
+      // ✅ add this
+      cheque_collect_status: chequeStatus || undefined,
     };
-  }, [q, paymentMode, status, dateFromStr, dateToStr]);
+  }, [q, paymentMode, status, dateFromStr, dateToStr, chequeStatus]);
 
   const loadData = async (page = 1, perPageOverride?: number) => {
     try {
@@ -156,7 +158,6 @@ export default function UnitSalePaymentList() {
 
       const list: Row[] = (result?.rows ?? []).map((r: any, idx: number) => ({
         ...r,
-        // ✅ backend থেকে serial_no আসলেও OK, না আসলে frontend থেকে বানাবে
         serial_no: r?.serial_no ?? start + idx + 1,
       }));
 
@@ -176,9 +177,7 @@ export default function UnitSalePaymentList() {
     }
   };
 
-  /* ✅ Only ONE effect for initial load + perPage change
-     perPage change হলে duplicate call হবে না
-  */
+  /* ✅ Only ONE effect for initial load + perPage change */
   useEffect(() => {
     setPagination((p) => ({ ...p, current_page: 1 }));
     loadData(1, Number(perPage) || 20);
@@ -199,7 +198,6 @@ export default function UnitSalePaymentList() {
     setDateTo(null);
     setPerPage("20");
     setPagination((p) => ({ ...p, current_page: 1 }));
-    // perPage effect loadData করবে, তবে সাথে সাথে reset data দেখাতে চাইলে:
     loadData(1, 20);
   };
 
@@ -209,9 +207,8 @@ export default function UnitSalePaymentList() {
     loadData(page);
   };
 
-  // ✅ IMPORTANT: এখানে loadData কল করবেন না (stale perPage issue)
   const onPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPerPage(e.target.value); // useEffect([perPage]) নিজে reload করবে
+    setPerPage(e.target.value);
   };
 
   const handleStartDate = (d: Date | null) => setDateFrom(d);
@@ -225,10 +222,16 @@ export default function UnitSalePaymentList() {
     goPage(page);
   };
 
+  /* ✅ UI-only filtering (Cheque Status) */
+  const filteredRows = useMemo(() => {
+    if (!chequeStatus) return rows;
+    return rows.filter((r) => (r?.cheque_collect_status || "") === chequeStatus);
+  }, [rows, chequeStatus]);
+
   const columns = [
     {
       key: "serial_no",
-      header: "Sl. No",
+      header: "#",
       width: "80px",
       headerClass: "text-center",
       cellClass: "text-center",
@@ -319,9 +322,7 @@ export default function UnitSalePaymentList() {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) => (
-        <div>
-          {row?.amount ? thousandSeparator(Number(row.amount), 2) : "-"}
-        </div>
+        <div>{row?.amount ? thousandSeparator(Number(row.amount), 2) : "-"}</div>
       ),
     },
     {
@@ -330,8 +331,13 @@ export default function UnitSalePaymentList() {
       width: "120px",
       headerClass: "text-left",
       cellClass: "text-left",
-      render: (row: any) => <div>{row?.status ? row.status : "-"}</div>,
+      render: (row: any) => <div>{row?.cheque_collect_status ? row.cheque_collect_status : "-"}</div>,
     },
+    {
+      key: "action",
+      header: "Action",
+      width: "120px",
+    }
   ];
 
   return (
@@ -340,15 +346,17 @@ export default function UnitSalePaymentList() {
       {isLoading ? <Loader /> : null}
 
       {/* FILTERS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-        <InputElement
-          id="q"
-          name="q"
-          label="Search (Receipt / Ref)"
-          placeholder="Type receipt no or reference no"
-          value={q}
-          onChange={(e: any) => setQ(e.target.value)}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-2">
+        <div className="mt-1">
+          <InputElement
+            id="q"
+            name="q"
+            label="Search (Receipt / Ref)"
+            placeholder="Type receipt no or reference no"
+            value={q}
+            onChange={(e: any) => setQ(e.target.value)}
+          />
+        </div>
 
         <DropdownCommon
           id="payment_mode"
@@ -365,7 +373,7 @@ export default function UnitSalePaymentList() {
         <DropdownCommon
           id="cheque_collect_status"
           name="cheque_collect_status"
-          label="Cheque Status (UI only)"
+          label="Cheque Status"
           value={chequeStatus}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
             setChequeStatus(e.target.value)
@@ -373,10 +381,29 @@ export default function UnitSalePaymentList() {
           className="h-[2.1rem] bg-transparent mt-1"
           data={CHEQUE_STATUSES}
         />
+        <div className="w-full mt-0 md:mt-2">
+          <label className="block text-sm">Date From</label>
+          <InputDatePicker
+            setCurrentDate={handleStartDate}
+            className="font-medium text-sm w-full h-9"
+            selectedDate={dateFrom}
+            setSelectedDate={setDateFrom}
+          />
+        </div>
+
+        <div className="w-full mt-0 md:mt-2">
+          <label className="block text-sm">Date To</label>
+          <InputDatePicker
+            setCurrentDate={handleEndDate}
+            className="font-medium text-sm w-full h-9"
+            selectedDate={dateTo}
+            setSelectedDate={setDateTo}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <div>
+        {/* <div className="md:-mt-1">
           <label>Overall Status</label>
           <DropdownCommon
             id="status"
@@ -389,30 +416,12 @@ export default function UnitSalePaymentList() {
             className="h-9 bg-transparent"
             data={STATUSES}
           />
-        </div>
+        </div> */}
 
-        <div className="w-full">
-          <label className="block text-sm">Date From</label>
-          <InputDatePicker
-            setCurrentDate={handleStartDate}
-            className="font-medium text-sm w-full h-9"
-            selectedDate={dateFrom}
-            setSelectedDate={setDateFrom}
-          />
-        </div>
 
-        <div className="w-full">
-          <label className="block text-sm">Date To</label>
-          <InputDatePicker
-            setCurrentDate={handleEndDate}
-            className="font-medium text-sm w-full h-9"
-            selectedDate={dateTo}
-            setSelectedDate={setDateTo}
-          />
-        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
         <SelectOption
           className="h-[2.1rem] bg-transparent mt-3"
           onChange={onPerPageChange}
@@ -423,7 +432,7 @@ export default function UnitSalePaymentList() {
           onClick={handleSearch}
           buttonLoading={false}
           label="Search"
-          className="whitespace-nowrap text-center mr-0 mt-3 h-8"
+          className="whitespace-nowrap text-center mr-0 mt-0 md:mt-3 h-8"
           icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
         />
 
@@ -431,14 +440,22 @@ export default function UnitSalePaymentList() {
           onClick={handleReset}
           buttonLoading={false}
           label="Reset"
-          className="whitespace-nowrap text-center mr-0 mt-3 h-8"
+          className="whitespace-nowrap text-center mr-0 mt-0 md:mt-3 h-8"
           icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
         />
+
+        <Link
+          to="/dashboard"
+          className="text-nowrap justify-center mr-0 p-2 h-8 mt-0 md:mt-3"
+        >
+          <FiArrowLeft className="mr-2" /> Home
+        </Link>
       </div>
 
       {/* TABLE */}
       <div className="bg-white dark:bg-gray-800">
-        <Table columns={columns} data={rows || []} className="" />
+        {/* ✅ rows না, filteredRows */}
+        <Table columns={columns} data={filteredRows || []} className="" />
       </div>
 
       {/* PAGINATION */}
@@ -449,13 +466,6 @@ export default function UnitSalePaymentList() {
           handlePageChange={handlePageChange}
         />
       ) : null}
-
-      {/* Back */}
-      <div className="mt-3">
-        <Link to="/real-estate" className="text-nowrap justify-center mr-0 P-2">
-          <FiArrowLeft className="mr-2" /> Back
-        </Link>
-      </div>
     </>
   );
 }
