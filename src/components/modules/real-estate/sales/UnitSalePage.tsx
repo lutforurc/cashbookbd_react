@@ -87,6 +87,7 @@ export default function UnitSalePage() {
   const [checkNumber, setCheckNumber] = useState<string>("");
   const [bankName, setBankName] = useState<string>("");
   const [branchName, setBranchName] = useState<string>("");
+  const [moneyReceipt, setMoneyReceipt] = useState<string>("");
 
   // ✅ NEW: Booking money state (separate from chargeAmount)
   const [bookingMoney, setBookingMoney] = useState<string>("");
@@ -300,6 +301,7 @@ export default function UnitSalePage() {
 
     // ✅ NEW
     payment_mode: paymentMode,
+    receipt_no: moneyReceipt || null,
     booking_amt: bookingAmt,
     note: note || null,
 
@@ -355,6 +357,11 @@ export default function UnitSalePage() {
       setEditingId(null);
       setDraftValue("");
       setNote("");
+      setMoneyReceipt("");
+      setPaymentMode("CASH");
+      setCheckNumber("");
+      setBankName("");
+      setBranchName("");
     } else {
       toast.info(response?.payload || "Failed to save.");
     }
@@ -374,7 +381,7 @@ export default function UnitSalePage() {
   /* ================= UI ================= */
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto">
       <HelmetTitle title="Unit Sales" />
 
       <div className="mb-2 flex justify-between">
@@ -451,7 +458,7 @@ export default function UnitSalePage() {
 
             <button
               onClick={addCustomCharge}
-              className="mt-2 inline-flex items-center gap-2  bg-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+              className="mt-2 inline-flex items-center gap-2  bg-gray-300 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-400 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
             >
               <FiPlus className="text-gray-900 dark:text-gray-100" />
               Add Charge
@@ -474,18 +481,17 @@ export default function UnitSalePage() {
                   data={UNIT_SALE_PAYMENT_MODES}
                 />
               </div>
-
               <div>
-                <label className="block mt-1 text-sm font-semibold">Note</label>
+                <label className="block mt-1 text-sm font-semibold">Money Receipt No.</label>
                 <InputElement
-                  id="note"
-                  name="note"
+                  id="receipt_no"
+                  name="receipt_no"
                   type="text"
                   label=""
-                  placeholder="Enter note"
+                  placeholder="Enter money receipt number"
                   className="text-sm h-8"
-                  value={note}
-                  onChange={(e: any) => setNote(e.target.value)}
+                  value={moneyReceipt}
+                  onChange={(e: any) => setMoneyReceipt(e.target.value)}
                 />
               </div>
             </div>
