@@ -131,6 +131,9 @@ const ROUTES = {
   due_installment_list: '/reports/due-installments',
   employee_wise_installment: '/reports/employee-installment',
 
+
+  unit_payment_list: '/admin/unit-payment-list', 
+
   // Invoice Routes
   inv_labour: '/invoice/labour-invoice',
 

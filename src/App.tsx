@@ -103,6 +103,7 @@ import RequirePermission from "./components/auth/RequirePermission";
 import NoAccess from './components/modules/pages/NoAccess';
 import { MENU_PERMISSIONS } from './components/Sidebar/menuPermissions';
 import LoanLedger from './components/modules/hrms/loan/LoanLedger';
+import UnitSalePaymentList from './components/modules/real-estate/checks/UnitSalePaymentList';
 
 
 
@@ -171,6 +172,10 @@ function App() {
             <Route path={routes.user_list} element={<UserList />} />
             <Route path={routes.user_edit} element={<EditUser user={me} />} />
             <Route path={routes.installment_list} element={<InstallmentDetails />} />
+
+
+
+            <Route path={routes.unit_payment_list} element={<UnitSalePaymentList />} />
 
             {/* Day Close */}
             <Route path={routes.day_close} element={<Dayclose />} />

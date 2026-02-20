@@ -25,6 +25,7 @@ export const MENU_PERMISSIONS = {
   requisition: ['requisition.create', 'requisition.comparison'],
   products: ['category.view', 'products.view'],
   admin: [
+    'check.register.view',
     'branch.view',
     'all.user.view',
     'dayclose.create',
@@ -45,7 +46,12 @@ export const MENU_PERMISSIONS = {
     'voucher.history',
     'voucher.changes',
   ],
-  hrm: ['employee.view', 'salary.generate', 'salary.sheet.view', 'employee.loan.ledger.view'],
+  hrm: [
+    'employee.view',
+    'salary.generate',
+    'salary.sheet.view',
+    'employee.loan.ledger.view',
+  ],
   roles: ['roles.view', 'roles.create', 'roles.edit', 'roles.delete'],
   customer: [
     'cs.delete',
