@@ -140,6 +140,7 @@ const InstallmentDelete = () => {
                 onClick={handleDeleteConfirmed}
                 loading={saveButtonLoading} // spinner shows while API call is running
                 disabled={saveButtonLoading} // button disabled while API call
+                className='bg-red-600 hover:bg-red-700'
               />
             </div>
           </div>

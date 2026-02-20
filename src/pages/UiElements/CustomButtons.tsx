@@ -125,7 +125,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled || loading}
-      className={`text-white bg-red-600 hover:bg-red-700 focus:outline-none font-medium text-sm px-5 h-8 text-center rounded inline-flex items-center justify-center ${className}`}
+      className={`text-white focus:outline-none font-medium text-sm px-5 h-8 text-center rounded inline-flex items-center justify-center ${className}`}
     >
       <span className="flex items-center">
         {loading ? (

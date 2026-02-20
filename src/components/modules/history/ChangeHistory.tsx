@@ -123,11 +123,12 @@ const ChangeHistory = (user: any) => {
 
       <ConfirmModal
         show={showConfirm}
-        title="Confirm"
+        title="Confirm history fetch"
         message={`View history for voucher ${voucherNo}?`}
         loading={loading}
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleFetchConfirmed}
+        className="bg-blue-600 hover:bg-blue-700"
       />
     </>
   );

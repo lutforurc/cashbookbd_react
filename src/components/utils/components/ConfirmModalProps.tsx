@@ -11,6 +11,7 @@ interface ConfirmModalProps {
   confirmLabel?: string;
   cancelLabel?: string;
   loading?: boolean;
+  className?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -22,6 +23,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   loading = false,
+  className = "",
   onConfirm,
   onCancel,
 }) => {
@@ -39,7 +41,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <ButtonLoading
             onClick={onCancel}
             label={cancelLabel}
-            className="whitespace-nowrap h-8 bg-gray-600 hover:bg-gray-700"
+            className="whitespace-nowrap h-8 bg-gray-500 hover:bg-gray-600"
             icon={<FiX className="text-white text-lg mr-2" />}
             disabled={loading}
           />
@@ -50,6 +52,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             onClick={onConfirm}
             loading={loading}
             disabled={loading}
+            className={className}
           />
         </div>
       </div>

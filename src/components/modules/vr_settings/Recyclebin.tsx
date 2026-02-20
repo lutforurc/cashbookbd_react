@@ -223,6 +223,7 @@ const Recyclebin = () => {
           setSelectedRow(null);
         }}
         onConfirm={handleDeleteConfirmed}
+        className="bg-red-600 hover:bg-red-700"
       />
 
       {/* Restore Modal */}
@@ -241,6 +242,7 @@ const Recyclebin = () => {
           setSelectedRow(null);
         }}
         onConfirm={handleRestoreConfirmed}
+        className="bg-green-600 hover:bg-green-700"
       />
     </div>
   );

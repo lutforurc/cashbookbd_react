@@ -427,7 +427,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
       <ConfirmModal
         show={showConfirm}
-        title="Confirm Deletion"
+        title="Confirm Salary Generation"
         message={
           <>
             Proceed with salary for <span className="font-bold mt-1">{monthText}</span>
@@ -436,6 +436,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         loading={saveButtonLoading}
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleSalaryGenerate}
+        className="bg-blue-400 hover:bg-blue-500"
       />
     </div>
   );
