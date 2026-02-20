@@ -228,6 +228,22 @@ export default function UnitSalePaymentList() {
     return rows.filter((r) => (r?.cheque_collect_status || "") === chequeStatus);
   }, [rows, chequeStatus]);
 
+  const PAYMENT_TYPE_LABEL: Record<string, string> = {
+    BOOKING: "Booking",
+    DOWN_PAYMENT: "Down Payment",
+    INSTALLMENT: "Installment",
+    ADJUSTMENT: "Adjustment",
+    PENALTY: "Penalty",
+    REFUND: "Refund",
+    SECURITY_DEPOSIT: "Security Deposit",
+    OTHER: "Other",
+  };
+
+  const formatPaymentType = (v?: string | null) => {
+    if (!v) return "-";
+    return PAYMENT_TYPE_LABEL[v] ?? v; // fallback to original
+  };
+
   const columns = [
     {
       key: "serial_no",
@@ -284,7 +300,7 @@ export default function UnitSalePaymentList() {
       headerClass: "text-left",
       cellClass: "text-left",
       render: (row: any) => (
-        <div>{row?.payment_type ? row.payment_type : "-"}</div>
+        <div>{formatPaymentType(row?.payment_type)}</div>
       ),
     },
     {
