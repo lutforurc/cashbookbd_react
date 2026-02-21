@@ -26,6 +26,7 @@ import {
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import InputOnly from '../../../utils/fields/InputOnly';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentItem {
   id: string | number;
@@ -63,7 +64,7 @@ const TradingCashPayment = () => {
   const [search, setSearch] = useState(''); // State to store the search value
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true);
-
+  const navigate = useNavigate();
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
     0,
@@ -316,6 +317,11 @@ const TradingCashPayment = () => {
     setIsResetOrder(false);
   };
 
+  const handleHome = () => {
+    navigate('/dashboard');
+  }
+
+
   useCtrlS(handleCashPaymentSave);
   return (
     <>
@@ -359,17 +365,17 @@ const TradingCashPayment = () => {
                   defaultValue={
                     formData.purchaseOrderNumber
                       ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText, //productData.accountName
-                        }
+                        value: formData.purchaseOrderNumber,
+                        label: formData.purchaseOrderText, //productData.accountName
+                      }
                       : null
                   }
                   value={
                     formData.purchaseOrderNumber
                       ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText, //productData.accountName
-                        }
+                        value: formData.purchaseOrderNumber,
+                        label: formData.purchaseOrderText, //productData.accountName
+                      }
                       : null
                   }
                 />
@@ -391,17 +397,17 @@ const TradingCashPayment = () => {
                 defaultValue={
                   formData.account
                     ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
-                      }
+                      value: formData.account,
+                      label: formData.accountName, //productData.accountName
+                    }
                     : null
                 }
                 value={
                   formData.account
                     ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
-                      }
+                      value: formData.account,
+                      label: formData.accountName, //productData.accountName
+                    }
                     : null
                 }
                 acType={''}
@@ -464,10 +470,14 @@ const TradingCashPayment = () => {
                   icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
                 />
               )}
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                onClick={handleHome}
+                label={`Home`}
+                className="whitespace-nowrap text-center mr-0 p-2"
+                icon={
+                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                }
+              />
             </div>
           </div>
         </div>

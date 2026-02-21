@@ -15,52 +15,11 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { unitSalePaymentEdit, unitSalePaymentUpdate } from "./unitSalePaymentsSlice";
 import { getCoal3ByCoal4 } from "../../chartofaccounts/levelthree/coal3Sliders";
+import { CHEQUE_STATUSES, ENTRY_STATUSES, PAYMENT_MODES, PAYMENT_TYPES } from "./checkContents";
 
 /* ================= CONSTANTS ================= */
 
 const LIST_PATH = "/admin/unit-payment-list"; // ✅ change here only if your actual list route differs
-
-const PAYMENT_MODES = [
-  { id: "", name: "Select Payment Mode" },
-  { id: "CASH", name: "Cash" },
-  { id: "BKASH", name: "bKash" },
-  { id: "NAGAD", name: "Nagad" },
-  { id: "ROCKET", name: "Rocket" },
-  { id: "UPAY", name: "Upay" },
-  { id: "BANK_TRANSFER", name: "Bank Transfer" },
-  { id: "CHEQUE", name: "Cheque" },
-  { id: "POS_CARD", name: "POS Card" },
-  { id: "MOBILE_BANKING", name: "Mobile Banking" },
-  { id: "OTHERS", name: "Others" },
-];
-
-const PAYMENT_TYPES = [
-  { id: "", name: "Select Payment For" },
-  { id: "BOOKING", name: "Booking" },
-  { id: "DOWN_PAYMENT", name: "Down Payment" },
-  { id: "INSTALLMENT", name: "Installment" },
-  { id: "ADJUSTMENT", name: "Adjustment" },
-  { id: "PENALTY", name: "Penalty" },
-  { id: "REFUND", name: "Refund" },
-  { id: "SECURITY_DEPOSIT", name: "Security Deposit" },
-  { id: "OTHER", name: "Other" },
-];
-
-const CHEQUE_STATUSES = [
-  { id: "", name: "Select Cheque Status" },
-  { id: "PENDING", name: "Pending" },
-  { id: "COLLECTED", name: "Collected" },
-  { id: "BOUNCED", name: "Bounced" },
-  { id: "CANCELLED", name: "Cancelled" },
-];
-
-const ENTRY_STATUSES = [
-  { id: "", name: "Select Status" },
-  { id: "PENDING", name: "Pending" },
-  { id: "CONFIRMED", name: "Confirmed" },
-  { id: "REJECTED", name: "Rejected" },
-  { id: "REVERSED", name: "Reversed" },
-];
 
 /* ================= TYPES ================= */
 
@@ -760,7 +719,6 @@ export default function UnitSalePaymentEdit() {
                       }}
                     />
                   </div>
-
                   <div className="w-full col-span-3">
                     <InputElement
                       id="cheque_return_reason"
@@ -801,7 +759,7 @@ export default function UnitSalePaymentEdit() {
               type="submit"
               onClick={() => { }}
               buttonLoading={isSubmitting}
-              label="Update Payment"
+              label="Update"
               className="h-9"
               icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
             />

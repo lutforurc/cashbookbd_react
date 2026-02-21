@@ -575,9 +575,9 @@ export default function UnitSalePage() {
               label={"Save"}
               icon={
                 loading ? (
-                  <FiLoader className="animate-spin text-white text-lg ml-2 mr-2 hidden xl:block" />
+                  <FiLoader className="animate-spin text-white text-lg ml-2 mr-2 " />
                 ) : (
-                  <FiSave className="text-white text-lg ml-2 mr-2 hidden xl:block" />
+                  <FiSave className="text-white text-lg ml-2 mr-2 " />
                 )
               }
               className="mt-2 p-2 flex-1"

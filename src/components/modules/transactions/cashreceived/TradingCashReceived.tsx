@@ -29,6 +29,7 @@ import {
 } from './cashReceivedSlice';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import { useNavigate } from 'react-router-dom';
 
 interface ReceivedItem {
   id: string | number;
@@ -67,7 +68,7 @@ const TradingCashReceived = () => {
   const [search, setSearch] = useState('');
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
-
+  const navigate = useNavigate();
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
     0,
@@ -132,6 +133,11 @@ const TradingCashReceived = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+  const handleHome = () => {
+    navigate('/dashboard');
+  }
+
 
   const handleAdd = () => {
     // const validationMessages = validateForm(formData, validationMessage);
@@ -311,31 +317,31 @@ const TradingCashReceived = () => {
                   settings.data.permissions,
                   'cash.received.edit',
                 ) && (
-                  <>
-                    <div className="w-full">
-                      <label htmlFor="search">Search Received</label>
-                      <InputOnly
-                        id="search"
-                        value={search}
-                        name="search"
-                        placeholder="Search Received"
-                        label=""
-                        className="py-1 w-full" // Add padding-right to account for the button
-                        onChange={(e) => setSearch(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor=""> </label>
-                      <ButtonLoading
-                        onClick={searchTransaction}
-                        buttonLoading={buttonLoading}
-                        label=" "
-                        className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
-                        icon={<FiSearch className="text-white text-lg ml-2" />}
-                      />
-                    </div>
-                  </>
-                )}
+                    <>
+                      <div className="w-full">
+                        <label htmlFor="search">Search Received</label>
+                        <InputOnly
+                          id="search"
+                          value={search}
+                          name="search"
+                          placeholder="Search Received"
+                          label=""
+                          className="py-1 w-full" // Add padding-right to account for the button
+                          onChange={(e) => setSearch(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor=""> </label>
+                        <ButtonLoading
+                          onClick={searchTransaction}
+                          buttonLoading={buttonLoading}
+                          label=" "
+                          className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
+                          icon={<FiSearch className="text-white text-lg ml-2" />}
+                        />
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
             <div className="relative">
@@ -346,17 +352,17 @@ const TradingCashReceived = () => {
                   defaultValue={
                     formData.purchaseOrderNumber
                       ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText, //productData.accountName
-                        }
+                        value: formData.purchaseOrderNumber,
+                        label: formData.purchaseOrderText, //productData.accountName
+                      }
                       : null
                   }
                   value={
                     formData.purchaseOrderNumber
                       ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText, //productData.accountName
-                        }
+                        value: formData.purchaseOrderNumber,
+                        label: formData.purchaseOrderText, //productData.accountName
+                      }
                       : null
                   }
                 />
@@ -461,10 +467,16 @@ const TradingCashReceived = () => {
                   icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
                 />
               )}
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                // disabled={saveButtonLoading}
+                onClick={handleHome}
+                // buttonLoading={saveButtonLoading}
+                label={`Home`}
+                className="whitespace-nowrap text-center mr-0 p-2"
+                icon={
+                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                }
+              />
             </div>
           </div>
         </div>

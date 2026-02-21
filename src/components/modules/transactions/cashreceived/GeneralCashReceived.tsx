@@ -17,7 +17,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
 import { toast } from 'react-toastify';
- 
+
 import InputOnly from '../../../utils/fields/InputOnly';
 import { hasPermission } from '../../../utils/permissionChecker';
 import {
@@ -27,6 +27,7 @@ import {
 } from './cashReceivedSlice';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
+import { useNavigate } from 'react-router-dom';
 
 interface ReceivedItem {
   id: string | number;
@@ -60,6 +61,7 @@ const GeneralCashReceived = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [isUpdateButton, setIsUpdateButton] = useState(false);
+    const navigate = useNavigate();
 
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
@@ -265,6 +267,11 @@ const GeneralCashReceived = () => {
     }
   }, [cashReceived.isEdit]);
 
+  
+  const handleHome = () => {
+    navigate('/dashboard');
+  }
+
   // Ctrl + S functionality (save functionality)
   useCtrlS(handleCashReceivedSave);
 
@@ -280,31 +287,31 @@ const GeneralCashReceived = () => {
                   settings.data.permissions,
                   'cash.received.edit',
                 ) && (
-                  <>
-                    <div className="w-full">
-                      <label htmlFor="search">Search Received</label>
-                      <InputOnly
-                        id="search"
-                        value={search}
-                        name="search"
-                        placeholder="Search Received"
-                        label=""
-                        className="py-1 w-full" // Add padding-right to account for the button
-                        onChange={(e) => setSearch(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor=""> </label>
-                      <ButtonLoading
-                        onClick={searchTransaction}
-                        buttonLoading={buttonLoading}
-                        label=" "
-                        className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
-                        icon={<FiSearch className="text-white text-lg ml-2" />}
-                      />
-                    </div>
-                  </>
-                )}
+                    <>
+                      <div className="w-full">
+                        <label htmlFor="search">Search Received</label>
+                        <InputOnly
+                          id="search"
+                          value={search}
+                          name="search"
+                          placeholder="Search Received"
+                          label=""
+                          className="py-1 w-full" // Add padding-right to account for the button
+                          onChange={(e) => setSearch(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor=""> </label>
+                        <ButtonLoading
+                          onClick={searchTransaction}
+                          buttonLoading={buttonLoading}
+                          label=" "
+                          className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
+                          icon={<FiSearch className="text-white text-lg ml-2" />}
+                        />
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -379,7 +386,7 @@ const GeneralCashReceived = () => {
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiPlus className="text-white text-lg ml-2 mr-2 hidden xl:block" />
+                    <FiPlus className="text-white text-lg ml-2 mr-2 " />
                   }
                 />
               )}
@@ -391,7 +398,7 @@ const GeneralCashReceived = () => {
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiEdit2 className="text-white text-lg ml-2  mr-2 hidden xl:block" />
+                    <FiEdit2 className="text-white text-lg ml-2  mr-2 " />
                   }
                 />
               ) : (
@@ -401,14 +408,20 @@ const GeneralCashReceived = () => {
                   label="Save"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiSave className="text-white text-lg ml-2  mr-2 hidden xl:block" />
+                    <FiSave className="text-white text-lg ml-2  mr-2 " />
                   }
                 />
               )}
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2 hidden xl:block" />
-                <span className="">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                // disabled={saveButtonLoading}
+                onClick={handleHome}
+                // buttonLoading={saveButtonLoading}
+                label={`Home`}
+                className="whitespace-nowrap text-center mr-0 p-2"
+                icon={
+                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                }
+              />
             </div>
           </div>
         </div>

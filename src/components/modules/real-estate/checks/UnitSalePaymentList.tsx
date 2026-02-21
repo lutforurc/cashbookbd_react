@@ -19,39 +19,8 @@ import SelectOption from "../../../utils/utils-functions/SelectOption";
 import { humanizeEnumText } from "../../../utils/hooks/humanizeEnumText";
 import { useNavigate } from "react-router-dom";
 import ActionButtons from "../../../utils/fields/ActionButton";
+import { CHEQUE_STATUSES, PAYMENT_MODES } from "./checkContents";
 
-/* ================= CONSTANTS ================= */
-
-const PAYMENT_MODES = [
-  { id: "", name: "All Modes" },
-  { id: "CASH", name: "Cash" },
-  { id: "BKASH", name: "bKash" },
-  { id: "NAGAD", name: "Nagad" },
-  { id: "ROCKET", name: "Rocket" },
-  { id: "UPAY", name: "Upay" },
-  { id: "BANK_TRANSFER", name: "Bank Transfer" },
-  { id: "CHEQUE", name: "Cheque" },
-  { id: "POS_CARD", name: "POS Card" },
-  { id: "MOBILE_BANKING", name: "Mobile Banking" },
-  { id: "OTHERS", name: "Others" },
-];
-
-// UI only (backend validation এ cheque_collect_status নাই)
-const CHEQUE_STATUSES = [
-  { id: "", name: "All Cheque Status" },
-  { id: "PENDING", name: "Pending" },
-  { id: "COLLECTED", name: "Collected" },
-  { id: "BOUNCED", name: "Bounced" },
-  { id: "CANCELLED", name: "Cancelled" },
-];
-
-const STATUSES = [
-  { id: "", name: "All Status" },
-  { id: "PENDING", name: "Pending" },
-  { id: "CONFIRMED", name: "Confirmed" },
-  { id: "REJECTED", name: "Rejected" },
-  { id: "REVERSED", name: "Reversed" },
-];
 
 /* ================= TYPES ================= */
 

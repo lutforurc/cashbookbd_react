@@ -28,6 +28,7 @@ import InputOnly from '../../../utils/fields/InputOnly';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentItem {
   id: string | number;
@@ -63,7 +64,7 @@ const GeneralCashPayment = () => {
   const [search, setSearch] = useState(''); // State to store the search value
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
-
+  const navigate = useNavigate();
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
     0,
@@ -79,7 +80,7 @@ const GeneralCashPayment = () => {
     });
   };
 
-  
+
   const handleCashPaymentSave = async () => {
     setSaveButtonLoading(true);
     if (tableData.length === 0) {
@@ -175,7 +176,7 @@ const GeneralCashPayment = () => {
     }
 
     const product = tableData[productIndex];
- 
+
 
     // Safely update formData
     setFormData((prevState) => ({
@@ -261,38 +262,40 @@ const GeneralCashPayment = () => {
     }
   }, [cashPayment.isEdit]);
 
-const handleInvoiceUpdate = async () => {
+  const handleInvoiceUpdate = async () => {
 
 
-//   if (!formData.account || tableData.length === 0) {
-//     toast.error("Please add at least one transaction before updating!");
-//     return;
-//   }
+    //   if (!formData.account || tableData.length === 0) {
+    //     toast.error("Please add at least one transaction before updating!");
+    //     return;
+    //   }
 
-  try {
-    setButtonLoading(true);
+    try {
+      setButtonLoading(true);
 
-    // Dispatch update action
-    await dispatch(
-      updateCashPayment(tableData, (message: string) => {
-        if (message) toast.info(message);
-      }),
-    );
+      // Dispatch update action
+      await dispatch(
+        updateCashPayment(tableData, (message: string) => {
+          if (message) toast.info(message);
+        }),
+      );
 
-    toast.success("Invoice updated successfully!");
+      toast.success("Invoice updated successfully!");
 
-    // Reset UI state
-    setIsUpdateButton(false);
-    setIsUpdating(false);
-  } catch (error) {
-    console.error("Error updating invoice:", error);
-    toast.error("Failed to update invoice.");
-  } finally {
-    setButtonLoading(false);
+      // Reset UI state
+      setIsUpdateButton(false);
+      setIsUpdating(false);
+    } catch (error) {
+      console.error("Error updating invoice:", error);
+      toast.error("Failed to update invoice.");
+    } finally {
+      setButtonLoading(false);
+    }
+  };
+
+  const handleHome = () => {
+    navigate('/dashboard');
   }
-};
-
-
   useEffect(() => {
     if (cashPayment.isEdit) {
       setIsUpdateButton(true);
@@ -441,10 +444,16 @@ const handleInvoiceUpdate = async () => {
                   icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
                 />
               )}
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                disabled={saveButtonLoading}
+                onClick={handleHome}
+                buttonLoading={saveButtonLoading}
+                label={`Home`}
+                className="whitespace-nowrap text-center mr-0 p-2"
+                icon={
+                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                }
+              />
             </div>
           </div>
         </div>
