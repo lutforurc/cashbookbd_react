@@ -244,20 +244,13 @@ export const unitSalePaymentEdit = createAsyncThunk<
   }
 });
 
-export const unitSalePaymentUpdate = createAsyncThunk<
-  { row?: any; data?: any; message?: string },
-  UnitSalePaymentUpdateRequest,
-  { rejectValue: string }
->("unitSalePayments/update", async (payload, thunkAPI) => {
+export const unitSalePaymentUpdate = createAsyncThunk<{ row?: any; data?: any; message?: string }, UnitSalePaymentUpdateRequest, { rejectValue: string }>("unitSalePayments/update", async (payload, thunkAPI) => {
   try {
     // ✅ If your backend route uses /payment-update/{id}, change only the URL
     // Example:
     // const res: any = await httpService.post(`/real-estate/unit-sale/payment-update/${payload.id}`, payload);
 
-    const res: any = await httpService.post(
-      `/real-estate/unit-sale/payment-update`,
-      payload
-    );
+    const res: any = await httpService.post(`/real-estate/unit-sale/payment-update`,payload);
 
     if (res?.data?.success === true) {
       const raw = res?.data?.data;
