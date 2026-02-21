@@ -415,7 +415,7 @@ const Product = (user: any) => {
 
       <div className="mb-2 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap lg:items-center">
-          <div className="w-full sm:w-56">
+          <div className="w-full ">
             <CategoryDropdown
               onChange={handleBrandChange}
               className="w-full text-sm !h-9"
@@ -423,7 +423,7 @@ const Product = (user: any) => {
             />
           </div>
 
-          <div className="w-full sm:w-56">
+          <div className="w-full ">
             {categoryData.isLoading ? (
               <Loader />
             ) : (
@@ -517,3 +517,5 @@ const Product = (user: any) => {
 };
 
 export default Product;
+
+// 5-260200002

@@ -16,6 +16,7 @@ import { unitSalePaymentsList } from "./unitSalePaymentsSlice";
 import Table from "../../../utils/others/Table";
 import Pagination from "../../../utils/utils-functions/Pagination";
 import SelectOption from "../../../utils/utils-functions/SelectOption";
+import { humanizeEnumText } from "../../../utils/hooks/humanizeEnumText";
 
 /* ================= CONSTANTS ================= */
 
@@ -228,21 +229,10 @@ export default function UnitSalePaymentList() {
     return rows.filter((r) => (r?.cheque_collect_status || "") === chequeStatus);
   }, [rows, chequeStatus]);
 
-  const PAYMENT_TYPE_LABEL: Record<string, string> = {
-    BOOKING: "Booking",
-    DOWN_PAYMENT: "Down Payment",
-    INSTALLMENT: "Installment",
-    ADJUSTMENT: "Adjustment",
-    PENALTY: "Penalty",
-    REFUND: "Refund",
-    SECURITY_DEPOSIT: "Security Deposit",
-    OTHER: "Other",
-  };
+  console.log('====================================');
+  console.log("rows", filteredRows[0]);
+  console.log('====================================');
 
-  const formatPaymentType = (v?: string | null) => {
-    if (!v) return "-";
-    return PAYMENT_TYPE_LABEL[v] ?? v; // fallback to original
-  };
 
   const columns = [
     {
@@ -277,11 +267,15 @@ export default function UnitSalePaymentList() {
     },
     {
       key: "booking_id",
-      header: "Booking ID",
+      header: "Booking",
       width: "120px",
       headerClass: "text-left",
       cellClass: "text-left",
-      render: (row: any) => <div>{row?.booking_id ? row.booking_id : "-"}</div>,
+      render: (row: any) =>
+        <div>
+          <span className="block">{row?.booking?.payload?.unit?.label}</span>
+          <span className="block">{row?.booking?.payload?.parking?.label}</span>
+        </div>,
     },
     {
       key: "payment_mode",
@@ -290,7 +284,7 @@ export default function UnitSalePaymentList() {
       headerClass: "text-left",
       cellClass: "text-left",
       render: (row: any) => (
-        <div>{row?.payment_mode ? row.payment_mode : "-"}</div>
+        <div>{humanizeEnumText(row?.payment_mode)}</div>
       ),
     },
     {
@@ -300,7 +294,7 @@ export default function UnitSalePaymentList() {
       headerClass: "text-left",
       cellClass: "text-left",
       render: (row: any) => (
-        <div>{formatPaymentType(row?.payment_type)}</div>
+        <div>{humanizeEnumText(row?.payment_type)}</div>
       ),
     },
     {
@@ -347,7 +341,7 @@ export default function UnitSalePaymentList() {
       width: "120px",
       headerClass: "text-left",
       cellClass: "text-left",
-      render: (row: any) => <div>{row?.cheque_collect_status ? row.cheque_collect_status : "-"}</div>,
+      render: (row: any) => <div>{humanizeEnumText(row?.cheque_collect_status)}</div>,
     },
     {
       key: "action",
