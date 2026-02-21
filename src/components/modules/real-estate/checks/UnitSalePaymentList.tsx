@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiArrowLeft, FiRefreshCcw, FiSearch } from "react-icons/fi";
+import { FiArrowLeft, FiEdit2, FiRefreshCcw, FiSearch } from "react-icons/fi";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -17,6 +17,8 @@ import Table from "../../../utils/others/Table";
 import Pagination from "../../../utils/utils-functions/Pagination";
 import SelectOption from "../../../utils/utils-functions/SelectOption";
 import { humanizeEnumText } from "../../../utils/hooks/humanizeEnumText";
+import { useNavigate } from "react-router-dom";
+import ActionButtons from "../../../utils/fields/ActionButton";
 
 /* ================= CONSTANTS ================= */
 
@@ -92,6 +94,8 @@ export default function UnitSalePaymentList() {
 
   // local render state
   const [rows, setRows] = useState<Row[]>([]);
+  const navigate = useNavigate();
+
   const [pagination, setPagination] = useState<PaginationState>({
     current_page: 1,
     last_page: 1,
@@ -229,10 +233,10 @@ export default function UnitSalePaymentList() {
     return rows.filter((r) => (r?.cheque_collect_status || "") === chequeStatus);
   }, [rows, chequeStatus]);
 
-  console.log('====================================');
-  console.log("rows", filteredRows[0]);
-  console.log('====================================');
-
+  const handlePaymentEdit = (row: any) => {
+    if (!row?.id) return;
+    navigate(`/admin/unit-payment/edit/${row.id}`);
+  };
 
   const columns = [
     {
@@ -241,7 +245,7 @@ export default function UnitSalePaymentList() {
       width: "80px",
       headerClass: "text-center",
       cellClass: "text-center",
-      render: (row: any) => <div>{row?.serial_no ? row.serial_no : "-"}</div>,
+      render: (row: Row) => <div>{row?.serial_no ? row.serial_no : "-"}</div>,
     },
     {
       key: "payment_date",
@@ -294,7 +298,11 @@ export default function UnitSalePaymentList() {
       headerClass: "text-left",
       cellClass: "text-left",
       render: (row: any) => (
-        <div>{humanizeEnumText(row?.payment_type)}</div>
+        <>
+          <div>{humanizeEnumText(row?.payment_type)}</div>
+          <span className="block">{row?.booking?.payload?.customer?.label}</span>
+          <span className="block">{row?.booking?.payload?.customer?.label_2}</span>
+        </>
       ),
     },
     {
@@ -344,10 +352,29 @@ export default function UnitSalePaymentList() {
       render: (row: any) => <div>{humanizeEnumText(row?.cheque_collect_status)}</div>,
     },
     {
-      key: "action",
-      header: "Action",
-      width: "120px",
-    }
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => (
+        <>
+          <div>
+            <ActionButtons
+              row={row}
+              showEdit={true}
+              handleEdit={handlePaymentEdit}
+              showDelete={false}
+              // handleDelete={handleBranchDelete}
+              // showToggle={true}
+              // handleToggle={() => handleToggle(row)}
+
+            // showConfirmId={showConfirmId}
+            // setShowConfirmId={setShowConfirmId}
+            />
+          </div>
+        </>
+      ),
+    },
   ];
 
   return (
@@ -363,6 +390,7 @@ export default function UnitSalePaymentList() {
             name="q"
             label="Search (Receipt / Ref)"
             placeholder="Type receipt no or reference no"
+            className="h-8.5"
             value={q}
             onChange={(e: any) => setQ(e.target.value)}
           />
@@ -395,7 +423,7 @@ export default function UnitSalePaymentList() {
           <label className="block text-sm">Date From</label>
           <InputDatePicker
             setCurrentDate={handleStartDate}
-            className="font-medium text-sm w-full h-9"
+            className="font-medium text-sm w-full h-8.5"
             selectedDate={dateFrom}
             setSelectedDate={setDateFrom}
           />
@@ -405,35 +433,16 @@ export default function UnitSalePaymentList() {
           <label className="block text-sm">Date To</label>
           <InputDatePicker
             setCurrentDate={handleEndDate}
-            className="font-medium text-sm w-full h-9"
+            className="font-medium text-sm w-full h-8.5"
             selectedDate={dateTo}
             setSelectedDate={setDateTo}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        {/* <div className="md:-mt-1">
-          <label>Overall Status</label>
-          <DropdownCommon
-            id="status"
-            name="status"
-            label=""
-            value={status}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setStatus(e.target.value)
-            }
-            className="h-9 bg-transparent"
-            data={STATUSES}
-          />
-        </div> */}
-
-
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
         <SelectOption
-          className="h-[2.1rem] bg-transparent mt-3"
+          className="h-[2.0rem] bg-transparent mt-3"
           onChange={onPerPageChange}
           value={perPage}
         />
@@ -464,7 +473,6 @@ export default function UnitSalePaymentList() {
 
       {/* TABLE */}
       <div className="bg-white dark:bg-gray-800">
-        {/* ✅ rows না, filteredRows */}
         <Table columns={columns} data={filteredRows || []} className="" />
       </div>
 
