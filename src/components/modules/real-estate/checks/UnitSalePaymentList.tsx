@@ -218,26 +218,24 @@ export default function UnitSalePaymentList() {
     },
     {
       key: "payment_date",
-      header: "Date",
+      header: (
+        <div>
+          <div>Payment Date</div>
+          <div>Receipt No</div>
+        </div>
+      ),
       width: "140px",
       headerClass: "text-left",
       cellClass: "text-left",
       render: (row: any) => (
         <div>
-          {row?.payment_date
-            ? dayjs(row.payment_date).format("YYYY-MM-DD")
-            : "-"}
+
+          <div>{row?.payment_date ? dayjs(row.payment_date).format("DD/MM/YYYY") : "-"}</div>
+          <div>{row?.receipt_no ? row.receipt_no : "-"}</div>
         </div>
       ),
     },
-    {
-      key: "receipt_no",
-      header: "Receipt No",
-      width: "140px",
-      headerClass: "text-left",
-      cellClass: "text-left",
-      render: (row: any) => <div>{row?.receipt_no ? row.receipt_no : "-"}</div>,
-    },
+
     {
       key: "booking_id",
       header: "Booking",
@@ -249,16 +247,6 @@ export default function UnitSalePaymentList() {
           <span className="block">{row?.booking?.payload?.unit?.label}</span>
           <span className="block">{row?.booking?.payload?.parking?.label}</span>
         </div>,
-    },
-    {
-      key: "payment_mode",
-      header: "Payment Mode",
-      width: "130px",
-      headerClass: "text-left",
-      cellClass: "text-left",
-      render: (row: any) => (
-        <div>{humanizeEnumText(row?.payment_mode)}</div>
-      ),
     },
     {
       key: "payment_type",
@@ -275,32 +263,41 @@ export default function UnitSalePaymentList() {
       ),
     },
     {
-      key: "reference_no",
-      header: "Check/Ref No",
-      width: "160px",
+      key: "payment_mode",
+      header: (
+        <div>
+          <div>Payment Mode</div>
+          <div>Check/Ref No</div>
+        </div>
+      ),
+      width: "130px",
       headerClass: "text-left",
       cellClass: "text-left",
       render: (row: any) => (
-        <div>{row?.reference_no ? row.reference_no : "-"}</div>
+        <>
+          <div>{humanizeEnumText(row?.payment_mode)}</div>
+          <div>{row?.reference_no ? row.reference_no : "-"}</div>
+        </>
       ),
     },
+
     {
       key: "bank_name",
-      header: "Bank Name",
-      width: "160px",
-      headerClass: "text-left",
-      cellClass: "text-left",
-      render: (row: any) => <div>{row?.bank_name ? row.bank_name : "-"}</div>,
-    },
-    {
-      key: "branch_name",
-      header: "Branch Name",
-      width: "160px",
-      headerClass: "text-left",
-      cellClass: "text-left",
-      render: (row: any) => (
-        <div>{row?.branch_name ? row.branch_name : "-"}</div>
+      // header: "Bank Name",
+       header: (
+        <div>
+          <div>Bank Name</div>
+          <div>Branch Name</div>
+        </div>
       ),
+      width: "160px",
+      headerClass: "text-left",
+      cellClass: "text-left",
+      render: (row: any) => 
+      <>
+      <div>{row?.bank_name ? row.bank_name : "-"}</div>
+      <div>{row?.branch_name ? row.branch_name : "-"}</div>
+      </>
     },
     {
       key: "amount",
@@ -333,9 +330,9 @@ export default function UnitSalePaymentList() {
               showEdit={true}
               handleEdit={handlePaymentEdit}
               showDelete={false}
-              // handleDelete={handleBranchDelete}
-              // showToggle={true}
-              // handleToggle={() => handleToggle(row)}
+            // handleDelete={handleBranchDelete}
+            // showToggle={true}
+            // handleToggle={() => handleToggle(row)}
 
             // showConfirmId={showConfirmId}
             // setShowConfirmId={setShowConfirmId}
