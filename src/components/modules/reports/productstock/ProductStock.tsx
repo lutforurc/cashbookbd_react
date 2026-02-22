@@ -1,8 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  ButtonLoading,
-  PrintButton,
-} from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -22,43 +19,66 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { fetchBrandDdl } from '../../product/brand/brandSlice';
 
 // ======================
-// ✅ Category-wise helper
+// ✅ Brand -> Category wise helper (like your print)
 // ======================
-const isGroupRow = (row: any) => row?.__type === 'GROUP';
+const isBrandRow = (row: any) => row?.__type === 'BRAND';
+const isCatRow = (row: any) => row?.__type === 'CAT';
+const isGroupRow = (row: any) => isBrandRow(row) || isCatRow(row);
 
-const buildCategoryWiseRows = (rows: any[]) => {
+const buildBrandCategoryRows = (rows: any[]) => {
   if (!Array.isArray(rows)) return [];
 
-  // sort safe: category then product
+  // ✅ sort: brand -> category -> product
   const sorted = [...rows].sort((a, b) => {
+    const b1 = String(a.brand_name || '').localeCompare(String(b.brand_name || ''));
+    if (b1 !== 0) return b1;
+
     const c1 = String(a.cat_name || '').localeCompare(String(b.cat_name || ''));
     if (c1 !== 0) return c1;
+
     return String(a.product_name || '').localeCompare(String(b.product_name || ''));
   });
 
-  const map = new Map<string, any[]>();
+  // ✅ group: brand -> category
+  const brandMap = new Map<string, any[]>();
   for (const r of sorted) {
-    const key = r.cat_name || 'Uncategorized';
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(r);
+    const brandKey = (r.brand_name || 'Unknown Brand').trim() || 'Unknown Brand';
+    if (!brandMap.has(brandKey)) brandMap.set(brandKey, []);
+    brandMap.get(brandKey)!.push(r);
   }
 
   const finalRows: any[] = [];
-  let serial = 1;
 
-  for (const [cat, items] of map.entries()) {
-    // category header row
+  for (const [brand, brandItems] of brandMap.entries()) {
+    // Brand header row
     finalRows.push({
-      __type: 'GROUP',
-      cat_name: cat,
+      __type: 'BRAND',
+      brand_name: brand,
     });
 
-    // items under category
-    for (const it of items) {
+    const catMap = new Map<string, any[]>();
+    for (const it of brandItems) {
+      const catKey = (it.cat_name || 'Uncategorized').trim() || 'Uncategorized';
+      if (!catMap.has(catKey)) catMap.set(catKey, []);
+      catMap.get(catKey)!.push(it);
+    }
+
+    for (const [cat, items] of catMap.entries()) {
+      // Category header row (inside brand)
       finalRows.push({
-        ...it,
-        sl_number: serial++,
+        __type: 'CAT',
+        brand_name: brand,
+        cat_name: cat,
       });
+
+      // ✅ serial reset per category (inside brand)
+      let serial = 1;
+      for (const it of items) {
+        finalRows.push({
+          ...it,
+          sl_number: serial++,
+        });
+      }
     }
   }
 
@@ -103,20 +123,14 @@ const ProductStock = (user: any) => {
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value)) {
-      setPerPage(value);
-    } else {
-      setPerPage(10);
-    }
+    if (!isNaN(value)) setPerPage(value);
+    else setPerPage(10);
   };
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value)) {
-      setFontSize(value);
-    } else {
-      setFontSize(10);
-    }
+    if (!isNaN(value)) setFontSize(value);
+    else setFontSize(10);
   };
 
   const handlePrint = useReactToPrint({
@@ -128,10 +142,10 @@ const ProductStock = (user: any) => {
     removeAfterPrint: true,
   });
 
-  // ✅ stock data -> convert to category-wise rows
+  // ✅ stock data -> convert to Brand -> Category rows (UI table only)
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
-      const grouped = buildCategoryWiseRows(stock.data);
+      const grouped = buildBrandCategoryRows(stock.data);
       setTableData(grouped);
     } else if (!stock.isLoading) {
       setTableData([]);
@@ -143,20 +157,12 @@ const ProductStock = (user: any) => {
   };
 
   const handleCategoryChange = (selectedOption: any) => {
-    if (selectedOption) {
-      setCategoryId(selectedOption.value);
-    } else {
-      setCategoryId(null);
-    }
+    if (selectedOption) setCategoryId(selectedOption.value);
+    else setCategoryId(null);
   };
 
-  const handleStartDate = (e: any) => {
-    setStartDate(e);
-  };
-
-  const handleEndDate = (e: any) => {
-    setEndDate(e);
-  };
+  const handleStartDate = (e: any) => setStartDate(e);
+  const handleEndDate = (e: any) => setEndDate(e);
 
   const handleActionButtonClick = () => {
     setButtonLoading(true);
@@ -178,15 +184,11 @@ const ProductStock = (user: any) => {
   };
 
   useEffect(() => {
-    if (
-      branchDdlData?.protectedData?.data &&
-      branchDdlData?.protectedData?.transactionDate
-    ) {
+    if (branchDdlData?.protectedData?.data && branchDdlData?.protectedData?.transactionDate) {
       setDropdownData(branchDdlData?.protectedData?.data);
       setDdlCategory(categoryData?.data);
 
-      const [day, month, year] =
-        branchDdlData?.protectedData?.transactionDate.split('/');
+      const [day, month, year] = branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
 
       setStartDate(parsedDate);
@@ -207,22 +209,25 @@ const ProductStock = (user: any) => {
       key: 'product_name',
       header: 'Product Name',
       render: (row: any) => {
-        if (isGroupRow(row)) {
+        if (isBrandRow(row)) {
           return (
-            <div className="font-semibold py-1">
-              {row.cat_name}
+            <div className="font-bold py-1">
+              {row.brand_name}
             </div>
           );
         }
 
-        return (
-          <>
-            <div>
-              {row.brand_name && <span className="">{row.brand_name} </span>}
-              {row.product_name}
+        if (isCatRow(row)) {
+          return (
+            <div className="font-semibold py-1">
+              <span className="font-semibold">{row.brand_name}</span>
+              <span className="mx-1 text-gray-800 dark:text-gray-100">→</span>
+              <span>{row.cat_name}</span>
             </div>
-          </>
-        );
+          );
+        }
+
+        return <div>{row.product_name}</div>;
       },
     },
     {
@@ -235,11 +240,7 @@ const ProductStock = (user: any) => {
         return (
           <p>
             {thousandSeparator(Math.floor(row.opening), 0)}
-            {Math.floor(row.opening) ? (
-              <span className="text-sm "> ({row.unit})</span>
-            ) : (
-              ''
-            )}
+            {Math.floor(row.opening) ? <span className="text-sm "> ({row.unit})</span> : ''}
           </p>
         );
       },
@@ -294,20 +295,14 @@ const ProductStock = (user: any) => {
     },
   ];
 
-  const optionsWithAll = [
-    { id: '', name: 'All Categories' },
-    ...(Array.isArray(ddlCategory) ? ddlCategory : []),
-  ];
+  const optionsWithAll = [{ id: '', name: 'All Categories' }, ...(Array.isArray(ddlCategory) ? ddlCategory : [])];
 
   const handleBrandChange = (selectedOption: any) => {
     const selectedId = selectedOption?.value ?? '';
     setBrandId(selectedId);
   };
 
-  const brandOptions = [
-    { id: '', name: 'All Brand' },
-    ...(brand?.brandDdl?.data || []),
-  ];
+  const brandOptions = [{ id: '', name: 'All Brand' }, ...(brand?.brandDdl?.data || [])];
 
   return (
     <div className="">
@@ -364,11 +359,7 @@ const ProductStock = (user: any) => {
               <div>
                 <label htmlFor="">Search by Name</label>
               </div>
-              <SearchInput
-                search={search}
-                setSearchValue={setSearchValue}
-                className="text-nowrap h-8 bg-transparent w-full"
-              />
+              <SearchInput search={search} setSearchValue={setSearchValue} className="text-nowrap h-8 bg-transparent w-full" />
             </div>
           </div>
 
@@ -429,12 +420,7 @@ const ProductStock = (user: any) => {
                   className="h-8 w-full"
                 />
               </div>
-
-              <PrintButton
-                onClick={handlePrint}
-                label="Print"
-                className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-8"
-              />
+              <PrintButton onClick={handlePrint} label="Print" className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-8" />
             </div>
           </div>
         </div>
@@ -448,7 +434,7 @@ const ProductStock = (user: any) => {
         <div className="hidden">
           <StockBookPrint
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group row print এ যাবে না
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group rows print এ যাবে না
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Product Stock"
