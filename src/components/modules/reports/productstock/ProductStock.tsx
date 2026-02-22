@@ -104,8 +104,8 @@ const ProductStock = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
-  const [perPage, setPerPage] = useState<number>(20);
-  const [fontSize, setFontSize] = useState<number>(12);
+  const [perPage, setPerPage] = useState<number>(35);
+  const [fontSize, setFontSize] = useState<number>(11);
   const [brandId, setBrandId] = useState<number | string | null>(null);
 
   useEffect(() => {
