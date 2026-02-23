@@ -46,6 +46,7 @@ interface branchItem {
   share_customer_with_other_branch: boolean;
   have_customer_sl: boolean;
   have_is_guaranter: boolean;
+  stock_report_type: boolean;
   is_opening: boolean;
   use_bangla: boolean;
   report_zero_bal: boolean;
@@ -83,6 +84,7 @@ const AddBranch = () => {
     share_customer_with_other_branch: false,
     have_customer_sl: false,
     have_is_guaranter: false,
+    stock_report_type: false,
     is_opening: false,
     use_bangla: false,
     report_zero_bal: false,
@@ -127,6 +129,7 @@ const AddBranch = () => {
           b.share_customer_with_other_branch == 1 ||
           b.share_customer_with_other_branch === '1',
         have_customer_sl: b.have_customer_sl == 1 || b.have_customer_sl === '1',
+        stock_report_type: b.stock_report_type == 1 || b.stock_report_type === '1',
         use_bangla: b.use_bangla == 1 || b.use_bangla === '1',
       }));
     }
@@ -420,7 +423,15 @@ const AddBranch = () => {
                 checked={formData.have_is_guaranter}
                 onChange={handleOnChange}
                 label="Use Guarantor?"
-                className="mb-4" // Add any additional styling if needed
+                className="mb-4"
+              />
+              <Checkbox
+                id="stock_report_type"
+                name="stock_report_type"
+                checked={formData.stock_report_type}
+                onChange={handleOnChange}
+                label="Stock: Brand->Category->Item"
+                className="mb-4"
               />
 
             </div>
