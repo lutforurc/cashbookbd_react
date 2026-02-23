@@ -105,6 +105,7 @@ import { MENU_PERMISSIONS } from './components/Sidebar/menuPermissions';
 import LoanLedger from './components/modules/hrms/loan/LoanLedger';
 import UnitSalePaymentList from './components/modules/real-estate/checks/UnitSalePaymentList';
 import UnitSalePaymentEdit from './components/modules/real-estate/checks/UnitSalePaymentEdit';
+import ProductStockIndex from './components/modules/reports/productstock/ProductStockIndex';
 
 
 
@@ -218,7 +219,7 @@ function App() {
             <Route path={routes.sales_ledger} element={<SalesLedger user={me} />} />
             <Route path={routes.mitch_match} element={<MitchMatch user={me} />} />
             <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
-            <Route path={routes.report_product_stock} element={<ProductStock user={me} />} />
+            <Route path={routes.report_product_stock} element={<ProductStockIndex user={me} />} />
             <Route path={routes.cat_wise_in_out} element={<CatWiseInOut user={me} />} />
 
             {/* Orders */}
