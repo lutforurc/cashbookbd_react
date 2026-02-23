@@ -99,9 +99,9 @@ const Product = (user: any) => {
 
   /* ================= INIT ================= */
   useEffect(() => {
-    dispatch(getSettings());
-    dispatch(getCategoryDdl());
-    dispatch(fetchBrandDdl());
+    dispatch(getSettings() as any);
+    dispatch(getCategoryDdl() as any);
+    dispatch(fetchBrandDdl() as any);
   }, []);
 
   useEffect(() => {
@@ -112,7 +112,7 @@ const Product = (user: any) => {
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }));
+    dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
   }, [page, perPage, categoryId, brandId, appliedSearch]);
 
   /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
@@ -141,7 +141,7 @@ const Product = (user: any) => {
     setCurrentPage(1);
     setAppliedSearch(search);
 
-    dispatch(getProduct({ page: 1, perPage, categoryId, brandId, search }));
+    dispatch(getProduct({ page: 1, perPage, categoryId, brandId, search }) as any);
   };
 
   const handlePageChange = (p: number) => {
@@ -182,10 +182,27 @@ const Product = (user: any) => {
     }));
   };
 
-  const handleProductBlur = async (e: any, row: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const isRowDirty = (row: any) => {
+    const edited = editedRows[row.product_id];
+    if (!edited) return false;
 
+    const qty0 = row.qty ?? row.openingbalance ?? '';
+    const rate0 = row.rate ?? '';
+    const serial0 = row.serial_no ?? '';
+
+    const qty1 = edited.qty ?? qty0 ?? '';
+    const rate1 = edited.rate ?? rate0 ?? '';
+    const serial1 = edited.serial_no ?? serial0 ?? '';
+
+    return (
+      String(qty1 ?? '') !== String(qty0 ?? '') ||
+      String(rate1 ?? '') !== String(rate0 ?? '') ||
+      String(serial1 ?? '') !== String(serial0 ?? '')
+    );
+  };
+
+  // ✅ Save button click এ API update হবে
+  const handleSaveRow = async (row: any) => {
     if (isGroupRow(row)) return;
 
     const edited = editedRows[row.product_id];
@@ -203,11 +220,33 @@ const Product = (user: any) => {
 
     try {
       const result: any = await dispatch(updateProductQtyRate(payload) as any);
-      if (result?.success && result?.message) toast.success(result.message);
-      else if (result?.message) toast.info(result.message);
+
+      if (result?.success && result?.message) {
+        toast.success(result.message);
+
+        // ✅ save হলে draft clear
+        setEditedRows((prev) => {
+          const copy = { ...prev };
+          delete copy[row.product_id];
+          return copy;
+        });
+      } else if (result?.message) {
+        toast.info(result.message);
+      }
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // ✅ Cancel/Reset draft
+  const handleCancelRow = (row: any) => {
+    if (isGroupRow(row)) return;
+
+    setEditedRows((prev) => {
+      const copy = { ...prev };
+      delete copy[row.product_id];
+      return copy;
+    });
   };
 
   const handleProductEdit = (row: any) => {
@@ -237,17 +276,13 @@ const Product = (user: any) => {
         if (isGroupRow(row)) return '';
         return (
           <textarea
-            rows={2}
-            className="w-full px-3 py-1 text-gray-600 bg-white border rounded-xs outline-none
-              dark:bg-transparent dark:border-gray-600 dark:text-white dark:placeholder-gray-500
-              focus:outline-none focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+            className="w-full h-8 px-3 py-1 text-gray-600 bg-white border rounded-xs outline-none resize-none
+                      dark:bg-transparent dark:border-gray-600 dark:text-white dark:placeholder-gray-500
+                      focus:outline-none focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
             placeholder="IMEI Number"
             value={editedRows[row.product_id]?.serial_no ?? row.serial_no ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'serial_no', e.target.value)}
-            onBlur={(e) => {
-              handleSerialBlur(row);
-              handleProductBlur(e, row);
-            }}
+            onBlur={() => handleSerialBlur(row)}
           />
         );
       },
@@ -266,7 +301,7 @@ const Product = (user: any) => {
             placeholder="Qty"
             value={editedRows[row.product_id]?.qty ?? row.qty ?? row.openingbalance ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'qty', e.target.value)}
-            onBlur={(e) => handleProductBlur(e, row)}
+          // ✅ onBlur removed (auto-save বন্ধ)
           />
         );
       },
@@ -285,8 +320,43 @@ const Product = (user: any) => {
             className="text-right w-24"
             value={editedRows[row.product_id]?.rate ?? row.rate ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'rate', e.target.value)}
-            onBlur={(e) => handleProductBlur(e, row)}
+          // ✅ onBlur removed (auto-save বন্ধ)
           />
+        );
+      },
+    },
+    {
+      key: 'save',
+      header: 'Save',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        if (isGroupRow(row)) return '';
+
+        const dirty = isRowDirty(row);
+
+        return (
+          <div className="flex justify-center gap-2">
+            <ButtonLoading icon="" className='py-1 px-2' label='Save' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
+            {/* <button
+              type="button"
+              disabled={!dirty}
+              onClick={() => handleSaveRow(row)}
+              className={`px-2 py-1 text-xs rounded ${dirty ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
+            >
+              Save
+            </button> */}
+            <ButtonLoading icon="" className='py-1 px-2' label='Cancel' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
+            {/* <button
+              type="button"
+              disabled={!editedRows[row.product_id]}
+              onClick={() => handleCancelRow(row)}
+              className={`px-2 py-1 text-xs rounded
+                ${editedRows[row.product_id] ? 'bg-gray-100 text-gray-800' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
+            >
+              Cancel
+            </button> */}
+          </div>
         );
       },
     },
@@ -321,7 +391,7 @@ const Product = (user: any) => {
           );
         },
       },
-      {
+      !settings?.data?.branch?.is_opening && {
         key: 'category',
         header: 'Category',
         render: (row: any) => (isGroupRow(row) ? '' : row.category),
@@ -382,7 +452,6 @@ const Product = (user: any) => {
     ...(brand?.brandDdl?.data || []),
   ];
 
-
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value)) {
@@ -392,14 +461,15 @@ const Product = (user: any) => {
     }
   };
 
-    const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = parseInt(e.target.value, 10);
-      if (!isNaN(value)) {
-        setFontSize(value);
-      } else {
-        setFontSize(10);
-      }
-    };
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setFontSize(value);
+    } else {
+      setFontSize(10);
+    }
+  };
+
   const handlePrint = useReactToPrint({
     content: () => {
       if (!printRef.current) return null;
@@ -478,11 +548,7 @@ const Product = (user: any) => {
                 className="font-medium text-sm h-9 w-12"
               />
             </div>
-            <PrintButton
-              onClick={handlePrint}
-              label="Print"
-              className="ml-2 pt-[0.45rem] pb-[0.45rem] h-9"
-            />
+            <PrintButton onClick={handlePrint} label="Print" className="ml-2 pt-[0.45rem] pb-[0.45rem] h-9" />
           </div>
         </div>
 
@@ -505,7 +571,6 @@ const Product = (user: any) => {
           <ProductPrint
             ref={printRef}
             rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group row print এ যাবে না
-
             title="Product List"
             rowsPerPage={Number(rowsPerPage)}
             fontSize={Number(fontSize)}
@@ -517,5 +582,3 @@ const Product = (user: any) => {
 };
 
 export default Product;
-
-// 5-260200002
