@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiCheck } from 'react-icons/fi';
+import { FiCheck, FiRotateCcw } from 'react-icons/fi';
 
 // Define the props for the Button component
 interface ButtonProps {
@@ -47,7 +47,7 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
           </>
         ) : (
           <>
-            {icon}
+            {icon ?? <FiRotateCcw className="text-white text-md ml-2 font-semibold  mr-2 " />}
             <span className='hidden md:block'>{label}</span>
           </>
         )}
@@ -89,7 +89,7 @@ type PrintButtonProps = {
 
 export const PrintButton: React.FC<PrintButtonProps> = ({
   label = '',
-  onClick = () => {},
+  onClick = () => { },
   className = '',
   type = 'button',
 }) => {
