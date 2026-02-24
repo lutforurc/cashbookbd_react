@@ -238,47 +238,75 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                             </td>
                             <td
                               style={{ fontSize: fs }}
-                              className="border border-gray-900 px-2 py-1 text-right"
+                              className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              <span className="block">
-                                {details.length
-                                  && details.map((detail: any, i: number) => (
-                                    <div key={i}>
-                                      {(detail?.quantity)}{" "}
+                              {details.length
+                                ? details.map((detail: any, i: number) => {
+                                  const categoryName = detail?.product?.category?.name ?? "";
+                                  const productName = detail?.product?.name ?? "";
+                                  const label = `${categoryName} ${productName}`.trim();
+
+                                  return (
+                                    <div
+                                      key={detail?.id ?? i}
+                                      className="leading-normal"
+                                      style={{ fontSize: getProductFs(label, fs) }}
+                                    >
+                                      {detail?.quantity ?? ""}
                                     </div>
-                                  ))}
-                              </span>
+                                  );
+                                })
+                                : "-"}
                             </td>
                             <td
                               style={{ fontSize: fs }}
-                              className="border border-gray-900 px-2 py-1 text-right"
+                              className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
                               {details.length
-                                ? details.map((detail: any, i: number) => (
-                                  <div key={i}>
-                                    {thousandSeparator(
-                                      detail?.purchase_price,
-                                      0
-                                    )}
-                                  </div>
-                                ))
+                                ? details.map((detail: any, i: number) => {
+                                  const categoryName = detail?.product?.category?.name ?? "";
+                                  const productName = detail?.product?.name ?? "";
+                                  const label = `${categoryName} ${productName}`.trim();
+
+                                  return (
+                                    <div
+                                      key={detail?.id ?? i}
+                                      className="leading-normal"
+                                      style={{ fontSize: getProductFs(label, fs) }}
+                                    >
+                                      {thousandSeparator(
+                                        (detail?.purchase_price || 0) * (detail?.quantity || 0),
+                                        0
+                                      )}
+                                    </div>
+                                  );
+                                })
                                 : "-"}
                             </td>
 
                             <td
                               style={{ fontSize: fs }}
-                              className="border border-gray-900 px-2 py-1 text-right"
+                              className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
                               {details.length
-                                ? details.map((detail: any, i: number) => (
-                                  <div key={i}>
-                                    {thousandSeparator(
-                                      (detail?.purchase_price || 0) *
-                                      (detail?.quantity || 0),
-                                      0
-                                    )}
-                                  </div>
-                                ))
+                                ? details.map((detail: any, i: number) => {
+                                  const categoryName = detail?.product?.category?.name ?? "";
+                                  const productName = detail?.product?.name ?? "";
+                                  const label = `${categoryName} ${productName}`.trim();
+
+                                  return (
+                                    <div
+                                      key={detail?.id ?? i}
+                                      className="leading-normal"
+                                      style={{ fontSize: getProductFs(label, fs) }}
+                                    >
+                                      {thousandSeparator(
+                                        (detail?.purchase_price || 0) * (detail?.quantity || 0),
+                                        0
+                                      )}
+                                    </div>
+                                  );
+                                })
                                 : "-"}
                             </td>
 
