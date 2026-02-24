@@ -58,8 +58,8 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
     const totalQuantity = ledgerCalc.getTotalQuantity();
     const totalPayment = ledgerCalc.getTotalPayment(); // Total (sales total)
     const grandTotal = ledgerCalc.getGrandTotal();     // Received
-    const totalBalance = ledgerCalc.getTotalBalance(); // Due
     const totalDiscount = ledgerCalc.getDiscountTotal();
+    const totalBalance = ledgerCalc.getTotalBalance(); // Due
 
     const parseNumber = (v: any) => {
       if (v == null) return NaN;
@@ -118,13 +118,12 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
               <PadPrinting />
 
               {/* header */}
-              <div className="mb-4">
-                <h1 className="text-2xl font-bold text-center">{title}</h1>
-
-                <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
+              <div className="mb-2">
+                <h1 style={{ fontSize: fs + 2 }} className="font-bold text-center">{title}</h1>
+                <div className="mt-2 grid grid-cols-1 gap-1 text-xs">
                   <div>
                     <span className="font-semibold">Report Date:</span>{" "}
-                    {startText} {endText ? `to ${endText}` : ""}
+                    {startText?.toString() } {endText ? `to ${endText}` : ""}
                   </div>
 
                   {(branchName || accountName || productName) && (
@@ -148,7 +147,6 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                   )}
                 </div>
               </div>
-
               <div className="w-full overflow-hidden">
                 <table className="w-full table-fixed border-collapse">
                   <thead className="bg-gray-100">
@@ -156,31 +154,28 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                       <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-10 text-center">
                         Sl
                       </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-22 text-left">
+                      <th style={{ fontSize: fs  }} className="border border-gray-900 px-2 py-2 w-22 text-left">
                         Chal. & Date
                       </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
+                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
                         Product & Details
                       </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-left">
-                        Vehicle
-                      </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-right">
+                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-right">
                         Qty
                       </th>
                       <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-20 text-right">
                         Rate
                       </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-24 text-right">
+                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-20 text-right">
                         Total
                       </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-right">
-                        Discount
+                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-10 text-right">
+                        Disc.
                       </th>
                       <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-right">
                         Received
                       </th>
-                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-right">
+                      <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-14 text-right">
                         Due
                       </th>
                     </tr>
@@ -210,7 +205,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               {row?.sl_number ?? idx + 1 + pIdx * rowsPerPage}
                             </td>
 
-                            <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-left leading-normal">
+                            <td style={{ fontSize: fs - 1 }} className="border border-gray-900 px-2 py-1 text-left leading-normal">
                               <div className={`text-[${fs - 2}px]`}>{row?.challan_no || ""}</div>
                               <div className={`text-[${fs}px]`}>{row?.challan_date || ""}</div>
                             </td>
@@ -236,10 +231,6 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
 
                                 {remarks ? <div className="mt-1 text-xs">{remarks}</div> : null}
                               </div>
-                            </td>
-
-                            <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-left">
-                              {row?.sales_master?.vehicle_no || "-"}
                             </td>
 
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
@@ -307,8 +298,8 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                       <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
                       <div>Total: {thousandSeparator(totalPayment, 0)}</div>
                       <div>Received: {thousandSeparator(grandTotal, 0)}</div>
-                      <div>Discount: {thousandSeparator(totalDiscount, 0)}</div>
-                      <div>Due: {thousandSeparator(totalBalance, 0)}</div>
+                     {totalDiscount > 0 && <div>Discount: {thousandSeparator(totalDiscount, 0)}</div>}
+                      { totalBalance > 0 && <div>Due: {thousandSeparator(totalBalance, 0)}</div> }
                     </div>
                   </div>
                 )}

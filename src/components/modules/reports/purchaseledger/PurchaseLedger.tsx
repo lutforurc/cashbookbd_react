@@ -316,7 +316,7 @@ const PurchaseLedger = (user: any) => {
     if (!Number.isFinite(v)) return;
 
     // optional: min/max guard
-    const safe = Math.max(1, Math.min(100, v));
+    const safe = Math.max(10, Math.min(100, v));
     setPerPage(safe);
   };
 
@@ -325,7 +325,7 @@ const PurchaseLedger = (user: any) => {
     if (!Number.isFinite(v)) return;
 
     // optional: min/max guard
-    const safe = Math.max(6, Math.min(30, v));
+     const safe = Math.max(1, Math.min(100, v));
     setFontSize(safe);
   };
 

@@ -351,6 +351,15 @@ const SalesLedger = (user: any) => {
     },
   ];
 
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    if (!Number.isFinite(v)) return;
+
+    // optional: min/max guard
+    const safe = Math.max(1, Math.min(100, v));
+    setFontSize(safe);
+  };
+
   const ledgerCalc = useMemo(() => new SalesLedgerCalculator(tableData || []), [tableData]);
   const totalQuantity = ledgerCalc.getTotalQuantity();
   const totalPayment = ledgerCalc.getTotalPayment();
@@ -430,7 +439,8 @@ const SalesLedger = (user: any) => {
                     name="fontSize"
                     label=""
                     value={fontSize.toString()}
-                    onChange={(e) => setFontSize(clampInt(e.target.value, 6, 30, 12))}
+                    // onChange={(e) => setFontSize(clampInt(e.target.value, 6, 10, 12))}
+                    onChange={handleFontSizeChange}
                     type='text'
                     className="font-medium text-sm h-9 w-12"
                   />

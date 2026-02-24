@@ -50,7 +50,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
 
-    const startText = startDate ;
+    const startText = startDate;
     const endText = endDate;
 
     const purchaseCalc = useMemo(
@@ -61,6 +61,19 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
     const totalPayment = purchaseCalc.getTotalPayment();
     const discountTotal = purchaseCalc.getDiscountTotal();
     const grandTotal = purchaseCalc.getGrandTotal();
+
+
+    const getProductFs = (name: string, baseFs: number) => {
+      const len = (name || "").trim().length;
+
+      // আপনার প্রয়োজন অনুযায়ী threshold adjust করতে পারবেন
+      if (len > 35) return Math.max(baseFs - 4, 7);
+      if (len > 28) return Math.max(baseFs - 3, 7);
+      if (len > 20) return Math.max(baseFs - 2, 7);
+      if (len > 16) return Math.max(baseFs - 1, 7);
+
+      return baseFs;
+    };
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -204,10 +217,14 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
 
                                     return (
                                       <>
-                                      <div key={detail?.id ?? i} className="leading-normal">
-                                        {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
-                                        {productName}
-                                      </div>
+                                        <div
+                                          key={detail?.id ?? i}
+                                          className="leading-normal whitespace-nowrap"
+                                          style={{ fontSize: getProductFs(`${categoryName} ${productName}`.trim(), fs) }}
+                                        >
+                                          {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
+                                          {productName}
+                                        </div>
                                       </>
                                     );
                                   })}
