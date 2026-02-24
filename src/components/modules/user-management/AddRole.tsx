@@ -63,6 +63,7 @@ const AddRole = () => {
             <ButtonLoading
               onClick={handleRoleSave}
               buttonLoading={loading} // Disable button while loading
+              className="p-2"
               label="Save"
             />
           </div>

@@ -12,12 +12,14 @@ import PasswordElement from '../../utils/fields/PasswordElement';
 import { editUser, updateUser } from './userSlice';
 import { getRoles } from '../roles/rolesSlice';
 import { toast } from 'react-toastify';
+import { getSettings } from '../settings/settingsSlice';
+import { authCheck } from '../../../features/authReducer';
 
 const EditUser = (user: any) => {
     const dispatch = useDispatch();
-    const branchDdlData = useSelector((state:any) => state.branchDdl);
-    const roles = useSelector((state:any) => state.roles);
-    const showUser = useSelector((state:any) => state.users);
+    const branchDdlData = useSelector((state: any) => state.branchDdl);
+    const roles = useSelector((state: any) => state.roles);
+    const showUser = useSelector((state: any) => state.users);
     const [dropdownData, setDropdownData] = useState<any[]>([]);
 
     const { id } = useParams<{ id: string }>();
@@ -30,21 +32,21 @@ const EditUser = (user: any) => {
         dispatch(editUser(id));
     }, []);
 
-  
+
     useEffect(() => {
         setDropdownData(branchDdlData?.data?.data);
     }, [branchDdlData]);
 
     const [formData, setFormData] = useState({
-        usr_id         : id,
-        name           : '',
-        email          : '',
-        description    : '',
-        password       : '',
+        usr_id: id,
+        name: '',
+        email: '',
+        description: '',
+        password: '',
         confirmPassword: '',
-        lang           : '',
-        branch_id      : '',
-        role_id        : '',
+        lang: '',
+        branch_id: '',
+        role_id: '',
     });
 
     useEffect(() => {
@@ -64,7 +66,7 @@ const EditUser = (user: any) => {
 
     const handleOnChange = (e) => {
         const { value, type, name } = e.target;
-    
+
         // Handle dropdown separately
         if (e.target.tagName === "SELECT") {
             setFormData({
@@ -73,7 +75,7 @@ const EditUser = (user: any) => {
             });
             return;
         }
-    
+
         switch (type) {
             case 'checkbox':
                 setFormData({
@@ -89,17 +91,23 @@ const EditUser = (user: any) => {
         }
     };
 
+    // toast.success(showUser?.updateData);
+    const handleUserUpdate = (e: any) => {
+        e.preventDefault();
+        dispatch(updateUser(formData) as any);
+    };
 
-    const handleUserUpdate = (e: any) => { 
-        e.preventDefault(); 
-        dispatch( updateUser( formData ) )
-        if (showUser?.updateData) { 
-            toast.success(showUser?.updateData);
-            setTimeout(() => {
-                window.history.back();
-            }, 1000);
-        }
-    }
+    useEffect(() => {
+        if (!showUser?.updateData) return;
+        toast.success(showUser.updateData);
+        (async () => {
+            await dispatch(authCheck() as any);        // ✅ update complete হওয়ার পরে
+            // await dispatch(getSettings() as any);
+            // একটাই রাখুন: reload বা back
+            window.location.reload();
+            // window.history.back();
+        })();
+    }, [showUser?.updateData]);
 
     const handleBack = () => {
         window.history.back();
@@ -132,7 +140,7 @@ const EditUser = (user: any) => {
                 <DropdownCommon
                     id="role_id"
                     name={'role_id'}
-                    label="Select Role" 
+                    label="Select Role"
                     defaultValue={formData?.role_id || ""}
                     onChange={handleOnChange}
                     className="h-[2.60rem]"
@@ -186,18 +194,18 @@ const EditUser = (user: any) => {
                     onChange={handleOnChange}
                 />
                 <div className='flex gap-2'>
-                <ButtonLoading
-                    onClick={handleUserUpdate}
-                    buttonLoading={showUser.isLoading}
-                    label="Update"
-                    className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
-                />
-                <ButtonLoading
-                    onClick={handleBack}
-                    buttonLoading={showUser.isLoading}
-                    label="Back"
-                    className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
-                />
+                    <ButtonLoading
+                        onClick={handleUserUpdate}
+                        buttonLoading={showUser.isLoading}
+                        label="Update"
+                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
+                    />
+                    <ButtonLoading
+                        onClick={handleBack}
+                        buttonLoading={showUser.isLoading}
+                        label="Back"
+                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
+                    />
                 </div>
 
 

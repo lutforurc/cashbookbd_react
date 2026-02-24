@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 interface SelectOptionProps {
+  name?: string;
   branchDdl: Array<{ id: string; name: string }>; // Assuming branchDdl is an array of objects
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   className?: string | undefined;
@@ -9,6 +10,7 @@ interface SelectOptionProps {
 }
 
 const BranchDropdown: React.FC<SelectOptionProps> = ({
+  name,
   branchDdl,
   onChange,
   className,
@@ -32,6 +34,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
   return (
     <select
       id={id}
+      name={name}
       value={selectedValue} // Bind the value to state
       onChange={handleSelectChange}
       className={`block w-full text-sm text-gray-900 border border-gray-300 rounded-xs bg-white outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}

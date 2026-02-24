@@ -119,8 +119,8 @@ const Roles = () => {
       <HelmetTitle title="Role List" />
 
       <div className="flex justify-end mb-1 gap-2">
-        <ButtonLoading className="p-1 w-30" onClick={handleUpdatePermissions}  buttonLoading={updating} label="Update" />
-        <ButtonLoading className="p-1 w-30" onClick={() => { }} buttonLoading={addingRole} label="Add Role" />
+        <ButtonLoading className="p-2 w-30" onClick={handleUpdatePermissions}  buttonLoading={updating} label="Update" />
+        <ButtonLoading className="p-2 w-40" onClick={() => { }} buttonLoading={addingRole} label="Add Role" />
       </div>
       <div className="overflow-y-auto">
         <DropdownCommon
