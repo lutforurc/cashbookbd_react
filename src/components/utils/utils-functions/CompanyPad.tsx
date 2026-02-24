@@ -4,6 +4,11 @@ import { chartDateTime } from './formatDate';
 
 const CompanyPad = () => {
   const settings = useSelector((state: any) => state.settings.data);
+
+  console.log('====================================');
+  console.log("settings", settings?.company?.notes);
+  console.log('====================================');
+
   return (
     <div>
       <div className="mb-6">
@@ -12,11 +17,16 @@ const CompanyPad = () => {
         </h1>
         <div className="text-center">
           <div>
-            <span className="-mt-2"> {settings?.company?.address}</span>
+            <span className="-mt-1"> {settings?.company?.address}</span>
           </div>
           <div>
             <span className=""> {settings?.company?.phone}</span>
           </div>
+          { settings?.company?.notes && (
+            <div>
+              <span className="-mt-2 text-xs"> {settings?.company?.notes}</span>
+            </div>
+          )}
         </div>
       </div>
       <div className="border-t-2 border-gray-900 -mt-4"></div>
@@ -27,7 +37,7 @@ const CompanyPad = () => {
           <span className="text-xs">{chartDateTime(new Date().toISOString())}</span>
         </div>
       </div>
-      <div className="-mt-2 text-xs">Address: <span className='font-bold text-xs'>{settings?.branch?.address}</span></div>
+      <div className="-mt-1 text-xs">Address: <span className='font-bold text-xs'>{settings?.branch?.address}</span></div>
     </div>
   );
 };
