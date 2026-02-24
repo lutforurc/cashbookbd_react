@@ -5,6 +5,7 @@ import PurchaseLedgerCalculator from "../../../utils/calculators/PurchaseLedgerC
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import { useSelector } from "react-redux";
 
 type Props = {
   rows: any[];
@@ -43,12 +44,14 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
     },
     ref
   ) => {
+    const settings = useSelector((state: any) => state.settings);
+    const stockReportType = settings?.data?.branch?.stock_report_type;
     const rowsArr: any[] = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
 
-    const startText = startDate ? dayjs(startDate).format("DD-MMM-YYYY") : "";
-    const endText = endDate ? dayjs(endDate).format("DD-MMM-YYYY") : "";
+    const startText = startDate ;
+    const endText = endDate;
 
     const purchaseCalc = useMemo(
       () => new PurchaseLedgerCalculator(rowsArr || []),
@@ -91,9 +94,9 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-28 text-center"
+                        className="border border-gray-900 px-2 py-2 w-22 text-center"
                       >
-                        Chal. No. &amp; Date
+                        Chal. & Date
                       </th>
                       <th
                         style={{ fontSize: fs }}
@@ -101,28 +104,33 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                       >
                         Description
                       </th>
-                      
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-18 text-right"
+                      >
+                        Qty
+                      </th>
                       <th
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-2 py-2 w-20 text-right"
                       >
-                        Qty & Rate
+                        Rate
                       </th>
                       <th
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-2 py-2 w-24 text-right"
                       >
-                        Dis. & Total
+                        Total
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-20 text-right"
+                        className="border border-gray-900 px-2 py-2 w-16 text-right"
                       >
                         Discount
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-20 text-right"
+                        className="border border-gray-900 px-2 py-2 w-18 text-right"
                       >
                         Payment
                       </th>
@@ -157,7 +165,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                           )?.credit;
 
                         const coaName = getRelevantCoaName(row);
-                        const details = row?.purchase_master?.details || []; 
+                        const details = row?.purchase_master?.details || [];
 
                         return (
                           <tr
@@ -189,15 +197,20 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                             >
                               <div className="w-full max-w-4xl leading-normal">
                                 {/* Product list */}
-                                {details.length ? (
-                                  details.map((detail: any, i: number) => (
-                                    <div key={i} className="leading-normal">
-                                      {detail?.product?.category?.name || ""} {detail?.product?.name || ""}
-                                    </div>
-                                  ))
-                                ) : (
-                                  <div className="text-gray-500">-</div>
-                                )}
+                                {Array.isArray(details) && details.length > 0 &&
+                                  details.map((detail: any, i: number) => {
+                                    const categoryName = detail?.product?.category?.name ?? "";
+                                    const productName = detail?.product?.name ?? "";
+
+                                    return (
+                                      <>
+                                      <div key={detail?.id ?? i} className="leading-normal">
+                                        {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
+                                        {productName}
+                                      </div>
+                                      </>
+                                    );
+                                  })}
                                 {/* COA Name */}
                                 {coaName ? (
                                   <div className="font-semibold">
@@ -208,51 +221,53 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                             </td>
                             <td
                               style={{ fontSize: fs }}
-                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                              className="border border-gray-900 px-2 py-1 text-right"
                             >
                               <span className="block">
                                 {details.length
-                                ? details.map((detail: any, i: number) => (
+                                  && details.map((detail: any, i: number) => (
                                     <div key={i}>
-                                      {thousandSeparator(detail?.quantity, 0)}{" "}
-                                      {detail?.product?.unit?.name || ""}
+                                      {(detail?.quantity)}{" "}
                                     </div>
-                                  ))
-                                : "-"}
-                                </span>
-
-                              {details.length
-                                ? details.map((detail: any, i: number) => (
-                                    <div key={i}>
-                                      {thousandSeparator(
-                                        detail?.purchase_price,
-                                        0
-                                      )}
-                                    </div>
-                                  ))
-                                : "-"}
+                                  ))}
+                              </span>
                             </td>
-
                             <td
                               style={{ fontSize: fs }}
-                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                              className="border border-gray-900 px-2 py-1 text-right"
                             >
                               {details.length
                                 ? details.map((detail: any, i: number) => (
-                                    <div key={i}>
-                                      {thousandSeparator(
-                                        (detail?.purchase_price || 0) *
-                                          (detail?.quantity || 0),
-                                        0
-                                      )}
-                                    </div>
-                                  ))
+                                  <div key={i}>
+                                    {thousandSeparator(
+                                      detail?.purchase_price,
+                                      0
+                                    )}
+                                  </div>
+                                ))
                                 : "-"}
                             </td>
 
                             <td
                               style={{ fontSize: fs }}
-                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                              className="border border-gray-900 px-2 py-1 text-right"
+                            >
+                              {details.length
+                                ? details.map((detail: any, i: number) => (
+                                  <div key={i}>
+                                    {thousandSeparator(
+                                      (detail?.purchase_price || 0) *
+                                      (detail?.quantity || 0),
+                                      0
+                                    )}
+                                  </div>
+                                ))
+                                : "-"}
+                            </td>
+
+                            <td
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1 text-right"
                             >
                               {discountValue
                                 ? thousandSeparator(discountValue, 0)
@@ -261,7 +276,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
 
                             <td
                               style={{ fontSize: fs }}
-                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                              className="border border-gray-900 px-2 py-1 text-right"
                             >
                               {paymentValue
                                 ? thousandSeparator(paymentValue, 0)

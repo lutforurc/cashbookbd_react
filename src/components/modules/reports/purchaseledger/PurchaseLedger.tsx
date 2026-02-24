@@ -165,7 +165,7 @@ const PurchaseLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       render: (row: any) => {
         return (
           <div>
@@ -173,7 +173,7 @@ const PurchaseLedger = (user: any) => {
               (detail: any, index: number) => (
                 <div key={index}>
                   <span>
-                    {thousandSeparator(detail?.quantity, 0)}{' '}
+                    {(detail?.quantity)}{' '}
                     {detail?.product?.unit?.name}
                   </span>
                 </div>
@@ -188,7 +188,7 @@ const PurchaseLedger = (user: any) => {
       key: 'rate',
       header: 'Rate',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       render: (row: any) => (
         <div>
           {row?.purchase_master?.details?.map((detail: any, index: number) => (
@@ -205,7 +205,7 @@ const PurchaseLedger = (user: any) => {
       key: 'total',
       header: 'Total',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       render: (row: any) => (
         <div>
           {row?.purchase_master?.details?.map((detail: any, index: number) => (
