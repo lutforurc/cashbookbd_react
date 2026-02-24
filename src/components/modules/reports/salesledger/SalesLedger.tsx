@@ -16,6 +16,7 @@ import SalesLedgerCalculator from '../../../utils/calculators/SalesLedgerCalcula
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import { useReactToPrint } from 'react-to-print';
 import SalesLedgerPrint from './SalesLedgerPrint';
+import InputElement from '../../../utils/fields/InputElement';
 
 const clampInt = (v: any, min: number, max: number, fallback: number) => {
   const n = parseInt(String(v ?? ''), 10);
@@ -246,8 +247,8 @@ const SalesLedger = (user: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
           ? row.acc_transaction_master
           : row?.acc_transaction_master
-          ? [row.acc_transaction_master]
-          : [];
+            ? [row.acc_transaction_master]
+            : [];
 
         const allDetails = masters.reduce((acc: any[], m: any) => {
           if (Array.isArray(m?.acc_transaction_details)) acc.push(...m.acc_transaction_details);
@@ -282,8 +283,8 @@ const SalesLedger = (user: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
           ? row.acc_transaction_master
           : row?.acc_transaction_master
-          ? [row.acc_transaction_master]
-          : [];
+            ? [row.acc_transaction_master]
+            : [];
 
         const allDetails = masters.reduce((acc: any[], m: any) => {
           if (Array.isArray(m?.acc_transaction_details)) acc.push(...m.acc_transaction_details);
@@ -318,8 +319,8 @@ const SalesLedger = (user: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
           ? row.acc_transaction_master
           : row?.acc_transaction_master
-          ? [row.acc_transaction_master]
-          : [];
+            ? [row.acc_transaction_master]
+            : [];
 
         const allDetails = masters.reduce((acc: any[], m: any) => {
           if (Array.isArray(m?.acc_transaction_details)) acc.push(...m.acc_transaction_details);
@@ -412,26 +413,26 @@ const SalesLedger = (user: any) => {
             <div className="mt-1 md:mt-6 w-full flex items-center gap-2">
               <div className="flex gap-2">
                 <div className="w-16">
-                  <label className="block text-xs mb-1">Rows</label>
-                  <input
-                    type="number"
+                  <InputElement
+                    id="perPage"
+                    name="perPage"
+                    label=""
                     value={rowsPerPage}
                     onChange={(e) => setRowsPerPage(clampInt(e.target.value, 1, 200, 12))}
-                    className="w-full h-9 px-2 text-sm border rounded"
-                    min={1}
-                    max={200}
+                    type='text'
+                    className="font-medium text-sm h-9 w-12"
                   />
                 </div>
 
                 <div className="w-16">
-                  <label className="block text-xs mb-1">Font</label>
-                  <input
-                    type="number"
-                    value={fontSize}
+                  <InputElement
+                    id="fontSize"
+                    name="fontSize"
+                    label=""
+                    value={fontSize.toString()}
                     onChange={(e) => setFontSize(clampInt(e.target.value, 6, 30, 12))}
-                    className="w-full h-9 px-2 text-sm border rounded"
-                    min={6}
-                    max={30}
+                    type='text'
+                    className="font-medium text-sm h-9 w-12"
                   />
                 </div>
               </div>
