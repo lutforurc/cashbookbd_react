@@ -325,7 +325,7 @@ const PurchaseLedger = (user: any) => {
     if (!Number.isFinite(v)) return;
 
     // optional: min/max guard
-     const safe = Math.max(1, Math.min(100, v));
+    const safe = Math.max(1, Math.min(100, v));
     setFontSize(safe);
   };
 
@@ -349,7 +349,7 @@ const PurchaseLedger = (user: any) => {
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
+                className="w-full font-medium text-sm p-2"
                 branchDdl={dropdownData}
               />
             </div>
@@ -393,37 +393,39 @@ const PurchaseLedger = (user: any) => {
                 setSelectedDate={setEndDate}
               />
             </div>
-            <InputElement
-              id="perPage"
-              name="perPage"
-              label="Rows"
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type='text'
-              className="font-medium text-sm h-9 w-12"
-            />
-            <InputElement
-              id="fontSize"
-              name="fontSize"
-              label="Font"
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type='text'
-              className="font-medium text-sm h-9 w-12"
-            />
-            <div className="mt-1 md:mt-6 w-full">
-              <ButtonLoading
-                onClick={handleActionButtonClick}
-                buttonLoading={buttonLoading}
-                label="Run"
-                className="pt-[0.45rem] pb-[0.45rem] w-full"
+            <div className='grid grid-cols-4 md:flex items-end gap-x-3'>
+              <InputElement
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type='text'
+                className="font-medium text-sm h-9 w-full md:w-12"
+              />
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type='text'
+                className="font-medium text-sm h-9 w-full md:w-12"
+              />
+              <div className="mt-6 md:mt-6 w-full">
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Run"
+                  className="pt-[0.45rem] pb-[0.45rem] w-full h-9"
+                />
+              </div>
+              <PrintButton
+                onClick={handlePrint}
+                label=""
+                className="mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
               />
             </div>
-            <PrintButton
-              onClick={handlePrint}
-              label=""
-              className="mt-6  pt-[0.45rem] pb-[0.45rem] h-8"
-            />
           </div>
         </div>
       </div>

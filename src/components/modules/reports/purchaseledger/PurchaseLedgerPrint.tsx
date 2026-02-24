@@ -216,7 +216,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                     const productName = detail?.product?.name ?? "";
 
                                     return (
-                                      <>
+                                      
                                         <div
                                           key={detail?.id ?? i}
                                           className="leading-normal whitespace-nowrap"
@@ -225,7 +225,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                           {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
                                           {productName}
                                         </div>
-                                      </>
+                                     
                                     );
                                   })}
                                 {/* COA Name */}
