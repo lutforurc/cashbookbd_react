@@ -24,6 +24,8 @@ const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.purchaseLedger);
+  const settings = useSelector((state: any) => state.settings);
+  const stockReportType = settings?.data?.branch?.stock_report_type;
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
@@ -144,19 +146,24 @@ const PurchaseLedger = (user: any) => {
         const coaName = getRelevantCoaName(row);
         return (
           <div className="min-w-52 break-words align-top">
-            {row?.purchase_master?.details?.map(
-              (detail: any, index: number) => (
-                <div key={index}>
-                  <div>{detail?.product?.name}</div>
-                </div>
-              ),
-            )}
+            {Array.isArray(row?.purchase_master?.details) &&
+              row.purchase_master.details.length > 0 &&
+              row.purchase_master.details.map((detail: any, i: number) => {
+                const categoryName = detail?.product?.category?.name ?? "";
+                const productName = detail?.product?.name ?? "";
+
+                return (
+                  <div key={detail?.id ?? i} className="leading-normal">
+                    {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
+                    {productName}
+                  </div>
+                );
+              })}
             {coaName && (
               <div className="text-sm mt-1 font-semibold">
                 {coaName}
               </div>
             )}
-            <div className="">{row?.purchase_master?.notes}</div>
           </div>
         );
       },
@@ -304,7 +311,7 @@ const PurchaseLedger = (user: any) => {
     removeAfterPrint: true,
   });
 
-    const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = Number(e.target.value);
     if (!Number.isFinite(v)) return;
 

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -14,14 +14,25 @@ import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import SalesLedgerCalculator from '../../../utils/calculators/SalesLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import { useReactToPrint } from 'react-to-print';
+import SalesLedgerPrint from './SalesLedgerPrint';
+
+const clampInt = (v: any, min: number, max: number, fallback: number) => {
+  const n = parseInt(String(v ?? ''), 10);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+};
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const ledgerData = useSelector((state: any) => state.salesLedger);
+  const settings = useSelector((state: any) => state.settings);
+  const stockReportType = settings?.data?.branch?.stock_report_type;
+
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading] = useState(false);
-  const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
+  const [tableData, setTableData] = useState<any[]>([]);
 
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
@@ -29,20 +40,31 @@ const SalesLedger = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
+  // ✅ Rows + Font controls (like your screenshot)
+  const [rowsPerPage, setRowsPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
+
+  // ✅ Print
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: 'Sales Ledger',
+  });
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
   }, []);
 
-useEffect(() => {
-  if (!ledgerData.isLoading) {
-    if (Array.isArray(ledgerData?.data)) {
-      setTableData(ledgerData.data);
-    } else {
-      setTableData([]); // 🔥 CLEAR OLD DATA
+  useEffect(() => {
+    if (!ledgerData.isLoading) {
+      if (Array.isArray(ledgerData?.data)) {
+        setTableData(ledgerData.data);
+      } else {
+        setTableData([]); // 🔥 CLEAR OLD DATA
+      }
     }
-  }
-}, [ledgerData.isLoading, ledgerData.data]);
+  }, [ledgerData.isLoading, ledgerData.data]);
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
@@ -57,8 +79,9 @@ useEffect(() => {
   };
 
   const handleActionButtonClick = () => {
-    const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
-    const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
+    const startD = dayjs(startDate).format('YYYY-MM-DD');
+    const endD = dayjs(endDate).format('YYYY-MM-DD');
+
     dispatch(
       getSalesLedger({
         branchId,
@@ -76,8 +99,10 @@ useEffect(() => {
       branchDdlData?.protectedData?.transactionDate
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
+
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
+
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
       setStartDate(parsedDate);
       setEndDate(parsedDate);
@@ -88,9 +113,11 @@ useEffect(() => {
   const selectedLedgerOptionHandler = (option: any) => {
     setLedgerAccount(option.value);
   };
+
   const selectedProduct = (option: any) => {
     setProductId(option.value);
   };
+
   const columns = [
     {
       key: 'sl_number',
@@ -118,32 +145,34 @@ useEffect(() => {
       cellClass: 'align-center',
       render: (row: any) => {
         const coaName = getRelevantCoaName(row);
+        const details = row?.sales_master?.details ?? [];
+        const remarks =
+          row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]
+            ?.remarks ?? '';
 
         return (
           <div className="min-w-52 break-words align-center">
-            {/* Product */}
-            {(row?.sales_master?.details ?? []).map(
-              (detail: any, index: number) => (
-                <div key={index}>
-                  {detail?.product?.name}
-                </div>
-              ),
+            {/* ✅ Product list (safe + category like Purchase print) */}
+            {Array.isArray(details) &&
+              details.length > 0 &&
+              details.map((detail: any, i: number) => {
+                const categoryName = detail?.product?.category?.name ?? '';
+                const productName = detail?.product?.name ?? '';
+                return (
+                  <div key={detail?.id ?? i} className="leading-normal">
+                    {String(stockReportType) === '1' && categoryName
+                      ? `${categoryName} `
+                      : ''}
+                    {productName}
+                  </div>
+                );
+              })}
+
+            {coaName && (
+              <div className="text-sm mt-1 font-semibold">{coaName}</div>
             )}
 
-            {/* ✅ Final COA name */}
-            {coaName && (
-              <div className="text-sm mt-1 font-semibold">
-                {coaName}
-              </div>
-            )}
-            {/* Remarks */}
-            <div className="">
-              {
-                row?.acc_transaction_master?.[0]
-                  ?.acc_transaction_details?.[0]
-                  ?.remarks
-              }
-            </div>
+            {remarks ? <div className="">{remarks}</div> : null}
           </div>
         );
       },
@@ -154,11 +183,7 @@ useEffect(() => {
       headerClass: 'text-left',
       cellClass: 'text-left align-center',
       width: '120px',
-      render: (row: any) => (
-        <>
-          <div>{row?.sales_master?.vehicle_no}</div>
-        </>
-      ),
+      render: (row: any) => <div>{row?.sales_master?.vehicle_no}</div>,
     },
     {
       key: 'quantity',
@@ -168,16 +193,11 @@ useEffect(() => {
       width: '120px',
       render: (row: any) => (
         <>
-          {(row?.sales_master?.details ?? []).map(
-            (detail: any, index: number) => (
-              <div key={index}>
-                <div>
-                  {thousandSeparator(detail?.quantity, 0)}{' '}
-                  {detail?.product?.unit?.name}
-                </div>
-              </div>
-            ),
-          )}
+          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
+            <div key={detail?.id ?? index}>
+              {thousandSeparator(detail?.quantity, 0)} {detail?.product?.unit?.name}
+            </div>
+          ))}
         </>
       ),
     },
@@ -189,13 +209,11 @@ useEffect(() => {
       cellClass: 'text-right align-center',
       render: (row: any) => (
         <>
-          {(row?.sales_master?.details ?? []).map(
-            (detail: any, index: number) => (
-              <div key={index}>
-                <div>{thousandSeparator(detail?.sales_price, 2)}</div>
-              </div>
-            ),
-          )}
+          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
+            <div key={detail?.id ?? index}>
+              {thousandSeparator(detail?.sales_price, 2)}
+            </div>
+          ))}
         </>
       ),
     },
@@ -207,18 +225,14 @@ useEffect(() => {
       cellClass: 'text-right align-center',
       render: (row: any) => (
         <>
-          {(row?.sales_master?.details ?? []).map(
-            (detail: any, index: number) => (
-              <div key={index}>
-                <div>
-                  {thousandSeparator(
-                    Math.floor(detail?.quantity * detail?.sales_price),
-                    0,
-                  )}
-                </div>
-              </div>
-            ),
-          )}
+          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
+            <div key={detail?.id ?? index}>
+              {thousandSeparator(
+                Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0)),
+                0,
+              )}
+            </div>
+          ))}
         </>
       ),
     },
@@ -227,18 +241,16 @@ useEffect(() => {
       header: 'Discount',
       headerClass: 'text-right',
       cellClass: 'text-right',
+      width: '120px',
       render: (row: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
           ? row.acc_transaction_master
           : row?.acc_transaction_master
-            ? [row.acc_transaction_master]
-            : [];
+          ? [row.acc_transaction_master]
+          : [];
 
-        // collect all details (works without flatMap)
         const allDetails = masters.reduce((acc: any[], m: any) => {
-          if (Array.isArray(m?.acc_transaction_details)) {
-            acc.push(...m.acc_transaction_details);
-          }
+          if (Array.isArray(m?.acc_transaction_details)) acc.push(...m.acc_transaction_details);
           return acc;
         }, []);
 
@@ -250,40 +262,51 @@ useEffect(() => {
           return Number.isFinite(n) ? n : NaN;
         };
 
-        const discountDetail = allDetails.find((d: any) => d?.coa4_id === 23);
-        const value = parseNumber(discountDetail?.debit);
+        const totalDiscount = allDetails
+          .filter((d: any) => d?.coa4_id === 23)
+          .reduce((s: number, d: any) => {
+            const n = parseNumber(d?.debit);
+            return s + (Number.isFinite(n) ? n : 0);
+          }, 0);
 
-        const display = Number.isFinite(value)
-          ? thousandSeparator(value, 0)
-          : '-';
-        return <div className="text-right">{display}</div>;
+        return <div className="text-right">{totalDiscount ? thousandSeparator(totalDiscount, 0) : '-'}</div>;
       },
-      width: '120px',
     },
     {
-      key: 'acc_transaction_master',
+      key: 'received',
       header: 'Received',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => {
-        const transaction = row?.acc_transaction_master?.find(
-          (
-            tm:
-              | {
-                acc_transaction_details?: {
-                  coa4_id?: number;
-                  debit?: string;
-                }[];
-              }
-              | undefined,
-          ) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
-        );
-        const debitValue = transaction?.acc_transaction_details?.[0]?.debit
-          ? thousandSeparator(transaction.acc_transaction_details[0].debit, 0)
-          : '-';
-        return <div className="text-right">{debitValue}</div>;
-      },
       width: '120px',
+      render: (row: any) => {
+        const masters = Array.isArray(row?.acc_transaction_master)
+          ? row.acc_transaction_master
+          : row?.acc_transaction_master
+          ? [row.acc_transaction_master]
+          : [];
+
+        const allDetails = masters.reduce((acc: any[], m: any) => {
+          if (Array.isArray(m?.acc_transaction_details)) acc.push(...m.acc_transaction_details);
+          return acc;
+        }, []);
+
+        const parseNumber = (v: any) => {
+          if (v == null) return NaN;
+          if (typeof v === 'number') return v;
+          const cleaned = String(v).replace(/[^\d.-]/g, '');
+          const n = Number(cleaned);
+          return Number.isFinite(n) ? n : NaN;
+        };
+
+        const totalReceived = allDetails
+          .filter((d: any) => d?.coa4_id === 17)
+          .reduce((s: number, d: any) => {
+            const n = parseNumber(d?.debit);
+            return s + (Number.isFinite(n) ? n : 0);
+          }, 0);
+
+        return <div className="text-right">{totalReceived ? thousandSeparator(totalReceived, 0) : '-'}</div>;
+      },
     },
     {
       key: 'balance',
@@ -295,13 +318,11 @@ useEffect(() => {
         const masters = Array.isArray(row?.acc_transaction_master)
           ? row.acc_transaction_master
           : row?.acc_transaction_master
-            ? [row.acc_transaction_master]
-            : [];
+          ? [row.acc_transaction_master]
+          : [];
 
         const allDetails = masters.reduce((acc: any[], m: any) => {
-          if (Array.isArray(m?.acc_transaction_details)) {
-            acc.push(...m.acc_transaction_details);
-          }
+          if (Array.isArray(m?.acc_transaction_details)) acc.push(...m.acc_transaction_details);
           return acc;
         }, []);
 
@@ -313,12 +334,10 @@ useEffect(() => {
           return Number.isFinite(n) ? n : 0;
         };
 
-        // payment (coa4_id = 17)
         const payment = allDetails
           .filter((d: any) => d?.coa4_id === 17)
           .reduce((s: number, d: any) => s + parseNumber(d.debit), 0);
 
-        // discount (coa4_id = 23)
         const discount = allDetails
           .filter((d: any) => d?.coa4_id === 23)
           .reduce((s: number, d: any) => s + parseNumber(d.debit), 0);
@@ -326,14 +345,12 @@ useEffect(() => {
         const total = parseNumber(row?.sales_master?.total);
         const balance = total - payment - discount;
 
-        return (
-          <div className="text-right">{thousandSeparator(balance, 0)}</div>
-        );
+        return <div className="text-right">{thousandSeparator(balance, 0)}</div>;
       },
     },
   ];
 
-  const ledgerCalc = new SalesLedgerCalculator(tableData || []);
+  const ledgerCalc = useMemo(() => new SalesLedgerCalculator(tableData || []), [tableData]);
   const totalQuantity = ledgerCalc.getTotalQuantity();
   const totalPayment = ledgerCalc.getTotalPayment();
   const grandTotal = ledgerCalc.getGrandTotal();
@@ -343,11 +360,11 @@ useEffect(() => {
   return (
     <div className="">
       <HelmetTitle title={'Sales Ledger'} />
+
       <div className="">
         <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-4 gap-y-2 mb-2">
           <div className="">
             <div>
-              {' '}
               <label htmlFor="">Select Branch</label>
             </div>
             <div>
@@ -359,14 +376,17 @@ useEffect(() => {
               />
             </div>
           </div>
+
           <div className="">
             <label htmlFor="">Select Account</label>
             <DdlMultiline acType={''} onSelect={selectedLedgerOptionHandler} />
           </div>
+
           <div className="">
             <label htmlFor="">Select Product</label>
             <ProductDropdown onSelect={selectedProduct} />
           </div>
+
           <div className="sm:grid md:flex gap-x-3 ">
             <div className="w-full">
               <label htmlFor="">Start Date</label>
@@ -377,6 +397,7 @@ useEffect(() => {
                 setSelectedDate={setStartDate}
               />
             </div>
+
             <div className="w-full">
               <label htmlFor="">End Date</label>
               <InputDatePicker
@@ -386,17 +407,52 @@ useEffect(() => {
                 setSelectedDate={setEndDate}
               />
             </div>
-            <div className="mt-1 md:mt-6 w-full">
+
+            {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
+            <div className="mt-1 md:mt-6 w-full flex items-center gap-2">
+              <div className="flex gap-2">
+                <div className="w-16">
+                  <label className="block text-xs mb-1">Rows</label>
+                  <input
+                    type="number"
+                    value={rowsPerPage}
+                    onChange={(e) => setRowsPerPage(clampInt(e.target.value, 1, 200, 12))}
+                    className="w-full h-9 px-2 text-sm border rounded"
+                    min={1}
+                    max={200}
+                  />
+                </div>
+
+                <div className="w-16">
+                  <label className="block text-xs mb-1">Font</label>
+                  <input
+                    type="number"
+                    value={fontSize}
+                    onChange={(e) => setFontSize(clampInt(e.target.value, 6, 30, 12))}
+                    className="w-full h-9 px-2 text-sm border rounded"
+                    min={6}
+                    max={30}
+                  />
+                </div>
+              </div>
+
               <ButtonLoading
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
                 label="Run"
                 className="pt-[0.45rem] pb-[0.45rem] w-full"
               />
+
+              <PrintButton
+                onClick={handlePrint}
+                className="pt-[0.45rem] pb-[0.45rem]"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
             </div>
           </div>
         </div>
       </div>
+
       <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />
@@ -412,6 +468,19 @@ useEffect(() => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ✅ Hidden print component */}
+      <div className="hidden">
+        <SalesLedgerPrint
+          ref={printRef}
+          rows={tableData || []}
+          title="Sales Ledger"
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
+          startDate={startDate ? dayjs(startDate).format('YYYY-MM-DD') : ''}
+          endDate={endDate ? dayjs(endDate).format('YYYY-MM-DD') : ''}
+        />
       </div>
     </div>
   );
