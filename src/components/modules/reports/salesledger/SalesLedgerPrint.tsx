@@ -6,6 +6,7 @@ import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import SalesLedgerCalculator from "../../../utils/calculators/SalesLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
+import { formatDateUsdToBd, formatLongDateUsdToBd } from "../../../utils/utils-functions/formatDate";
 
 type Props = {
   rows: any[];
@@ -150,7 +151,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                 <div className="mt-2 grid grid-cols-1 gap-1 text-xs">
                   <div>
                     <span className="font-semibold">Report Date:</span>{" "}
-                    {startText?.toString()} {endText ? `to ${endText}` : ""}
+                    {startText?.toString()} { formatLongDateUsdToBd(endText.toString()) ? `to ${ formatLongDateUsdToBd(endText.toString())}` : ""}
                   </div>
 
                   {(branchName || accountName || productName) && (
