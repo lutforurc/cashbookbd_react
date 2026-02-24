@@ -275,7 +275,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       style={{ fontSize: getProductFs(label, fs) }}
                                     >
                                       {thousandSeparator(
-                                        (detail?.purchase_price || 0) * (detail?.quantity || 0),
+                                        (detail?.purchase_price || 0) ,
                                         0
                                       )}
                                     </div>
@@ -349,7 +349,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                     <div className="flex justify-end gap-6 font-bold text-xs">
                       <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
                       <div>Total: {thousandSeparator(totalPayment, 0)}</div>
-                      <div>Discount: {thousandSeparator(discountTotal, 0)}</div>
+                      { discountTotal > 0 && <div>Discount: {thousandSeparator(discountTotal, 0)}</div>}
                       <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
                     </div>
                   </div>
