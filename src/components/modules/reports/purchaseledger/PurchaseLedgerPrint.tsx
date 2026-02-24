@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import PurchaseLedgerCalculator from "../../../utils/calculators/PurchaseLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
+import PrintStyles from "../../../utils/utils-functions/PrintStyles";
+import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 
 type Props = {
   rows: any[];
@@ -11,179 +13,310 @@ type Props = {
   productName?: string;
   startDate?: Date | string | null;
   endDate?: Date | string | null;
+
+  // same style controls like CashBookPrint
+  title?: string; // default "Purchase Ledger"
+  rowsPerPage?: number; // default 8
+  fontSize?: number; // default 9
 };
 
-const cellStyle: React.CSSProperties = {
-  border: "1px solid #111",
-  padding: "4px 6px",
-  verticalAlign: "top",
-};
-
-const thStyle: React.CSSProperties = {
-  ...cellStyle,
-  fontWeight: 700,
-  textAlign: "center",
+const chunkRows = <T,>(data: T[], size: number): T[][] => {
+  if (!Array.isArray(data)) return [[]];
+  if (size <= 0) return [data];
+  const out: T[][] = [];
+  for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
+  return out;
 };
 
 const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
-  ({ rows = [], branchName, accountName, productName, startDate, endDate }, ref) => {
+  (
+    {
+      rows = [],
+      branchName,
+      accountName,
+      productName,
+      startDate,
+      endDate,
+      title = "Purchase Ledger",
+      rowsPerPage = 8,
+      fontSize,
+    },
+    ref
+  ) => {
+    const rowsArr: any[] = Array.isArray(rows) ? rows : [];
+    const pages = chunkRows(rowsArr, rowsPerPage);
+    const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
+
     const startText = startDate ? dayjs(startDate).format("DD-MMM-YYYY") : "";
     const endText = endDate ? dayjs(endDate).format("DD-MMM-YYYY") : "";
 
-    const purchaseCalc = useMemo(() => new PurchaseLedgerCalculator(rows || []), [rows]);
+    const purchaseCalc = useMemo(
+      () => new PurchaseLedgerCalculator(rowsArr || []),
+      [rowsArr]
+    );
     const totalQuantity = purchaseCalc.getTotalQuantity();
     const totalPayment = purchaseCalc.getTotalPayment();
     const discountTotal = purchaseCalc.getDiscountTotal();
     const grandTotal = purchaseCalc.getGrandTotal();
 
     return (
-      <div ref={ref} style={{ padding: 12, fontSize: 11, color: "#000" }}>
-        {/* Print-only CSS */}
-        <style>
-          {`
-            @media print {
-              .no-print { display: none !important; }
-              @page { size: auto; margin: 12mm; }
-            }
-          `}
-        </style>
+      <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
+        <PrintStyles />
 
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 10 }}>
-          <div style={{ fontSize: 16, fontWeight: 800 }}>Purchase Ledger</div>
-          <div style={{ marginTop: 4 }}>
-            <span style={{ fontWeight: 700 }}>Branch:</span> {branchName || "-"}
-            {"  |  "}
-            <span style={{ fontWeight: 700 }}>Date:</span> {startText} {endText ? `to ${endText}` : ""}
-          </div>
+        {pages.map((pageRows, pIdx) => {
+          return (
+            <div key={pIdx} className="print-page">
+              <PadPrinting />
 
-          <div style={{ marginTop: 2 }}>
-            <span style={{ fontWeight: 700 }}>Account:</span> {accountName || "-"}
-            {"  |  "}
-            <span style={{ fontWeight: 700 }}>Product:</span> {productName || "All"}
-          </div>
-        </div>
+              {/* Per-page header (prints on every page) */}
+              <div className="mb-4">
+                <h1 className="text-2xl font-bold text-center">{title}</h1>
 
-        {/* Table */}
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th style={{ ...thStyle, width: 60 }}>Sl</th>
-              <th style={{ ...thStyle, width: 130 }}>Chal. No. & Date</th>
-              <th style={{ ...thStyle, width: 120 }}>Vehicle Number</th>
-              <th style={thStyle}>Description</th>
-              <th style={{ ...thStyle, width: 110, textAlign: "right" }}>Quantity</th>
-              <th style={{ ...thStyle, width: 90, textAlign: "right" }}>Rate</th>
-              <th style={{ ...thStyle, width: 110, textAlign: "right" }}>Total</th>
-              <th style={{ ...thStyle, width: 110, textAlign: "right" }}>Discount</th>
-              <th style={{ ...thStyle, width: 110, textAlign: "right" }}>Payment</th>
-            </tr>
-          </thead>
+                <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
+                  <div>
+                    <span className="font-semibold">Report Date:</span>{" "}
+                    {startText || "-"} {endText ? `to ${endText}` : ""}
+                  </div>
+                </div>
+              </div>
+              <div className="w-full overflow-hidden">
+                <table className="w-full table-fixed border-collapse">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-10 text-center"
+                      >
+                        Sl
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-28 text-center"
+                      >
+                        Chal. No. &amp; Date
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2"
+                      >
+                        Description
+                      </th>
+                      
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-20 text-right"
+                      >
+                        Qty & Rate
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-24 text-right"
+                      >
+                        Dis. & Total
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-20 text-right"
+                      >
+                        Discount
+                      </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-20 text-right"
+                      >
+                        Payment
+                      </th>
+                    </tr>
+                  </thead>
 
-          <tbody>
-            {(rows || []).map((row: any, idx: number) => {
-              // Discount (coa4_id === 40)
-              const discountTrx = row?.acc_transaction_master?.find((tm: any) =>
-                tm?.acc_transaction_details?.some((d: any) => d?.coa4_id === 40)
-              );
-              const discountValue =
-                discountTrx?.acc_transaction_details?.find((d: any) => d?.coa4_id === 40)?.credit;
+                  <tbody>
+                    {pageRows.length ? (
+                      pageRows.map((row: any, idx: number) => {
+                        // Discount (coa4_id === 40)
+                        const discountTrx = row?.acc_transaction_master?.find(
+                          (tm: any) =>
+                            tm?.acc_transaction_details?.some(
+                              (d: any) => d?.coa4_id === 40
+                            )
+                        );
+                        const discountValue =
+                          discountTrx?.acc_transaction_details?.find(
+                            (d: any) => d?.coa4_id === 40
+                          )?.credit;
 
-              // Payment (coa4_id === 17)
-              const paymentTrx = row?.acc_transaction_master?.find((tm: any) =>
-                tm?.acc_transaction_details?.some((d: any) => d?.coa4_id === 17)
-              );
-              const paymentValue =
-                paymentTrx?.acc_transaction_details?.find((d: any) => d?.coa4_id === 17)?.credit;
+                        // Payment (coa4_id === 17)
+                        const paymentTrx = row?.acc_transaction_master?.find(
+                          (tm: any) =>
+                            tm?.acc_transaction_details?.some(
+                              (d: any) => d?.coa4_id === 17
+                            )
+                        );
+                        const paymentValue =
+                          paymentTrx?.acc_transaction_details?.find(
+                            (d: any) => d?.coa4_id === 17
+                          )?.credit;
 
-              const coaName = getRelevantCoaName(row);
+                        const coaName = getRelevantCoaName(row);
+                        const details = row?.purchase_master?.details || []; 
 
-              return (
-                <tr key={row?.id ?? idx}>
-                  <td style={{ ...cellStyle, textAlign: "center" }}>
-                    {row?.sl_number ?? idx + 1}
-                  </td>
+                        return (
+                          <tr
+                            key={row?.id ?? `${pIdx}-${idx}`}
+                            className="avoid-break align-top"
+                          >
+                            <td
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1 text-center"
+                            >
+                              {row?.sl_number ?? idx + 1 + pIdx * rowsPerPage}
+                            </td>
 
-                  <td style={cellStyle}>
-                    <div>{row?.challan_no || ""}</div>
-                    <div>{row?.challan_date || ""}</div>
-                  </td>
+                            <td
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1 text-center leading-normal"
+                            >
+                              <div className={`text-[${fs - 2}px]`}>
+                                {row?.challan_no || ""}
+                              </div>
+                              <div className={`text-[${fs}px]`}>
+                                {row?.challan_date || ""}
+                              </div>
+                            </td>
 
-                  <td style={cellStyle}>
-                    {row?.purchase_master?.vehicle_no || ""}
-                  </td>
+                            <td
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1"
+                            >
+                              <div className="w-full max-w-4xl leading-normal">
+                                {/* Product list */}
+                                {details.length ? (
+                                  details.map((detail: any, i: number) => (
+                                    <div key={i} className="leading-normal">
+                                      {detail?.product?.category?.name || ""} {detail?.product?.name || ""}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="text-gray-500">-</div>
+                                )}
+                                {/* COA Name */}
+                                {coaName ? (
+                                  <div className="font-semibold">
+                                    {coaName}
+                                  </div>
+                                ) : null}
+                              </div>
+                            </td>
+                            <td
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                            >
+                              <span className="block">
+                                {details.length
+                                ? details.map((detail: any, i: number) => (
+                                    <div key={i}>
+                                      {thousandSeparator(detail?.quantity, 0)}{" "}
+                                      {detail?.product?.unit?.name || ""}
+                                    </div>
+                                  ))
+                                : "-"}
+                                </span>
 
-                  <td style={cellStyle}>
-                    {/* Product list */}
-                    {(row?.purchase_master?.details || []).map((detail: any, i: number) => (
-                      <div key={i}>{detail?.product?.name || ""}</div>
-                    ))}
+                              {details.length
+                                ? details.map((detail: any, i: number) => (
+                                    <div key={i}>
+                                      {thousandSeparator(
+                                        detail?.purchase_price,
+                                        0
+                                      )}
+                                    </div>
+                                  ))
+                                : "-"}
+                            </td>
 
-                    {/* COA Name */}
-                    {coaName ? (
-                      <div style={{ marginTop: 4, fontWeight: 700 }}>{coaName}</div>
-                    ) : null}
+                            <td
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                            >
+                              {details.length
+                                ? details.map((detail: any, i: number) => (
+                                    <div key={i}>
+                                      {thousandSeparator(
+                                        (detail?.purchase_price || 0) *
+                                          (detail?.quantity || 0),
+                                        0
+                                      )}
+                                    </div>
+                                  ))
+                                : "-"}
+                            </td>
 
-                    {/* Notes */}
-                    {row?.purchase_master?.notes ? (
-                      <div style={{ marginTop: 4 }}>{row?.purchase_master?.notes}</div>
-                    ) : null}
-                  </td>
+                            <td
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                            >
+                              {discountValue
+                                ? thousandSeparator(discountValue, 0)
+                                : "-"}
+                            </td>
 
-                  <td style={{ ...cellStyle, textAlign: "right" }}>
-                    {(row?.purchase_master?.details || []).map((detail: any, i: number) => (
-                      <div key={i}>
-                        {thousandSeparator(detail?.quantity, 0)} {detail?.product?.unit?.name || ""}
-                      </div>
-                    ))}
-                  </td>
+                            <td
+                              style={{ fontSize: fs }}
+                              className="border border-gray-900 px-2 py-1 text-right align-middle"
+                            >
+                              {paymentValue
+                                ? thousandSeparator(paymentValue, 0)
+                                : "-"}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          className="border border-gray-900 px-3 py-6 text-center text-gray-500"
+                        >
+                          No data found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
 
-                  <td style={{ ...cellStyle, textAlign: "right" }}>
-                    {(row?.purchase_master?.details || []).map((detail: any, i: number) => (
-                      <div key={i}>{thousandSeparator(detail?.purchase_price, 2)}</div>
-                    ))}
-                  </td>
+                {/* Summary only on LAST page (CashBook style compatible) */}
+                {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
+                  <div className="mt-3 border-t border-gray-900 pt-2">
+                    <div className="flex justify-end gap-6 font-bold text-xs">
+                      <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
+                      <div>Total: {thousandSeparator(totalPayment, 0)}</div>
+                      <div>Discount: {thousandSeparator(discountTotal, 0)}</div>
+                      <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-                  <td style={{ ...cellStyle, textAlign: "right" }}>
-                    {(row?.purchase_master?.details || []).map((detail: any, i: number) => (
-                      <div key={i}>
-                        {thousandSeparator((detail?.purchase_price || 0) * (detail?.quantity || 0), 0)}
-                      </div>
-                    ))}
-                  </td>
+              <div
+                style={{ fontSize: fs }}
+                className="mt-auto text-right text-xs"
+              >
+                Page {pIdx + 1} of {pages.length}
+              </div>
 
-                  <td style={{ ...cellStyle, textAlign: "right" }}>
-                    {discountValue ? thousandSeparator(discountValue, 0) : "-"}
-                  </td>
+              {pIdx !== pages.length - 1 && <div className="page-break" />}
 
-                  <td style={{ ...cellStyle, textAlign: "right" }}>
-                    {paymentValue ? thousandSeparator(paymentValue, 0) : "-"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        {/* Summary */}
-        {rows?.length > 0 && (
-          <div style={{ marginTop: 10, borderTop: "1px solid #111", paddingTop: 8 }}>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 18, fontWeight: 800 }}>
-              <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
-              <div>Total: {thousandSeparator(totalPayment, 0)}</div>
-              <div>Discount: {thousandSeparator(discountTotal, 0)}</div>
-              <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
             </div>
-          </div>
-        )}
+          );
+        })}
 
-        {/* Footer */}
-        <div style={{ marginTop: 10, fontSize: 10 }}>
-          Printed: {dayjs().format("DD-MMM-YYYY hh:mm A")}
+        <div className="mt-2 text-xs text-gray-900">
+          * This document is system generated. Printed:{" "}
+          {dayjs().format("DD-MMM-YYYY hh:mm A")}
         </div>
       </div>
     );
   }
 );
 
+PurchaseLedgerPrint.displayName = "PurchaseLedgerPrint";
 export default PurchaseLedgerPrint;

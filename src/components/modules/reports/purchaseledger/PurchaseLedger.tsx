@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -16,8 +16,9 @@ import ImagePopup from '../../../utils/others/ImagePopup';
 import { FaRotateRight } from 'react-icons/fa6';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
-import PurchaseLedgerPrint from './PurchaseLedgerPrint'; 
+import PurchaseLedgerPrint from './PurchaseLedgerPrint';
 import { useReactToPrint } from 'react-to-print';
+import InputElement from '../../../utils/fields/InputElement';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -33,7 +34,9 @@ const PurchaseLedger = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [hideIcon, setHideIcon] = useState<boolean>(true);
-  const printRef = useRef<HTMLDivElement>(null); 
+  const printRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
 
 
   useEffect(() => {
@@ -98,6 +101,8 @@ const PurchaseLedger = (user: any) => {
       setProductId(option.value); // Normal select
     }
   };
+
+
 
   const columns = [
     {
@@ -195,7 +200,7 @@ const PurchaseLedger = (user: any) => {
       ),
       width: '100px',
     },
-   
+
     {
       key: 'total',
       header: 'Total',
@@ -267,7 +272,7 @@ const PurchaseLedger = (user: any) => {
     },
 
 
-    
+
     {
       key: 'voucher_image',
       header: 'Voucher',
@@ -287,23 +292,41 @@ const PurchaseLedger = (user: any) => {
   ];
 
   const handlePrint = useReactToPrint({
-      content: () => {
-        if (!printRef.current) {
-          // alert("Nothing to print: Ref not ready");
-          return null;
-        }
-        return printRef.current;
-      },
-      documentTitle: 'Purchase Ledger',
-      // onAfterPrint: () => alert('Printed successfully!'),
-      removeAfterPrint: true,
-    });
+    content: () => {
+      if (!printRef.current) {
+        // alert("Nothing to print: Ref not ready");
+        return null;
+      }
+      return printRef.current;
+    },
+    documentTitle: 'Purchase Ledger',
+    // onAfterPrint: () => alert('Printed successfully!'),
+    removeAfterPrint: true,
+  });
 
-const purchaseCalc = new PurchaseLedgerCalculator(tableData || []);
-const totalQuantity = purchaseCalc.getTotalQuantity();
-const totalPayment = purchaseCalc.getTotalPayment();
-const grandTotal = purchaseCalc.getGrandTotal();
-const discountTotal = purchaseCalc.getDiscountTotal();
+    const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    if (!Number.isFinite(v)) return;
+
+    // optional: min/max guard
+    const safe = Math.max(1, Math.min(100, v));
+    setPerPage(safe);
+  };
+
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    if (!Number.isFinite(v)) return;
+
+    // optional: min/max guard
+    const safe = Math.max(6, Math.min(30, v));
+    setFontSize(safe);
+  };
+
+  const purchaseCalc = new PurchaseLedgerCalculator(tableData || []);
+  const totalQuantity = purchaseCalc.getTotalQuantity();
+  const totalPayment = purchaseCalc.getTotalPayment();
+  const grandTotal = purchaseCalc.getGrandTotal();
+  const discountTotal = purchaseCalc.getDiscountTotal();
 
   return (
     <div className="">
@@ -363,6 +386,24 @@ const discountTotal = purchaseCalc.getDiscountTotal();
                 setSelectedDate={setEndDate}
               />
             </div>
+            <InputElement
+              id="perPage"
+              name="perPage"
+              label="Rows"
+              value={perPage.toString()}
+              onChange={handlePerPageChange}
+              type='text'
+              className="font-medium text-sm h-9 w-12"
+            />
+            <InputElement
+              id="fontSize"
+              name="fontSize"
+              label="Font"
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type='text'
+              className="font-medium text-sm h-9 w-12"
+            />
             <div className="mt-1 md:mt-6 w-full">
               <ButtonLoading
                 onClick={handleActionButtonClick}
@@ -371,6 +412,11 @@ const discountTotal = purchaseCalc.getDiscountTotal();
                 className="pt-[0.45rem] pb-[0.45rem] w-full"
               />
             </div>
+            <PrintButton
+              onClick={handlePrint}
+              label=""
+              className="mt-6  pt-[0.45rem] pb-[0.45rem] h-8"
+            />
           </div>
         </div>
       </div>
@@ -390,17 +436,17 @@ const discountTotal = purchaseCalc.getDiscountTotal();
         )}
       </div>
       <div className="hidden">
-          <PurchaseLedgerPrint
-            ref={printRef}
-            rows={tableData || []}
-            startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
-            endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
-            // title="Purchase Ledger"
-            rowsPerPage={Number(perPage)}
-            fontSize={Number(fontSize)}
-          />
- 
-        </div>
+        <PurchaseLedgerPrint
+          ref={printRef}
+          rows={tableData || []}
+          startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
+          endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
+          title="Purchase Ledger"
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+        />
+
+      </div>
     </div>
   );
 };
