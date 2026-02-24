@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -16,6 +16,8 @@ import ImagePopup from '../../../utils/others/ImagePopup';
 import { FaRotateRight } from 'react-icons/fa6';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import PurchaseLedgerPrint from './PurchaseLedgerPrint'; 
+import { useReactToPrint } from 'react-to-print';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -31,6 +33,8 @@ const PurchaseLedger = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [hideIcon, setHideIcon] = useState<boolean>(true);
+  const printRef = useRef<HTMLDivElement>(null); 
+
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -282,6 +286,19 @@ const PurchaseLedger = (user: any) => {
     },
   ];
 
+  const handlePrint = useReactToPrint({
+      content: () => {
+        if (!printRef.current) {
+          // alert("Nothing to print: Ref not ready");
+          return null;
+        }
+        return printRef.current;
+      },
+      documentTitle: 'Purchase Ledger',
+      // onAfterPrint: () => alert('Printed successfully!'),
+      removeAfterPrint: true,
+    });
+
 const purchaseCalc = new PurchaseLedgerCalculator(tableData || []);
 const totalQuantity = purchaseCalc.getTotalQuantity();
 const totalPayment = purchaseCalc.getTotalPayment();
@@ -372,6 +389,18 @@ const discountTotal = purchaseCalc.getDiscountTotal();
           </div>
         )}
       </div>
+      <div className="hidden">
+          <PurchaseLedgerPrint
+            ref={printRef}
+            rows={tableData || []}
+            startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
+            endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
+            // title="Purchase Ledger"
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
+          />
+ 
+        </div>
     </div>
   );
 };

@@ -301,5 +301,5 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
   },
 );
 
-StockBookPrintNormal.displayName = 'StockBookPrint';
+StockBookPrintNormal.displayName = 'StockBookPrintNormal';
 export default StockBookPrintNormal;
