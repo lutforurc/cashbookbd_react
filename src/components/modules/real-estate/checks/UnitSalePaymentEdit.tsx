@@ -320,10 +320,10 @@ export default function UnitSalePaymentEdit() {
     }
 
     // ✅ cheque + bank transfer both require receiver bank account
-    if (needsBankReceivedAccount && !form.coal4_id) {
-      toast.warning("Bank received account is required");
-      return false;
-    }
+    // if (needsBankReceivedAccount && !form.coal4_id) {
+    //   toast.warning("Bank received account is required");
+    //   return false;
+    // }
 
     if (isCheque) {
       if (!form.reference_no) {
@@ -388,10 +388,12 @@ export default function UnitSalePaymentEdit() {
         branch_name: form.branch_name || undefined,
 
         // ✅ send only when needed, normalize to number
-        coal4_id:
-          needsBankReceivedAccount && form.coal4_id
-            ? Number(form.coal4_id)
-            : undefined,
+        // coal4_id:
+        //   needsBankReceivedAccount && form.coal4_id
+        //     ? Number(form.coal4_id)
+        //     : undefined,
+
+        coal4_id: needsBankReceivedAccount ? (form.coal4_id ? Number(form.coal4_id) : null) : null,
 
         cheque_collect_status: isCheque ? form.cheque_collect_status || undefined : undefined,
         cheque_deposit_due_date: isCheque ? form.cheque_deposit_due_date || undefined : undefined,
