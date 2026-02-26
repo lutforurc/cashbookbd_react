@@ -284,7 +284,7 @@ export default function UnitSalePaymentList() {
     {
       key: "bank_name",
       // header: "Bank Name",
-       header: (
+      header: (
         <div>
           <div>Bank Name</div>
           <div>Branch Name</div>
@@ -293,11 +293,11 @@ export default function UnitSalePaymentList() {
       width: "160px",
       headerClass: "text-left",
       cellClass: "text-left",
-      render: (row: any) => 
-      <>
-      <div>{row?.bank_name ? row.bank_name : "-"}</div>
-      <div>{row?.branch_name ? row.branch_name : "-"}</div>
-      </>
+      render: (row: any) =>
+        <>
+          <div>{row?.bank_name ? row.bank_name : "-"}</div>
+          <div>{row?.branch_name ? row.branch_name : "-"}</div>
+        </>
     },
     {
       key: "amount",
@@ -349,19 +349,7 @@ export default function UnitSalePaymentList() {
       {isLoading ? <Loader /> : null}
 
       {/* FILTERS */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-2">
-        <div className="mt-1">
-          <InputElement
-            id="q"
-            name="q"
-            label="Search (Receipt / Ref)"
-            placeholder="Type receipt no or reference no"
-            className="h-8.5"
-            value={q}
-            onChange={(e: any) => setQ(e.target.value)}
-          />
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-2 ">
         <DropdownCommon
           id="payment_mode"
           name="payment_mode"
@@ -385,6 +373,17 @@ export default function UnitSalePaymentList() {
           className="h-[2.1rem] bg-transparent mt-1"
           data={CHEQUE_STATUSES}
         />
+        <div className="mt-1">
+          <InputElement
+            id="q"
+            name="q"
+            label="Search (Receipt / Ref)"
+            placeholder="Type receipt no or reference no"
+            className="h-8.5"
+            value={q}
+            onChange={(e: any) => setQ(e.target.value)}
+          />
+        </div>
         <div className="w-full mt-0 md:mt-2">
           <label className="block text-sm">Date From</label>
           <InputDatePicker
@@ -408,7 +407,7 @@ export default function UnitSalePaymentList() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
         <SelectOption
-          className="h-[2.0rem] bg-transparent mt-3"
+          className="h-8.5 bg-transparent "
           onChange={onPerPageChange}
           value={perPage}
         />
@@ -417,7 +416,7 @@ export default function UnitSalePaymentList() {
           onClick={handleSearch}
           buttonLoading={false}
           label="Search"
-          className="whitespace-nowrap text-center mr-0 mt-0 md:mt-3 h-8"
+          className="whitespace-nowrap text-center mr-0  h-8.5"
           icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
         />
 
@@ -425,13 +424,13 @@ export default function UnitSalePaymentList() {
           onClick={handleReset}
           buttonLoading={false}
           label="Reset"
-          className="whitespace-nowrap text-center mr-0 mt-0 md:mt-3 h-8"
+          className="whitespace-nowrap text-center mr-0  h-8.5"
           icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
         />
 
         <Link
           to="/dashboard"
-          className="text-nowrap justify-center mr-0 p-2 h-8 mt-0 md:mt-3"
+          className="text-nowrap justify-center mr-0 p-2 h-8.5 "
         >
           <FiArrowLeft className="mr-2" /> Home
         </Link>
