@@ -747,6 +747,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             pathname === routes.real_estate_floor_list ||
                             pathname === routes.real_estate_unit_types_list ||
                             pathname === routes.real_estate_floor_unit_list ||
+                            pathname === routes.unit_payment_list ||
+                            pathname === routes.real_estate_floor_unit_list ||
                             pathname === '/real-estate/project-list' ||
                             pathname.includes('/real-estate/add-area')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
@@ -766,6 +768,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+
+                          {hasPermission(permissions, 'check.register.view') && (
+                            <li>
+                              <NavLink
+                                // to="/admin/check-register"
+                                to={routes.unit_payment_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Check Register
+                              </NavLink>
+                            </li>
+                          )}
+
                           <li>
                             <NavLink
                               to="/real-estate/area-list"
@@ -997,20 +1015,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {hasPermission(permissions, 'check.register.view') && (
-                            <li>
-                              <NavLink
-                                // to="/admin/check-register"
-                                to={routes.unit_payment_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Check Register
-                              </NavLink>
-                            </li>
-                          )}
+                          
                           {hasPermission(permissions, 'branch.view') && (
                             <li>
                               <NavLink
