@@ -12,6 +12,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { buildingUnitList } from './unitSlice';
 import routes from '../../../services/appRoutes';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ActionButtons from '../../../utils/fields/ActionButton';
 
 const BuildingUnitsList = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -81,6 +82,18 @@ const BuildingUnitsList = ({ user }: any) => {
 
   const handleCreateUnit = () => {
     navigate(routes.real_estate_add_floor_unit);
+  };
+
+  const handleUnitEdit = (row: any) => {
+    // navigate(`${routes.real_estate_edit_floor_unit}/${row.id}`);
+    // or: navigate(`/real-estate/unit-edit/${row.id}`);
+  };
+
+  const handleToggle = (row: any) => {
+    // const newStatus = row.status === 1 ? 0 : 1;
+    // dispatch(branchStatus(row.id, newStatus)).then(() => {
+    //   dispatch(getBranch({ page, perPage, searchValue }));
+    // });
   };
 
   /* ---- Table Columns ---- */
@@ -164,9 +177,7 @@ const BuildingUnitsList = ({ user }: any) => {
           4: { text: "Sold", cls: "bg-red-100 text-red-800" },
           0: { text: "Inactive", cls: "bg-gray-100 text-gray-700" },
         };
-
         const s = map[row.status] ?? { text: "Unknown", cls: "bg-gray-100 text-gray-700" };
-
         return (
           <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${s.cls}`}>
             {s.text}
@@ -174,12 +185,35 @@ const BuildingUnitsList = ({ user }: any) => {
         );
       },
     },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => (
+        <>
+          <div>
+            <ActionButtons
+              row={row}
+              showEdit={true}
+              handleEdit={handleUnitEdit}
+              showDelete={false}
+              // handleDelete={handleBranchDelete}
+              showToggle={true}
+              handleToggle={() => handleToggle(row)}
+
+            // showConfirmId={showConfirmId}
+            // setShowConfirmId={setShowConfirmId}
+            />
+          </div>
+        </>
+      ),
+    },
   ];
 
   return (
     <div>
       <HelmetTitle title="List of Units" />
-
       <div className="flex mb-1 justify-between">
         <div className='flex'>
           <SelectOption onChange={handleSelectChange} className="mr-2" />

@@ -65,11 +65,9 @@ const BranchList = () => {
 
   const handleToggle = (row: any) => {
     const newStatus = row.status === 1 ? 0 : 1;
-
     dispatch(branchStatus(row.id, newStatus)).then(() => {
       dispatch(getBranch({ page, perPage, searchValue }));
     });
- 
   };
 
   const columns = [

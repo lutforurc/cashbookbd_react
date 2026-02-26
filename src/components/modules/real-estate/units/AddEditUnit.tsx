@@ -223,18 +223,20 @@ const handleUnitTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
           onClick={handleSave}
           buttonLoading={buttonLoading}
           label={isEdit ? "Update" : "Save"}
-          icon={<FiSave className="ml-2 text-lg" />}
+          className="p-2"
+          icon={<FiSave className="mr-2 text-lg" />}
         />
 
         <ButtonLoading
           onClick={handleReset}
           buttonLoading={false}
           label="Reset"
-          icon={<FiRefreshCcw className="ml-2 text-lg" />}
+          className="p-2"
+          icon={<FiRefreshCcw className="mr-2 text-lg" />}
         />
 
         <Link
-          to={`/real-estate/flats/${flatId}/units`}
+          to={`/real-estate/unit/list`}
           className="flex items-center justify-center"
         >
           <FiArrowLeft className="mr-2" /> Back
