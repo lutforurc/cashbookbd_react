@@ -315,7 +315,9 @@ export default function UnitSalePaymentList() {
       width: "120px",
       headerClass: "text-left",
       cellClass: "text-left",
-      render: (row: any) => <div>{humanizeEnumText(row?.cheque_collect_status)}</div>,
+      render: (row: any) => <div>
+        { row.payment_mode === "CASH" && row?.cheque_collect_status === "NOT_APPLICABLE" ? "Collected" : humanizeEnumText(row?.cheque_collect_status)}
+        </div>,
     },
     {
       key: 'action',
