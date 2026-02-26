@@ -286,6 +286,7 @@ const LoanLedger = (user: any) => {
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
+              icon=""
               className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
             />
             <PrintButton

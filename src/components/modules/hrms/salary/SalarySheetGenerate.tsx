@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiSave, FiPrinter, FiTrash2 } from "react-icons/fi";
+import { FiSave, FiPrinter, FiTrash2, FiSearch } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
@@ -372,6 +372,7 @@ const SalarySheetGenerate = ({ user }: any) => {
             buttonLoading={searchLoading}
             disabled={searchLoading}
             label="Search"
+            icon={<FiSearch className="mr-2" />}
             className="whitespace-nowrap p-2 ml-2 mr-2"
           />
         </div>
