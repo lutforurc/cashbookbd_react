@@ -379,7 +379,7 @@ export default function UnitSalePaymentList() {
           <InputElement
             id="q"
             name="q"
-            label="Search (Receipt / Ref)"
+            label="Search (Receipt, Name, Mobile)"
             placeholder="Type receipt no or reference no"
             className="h-8.5"
             value={q}
