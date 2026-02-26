@@ -417,6 +417,7 @@ const ProductStock = (user: any) => {
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
                   label="Run"
+                  icon=""
                   className="h-8 w-full"
                 />
               </div>

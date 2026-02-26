@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiEdit2, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiEdit2, FiPlus, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -292,7 +292,8 @@ const CustomerSupplier = () => {
         </div>
 
         <Link to="/customer-supplier/create" className="text-nowrap">
-          New Customer
+          { <FiPlus className="inline mr-1" /> }
+          Add Customer
         </Link>
       </div>
 

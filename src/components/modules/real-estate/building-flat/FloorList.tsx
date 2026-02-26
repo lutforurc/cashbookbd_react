@@ -155,6 +155,7 @@ const FloorList = ({ user }: any) => {
           className="h-9"
           onClick={handleCreateFloor}
           label="New Floor"
+          icon=""
         />
       </div>
 

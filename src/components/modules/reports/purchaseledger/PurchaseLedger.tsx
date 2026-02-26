@@ -417,6 +417,7 @@ const PurchaseLedger = (user: any) => {
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
                   label="Run"
+                  icon=""
                   className="pt-[0.45rem] pb-[0.45rem] w-full h-9"
                 />
               </div>

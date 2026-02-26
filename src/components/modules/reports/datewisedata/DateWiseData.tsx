@@ -264,6 +264,7 @@ const DateWiseData = (user: any) => {
       onClick={handleRun}
       buttonLoading={buttonLoading}
       label="Run"
+      icon=""
       className="w-full h-8 whitespace-nowrap"
     />
   </div>

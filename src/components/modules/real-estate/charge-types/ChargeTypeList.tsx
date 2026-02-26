@@ -248,7 +248,7 @@ const ChargeTypeList = ({ user }: any) => {
           </div>
         </div>
 
-        <ButtonLoading className="h-9" onClick={handleCreate} label="New Charge Type" />
+        <ButtonLoading className="h-9" icon="" onClick={handleCreate} label="New Charge Type" />
       </div>
 
       <div className="relative no-scrollbar">

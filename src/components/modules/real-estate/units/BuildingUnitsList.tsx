@@ -198,6 +198,7 @@ const BuildingUnitsList = ({ user }: any) => {
           className="h-9"
           onClick={handleCreateUnit}
           label="New Unit"
+          icon=""
         />
       </div>
 

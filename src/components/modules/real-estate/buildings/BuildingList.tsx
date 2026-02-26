@@ -208,6 +208,7 @@ const BuildingList = ({ user }: any) => {
           onClick={handleSearchButton}
           // buttonLoading={buttonLoading}
           label="New Project"
+          icon=""
         />
       </div>
       <div className="relative no-scrollbar">

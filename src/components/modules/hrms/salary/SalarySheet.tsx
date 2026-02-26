@@ -293,6 +293,7 @@ const SalarySheet = ({ user }: any) => {
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
+              icon=""
               className="whitespace-nowrap"
             />
           </div>

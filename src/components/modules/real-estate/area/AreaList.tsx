@@ -79,6 +79,7 @@ const AreaList = () => {
           onClick={handleSearchButton}
           buttonLoading={buttonLoading}
           label="New Location"
+          icon=""
         />
       </div>
       {realEstateArea.isLoading ? <Loader /> : ''}

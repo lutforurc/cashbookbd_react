@@ -232,6 +232,7 @@ const DueList = (user: any) => {
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
+              icon=""
               label="Run"
               className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
             />

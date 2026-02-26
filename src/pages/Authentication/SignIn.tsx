@@ -9,6 +9,7 @@ import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { getSettings } from '../../components/modules/settings/settingsSlice';
 import coverImg from '../../images/cover/cover-02.png';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { ButtonLoading } from '../UiElements/CustomButtons';
 
 const SignIn: React.FC = () => {
   const { isLoading, errors, isLoggedIn } = useSelector((state: any) => state.auth);
@@ -214,11 +215,8 @@ const SignIn: React.FC = () => {
                   </div>
 
                   <div className="mb-2">
-                    <input
-                      type="submit"
-                      value="Sign In"
-                      className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-3 text-white transition hover:bg-opacity-90"
-                    />
+
+                    <ButtonLoading icon="" type="submit" label='Sign In' className='p-3 w-full' />
                   </div>
                 </form>
               </div>

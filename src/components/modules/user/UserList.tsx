@@ -125,6 +125,7 @@ const UserList = () => {
                 buttonLoading={buttonLoading}
                 label="Search"
                 className="whitespace-nowrap"
+                icon=""
             />
        </div>
         {/* <ButtonLoading

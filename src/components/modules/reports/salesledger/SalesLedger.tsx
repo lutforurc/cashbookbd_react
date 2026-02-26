@@ -451,6 +451,7 @@ const SalesLedger = (user: any) => {
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
                 label="Run"
+                icon=""
                 className="pt-[0.45rem] pb-[0.45rem] w-full"
               />
 

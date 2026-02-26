@@ -142,6 +142,7 @@ const BranchList = () => {
           onClick={handleSearchButton}
           buttonLoading={buttonLoading}
           label="Add Branch"
+          icon=""
         />
       </div>
       <div className="relative no-scrollbar">

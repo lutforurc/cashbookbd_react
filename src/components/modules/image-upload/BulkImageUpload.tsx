@@ -268,6 +268,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
             onClick={handleUploadBulkImage}
             buttonLoading={buttonLoading}
             label="Update"
+            icon=""
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
           />
         </div>

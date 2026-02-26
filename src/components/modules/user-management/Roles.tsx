@@ -7,6 +7,7 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { formatRoleNameForCashBook } from '../../utils/utils-functions/formatRoleName';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { toast } from 'react-toastify';
+import { FiPlus } from 'react-icons/fi';
 
 interface Permission {
   id: number;
@@ -119,8 +120,8 @@ const Roles = () => {
       <HelmetTitle title="Role List" />
 
       <div className="flex justify-end mb-1 gap-2">
-        <ButtonLoading className="p-2 w-30" onClick={handleUpdatePermissions}  buttonLoading={updating} label="Update" />
-        <ButtonLoading className="p-2 w-40" onClick={() => { }} buttonLoading={addingRole} label="Add Role" />
+        <ButtonLoading className="p-2 w-30" icon="" onClick={handleUpdatePermissions}  buttonLoading={updating} label="Update" />
+        <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className='mr-2' />} onClick={() => { }} buttonLoading={addingRole} label="Add Role" />
       </div>
       <div className="overflow-y-auto">
         <DropdownCommon

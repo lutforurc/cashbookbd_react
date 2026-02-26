@@ -294,6 +294,7 @@ const CatWiseInOut = (user: any) => {
             onClick={handleRun}
             buttonLoading={buttonLoading}
             label="Run"
+            icon=""
             className="h-9 px-4"
           />
           <PrintButton

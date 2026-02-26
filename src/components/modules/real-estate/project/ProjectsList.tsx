@@ -150,6 +150,7 @@ const ProjectsList = ({ user }: any) => {
         <ButtonLoading
         className='h-9'
           onClick={handleSearchButton}
+          icon=""
           // buttonLoading={buttonLoading}
           label="New Project"
         />
