@@ -120,7 +120,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       </div>
 
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-        <nav className="mt-5 py-2 px-4 lg:mt-1 lg:px-6">
+        <nav className="py-2 px-4 lg:mt-1 lg:px-6">
           <div>
             <ul className="flex flex-col gap-1.5">
               {/* Dashboard */}
@@ -400,6 +400,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 <SidebarLinkGroup
                   activeCondition={
                     pathname === '/reports/cashbook' ||
+                    pathname === routes.profit_loss || //'/reports/profit-loss' ||
                     pathname === '/reports/employee-installment' ||
                     pathname === '/reports/ledger' ||
                     pathname === '/reports/due-installments' ||
@@ -459,6 +460,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 }
                               >
                                 Cash Book
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li>
+                              <NavLink
+                                to={ routes.profit_loss} //"/reports/profit-loss"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Profit Loss
                               </NavLink>
                             </li>
                           )}

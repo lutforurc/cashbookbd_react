@@ -106,6 +106,7 @@ import LoanLedger from './components/modules/hrms/loan/LoanLedger';
 import UnitSalePaymentList from './components/modules/real-estate/checks/UnitSalePaymentList';
 import UnitSalePaymentEdit from './components/modules/real-estate/checks/UnitSalePaymentEdit';
 import ProductStockIndex from './components/modules/reports/productstock/ProductStockIndex';
+import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 
 
 
@@ -210,6 +211,7 @@ function App() {
             {/* Reports */}
             <Route path={routes.report_date_wise_total} element={<DateWiseData user={me} />} />
             <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
+            <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
             <Route path={routes.due_installment_list} element={<DueInstallment user={me} />} />
             <Route path={routes.employee_wise_installment} element={<StaffWiseDueInstallment user={me} />} />
             <Route path={routes.report_due_list} element={<DueList user={me} />} />

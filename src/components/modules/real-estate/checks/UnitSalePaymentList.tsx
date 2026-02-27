@@ -316,8 +316,8 @@ export default function UnitSalePaymentList() {
       headerClass: "text-left",
       cellClass: "text-left",
       render: (row: any) => <div>
-        { row.status === "CONFIRMED" ? "Collected" : humanizeEnumText(row?.cheque_collect_status)}
-        </div>,
+        {row.status === "CONFIRMED" ? "Collected" : humanizeEnumText(row?.cheque_collect_status)}
+      </div>,
     },
     {
       key: 'action',
@@ -379,7 +379,18 @@ export default function UnitSalePaymentList() {
           <InputElement
             id="q"
             name="q"
-            label="Search (Receipt, Name, Mobile)"
+            label={
+              <>
+                {/* xs/sm */}
+                <span className="block 2xl:hidden">Search</span>
+
+                {/* md only */}
+                {/* <span className="hidden md:block lg:hidden">Search (Receipt, Name)</span> */}
+
+                {/* lg and up */}
+                <span className="hidden 2xl:block">Search (Receipt, Name, Mobile)</span>
+              </>
+            }
             placeholder="Type receipt no or reference no"
             className="h-8.5"
             value={q}

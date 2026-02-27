@@ -77,6 +77,7 @@ const ROUTES = {
 
   report_ledger: '/reports/ledger',
   report_cashbook: '/reports/cashbook',
+  profit_loss: '/reports/profit-loss',
   report_due_list: '/reports/due-list',
   report_date_wise_total: '/reports/date-wise-total-data',
   report_product_stock: '/reports/product/stock',
