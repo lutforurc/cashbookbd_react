@@ -1,321 +1,279 @@
-import { useEffect, useRef, useState } from 'react';
-import {
-  ButtonLoading,
-  PrintButton,
-} from '../../../../pages/UiElements/CustomButtons';
-import InputDatePicker from '../../../utils/fields/DatePicker';
-import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
-import HelmetTitle from '../../../utils/others/HelmetTitle';
-import Loader from '../../../../common/Loader';
-import { useDispatch, useSelector } from 'react-redux';
-import { getCashBook } from './cashBookSlice';
-import { FiBook, FiCheckCircle, FiEdit, FiTrash2 } from 'react-icons/fi';
-import Table from '../../../utils/others/Table';
-import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import dayjs from 'dayjs';
-import ImagePopup from '../../../utils/others/ImagePopup';
-import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import { useReactToPrint } from 'react-to-print';
-import InputElement from '../../../utils/fields/InputElement';
-import CashBookPrint from './ProfitLossPrint';
-import { useVoucherPrint } from '../../vouchers';
-import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
-import ProfitLossPrint from './ProfitLossPrint';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import dayjs from "dayjs";
+import { useReactToPrint } from "react-to-print";
 
+import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
+import InputDatePicker from "../../../utils/fields/DatePicker";
+import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import HelmetTitle from "../../../utils/others/HelmetTitle";
+import Loader from "../../../../common/Loader";
+import InputElement from "../../../utils/fields/InputElement";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+
+import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
+import { fetchProfitLoss } from "./profitLossSlice";
+import ProfitLossPrint from "./ProfitLossPrint";
+
+type TradingRow = {
+  coal3_id?: number | string;
+  coal4_id?: number | string;
+  name?: string;
+  coal4_name?: string;
+  debit?: number | string;
+  credit?: number | string;
+};
+
+type NetRow = {
+  name?: string;
+  debit?: number | string;
+  credit?: number | string;
+};
+
+const toNum = (v: any) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+// Blade-এর মতো 0 হলে 0 দেখাবে
+const fmtZero = (n: number) => thousandSeparator(n || 0, 0);
+
+// Breakdown লাইনে (Sales/Discount) 0 হলে খালি রাখবে
+const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n, 0) : "");
+
+const sumByIds = (rows: TradingRow[], coal3_id: number, coal4_id: number) => {
+  return rows
+    .filter(
+      (r) =>
+        Number(r.coal3_id) === coal3_id && Number(r.coal4_id) === coal4_id
+    )
+    .reduce(
+      (acc, r) => {
+        acc.debit += toNum(r.debit);
+        acc.credit += toNum(r.credit);
+        return acc;
+      },
+      { debit: 0, credit: 0 }
+    );
+};
 
 const ProfitLoss = (user: any) => {
   const dispatch = useDispatch();
-  const branchDdlData = useSelector((state) => state.branchDdl);
-  const cashBookData = useSelector((state) => state.cashBook);
+
+  const branchDdlData: any = useSelector((state: any) => state.branchDdl);
+  const profitLossState: any = useSelector((state: any) => state.profitLoss);
+
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null); // Define state with type
-  const [endDate, setEndDate] = useState<Date | null>(null); // Define state with type
+
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [tableData, setTableData] = useState<any[]>([]);
-  const [isSelected, setIsSelected] = useState<number | string>('');
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
-  const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
-  const [branchPad, setBranchPad] = useState<string | null>(null);
-  const printRef = useRef<HTMLDivElement>(null); 
-  const voucherRegistryRef = useRef<any>(null);
-  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
-  interface OptionType {
-    value: string;
-    label: string;
-    additionalDetails: string;
-  }
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    dispatch(getDdlProtectedBranch());
-    setIsSelected(user.user.branch_id);
-    setBranchId(user.user.branch_id);
-    setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
+    dispatch(getDdlProtectedBranch() as any);
+    setBranchId(Number(user?.user?.branch_id) || null);
   }, []);
 
   useEffect(() => {
-    setTableData(cashBookData?.data);
-  }, [cashBookData]);
+    const ddl = branchDdlData?.protectedData?.data;
+    const trxDate = branchDdlData?.protectedData?.transactionDate;
+
+    if (ddl) setDropdownData(ddl);
+
+    if (trxDate) {
+      const [day, month, year] = trxDate.split("/");
+      const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+      setStartDate(parsed);
+      setEndDate(parsed);
+    }
+  }, [
+    branchDdlData?.protectedData?.data,
+    branchDdlData?.protectedData?.transactionDate,
+  ]);
 
   const handleBranchChange = (e: any) => {
-    setBranchId(e.target.value);
-  };
-  const handleStartDate = (e: any) => {
-    setStartDate(e);
-  };
-  const handleEndDate = (e: any) => {
-    setEndDate(e);
-  };
-  const handleActionButtonClick = (e: any) => {
-
-    const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
-    const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-
-    dispatch(getCashBook({ branchId, startDate: startD, endDate: endD }));
-    setTableData(cashBookData?.data);
+    const v = Number(e.target.value);
+    setBranchId(Number.isFinite(v) ? v : null);
   };
 
-  useEffect(() => {
-    if (
-      branchDdlData?.protectedData?.data &&
-      branchDdlData?.protectedData?.transactionDate
-    ) {
-      setDropdownData(branchDdlData?.protectedData?.data);
-      const [day, month, year] =
-        branchDdlData?.protectedData?.transactionDate.split('/');
-      const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(parsedDate);
-      setEndDate(parsedDate);
-      setBranchId(user.user.branch_id);
-    } else {
+  const handleActionButtonClick = async () => {
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
+
+    const startD = dayjs(startDate).format("YYYY-MM-DD");
+    const endD = dayjs(endDate).format("YYYY-MM-DD");
+
+    setButtonLoading(true);
+
+    // ✅ এখানে keys ঠিক করা হলো
+    const action = await dispatch(
+      fetchProfitLoss({
+        branch_id: Number(branchId),
+        startDate: startD,
+        endDate: endD,
+      }) as any
+    );
+
+    setButtonLoading(false);
+
+    if (action?.meta?.requestStatus !== "fulfilled") {
+      alert(action?.payload || "Profit & loss load failed");
     }
-  }, [branchDdlData?.protectedData?.data]);
+  };
 
-  const handleCheckBtnClick = () => { };
+  // nested data normalize (আপনার sample অনুযায়ী)
+  const apiData = useMemo(() => {
+    const raw = profitLossState?.data;
+
+    if (raw?.data?.data?.trading) return raw.data.data;
+    if (raw?.data?.trading) return raw.data;
+    if (raw?.trading) return raw;
+
+    return null;
+  }, [profitLossState?.data]);
+
+  const report = useMemo(() => {
+    const trading: TradingRow[] = apiData?.trading || [];
+    const netprofit: NetRow[] = apiData?.netprofit || [];
+
+    // Opening Stock: coal3_id=29 coal4_id=18 => debit
+    const opening = sumByIds(trading, 29, 18).debit;
+
+    // Closing Stock: coal3_id=29 coal4_id=21 => credit
+    const closing = sumByIds(trading, 29, 21).credit;
+
+    // Net Purchase: coal3_id=9 coal4_id=35 => debit
+    const purchaseAgg = sumByIds(trading, 9, 35);
+    const netPurchase = purchaseAgg.debit - purchaseAgg.credit;
+
+    // Sales: coal3_id=7 coal4_id=15 => credit
+    const salesCredit = sumByIds(trading, 7, 15).credit;
+
+    // Sales Discount: coal3_id=7 coal4_id=23 => debit
+    const salesDiscountDebit = sumByIds(trading, 7, 23).debit;
+
+    // ✅ Net Sales (Sales credit - Discount debit)
+    const netSalesCredit = Math.max(0, salesCredit - salesDiscountDebit);
+
+    // Trading base (Net Sales যাবে, Sales/Discount breakdown যাবে না)
+    const debitBase = opening + netPurchase;
+    const creditBase = closing + netSalesCredit;
+
+    // Blade balancing: Profit -> Gross Profit debit side; Loss -> Gross Loss credit side
+    const grossProfit = creditBase > debitBase ? creditBase - debitBase : 0;
+    const grossLoss = debitBase > creditBase ? debitBase - creditBase : 0;
+
+    const tradingTotalDebit = grossProfit > 0 ? debitBase + grossProfit : debitBase;
+    const tradingTotalCredit = grossLoss > 0 ? creditBase + grossLoss : creditBase;
+
+    // Net Profit/Loss
+    const expenseRows = netprofit.filter(
+      (r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0
+    );
+    const incomeRows = netprofit.filter((r) => toNum(r.credit) > 0);
+
+    const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
+    const totalIncome = incomeRows.reduce((s, r) => s + toNum(r.credit), 0);
+
+    const debitPLBase = grossLoss + totalExpense;
+    const creditPLBase = grossProfit + totalIncome;
+
+    const netProfit = creditPLBase > debitPLBase ? creditPLBase - debitPLBase : 0;
+    const netLoss = debitPLBase > creditPLBase ? debitPLBase - creditPLBase : 0;
+
+    const netTotalDebit = netProfit > 0 ? debitPLBase + netProfit : debitPLBase;
+    const netTotalCredit = netLoss > 0 ? creditPLBase + netLoss : creditPLBase;
+
+    return {
+      trading: {
+        opening,
+        closing,
+        netPurchase,
+        salesCredit,
+        salesDiscountDebit,
+        netSalesCredit,
+        grossProfit,
+        grossLoss,
+        totalDebit: tradingTotalDebit,
+        totalCredit: tradingTotalCredit,
+      },
+      net: {
+        grossProfit,
+        grossLoss,
+        expenses: expenseRows,
+        incomes: incomeRows,
+        totalExpense,
+        totalIncome,
+        netProfit,
+        netLoss,
+        totalDebit: netTotalDebit,
+        totalCredit: netTotalCredit,
+      },
+    };
+  }, [apiData]);
 
   const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) { 
-        return null;
-      }
-      return printRef.current;
-    },
-    documentTitle: 'Profit Loss',
+    content: () => printRef.current,
+    documentTitle: "Profit Loss",
     removeAfterPrint: true,
   });
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value)) {
-      setPerPage(value);
-    } else {
-      setPerPage(10); // Reset if input is invalid
-    }
+    setPerPage(Number.isFinite(value) ? value : 12);
   };
+
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-
-    if (!isNaN(value)) {
-      setFontSize(value);
-    } else {
-      setFontSize(10); // Reset if input is invalid
-    }
+    setFontSize(Number.isFinite(value) ? value : 12);
   };
 
-
-
-  const columns = [
-    {
-      key: 'sl_number',
-      header: 'Sl. No',
-      width: '80px',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-      render: (row: any) => <div>{row?.sl_number ? row.sl_number : '-'}</div>,
-    },
-    {
-      key: 'vr_date',
-      header: 'Vr Date',
-      width: '90px',
-      headerClass: 'text-center',
-      cellClass: 'text-center !px-1',
-    },
-    {
-      key: 'vr_no',
-      header: 'Vr No',
-      width: '80px',
-      headerClass: 'text-center',
-      cellClass: 'text-center !px-2',
-      render: (row: any) => (
-        <div
-          className="cursor-pointer hover:underline"
-          onClick={() => handleVoucherPrint(row)}
-        >
-          {row.vr_no}
-        </div>
-      ),
-    },
-    {
-      key: 'nam',
-      header: 'Description',
-      render: (row: any) => (
-        <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
-          <div className="truncate">
-            <a href="http://localhost:5173/reports/ledger" target="_blank">
-              <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
-              {row.somity ? (
-                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
-              ) : (
-                ''
-              )}
-              {row.somity && (
-                <>
-                  <p className="text-sm text-gray-500">
-                    {row?.somity?.somity_name && row?.somity?.somity_id
-                      ? `${row.somity.somity_name} (${row.somity.somity_id})`
-                      : ''}
-                  </p>
-                  <p className="text-sm text-gray-500">{row?.somity?.mobile}</p>
-                </>
-              )}
-            </a>
-          </div>
-          <div className="text-sm text-gray-500 break-words whitespace-normal">
-            {row?.remarks}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'credit',
-      header: 'Received',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: any) => (
-        <>
-          <p className="">
-            {row.credit > 0 ? thousandSeparator(row.credit, 0) : '-'}
-          </p>
-        </>
-      ),
-    },
-    {
-      key: 'debit',
-      header: 'Payment',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: any) => (
-        <>
-          <p className="">
-            {row.debit > 0 ? thousandSeparator(row.debit, 0) : '-'}
-          </p>
-        </>
-      ),
-    },
-    {
-      key: 'voucher_image',
-      header: 'Voucher',
-      render: (row: any) => {
-        return (
-          <ImagePopup
-            title={row?.remarks || ''}
-            branchPad={row?.branchPad || ''}
-            voucher_image={row?.voucher_image || ''}
-          />
-        );
-      },
-    },
-    {
-      key: 'action',
-      header: 'Action',
-      render: (row: any) => {
-        const isNumber =
-          row?.sl_number &&
-          !isNaN(Number(row.sl_number)) &&
-          Number(row.sl_number) > 0;
-        return (
-          <>
-            {row?.vr_no ? (
-              <>
-                <button
-                  onClick={() => handleCheckBtnClick()}
-                  className="cursor-pointer"
-                >
-                  {row?.is_approved ? (
-                    <FiCheckCircle className="text-green-500 font-bold" />
-                  ) : (
-                    <FiTrash2 className="text-red-500" />
-                  )}
-                </button>
-                <button
-                  onClick={() => handleCheckBtnClick()}
-                  className="text-blue-500 ml-2"
-                >
-                  <FiBook className="cursor-pointer" />
-                </button>
-                <button
-                  onClick={() => handleCheckBtnClick()}
-                  className="text-blue-500 ml-2"
-                >
-                  <FiEdit className="cursor-pointer" />
-                </button>
-              </>
-            ) : (
-              ''
-            )}
-          </>
-        );
-      },
-    },
-  ];
-
-
   return (
-    <div className="">
-      <HelmetTitle title={'Profit Loss'} />
+    <div>
+      <HelmetTitle title={"Profit Loss"} />
+
+      {/* ===== Filters ===== */}
       <div className="flex justify-between mb-1">
-        {selectedOption && (
-          <div className="mt-4">
-            <p>Selected:</p>
-            <p className="font-bold">{selectedOption.label}</p>
-          </div>
-        )}
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 w-full  gap-2">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 w-full gatext-black dark:text-white p-2">
           <div>
-            <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
-            </div>
+            <label>Select Branch</label>
             <div className="w-full">
-              {branchDdlData.isLoading == true ? <Loader /> : ''}
+              {branchDdlData?.isLoading ? <Loader /> : null}
               <BranchDropdown
                 defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
-                className="w-60 font-medium text-sm p-1.5 "
+                className="w-60 font-medium text-sm p-1.5"
                 branchDdl={dropdownData}
               />
             </div>
           </div>
+
           <div className="w-full">
-            <label htmlFor="">Start Date</label>
+            <label>Start Date</label>
             <InputDatePicker
-              setCurrentDate={handleStartDate}
+              setCurrentDate={(d: any) => setStartDate(d)}
               className="font-medium text-sm w-full h-9"
               selectedDate={startDate}
               setSelectedDate={setStartDate}
             />
           </div>
+
           <div className="w-full">
-            <label htmlFor="">End Date</label>
+            <label>End Date</label>
             <InputDatePicker
-              setCurrentDate={handleEndDate}
+              setCurrentDate={(d: any) => setEndDate(d)}
               className="font-medium text-sm w-full h-9"
               selectedDate={endDate}
               setSelectedDate={setEndDate}
             />
           </div>
+
           <div className="flex w-full">
             <div className="mr-2">
               <InputElement
@@ -324,10 +282,11 @@ const ProfitLoss = (user: any) => {
                 label="Rows"
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
-                type='text'
+                type="text"
                 className="font-medium text-sm h-9 w-12"
               />
             </div>
+
             <div className="mr-2">
               <InputElement
                 id="fontSize"
@@ -335,10 +294,11 @@ const ProfitLoss = (user: any) => {
                 label="Font"
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
-                type='text'
+                type="text"
                 className="font-medium text-sm h-9 w-12"
               />
             </div>
+
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
@@ -346,32 +306,216 @@ const ProfitLoss = (user: any) => {
               icon=""
               className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
             />
+
             <PrintButton
               onClick={handlePrint}
               label=""
-              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
+              className="ml-2 mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
             />
           </div>
         </div>
       </div>
-      <div className="overflow-y-auto">
-        {cashBookData.isLoading ? <Loader /> : ''}
-        <Table columns={columns} data={tableData || []} />
 
-        {/* === Hidden Print Component === */}
+      {/* ===== Report ===== */}
+      <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-300 p-3 rounded">
+        {profitLossState?.loading ? <Loader /> : null}
+
+        {/* TRADING */}
+        <div className="text-center font-semibold mb-2 dark:text-white text-black-2 p-2 dark:border-gray-700 border-gray-200">
+          PROFIT OR LOSS A/C (TRADING A/C)
+        </div>
+
+        <table className="w-full text-sm ">
+          <thead>
+            <tr className="border-b dark:border-gray-700 border-gray-200">
+              <th className="text-left text-black dark:text-white p-2">
+                Particulars
+              </th>
+              <th className="text-right text-black dark:text-white p-2 w-[220px]"></th>
+              <th className="text-right text-black dark:text-white p-2 w-[160px]">
+                Debit (Tk.)
+              </th>
+              <th className="text-right text-black dark:text-white p-2 w-[160px]">
+                Credit (Tk.)
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr className="border-b dark:border-gray-700 border-gray-200">
+              <td className="text-black dark:text-white p-2">Opening Stock</td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.opening)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(0)}
+              </td>
+            </tr>
+
+            <tr className="border-b dark:border-gray-700 border-gray-200">
+              <td className="text-black dark:text-white p-2">Closing Stock</td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(0)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.closing)}
+              </td>
+            </tr>
+
+            <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+              <td className="text-black dark:text-white p-2">Net Purchase</td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.netPurchase)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(0)}
+              </td>
+            </tr>
+
+            {/* Sales Breakdown */}
+            <tr className="border-b dark:border-gray-700 border-gray-200">
+              <td className="text-black dark:text-white p-2 pl-6">Sales</td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtEmptyIfZero(report.trading.salesCredit)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+            </tr>
+
+            <tr className="border-b dark:border-gray-700 border-gray-200">
+              <td className="text-black dark:text-white p-2 pl-6">(-) Sales Discount</td>
+              <td className="text-black dark:text-white p-2 text-right border-b dark:border-gray-100 border-gray-600">
+                {fmtEmptyIfZero(report.trading.salesDiscountDebit)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+            </tr>
+
+            <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+              <td className="text-black dark:text-white p-2">Net Sales</td>
+              <td className="text-black dark:text-white p-2 text-right"> {fmtZero(report.trading.netSalesCredit)}</td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(0)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.netSalesCredit)}
+              </td>
+            </tr>
+
+            <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+              <td className="text-black dark:text-white p-2">
+                {report.trading.grossProfit > 0 ? "Gross Profit" : "Gross Loss"}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.grossProfit > 0 ? report.trading.grossProfit : 0)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.grossLoss > 0 ? report.trading.grossLoss : 0)}
+              </td>
+            </tr>
+
+            <tr className="font-semibold border-t-2 dark:border-gray-300 border-gray-600">
+              <td className="text-black dark:text-white p-2">Total</td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.totalDebit)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtZero(report.trading.totalCredit)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="text-center font-semibold mt-6 mb-2 text-black dark:text-white">
+          NET PROFIT OR LOSS A/C
+        </div>
+
+        <table className="w-full text-sm text-black dark:text-white">
+          <thead>
+            <tr className="border-b dark:border-gray-700 border-gray-200">
+              <th className="text-left p-2">Particulars</th>
+              <th className="text-right p-2 w-[160px]">Debit (Tk.)</th>
+              <th className="text-right p-2 w-[160px]">Credit (Tk.)</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+              <td className="p-2">
+                {report.net.grossProfit > 0 ? "Gross Profit B/F" : "Gross Loss B/F"}
+              </td>
+              <td className="p-2 text-right">
+                {fmtZero(report.net.grossLoss > 0 ? report.net.grossLoss : 0)}
+              </td>
+              <td className="p-2 text-right">
+                {fmtZero(report.net.grossProfit > 0 ? report.net.grossProfit : 0)}
+              </td>
+            </tr>
+
+            {report.net.expenses.map((r: any, idx: number) => (
+              <tr key={`exp-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
+                <td className="p-2 pl-6">(-) {r.name}</td>
+                <td className="p-2 text-right">{fmtZero(toNum(r.debit))}</td>
+                <td className="p-2 text-right"></td>
+              </tr>
+            ))}
+
+            <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+              <td className="p-2">Total Expense</td>
+              <td className="p-2 text-right">{fmtZero(report.net.totalExpense)}</td>
+              <td className="p-2 text-right"></td>
+            </tr>
+
+            {report.net.incomes?.length > 0 ? (
+              <>
+                {report.net.incomes.map((r: any, idx: number) => (
+                  <tr key={`inc-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
+                    <td className="p-2 pl-6">{r.name}</td>
+                    <td className="p-2 text-right"></td>
+                    <td className="p-2 text-right">{fmtZero(toNum(r.credit))}</td>
+                  </tr>
+                ))}
+                <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+                  <td className="p-2">Total Income</td>
+                  <td className="p-2 text-right"></td>
+                  <td className="p-2 text-right">{fmtZero(report.net.totalIncome)}</td>
+                </tr>
+              </>
+            ) : null}
+
+            <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
+              <td className="p-2">
+                {report.net.netProfit > 0 ? "Net Profit" : "Net Loss"}
+              </td>
+              <td className="p-2 text-right">
+                {fmtZero(report.net.netProfit > 0 ? report.net.netProfit : 0)}
+              </td>
+              <td className="p-2 text-right">
+                {fmtZero(report.net.netLoss > 0 ? report.net.netLoss : 0)}
+              </td>
+            </tr>
+
+            <tr className="font-semibold border-t-2 dark:border-gray-300 border-gray-600">
+              <td className="p-2">Total</td>
+              <td className="p-2 text-right">{fmtZero(report.net.totalDebit)}</td>
+              <td className="p-2 text-right">{fmtZero(report.net.totalCredit)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* ===== Hidden Print ===== */}
         <div className="hidden">
           <ProfitLossPrint
             ref={printRef}
-            rows={tableData || []}
-            startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
-            endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
+            report={report}
             title="Profit Loss"
-            rowsPerPage={Number(perPage)}
-            fontSize={Number(fontSize)}
-          />
-
-          <VoucherPrintRegistry
-            ref={voucherRegistryRef}
+            startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
+            endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
           />

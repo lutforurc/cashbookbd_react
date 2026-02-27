@@ -59,6 +59,7 @@ import unitSlice from './components/modules/real-estate/units/unitSlice';
 import brandSlice from './components/modules/product/brand/brandSlice';
 import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice';
 import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
+import profitLossSlice from './components/modules/reports/profit-loss/profitLossSlice';
 
 
 const store = configureStore({
@@ -74,6 +75,7 @@ const store = configureStore({
     dateWiseTotal: dateWiseTotalReducer,
     branchDdl: branchDdlReducer,
     cashBook: cashBookReducer,
+    profitLoss: profitLossSlice,
     ledger: ledgerReducer,
     labourLedger: labourLedgerSlice,
     coal1: coal1Reducer,
