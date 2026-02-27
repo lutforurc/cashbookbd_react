@@ -182,6 +182,7 @@ const ROUTES = {
   real_estate_add_building_floor: '/real-estate/building/floor', 
   real_estate_floor_list: '/real-estate/building/floor/list', 
   real_estate_add_floor_unit: '/real-estate/add-unit',
+  real_estate_add_floor_unit_edit: "/real-estate/add-floor-unit/:id",
   real_estate_floor_unit_list: '/real-estate/unit/list',  
   real_estate_unit_types_create: '/real-estate/unit-types/create',
   real_estate_unit_types_list: '/real-estate/unit-types/list',  

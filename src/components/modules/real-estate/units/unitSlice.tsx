@@ -121,32 +121,32 @@ export const unitChargeTypeList = createAsyncThunk<
 
 /* ---- Unit Charge Types DDL ---- */
 
-export const unitChargeTypeDdl = createAsyncThunk<  UnitChargeTypeItem[], string | undefined, { rejectValue: string } >("unit/unitChargeTypeDdl",async (search = "", { rejectWithValue }) => {
-    try {
-      const token = getToken();
-      const res = await fetch(
-        API_UNIT_CHARGE_DDL_LIST_URL + `?q=${search}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await res.json();
-
-      if (data?.success === true) {
-        return data.data;
+export const unitChargeTypeDdl = createAsyncThunk<UnitChargeTypeItem[], string | undefined, { rejectValue: string }>("unit/unitChargeTypeDdl", async (search = "", { rejectWithValue }) => {
+  try {
+    const token = getToken();
+    const res = await fetch(
+      API_UNIT_CHARGE_DDL_LIST_URL + `?q=${search}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      return rejectWithValue(
-        data?.message || "Failed to load unit charge types"
-      );
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    const data = await res.json();
+
+    if (data?.success === true) {
+      return data.data;
     }
+
+    return rejectWithValue(
+      data?.message || "Failed to load unit charge types"
+    );
+  } catch (error: any) {
+    return rejectWithValue(error.message);
   }
+}
 );
 
 
@@ -302,27 +302,27 @@ export const unitDdl = createAsyncThunk<UnitDdlItem[], string | undefined, { rej
 
 
 /* ---- Parking DDL ---- */
-export const parkingDdl = createAsyncThunk<UnitDdlItem[],string | undefined, { rejectValue: string }>("unit/parkingDdl", async (search = "", { rejectWithValue }) => {
-    try {
-      const token = getToken();
-      const res = await fetch(API_PARKING_DDL_LIST_URL + `?q=${search}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+export const parkingDdl = createAsyncThunk<UnitDdlItem[], string | undefined, { rejectValue: string }>("unit/parkingDdl", async (search = "", { rejectWithValue }) => {
+  try {
+    const token = getToken();
+    const res = await fetch(API_PARKING_DDL_LIST_URL + `?q=${search}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (data?.success === true) {
-        return data.data;
-      }
-
-      return rejectWithValue(data?.message || "Failed to load parking ddl");
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    if (data?.success === true) {
+      return data.data;
     }
+
+    return rejectWithValue(data?.message || "Failed to load parking ddl");
+  } catch (error: any) {
+    return rejectWithValue(error.message);
   }
+}
 );
 
 /* ---- Store Unit ---- */
@@ -340,21 +340,24 @@ export const unitStore = createAsyncThunk<any, UnitItem, { rejectValue: string }
 
 /* ---- Update Unit ---- */
 export const unitUpdate = createAsyncThunk<any, UnitItem, { rejectValue: string }>("unit/unitUpdate", async (payload, { rejectWithValue }) => {
-  try {
-    const res = await httpService.post(API_UNIT_UPDATE_URL, payload);
-    if (res.data?.success === true) {
-      return res.data;
+    try {
+      if (!payload?.id) return rejectWithValue("Missing unit id");
+
+      const res = await httpService.post(`${API_UNIT_UPDATE_URL}/${payload.id}`, payload);
+
+      if (res.data?.success === true) return res.data;
+
+      return rejectWithValue(res.data?.message || "Unit update failed");
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
-    return rejectWithValue(res.data?.message || "Unit update failed");
-  } catch (error: any) {
-    return rejectWithValue(error.message);
   }
-});
+);
 
 /* ---- Edit Unit ---- */
 export const unitEdit = createAsyncThunk<UnitItem, number, { rejectValue: string }>("unit/unitEdit", async (id, { rejectWithValue }) => {
   try {
-    const res = await httpService.get(API_UNIT_EDIT_URL + id);
+    const res = await httpService.get(`${API_UNIT_EDIT_URL}/${id}`);
     if (res.data?.success === true) {
       return res.data.data.data;
     }
@@ -407,7 +410,22 @@ const unitSlice = createSlice({
       .addCase(unitDdl.fulfilled, (state, action) => {
         state.unitDdl = action.payload;
       })
-      
+
+      /* ===== Unit Edit (Load Single Unit) ===== */
+      .addCase(unitEdit.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.editUnit = null;
+      })
+      .addCase(unitEdit.fulfilled, (state, action: PayloadAction<UnitItem>) => {
+        state.loading = false;
+        state.editUnit = action.payload;
+      })
+      .addCase(unitEdit.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to load unit";
+      })
+
       /* ===== Parking DDL ===== */
       .addCase(parkingDdl.fulfilled, (state, action) => {
         state.parkingDdl = action.payload;

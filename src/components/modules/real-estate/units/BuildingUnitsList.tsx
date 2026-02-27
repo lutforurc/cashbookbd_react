@@ -84,17 +84,25 @@ const BuildingUnitsList = ({ user }: any) => {
     navigate(routes.real_estate_add_floor_unit);
   };
 
-  const handleUnitEdit = (row: any) => {
-    // navigate(`${routes.real_estate_edit_floor_unit}/${row.id}`);
-    // or: navigate(`/real-estate/unit-edit/${row.id}`);
-  };
+const handleUnitEdit = (row: any) => {
+  navigate(
+    routes.real_estate_add_floor_unit_edit.replace(":id", String(row.id))
+  );
+};
 
-  const handleToggle = (row: any) => {
-    // const newStatus = row.status === 1 ? 0 : 1;
-    // dispatch(branchStatus(row.id, newStatus)).then(() => {
-    //   dispatch(getBranch({ page, perPage, searchValue }));
-    // });
-  };
+const handleToggle = (row: any) => {
+  const newStatus = row.status === 0 ? 1 : 0; // only if your toggle is Active/Inactive
+
+  dispatch(buildingUnitStatusUpdate({ id: row.id, status: newStatus }) as any).then(() => {
+    dispatch(
+      buildingUnitList({
+        page,
+        per_page: perPage,
+        // branch_id: branchId ? Number(branchId) : undefined,
+      }) as any
+    );
+  });
+};
 
   /* ---- Table Columns ---- */
   const columns = [

@@ -127,7 +127,7 @@ function App() {
     setTimeout(() => setLoading(false), 1000);
     dispatch(authCheck());
   }, []);
- 
+
 
 
   return (
@@ -284,6 +284,7 @@ function App() {
 
             <Route path={routes.real_estate_floor_unit_list} element={<BuildingUnitsList user={me} />} />
             <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
+            <Route path={routes.real_estate_add_floor_unit_edit} element={<AddEditUnit />} /> 
             <Route path={routes.real_estate_unit_types_create} element={<AddEditUnitChargeType />} />
 
             <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
