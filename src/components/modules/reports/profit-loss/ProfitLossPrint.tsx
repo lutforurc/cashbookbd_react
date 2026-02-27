@@ -1,212 +1,371 @@
-import React from 'react';
-import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import PrintStyles from '../../../utils/utils-functions/PrintStyles';
+import React, { forwardRef } from "react";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 
-type Somity = {
-  idfr_code?: string;
-  somity_name?: string;
-  somity_id?: string | number;
-  mobile?: string;
-};
-
-export type CashRow = {
-  sl_number?: string | number;
-  vr_date?: string; // already formatted string
-  vr_no?: string | number;
-  nam?: string; // may contain HTML
-  somity?: Somity | null;
-  remarks?: string;
-  credit?: number; // Received
-  debit?: number; // Payment
-  branchPad?: string;
-  is_approved?: boolean;
-};
+const fmtZero = (n: number) => thousandSeparator(n || 0, 0);
+const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n, 0) : "");
 
 type Props = {
-  rows: CashRow[];
-  startDate?: string; // e.g. '01/10/2025'
-  endDate?: string; // e.g. '31/10/2025'
-  title?: string; // default 'Cash Book'
-  rowsPerPage?: number; // default 20
-  fontSize?: number; // default 9 (in px)
+  report: any;
+  title?: string;
+  startDate?: string;
+  endDate?: string;
+  rowsPerPage?: number; // keep for compatibility (not needed here)
+  fontSize?: number;    // px
 };
 
-const chunkRows = <T,>(data: T[], size: number): T[][] => {
-  if (size <= 0) return [data];
-  const out: T[][] = [];
-  for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
-  return out;
-};
-
-const ProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
+const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
   (
     {
-      rows,
-      startDate,
-      endDate,
-      title = 'Profit Loss',
-      rowsPerPage = 8,
+      report,
+      title = "Profit Loss",
+      startDate = "-",
+      endDate = "-",
       fontSize,
     },
-    ref,
+    ref
   ) => {
-    // SAFETY: ensure array to avoid reduce/map errors
-    const rowsArr: CashRow[] = Array.isArray(rows) ? rows : [];
+    const fs = Number.isFinite(fontSize) ? (fontSize as number) : 11;
 
-    const pages = chunkRows(rowsArr, rowsPerPage);
-    const fs = Number.isFinite(fontSize) ? fontSize! : 9;
+    // Profit/Loss সাধারণত ১ পেজেই থাকে, তবু CashBookPrint এর মতো wrapper রাখলাম
+    const pages = [1];
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
         <PrintStyles />
 
-        {/* Pages */}
-        {pages.map((pageRows, pIdx) => {
-          return (
-            <div key={pIdx} className="print-page">
-              <PadPrinting />
-              {/* Per-page header (prints on every page) */}
-              <div className="mb-4">
-                <h1 className="text-2xl font-bold text-center">{title}</h1>
-                <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
-                  <div>
-                    <span className="font-semibold">Report Date:</span>{' '}
-                    {startDate || '-'} — {endDate || '-'}
-                  </div>
+        {pages.map((_, pIdx) => (
+          <div key={pIdx} className="print-page">
+            <PadPrinting />
+
+            {/* Per-page header (CashBookPrint style) */}
+            <div className="mb-4">
+              <h1 className="text-2xl font-bold text-center">{title}</h1>
+              <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
+                <div>
+                  <span className="font-semibold">Report Date:</span>{" "}
+                  {startDate} — {endDate}
                 </div>
               </div>
-
-              <div className="w-full overflow-hidden">
-                <table className="w-full table-fixed border-collapse">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th
-                        style={{ fontSize: fs }}
-                        className={`border border-gray-900 px-2 py-2 w-8 text-center`}
-                      >
-                        #
-                      </th>
-                      <th
-                        style={{ fontSize: fs }}
-                        className={`border border-gray-900 px-2 py-2 w-25 text-center`}
-                      >
-                        Vr No
-                      </th>
-                      <th
-                        style={{ fontSize: fs }}
-                        className={`border border-gray-900 px-2 py-2`}
-                      >
-                        Description
-                      </th>
-                      <th
-                        style={{ fontSize: fs }}
-                        className={`border border-gray-900 px-2 py-2 w-28 text-right`}
-                      >
-                        Received
-                      </th>
-                      <th
-                        style={{ fontSize: fs }}
-                        className={`border border-gray-900 px-2 py-2 w-28 text-right`}
-                      >
-                        Payment
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {pageRows.length ? (pageRows.map((row, idx) => (
-                      <tr key={idx} className="avoid-break align-top">
-                        <td
-                          style={{ fontSize: fs }}
-                          className={`border border-gray-900 px-2 py-1 text-center`}
-                        >
-                          {row?.sl_number == 0 ? '' : row?.sl_number}
-                        </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center leading-normal">
-                          <div className={`text-[${fs - 3}px]`}>
-                            {row?.vr_no}
-                          </div>
-                          <div className={`text-[${fs}px]`}>
-                            {row?.vr_date}
-                          </div>
-                        </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                          <div className="w-full max-w-4xl leading-normal">
-                            <div className="truncate leading-normal">
-                              <span
-                                className={`text-[${fs}px]`}
-                                dangerouslySetInnerHTML={{
-                                  __html: row?.nam || '',
-                                }}
-                              ></span>
-                              {row?.somity?.idfr_code && (
-                                <span className={`text-[${fs}px]`}>
-                                  {' '}
-                                  ({row.somity.idfr_code})
-                                </span>
-                              )}
-                            </div>
-                            {row?.somity && (
-                              <div className={`text-[${fs}px]`}>
-                                {row.somity.somity_name &&
-                                  row.somity.somity_id && (
-                                    <div>
-                                      {row.somity.somity_name} (
-                                      {row.somity.somity_id})
-                                    </div>
-                                  )}
-                                {row.somity.mobile && (
-                                  <div>{row.somity.mobile}</div>
-                                )}
-                              </div>
-                            )}
-                            {row?.remarks && (
-                              <div
-                                className={`break-words whitespace-normal`}
-                              >
-                                {row.remarks}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 py-1 text-right align-middle`}>
-                          <span>{thousandSeparator(Number(row?.credit), 0)}</span>
-                        </td>
-                        <td
-                          style={{ fontSize: fs }}
-                          className={`border border-gray-900 px-2 py-1 text-right align-middle`}
-                        >
-                          {thousandSeparator(Number(row?.debit), 0)}
-                        </td>
-                      </tr>
-                    ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={7}
-                          className="border border-gray-900 px-3 py-6 text-center text-gray-500"
-                        >
-                          No data found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-
-                {/* 👇 Force break after each page except the last */}
-              </div>
-              <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
-                Page {pIdx + 1} of {pages.length}
-              </div>
-
-              {/* Page break between pages */}
-
-              {pIdx !== pages.length - 1 && <div className="page-break" />}
-
             </div>
-          );
-        })}
+
+            {/* ===== TRADING ===== */}
+            <div className="mb-2 text-center font-semibold">
+              PROFIT OR LOSS A/C (TRADING A/C)
+            </div>
+
+            <div className="w-full overflow-hidden">
+              <table className="w-full table-fixed border-collapse">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th
+                      style={{ fontSize: fs }}
+                      className="border-l-0 border-t border-b border-gray-900 border-r-0 px-2 py-1 text-left"
+                    >
+                      Particulars
+                    </th>
+
+                    {/* Amount column (no left/right border) */}
+                    <th
+                      style={{ fontSize: fs }}
+                      className="border-t border-b border-gray-900 border-l-0 border-r-0 px-2 py-1 w-[100px] text-right"
+                    >
+                      {/* blank title */}
+                    </th>
+                    <th
+                      style={{ fontSize: fs }}
+                      className="border border-gray-900  px-2 py-1 w-[100px] text-right"
+                    >
+                      Debit (Tk.)
+                    </th>
+
+                    <th
+                      style={{ fontSize: fs }}
+                      className="border border-r-0 border-gray-900 px-2 py-1 w-[100px] text-right"
+                    >
+                      Credit (Tk.)
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr className="avoid-break">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0  border-gray-900 px-2 py-1">
+                      Opening Stock
+                    </td>
+                    <td
+                      style={{ fontSize: fs }}
+                      className="border-t border-b border-gray-900 border-l-0 border-r-0 px-2 py-1 text-right"
+                    ></td>
+
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.trading?.opening)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(0)}
+                    </td>
+                  </tr>
+                  <tr className="avoid-break">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      Closing Stock
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(0)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.trading?.closing)}
+                    </td>
+                  </tr>
+                  {/* Purchase Breakdown */}
+                  <tr className="avoid-break">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                      Purchase
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtEmptyIfZero(report?.trading?.purchaseDebit)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+                  </tr>
+
+                  {Number(report?.trading?.purchaseDiscountCredit || 0) > 0 ? (
+                    <tr className="avoid-break">
+                      <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                        (-) Purchase Discount
+                      </td>
+                      {/* underline like blade inside amount column */}
+                      <td
+                        style={{ fontSize: fs }}
+                        className="border border-l-0 border-gray-900 px-2 py-1 text-right"
+                      >
+                        <span style={{ display: "inline-block", paddingBottom: "2px" }}>
+                          {fmtEmptyIfZero(report?.trading?.purchaseDiscountCredit)}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
+                      <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+                    </tr>
+                  ) : null}
+
+                  <tr className="avoid-break font-bold">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      Net Purchase
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.trading?.netPurchase)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(0)}
+                    </td>
+                  </tr>
+
+                  {/* Sales Breakdown */}
+                  <tr className="avoid-break">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                      Sales
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtEmptyIfZero(report?.trading?.salesCredit)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+                  </tr>
+
+                  {Number(report?.trading?.salesDiscountDebit || 0) > 0 ? (
+                    <tr className="avoid-break">
+                      <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                        (-) Sales Discount
+                      </td>
+                      <td
+                        style={{ fontSize: fs }}
+                        className="border border-l-0 border-gray-900 px-2 py-1 text-right"
+                      >
+                        <span style={{ display: "inline-block", paddingBottom: "2px" }}>
+                          {fmtEmptyIfZero(report?.trading?.salesDiscountDebit)}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
+                      <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+                    </tr>
+                  ) : null}
+
+                  <tr className="avoid-break font-bold">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      Net Sales
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(0)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.trading?.netSalesCredit)}
+                    </td>
+                  </tr>
+
+                  <tr className="avoid-break font-bold">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      {Number(report?.trading?.grossProfit || 0) > 0 ? "Gross Profit" : "Gross Loss"}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(Number(report?.trading?.grossProfit || 0) > 0 ? report?.trading?.grossProfit : 0)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(Number(report?.trading?.grossLoss || 0) > 0 ? report?.trading?.grossLoss : 0)}
+                    </td>
+                  </tr>
+
+                  <tr className="avoid-break font-bold">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      Total
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.trading?.totalDebit)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.trading?.totalCredit)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* ===== NET PROFIT/LOSS ===== */}
+            <div className="mt-3 mb-2 text-center font-semibold">
+              NET PROFIT OR LOSS A/C
+            </div>
+
+            <div className="w-full overflow-hidden">
+              <table className="w-full table-fixed border-collapse">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th
+                      style={{ fontSize: fs }}
+                      className="border border-l-0 border-gray-900 px-2 py-1 text-left border-r-0"
+                    >
+                      Particulars
+                    </th>
+                    <th className="border border-l-0 border-gray-900 px-2 py-1 w-[100px]"></th>
+                    <th
+                      style={{ fontSize: fs }}
+                      className="border border-gray-900 px-2 py-1 w-[100px] text-right"
+                    >
+                      Debit (Tk.)
+                    </th>
+                    <th
+                      style={{ fontSize: fs }}
+                      className="border border-r-0 border-gray-900 px-2 py-1 w-[100px] text-right"
+                    >
+                      Credit (Tk.)
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr className="avoid-break font-bold">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      {Number(report?.net?.grossProfit || 0) > 0 ? "Gross Profit B/F" : "Gross Loss B/F"}
+                    </td>
+                    <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(Number(report?.net?.grossLoss || 0) > 0 ? report?.net?.grossLoss : 0)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(Number(report?.net?.grossProfit || 0) > 0 ? report?.net?.grossProfit : 0)}
+                    </td>
+                  </tr>
+
+                  {Array.isArray(report?.net?.expenses) &&
+                    report.net.expenses.map((r: any, idx: number) => (
+                      <tr key={`exp-${idx}`} className="avoid-break">
+                        <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                          (-) {r?.name}
+                        </td>
+                        <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right">{fmtZero(Number(r?.debit || 0))}</td>
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
+                        <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+                      </tr>
+                    ))}
+
+                  <tr className="avoid-break font-bold">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      Total Expense
+                    </td>
+                    <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.net?.totalExpense)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+                  </tr>
+
+                  {Array.isArray(report?.net?.incomes) && report.net.incomes.length > 0 ? (
+                    <>
+                      {report.net.incomes.map((r: any, idx: number) => (
+                        <tr key={`inc-${idx}`} className="avoid-break">
+                          <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                            {r?.name}
+                          </td>
+                          <th style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1"></th>
+                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
+                          <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                            {fmtZero(Number(r?.credit || 0))}
+                          </td>
+                        </tr>
+                      ))}
+
+                      <tr className="avoid-break font-bold">
+                        <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                          Total Income
+                        </td>
+                        <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
+                        <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                          {fmtZero(report?.net?.totalIncome)}
+                        </td>
+                      </tr>
+                    </>
+                  ) : null}
+
+                  <tr className="avoid-break font-bold">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      {Number(report?.net?.netProfit || 0) > 0 ? "Net Profit" : "Net Loss"}
+                    </td>
+                    <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(Number(report?.net?.netProfit || 0) > 0 ? report?.net?.netProfit : 0)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(Number(report?.net?.netLoss || 0) > 0 ? report?.net?.netLoss : 0)}
+                    </td>
+                  </tr>
+                  <tr className="avoid-break font-bold">
+                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                      Total
+                    </td>
+                    <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.net?.totalDebit)}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+                      {fmtZero(report?.net?.totalCredit)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Page footer (CashBookPrint style) */}
+            <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
+              Page {pIdx + 1} of {pages.length}
+            </div>
+
+            {pIdx !== pages.length - 1 && <div className="page-break" />}
+          </div>
+        ))}
 
         {/* Note */}
         <div className="mt-2 text-xs text-gray-900">
@@ -214,8 +373,8 @@ const ProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
         </div>
       </div>
     );
-  },
+  }
 );
 
-ProfitLossPrint.displayName = 'CashBooPrint';
+ProfitLossPrint.displayName = "ProfitLossPrint";
 export default ProfitLossPrint;

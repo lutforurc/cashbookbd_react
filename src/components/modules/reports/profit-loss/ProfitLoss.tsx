@@ -38,15 +38,12 @@ const toNum = (v: any) => {
 // Blade-এর মতো 0 হলে 0 দেখাবে
 const fmtZero = (n: number) => thousandSeparator(n || 0, 0);
 
-// Breakdown লাইনে (Sales/Discount) 0 হলে খালি রাখবে
+// Breakdown লাইনে (Sales/Discount, Purchase/Discount) 0 হলে খালি রাখবে
 const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n, 0) : "");
 
 const sumByIds = (rows: TradingRow[], coal3_id: number, coal4_id: number) => {
   return rows
-    .filter(
-      (r) =>
-        Number(r.coal3_id) === coal3_id && Number(r.coal4_id) === coal4_id
-    )
+    .filter((r) => Number(r.coal3_id) === coal3_id && Number(r.coal4_id) === coal4_id)
     .reduce(
       (acc, r) => {
         acc.debit += toNum(r.debit);
@@ -92,10 +89,7 @@ const ProfitLoss = (user: any) => {
       setStartDate(parsed);
       setEndDate(parsed);
     }
-  }, [
-    branchDdlData?.protectedData?.data,
-    branchDdlData?.protectedData?.transactionDate,
-  ]);
+  }, [branchDdlData?.protectedData?.data, branchDdlData?.protectedData?.transactionDate]);
 
   const handleBranchChange = (e: any) => {
     const v = Number(e.target.value);
@@ -111,7 +105,7 @@ const ProfitLoss = (user: any) => {
 
     setButtonLoading(true);
 
-    // ✅ এখানে keys ঠিক করা হলো
+    // ✅ keys ঠিক: start_date / end_date
     const action = await dispatch(
       fetchProfitLoss({
         branch_id: Number(branchId),
@@ -148,9 +142,15 @@ const ProfitLoss = (user: any) => {
     // Closing Stock: coal3_id=29 coal4_id=21 => credit
     const closing = sumByIds(trading, 29, 21).credit;
 
-    // Net Purchase: coal3_id=9 coal4_id=35 => debit
-    const purchaseAgg = sumByIds(trading, 9, 35);
-    const netPurchase = purchaseAgg.debit - purchaseAgg.credit;
+    // ✅ Purchase + Purchase Discount (নতুন)
+    // Purchase: coal3_id=9 coal4_id=35 => debit
+    const purchaseDebit = sumByIds(trading, 9, 35).debit;
+
+    // Purchase Discount: coal3_id=8 coal4_id=40 => credit
+    const purchaseDiscountCredit = sumByIds(trading, 8, 40).credit;
+
+    // Net Purchase = Purchase - Purchase Discount
+    const netPurchase = Math.max(0, purchaseDebit - purchaseDiscountCredit);
 
     // Sales: coal3_id=7 coal4_id=15 => credit
     const salesCredit = sumByIds(trading, 7, 15).credit;
@@ -158,10 +158,10 @@ const ProfitLoss = (user: any) => {
     // Sales Discount: coal3_id=7 coal4_id=23 => debit
     const salesDiscountDebit = sumByIds(trading, 7, 23).debit;
 
-    // ✅ Net Sales (Sales credit - Discount debit)
+    // Net Sales (Sales credit - Discount debit)
     const netSalesCredit = Math.max(0, salesCredit - salesDiscountDebit);
 
-    // Trading base (Net Sales যাবে, Sales/Discount breakdown যাবে না)
+    // Trading base (Net Sales + Net Purchase ব্যবহার হবে)
     const debitBase = opening + netPurchase;
     const creditBase = closing + netSalesCredit;
 
@@ -173,9 +173,7 @@ const ProfitLoss = (user: any) => {
     const tradingTotalCredit = grossLoss > 0 ? creditBase + grossLoss : creditBase;
 
     // Net Profit/Loss
-    const expenseRows = netprofit.filter(
-      (r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0
-    );
+    const expenseRows = netprofit.filter((r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0);
     const incomeRows = netprofit.filter((r) => toNum(r.credit) > 0);
 
     const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
@@ -194,10 +192,15 @@ const ProfitLoss = (user: any) => {
       trading: {
         opening,
         closing,
+
+        purchaseDebit,
+        purchaseDiscountCredit,
         netPurchase,
+
         salesCredit,
         salesDiscountDebit,
         netSalesCredit,
+
         grossProfit,
         grossLoss,
         totalDebit: tradingTotalDebit,
@@ -240,7 +243,7 @@ const ProfitLoss = (user: any) => {
 
       {/* ===== Filters ===== */}
       <div className="flex justify-between mb-1">
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 w-full gatext-black dark:text-white p-2">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 w-full gap-2 text-black dark:text-white p-2">
           <div>
             <label>Select Branch</label>
             <div className="w-full">
@@ -321,23 +324,17 @@ const ProfitLoss = (user: any) => {
         {profitLossState?.loading ? <Loader /> : null}
 
         {/* TRADING */}
-        <div className="text-center font-semibold mb-2 dark:text-white text-black-2 p-2 dark:border-gray-700 border-gray-200">
+        <div className="text-center font-semibold mb-2 dark:text-white text-black p-2">
           PROFIT OR LOSS A/C (TRADING A/C)
         </div>
 
-        <table className="w-full text-sm ">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b dark:border-gray-700 border-gray-200">
-              <th className="text-left text-black dark:text-white p-2">
-                Particulars
-              </th>
+              <th className="text-left text-black dark:text-white p-2">Particulars</th>
               <th className="text-right text-black dark:text-white p-2 w-[220px]"></th>
-              <th className="text-right text-black dark:text-white p-2 w-[160px]">
-                Debit (Tk.)
-              </th>
-              <th className="text-right text-black dark:text-white p-2 w-[160px]">
-                Credit (Tk.)
-              </th>
+              <th className="text-right text-black dark:text-white p-2 w-[160px]">Debit (Tk.)</th>
+              <th className="text-right text-black dark:text-white p-2 w-[160px]">Credit (Tk.)</th>
             </tr>
           </thead>
 
@@ -345,34 +342,43 @@ const ProfitLoss = (user: any) => {
             <tr className="border-b dark:border-gray-700 border-gray-200">
               <td className="text-black dark:text-white p-2">Opening Stock</td>
               <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(report.trading.opening)}
-              </td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(0)}
-              </td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.opening)}</td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
             </tr>
 
             <tr className="border-b dark:border-gray-700 border-gray-200">
               <td className="text-black dark:text-white p-2">Closing Stock</td>
               <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(0)}
-              </td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(report.trading.closing)}
-              </td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.closing)}</td>
             </tr>
+
+            {/* ✅ Purchase Breakdown (নতুন) */}
+            <tr className="border-b dark:border-gray-700 border-gray-200">
+              <td className="text-black dark:text-white p-2 pl-6">Purchase</td>
+              <td className="text-black dark:text-white p-2 text-right">
+                {fmtEmptyIfZero(report.trading.purchaseDebit)}
+              </td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+            </tr>
+
+            {report.trading.purchaseDiscountCredit > 0 ? (
+              <tr className="border-b dark:border-gray-700 border-gray-200">
+                <td className="text-black dark:text-white p-2 pl-6">(-) Purchase Discount</td>
+                <td className="text-black dark:text-white p-2 text-right border-b dark:border-gray-100 border-gray-600">
+                  {fmtEmptyIfZero(report.trading.purchaseDiscountCredit)}
+                </td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+              </tr>
+            ) : null}
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="text-black dark:text-white p-2">Net Purchase</td>
               <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(report.trading.netPurchase)}
-              </td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(0)}
-              </td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netPurchase)}</td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
             </tr>
 
             {/* Sales Breakdown */}
@@ -385,24 +391,22 @@ const ProfitLoss = (user: any) => {
               <td className="text-black dark:text-white p-2 text-right"></td>
             </tr>
 
-            <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">(-) Sales Discount</td>
-              <td className="text-black dark:text-white p-2 text-right border-b dark:border-gray-100 border-gray-600">
-                {fmtEmptyIfZero(report.trading.salesDiscountDebit)}
-              </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-            </tr>
+            {report.trading.salesDiscountDebit > 0 ? (
+              <tr className="border-b dark:border-gray-700 border-gray-200">
+                <td className="text-black dark:text-white p-2 pl-6">(-) Sales Discount</td>
+                <td className="text-black dark:text-white p-2 text-right border-b dark:border-gray-100 border-gray-600">
+                  {fmtEmptyIfZero(report.trading.salesDiscountDebit)}
+                </td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+              </tr>
+            ) : null}
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="text-black dark:text-white p-2">Net Sales</td>
-              <td className="text-black dark:text-white p-2 text-right"> {fmtZero(report.trading.netSalesCredit)}</td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(0)}
-              </td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(report.trading.netSalesCredit)}
-              </td>
+              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netSalesCredit)}</td>
             </tr>
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
@@ -421,12 +425,8 @@ const ProfitLoss = (user: any) => {
             <tr className="font-semibold border-t-2 dark:border-gray-300 border-gray-600">
               <td className="text-black dark:text-white p-2">Total</td>
               <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(report.trading.totalDebit)}
-              </td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtZero(report.trading.totalCredit)}
-              </td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.totalDebit)}</td>
+              <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.totalCredit)}</td>
             </tr>
           </tbody>
         </table>
@@ -439,6 +439,7 @@ const ProfitLoss = (user: any) => {
           <thead>
             <tr className="border-b dark:border-gray-700 border-gray-200">
               <th className="text-left p-2">Particulars</th>
+              <th className="text-right p-2"></th>
               <th className="text-right p-2 w-[160px]">Debit (Tk.)</th>
               <th className="text-right p-2 w-[160px]">Credit (Tk.)</th>
             </tr>
@@ -446,27 +447,24 @@ const ProfitLoss = (user: any) => {
 
           <tbody>
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
-              <td className="p-2">
-                {report.net.grossProfit > 0 ? "Gross Profit B/F" : "Gross Loss B/F"}
-              </td>
-              <td className="p-2 text-right">
-                {fmtZero(report.net.grossLoss > 0 ? report.net.grossLoss : 0)}
-              </td>
-              <td className="p-2 text-right">
-                {fmtZero(report.net.grossProfit > 0 ? report.net.grossProfit : 0)}
-              </td>
+              <td className="p-2">{report.net.grossProfit > 0 ? "Gross Profit B/F" : "Gross Loss B/F"}</td>
+              <td></td>
+              <td className="p-2 text-right">{fmtZero(report.net.grossLoss > 0 ? report.net.grossLoss : 0)}</td>
+              <td className="p-2 text-right">{fmtZero(report.net.grossProfit > 0 ? report.net.grossProfit : 0)}</td>
             </tr>
 
             {report.net.expenses.map((r: any, idx: number) => (
               <tr key={`exp-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
                 <td className="p-2 pl-6">(-) {r.name}</td>
                 <td className="p-2 text-right">{fmtZero(toNum(r.debit))}</td>
+                <td></td>
                 <td className="p-2 text-right"></td>
               </tr>
             ))}
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="p-2">Total Expense</td>
+              <td className="p-2 text-right"></td>
               <td className="p-2 text-right">{fmtZero(report.net.totalExpense)}</td>
               <td className="p-2 text-right"></td>
             </tr>
