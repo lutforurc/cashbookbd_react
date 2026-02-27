@@ -115,11 +115,10 @@ const AddEditUnit = () => {
       });
 
       if (isEdit) {
-        navigate("/real-estate/unit/list", { replace: true });
+        navigate("/real-estate/unit/list");
         return;
       }
 
-      // ✅ Save হলে ফর্ম reset হবে, কিন্তু Floor থাকবে
       resetFormKeepFloor();
       return;
     }
