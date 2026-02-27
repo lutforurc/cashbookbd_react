@@ -109,13 +109,14 @@ const AddEditUnit = () => {
     setButtonLoading(false);
 
     if (action.meta.requestStatus === "fulfilled") {
+      dispatch(clearUnitState());
+
       toast.success(isEdit ? "Unit updated successfully" : "Unit created successfully", {
         autoClose: 3000,
-        onClose: () => dispatch(clearUnitState()),
       });
 
       if (isEdit) {
-        navigate("/real-estate/unit/list");
+        navigate("/real-estate/unit/list", { replace: true });
         return;
       }
 
