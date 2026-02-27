@@ -12,23 +12,22 @@ type Props = {
   startDate?: string;
   endDate?: string;
   rowsPerPage?: number; // keep for compatibility (not needed here)
-  fontSize?: number;    // px
+  fontSize?: number; // px
 };
 
 const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
   (
-    {
-      report,
-      title = "Profit Loss",
-      startDate = "-",
-      endDate = "-",
-      fontSize,
-    },
+    { report, title = "Profit Loss", startDate = "-", endDate = "-", fontSize },
     ref
   ) => {
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 11;
 
-    // Profit/Loss সাধারণত ১ পেজেই থাকে, তবু CashBookPrint এর মতো wrapper রাখলাম
+    // ✅ fs অনুযায়ী padding-y (9-11 => 0.5px, 12-15 => 0.7px, 16+ => 1)
+    const cellPy = fs <= 11 ? "py-[0.5px]" : fs <= 15 ? "py-[.9px]" : "py-1";
+
+    // ✅ underline padding-bottom (fs অনুযায়ী)
+    const underlinePb = fs <= 11 ? "1px" : fs <= 15 ? "1.5px" : "2px";
+
     const pages = [1];
 
     return (
@@ -40,8 +39,8 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
             <PadPrinting />
 
             {/* Per-page header (CashBookPrint style) */}
-            <div className="mb-4">
-              <h1 className="text-2xl font-bold text-center">{title}</h1>
+            <div className="mb-2">
+              <h1 style={{ fontSize: (fs + 3) }} className="font-bold text-center uppercase">{title}</h1>
               <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
                 <div>
                   <span className="font-semibold">Report Date:</span>{" "}
@@ -51,7 +50,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
             </div>
 
             {/* ===== TRADING ===== */}
-            <div className="mb-2 text-center font-semibold">
+            <div style={{ fontSize: (fs + 1) }} className="mb-2 text-center font-semibold">
               PROFIT OR LOSS A/C (TRADING A/C)
             </div>
 
@@ -61,7 +60,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                   <tr>
                     <th
                       style={{ fontSize: fs }}
-                      className="border-l-0 border-t border-b border-gray-900 border-r-0 px-2 py-1 text-left"
+                      className={`border-l-0 border-t border-b border-gray-900 border-r-0 px-2 ${cellPy} text-left`}
                     >
                       Particulars
                     </th>
@@ -69,20 +68,21 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                     {/* Amount column (no left/right border) */}
                     <th
                       style={{ fontSize: fs }}
-                      className="border-t border-b border-gray-900 border-l-0 border-r-0 px-2 py-1 w-[100px] text-right"
+                      className={`border-t border-b border-gray-900 border-l-0 border-r-0 px-2 ${cellPy} w-[100px] text-right`}
                     >
                       {/* blank title */}
                     </th>
+
                     <th
                       style={{ fontSize: fs }}
-                      className="border border-gray-900  px-2 py-1 w-[100px] text-right"
+                      className={`border border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
                     >
                       Debit (Tk.)
                     </th>
 
                     <th
                       style={{ fontSize: fs }}
-                      className="border border-r-0 border-gray-900 px-2 py-1 w-[100px] text-right"
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
                     >
                       Credit (Tk.)
                     </th>
@@ -91,142 +91,289 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
 
                 <tbody>
                   <tr className="avoid-break">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0  border-gray-900 px-2 py-1">
-                      Opening Stock
-                    </td>
                     <td
                       style={{ fontSize: fs }}
-                      className="border-t border-b border-gray-900 border-l-0 border-r-0 px-2 py-1 text-right"
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
+                      Opening Stock
+                    </td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border-t border-b border-gray-900 border-l-0 border-r-0 px-2 ${cellPy} text-right`}
                     ></td>
 
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.trading?.opening)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(0)}
                     </td>
                   </tr>
+
                   <tr className="avoid-break">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
                       Closing Stock
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(0)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.trading?.closing)}
                     </td>
                   </tr>
+
                   {/* Purchase Breakdown */}
                   <tr className="avoid-break">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
+                    >
                       Purchase
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtEmptyIfZero(report?.trading?.purchaseDebit)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
                   </tr>
 
                   {Number(report?.trading?.purchaseDiscountCredit || 0) > 0 ? (
                     <tr className="avoid-break">
-                      <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
-                        (-) Purchase Discount
-                      </td>
-                      {/* underline like blade inside amount column */}
                       <td
                         style={{ fontSize: fs }}
-                        className="border border-l-0 border-gray-900 px-2 py-1 text-right"
+                        className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
                       >
-                        <span style={{ display: "inline-block", paddingBottom: "2px" }}>
-                          {fmtEmptyIfZero(report?.trading?.purchaseDiscountCredit)}
-                        </span>
+                        (-) Purchase Discount
                       </td>
-                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
-                      <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      >
+                        {fmtEmptyIfZero(report?.trading?.purchaseDiscountCredit)}
+                      </td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
                     </tr>
                   ) : null}
 
                   <tr className="avoid-break font-bold">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
                       Net Purchase
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.trading?.netPurchase)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(0)}
                     </td>
                   </tr>
 
                   {/* Sales Breakdown */}
                   <tr className="avoid-break">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
+                    >
                       Sales
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtEmptyIfZero(report?.trading?.salesCredit)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
                   </tr>
 
                   {Number(report?.trading?.salesDiscountDebit || 0) > 0 ? (
                     <tr className="avoid-break">
-                      <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
-                        (-) Sales Discount
-                      </td>
                       <td
                         style={{ fontSize: fs }}
-                        className="border border-l-0 border-gray-900 px-2 py-1 text-right"
+                        className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
                       >
-                        <span style={{ display: "inline-block", paddingBottom: "2px" }}>
-                          {fmtEmptyIfZero(report?.trading?.salesDiscountDebit)}
-                        </span>
+                        (-) Sales Discount
                       </td>
-                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
-                      <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      >
+                        {fmtEmptyIfZero(report?.trading?.salesDiscountDebit)}
+                      </td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
+
+                      <td
+                        style={{ fontSize: fs }}
+                        className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                      ></td>
                     </tr>
                   ) : null}
 
                   <tr className="avoid-break font-bold">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
                       Net Sales
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(0)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.trading?.netSalesCredit)}
                     </td>
                   </tr>
 
                   <tr className="avoid-break font-bold">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
-                      {Number(report?.trading?.grossProfit || 0) > 0 ? "Gross Profit" : "Gross Loss"}
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
+                      {Number(report?.trading?.grossProfit || 0) > 0
+                        ? "Gross Profit"
+                        : "Gross Loss"}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {fmtZero(Number(report?.trading?.grossProfit || 0) > 0 ? report?.trading?.grossProfit : 0)}
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
+                      {fmtZero(
+                        Number(report?.trading?.grossProfit || 0) > 0
+                          ? report?.trading?.grossProfit
+                          : 0
+                      )}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
-                      {fmtZero(Number(report?.trading?.grossLoss || 0) > 0 ? report?.trading?.grossLoss : 0)}
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
+                      {fmtZero(
+                        Number(report?.trading?.grossLoss || 0) > 0
+                          ? report?.trading?.grossLoss
+                          : 0
+                      )}
                     </td>
                   </tr>
 
                   <tr className="avoid-break font-bold">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
                       Total
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right"></td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.trading?.totalDebit)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.trading?.totalCredit)}
                     </td>
                   </tr>
@@ -235,7 +382,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
             </div>
 
             {/* ===== NET PROFIT/LOSS ===== */}
-            <div className="mt-3 mb-2 text-center font-semibold">
+            <div style={{ fontSize: fs + 1 }} className="mt-3 mb-2 text-center font-semibold">
               NET PROFIT OR LOSS A/C
             </div>
 
@@ -245,20 +392,26 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                   <tr>
                     <th
                       style={{ fontSize: fs }}
-                      className="border border-l-0 border-gray-900 px-2 py-1 text-left border-r-0"
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-left border-r-0`}
                     >
                       Particulars
                     </th>
-                    <th className="border border-l-0 border-gray-900 px-2 py-1 w-[100px]"></th>
+
                     <th
                       style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-1 w-[100px] text-right"
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy} w-[100px]`}
+                    ></th>
+
+                    <th
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
                     >
                       Debit (Tk.)
                     </th>
+
                     <th
                       style={{ fontSize: fs }}
-                      className="border border-r-0 border-gray-900 px-2 py-1 w-[100px] text-right"
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
                     >
                       Credit (Tk.)
                     </th>
@@ -267,63 +420,151 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
 
                 <tbody>
                   <tr className="avoid-break font-bold">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
-                      {Number(report?.net?.grossProfit || 0) > 0 ? "Gross Profit B/F" : "Gross Loss B/F"}
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
+                      {Number(report?.net?.grossProfit || 0) > 0
+                        ? "Gross Profit B/F"
+                        : "Gross Loss B/F"}
                     </td>
-                    <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {fmtZero(Number(report?.net?.grossLoss || 0) > 0 ? report?.net?.grossLoss : 0)}
+
+                    <th
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy}`}
+                    ></th>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
+                      {fmtZero(
+                        Number(report?.net?.grossLoss || 0) > 0
+                          ? report?.net?.grossLoss
+                          : 0
+                      )}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 text-right">
-                      {fmtZero(Number(report?.net?.grossProfit || 0) > 0 ? report?.net?.grossProfit : 0)}
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
+                      {fmtZero(
+                        Number(report?.net?.grossProfit || 0) > 0
+                          ? report?.net?.grossProfit
+                          : 0
+                      )}
                     </td>
                   </tr>
 
                   {Array.isArray(report?.net?.expenses) &&
                     report.net.expenses.map((r: any, idx: number) => (
                       <tr key={`exp-${idx}`} className="avoid-break">
-                        <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
+                        <td
+                          style={{ fontSize: fs }}
+                          className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
+                        >
                           (-) {r?.name}
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1 text-right">{fmtZero(Number(r?.debit || 0))}</td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
-                        <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+
+                        <td
+                          style={{ fontSize: fs }}
+                          className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                        >
+                          {fmtZero(Number(r?.debit || 0))}
+                        </td>
+
+                        <td
+                          style={{ fontSize: fs }}
+                          className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                        ></td>
+
+                        <td
+                          style={{ fontSize: fs }}
+                          className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                        ></td>
                       </tr>
                     ))}
 
                   <tr className="avoid-break font-bold">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
                       Total Expense
                     </td>
-                    <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+
+                    <th
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy}`}
+                    ></th>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.net?.totalExpense)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right"></td>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    ></td>
                   </tr>
 
-                  {Array.isArray(report?.net?.incomes) && report.net.incomes.length > 0 ? (
+                  {Array.isArray(report?.net?.incomes) &&
+                  report.net.incomes.length > 0 ? (
                     <>
                       {report.net.incomes.map((r: any, idx: number) => (
                         <tr key={`inc-${idx}`} className="avoid-break">
-                          <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1 pl-6">
-                            {r?.name}
+                          <td
+                            style={{ fontSize: fs }}
+                            className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
+                          >
+                            (+) {r?.name}
                           </td>
-                          <th style={{ fontSize: fs }} className="border border-l-0 border-gray-900 px-2 py-1"></th>
-                          <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
-                          <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+
+                          <th
+                            style={{ fontSize: fs }}
+                            className={`border border-l-0 border-gray-900 px-2 ${cellPy}`}
+                          ></th>
+
+                          <td
+                            style={{ fontSize: fs }}
+                            className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                          ></td>
+
+                          <td
+                            style={{ fontSize: fs }}
+                            className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                          >
                             {fmtZero(Number(r?.credit || 0))}
                           </td>
                         </tr>
                       ))}
 
                       <tr className="avoid-break font-bold">
-                        <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                        <td
+                          style={{ fontSize: fs }}
+                          className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                        >
                           Total Income
                         </td>
-                        <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right"></td>
-                        <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+
+                        <th
+                          style={{ fontSize: fs }}
+                          className={`border border-l-0 border-gray-900 px-2 ${cellPy}`}
+                        ></th>
+
+                        <td
+                          style={{ fontSize: fs }}
+                          className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                        ></td>
+
+                        <td
+                          style={{ fontSize: fs }}
+                          className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                        >
                           {fmtZero(report?.net?.totalIncome)}
                         </td>
                       </tr>
@@ -331,26 +572,67 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                   ) : null}
 
                   <tr className="avoid-break font-bold">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
-                      {Number(report?.net?.netProfit || 0) > 0 ? "Net Profit" : "Net Loss"}
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
+                      {Number(report?.net?.netProfit || 0) > 0
+                        ? "Net Profit"
+                        : "Net Loss"}
                     </td>
-                    <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {fmtZero(Number(report?.net?.netProfit || 0) > 0 ? report?.net?.netProfit : 0)}
+
+                    <th
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy}`}
+                    ></th>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
+                      {fmtZero(
+                        Number(report?.net?.netProfit || 0) > 0
+                          ? report?.net?.netProfit
+                          : 0
+                      )}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
-                      {fmtZero(Number(report?.net?.netLoss || 0) > 0 ? report?.net?.netLoss : 0)}
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
+                      {fmtZero(
+                        Number(report?.net?.netLoss || 0) > 0
+                          ? report?.net?.netLoss
+                          : 0
+                      )}
                     </td>
                   </tr>
+
                   <tr className="avoid-break font-bold">
-                    <td style={{ fontSize: fs }} className="border border-l-0 border-r-0 border-gray-900 px-2 py-1">
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
+                    >
                       Total
                     </td>
-                    <th className="border border-l-0 border-gray-900 px-2 py-1"></th>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+
+                    <th
+                      style={{ fontSize: fs }}
+                      className={`border border-l-0 border-gray-900 px-2 ${cellPy}`}
+                    ></th>
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.net?.totalDebit)}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-r-0 border-gray-900 px-2 py-1 text-right">
+
+                    <td
+                      style={{ fontSize: fs }}
+                      className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
+                    >
                       {fmtZero(report?.net?.totalCredit)}
                     </td>
                   </tr>

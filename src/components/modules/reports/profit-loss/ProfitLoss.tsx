@@ -78,18 +78,33 @@ const ProfitLoss = (user: any) => {
   }, []);
 
   useEffect(() => {
-    const ddl = branchDdlData?.protectedData?.data;
-    const trxDate = branchDdlData?.protectedData?.transactionDate;
+  const protectedData = branchDdlData?.protectedData;
+  if (!protectedData) return;
 
-    if (ddl) setDropdownData(ddl);
+  const { data: ddl, transactionDate: trxDate } = protectedData;
 
-    if (trxDate) {
-      const [day, month, year] = trxDate.split("/");
-      const parsed = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(parsed);
-      setEndDate(parsed);
+  if (ddl) {
+    setDropdownData(ddl);
+  }
+
+  if (trxDate) {
+    try {
+      const [day, month, year] = trxDate.split("/").map(str => Number(str.trim()));
+      if (isNaN(year) || year < 1900 || year > 2100) {
+        console.warn("Invalid year in transactionDate:", trxDate);
+        return;
+      }
+      const startOfYear = new Date(year, 0, 1);
+      setStartDate(startOfYear);
+      const endDateValue = new Date(year, month - 1, day);
+      setEndDate(endDateValue);
+    } catch (error) {
+      console.warn("Failed to parse transactionDate:", trxDate, error); 
     }
-  }, [branchDdlData?.protectedData?.data, branchDdlData?.protectedData?.transactionDate]);
+  }
+}, [branchDdlData?.protectedData?.data, branchDdlData?.protectedData?.transactionDate]);
+
+  
 
   const handleBranchChange = (e: any) => {
     const v = Number(e.target.value);
@@ -177,7 +192,7 @@ const ProfitLoss = (user: any) => {
     const incomeRows = netprofit.filter((r) => toNum(r.credit) > 0);
 
     const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
-    const totalIncome = incomeRows.reduce((s, r) => s + toNum(r.credit), 0);
+    const totalIncome = incomeRows.reduce((s, r) => s + (toNum(r.credit) - toNum(r.debit)), 0);
 
     const debitPLBase = grossLoss + totalExpense;
     const creditPLBase = grossProfit + totalIncome;
@@ -464,7 +479,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="p-2">Total Expense</td>
-              <td className="p-2 text-right"></td>
+              <td className="p-2 text-right border-t"></td>
               <td className="p-2 text-right">{fmtZero(report.net.totalExpense)}</td>
               <td className="p-2 text-right"></td>
             </tr>
@@ -474,12 +489,14 @@ const ProfitLoss = (user: any) => {
                 {report.net.incomes.map((r: any, idx: number) => (
                   <tr key={`inc-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
                     <td className="p-2 pl-6">{r.name}</td>
+                    <td className="p-2 text-right">{ r.credit-r.debit > 0 ? fmtZero(toNum(r.credit - r.debit)) : fmtZero(0)}</td>
                     <td className="p-2 text-right"></td>
-                    <td className="p-2 text-right">{fmtZero(toNum(r.credit))}</td>
+                    <td className="p-2 text-right"></td>
                   </tr>
                 ))}
                 <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
                   <td className="p-2">Total Income</td>
+                  <td className="p-2 text-right border-t"></td>
                   <td className="p-2 text-right"></td>
                   <td className="p-2 text-right">{fmtZero(report.net.totalIncome)}</td>
                 </tr>
@@ -491,6 +508,9 @@ const ProfitLoss = (user: any) => {
                 {report.net.netProfit > 0 ? "Net Profit" : "Net Loss"}
               </td>
               <td className="p-2 text-right">
+               
+              </td>
+              <td className="p-2 text-right">
                 {fmtZero(report.net.netProfit > 0 ? report.net.netProfit : 0)}
               </td>
               <td className="p-2 text-right">
@@ -500,6 +520,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="font-semibold border-t-2 dark:border-gray-300 border-gray-600">
               <td className="p-2">Total</td>
+              <td className="p-2 text-right"></td>
               <td className="p-2 text-right">{fmtZero(report.net.totalDebit)}</td>
               <td className="p-2 text-right">{fmtZero(report.net.totalCredit)}</td>
             </tr>
