@@ -19,7 +19,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { fetchBrandDdl } from '../../product/brand/brandSlice';
 
 // ======================
-// ✅ Brand -> Category wise helper (like your print)
+// Brand -> Category wise helper
 // ======================
 const isBrandRow = (row: any) => row?.__type === 'BRAND';
 const isCatRow = (row: any) => row?.__type === 'CAT';
@@ -28,7 +28,6 @@ const isGroupRow = (row: any) => isBrandRow(row) || isCatRow(row);
 const buildBrandCategoryRows = (rows: any[]) => {
   if (!Array.isArray(rows)) return [];
 
-  // ✅ sort: brand -> category -> product
   const sorted = [...rows].sort((a, b) => {
     const b1 = String(a.brand_name || '').localeCompare(String(b.brand_name || ''));
     if (b1 !== 0) return b1;
@@ -39,7 +38,6 @@ const buildBrandCategoryRows = (rows: any[]) => {
     return String(a.product_name || '').localeCompare(String(b.product_name || ''));
   });
 
-  // ✅ group: brand -> category
   const brandMap = new Map<string, any[]>();
   for (const r of sorted) {
     const brandKey = (r.brand_name || 'Unknown Brand').trim() || 'Unknown Brand';
@@ -50,7 +48,6 @@ const buildBrandCategoryRows = (rows: any[]) => {
   const finalRows: any[] = [];
 
   for (const [brand, brandItems] of brandMap.entries()) {
-    // Brand header row
     finalRows.push({
       __type: 'BRAND',
       brand_name: brand,
@@ -64,14 +61,12 @@ const buildBrandCategoryRows = (rows: any[]) => {
     }
 
     for (const [cat, items] of catMap.entries()) {
-      // Category header row (inside brand)
       finalRows.push({
         __type: 'CAT',
         brand_name: brand,
         cat_name: cat,
       });
 
-      // ✅ serial reset per category (inside brand)
       let serial = 1;
       for (const it of items) {
         finalRows.push({
@@ -85,7 +80,7 @@ const buildBrandCategoryRows = (rows: any[]) => {
   return finalRows;
 };
 
-const ProductStock = (user: any) => {
+const ProductStock = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const categoryData = useSelector((state: any) => state.category);
@@ -98,51 +93,28 @@ const ProductStock = (user: any) => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [search, setSearchValue] = useState('');
 
-  const [branchId, setBranchId] = useState<number | string | null>(null);
+  const [branchId, setBranchId] = useState<number | string | ''>(user?.user?.branch_id || '');
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [brandId, setBrandId] = useState<string | null>(''); // null হতে পারবে
 
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(35);
   const [fontSize, setFontSize] = useState<number>(11);
-  const [brandId, setBrandId] = useState<number | string | null>(null);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(getCategoryDdl());
     dispatch(fetchBrandDdl());
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (Array.isArray(categoryData?.ddlData?.data?.category)) {
-      setDdlCategory(categoryData?.ddlData?.data?.category || []);
-      setCategoryId(categoryData.ddlData[0]?.id ?? null);
+      setDdlCategory(categoryData.ddlData.data.category || []);
     }
   }, [categoryData]);
 
-  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value)) setPerPage(value);
-    else setPerPage(10);
-  };
-
-  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value)) setFontSize(value);
-    else setFontSize(10);
-  };
-
-  const handlePrint = useReactToPrint({
-    content: () => {
-      if (!printRef.current) return null;
-      return printRef.current;
-    },
-    documentTitle: 'Product Stock',
-    removeAfterPrint: true,
-  });
-
-  // ✅ stock data -> convert to Brand -> Category rows (UI table only)
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
       const grouped = buildBrandCategoryRows(stock.data);
@@ -152,52 +124,85 @@ const ProductStock = (user: any) => {
     }
   }, [stock]);
 
-  const handleBranchChange = (e: any) => {
-    setBranchId(e.target.value);
-  };
-
-  const handleCategoryChange = (selectedOption: any) => {
-    if (selectedOption) setCategoryId(selectedOption.value);
-    else setCategoryId(null);
-  };
-
-  const handleStartDate = (e: any) => setStartDate(e);
-  const handleEndDate = (e: any) => setEndDate(e);
-
-  const handleActionButtonClick = () => {
-    setButtonLoading(true);
-    const startD = dayjs(startDate).format('YYYY-MM-DD');
-    const endD = dayjs(endDate).format('YYYY-MM-DD');
-
-    dispatch(
-      getProductStock({
-        branchId,
-        brandId,
-        categoryId,
-        search,
-        startDate: startD,
-        endDate: endD,
-      }),
-    ) as any;
-
-    setTimeout(() => setButtonLoading(false), 500);
-  };
-
   useEffect(() => {
     if (branchDdlData?.protectedData?.data && branchDdlData?.protectedData?.transactionDate) {
-      setDropdownData(branchDdlData?.protectedData?.data);
-      setDdlCategory(categoryData?.data);
+      setDropdownData(branchDdlData.protectedData.data);
 
-      const [day, month, year] = branchDdlData?.protectedData?.transactionDate.split('/');
+      const [day, month, year] = branchDdlData.protectedData.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
 
       setStartDate(parsedDate);
       setEndDate(parsedDate);
-      setBranchId(user.user.branch_id);
+
+      if (user?.user?.branch_id) {
+        setBranchId(user.user.branch_id);
+      }
     }
-  }, [branchDdlData?.protectedData]);
+  }, [branchDdlData?.protectedData, user]);
 
+  const handleBranchChange = (e: any) => {
+    const val = e.target ? e.target.value : e;
+    setBranchId(val);
+  };
 
+  const handleBrandChange = (selectedOption: any) => {
+    setBrandId(selectedOption?.value ?? null); // "" এর বদলে null
+  };
+
+  const handleCategoryChange = (selectedOption: any) => {
+    setCategoryId(selectedOption?.value ?? null);
+  };
+
+  const handleStartDate = (date: Date | null) => setStartDate(date);
+  const handleEndDate = (date: Date | null) => setEndDate(date);
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPerPage(isNaN(value) ? 10 : value);
+  };
+
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setFontSize(isNaN(value) ? 10 : value);
+  };
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: 'Product Stock',
+    removeAfterPrint: true,
+  });
+
+  const handleActionButtonClick = () => {
+    if (!startDate || !endDate) return;
+
+    setButtonLoading(true);
+
+    const startD = dayjs(startDate).format('YYYY-MM-DD');
+    const endD = dayjs(endDate).format('YYYY-MM-DD');
+
+    // ডিবাগের জন্য দেখতে পারেন
+    console.log('Sending payload:', {
+      branchId,
+      brandId,           // এখন null হলে null-ই যাবে
+      categoryId,
+      search,
+      startDate: startD,
+      endDate: endD,
+    });
+
+    dispatch(
+      getProductStock({
+        branchId: branchId || null,
+        brandId: brandId,           // null পাঠালে ব্যাকএন্ডে সব ব্র্যান্ড আসবে (আশা করা যায়)
+        categoryId,
+        search: search || undefined,
+        startDate: startD,
+        endDate: endD,
+      })
+    );
+
+    setTimeout(() => setButtonLoading(false), 800);
+  };
 
   const columns = [
     {
@@ -212,13 +217,8 @@ const ProductStock = (user: any) => {
       header: 'Product Name',
       render: (row: any) => {
         if (isBrandRow(row)) {
-          return (
-            <div className="font-bold py-1">
-              {row.brand_name}
-            </div>
-          );
+          return <div className="font-bold py-1">{row.brand_name}</div>;
         }
-
         if (isCatRow(row)) {
           return (
             <div className="font-semibold py-1">
@@ -228,7 +228,6 @@ const ProductStock = (user: any) => {
             </div>
           );
         }
-
         return <div>{row.product_name}</div>;
       },
     },
@@ -237,214 +236,197 @@ const ProductStock = (user: any) => {
       header: 'Opening',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => {
-        if (isGroupRow(row)) return '';
-        return (
+      render: (row: any) =>
+        isGroupRow(row) ? (
+          ''
+        ) : (
           <p>
-            {thousandSeparator(Math.floor(row.opening), 0)}
-            {Math.floor(row.opening) ? <span className="text-sm "> ({row.unit})</span> : ''}
+            {thousandSeparator(Math.floor(row.opening || 0), 0)}
+            {row.opening ? <span className="text-sm"> ({row.unit})</span> : ''}
           </p>
-        );
-      },
+        ),
     },
     {
       key: 'stock_in',
       header: 'Stock In',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => {
-        if (isGroupRow(row)) return '';
-        return row.stock_in ? (
-          <span className="text-sm ">
+      render: (row: any) =>
+        isGroupRow(row) ? (
+          ''
+        ) : row.stock_in ? (
+          <span className="text-sm">
             {thousandSeparator(Math.floor(row.stock_in), 0)} ({row.unit})
           </span>
         ) : (
           '-'
-        );
-      },
+        ),
     },
     {
       key: 'stock_out',
       header: 'Stock Out',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => {
-        if (isGroupRow(row)) return '';
-        return row.stock_out ? (
-          <span className="text-sm ">
+      render: (row: any) =>
+        isGroupRow(row) ? (
+          ''
+        ) : row.stock_out ? (
+          <span className="text-sm">
             {thousandSeparator(Math.floor(row.stock_out), 0)} ({row.unit})
           </span>
         ) : (
           '-'
-        );
-      },
+        ),
     },
     {
       key: 'balance',
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => {
-        if (isGroupRow(row)) return '';
-        return Math.floor(row.balance) ? (
-          <span className="text-sm ">
+      render: (row: any) =>
+        isGroupRow(row) ? (
+          ''
+        ) : Math.floor(row.balance || 0) ? (
+          <span className="text-sm">
             {thousandSeparator(Math.floor(row.balance), 0)} ({row.unit})
           </span>
         ) : (
           '-'
-        );
-      },
+        ),
     },
   ];
 
-  const optionsWithAll = [{ id: '', name: 'All Categories' }, ...(Array.isArray(ddlCategory) ? ddlCategory : [])];
-
-  const handleBrandChange = (selectedOption: any) => {
-    const selectedId = selectedOption?.value ?? '';
-    setBrandId(selectedId);
-  };
-
   const brandOptions = [{ id: '', name: 'All Brand' }, ...(brand?.brandDdl?.data || [])];
-
+  const categoryOptions = [{ id: '', name: 'All Categories' }, ...(ddlCategory || [])];
 
   return (
     <div className="">
-      <HelmetTitle title={'Product Stock'} />
+      <HelmetTitle title="Product Stock" />
 
-      <div className="mb-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 md:gap-x-4 gap-y-2">
-          <div className="">
-            <div>
-              <label htmlFor="">Select Branch</label>
-            </div>
-            <div>
-              {branchDdlData.isLoading == true ? <Loader /> : ''}
+      <div className="mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Branch */}
+          <div>
+            <label className="block mb-1 text-sm font-medium">Select Branch</label>
+            {branchDdlData.isLoading ? (
+              <Loader />
+            ) : (
               <BranchDropdown
+                defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
-                defaultValue={user.user.branch_id}
-                className="w-full font-medium text-sm pl-1.5 pt-2 pb-2"
+                className="w-full text-sm p-2 border "
                 branchDdl={dropdownData}
               />
-            </div>
+            )}
           </div>
 
-          <div className="">
+          {/* Brand */}
+          <div>
+            <label className="block mb-1 text-sm font-medium">Select Brand</label>
+            <CategoryDropdown
+              onChange={handleBrandChange}
+              className="w-full text-sm h-8"
+              categoryDdl={brandOptions} 
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block mb-1 text-sm font-medium">Select Category</label>
+            {categoryData.isLoading ? (
+              <Loader />
+            ) : (
+              <CategoryDropdown
+                onChange={handleCategoryChange}
+                className="w-full text-sm"
+                categoryDdl={categoryOptions}
+                placeholder="All Categories"
+              />
+            )}
+          </div>
+
+          {/* Search */}
+          <div>
+            <label className="block mb-1 text-sm font-medium">Search by Product Name</label>
+            <SearchInput
+              search={search}
+              setSearchValue={setSearchValue}
+              className="w-full text-sm h-10"
+            />
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="">Select Brand</label>
+              <label className="block mb-1 text-sm font-medium">Start Date</label>
+              <InputDatePicker
+                setCurrentDate={handleStartDate}
+                className="w-full text-sm h-10"
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
+              />
             </div>
             <div>
-              <CategoryDropdown
-                onChange={handleBrandChange}
-                className="w-full font-medium text-sm"
-                categoryDdl={brandOptions}
+              <label className="block mb-1 text-sm font-medium">End Date</label>
+              <InputDatePicker
+                setCurrentDate={handleEndDate}
+                className="w-full text-sm h-10"
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
               />
             </div>
           </div>
 
-          <div className="">
-            <div>
-              <label htmlFor="">Select Category</label>
+          {/* Controls */}
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="flex gap-2">
+              <InputElement
+                label="Rows"
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type="text"
+                className="w-16 text-sm h-10"
+              />
+              <InputElement
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="w-16 text-sm h-10"
+              />
             </div>
-            <div>
-              {categoryData.isLoading ? (
-                <Loader />
-              ) : (
-                <CategoryDropdown
-                  onChange={handleCategoryChange}
-                  className="w-full font-medium text-sm"
-                  categoryDdl={optionsWithAll}
-                />
-              )}
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1">
-            <div className="mr-2 w-full">
-              <div>
-                <label htmlFor="">Search by Name</label>
-              </div>
-              <SearchInput search={search} setSearchValue={setSearchValue} className="text-nowrap h-8 bg-transparent w-full" />
-            </div>
-          </div>
+            <ButtonLoading
+              onClick={handleActionButtonClick}
+              buttonLoading={buttonLoading}
+              label="Run"
+              className="h-10 px-6"
+            />
 
-          <div className="sm:grid md:flex gap-x-3 ">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="w-full">
-                <label htmlFor="">Start Date</label>
-                <InputDatePicker
-                  setCurrentDate={handleStartDate}
-                  className="w-full font-medium text-sm h-8"
-                  selectedDate={startDate}
-                  setSelectedDate={setStartDate}
-                />
-              </div>
-              <div className="w-full">
-                <label htmlFor="">End Date</label>
-                <InputDatePicker
-                  setCurrentDate={handleEndDate}
-                  className="w-full font-medium text-sm h-8"
-                  selectedDate={endDate}
-                  setSelectedDate={setEndDate}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="sm:grid md:flex gap-x-3 ">
-            <div className="flex w-full">
-              <div className="mr-2">
-                <InputElement
-                  id="perPage"
-                  name="perPage"
-                  label="Rows"
-                  value={perPage.toString()}
-                  onChange={handlePerPageChange}
-                  type="text"
-                  className="font-medium text-sm h-8 w-12"
-                />
-              </div>
-
-              <div className="mr-2">
-                <InputElement
-                  id="fontSize"
-                  name="fontSize"
-                  label="Font"
-                  value={fontSize.toString()}
-                  onChange={handleFontSizeChange}
-                  type="text"
-                  className="font-medium text-sm h-8 w-12"
-                />
-              </div>
-
-              <div className="mt-6">
-                <ButtonLoading
-                  onClick={handleActionButtonClick}
-                  buttonLoading={buttonLoading}
-                  label="Run"
-                  icon=""
-                  className="h-8 w-full"
-                />
-              </div>
-              <PrintButton onClick={handlePrint} label="Print" className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-8" />
-            </div>
+            <PrintButton onClick={handlePrint} label="" className="h-10 px-6" />
           </div>
         </div>
       </div>
 
-      <div className="overflow-y-auto">
-        {stock.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} />
+      <div className="overflow-x-auto">
+        {stock.isLoading ? (
+          <div className="flex justify-center py-10">
+            <Loader />
+          </div>
+        ) : (
+          <Table columns={columns} data={tableData || []} />
+        )}
 
-        {/* === Hidden Print Component === */}
+        {/* Print hidden content */}
         <div className="hidden">
           <StockBookPrint
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group rows print এ যাবে না
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r))}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Product Stock"
-            rowsPerPage={Number(perPage)}
-            fontSize={Number(fontSize)}
+            rowsPerPage={perPage}
+            fontSize={fontSize}
           />
         </div>
       </div>
