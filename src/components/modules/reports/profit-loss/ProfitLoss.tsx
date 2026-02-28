@@ -3,7 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
 
-import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
+import {
+  ButtonLoading,
+  PrintButton,
+} from "../../../../pages/UiElements/CustomButtons";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -38,12 +41,15 @@ const toNum = (v: any) => {
 // Blade-এর মতো 0 হলে 0 দেখাবে
 const fmtZero = (n: number) => thousandSeparator(n || 0, 0);
 
-// Breakdown লাইনে (Sales/Discount, Purchase/Discount) 0 হলে খালি রাখবে
+// Breakdown লাইনে 0 হলে খালি রাখবে
 const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n, 0) : "");
 
 const sumByIds = (rows: TradingRow[], coal3_id: number, coal4_id: number) => {
   return rows
-    .filter((r) => Number(r.coal3_id) === coal3_id && Number(r.coal4_id) === coal4_id)
+    .filter(
+      (r) =>
+        Number(r.coal3_id) === coal3_id && Number(r.coal4_id) === coal4_id
+    )
     .reduce(
       (acc, r) => {
         acc.debit += toNum(r.debit);
@@ -78,33 +84,39 @@ const ProfitLoss = (user: any) => {
   }, []);
 
   useEffect(() => {
-  const protectedData = branchDdlData?.protectedData;
-  if (!protectedData) return;
+    const protectedData = branchDdlData?.protectedData;
+    if (!protectedData) return;
 
-  const { data: ddl, transactionDate: trxDate } = protectedData;
+    const { data: ddl, transactionDate: trxDate } = protectedData;
 
-  if (ddl) {
-    setDropdownData(ddl);
-  }
-
-  if (trxDate) {
-    try {
-      const [day, month, year] = trxDate.split("/").map(str => Number(str.trim()));
-      if (isNaN(year) || year < 1900 || year > 2100) {
-        console.warn("Invalid year in transactionDate:", trxDate);
-        return;
-      }
-      const startOfYear = new Date(year, 0, 1);
-      setStartDate(startOfYear);
-      const endDateValue = new Date(year, month - 1, day);
-      setEndDate(endDateValue);
-    } catch (error) {
-      console.warn("Failed to parse transactionDate:", trxDate, error); 
+    if (ddl) {
+      setDropdownData(ddl);
     }
-  }
-}, [branchDdlData?.protectedData?.data, branchDdlData?.protectedData?.transactionDate]);
 
-  
+    if (trxDate) {
+      try {
+        const [day, month, year] = trxDate
+          .split("/")
+          .map((str: string) => Number(str.trim()));
+
+        if (isNaN(year) || year < 1900 || year > 2100) {
+          console.warn("Invalid year in transactionDate:", trxDate);
+          return;
+        }
+
+        const startOfYear = new Date(year, 0, 1);
+        setStartDate(startOfYear);
+
+        const endDateValue = new Date(year, month - 1, day);
+        setEndDate(endDateValue);
+      } catch (error) {
+        console.warn("Failed to parse transactionDate:", trxDate, error);
+      }
+    }
+  }, [
+    branchDdlData?.protectedData?.data,
+    branchDdlData?.protectedData?.transactionDate,
+  ]);
 
   const handleBranchChange = (e: any) => {
     const v = Number(e.target.value);
@@ -120,7 +132,6 @@ const ProfitLoss = (user: any) => {
 
     setButtonLoading(true);
 
-    // ✅ keys ঠিক: start_date / end_date
     const action = await dispatch(
       fetchProfitLoss({
         branch_id: Number(branchId),
@@ -157,15 +168,20 @@ const ProfitLoss = (user: any) => {
     // Closing Stock: coal3_id=29 coal4_id=21 => credit
     const closing = sumByIds(trading, 29, 21).credit;
 
-    // ✅ Purchase + Purchase Discount (নতুন)
     // Purchase: coal3_id=9 coal4_id=35 => debit
     const purchaseDebit = sumByIds(trading, 9, 35).debit;
+
+    // ✅ Purchase Return: coal3_id=9 coal4_id=16 => credit (এটাই বাদ যাবে)
+    const purchaseReturnCredit = sumByIds(trading, 9, 16).credit;
 
     // Purchase Discount: coal3_id=8 coal4_id=40 => credit
     const purchaseDiscountCredit = sumByIds(trading, 8, 40).credit;
 
-    // Net Purchase = Purchase - Purchase Discount
-    const netPurchase = Math.max(0, purchaseDebit - purchaseDiscountCredit);
+    // ✅ Net Purchase = Purchase - Purchase Return - Purchase Discount
+    const netPurchase = Math.max(
+      0,
+      purchaseDebit - purchaseReturnCredit - purchaseDiscountCredit
+    );
 
     // Sales: coal3_id=7 coal4_id=15 => credit
     const salesCredit = sumByIds(trading, 7, 15).credit;
@@ -173,26 +189,37 @@ const ProfitLoss = (user: any) => {
     // Sales Discount: coal3_id=7 coal4_id=23 => debit
     const salesDiscountDebit = sumByIds(trading, 7, 23).debit;
 
-    // Net Sales (Sales credit - Discount debit)
-    const netSalesCredit = Math.max(0, salesCredit - salesDiscountDebit);
+    // ✅ Sales Return: coal3_id=7 coal4_id=19 => debit (এটাই বাদ যাবে)
+    const salesReturnDebit = sumByIds(trading, 7, 19).debit;
 
-    // Trading base (Net Sales + Net Purchase ব্যবহার হবে)
+    // ✅ Net Sales = Sales - Sales Discount - Sales Return
+    const netSalesCredit = Math.max(
+      0,
+      salesCredit - salesDiscountDebit - salesReturnDebit
+    );
+
+    // Trading base
     const debitBase = opening + netPurchase;
     const creditBase = closing + netSalesCredit;
 
-    // Blade balancing: Profit -> Gross Profit debit side; Loss -> Gross Loss credit side
+    // Blade balancing
     const grossProfit = creditBase > debitBase ? creditBase - debitBase : 0;
     const grossLoss = debitBase > creditBase ? debitBase - creditBase : 0;
 
     const tradingTotalDebit = grossProfit > 0 ? debitBase + grossProfit : debitBase;
     const tradingTotalCredit = grossLoss > 0 ? creditBase + grossLoss : creditBase;
 
-    // Net Profit/Loss
-    const expenseRows = netprofit.filter((r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0);
+    const expenseRows = netprofit.filter(
+      (r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0
+    );
     const incomeRows = netprofit.filter((r) => toNum(r.credit) > 0);
 
     const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
-    const totalIncome = incomeRows.reduce((s, r) => s + (toNum(r.credit) - toNum(r.debit)), 0);
+
+    const totalIncome = incomeRows.reduce((s, r) => {
+      const net = toNum(r.credit) - toNum(r.debit);
+      return s + (net > 0 ? net : 0);
+    }, 0);
 
     const debitPLBase = grossLoss + totalExpense;
     const creditPLBase = grossProfit + totalIncome;
@@ -209,11 +236,13 @@ const ProfitLoss = (user: any) => {
         closing,
 
         purchaseDebit,
+        purchaseReturnCredit,
         purchaseDiscountCredit,
         netPurchase,
 
         salesCredit,
         salesDiscountDebit,
+        salesReturnDebit,
         netSalesCredit,
 
         grossProfit,
@@ -251,6 +280,13 @@ const ProfitLoss = (user: any) => {
     const value = parseInt(e.target.value, 10);
     setFontSize(Number.isFinite(value) ? value : 12);
   };
+
+
+  console.log('====================================');
+  console.log("report.net.expenses", profitLossState);
+  console.log('====================================');
+
+
 
   return (
     <div>
@@ -368,7 +404,7 @@ const ProfitLoss = (user: any) => {
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.closing)}</td>
             </tr>
 
-            {/* ✅ Purchase Breakdown (নতুন) */}
+            {/* Purchase Breakdown */}
             <tr className="border-b dark:border-gray-700 border-gray-200">
               <td className="text-black dark:text-white p-2 pl-6">Purchase</td>
               <td className="text-black dark:text-white p-2 text-right">
@@ -378,10 +414,21 @@ const ProfitLoss = (user: any) => {
               <td className="text-black dark:text-white p-2 text-right"></td>
             </tr>
 
+            {report.trading.purchaseReturnCredit > 0 ? (
+              <tr className="border-b dark:border-gray-700 border-gray-200">
+                <td className="text-black dark:text-white p-2 pl-6">(-) Purchase Return</td>
+                <td className="text-black dark:text-white p-2 text-right ">
+                  {fmtEmptyIfZero(report.trading.purchaseReturnCredit)}
+                </td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+              </tr>
+            ) : null}
+
             {report.trading.purchaseDiscountCredit > 0 ? (
               <tr className="border-b dark:border-gray-700 border-gray-200">
                 <td className="text-black dark:text-white p-2 pl-6">(-) Purchase Discount</td>
-                <td className="text-black dark:text-white p-2 text-right border-b dark:border-gray-100 border-gray-600">
+                <td className="text-black dark:text-white p-2 text-right ">
                   {fmtEmptyIfZero(report.trading.purchaseDiscountCredit)}
                 </td>
                 <td className="text-black dark:text-white p-2 text-right"></td>
@@ -391,7 +438,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="text-black dark:text-white p-2">Net Purchase</td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right border-t dark:border-gray-100 border-gray-600"></td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netPurchase)}</td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
             </tr>
@@ -409,8 +456,19 @@ const ProfitLoss = (user: any) => {
             {report.trading.salesDiscountDebit > 0 ? (
               <tr className="border-b dark:border-gray-700 border-gray-200">
                 <td className="text-black dark:text-white p-2 pl-6">(-) Sales Discount</td>
-                <td className="text-black dark:text-white p-2 text-right border-b dark:border-gray-100 border-gray-600">
+                <td className="text-black dark:text-white p-2 text-right ">
                   {fmtEmptyIfZero(report.trading.salesDiscountDebit)}
+                </td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+              </tr>
+            ) : null}
+
+            {report.trading.salesReturnDebit > 0 ? (
+              <tr className="border-b dark:border-gray-700 border-gray-200">
+                <td className="text-black dark:text-white p-2 pl-6">(-) Sales Return</td>
+                <td className="text-black dark:text-white p-2 text-right ">
+                  {fmtEmptyIfZero(report.trading.salesReturnDebit)}
                 </td>
                 <td className="text-black dark:text-white p-2 text-right"></td>
                 <td className="text-black dark:text-white p-2 text-right"></td>
@@ -419,7 +477,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="text-black dark:text-white p-2">Net Sales</td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
+              <td className="text-black dark:text-white p-2 text-right border-t dark:border-gray-100 border-gray-600"></td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netSalesCredit)}</td>
             </tr>
@@ -489,11 +547,17 @@ const ProfitLoss = (user: any) => {
                 {report.net.incomes.map((r: any, idx: number) => (
                   <tr key={`inc-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
                     <td className="p-2 pl-6">{r.name}</td>
-                    <td className="p-2 text-right">{ r.credit-r.debit > 0 ? fmtZero(toNum(r.credit - r.debit)) : fmtZero(0)}</td>
+                    <td className="p-2 text-right">
+                      {(() => {
+                        const net = toNum(r.credit) - toNum(r.debit);
+                        return net > 0 ? fmtZero(net) : fmtZero(0);
+                      })()}
+                    </td>
                     <td className="p-2 text-right"></td>
                     <td className="p-2 text-right"></td>
                   </tr>
                 ))}
+
                 <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
                   <td className="p-2">Total Income</td>
                   <td className="p-2 text-right border-t"></td>
@@ -504,18 +568,10 @@ const ProfitLoss = (user: any) => {
             ) : null}
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
-              <td className="p-2">
-                {report.net.netProfit > 0 ? "Net Profit" : "Net Loss"}
-              </td>
-              <td className="p-2 text-right">
-               
-              </td>
-              <td className="p-2 text-right">
-                {fmtZero(report.net.netProfit > 0 ? report.net.netProfit : 0)}
-              </td>
-              <td className="p-2 text-right">
-                {fmtZero(report.net.netLoss > 0 ? report.net.netLoss : 0)}
-              </td>
+              <td className="p-2">{report.net.netProfit > 0 ? "Net Profit" : "Net Loss"}</td>
+              <td className="p-2 text-right"></td>
+              <td className="p-2 text-right">{fmtZero(report.net.netProfit > 0 ? report.net.netProfit : 0)}</td>
+              <td className="p-2 text-right">{fmtZero(report.net.netLoss > 0 ? report.net.netLoss : 0)}</td>
             </tr>
 
             <tr className="font-semibold border-t-2 dark:border-gray-300 border-gray-600">
