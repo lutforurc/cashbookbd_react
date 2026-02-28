@@ -158,6 +158,10 @@ const ProfitLoss = (user: any) => {
     return null;
   }, [profitLossState?.data]);
 
+
+
+
+
   const report = useMemo(() => {
     const trading: TradingRow[] = apiData?.trading || [];
     const netprofit: NetRow[] = apiData?.netprofit || [];
@@ -209,9 +213,7 @@ const ProfitLoss = (user: any) => {
     const tradingTotalDebit = grossProfit > 0 ? debitBase + grossProfit : debitBase;
     const tradingTotalCredit = grossLoss > 0 ? creditBase + grossLoss : creditBase;
 
-    const expenseRows = netprofit.filter(
-      (r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0
-    );
+    const expenseRows = netprofit.filter((r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0    );
     const incomeRows = netprofit.filter((r) => toNum(r.credit) > 0);
 
     const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
@@ -264,6 +266,8 @@ const ProfitLoss = (user: any) => {
       },
     };
   }, [apiData]);
+ 
+
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
@@ -281,10 +285,6 @@ const ProfitLoss = (user: any) => {
     setFontSize(Number.isFinite(value) ? value : 12);
   };
 
-
-  console.log('====================================');
-  console.log("report.net.expenses", profitLossState);
-  console.log('====================================');
 
 
 

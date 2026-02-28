@@ -197,6 +197,8 @@ const ProductStock = (user: any) => {
     }
   }, [branchDdlData?.protectedData]);
 
+
+
   const columns = [
     {
       key: 'sl_number',
@@ -304,6 +306,7 @@ const ProductStock = (user: any) => {
 
   const brandOptions = [{ id: '', name: 'All Brand' }, ...(brand?.brandDdl?.data || [])];
 
+
   return (
     <div className="">
       <HelmetTitle title={'Product Stock'} />
@@ -318,6 +321,7 @@ const ProductStock = (user: any) => {
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
                 onChange={handleBranchChange}
+                defaultValue={user.user.branch_id}
                 className="w-full font-medium text-sm pl-1.5 pt-2 pb-2"
                 branchDdl={dropdownData}
               />

@@ -5,10 +5,6 @@ import { chartDateTime } from './formatDate';
 const CompanyPad = () => {
   const settings = useSelector((state: any) => state.settings.data);
 
-  console.log('====================================');
-  console.log("settings", settings?.company?.notes);
-  console.log('====================================');
-
   return (
     <div>
       <div className="mb-6">
