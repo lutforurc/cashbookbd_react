@@ -213,7 +213,7 @@ const ProfitLoss = (user: any) => {
     const tradingTotalDebit = grossProfit > 0 ? debitBase + grossProfit : debitBase;
     const tradingTotalCredit = grossLoss > 0 ? creditBase + grossLoss : creditBase;
 
-    const expenseRows = netprofit.filter((r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0    );
+    const expenseRows = netprofit.filter((r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0);
     const incomeRows = netprofit.filter((r) => toNum(r.credit) > 0);
 
     const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
@@ -266,7 +266,7 @@ const ProfitLoss = (user: any) => {
       },
     };
   }, [apiData]);
- 
+
 
 
   const handlePrint = useReactToPrint({
@@ -405,14 +405,21 @@ const ProfitLoss = (user: any) => {
             </tr>
 
             {/* Purchase Breakdown */}
-            <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">Purchase</td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtEmptyIfZero(report.trading.purchaseDebit)}
-              </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-            </tr>
+
+            {report.trading.purchaseDiscountCredit || report.trading.purchaseReturnCredit ? (
+              <tr className="border-b dark:border-gray-700 border-gray-200">
+                <td className="text-black dark:text-white p-2 pl-6">Purchase</td>
+                <td className="text-black dark:text-white p-2 text-right">
+                  {fmtEmptyIfZero(report.trading.purchaseDebit)}
+                </td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+              </tr>
+            ) : (
+              <>
+              </>
+            )}
+
 
             {report.trading.purchaseReturnCredit > 0 ? (
               <tr className="border-b dark:border-gray-700 border-gray-200">
@@ -438,13 +445,14 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="text-black dark:text-white p-2">Net Purchase</td>
-              <td className="text-black dark:text-white p-2 text-right border-t dark:border-gray-100 border-gray-600"></td>
+              <td className={`text-black dark:text-white p-2 text-right border-t ${report.trading.purchaseDiscountCredit || report.trading.purchaseReturnCredit ? 'dark:border-gray-100 border-gray-600' : ''}`}></td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netPurchase)}</td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
             </tr>
 
             {/* Sales Breakdown */}
-            <tr className="border-b dark:border-gray-700 border-gray-200">
+            {report.trading.salesDiscountDebit || report.trading.salesReturnDebit ? (
+              <tr className="border-b dark:border-gray-700 border-gray-200">
               <td className="text-black dark:text-white p-2 pl-6">Sales</td>
               <td className="text-black dark:text-white p-2 text-right">
                 {fmtEmptyIfZero(report.trading.salesCredit)}
@@ -452,6 +460,10 @@ const ProfitLoss = (user: any) => {
               <td className="text-black dark:text-white p-2 text-right"></td>
               <td className="text-black dark:text-white p-2 text-right"></td>
             </tr>
+            ) : (
+              <></>
+            )}
+            
 
             {report.trading.salesDiscountDebit > 0 ? (
               <tr className="border-b dark:border-gray-700 border-gray-200">
@@ -477,7 +489,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="text-black dark:text-white p-2">Net Sales</td>
-              <td className="text-black dark:text-white p-2 text-right border-t dark:border-gray-100 border-gray-600"></td>
+              <td className={`text-black dark:text-white p-2 text-right border-t ${report.trading.salesDiscountDebit || report.trading.salesReturnDebit ? 'dark:border-gray-100 border-gray-600' : ''}`}></td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netSalesCredit)}</td>
             </tr>
