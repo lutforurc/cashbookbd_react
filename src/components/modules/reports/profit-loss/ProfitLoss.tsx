@@ -15,7 +15,8 @@ import InputElement from "../../../utils/fields/InputElement";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
-import { fetchClosingStockItems, fetchProfitLoss } from "./profitLossSlice";
+import { fetchProfitLoss } from "./profitLossSlice";
+import { fetchClosingStockItems } from "./profitLossSlice";
 import ProfitLossPrint from "./ProfitLossPrint";
 import ItemDetailsPrint from "./ItemDetailsPrint";
 
@@ -68,7 +69,6 @@ const ProfitLoss = (user: any) => {
   const profitLossState: any = useSelector((state: any) => state.profitLoss);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [itemDetails, setItemDetails] = useState<any>({});
   const [branchId, setBranchId] = useState<number | null>(null);
 
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -80,16 +80,15 @@ const ProfitLoss = (user: any) => {
 
   const printRef = useRef<HTMLDivElement>(null);
 
+  // ✅ অতিরিক্ত: ItemDetailsPrint এর জন্য আলাদা ref + loading + data
+  const itemPrintRef = useRef<HTMLDivElement>(null);
+  const [itemPrintLoading, setItemPrintLoading] = useState(false);
+  const closingStockData = profitLossState?.closingStockData;
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
     setBranchId(Number(user?.user?.branch_id) || null);
   }, []);
-
-
-  useEffect(() => {
-    dispatch(getDdlProtectedBranch() as any);
-    setBranchId(Number(user?.user?.branch_id) || null);
-  }, [profitLossState?.closingStockAction?.data]);
 
   useEffect(() => {
     const protectedData = branchDdlData?.protectedData;
@@ -148,19 +147,6 @@ const ProfitLoss = (user: any) => {
       }) as any
     );
 
-    const closingStockAction = await dispatch(
-          fetchClosingStockItems({
-            companyId: 1,
-            branchId: 1,
-            userId: 1,
-          })
-        );
-
-    setItemDetails(closingStockAction?.payload || []); // Assuming payload has the data you need
-      
-    console.log('====================================');
-    console.log("closingStockAction", profitLossState);
-    console.log('====================================');
     setButtonLoading(false);
 
     if (action?.meta?.requestStatus !== "fulfilled") {
@@ -178,10 +164,6 @@ const ProfitLoss = (user: any) => {
 
     return null;
   }, [profitLossState?.data]);
-
-
-
-
 
   const report = useMemo(() => {
     const trading: TradingRow[] = apiData?.trading || [];
@@ -205,7 +187,7 @@ const ProfitLoss = (user: any) => {
     // ✅ Net Purchase = Purchase - Purchase Return - Purchase Discount
     const netPurchase = Math.max(
       0,
-      Number(purchaseDebit) - Number(purchaseReturnCredit) - Number(purchaseDiscountCredit)
+      purchaseDebit - purchaseReturnCredit - purchaseDiscountCredit
     );
 
     // Sales: coal3_id=7 coal4_id=15 => credit
@@ -220,12 +202,12 @@ const ProfitLoss = (user: any) => {
     // ✅ Net Sales = Sales - Sales Discount - Sales Return
     const netSalesCredit = Math.max(
       0,
-      Number(salesCredit) - Number(salesDiscountDebit) - Number(salesReturnDebit)
+      salesCredit - salesDiscountDebit - salesReturnDebit
     );
 
     // Trading base
-    const debitBase = Number(opening) + Number(netPurchase);
-    const creditBase = Number(closing) + Number(netSalesCredit);
+    const debitBase = opening + netPurchase;
+    const creditBase = closing + netSalesCredit;
 
     // Blade balancing
     const grossProfit = creditBase > debitBase ? creditBase - debitBase : 0;
@@ -288,13 +270,48 @@ const ProfitLoss = (user: any) => {
     };
   }, [apiData]);
 
-
-
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: "Profit Loss",
     removeAfterPrint: true,
   });
+
+  // ✅ অতিরিক্ত: ItemDetailsPrint এর জন্য print handler
+  const handleItemPrint = useReactToPrint({
+    content: () => itemPrintRef.current,
+    documentTitle: "Stock Details with rate",
+    removeAfterPrint: true,
+  });
+
+  // ✅ অতিরিক্ত: নতুন বাটন ক্লিক -> fetchClosingStockItems -> তারপর print
+  const handleItemPrintButtonClick = async () => {
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
+
+    const startD = dayjs(startDate).format("YYYY-MM-DD");
+    const endD = dayjs(endDate).format("YYYY-MM-DD");
+
+    setItemPrintLoading(true);
+
+    const action = await dispatch(
+      fetchClosingStockItems({
+        companyId: Number(user?.user?.company_id || user?.user?.companyId || 1),
+        branchId: Number(branchId),
+        userId: Number(user?.user?.id || user?.user?.userId || 1),
+        start_date: startD,
+        end_date: endD,
+      }) as any
+    );
+
+    setItemPrintLoading(false);
+
+    if (action?.meta?.requestStatus !== "fulfilled") {
+      return alert(action?.payload || "Closing stock load failed");
+    }
+
+    // store update/render complete হওয়ার জন্য
+    setTimeout(() => handleItemPrint(), 0);
+  };
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -307,7 +324,9 @@ const ProfitLoss = (user: any) => {
   };
 
 
-
+  console.log('====================================');
+  console.log("closingStockData", closingStockData);
+  console.log('====================================');
 
   return (
     <div>
@@ -385,6 +404,15 @@ const ProfitLoss = (user: any) => {
             <PrintButton
               onClick={handlePrint}
               label=""
+              className="ml-2 mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
+            />
+
+            {/* ✅ অতিরিক্ত: Item Details Print বাটন */}
+            <ButtonLoading
+              onClick={handleItemPrintButtonClick}
+              buttonLoading={itemPrintLoading}
+              label="Item Print"
+              icon=""
               className="ml-2 mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
             />
           </div>
@@ -474,17 +502,17 @@ const ProfitLoss = (user: any) => {
             {/* Sales Breakdown */}
             {report.trading.salesDiscountDebit || report.trading.salesReturnDebit ? (
               <tr className="border-b dark:border-gray-700 border-gray-200">
-              <td className="text-black dark:text-white p-2 pl-6">Sales</td>
-              <td className="text-black dark:text-white p-2 text-right">
-                {fmtEmptyIfZero(report.trading.salesCredit)}
-              </td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-              <td className="text-black dark:text-white p-2 text-right"></td>
-            </tr>
+                <td className="text-black dark:text-white p-2 pl-6">Sales</td>
+                <td className="text-black dark:text-white p-2 text-right">
+                  {fmtEmptyIfZero(report.trading.salesCredit)}
+                </td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+                <td className="text-black dark:text-white p-2 text-right"></td>
+              </tr>
             ) : (
               <></>
             )}
-            
+
 
             {report.trading.salesDiscountDebit > 0 ? (
               <tr className="border-b dark:border-gray-700 border-gray-200">
@@ -570,7 +598,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="p-2">Total Expense</td>
-              <td className={`text-black dark:text-white p-2 text-right border-t w-30 ${ report.net.expenses.length > 0 ? 'dark:border-gray-100 border-gray-600' : ''}`}></td>
+              <td className={`text-black dark:text-white p-2 text-right border-t w-30 ${report.net.expenses.length > 0 ? 'dark:border-gray-100 border-gray-600' : ''}`}></td>
               <td className="p-2 text-right">{fmtZero(report.net.totalExpense)}</td>
               <td className="p-2 text-right"></td>
             </tr>
@@ -628,14 +656,15 @@ const ProfitLoss = (user: any) => {
             fontSize={Number(fontSize)}
           />
 
+          {/* ✅ অতিরিক্ত: ItemDetailsPrint hidden */}
           <ItemDetailsPrint
-            ref={printRef}
-            rows={itemDetails}
+            ref={itemPrintRef}
+            report={closingStockData}
             title="Closing Stock Item Details"
             startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
             endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
-            rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
+            rowsPerPage={Number(perPage)}
           />
         </div>
       </div>

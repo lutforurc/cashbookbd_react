@@ -1,14 +1,14 @@
-export const formatRoleName = (roleName:any) => {
-    return roleName.split(".")[0].replace(/^./, (char:string) => char.toUpperCase());
-  };
+export const formatRoleName = (roleName: any) => {
+  return roleName.split(".")[0].replace(/^./, (char: string) => char.toUpperCase());
+};
 
 
 
-  // export const formatRoleNameForCashBook = (roleName:any) => {
-  //   const parts = roleName.split('.');
-  //   const lastPart = parts[parts.length - 1];
-  //   return lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
-  // };
+// export const formatRoleNameForCashBook = (roleName:any) => {
+//   const parts = roleName.split('.');
+//   const lastPart = parts[parts.length - 1];
+//   return lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
+// };
 export const formatRoleNameForCashBook = (roleName: any) => {
   return roleName
     .split('.')                 // ['ledger', 'create', 'view']
@@ -19,6 +19,16 @@ export const formatRoleNameForCashBook = (roleName: any) => {
     .join(' ');                  // 'Ledger Create View'
 };
 
-  export const firstCharacterUppercase = (roleName:any) => {
-    return roleName.split(".")[0].replace(/^./, (char:string) => char.toUpperCase());
-  };
+export const firstCharacterUppercase = (roleName: any) => {
+  return roleName.split(".")[0].replace(/^./, (char: string) => char.toUpperCase());
+};
+
+export const firstLetterCapitalize = (text: any) => {
+  const s = String(text ?? "").trim();
+  if (!s) return "";
+  return s
+    .toLowerCase()
+    .split(/\s+/)
+    .map(w => (w ? w[0].toUpperCase() + w.slice(1) : ""))
+    .join(" ");
+};
