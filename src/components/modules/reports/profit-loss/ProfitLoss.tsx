@@ -395,7 +395,7 @@ const ProfitLoss = (user: any) => {
 
             <ButtonLoading
               onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
+              // buttonLoading={buttonLoading}
               label="Run"
               icon=""
               className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
@@ -408,13 +408,18 @@ const ProfitLoss = (user: any) => {
             />
 
             {/* ✅ অতিরিক্ত: Item Details Print বাটন */}
-            <ButtonLoading
+            <PrintButton
+              onClick={handleItemPrintButtonClick}
+              label=""
+              className="ml-2 mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
+            />
+            {/* <ButtonLoading
               onClick={handleItemPrintButtonClick}
               buttonLoading={itemPrintLoading}
               label="Item Print"
               icon=""
               className="ml-2 mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
-            />
+            /> */}
           </div>
         </div>
       </div>

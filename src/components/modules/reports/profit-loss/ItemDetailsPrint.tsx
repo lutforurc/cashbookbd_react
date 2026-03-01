@@ -290,7 +290,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
               style={{ fontSize: fs }}
               className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} font-semibold`}
             >
-              { firstLetterCapitalize(r.brand)} → { firstLetterCapitalize(r.category)}
+              { firstLetterCapitalize(r.brand)} → { r.category }
             </td>
           </tr>
         );
@@ -351,7 +351,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
               style={{ fontSize: fs }}
               className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
             >
-              { firstLetterCapitalize(r.category)} Total
+              { r.category } Total
             </td>
             <td
               style={{ fontSize: fs }}
