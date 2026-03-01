@@ -16,7 +16,7 @@ import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import { fetchBrandDdl } from '../../product/brand/brandSlice';
+import { fetchBrandDdl } from '../../product/brand/brandSlice'; 
 
 // ======================
 // Brand -> Category wise helper
@@ -326,7 +326,7 @@ const ProductStock = ({ user }: any) => {
             <CategoryDropdown
               onChange={handleBrandChange}
               className="w-full text-sm h-8"
-              categoryDdl={brandOptions} 
+              categoryDdl={brandOptions}
             />
           </div>
 

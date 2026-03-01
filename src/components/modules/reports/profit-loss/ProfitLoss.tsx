@@ -15,8 +15,9 @@ import InputElement from "../../../utils/fields/InputElement";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
-import { fetchProfitLoss } from "./profitLossSlice";
+import { fetchClosingStockItems, fetchProfitLoss } from "./profitLossSlice";
 import ProfitLossPrint from "./ProfitLossPrint";
+import ItemDetailsPrint from "./ItemDetailsPrint";
 
 type TradingRow = {
   coal3_id?: number | string;
@@ -67,6 +68,7 @@ const ProfitLoss = (user: any) => {
   const profitLossState: any = useSelector((state: any) => state.profitLoss);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [itemDetails, setItemDetails] = useState<any>({});
   const [branchId, setBranchId] = useState<number | null>(null);
 
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -82,6 +84,12 @@ const ProfitLoss = (user: any) => {
     dispatch(getDdlProtectedBranch() as any);
     setBranchId(Number(user?.user?.branch_id) || null);
   }, []);
+
+
+  useEffect(() => {
+    dispatch(getDdlProtectedBranch() as any);
+    setBranchId(Number(user?.user?.branch_id) || null);
+  }, [profitLossState?.closingStockAction?.data]);
 
   useEffect(() => {
     const protectedData = branchDdlData?.protectedData;
@@ -140,6 +148,19 @@ const ProfitLoss = (user: any) => {
       }) as any
     );
 
+    const closingStockAction = await dispatch(
+          fetchClosingStockItems({
+            companyId: 1,
+            branchId: 1,
+            userId: 1,
+          })
+        );
+
+    setItemDetails(closingStockAction?.payload || []); // Assuming payload has the data you need
+      
+    console.log('====================================');
+    console.log("closingStockAction", profitLossState);
+    console.log('====================================');
     setButtonLoading(false);
 
     if (action?.meta?.requestStatus !== "fulfilled") {
@@ -184,7 +205,7 @@ const ProfitLoss = (user: any) => {
     // ✅ Net Purchase = Purchase - Purchase Return - Purchase Discount
     const netPurchase = Math.max(
       0,
-      purchaseDebit - purchaseReturnCredit - purchaseDiscountCredit
+      Number(purchaseDebit) - Number(purchaseReturnCredit) - Number(purchaseDiscountCredit)
     );
 
     // Sales: coal3_id=7 coal4_id=15 => credit
@@ -199,12 +220,12 @@ const ProfitLoss = (user: any) => {
     // ✅ Net Sales = Sales - Sales Discount - Sales Return
     const netSalesCredit = Math.max(
       0,
-      salesCredit - salesDiscountDebit - salesReturnDebit
+      Number(salesCredit) - Number(salesDiscountDebit) - Number(salesReturnDebit)
     );
 
     // Trading base
-    const debitBase = opening + netPurchase;
-    const creditBase = closing + netSalesCredit;
+    const debitBase = Number(opening) + Number(netPurchase);
+    const creditBase = Number(closing) + Number(netSalesCredit);
 
     // Blade balancing
     const grossProfit = creditBase > debitBase ? creditBase - debitBase : 0;
@@ -601,6 +622,16 @@ const ProfitLoss = (user: any) => {
             ref={printRef}
             report={report}
             title="Profit Loss"
+            startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
+            endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
+          />
+
+          <ItemDetailsPrint
+            ref={printRef}
+            rows={itemDetails}
+            title="Closing Stock Item Details"
             startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
             endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
             rowsPerPage={Number(perPage)}

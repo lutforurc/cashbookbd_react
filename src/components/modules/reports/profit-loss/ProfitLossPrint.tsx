@@ -25,8 +25,6 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
     // ✅ fs অনুযায়ী padding-y (9-11 => 0.5px, 12-15 => 0.7px, 16+ => 1)
     const cellPy = fs <= 11 ? "py-[0.5px]" : fs <= 15 ? "py-[.9px]" : "py-1";
 
-    // ✅ underline padding-bottom (fs অনুযায়ী)
-    const underlinePb = fs <= 11 ? "1px" : fs <= 15 ? "1.5px" : "2px";
 
     const pages = [1];
 

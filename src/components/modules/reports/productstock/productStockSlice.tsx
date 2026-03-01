@@ -17,10 +17,6 @@ export const getProductStock = ({ branchId, brandId, categoryId, search, startDa
   httpService.post(API_REPORT_PRODUCT_STOCK_URL, { branch_id: branchId, brand_id: brandId, category_id: categoryId, product_name: search, startdate: startDate, enddate: endDate })
     .then((res) => {
 
-      console.log('====================================');
-      console.log("Branch SSSSSSSSSSSS", [branchId]);
-      console.log('====================================');
-
       let _data = res.data;
       if (_data.success) {
         dispatch({
