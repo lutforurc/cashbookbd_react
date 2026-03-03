@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiArrowLeft, FiEdit2, FiRefreshCcw, FiSearch } from "react-icons/fi";
+import { FiArrowLeft, FiEdit2, FiPlus, FiRefreshCcw, FiSearch } from "react-icons/fi";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -161,6 +161,13 @@ export default function UnitSalePaymentList() {
   const handleSearch = () => {
     setPagination((p) => ({ ...p, current_page: 1 }));
     loadData(1);
+  };
+
+  const handleAddNew = () => {
+    navigate("/admin/unit-payment/entry");
+  };
+  const handleHome = () => {
+    navigate("/dashboard");
   };
 
   const handleReset = () => {
@@ -418,7 +425,7 @@ export default function UnitSalePaymentList() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-2">
         <SelectOption
           className="h-8.5 bg-transparent "
           onChange={onPerPageChange}
@@ -441,12 +448,24 @@ export default function UnitSalePaymentList() {
           icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
         />
 
-        <Link
-          to="/dashboard"
-          className="text-nowrap justify-center mr-0 p-2 h-8.5 "
-        >
-          <FiArrowLeft className="mr-2" /> Home
-        </Link>
+
+ 
+          <ButtonLoading
+            onClick={handleAddNew}
+            buttonLoading={false}
+            label="Add New"
+            className="whitespace-nowrap text-center mr-0  h-8.5 w-full"
+            icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+          />
+
+          <ButtonLoading
+            onClick={handleHome}
+            buttonLoading={false}
+            label="Home"
+            className="whitespace-nowrap text-center mr-0  h-8.5 w-full"
+            icon={<FiArrowLeft className="text-white text-lg ml-2 mr-2" />}
+          />
+      
       </div>
 
       {/* TABLE */}

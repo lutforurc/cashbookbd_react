@@ -105,6 +105,7 @@ import { MENU_PERMISSIONS } from './components/Sidebar/menuPermissions';
 import LoanLedger from './components/modules/hrms/loan/LoanLedger';
 import UnitSalePaymentList from './components/modules/real-estate/checks/UnitSalePaymentList';
 import UnitSalePaymentEdit from './components/modules/real-estate/checks/UnitSalePaymentEdit';
+import UnitSalePaymentEntry from './components/modules/real-estate/checks/UnitSalePaymentEntry';
 import ProductStockIndex from './components/modules/reports/productstock/ProductStockIndex';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 
@@ -180,6 +181,7 @@ function App() {
 
             <Route path={routes.unit_payment_list} element={<UnitSalePaymentList />} />
             <Route path={routes.unit_payment_edit} element={<UnitSalePaymentEdit />} />
+            <Route path={routes.unit_payment_entry} element={<UnitSalePaymentEntry />} />
 
             {/* Day Close */}
             <Route path={routes.day_close} element={<Dayclose />} />

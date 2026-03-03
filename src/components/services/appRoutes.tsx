@@ -135,6 +135,7 @@ const ROUTES = {
 
   unit_payment_list: '/admin/unit-payment-list', 
   unit_payment_edit: '/admin/unit-payment/edit/:id', 
+  unit_payment_entry: '/admin/unit-payment/entry',
 
   // Invoice Routes
   inv_labour: '/invoice/labour-invoice',
