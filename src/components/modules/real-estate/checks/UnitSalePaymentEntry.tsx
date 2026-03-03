@@ -14,6 +14,7 @@ import { CHEQUE_STATUSES, ENTRY_STATUSES, PAYMENT_MODES, PAYMENT_TYPES } from ".
 import { getCoal3ByCoal4 } from "../../chartofaccounts/levelthree/coal3Sliders";
 import httpService from "../../../services/httpService";
 import { toast } from "react-toastify";
+import { unitSalePaymentsDdl } from "./unitSalePaymentsSlice";
 
 const LIST_PATH = "/admin/unit-payment-list";
 
@@ -57,15 +58,12 @@ const initialForm: FormState = {
 
 export default function UnitSalePaymentEntry() {
   const coal3 = useSelector((s: any) => s.coal3);
+  const unitSalePayments = useSelector((s: any) => s.unitPayments);
   const dispatch = useDispatch<any>();
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
   const [customerSearch, setCustomerSearch] = useState("");
-  const [saleOptionsLoading, setSaleOptionsLoading] = useState(false);
-  const [unitSaleOptions, setUnitSaleOptions] = useState<{ id: string; name: string }[]>([
-    { id: "", name: "Select Unit Sale" },
-  ]);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [saleSummary, setSaleSummary] = useState<any>(null);
 
@@ -86,6 +84,37 @@ export default function UnitSalePaymentEntry() {
     () => isCheque && ["BOUNCED", "CANCELLED"].includes(form.cheque_collect_status || ""),
     [isCheque, form.cheque_collect_status]
   );
+  const saleOptionsLoading = unitSalePayments?.ddlLoading || false;
+  const unitSaleOptions = useMemo(() => {
+    const rows = unitSalePayments?.ddlRows ?? [];
+    const options: { id: string; name: string }[] = [{ id: "", name: "Select Unit Sale" }];
+
+    rows.forEach((r: any) => {
+      const saleId = String(r?.id ?? "");
+      if (!saleId) return;
+      const customer =
+        r?.customer_name ||
+        r?.customer?.name ||
+        r?.booking?.payload?.customer?.label ||
+        "Unknown Customer";
+      const unit =
+        r?.unit_label ||
+        r?.booking?.unit_label ||
+        r?.booking?.payload?.unit?.label ||
+        "Unknown Unit";
+      const parking =
+        r?.parking_label ||
+        r?.booking?.parking_label ||
+        r?.booking?.payload?.parking?.label ||
+        "No Parking";
+      options.push({
+        id: saleId,
+        name: `Sale #${saleId} - ${customer} (${unit}, ${parking})`,
+      });
+    });
+
+    return options;
+  }, [unitSalePayments?.ddlRows]);
 
   useEffect(() => {
     dispatch(getCoal3ByCoal4(2));
@@ -99,42 +128,17 @@ export default function UnitSalePaymentEntry() {
 
   const loadUnitSaleOptions = async (q = "") => {
     try {
-      setSaleOptionsLoading(true);
-      let res: any;
-      try {
-        res = await httpService.get(`/real-estate/unit-sale/ddl`, {
-          params: { q: q || undefined, page: 1, perPage: 50, per_page: 50 },
-        });
-      } catch {
-        // fallback if backend route is registered without "real-estate" prefix
-        res = await httpService.get(`/unit-sale/ddl`, {
-          params: { q: q || undefined, page: 1, perPage: 50, per_page: 50 },
-        });
-      }
-
-      const rows = res?.data?.data?.data ?? res?.data?.data ?? [];
-      const options: { id: string; name: string }[] = [{ id: "", name: "Select Unit Sale" }];
-
-      rows.forEach((r: any) => {
-        const saleId = String(r?.id ?? "");
-        if (!saleId) return;
-        const customer = r?.customer_name || "Unknown Customer";
-        const unit = r?.unit_label || "Unknown Unit";
-        const parking = r?.parking_label || "No Parking";
-        options.push({
-          id: saleId,
-          name: `Sale #${saleId} - ${customer} (${unit}, ${parking})`,
-        });
-      });
-
-      setUnitSaleOptions(options);
+      await dispatch(
+        unitSalePaymentsDdl({ q: q || undefined, page: 1, perPage: 50, per_page: 50 })
+      ).unwrap();
     } catch (e: any) {
-      setUnitSaleOptions([{ id: "", name: "Select Unit Sale" }]);
       toast.error(errMsg(e, "Failed to load unit sale list"));
-    } finally {
-      setSaleOptionsLoading(false);
     }
   };
+
+console.log('====================================');
+console.log("unitSalePayments", unitSalePayments);
+console.log('===================================='); 
 
   const loadSaleSummary = async (saleId: string) => {
     if (!saleId) {
@@ -192,7 +196,7 @@ export default function UnitSalePaymentEntry() {
 
   return (
     <>
-      <HelmetTitle title="Unit Sale Payment Entry" />
+      <HelmetTitle title="Received Entry" />
 
       <form
         onSubmit={(e) => {
@@ -201,7 +205,7 @@ export default function UnitSalePaymentEntry() {
       >
         <div className="flex flex-wrap gap-2 items-center justify-between mb-3">
           <div>
-            <h2 className="text-lg font-semibold">Unit Sale Payment Entry</h2>
+            <h2 className="text-lg font-semibold">Received Entry</h2>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               UI Prototype: Save/Search workflow will be wired next.
             </p>

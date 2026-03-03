@@ -60,6 +60,7 @@ import brandSlice from './components/modules/product/brand/brandSlice';
 import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice';
 import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
 import profitLossSlice from './components/modules/reports/profit-loss/profitLossSlice';
+import unitSalePaymentsSlice from './components/modules/real-estate/checks/unitSalePaymentsSlice';
 
 
 const store = configureStore({
@@ -125,6 +126,7 @@ const store = configureStore({
     buildingUnits: unitSlice,
     brand: brandSlice,
     unitSale: unitSaleSlice,
+    unitPayments: unitSalePaymentsSlice,
   },
 });
 

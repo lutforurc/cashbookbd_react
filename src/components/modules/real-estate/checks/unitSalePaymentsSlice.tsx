@@ -59,6 +59,14 @@ export interface UnitSalePaymentItem {
   deleted_at?: string | null;
 }
 
+export interface UnitSaleDdlItem {
+  id?: number | string;
+  customer_name?: string;
+  unit_label?: string;
+  parking_label?: string;
+  [key: string]: any;
+}
+
 /* ---- Request (backend keys match) ---- */
 export interface UnitSalePaymentsListRequest {
   page: number;
@@ -76,6 +84,13 @@ export interface UnitSalePaymentsListRequest {
   q?: string;
   perPage?: number; // backend expects perPage
   withTrashed?: boolean | string | number; // ✅ allow messy input, normalize in thunk
+}
+
+export interface UnitSalePaymentsDdlRequest {
+  q?: string;
+  page?: number;
+  perPage?: number;
+  per_page?: number;
 }
 
 /* ---- Additive: Edit / Update Requests ---- */
@@ -128,9 +143,12 @@ export interface LaravelPaginator<T> {
 interface UnitSalePaymentsState {
   rows: UnitSalePaymentItem[];
   paginator: LaravelPaginator<UnitSalePaymentItem> | null;
+  ddlRows: UnitSaleDdlItem[];
 
   loading: boolean;
+  ddlLoading: boolean;
   error: string | null;
+  ddlError: string | null;
   message: string | null;
 }
 
@@ -139,8 +157,11 @@ interface UnitSalePaymentsState {
 const initialState: UnitSalePaymentsState = {
   rows: [],
   paginator: null,
+  ddlRows: [],
   loading: false,
+  ddlLoading: false,
   error: null,
+  ddlError: null,
   message: null,
 };
 
@@ -203,6 +224,113 @@ export const unitSalePaymentsList = createAsyncThunk<
       error?.response?.data?.message ||
         error?.message ||
         "Failed to fetch unit sale payments"
+    );
+  }
+});
+
+export const unitSalePaymentsDdl = createAsyncThunk<
+  { rows: UnitSaleDdlItem[] },
+  UnitSalePaymentsDdlRequest | undefined,
+  { rejectValue: string }
+>("unitSalePayments/ddl", async (params, thunkAPI) => {
+  try {
+    const parseRows = (res: any): UnitSaleDdlItem[] => {
+      const payload = res?.data;
+      const raw = payload?.data ?? payload;
+      const rowsCandidate =
+        raw?.data ??
+        raw?.rows ??
+        raw?.paginator?.data ??
+        payload?.rows ??
+        payload?.paginator?.data ??
+        raw;
+      return Array.isArray(rowsCandidate) ? (rowsCandidate as UnitSaleDdlItem[]) : [];
+    };
+
+    let res: any = await httpService.get(`/real-estate/unit-sale/ddl`, {
+      params: {
+        q: params?.q || undefined,
+        page: params?.page ?? 1,
+        perPage: params?.perPage ?? 50,
+        per_page: params?.per_page ?? (params?.perPage ?? 50),
+      },
+    });
+    let payload = res?.data;
+    let rows = parseRows(res);
+
+    if (rows.length === 0) {
+      try {
+        res = await httpService.get(`/unit-sale/ddl`, {
+          params: {
+            q: params?.q || undefined,
+            page: params?.page ?? 1,
+            perPage: params?.perPage ?? 50,
+            per_page: params?.per_page ?? (params?.perPage ?? 50),
+          },
+        });
+        payload = res?.data;
+        rows = parseRows(res);
+      } catch {
+        // ignore fallback error
+      }
+    }
+
+    // Last fallback: derive options from payments-list if ddl endpoint returns empty
+    if (rows.length === 0) {
+      const listRes: any = await httpService.get(`/real-estate/unit-sale/payments-list`, {
+        params: {
+          q: params?.q || undefined,
+          page: 1,
+          perPage: params?.perPage ?? 50,
+        },
+      });
+      const listPayload = listRes?.data;
+      const listRaw = listPayload?.data;
+      const listRows = (listRaw?.data && listRaw?.current_page ? listRaw?.data : listRaw?.data?.data) || [];
+
+      const seen = new Set<string>();
+      rows = (Array.isArray(listRows) ? listRows : [])
+        .map((r: any) => {
+          const id = r?.booking_id ?? r?.id;
+          if (!id) return null;
+          return {
+            id,
+            customer_name:
+              r?.customer_name ||
+              r?.booking?.customer_name ||
+              r?.booking?.payload?.customer?.label,
+            unit_label:
+              r?.unit_label ||
+              r?.booking?.unit_label ||
+              r?.booking?.payload?.unit?.label,
+            parking_label:
+              r?.parking_label ||
+              r?.booking?.parking_label ||
+              r?.booking?.payload?.parking?.label,
+            booking: r?.booking,
+          } as UnitSaleDdlItem;
+        })
+        .filter((r: any) => {
+          if (!r?.id) return false;
+          const key = String(r.id);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+
+    if (payload?.success === false && rows.length === 0) {
+      return thunkAPI.rejectWithValue(
+        payload?.message || "Failed to fetch unit sale list"
+      );
+    }
+
+    return { rows: rows as UnitSaleDdlItem[] };
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Failed to fetch unit sale list"
     );
   }
 });
@@ -282,8 +410,11 @@ const unitSalePaymentsSlice = createSlice({
     clearUnitSalePaymentsState(state) {
       state.rows = [];
       state.paginator = null;
+      state.ddlRows = [];
       state.loading = false;
+      state.ddlLoading = false;
       state.error = null;
+      state.ddlError = null;
       state.message = null;
     },
   },
@@ -310,6 +441,18 @@ const unitSalePaymentsSlice = createSlice({
       .addCase(unitSalePaymentsList.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load unit sale payments";
+      })
+      .addCase(unitSalePaymentsDdl.pending, (state) => {
+        state.ddlLoading = true;
+        state.ddlError = null;
+      })
+      .addCase(unitSalePaymentsDdl.fulfilled, (state, action) => {
+        state.ddlLoading = false;
+        state.ddlRows = action.payload.rows;
+      })
+      .addCase(unitSalePaymentsDdl.rejected, (state, action) => {
+        state.ddlLoading = false;
+        state.ddlError = action.payload || "Failed to load unit sale list";
       });
 
     // ✅ No extraReducers for edit/update added intentionally
