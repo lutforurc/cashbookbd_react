@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FiArrowLeft, FiSave } from "react-icons/fi";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputElement from "../../../utils/fields/InputElement";
@@ -14,7 +15,7 @@ import { CHEQUE_STATUSES, ENTRY_STATUSES, PAYMENT_MODES, PAYMENT_TYPES } from ".
 import { getCoal3ByCoal4 } from "../../chartofaccounts/levelthree/coal3Sliders";
 import httpService from "../../../services/httpService";
 import { toast } from "react-toastify";
-import { unitSalePaymentsDdl } from "./unitSalePaymentsSlice";
+import { unitSalePaymentCreate, unitSalePaymentsDdl } from "./unitSalePaymentsSlice";
 
 const LIST_PATH = "/admin/unit-payment-list";
 
@@ -60,11 +61,13 @@ export default function UnitSalePaymentEntry() {
   const coal3 = useSelector((s: any) => s.coal3);
   const unitSalePayments = useSelector((s: any) => s.unitPayments);
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
   const [customerSearch, setCustomerSearch] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [saleSummary, setSaleSummary] = useState<any>(null);
 
   const errMsg = (e: any, fallback: string) =>
@@ -136,10 +139,6 @@ export default function UnitSalePaymentEntry() {
     }
   };
 
-console.log('====================================');
-console.log("unitSalePayments", unitSalePayments);
-console.log('===================================='); 
-
   const loadSaleSummary = async (saleId: string) => {
     if (!saleId) {
       setSaleSummary(null);
@@ -194,14 +193,114 @@ console.log('====================================');
     setChequeBounceDateObj(null);
   };
 
+  const validate = () => {
+    if (!form.booking_id) {
+      toast.warning("Unit sale is required");
+      return false;
+    }
+
+    if (!form.payment_date) {
+      toast.warning("Payment date is required");
+      return false;
+    }
+
+    if (!form.payment_mode) {
+      toast.warning("Payment mode is required");
+      return false;
+    }
+
+    if (!form.payment_type) {
+      toast.warning("Payment type is required");
+      return false;
+    }
+
+    if (form.amount === "" || form.amount === null || form.amount === undefined) {
+      toast.warning("Amount is required");
+      return false;
+    }
+
+    const amountNum = Number(form.amount);
+    if (Number.isNaN(amountNum) || amountNum <= 0) {
+      toast.warning("Amount must be greater than 0");
+      return false;
+    }
+
+    if (isCheque) {
+      if (!form.reference_no) {
+        toast.warning("Cheque / Reference no is required for cheque payment");
+        return false;
+      }
+      if (!form.bank_name) {
+        toast.warning("Bank name is required for cheque payment");
+        return false;
+      }
+      if (!form.cheque_collect_status) {
+        toast.warning("Cheque status is required for cheque payment");
+        return false;
+      }
+      if (isChequeBouncedOrCancelled) {
+        if (!form.cheque_bounce_date) {
+          toast.warning("Cheque bounce / return date is required");
+          return false;
+        }
+        if (!form.cheque_return_reason?.trim()) {
+          toast.warning("Cheque return reason is required");
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    const payload = {
+      booking_id: Number(form.booking_id),
+      receipt_no: form.receipt_no || undefined,
+      payment_date: form.payment_date,
+      amount: Number(form.amount),
+      payment_type: form.payment_type,
+      payment_mode: form.payment_mode,
+      reference_no: form.reference_no || undefined,
+      bank_name: form.bank_name || undefined,
+      branch_name: form.branch_name || undefined,
+      coal4_id: needsBankReceivedAccount ? (form.coal4_id ? Number(form.coal4_id) : null) : null,
+      cheque_collect_status: isCheque ? form.cheque_collect_status || undefined : undefined,
+      cheque_deposit_due_date: isCheque ? form.cheque_deposit_due_date || undefined : undefined,
+      cheque_collect_date: isCheque ? form.cheque_collect_date || undefined : undefined,
+      cheque_bounce_date:
+        isCheque && isChequeBouncedOrCancelled ? form.cheque_bounce_date || undefined : undefined,
+      cheque_return_reason:
+        isCheque && isChequeBouncedOrCancelled
+          ? form.cheque_return_reason || undefined
+          : undefined,
+      status: form.status || undefined,
+    };
+
+    try {
+      setIsSubmitting(true);
+      const res = await dispatch(unitSalePaymentCreate(payload)).unwrap();
+      toast.success(res?.message || "Payment saved successfully");
+      resetForm();
+      setSaleSummary(null);
+      navigate(LIST_PATH);
+    } catch (e: any) {
+      toast.error(errMsg(e, "Failed to save payment"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <HelmetTitle title="Received Entry" />
 
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-        }}
+        onSubmit={handleSubmit}
       >
         <div className="flex flex-wrap gap-2 items-center justify-between mb-3">
           <div>
@@ -552,7 +651,7 @@ console.log('====================================');
             <ButtonLoading
               type="submit"
               onClick={() => {}}
-              buttonLoading={false}
+              buttonLoading={isSubmitting}
               label="Save"
               className="h-9"
               icon={<FiSave className="text-white text-lg ml-2 mr-2" />}

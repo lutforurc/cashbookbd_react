@@ -125,6 +125,34 @@ export interface UnitSalePaymentUpdateRequest {
   [key: string]: any; // future-safe
 }
 
+export interface UnitSalePaymentCreateRequest {
+  booking_id: number | string;
+  branch_id?: number | string;
+
+  status?: UnitSalePaymentStatus | string;
+  payment_type?: UnitSalePaymentType | string;
+  payment_mode?: UnitSalePaymentMode | string;
+
+  payment_date?: string;
+  receipt_no?: string;
+  reference_no?: string;
+
+  bank_name?: string;
+  branch_name?: string;
+  coal4_id?: number | string | null;
+
+  cheque_collect_status?: string;
+  cheque_deposit_due_date?: string;
+  cheque_collect_date?: string;
+  cheque_bounce_date?: string;
+  cheque_return_reason?: string;
+
+  amount?: number | string;
+  remarks?: string;
+
+  [key: string]: any;
+}
+
 /* ---- Laravel paginator ---- */
 export interface LaravelPaginator<T> {
   current_page: number;
@@ -397,6 +425,44 @@ export const unitSalePaymentUpdate = createAsyncThunk<{ row?: any; data?: any; m
       error?.response?.data?.message ||
         error?.message ||
         "Failed to update unit sale payment"
+    );
+  }
+});
+
+export const unitSalePaymentCreate = createAsyncThunk<
+  { row?: any; data?: any; message?: string },
+  UnitSalePaymentCreateRequest,
+  { rejectValue: string }
+>("unitSalePayments/create", async (payload, thunkAPI) => {
+  try {
+    let res: any;
+    try {
+      res = await httpService.post(`/real-estate/unit-sale/payment-store`, payload);
+    } catch {
+      try {
+        res = await httpService.post(`/real-estate/unit-sale/payment-entry`, payload);
+      } catch {
+        res = await httpService.post(`/real-estate/unit-sale/payment-create`, payload);
+      }
+    }
+
+    if (res?.data?.success === true) {
+      const raw = res?.data?.data;
+      return {
+        row: raw?.row ?? raw?.data ?? raw,
+        data: raw,
+        message: res?.data?.message || "Payment created successfully",
+      };
+    }
+
+    return thunkAPI.rejectWithValue(
+      res?.data?.message || "Failed to create unit sale payment"
+    );
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Failed to create unit sale payment"
     );
   }
 });
