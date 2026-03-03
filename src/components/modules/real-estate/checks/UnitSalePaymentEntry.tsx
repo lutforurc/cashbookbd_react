@@ -12,10 +12,13 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { CHEQUE_STATUSES, ENTRY_STATUSES, PAYMENT_MODES, PAYMENT_TYPES } from "./checkContents";
 import { getCoal3ByCoal4 } from "../../chartofaccounts/levelthree/coal3Sliders";
+import httpService from "../../../services/httpService";
+import { toast } from "react-toastify";
 
 const LIST_PATH = "/admin/unit-payment-list";
 
 type FormState = {
+  booking_id: string;
   receipt_no: string;
   payment_date: string;
   amount: string | number;
@@ -34,6 +37,7 @@ type FormState = {
 };
 
 const initialForm: FormState = {
+  booking_id: "",
   receipt_no: "",
   payment_date: dayjs().format("YYYY-MM-DD"),
   amount: "",
@@ -57,6 +61,16 @@ export default function UnitSalePaymentEntry() {
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [saleOptionsLoading, setSaleOptionsLoading] = useState(false);
+  const [unitSaleOptions, setUnitSaleOptions] = useState<{ id: string; name: string }[]>([
+    { id: "", name: "Select Unit Sale" },
+  ]);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [saleSummary, setSaleSummary] = useState<any>(null);
+
+  const errMsg = (e: any, fallback: string) =>
+    e?.response?.data?.message || e?.message || fallback;
 
   const [paymentDateObj, setPaymentDateObj] = useState<Date | null>(new Date());
   const [chequeDueDateObj, setChequeDueDateObj] = useState<Date | null>(null);
@@ -83,6 +97,73 @@ export default function UnitSalePaymentEntry() {
     }
   }, [coal3]);
 
+  const loadUnitSaleOptions = async (q = "") => {
+    try {
+      setSaleOptionsLoading(true);
+      let res: any;
+      try {
+        res = await httpService.get(`/real-estate/unit-sale/ddl`, {
+          params: { q: q || undefined, page: 1, perPage: 50, per_page: 50 },
+        });
+      } catch {
+        // fallback if backend route is registered without "real-estate" prefix
+        res = await httpService.get(`/unit-sale/ddl`, {
+          params: { q: q || undefined, page: 1, perPage: 50, per_page: 50 },
+        });
+      }
+
+      const rows = res?.data?.data?.data ?? res?.data?.data ?? [];
+      const options: { id: string; name: string }[] = [{ id: "", name: "Select Unit Sale" }];
+
+      rows.forEach((r: any) => {
+        const saleId = String(r?.id ?? "");
+        if (!saleId) return;
+        const customer = r?.customer_name || "Unknown Customer";
+        const unit = r?.unit_label || "Unknown Unit";
+        const parking = r?.parking_label || "No Parking";
+        options.push({
+          id: saleId,
+          name: `Sale #${saleId} - ${customer} (${unit}, ${parking})`,
+        });
+      });
+
+      setUnitSaleOptions(options);
+    } catch (e: any) {
+      setUnitSaleOptions([{ id: "", name: "Select Unit Sale" }]);
+      toast.error(errMsg(e, "Failed to load unit sale list"));
+    } finally {
+      setSaleOptionsLoading(false);
+    }
+  };
+
+  const loadSaleSummary = async (saleId: string) => {
+    if (!saleId) {
+      setSaleSummary(null);
+      return;
+    }
+    try {
+      setSummaryLoading(true);
+      let res: any;
+      try {
+        res = await httpService.get(`/real-estate/unit-sale/summary/${saleId}`);
+      } catch {
+        res = await httpService.get(`/unit-sale/summary/${saleId}`);
+      }
+      const summary = res?.data?.data ?? null;
+      setSaleSummary(summary);
+    } catch (e: any) {
+      setSaleSummary(null);
+      toast.error(errMsg(e, "Failed to load sale summary"));
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUnitSaleOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const bankAccountOptions = useMemo(
     () => [
       { id: "", name: "Select Bank Account" },
@@ -97,6 +178,9 @@ export default function UnitSalePaymentEntry() {
   const setField = (name: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  const pretty = (v?: string) =>
+    v ? v.toString().replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : "-";
 
   const resetForm = () => {
     setForm(initialForm);
@@ -116,7 +200,12 @@ export default function UnitSalePaymentEntry() {
         }}
       >
         <div className="flex flex-wrap gap-2 items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Unit Sale Payment Entry</h2>
+          <div>
+            <h2 className="text-lg font-semibold">Unit Sale Payment Entry</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              UI Prototype: Save/Search workflow will be wired next.
+            </p>
+          </div>
 
           <div className="flex gap-2">
             <ButtonLoading
@@ -134,36 +223,100 @@ export default function UnitSalePaymentEntry() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded border border-gray-400 p-3 mb-3">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-sm">
+        <div className="bg-white dark:bg-gray-800 rounded border border-gray-300 p-3 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <div className="dark:text-white text-left text-sm text-gray-900">Receipt No</div>
+              <DropdownCommon
+                id="booking_id"
+                name="booking_id"
+                label="Unit Sale ID"
+                value={form.booking_id || ""}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  const id = e.target.value;
+                  setField("booking_id", id);
+                  loadSaleSummary(id);
+                }}
+                className="h-[2.1rem] bg-transparent"
+                data={unitSaleOptions}
+              />
+            </div>
+            <div>
+              <InputElement
+                id="customer_search"
+                name="customer_search"
+                label="Customer / Mobile"
+                placeholder="Type customer name or mobile"
+                className="h-8.5"
+                value={customerSearch}
+                onChange={(e: any) => setCustomerSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex items-end">
+              <ButtonLoading
+                onClick={(e: any) => {
+                  e?.preventDefault?.();
+                  loadUnitSaleOptions(customerSearch);
+                }}
+                buttonLoading={saleOptionsLoading}
+                label="Load Sale Info"
+                className="h-8.5 w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded border border-gray-300 p-3 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+            <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
+              <div className="text-xs text-gray-500">Receipt No</div>
               <div className="font-medium">{form.receipt_no || "-"}</div>
             </div>
-
-            <div>
-              <div className="dark:text-white text-left text-sm text-gray-900">Booking</div>
-              <div className="font-medium">-</div>
-              <div className="text-xs dark:text-white text-left text-gray-900">-</div>
-            </div>
-
-            <div>
-              <div className="dark:text-white text-left text-sm text-gray-900">Customer</div>
-              <div className="font-medium">-</div>
-              <div className="text-xs dark:text-white text-left text-gray-900">-</div>
-            </div>
-
-            <div>
-              <div className="dark:text-white text-left text-sm text-gray-900">Issued Amount</div>
+            <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
+              <div className="text-xs text-gray-500">Booking</div>
               <div className="font-medium">
-                {form.amount !== "" ? thousandSeparator(Number(form.amount || 0), 2) : "-"}
+                {summaryLoading ? "Loading..." : saleSummary?.booking?.unit_label || "-"}
+              </div>
+              <div className="text-xs text-gray-500">
+                {summaryLoading ? "..." : saleSummary?.booking?.parking_label || "-"}
+              </div>
+            </div>
+            <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
+              <div className="text-xs text-gray-500">Customer</div>
+              <div className="font-medium">
+                {summaryLoading ? "Loading..." : saleSummary?.customer?.name || "-"}
+              </div>
+              <div className="text-xs text-gray-500">
+                {summaryLoading ? "..." : saleSummary?.customer?.mobile || "-"}
+              </div>
+            </div>
+            <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
+              <div className="text-xs text-gray-500">Issued Amount</div>
+              <div className="font-medium">
+                {saleSummary?.amounts?.due_amount !== undefined &&
+                saleSummary?.amounts?.due_amount !== null
+                  ? thousandSeparator(Number(saleSummary.amounts.due_amount || 0), 2)
+                  : form.amount !== ""
+                  ? thousandSeparator(Number(form.amount || 0), 2)
+                  : "-"}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded border border-gray-400 p-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="bg-white dark:bg-gray-800 rounded border border-gray-300 p-3">
+          <div className="flex flex-wrap gap-2 mb-3">
+            <span className="text-xs rounded bg-gray-100 dark:bg-gray-700 px-2 py-1">
+              Mode: {pretty(form.payment_mode)}
+            </span>
+            <span className="text-xs rounded bg-gray-100 dark:bg-gray-700 px-2 py-1">
+              Payment For: {pretty(form.payment_type)}
+            </span>
+            <span className="text-xs rounded bg-gray-100 dark:bg-gray-700 px-2 py-1">
+              Entry Status: {pretty(form.status)}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
             <div className="w-full">
               <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
                 Payment Date
@@ -218,6 +371,9 @@ export default function UnitSalePaymentEntry() {
                 onChange={(e: any) => setField("amount", e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
             <DropdownCommon
               id="status"
@@ -243,7 +399,7 @@ export default function UnitSalePaymentEntry() {
               />
             </div>
 
-            <div className="mt-1">
+            <div>
               <InputElement
                 id="reference_no"
                 name="reference_no"
@@ -255,7 +411,7 @@ export default function UnitSalePaymentEntry() {
               />
             </div>
 
-            <div className="mt-1">
+            <div>
               <InputElement
                 id="bank_name"
                 name="bank_name"
@@ -267,7 +423,7 @@ export default function UnitSalePaymentEntry() {
               />
             </div>
 
-            <div className="mt-1">
+            <div>
               <InputElement
                 id="branch_name"
                 name="branch_name"
@@ -281,8 +437,8 @@ export default function UnitSalePaymentEntry() {
           </div>
 
           {isCheque ? (
-            <div className="mt-4 border-t border-gray-400 pt-3">
-              <h3 className="dark:text-white text-left text-sm text-gray-900 font-semibold">
+            <div className="mt-4 border-t border-gray-300 dark:border-gray-700 pt-3">
+              <h3 className="dark:text-white text-left text-sm text-gray-900 font-semibold mb-2">
                 Cheque Details
               </h3>
 
