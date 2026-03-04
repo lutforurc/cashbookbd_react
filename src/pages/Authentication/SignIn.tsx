@@ -10,18 +10,13 @@ import { getSettings } from '../../components/modules/settings/settingsSlice';
 import coverImg from '../../images/cover/cover-02.png';
 import { FiEye, FiEyeOff, FiLogIn } from 'react-icons/fi';
 import { ButtonLoading } from '../UiElements/CustomButtons';
+import { getSignInTitleByHost } from '../../components/services/tenantTitles';
 
 const SignIn: React.FC = () => {
   const { isLoading, errors, isLoggedIn } = useSelector((state: any) => state.auth);
 
   const [checkPassword, setCheckPassword] = useState(true);
   const hostname = window.location.hostname;
-
-  const getTitle = () => {
-    if (hostname === 'accounts.nibirnirman.cashbookbd.com') return 'Sign In to Nibir Nirman';
-    if (hostname === 'accounts.sinthia.cashbookbd.com') return 'Sign In to Sinthia Electronics';
-    return 'Sign In to Cashbook';
-  };
 
   const prevLocation = useLocation();
   const dispatch = useDispatch();
@@ -136,7 +131,7 @@ const SignIn: React.FC = () => {
           <div className="flex h-full items-center justify-center px-4 py-8 sm:px-10 xl:py-0">
             <div className="w-full max-w-md">
               <h2 className="mb-2 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
-                <HelmetTitle title={getTitle()} />
+                <HelmetTitle title={getSignInTitleByHost(hostname)} />
               </h2>
 
               <p className="mb-1 text-sm text-black/60 dark:text-white/60 text-center w-full">
