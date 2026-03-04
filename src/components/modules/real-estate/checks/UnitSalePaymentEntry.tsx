@@ -83,6 +83,10 @@ export default function UnitSalePaymentEntry() {
     () => ["CHEQUE", "BANK_TRANSFER"].includes(form.payment_mode),
     [form.payment_mode]
   );
+  const canEditEntryStatus = useMemo(
+    () => ["CHEQUE", "BANK_TRANSFER"].includes(form.payment_mode),
+    [form.payment_mode]
+  );
   const isChequeBouncedOrCancelled = useMemo(
     () => isCheque && ["BOUNCED", "CANCELLED"].includes(form.cheque_collect_status || ""),
     [isCheque, form.cheque_collect_status]
@@ -93,16 +97,26 @@ export default function UnitSalePaymentEntry() {
     const options: { id: string; name: string }[] = [{ id: "", name: "Select Unit Sale" }];
 
     rows.forEach((r: any) => {
-      const saleId = String(r?.id ?? "");
+      const saleId = String(
+        r?.id ??
+          r?.booking_id ??
+          r?.unit_sale_id ??
+          r?.sale_id ??
+          r?.booking?.id ??
+          r?.booking?.booking_id ??
+          ""
+      );
       if (!saleId) return;
       const customer =
         r?.customer_name ||
         r?.customer?.name ||
+        r?.booking?.customer_name ||
         r?.booking?.payload?.customer?.label ||
         "Unknown Customer";
       const unit =
         r?.unit_label ||
         r?.booking?.unit_label ||
+        r?.booking?.flat_label ||
         r?.booking?.payload?.unit?.label ||
         "Unknown Unit";
       const parking =
@@ -131,9 +145,42 @@ export default function UnitSalePaymentEntry() {
 
   const loadUnitSaleOptions = async (q = "") => {
     try {
-      await dispatch(
+      const res = await dispatch(
         unitSalePaymentsDdl({ q: q || undefined, page: 1, perPage: 50, per_page: 50 })
       ).unwrap();
+
+      const rows = Array.isArray(res?.rows) ? res.rows : [];
+      const resolveSaleId = (r: any) =>
+        String(
+          r?.id ??
+            r?.booking_id ??
+            r?.unit_sale_id ??
+            r?.sale_id ??
+            r?.booking?.id ??
+            r?.booking?.booking_id ??
+            ""
+        );
+
+      // If only one result is returned, auto-select it and load summary.
+      if (rows.length === 1) {
+        const id = resolveSaleId(rows[0]);
+        if (id) {
+          setField("booking_id", id);
+          loadSaleSummary(id);
+          return;
+        }
+      }
+
+      // Keep current selection if still present; otherwise clear stale selection.
+      if (form.booking_id) {
+        const exists = rows.some((r: any) => resolveSaleId(r) === String(form.booking_id));
+        if (!exists) {
+          setField("booking_id", "");
+          setSaleSummary(null);
+        } else {
+          loadSaleSummary(String(form.booking_id));
+        }
+      }
     } catch (e: any) {
       toast.error(errMsg(e, "Failed to load unit sale list"));
     }
@@ -179,7 +226,33 @@ export default function UnitSalePaymentEntry() {
   );
 
   const setField = (name: keyof FormState, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+
+      if (name === "payment_mode") {
+        // Keep form data consistent when mode changes.
+        if (value !== "CHEQUE") {
+          next.cheque_collect_status = "";
+          next.cheque_deposit_due_date = "";
+          next.cheque_collect_date = "";
+          next.cheque_bounce_date = "";
+          next.cheque_return_reason = "";
+          next.bank_name = "";
+          next.branch_name = "";
+        }
+        if (!["CHEQUE", "BANK_TRANSFER"].includes(value)) {
+          next.coal4_id = "";
+          next.status = "CONFIRMED";
+        }
+      }
+
+      if (name === "cheque_collect_status" && !["BOUNCED", "CANCELLED"].includes(value)) {
+        next.cheque_bounce_date = "";
+        next.cheque_return_reason = "";
+      }
+
+      return next;
+    });
   };
 
   const pretty = (v?: string) =>
@@ -222,6 +295,11 @@ export default function UnitSalePaymentEntry() {
     const amountNum = Number(form.amount);
     if (Number.isNaN(amountNum) || amountNum <= 0) {
       toast.warning("Amount must be greater than 0");
+      return false;
+    }
+
+    if (needsBankReceivedAccount && !form.coal4_id) {
+      toast.warning("Bank received account is required");
       return false;
     }
 
@@ -278,7 +356,7 @@ export default function UnitSalePaymentEntry() {
         isCheque && isChequeBouncedOrCancelled
           ? form.cheque_return_reason || undefined
           : undefined,
-      status: form.status || undefined,
+      status: canEditEntryStatus ? form.status || undefined : "CONFIRMED",
     };
 
     try {
@@ -287,7 +365,7 @@ export default function UnitSalePaymentEntry() {
       toast.success(res?.message || "Payment saved successfully");
       resetForm();
       setSaleSummary(null);
-      navigate(LIST_PATH);
+      // navigate(LIST_PATH);
     } catch (e: any) {
       toast.error(errMsg(e, "Failed to save payment"));
     } finally {
@@ -306,7 +384,7 @@ export default function UnitSalePaymentEntry() {
           <div>
             <h2 className="text-lg font-semibold">Received Entry</h2>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              UI Prototype: Save/Search workflow will be wired next.
+              Fill payment details and save the entry.
             </p>
           </div>
 
@@ -377,10 +455,10 @@ export default function UnitSalePaymentEntry() {
             <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
               <div className="text-xs text-gray-500">Booking</div>
               <div className="font-medium">
-                {summaryLoading ? "Loading..." : saleSummary?.booking?.unit_label || "-"}
+                {summaryLoading ? "Loading..." : saleSummary?.booking?.unit_label || ""}
               </div>
               <div className="text-xs text-gray-500">
-                {summaryLoading ? "..." : saleSummary?.booking?.parking_label || "-"}
+                {summaryLoading ? "..." : saleSummary?.booking?.parking_label || ""}
               </div>
             </div>
             <div className="rounded border border-gray-200 dark:border-gray-700 p-2">
@@ -396,29 +474,17 @@ export default function UnitSalePaymentEntry() {
               <div className="text-xs text-gray-500">Issued Amount</div>
               <div className="font-medium">
                 {saleSummary?.amounts?.due_amount !== undefined &&
-                saleSummary?.amounts?.due_amount !== null
+                  saleSummary?.amounts?.due_amount !== null
                   ? thousandSeparator(Number(saleSummary.amounts.due_amount || 0), 2)
                   : form.amount !== ""
-                  ? thousandSeparator(Number(form.amount || 0), 2)
-                  : "-"}
+                    ? thousandSeparator(Number(form.amount || 0), 2)
+                    : "-"}
               </div>
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded border border-gray-300 p-3">
-          <div className="flex flex-wrap gap-2 mb-3">
-            <span className="text-xs rounded bg-gray-100 dark:bg-gray-700 px-2 py-1">
-              Mode: {pretty(form.payment_mode)}
-            </span>
-            <span className="text-xs rounded bg-gray-100 dark:bg-gray-700 px-2 py-1">
-              Payment For: {pretty(form.payment_type)}
-            </span>
-            <span className="text-xs rounded bg-gray-100 dark:bg-gray-700 px-2 py-1">
-              Entry Status: {pretty(form.status)}
-            </span>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
             <div className="w-full">
               <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
@@ -469,7 +535,7 @@ export default function UnitSalePaymentEntry() {
                 label="Amount"
                 type="number"
                 placeholder="Enter amount"
-                className="h-8.5"
+                className="h-8"
                 value={form.amount as any}
                 onChange={(e: any) => setField("amount", e.target.value)}
               />
@@ -478,14 +544,16 @@ export default function UnitSalePaymentEntry() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
+
             <DropdownCommon
               id="status"
               name="status"
               label="Entry Status"
-              value={form.status}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setField("status", e.target.value)
-              }
+              value={canEditEntryStatus ? form.status : "CONFIRMED"}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                if (!canEditEntryStatus) return;
+                setField("status", e.target.value);
+              }}
               className="h-[2.1rem] bg-transparent"
               data={ENTRY_STATUSES}
             />
@@ -506,43 +574,48 @@ export default function UnitSalePaymentEntry() {
               <InputElement
                 id="reference_no"
                 name="reference_no"
-                label={isCheque ? "Cheque No / Ref No" : "Reference No"}
-                placeholder="Enter reference no"
+                label={isCheque ? "Cheque No" : "Reference No"}
+                placeholder={isCheque ? "Cheque No" : "Reference No"}
                 className="h-8.5"
                 value={form.reference_no}
                 onChange={(e: any) => setField("reference_no", e.target.value)}
               />
             </div>
+            {isCheque ? (
+              <>
+                <div>
+                  <InputElement
+                    id="bank_name"
+                    name="bank_name"
+                    label="Bank Name"
+                    placeholder="Enter bank name"
+                    className="h-8.5"
+                    value={form.bank_name}
+                    onChange={(e: any) => setField("bank_name", e.target.value)}
+                  />
+                </div>
 
-            <div>
-              <InputElement
-                id="bank_name"
-                name="bank_name"
-                label="Bank Name"
-                placeholder="Enter bank name"
-                className="h-8.5"
-                value={form.bank_name}
-                onChange={(e: any) => setField("bank_name", e.target.value)}
-              />
-            </div>
+                <div>
+                  <InputElement
+                    id="branch_name"
+                    name="branch_name"
+                    label="Branch Name"
+                    placeholder="Enter branch name"
+                    className="h-8.5"
+                    value={form.branch_name}
+                    onChange={(e: any) => setField("branch_name", e.target.value)}
+                  />
+                </div>
 
-            <div>
-              <InputElement
-                id="branch_name"
-                name="branch_name"
-                label="Branch Name"
-                placeholder="Enter branch name"
-                className="h-8.5"
-                value={form.branch_name}
-                onChange={(e: any) => setField("branch_name", e.target.value)}
-              />
-            </div>
+              </>
+            ) : null}
+
           </div>
 
           {isCheque ? (
             <div className="mt-4 border-t border-gray-300 dark:border-gray-700 pt-3">
               <h3 className="dark:text-white text-left text-sm text-gray-900 font-semibold mb-2">
-                Cheque Details
+                Cheque Deposit Information
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -557,22 +630,19 @@ export default function UnitSalePaymentEntry() {
                   className="h-10 bg-transparent"
                   data={CHEQUE_STATUSES}
                 />
-
-                <div>
-                  {needsBankReceivedAccount ? (
-                    <DropdownCommon
-                      id="coal4_id"
-                      name="coal4_id"
-                      label="Bank Received Account"
-                      value={form.coal4_id}
-                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                        setField("coal4_id", e.target.value)
-                      }
-                      className="h-10 bg-transparent"
-                      data={bankAccountOptions}
-                    />
-                  ) : null}
-                </div>
+                {needsBankReceivedAccount ? (
+                  <DropdownCommon
+                    id="coal4_id"
+                    name="coal4_id"
+                    label="Bank Received Account"
+                    value={form.coal4_id}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                      setField("coal4_id", e.target.value)
+                    }
+                    className="h-10 bg-transparent"
+                    data={bankAccountOptions}
+                  />
+                ) : null}
 
                 <div className="w-full">
                   <label className="dark:text-white text-left text-sm text-gray-900 block mb-1">
@@ -650,7 +720,7 @@ export default function UnitSalePaymentEntry() {
           <div className="flex flex-wrap gap-2 mt-4">
             <ButtonLoading
               type="submit"
-              onClick={() => {}}
+              onClick={() => { }}
               buttonLoading={isSubmitting}
               label="Save"
               className="h-9"

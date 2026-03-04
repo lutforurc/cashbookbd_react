@@ -206,10 +206,7 @@ const toBool = (v: any): boolean | undefined => {
 
 /* ================= ASYNC THUNK ================= */
 
-export const unitSalePaymentsList = createAsyncThunk<
-  { rows: UnitSalePaymentItem[]; paginator: LaravelPaginator<UnitSalePaymentItem> },
-  UnitSalePaymentsListRequest,
-  { rejectValue: string }
+export const unitSalePaymentsList = createAsyncThunk<{ rows: UnitSalePaymentItem[]; paginator: LaravelPaginator<UnitSalePaymentItem> },UnitSalePaymentsListRequest,{ rejectValue: string }
 >("unitSalePayments/list", async (params, thunkAPI) => {
   try {
     // ✅ normalize + backend keys keep
@@ -256,20 +253,26 @@ export const unitSalePaymentsList = createAsyncThunk<
   }
 });
 
-export const unitSalePaymentsDdl = createAsyncThunk<
-  { rows: UnitSaleDdlItem[] },
-  UnitSalePaymentsDdlRequest | undefined,
-  { rejectValue: string }
->("unitSalePayments/ddl", async (params, thunkAPI) => {
+export const unitSalePaymentsDdl = createAsyncThunk<{ rows: UnitSaleDdlItem[] },UnitSalePaymentsDdlRequest | undefined,{ rejectValue: string }>("unitSalePayments/ddl", async (params, thunkAPI) => {
   try {
     const parseRows = (res: any): UnitSaleDdlItem[] => {
       const payload = res?.data;
       const raw = payload?.data ?? payload;
       const rowsCandidate =
+        raw?.data?.data ??
+        payload?.data?.data?.data ??
         raw?.data ??
         raw?.rows ??
+        raw?.list ??
+        raw?.items ??
+        raw?.results ??
+        raw?.options ??
         raw?.paginator?.data ??
         payload?.rows ??
+        payload?.list ??
+        payload?.items ??
+        payload?.results ??
+        payload?.options ??
         payload?.paginator?.data ??
         raw;
       return Array.isArray(rowsCandidate) ? (rowsCandidate as UnitSaleDdlItem[]) : [];
@@ -286,22 +289,22 @@ export const unitSalePaymentsDdl = createAsyncThunk<
     let payload = res?.data;
     let rows = parseRows(res);
 
-    if (rows.length === 0) {
-      try {
-        res = await httpService.get(`/unit-sale/ddl`, {
-          params: {
-            q: params?.q || undefined,
-            page: params?.page ?? 1,
-            perPage: params?.perPage ?? 50,
-            per_page: params?.per_page ?? (params?.perPage ?? 50),
-          },
-        });
-        payload = res?.data;
-        rows = parseRows(res);
-      } catch {
-        // ignore fallback error
-      }
-    }
+    // if (rows.length === 0) {
+    //   try {
+    //     res = await httpService.get(`/unit-sale/ddl`, {
+    //       params: {
+    //         q: params?.q || undefined,
+    //         page: params?.page ?? 1,
+    //         perPage: params?.perPage ?? 50,
+    //         per_page: params?.per_page ?? (params?.perPage ?? 50),
+    //       },
+    //     });
+    //     payload = res?.data;
+    //     rows = parseRows(res);
+    //   } catch {
+    //     // ignore fallback error
+    //   }
+    // }
 
     // Last fallback: derive options from payments-list if ddl endpoint returns empty
     if (rows.length === 0) {
@@ -429,22 +432,9 @@ export const unitSalePaymentUpdate = createAsyncThunk<{ row?: any; data?: any; m
   }
 });
 
-export const unitSalePaymentCreate = createAsyncThunk<
-  { row?: any; data?: any; message?: string },
-  UnitSalePaymentCreateRequest,
-  { rejectValue: string }
->("unitSalePayments/create", async (payload, thunkAPI) => {
+export const unitSalePaymentCreate = createAsyncThunk<{ row?: any; data?: any; message?: string },UnitSalePaymentCreateRequest,{ rejectValue: string }>("unitSalePayments/create", async (payload, thunkAPI) => {
   try {
-    let res: any;
-    try {
-      res = await httpService.post(`/real-estate/unit-sale/payment-store`, payload);
-    } catch {
-      try {
-        res = await httpService.post(`/real-estate/unit-sale/payment-entry`, payload);
-      } catch {
-        res = await httpService.post(`/real-estate/unit-sale/payment-create`, payload);
-      }
-    }
+    const res: any = await httpService.post(`/real-estate/unit-sale/payment-create`, payload);
 
     if (res?.data?.success === true) {
       const raw = res?.data?.data;
