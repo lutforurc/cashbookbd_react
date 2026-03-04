@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiArrowRightCircle, FiCheck, FiRotateCcw } from 'react-icons/fi';
+import { FiArrowRightCircle, FiCheck } from 'react-icons/fi';
 
 // Define the props for the Button component
 interface ButtonProps {

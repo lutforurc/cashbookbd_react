@@ -19,7 +19,7 @@ import BuildingUnitChargesDropdown from "../../../utils/utils-functions/Building
 import InputElement from "../../../utils/fields/InputElement";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { storeSalePricing } from "./unitSaleSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";

@@ -148,7 +148,7 @@ const AddProduct = () => {
         if (d?.success) {
           toast.success(d?.message);
           setTimeout(() => {
-            Navigate('/branch/branch-list');
+            navigate('/product/product-list');
           }, 300);
         } else {
           toast.error(d?.message || 'Failed');
