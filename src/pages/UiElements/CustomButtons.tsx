@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiCheck, FiRotateCcw } from 'react-icons/fi';
+import { FiArrowRightCircle, FiCheck, FiRotateCcw } from 'react-icons/fi';
 
 // Define the props for the Button component
 interface ButtonProps {
@@ -29,6 +29,7 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
   buttonLoading = false,
 }) => {
   label = label || '';
+  const resolvedIcon = icon ? icon : <FiArrowRightCircle className="h-5 w-5" />;
   return (
     <button
       id={id}
@@ -47,7 +48,7 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
           </>
         ) : (
           <>
-            {icon ?? <FiRotateCcw className="text-white text-md ml-2 font-semibold  mr-2 " />}
+            {resolvedIcon}
             <span className='hidden md:block'>{label}</span>
           </>
         )}

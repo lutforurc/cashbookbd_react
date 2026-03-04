@@ -8,7 +8,7 @@ import { login } from '../../features/authReducer';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { getSettings } from '../../components/modules/settings/settingsSlice';
 import coverImg from '../../images/cover/cover-02.png';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiLogIn } from 'react-icons/fi';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 
 const SignIn: React.FC = () => {
@@ -216,7 +216,11 @@ const SignIn: React.FC = () => {
 
                   <div className="mb-2">
 
-                    <ButtonLoading icon="" type="submit" label='Sign In' className='p-3 w-full' />
+                    <ButtonLoading icon={
+                     <div className='md:hidden'>
+                       <FiLogIn className="h-5 w-5" />
+                     </div>
+                    } type="submit" label='Sign In' className='p-3 w-full' />
                   </div>
                 </form>
               </div>
