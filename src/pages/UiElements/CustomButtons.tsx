@@ -48,7 +48,7 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
           </>
         ) : (
           <>
-            {resolvedIcon}
+            <span className="block md:hidden">{resolvedIcon}</span>
             <span className='hidden md:block'>{label}</span>
           </>
         )}
