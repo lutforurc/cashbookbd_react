@@ -160,9 +160,12 @@ const UserList = () => {
         const roleNames = getRoleDisplayNames(row);
         if (roleNames.length === 0) return <span>-</span>;
         return (
-          <div className="grid grid-cols-1 md:grid-cols-3">
+          <div className="flex flex-wrap gap-1.5">
             {roleNames.map((name, index) => (
-              <span key={`${row?.user_id || row?.id || 'role'}-${index}`} className="mr-1 block border dark:border-white dark:text-white border-black-2 text-black-2 text-xs px-2 py-1  mb-1">
+              <span
+                key={`${row?.user_id || row?.id || 'role'}-${index}`}
+                className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              >
                 {name}
               </span>
             ))}
