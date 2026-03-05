@@ -77,6 +77,7 @@ const UserList = () => {
     navigate(`/user/user-edit/${user_id}`);
   }
 
+  
   const handleAddUser = () => {
     if (!canCreateUser) {
       toast.error('You are not authorized to create user.');
