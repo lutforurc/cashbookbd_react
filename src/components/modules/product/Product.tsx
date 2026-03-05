@@ -5,7 +5,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiRefreshCcw, FiTrash2 } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import Link from '../../utils/others/Link';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -327,7 +327,7 @@ const Product = (user: any) => {
     },
     {
       key: 'save',
-      header: 'Save',
+      header: 'Action',
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => {
@@ -338,24 +338,11 @@ const Product = (user: any) => {
         return (
           <div className="flex justify-center gap-2">
             <ButtonLoading icon="" className='py-1 px-2' label='Save' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
-            {/* <button
-              type="button"
-              disabled={!dirty}
-              onClick={() => handleSaveRow(row)}
-              className={`px-2 py-1 text-xs rounded ${dirty ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
-            >
-              Save
-            </button> */}
-            <ButtonLoading icon="" className='py-1 px-2' label='Cancel' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
-            {/* <button
-              type="button"
-              disabled={!editedRows[row.product_id]}
-              onClick={() => handleCancelRow(row)}
-              className={`px-2 py-1 text-xs rounded
-                ${editedRows[row.product_id] ? 'bg-gray-100 text-gray-800' : 'bg-gray-50 text-gray-400 cursor-not-allowed'}`}
-            >
-              Cancel
-            </button> */}
+            <ButtonLoading icon={
+              <>
+              <FiRefreshCcw className="" />
+              </>
+            } className='py-1 px-2' label='Cancel' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
           </div>
         );
       },

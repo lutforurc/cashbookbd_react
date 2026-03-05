@@ -55,9 +55,9 @@ const EditUser = (user: any) => {
                 ...prevData,
                 name: showUser.editData.name || '',
                 email: showUser.editData.email || '',
-                role_id: showUser.editData.role_id || '',
+                role_id: String(showUser.editData.role_id || ''),
                 lang: showUser.editData.lang || '',
-                branch_id: showUser.editData.branch_id || '',  // Add this line
+                branch_id: String(showUser.editData.branch_id || ''),
             }));
         }
     }, [showUser.editData]);
@@ -141,7 +141,7 @@ const EditUser = (user: any) => {
                     id="role_id"
                     name={'role_id'}
                     label="Select Role"
-                    defaultValue={formData?.role_id || ""}
+                    value={formData?.role_id || ""}
                     onChange={handleOnChange}
                     className="h-[2.60rem]"
                     data={roles?.roles?.data?.data || []}  // Fetch and pass role options
