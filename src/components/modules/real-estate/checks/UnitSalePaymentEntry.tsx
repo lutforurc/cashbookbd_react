@@ -268,7 +268,7 @@ export default function UnitSalePaymentEntry() {
 
   const validate = () => {
     if (!form.booking_id) {
-      toast.warning("Unit sale is required");
+      toast.warning("Select Customer and Unit Sale");
       return false;
     }
 
@@ -736,3 +736,21 @@ export default function UnitSalePaymentEntry() {
     </>
   );
 }
+
+
+
+// {
+//     "booking_id": 23,
+//     "receipt_no": "31313131331",
+//     "payment_date": "2026-03-05",
+//     "amount": 32131313,
+//     "payment_type": "BOOKING",
+//     "payment_mode": "CHEQUE",
+//     "reference_no": "31313131313",
+//     "bank_name": "313131313",
+//     "branch_name": "313131",
+//     "coal4_id": 49,
+//     "cheque_collect_status": "PENDING",
+//     "cheque_deposit_due_date": "2026-03-07",
+//     "status": "PENDING"
+// }
