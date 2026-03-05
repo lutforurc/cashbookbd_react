@@ -11,11 +11,20 @@ import Table from '../../utils/others/Table';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import SearchInput from '../../utils/fields/SearchInput';
+import routes from '../../services/appRoutes';
+import { hasPermission } from '../../utils/permissionChecker';
 
 const UserList = () => {
   const userList = useSelector((state) => state.users);
+  const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const userPermissions = settings?.data?.permissions || [];
+  const canCreateUser =
+    hasPermission(userPermissions, 'all.user.create') ||
+    hasPermission(userPermissions, 'user.create') ||
+    hasPermission(userPermissions, 'user.store') ||
+    hasPermission(userPermissions, 'all.user.add');
 
   const [searchValue, setSearchValue] = useState('');
   const [page, setPage] = useState(1);
@@ -33,12 +42,12 @@ const UserList = () => {
     setTotalPages(Math.ceil(userList.data.total / page.target.value));
     setTableData(userList.data.data);
   };
-  
+
   const handleSearchButton = () => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(getUser({ page: 1, perPage,  search })); // Use 'search' instead
-};
+    dispatch(getUser({ page: 1, perPage, search })); // Use 'search' instead
+  };
 
   useEffect(() => {
     dispatch(getUser({ page, perPage, search }));
@@ -68,6 +77,63 @@ const UserList = () => {
     navigate(`/user/user-edit/${user_id}`);
   }
 
+  const handleAddUser = () => {
+    if (!canCreateUser) {
+      toast.error('You are not authorized to create user.');
+      return;
+    }
+    navigate(routes.user_add);
+  };
+
+  const cleanRoleText = (value: any) =>
+    String(value ?? '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const extractRoleNames = (value: any): string[] => {
+    if (!value) return [];
+
+    if (Array.isArray(value)) {
+      return value
+        .flatMap((item: any) =>
+          extractRoleNames(typeof item === 'string' ? item : item?.name ?? item),
+        )
+        .filter(Boolean);
+    }
+
+    if (typeof value === 'object') {
+      return extractRoleNames(value?.name ?? '');
+    }
+
+    const text = String(value);
+    if (/<span[^>]*>/i.test(text)) {
+      const matches = [...text.matchAll(/<span[^>]*>(.*?)<\/span>/gi)];
+      return matches
+        .map((m) => cleanRoleText(m[1]))
+        .filter(Boolean);
+    }
+
+    return text
+      .split(',')
+      .map((item) => cleanRoleText(item))
+      .filter(Boolean);
+  };
+
+  const getRoleDisplayNames = (row: any): string[] => {
+    const fromRoles = extractRoleNames(row?.roles);
+    if (fromRoles.length > 0) return fromRoles;
+
+    const fromRole = extractRoleNames(row?.role);
+    if (fromRole.length > 0) return fromRole;
+
+    const fromRoleName = extractRoleNames(row?.role_name);
+    if (fromRoleName.length > 0) return fromRoleName;
+
+    return [];
+  };
+
   const columns = [
     {
       key: 'serial',
@@ -77,24 +143,37 @@ const UserList = () => {
     },
     {
       key: 'name',
-      header: 'User Name', 
+      header: 'User Name',
     },
     {
       key: 'branch',
-      header: 'Working Branch', 
+      header: 'Working Branch',
     },
     {
       key: 'email',
-      header: 'Email', 
+      header: 'Email',
     },
     {
       key: 'role',
-      header: 'Role', 
+      header: 'Role',
+      render: (row: any) => {
+        const roleNames = getRoleDisplayNames(row);
+        if (roleNames.length === 0) return <span>-</span>;
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {roleNames.map((name, index) => (
+              <span key={`${row?.user_id || row?.id || 'role'}-${index}`} className="mr-1 block border dark:border-white dark:text-white border-black-2 text-black-2 text-xs px-2 py-1  mb-1">
+                {name}
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       key: "id",
       header: "Action",
-      render: (row: any) => {  
+      render: (row: any) => {
         return (
           <div className="flex justify-center items-center">
             <button
@@ -106,33 +185,40 @@ const UserList = () => {
           </div>
         );
       },
-    },,
+    },
   ];
 
   return (
     <div>
       <HelmetTitle title={'User List'} />
       <div className="flex justify-between mb-1">
-        <SelectOption onChange={handleSelectChange} />
-       <div className='flex'>
+        <div className="flex gap-2">
+          <SelectOption onChange={handleSelectChange} />
+          <div className='flex'>
             <SearchInput
-                search={search}
-                setSearchValue={setSearch}
-                className="text-nowrap"
+              search={search}
+              setSearchValue={setSearch}
+              className="text-nowrap"
             />
             <ButtonLoading
-                onClick={handleSearchButton}
-                buttonLoading={buttonLoading}
-                label="Search"
-                className="whitespace-nowrap"
-                icon=""
+              onClick={handleSearchButton}
+              buttonLoading={buttonLoading}
+              label="Search"
+              className="whitespace-nowrap"
+              icon=""
             />
-       </div>
-        {/* <ButtonLoading
-          onClick={handleSearchButton}
-          buttonLoading={buttonLoading}
-          label="Save"
-        /> */}
+          </div>
+
+        </div>
+        {canCreateUser && (
+          <ButtonLoading
+            onClick={handleAddUser}
+            buttonLoading={false}
+            label="Add User"
+            className="whitespace-nowrap ml-2"
+            icon=""
+          />
+        )}
       </div>
 
       <div className="relative overflow-x-auto overflow-y-hidden">

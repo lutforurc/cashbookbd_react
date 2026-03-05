@@ -17,6 +17,7 @@ interface Props {
   onChange: (selected: Option[]) => void;
   placeholder?: string;
   className?: string;
+  selectionLabel?: string;
 }
 
 /* ===== Option with ✔ ===== */
@@ -34,26 +35,25 @@ const CustomOption = (props: OptionProps<Option, true>) => {
 };
 
 /* ===== Value Container (COUNT TEXT) ===== */
-const CustomValueContainer = (
-  props: ValueContainerProps<Option, true>
-) => {
-  const selected = props.getValue();
+const makeValueContainer = (placeholder: string, selectionLabel: string) =>
+  function CustomValueContainer(props: ValueContainerProps<Option, true>) {
+    const selected = props.getValue();
 
-  let displayText = 'Select salary level';
+    let displayText = placeholder;
 
-  if (selected.length === 1) {
-    displayText = '1 level selected';
-  } else if (selected.length > 1) {
-    displayText = `${selected.length} levels selected`;
-  }
+    if (selected.length === 1) {
+      displayText = `1 ${selectionLabel} selected`;
+    } else if (selected.length > 1) {
+      displayText = `${selected.length} ${selectionLabel}s selected`;
+    }
 
-  return (
-    <components.ValueContainer {...props}>
-      <div className="truncate">{displayText}</div>
-      {props.children[1]}
-    </components.ValueContainer>
-  );
-};
+    return (
+      <components.ValueContainer {...props}>
+        <div className="truncate">{displayText}</div>
+        {props.children[1]}
+      </components.ValueContainer>
+    );
+  };
 
 const MultiSelectDropdown = ({
   options,
@@ -61,6 +61,7 @@ const MultiSelectDropdown = ({
   onChange,
   placeholder = 'Select',
   className,
+  selectionLabel = 'item',
 }: Props) => {
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
@@ -171,7 +172,7 @@ const MultiSelectDropdown = ({
       hideSelectedOptions={false}
       components={{
         Option: CustomOption,
-        ValueContainer: CustomValueContainer,
+        ValueContainer: makeValueContainer(placeholder, selectionLabel),
       }}
     />
   );

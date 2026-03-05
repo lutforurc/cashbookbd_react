@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import routes from './components/services/appRoutes';
 import BranchList from './components/modules/branch/BranchList';
 import UserList from './components/modules/user/UserList';
+import AddUser from './components/modules/user/AddUser';
 import Product from './components/modules/product/Product';
 import DateWiseData from './components/modules/reports/datewisedata/DateWiseData';
 import AddProduct from './components/modules/product/AddProduct';
@@ -123,6 +124,7 @@ function App() {
 
   const userPermissions = settings?.data?.permissions ?? [];
   const permissionsLoading = settings?.loading ?? false;
+  const userCreatePermissions = ['all.user.create', 'user.create', 'user.store', 'all.user.add'];
 
 
   useEffect(() => {
@@ -174,6 +176,17 @@ function App() {
             <Route path={routes.branch_add} element={<AddBranch />} />
             <Route path={routes.branch_edit} element={<AddBranch />} />
             <Route path={routes.user_list} element={<UserList />} />
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={userCreatePermissions}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.user_add} element={<AddUser />} />
+            </Route>
             <Route path={routes.user_edit} element={<EditUser user={me} />} />
             <Route path={routes.installment_list} element={<InstallmentDetails />} />
 

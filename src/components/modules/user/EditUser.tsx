@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Link, useParams } from "react-router-dom";
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
-import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDdlAllBranch } from '../branch/ddlBranchSlider';
@@ -14,6 +13,12 @@ import { getRoles } from '../roles/rolesSlice';
 import { toast } from 'react-toastify';
 import { getSettings } from '../settings/settingsSlice';
 import { authCheck } from '../../../features/authReducer';
+import MultiSelectDropdown from '../../utils/utils-functions/MultiSelectDropdown';
+
+type MultiOption = {
+    value: string | number;
+    label: string;
+};
 
 const EditUser = (user: any) => {
     const dispatch = useDispatch();
@@ -21,6 +26,7 @@ const EditUser = (user: any) => {
     const roles = useSelector((state: any) => state.roles);
     const showUser = useSelector((state: any) => state.users);
     const [dropdownData, setDropdownData] = useState<any[]>([]);
+    const [selectedRoles, setSelectedRoles] = useState<MultiOption[]>([]);
 
     const { id } = useParams<{ id: string }>();
 
@@ -49,6 +55,11 @@ const EditUser = (user: any) => {
         role_id: '',
     });
 
+    const roleOptions: MultiOption[] = (roles?.roles?.data?.data || []).map((item: any) => ({
+        value: String(item.id),
+        label: item.name,
+    }));
+
     useEffect(() => {
         if (showUser.editData) {
             setFormData((prevData) => ({
@@ -61,6 +72,30 @@ const EditUser = (user: any) => {
             }));
         }
     }, [showUser.editData]);
+
+    useEffect(() => {
+        const incomingRoleIdsRaw = Array.isArray(showUser?.editData?.role_ids)
+            ? showUser.editData.role_ids
+            : Array.isArray(showUser?.editData?.roles)
+                ? showUser.editData.roles.map((r: any) => r?.id ?? r?.role_id ?? r)
+                : showUser?.editData?.role_id
+                    ? [showUser.editData.role_id]
+                    : [];
+
+        const incomingRoleIds = incomingRoleIdsRaw.map((item: any) => String(item));
+        const preselected = roleOptions.filter((option) =>
+            incomingRoleIds.includes(String(option.value))
+        );
+
+        setSelectedRoles(preselected);
+    }, [showUser?.editData, roles?.roles?.data?.data]);
+
+    useEffect(() => {
+        setFormData((prevData) => ({
+            ...prevData,
+            role_id: selectedRoles[0] ? String(selectedRoles[0].value) : '',
+        }));
+    }, [selectedRoles]);
 
 
 
@@ -91,10 +126,21 @@ const EditUser = (user: any) => {
         }
     };
 
-    // toast.success(showUser?.updateData);
     const handleUserUpdate = (e: any) => {
         e.preventDefault();
-        dispatch(updateUser(formData) as any);
+
+        const roleIds = selectedRoles.map((item) => {
+            const numericId = Number(item.value);
+            return Number.isNaN(numericId) ? item.value : numericId;
+        });
+
+        const payload = {
+            ...formData,
+            role_id: selectedRoles[0] ? String(selectedRoles[0].value) : '',
+            role_ids: roleIds,
+        };
+
+        dispatch(updateUser(payload) as any);
     };
 
     useEffect(() => {
@@ -117,7 +163,6 @@ const EditUser = (user: any) => {
         <div>
             <HelmetTitle title={'Edit User'} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <div>
                     <div>
                         {''}
@@ -137,16 +182,19 @@ const EditUser = (user: any) => {
                     className={''}
                     onChange={handleOnChange}
                 />
-                <DropdownCommon
-                    id="role_id"
-                    name={'role_id'}
-                    label="Select Role"
-                    value={formData?.role_id || ""}
-                    onChange={handleOnChange}
-                    className="h-[2.60rem]"
-                    data={roles?.roles?.data?.data || []}  // Fetch and pass role options
-                />
-
+                <div>
+                    <div>
+                        <label htmlFor="role_id">Select Role</label>
+                    </div>
+                    <MultiSelectDropdown
+                        options={roleOptions}
+                        value={selectedRoles}
+                        onChange={setSelectedRoles}
+                        placeholder="Select roles"
+                        selectionLabel="role"
+                        className="w-full"
+                    />
+                </div>
                 <div>
                     <div>
                         {''}
@@ -165,7 +213,6 @@ const EditUser = (user: any) => {
                         />
                     </div>
                 </div>
-
                 <InputElement
                     id="lang"
                     value={formData.lang}
