@@ -110,6 +110,7 @@ import UnitSalePaymentEntry from './components/modules/real-estate/checks/UnitSa
 import ProductStockIndex from './components/modules/reports/productstock/ProductStockIndex';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTransfer';
+import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
 
 
 
@@ -215,6 +216,7 @@ function App() {
             <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
             <Route path={routes.journal} element={<Journal />} />
             <Route path={routes.branch_transfer} element={<BranchTransfer />} />
+            <Route path={routes.branch_received} element={<WarehouseReceived />} />
 
             {/* Products */}
             <Route path={routes.product_list} element={<Product user={me} />} />
