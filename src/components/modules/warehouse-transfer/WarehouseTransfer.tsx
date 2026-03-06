@@ -27,6 +27,8 @@ type TransferItem = {
   productName: string;
   unit: string;
   quantity: string;
+  damagedQty: string;
+  shortQty: string;
   rate: string;
 };
 
@@ -44,13 +46,19 @@ const BranchTransfer = () => {
     productName: '',
     unit: '',
     quantity: '',
+    damagedQty: '',
+    shortQty: '',
     rate: '',
   });
   const [formData, setFormData] = useState({
     transferDate: dayjs().format('YYYY-MM-DD'),
     fromBranch: '',
     toBranch: '',
-    notes: '',
+    challanNumber: '',
+    receiverName: '',
+    receiverMobileNumber: '',
+    transport: '',
+    note: '',
     products: [] as TransferItem[],
   });
 
@@ -142,6 +150,8 @@ const BranchTransfer = () => {
         productId: '',
         productName: '',
         unit: '',
+        damagedQty: '',
+        shortQty: '',
         rate: '',
       }));
       return;
@@ -161,6 +171,8 @@ const BranchTransfer = () => {
       productName: '',
       unit: '',
       quantity: '',
+      damagedQty: '',
+      shortQty: '',
       rate: '',
     });
     setIsUpdatingLine(false);
@@ -173,7 +185,11 @@ const BranchTransfer = () => {
       transferDate: today.format('YYYY-MM-DD'),
       fromBranch: '',
       toBranch: '',
-      notes: '',
+      challanNumber: '',
+      receiverName: '',
+      receiverMobileNumber: '',
+      transport: '',
+      note: '',
       products: [],
     });
     setTransferDate(today.toDate());
@@ -193,6 +209,14 @@ const BranchTransfer = () => {
       toast.error('Please enter valid rate');
       return false;
     }
+    if (lineItem.damagedQty !== '' && Number(lineItem.damagedQty) < 0) {
+      toast.error('Damaged qty cannot be negative');
+      return false;
+    }
+    if (lineItem.shortQty !== '' && Number(lineItem.shortQty) < 0) {
+      toast.error('Short qty cannot be negative');
+      return false;
+    }
     return true;
   };
 
@@ -205,6 +229,8 @@ const BranchTransfer = () => {
       productName: lineItem.productName,
       unit: lineItem.unit,
       quantity: lineItem.quantity,
+      damagedQty: lineItem.damagedQty || '0',
+      shortQty: lineItem.shortQty || '0',
       rate: lineItem.rate,
     };
 
@@ -223,6 +249,8 @@ const BranchTransfer = () => {
       productName: found.productName,
       unit: found.unit,
       quantity: found.quantity,
+      damagedQty: found.damagedQty || '0',
+      shortQty: found.shortQty || '0',
       rate: found.rate,
     });
     setIsUpdatingLine(true);
@@ -242,6 +270,8 @@ const BranchTransfer = () => {
               productName: lineItem.productName,
               unit: lineItem.unit,
               quantity: lineItem.quantity,
+              damagedQty: lineItem.damagedQty || '0',
+              shortQty: lineItem.shortQty || '0',
               rate: lineItem.rate,
             }
           : item,
@@ -265,10 +295,6 @@ const BranchTransfer = () => {
       toast.error('At least two branches are required for transfer');
       return;
     }
-    if (!formData.transferDate) {
-      toast.error('Transfer date is required');
-      return;
-    }
     if (!formData.fromBranch || !formData.toBranch) {
       toast.error('From and To branch are required');
       return;
@@ -277,21 +303,34 @@ const BranchTransfer = () => {
       toast.error('From and To branch cannot be same');
       return;
     }
+    const receiverMobile = formData.receiverMobileNumber.trim();
+    if (receiverMobile && !/^\d+$/.test(receiverMobile)) {
+      toast.error('Receiver mobile number must contain digits only');
+      return;
+    }
+    if (receiverMobile && (receiverMobile.length < 6 || receiverMobile.length > 32)) {
+      toast.error('Receiver mobile number must be between 6 and 32 digits');
+      return;
+    }
     if (!formData.products.length) {
       toast.error('Please add at least one product');
       return;
     }
 
     const payload = {
-      transfer_date: formData.transferDate,
-      from_branch_id: Number(formData.fromBranch),
       to_branch_id: Number(formData.toBranch),
-      notes: formData.notes,
-      items: formData.products.map((item) => ({
-        product_id: Number(item.productId),
+      from_branch_id: formData.fromBranch ? Number(formData.fromBranch) : null,
+      challan_number: formData.challanNumber || null,
+      challan_date: formData.transferDate || null,
+      receiver_name: formData.receiverName || null,
+      receiver_mobile_number: receiverMobile || null,
+      note: formData.note || null,
+      transport: formData.transport || null,
+      table_data: formData.products.map((item) => ({
+        code: Number(item.productId),
         qty: Number(item.quantity),
-        quantity: Number(item.quantity),
-        rate: Number(item.rate),
+        damaged_qty: Number(item.damagedQty || 0),
+        short_qty: Number(item.shortQty || 0),
       })),
     };
 
@@ -317,18 +356,53 @@ const BranchTransfer = () => {
         <InputDatePicker
           id="transferDate"
           name="transferDate"
-          label="Transfer Date"
+          label="Challan Date"
           selectedDate={transferDate}
           setSelectedDate={setTransferDate}
           setCurrentDate={handleTransferDateChange}
           className="w-full h-8.5"
         />
         <InputElement
-          id="notes"
-          name="notes"
-          label="Notes"
-          placeholder="Transfer notes"
-          value={formData.notes}
+          id="challanNumber"
+          name="challanNumber"
+          label="Challan Number"
+          placeholder="Enter challan number"
+          value={formData.challanNumber}
+          onChange={handleFormInput}
+        />
+        <InputElement
+          id="receiverName"
+          name="receiverName"
+          label="Receiver Name"
+          placeholder="Enter receiver name"
+          value={formData.receiverName}
+          onChange={handleFormInput}
+        />
+        <InputElement
+          id="receiverMobileNumber"
+          name="receiverMobileNumber"
+          type="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          label="Receiver Mobile"
+          placeholder="Enter mobile number"
+          value={formData.receiverMobileNumber}
+          onChange={handleFormInput}
+        />
+        <InputElement
+          id="transport"
+          name="transport"
+          label="Transport"
+          placeholder="Enter transport"
+          value={formData.transport}
+          onChange={handleFormInput}
+        />
+        <InputElement
+          id="note"
+          name="note"
+          label="Note"
+          placeholder="Transfer note"
+          value={formData.note}
           onChange={handleFormInput}
         />
         <div>
@@ -356,11 +430,12 @@ const BranchTransfer = () => {
 
         <div className="md:col-span-2 mt-2 border-t border-gray-200 dark:border-gray-700 pt-3">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
-            <div className="md:col-span-7">
+            <div className="md:col-span-4">
               <label className="text-black dark:text-white">Select Product</label>
               <RequisitionItemsDropdown
                 id="transferProduct"
                 name="transferProduct"
+                // className='h-8'
                 onSelect={handleProductSelect}
                 defaultValue={
                   lineItem.productId
@@ -374,10 +449,11 @@ const BranchTransfer = () => {
                 }
               />
             </div>
-            <div className="md:col-span-3">
+            <div className="md:col-span-2">
               <InputElement
                 id="quantity"
                 name="quantity"
+                className='h-9.5'
                 type="number"
                 label={`Quantity ${lineItem.unit ? `(${lineItem.unit})` : ''}`}
                 value={lineItem.quantity}
@@ -387,8 +463,33 @@ const BranchTransfer = () => {
             </div>
             <div className="md:col-span-2">
               <InputElement
+                id="damagedQty"
+                name="damagedQty"
+                className='h-9.5'
+                type="number"
+                label="Damaged Qty"
+                value={lineItem.damagedQty}
+                placeholder="0"
+                onChange={handleLineItemChange}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <InputElement
+                id="shortQty"
+                name="shortQty"
+                className='h-9.5'
+                type="number"
+                label="Short Qty"
+                value={lineItem.shortQty}
+                placeholder="0"
+                onChange={handleLineItemChange}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <InputElement
                 id="rate"
                 name="rate"
+                className='h-9.5'
                 type="number"
                 label="Rate"
                 value={lineItem.rate}
@@ -448,6 +549,8 @@ const BranchTransfer = () => {
               <th className="px-2 py-2 text-center">Sl</th>
               <th className="px-2 py-2">Product</th>
               <th className="px-2 py-2 text-right">Qty</th>
+              <th className="px-2 py-2 text-right">Damaged Qty</th>
+              <th className="px-2 py-2 text-right">Short Qty</th>
               <th className="px-2 py-2 text-right">Rate</th>
               <th className="px-2 py-2 text-right">Amount</th>
               <th className="px-2 py-2 text-center w-20">Action</th>
@@ -460,6 +563,12 @@ const BranchTransfer = () => {
                 <td className="px-2 py-2 text-gray-900 dark:text-white">{row.productName}</td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
                   {thousandSeparator(Number(row.quantity), 2)} {row.unit}
+                </td>
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                  {thousandSeparator(Number(row.damagedQty || 0), 2)}
+                </td>
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                  {thousandSeparator(Number(row.shortQty || 0), 2)}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
                   {thousandSeparator(Number(row.rate), 2)}
@@ -485,7 +594,7 @@ const BranchTransfer = () => {
             ))}
             {formData.products.length === 0 && (
               <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td colSpan={6} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
+                <td colSpan={8} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
                   No product added
                 </td>
               </tr>
