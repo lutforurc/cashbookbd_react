@@ -104,6 +104,7 @@ import RequirePermission from "./components/auth/RequirePermission";
 import NoAccess from './components/modules/pages/NoAccess';
 import { MENU_PERMISSIONS } from './components/Sidebar/menuPermissions';
 import LoanLedger from './components/modules/hrms/loan/LoanLedger';
+import LoanBalance from './components/modules/hrms/loan/LoanBalance';
 import UnitSalePaymentList from './components/modules/real-estate/checks/UnitSalePaymentList';
 import UnitSalePaymentEdit from './components/modules/real-estate/checks/UnitSalePaymentEdit';
 import UnitSalePaymentEntry from './components/modules/real-estate/checks/UnitSalePaymentEntry';
@@ -214,6 +215,7 @@ function App() {
             <Route path={routes.bank_payment} element={<BankPayment />} />
             <Route path={routes.employee_loan} element={<EmployeeLoan />} />
             <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
+            <Route path={routes.employee_loan_balance} element={<LoanBalance />} />
             <Route path={routes.journal} element={<Journal />} />
             <Route path={routes.branch_transfer} element={<BranchTransfer />} />
             <Route path={routes.branch_received} element={<WarehouseReceived />} />

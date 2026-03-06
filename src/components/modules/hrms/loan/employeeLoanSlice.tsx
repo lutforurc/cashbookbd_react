@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import httpService from '../../../services/httpService';
 import {
   API_EMPLOYEE_DDL_SEARCH_URL,
+  API_EMPLOYEE_LOAN_BALANCE_URL,
   API_EMPLOYEE_LOAN_DISBURSEMENT_URL,
   API_EMPLOYEE_LOAN_LEDGER_URL,
 } from '../../../services/apiRoutes';
@@ -55,6 +56,17 @@ export type LoanLedgerData = {
   details: LoanLedgerRow[];
 };
 
+export type LoanBalanceRow = {
+  id?: number | string;
+  employee_name?: string;
+  designation?: string;
+  total_senction?: number | string;
+  total_payment?: number | string;
+  installment?: number | string;
+  balance?: number | string;
+  [key: string]: any;
+};
+
 type Coal4State = {
   // existing (DDL)
   ddl: Coal4Item[];
@@ -71,6 +83,11 @@ type Coal4State = {
   ledgerLoading: boolean;
   ledgerData: LoanLedgerData | null;
   ledgerError: string | null;
+
+  // Loan Balance List
+  loanBalanceLoading: boolean;
+  loanBalanceData: LoanBalanceRow[] | null;
+  loanBalanceError: string | null;
 };
 
 const initialState: Coal4State = {
@@ -86,6 +103,10 @@ const initialState: Coal4State = {
   ledgerLoading: false,
   ledgerData: null,
   ledgerError: null,
+
+  loanBalanceLoading: false,
+  loanBalanceData: null,
+  loanBalanceError: null,
 };
 
 // ===== Thunk: Employee DDL Search (আগেরটাই) =====
@@ -165,6 +186,22 @@ export const employeeLoanLedger = createAsyncThunk<LoanLedgerData,LoanLedgerPayl
   }
 });
 
+export const employeeLoanBalance = createAsyncThunk<LoanBalanceRow[], void, { rejectValue: string }>(
+  'employeeLoan/employeeLoanBalance',
+  async (_, thunkAPI) => {
+    try {
+      const response = await httpService.get(API_EMPLOYEE_LOAN_BALANCE_URL);
+      const raw = response.data;
+      const data = raw?.data?.data ?? raw?.data ?? raw ?? [];
+      return Array.isArray(data) ? data : [];
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || 'Failed to fetch loan balance';
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // ===== Slice =====
 const employeeLoanSlice = createSlice({name: 'employeeLoan',initialState,reducers: { 
     clearCoal4Ddl(state) {
@@ -192,6 +229,9 @@ const employeeLoanSlice = createSlice({name: 'employeeLoan',initialState,reducer
     },
     clearLoanLedgerError(state) {
       state.ledgerError = null;
+    },
+    clearLoanBalanceError(state) {
+      state.loanBalanceError = null;
     },
   },
   extraReducers: (builder) => {
@@ -248,6 +288,21 @@ const employeeLoanSlice = createSlice({name: 'employeeLoan',initialState,reducer
         state.ledgerLoading = false;
         state.ledgerData = null;
         state.ledgerError = (action.payload as string) || 'Failed to fetch loan ledger';
+      })
+
+      // ===== Loan Balance =====
+      .addCase(employeeLoanBalance.pending, (state) => {
+        state.loanBalanceLoading = true;
+        state.loanBalanceError = null;
+      })
+      .addCase(employeeLoanBalance.fulfilled, (state, action: PayloadAction<LoanBalanceRow[]>) => {
+        state.loanBalanceLoading = false;
+        state.loanBalanceData = action.payload;
+      })
+      .addCase(employeeLoanBalance.rejected, (state, action) => {
+        state.loanBalanceLoading = false;
+        state.loanBalanceData = [];
+        state.loanBalanceError = (action.payload as string) || 'Failed to fetch loan balance';
       });
   },
 });
@@ -258,6 +313,7 @@ export const {
   clearLoanDisbursementError,
   resetLoanLedger,
   clearLoanLedgerError,
+  clearLoanBalanceError,
 } = employeeLoanSlice.actions;
 
 export default employeeLoanSlice.reducer;

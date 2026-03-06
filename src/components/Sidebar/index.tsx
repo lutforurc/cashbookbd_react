@@ -177,6 +177,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/accounts/cash/payment' ||
                     pathname === '/accounts/bank/receive' ||
                     pathname === '/accounts/bank/payment' ||
+                    pathname === routes.employee_loan ||
+                    pathname === routes.employee_loan_balance ||
                     pathname === '/accounts/journal' ||
                     pathname === routes.branch_transfer ||
                     pathname === routes.branch_received ||
@@ -196,6 +198,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/accounts/bank/receive' ||
                           pathname === '/accounts/bank/payment' ||
                           pathname === '/accounts/employee-loan' ||
+                          pathname === routes.employee_loan_balance ||
                           pathname === '/accounts/journal' ||
                           pathname === routes.branch_transfer ||
                           pathname === routes.branch_received ||
@@ -286,13 +289,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           {hasPermission(permissions, 'hrm.loan.create') && (
                             <li>
                               <NavLink
-                                to="/accounts/employee-loan"
+                                to={routes.employee_loan}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
                                 Employee Loan
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'hrm.loan.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.employee_loan_balance}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Loan Balance
                               </NavLink>
                             </li>
                           )}
