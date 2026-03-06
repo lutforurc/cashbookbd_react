@@ -33,6 +33,7 @@ interface SalaryRow {
   loan_deduction: number;
 
   net_deduction: number;
+  working_days: number;
 }
 
 /* ================= COMPONENT ================= */
@@ -49,6 +50,9 @@ const SalarySheetGenerate = ({ user }: any) => {
   const [designationLevel, setDesignationLevel] = useState<any[]>([]);
   const [monthId, setMonthId] = useState<string>("");
   const [monthText, setMonthText] = useState<string>("");
+  const [selectedMonthDays, setSelectedMonthDays] = useState<number>(
+    new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
+  );
 
   const [searched, setSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -113,6 +117,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         loan_deduction: Number(emp.loan_deduction) || 0,
 
         net_deduction: Number(emp.others_deduction) || 0,
+        working_days: selectedMonthDays,
       }));
 
       setEmployees(mapped);
@@ -134,19 +139,31 @@ const SalarySheetGenerate = ({ user }: any) => {
     const num = Number(value);
     setEmployees((prev) =>
       prev.map((emp) =>
-        emp.id === id ? { ...emp, [field]: isNaN(num) ? 0 : num } : emp
+        String(emp.id) === String(id) ? { ...emp, [field]: isNaN(num) ? 0 : num } : emp
       )
     );
   };
 
   /* ================= CALCULATIONS ================= */
-  const totalSalary = (emp: SalaryRow) =>
-    (Number(emp.basic_salary) || 0) + (Number(emp.others_allowance) || 0);
+  const totalSalary = (emp: SalaryRow) => {
+    const monthDays = selectedMonthDays > 0 ? selectedMonthDays : 30;
+    const payableDays = Number(emp.working_days) || 0;
+    const basic = Number(emp.basic_salary) || 0;
+    const allowance = Number(emp.others_allowance) || 0;
+    return ((basic + allowance) / monthDays) * payableDays;
+  };
 
-  // ✅ আপনার চাওয়া: Net Salary = Total - Loan Ded.
-  // এখানে Loan Ded. = loan_balance (কারণ API তে আসল টাকা loan_balance এ আছে)
-  const netSalary = (emp: SalaryRow) =>
-    totalSalary(emp) - (Number(emp.loan_balance) || 0);
+  const roundUpToNearestTen = (value: number) => Math.ceil(value / 10) * 10;
+  const netSalary = (emp: SalaryRow) => {
+    const days = Number(emp.working_days) || 0;
+    const monthDays = selectedMonthDays > 0 ? selectedMonthDays : 30;
+    if (days <= 0 || monthDays <= 0) return 0;
+    const gross = (Number(emp.basic_salary) || 0) + (Number(emp.others_allowance) || 0);
+    const calculated = (gross / monthDays) * days;
+    const roundedGross = roundUpToNearestTen(calculated);
+    const loanDed = Number(emp.loan_balance) || 0;
+    return Math.max(0, roundedGross - loanDed);
+  };
 
   const grandTotals = useMemo(() => {
     return employees.reduce(
@@ -191,6 +208,31 @@ const SalarySheetGenerate = ({ user }: any) => {
       ),
     },
     {
+      key: "days",
+      header: "Working Day",
+      headerClass: "text-right w-24",
+      cellClass: "text-right",
+      render: (row: SalaryRow) => (
+        <InputElement
+          type="number"
+          value={row.working_days}
+          className="text-right w-24 !md:w-20"
+          onChange={(e) => {
+            const inputDays = Number(e.target.value);
+            const safeDays = Math.max(
+              0,
+              Math.min(selectedMonthDays, Number.isFinite(inputDays) ? inputDays : 0)
+            );
+            setEmployees((prev) =>
+              prev.map((emp) =>
+                String(emp.id) === String(row.id) ? { ...emp, working_days: safeDays } : emp
+              )
+            );
+          }}
+        />
+      ),
+    },
+    {
       key: "basic_salary",
       header: "Basic",
       headerClass: "text-right w-24",
@@ -201,9 +243,11 @@ const SalarySheetGenerate = ({ user }: any) => {
           value={row.basic_salary}
           className="text-right w-24 !md:w-20"
           onChange={(e) => handleInputChange(row.id, "basic_salary", e.target.value)}
+          disabled={true} 
         />
       ),
     },
+
     {
       key: "others_allowance",
       header: "Mobile Bill",
@@ -215,6 +259,7 @@ const SalarySheetGenerate = ({ user }: any) => {
           value={row.others_allowance}
           className="text-right w-24 !md:w-20"
           onChange={(e) => handleInputChange(row.id, "others_allowance", e.target.value)}
+          disabled={true} 
         />
       ),
     },
@@ -223,7 +268,8 @@ const SalarySheetGenerate = ({ user }: any) => {
       header: "Total",
       headerClass: "text-right w-24",
       cellClass: "text-right font-semibold text-green-700 dark:text-green-400 w-24",
-      render: (row: SalaryRow) => thousandSeparator(totalSalary(row), 0),
+      render: (row: SalaryRow) =>
+        thousandSeparator(roundUpToNearestTen(totalSalary(row)), 0),
     },
 
     // ✅ Loan Ded. input এখন loan_balance edit করবে
@@ -278,14 +324,19 @@ const SalarySheetGenerate = ({ user }: any) => {
       // তাহলে loan_balance কে loan_deduction হিসেবে পাঠিয়ে দিন (safe mapping)
       const payloadEmployees = employees.map((e) => ({
         ...e,
-        basic_salary: Number(e.basic_salary) || 0,
-        others_allowance: Number(e.others_allowance) || 0,
+        basic_salary:
+          ((Number(e.basic_salary) || 0) / (selectedMonthDays || 30)) *
+          (Number(e.working_days) || 0),
+        others_allowance:
+          ((Number(e.others_allowance) || 0) / (selectedMonthDays || 30)) *
+          (Number(e.working_days) || 0),
         loan_balance: Number(e.loan_balance) || 0,
 
         // ✅ IMPORTANT: save loan_deduction = loan_balance
         loan_deduction: Number(e.loan_balance) || 0,
 
         net_deduction: Number(e.net_deduction) || 0,
+        working_days: Number(e.working_days) || 0,
       }));
 
       const response = await dispatch(
@@ -329,6 +380,17 @@ const SalarySheetGenerate = ({ user }: any) => {
     const { value } = e.target;
     setMonthId(value.toString());
     setMonthText(e.target.selectedOptions[0]?.text || "");
+
+    const parsedMonth = Number(value);
+    const now = new Date();
+    const year = now.getFullYear();
+    const fallbackDays = new Date(year, now.getMonth() + 1, 0).getDate();
+    const daysInMonth =
+      Number.isFinite(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12
+        ? new Date(year, parsedMonth, 0).getDate()
+        : fallbackDays;
+    setSelectedMonthDays(daysInMonth);
+    setEmployees((prev) => prev.map((emp) => ({ ...emp, working_days: daysInMonth })));
   };
 
   /* ================= UI ================= */

@@ -310,8 +310,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          
-                          
                         </ul>
                       </div>
                     </React.Fragment>
