@@ -6,6 +6,9 @@ export const MENU_PERMISSIONS = {
     'bank.payment.create',
     'hrm.loan.create',
     'journal.create',
+    'branch.transfer.create',
+    'inventory.transfer.create',
+    'product.transfer.create',
   ],
   invoice: ['purchase.create', 'sales.create', 'labour.invoice.create'],
   reports: [

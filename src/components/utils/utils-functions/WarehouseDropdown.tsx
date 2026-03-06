@@ -16,6 +16,7 @@ const WarehouseDropdown: React.FC<SelectOptionProps> = ({
   onKeyDown,
   className,
   id, 
+  name,
   defaultValue,
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>(defaultValue || '');
@@ -35,7 +36,7 @@ const WarehouseDropdown: React.FC<SelectOptionProps> = ({
   return (
     <select
       id={id} 
-      name={'warehouse'} // Assuming name is a string for the select element
+      name={name || 'warehouse'}
       value={selectedValue} // Bind the value to state
       onChange={handleSelectChange}
       onKeyDown={onKeyDown} // Pass it to the select element
