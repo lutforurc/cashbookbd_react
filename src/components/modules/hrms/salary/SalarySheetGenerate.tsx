@@ -419,7 +419,10 @@ const SalarySheetGenerate = ({ user }: any) => {
             Total Salary:{" "}
             <span className="font-semibold">{thousandSeparator(grandTotals.total_salary, 0)}</span>
           </div>
-
+          <div>
+            Total Deduction:{" "}
+            <span className="font-semibold">{thousandSeparator(grandTotals?.loan_deduction, 0)}</span>
+          </div>
           <div className="font-bold text-green-700 dark:text-green-400">
             Net Total: {thousandSeparator(grandTotals.net_salary, 0)}
           </div>
