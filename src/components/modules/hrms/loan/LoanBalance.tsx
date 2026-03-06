@@ -207,7 +207,7 @@ const LoanBalance = () => {
       <HelmetTitle title="Loan Balance" />
 
       <div className="rounded-sm border border-stroke bg-white px-4 py-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:items-center">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2 text-sm text-black dark:text-white">
             <SelectOption onChange={(e) => setPerPage(Number(e.target.value))} />
             <BranchDropdown
@@ -217,7 +217,7 @@ const LoanBalance = () => {
               branchDdl={branchOptions}
             />
           </div>
-          <div className="flex items-center justify-start gap-2 md:justify-end">
+          <div className="flex items-center gap-2 md:justify-end">
             <label className="text-sm text-black dark:text-white">Search:</label>
             <input
               type="text"
