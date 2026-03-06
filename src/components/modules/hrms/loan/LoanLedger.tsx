@@ -128,7 +128,10 @@ const LoanLedger = (user: any) => {
       key: 'remarks',
       header: 'Remarks',  
       render: (row: any) => (
-        <div className="">{row.remarks ? row.remarks : ''}</div>
+        <div className="">
+          <div className='block text-gray-900 dark:text-white'>{row.remarks ? row.remarks : ''}</div>
+          <div className='block text-gray-500 dark:text-gray-500'>{row.branch_name ? ` ${row.branch_name}` : ''}</div>
+          </div>
       ),
     }, 
     {

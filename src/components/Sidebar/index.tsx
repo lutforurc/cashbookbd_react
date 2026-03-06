@@ -178,10 +178,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/accounts/bank/receive' ||
                     pathname === '/accounts/bank/payment' ||
                     pathname === routes.employee_loan ||
-                    pathname === routes.employee_loan_balance ||
+                    
                     pathname === '/accounts/journal' ||
-                    pathname === routes.branch_transfer ||
-                    pathname === routes.branch_received ||
+                    
+                    
                     pathname.includes('forms')
                   }
                   menuId="transaction"
@@ -198,10 +198,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/accounts/bank/receive' ||
                           pathname === '/accounts/bank/payment' ||
                           pathname === '/accounts/employee-loan' ||
-                          pathname === routes.employee_loan_balance ||
-                          pathname === '/accounts/journal' ||
-                          pathname === routes.branch_transfer ||
-                          pathname === routes.branch_received ||
+                          pathname === '/accounts/journal' || 
                           pathname.includes('/accounts/cash/receive')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -299,19 +296,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'hrm.loan.create') && (
-                            <li>
-                              <NavLink
-                                to={routes.employee_loan_balance}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Loan Balance
-                              </NavLink>
-                            </li>
-                          )}
+                          
                           {hasPermission(permissions, 'journal.create') && (
                             <li>
                               <NavLink
@@ -325,39 +310,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'branch.transfer.create') ||
-                            hasPermission(permissions, 'inventory.transfer.create') ||
-                            hasPermission(permissions, 'product.transfer.create') ||
-                            hasPermission(permissions, 'purchase.create')) && (
-                              <li>
-                                <NavLink
-                                  to={routes.branch_transfer}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-white')
-                                  }
-                                >
-                                  Branch Transfer
-                                </NavLink>
-                              </li>
-                            )}
-                          {/* {(hasPermission(permissions, 'branch.received.create') ||
-                            hasPermission(permissions, 'inventory.received.create') ||
-                            hasPermission(permissions, 'product.received.create') ||
-                            hasPermission(permissions, 'branch.transfer.create') ||
-                            hasPermission(permissions, 'inventory.transfer.create')) && ( */}
-                              <li>
-                                <NavLink
-                                  to={routes.branch_received}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-white')
-                                  }
-                                >
-                                  Branch Receive
-                                </NavLink>
-                              </li>
-                            {/* // )} */}
+                          
+                          
                         </ul>
                       </div>
                     </React.Fragment>
@@ -371,6 +325,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   activeCondition={
                     pathname === '/invoice/purchase' ||
                     pathname === '/invoice/sales' ||
+                    pathname === routes.branch_transfer ||
+                    pathname === routes.branch_received ||
                     pathname.includes('forms')
                   }
                   menuId="invoice"
@@ -384,6 +340,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/invoice/purchase' ||
                           pathname === '/invoice/sales' ||
                           pathname === '/invoice/labour-invoice' ||
+                          pathname === routes.branch_transfer ||
+                          pathname === routes.branch_received ||
                           pathname.includes('/invoice/sales')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -441,6 +399,39 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
+                          {/* {(hasPermission(permissions, 'branch.received.create') ||
+                            hasPermission(permissions, 'inventory.received.create') ||
+                            hasPermission(permissions, 'product.received.create') ||
+                            hasPermission(permissions, 'branch.transfer.create') ||
+                            hasPermission(permissions, 'inventory.transfer.create')) && ( */}
+                              <li>
+                                <NavLink
+                                  to={routes.branch_received}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Branch Receive
+                                </NavLink>
+                              </li>
+                            {/* // )} */}
+                          {(hasPermission(permissions, 'branch.transfer.create') ||
+                            hasPermission(permissions, 'inventory.transfer.create') ||
+                            hasPermission(permissions, 'product.transfer.create') ||
+                            hasPermission(permissions, 'purchase.create')) && (
+                              <li>
+                                <NavLink
+                                  to={routes.branch_transfer}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Branch Issue
+                                </NavLink>
+                              </li>
+                            )}
                         </ul>
                       </div>
                     </React.Fragment>
@@ -1364,6 +1355,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   activeCondition={
                     pathname === '/hrms/employees' ||
                     pathname === '/hrms/salary/salary-generate' ||
+                    pathname === routes.employee_loan_balance ||
                     pathname.includes('/hrms/salary-sheet')
                   }
                   menuId="hrm"
@@ -1378,6 +1370,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
                           pathname === '/hrms/employees' ||
                           pathname === '/hrms/salary/salary-generate' ||
+                          pathname === routes.employee_loan_balance ||
                           pathname.includes('/hrms/salary-sheet')
                         ) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
@@ -1421,6 +1414,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 }
                               >
                                 Salary Generate
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'hrm.loan.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.employee_loan_balance}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Loan Balance
                               </NavLink>
                             </li>
                           )}

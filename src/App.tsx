@@ -215,7 +215,7 @@ function App() {
             <Route path={routes.bank_payment} element={<BankPayment />} />
             <Route path={routes.employee_loan} element={<EmployeeLoan />} />
             <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
-            <Route path={routes.employee_loan_balance} element={<LoanBalance />} />
+            <Route path={routes.employee_loan_balance} element={<LoanBalance user={me} />} />
             <Route path={routes.journal} element={<Journal />} />
             <Route path={routes.branch_transfer} element={<BranchTransfer />} />
             <Route path={routes.branch_received} element={<WarehouseReceived />} />

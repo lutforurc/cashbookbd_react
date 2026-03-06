@@ -36,11 +36,12 @@ const firstValue = (row: any, keys: string[], fallback = ''): any => {
   return fallback;
 };
 
-const LoanBalance = () => {
+const LoanBalance = (user: any) => {
   const dispatch = useDispatch<any>();
   const employeeLoan = useSelector((state: any) => state.employeeLoan);
   const authMe = useSelector((state: any) => state.auth?.me);
   const branchDdlData = useSelector((state) => state.branchDdl);
+  const settings = useSelector((state) => state.settings);
   const [search, setSearchValue] = useState('');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [perPage, setPerPage] = useState(10);
@@ -48,6 +49,12 @@ const LoanBalance = () => {
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | ''>('');
   const [branchInitialized, setBranchInitialized] = useState(false);
+
+
+  console.log('====================================');
+  console.log("settings", settings?.data?.branch?.branch_types_id);
+  console.log('====================================');
+
 
   useEffect(() => {
     if (branchId === '') {
@@ -57,8 +64,8 @@ const LoanBalance = () => {
     }
   }, [dispatch, branchId]);
 
-    useEffect(() => {
-    if (branchDdlData?.protectedData?.data ) {
+  useEffect(() => {
+    if (branchDdlData?.protectedData?.data) {
       setDropdownData(branchDdlData?.protectedData?.data);
     }
   }, [branchDdlData?.protectedData?.data]);
@@ -109,6 +116,11 @@ const LoanBalance = () => {
         .includes(keyword),
     );
   }, [normalizedRows, search]);
+
+  const grandTotalBalance = useMemo(
+    () => filteredRows.reduce((sum, row) => sum + toNumber(row.balance), 0),
+    [filteredRows],
+  );
 
   const totalEntries = filteredRows.length;
   const totalPages = Math.max(1, Math.ceil(totalEntries / perPage));
@@ -218,12 +230,11 @@ const LoanBalance = () => {
     setCurrentPage(1);
   };
 
-    const branchOptions = dropdownData ? [{ id: "", name: "Select All Branch" }, ...(dropdownData ?? [])] : [...(dropdownData ?? [])];
+  const branchOptions = settings?.data?.branch?.branch_types_id == 1 ? [{ id: "", name: "Select All Branch" }, ...(dropdownData ?? [])] : [...(dropdownData ?? [])];
 
   return (
     <div className="w-full">
       <HelmetTitle title="Loan Balance" />
-
       <div className="rounded-sm px-4 py-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2 text-sm text-black dark:text-white">
@@ -231,7 +242,7 @@ const LoanBalance = () => {
             <BranchDropdown
               defaultValue={(branchId ?? '').toString()}
               onChange={handleBranchChange}
-              className="w-60 font-medium text-sm h-9"
+              className="!w-64 font-medium text-sm h-9"
               branchDdl={branchOptions}
             />
           </div>
@@ -256,18 +267,24 @@ const LoanBalance = () => {
             {employeeLoan?.loanBalanceLoading === true ? <Loader /> : ''}
             <Table columns={columns} data={tableData || []} noDataMessage="No loan balance data found." />
           </div>
-          {totalPages > 1 ? (
-            <Pagination
-              currentPage={safePage}
-              totalPages={totalPages}
-              handlePageChange={handlePageChange}
-            />
-          ) : (
-            ''
-          )}
-          {/* <div className="mt-3 text-sm text-black dark:text-white">
-            Showing {totalEntries === 0 ? 0 : startIndex + 1} to {endIndex} of {totalEntries} entries
-          </div> */}
+          <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="rounded-xs border border-stroke px-3 py-1.5 text-sm font-semibold text-black dark:border-strokedark dark:text-white">
+                Total Balance: {thousandSeparator(grandTotalBalance, 0)}
+              </div>
+            </div>
+            <div>
+              {totalPages > 1 ? (
+                <Pagination
+                  currentPage={safePage}
+                  totalPages={totalPages}
+                  handlePageChange={handlePageChange}
+                />
+              ) : (
+                ''
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
