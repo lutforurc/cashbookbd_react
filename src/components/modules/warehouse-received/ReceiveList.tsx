@@ -7,7 +7,7 @@ import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { getBranchReceiveds } from './warehouseReceivedSlice';
+import { getBranchReceived } from './warehouseReceivedSlice';
 
 interface ReceiveListProps {
   refreshKey?: number;
@@ -33,14 +33,14 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
   const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
-    dispatch(getBranchReceiveds({ page, perPage, search }));
+    dispatch(getBranchReceived({ page, perPage, search }));
   }, [dispatch, page, perPage, refreshKey]);
 
   const handleSearch = () => {
     setSearchLoading(true);
     setCurrentPage(1);
     setPage(1);
-    dispatch(getBranchReceiveds({ page: 1, perPage, search }));
+    dispatch(getBranchReceived({ page: 1, perPage, search }));
     setTimeout(() => setSearchLoading(false), 150);
   };
 

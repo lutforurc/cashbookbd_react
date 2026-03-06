@@ -63,13 +63,9 @@ const normalizeListPayload = (payload: any): BranchReceivedListPayload => {
   };
 };
 
-export const getBranchReceiveds = createAsyncThunk<
-  BranchReceivedListPayload,
-  any,
-  { rejectValue: string }
->('branchReceived/getBranchReceiveds', async (params = {}, thunkAPI) => {
+export const getBranchReceived = createAsyncThunk<BranchReceivedListPayload, any, { rejectValue: string }>('branchReceived/getBranchReceived', async (params = {}, thunkAPI) => {
   try {
-    const res = await httpService.post(API_BRANCH_RECEIVED_LIST_URL, params);
+    const res = await httpService.get(API_BRANCH_RECEIVED_LIST_URL, params);
     const responseData = res.data;
 
     if (responseData?.success) {
@@ -132,11 +128,11 @@ const branchReceivedSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getBranchReceiveds.pending, (state) => {
+      .addCase(getBranchReceived.pending, (state) => {
         state.isLoading = true;
         state.errors = null;
       })
-      .addCase(getBranchReceiveds.fulfilled, (state, action) => {
+      .addCase(getBranchReceived.fulfilled, (state, action) => {
         state.isLoading = false;
         state.data = action.payload.rows;
         state.pagination = {
@@ -145,7 +141,7 @@ const branchReceivedSlice = createSlice({
           currentPage: action.payload.currentPage,
         };
       })
-      .addCase(getBranchReceiveds.rejected, (state, action) => {
+      .addCase(getBranchReceived.rejected, (state, action) => {
         state.isLoading = false;
         state.errors = action.payload || 'Failed to load branch receives';
       })

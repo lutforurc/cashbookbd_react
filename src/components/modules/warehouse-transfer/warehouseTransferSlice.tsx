@@ -69,7 +69,7 @@ export const getBranchTransfers = createAsyncThunk<
   { rejectValue: string }
 >('branchTransfer/getBranchTransfers', async (params = {}, thunkAPI) => {
   try {
-    const res = await httpService.post(API_BRANCH_TRANSFER_LIST_URL, params);
+    const res = await httpService.get(API_BRANCH_TRANSFER_LIST_URL, params);
     const responseData = res.data;
 
     if (responseData?.success) {
