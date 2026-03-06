@@ -9,6 +9,8 @@ import { employeeLoanBalance } from './employeeLoanSlice';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
+import SearchInput from '../../../utils/fields/SearchInput';
+import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 type BalanceRow = {
   employee_name: string;
@@ -39,7 +41,8 @@ const LoanBalance = () => {
   const employeeLoan = useSelector((state: any) => state.employeeLoan);
   const authMe = useSelector((state: any) => state.auth?.me);
   const branchDdlData = useSelector((state) => state.branchDdl);
-  const [search, setSearch] = useState('');
+  const [search, setSearchValue] = useState('');
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -193,6 +196,21 @@ const LoanBalance = () => {
     setCurrentPage(page);
   };
 
+  const handleSearchButton = async () => {
+    setButtonLoading(true);
+    setCurrentPage(1);
+    const searchName = search.trim();
+    try {
+      if (branchId === '') {
+        await dispatch(employeeLoanBalance({ searchName })).unwrap();
+      } else {
+        await dispatch(employeeLoanBalance({ branchId, searchName })).unwrap();
+      }
+    } finally {
+      setButtonLoading(false);
+    }
+  };
+
   const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setBranchId(value === '' ? '' : Number(value));
@@ -206,7 +224,7 @@ const LoanBalance = () => {
     <div className="w-full">
       <HelmetTitle title="Loan Balance" />
 
-      <div className="rounded-sm border border-stroke bg-white px-4 py-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-sm px-4 py-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2 text-sm text-black dark:text-white">
             <SelectOption onChange={(e) => setPerPage(Number(e.target.value))} />
@@ -217,13 +235,18 @@ const LoanBalance = () => {
               branchDdl={branchOptions}
             />
           </div>
-          <div className="flex items-center gap-2 md:justify-end">
-            <label className="text-sm text-black dark:text-white">Search:</label>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-9 w-full rounded border border-stroke bg-white px-2 text-sm focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark md:w-52"
+          <div className="flex items-center md:justify-end">
+            <SearchInput
+              search={search}
+              setSearchValue={setSearchValue}
+              className="text-nowrap h-8.5"
+            />
+
+            <ButtonLoading
+              onClick={handleSearchButton}
+              buttonLoading={buttonLoading}
+              label="Search"
+              className="whitespace-nowrap h-8.5 w-25"
             />
           </div>
         </div>
@@ -242,9 +265,9 @@ const LoanBalance = () => {
           ) : (
             ''
           )}
-          <div className="mt-3 text-sm text-black dark:text-white">
+          {/* <div className="mt-3 text-sm text-black dark:text-white">
             Showing {totalEntries === 0 ? 0 : startIndex + 1} to {endIndex} of {totalEntries} entries
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
