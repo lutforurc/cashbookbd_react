@@ -6,9 +6,13 @@ import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { employeeLoanBalance } from './employeeLoanSlice';
+import SelectOption from '../../../utils/utils-functions/SelectOption';
+import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
+import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 
 type BalanceRow = {
   employee_name: string;
+  branch: string;
   designation: string;
   total_senction: number;
   total_payment: number;
@@ -33,13 +37,29 @@ const firstValue = (row: any, keys: string[], fallback = ''): any => {
 const LoanBalance = () => {
   const dispatch = useDispatch<any>();
   const employeeLoan = useSelector((state: any) => state.employeeLoan);
+  const authMe = useSelector((state: any) => state.auth?.me);
+  const branchDdlData = useSelector((state) => state.branchDdl);
   const [search, setSearch] = useState('');
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [branchId, setBranchId] = useState<number | ''>('');
+  const [branchInitialized, setBranchInitialized] = useState(false);
 
   useEffect(() => {
-    dispatch(employeeLoanBalance());
-  }, [dispatch]);
+    if (branchId === '') {
+      dispatch(employeeLoanBalance());
+    } else {
+      dispatch(employeeLoanBalance({ branchId }));
+    }
+  }, [dispatch, branchId]);
+
+    useEffect(() => {
+    if (branchDdlData?.protectedData?.data ) {
+      setDropdownData(branchDdlData?.protectedData?.data);
+    }
+  }, [branchDdlData?.protectedData?.data]);
+
 
   const normalizedRows: BalanceRow[] = useMemo(() => {
     const rows = Array.isArray(employeeLoan?.loanBalanceData)
@@ -50,6 +70,7 @@ const LoanBalance = () => {
       employee_name: String(
         firstValue(item, ['employee_name', 'employeeName', 'name', 'employee'], ''),
       ),
+      branch: String(firstValue(item, ['branch', 'branch_name', 'branchName'], '')),
       designation: String(firstValue(item, ['designation', 'designation_name'], '')),
       total_senction: toNumber(
         firstValue(item, ['total_senction', 'total_sanction', 'total_loan', 'loan_amount'], 0),
@@ -73,6 +94,7 @@ const LoanBalance = () => {
     return normalizedRows.filter((row) =>
       [
         row.employee_name,
+        row.branch,
         row.designation,
         String(row.total_senction),
         String(row.total_payment),
@@ -111,7 +133,11 @@ const LoanBalance = () => {
     {
       key: 'employee_name',
       header: 'Employee Name',
-      render: (row: any) => <span>{row.employee_name}</span>,
+      render: (row: any) =>
+        <span>
+          <div className='text-black-2 dark:text-white'>{row.employee_name}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-500">{row.branch}</div>
+        </span>,
     },
     {
       key: 'designation',
@@ -133,13 +159,6 @@ const LoanBalance = () => {
       render: (row: any) => <span>{thousandSeparator(row.total_payment, 0)}</span>,
     },
     {
-      key: 'installment',
-      header: 'Installment',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: any) => <span>{thousandSeparator(row.installment, 0)}</span>,
-    },
-    {
       key: 'balance',
       header: 'Balance',
       headerClass: 'text-right',
@@ -147,6 +166,18 @@ const LoanBalance = () => {
       render: (row: any) => <span>{thousandSeparator(row.balance, 0)}</span>,
     },
   ];
+
+
+  useEffect(() => {
+    dispatch(getDdlProtectedBranch());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!branchInitialized && authMe?.branch_id) {
+      setBranchId(Number(authMe.branch_id));
+      setBranchInitialized(true);
+    }
+  }, [authMe?.branch_id, branchInitialized]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -162,6 +193,15 @@ const LoanBalance = () => {
     setCurrentPage(page);
   };
 
+  const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setBranchId(value === '' ? '' : Number(value));
+    setBranchInitialized(true);
+    setCurrentPage(1);
+  };
+
+    const branchOptions = dropdownData ? [{ id: "", name: "Select All Branch" }, ...(dropdownData ?? [])] : [...(dropdownData ?? [])];
+
   return (
     <div className="w-full">
       <HelmetTitle title="Loan Balance" />
@@ -169,21 +209,14 @@ const LoanBalance = () => {
       <div className="rounded-sm border border-stroke bg-white px-4 py-4 shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:items-center">
           <div className="flex items-center gap-2 text-sm text-black dark:text-white">
-            <span>Show</span>
-            <select
-              value={perPage}
-              onChange={(e) => setPerPage(Number(e.target.value))}
-              className="rounded border border-stroke bg-white px-2 py-1 text-sm dark:border-strokedark dark:bg-boxdark"
-            >
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-            <span>entries</span>
+            <SelectOption onChange={(e) => setPerPage(Number(e.target.value))} />
+            <BranchDropdown
+              defaultValue={(branchId ?? '').toString()}
+              onChange={handleBranchChange}
+              className="w-60 font-medium text-sm h-9"
+              branchDdl={branchOptions}
+            />
           </div>
-
-
           <div className="flex items-center justify-start gap-2 md:justify-end">
             <label className="text-sm text-black dark:text-white">Search:</label>
             <input

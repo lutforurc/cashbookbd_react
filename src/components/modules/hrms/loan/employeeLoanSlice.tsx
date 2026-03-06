@@ -186,11 +186,18 @@ export const employeeLoanLedger = createAsyncThunk<LoanLedgerData,LoanLedgerPayl
   }
 });
 
-export const employeeLoanBalance = createAsyncThunk<LoanBalanceRow[], void, { rejectValue: string }>(
+export const employeeLoanBalance = createAsyncThunk<
+  LoanBalanceRow[],
+  { branchId?: number | string | null } | void,
+  { rejectValue: string }
+>(
   'employeeLoan/employeeLoanBalance',
-  async (_, thunkAPI) => {
+  async (payload, thunkAPI) => {
     try {
-      const response = await httpService.get(API_EMPLOYEE_LOAN_BALANCE_URL);
+      const branchId = payload && typeof payload === 'object' ? payload.branchId : null;
+      const response = await httpService.get(API_EMPLOYEE_LOAN_BALANCE_URL, {
+        params: branchId ? { branch_id: branchId } : {},
+      });
       const raw = response.data;
       const data = raw?.data?.data ?? raw?.data ?? raw ?? [];
       return Array.isArray(data) ? data : [];
