@@ -47,12 +47,17 @@ export const VoucherPrintRegistry = forwardRef(
     /* ================= PUBLIC METHOD ================= */
     useImperativeHandle(ref, () => ({
       printVoucher(row: any) {
-        if (!row?.mtm_id || !row?.vr_no) {
+        const mtmId = row?.mtm_id ?? row?.mtmId ?? row?.mid ?? row?.id;
+        if (!mtmId || !row?.vr_no) {
           toast.error('Invalid voucher data');
           return;
         }
 
-        const voucherType = row.vr_no.split('-')[0];
+        const rawVoucherType = String(row.vr_no).split('-')[0]?.trim();
+        const parsedVoucherType = Number.parseInt(rawVoucherType, 10);
+        const voucherType = Number.isNaN(parsedVoucherType)
+          ? rawVoucherType
+          : String(parsedVoucherType);
 
         switch (voucherType) {
           /* ================= CASH PAYMENT ================= */
@@ -61,7 +66,7 @@ export const VoucherPrintRegistry = forwardRef(
 
             dispatch(
               electronicsSalesPrint(
-                { mt: row.mtm_id },
+                { mt: mtmId },
                 (message?: string) => {
                   if (message) {
                     toast.error(message);
@@ -78,7 +83,7 @@ export const VoucherPrintRegistry = forwardRef(
 
             dispatch(
               electronicsSalesPrint(
-                { mt: row.mtm_id },
+                { mt: mtmId },
                 (message?: string) => {
                   if (message) {
                     toast.error(message);
@@ -96,7 +101,7 @@ export const VoucherPrintRegistry = forwardRef(
 
             dispatch(
               electronicsSalesPrint(
-                { mt: row.mtm_id },
+                { mt: mtmId },
                 (message?: string) => {
                   if (message) {
                     toast.error(message);
@@ -108,14 +113,25 @@ export const VoucherPrintRegistry = forwardRef(
             );
             break;
 
-          /* ================= PURCHASE (FUTURE) ================= */
+          /* ================= PURCHASE ================= */
           case '4':
             activePrintRef.current = purchaseRef.current;
-            toast.error('Purchase print not implemented yet');
+            dispatch(
+              electronicsSalesPrint(
+                { mt: mtmId },
+                (message?: string) => {
+                  if (message) {
+                    toast.error(message);
+                  } else {
+                    setTimeout(printVoucherDoc, 300);
+                  }
+                }
+              )
+            );
             break;
 
           default:
-            toast.error('Unknown voucher type');
+            toast.error(`Unknown voucher type: ${rawVoucherType || 'N/A'}`);
         }
       },
     }));

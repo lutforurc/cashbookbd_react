@@ -152,7 +152,12 @@ const CashBook = (user: any) => {
       render: (row: any) => (
         <div
           className="cursor-pointer hover:underline"
-          onClick={() => handleVoucherPrint(row)}
+          onClick={() =>
+            handleVoucherPrint({
+              ...row,
+              mtm_id: row?.mtm_id ?? row?.mtmId ?? row?.mid ?? row?.id,
+            })
+          }
         >
           {row.vr_no}
         </div>
