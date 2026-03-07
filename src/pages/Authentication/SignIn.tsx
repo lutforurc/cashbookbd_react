@@ -7,7 +7,6 @@ import Loader from '../../common/Loader';
 import { login } from '../../features/authReducer';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { getSettings } from '../../components/modules/settings/settingsSlice';
-import coverImg from '../../images/cover/cover-02.png';
 import { FiEye, FiEyeOff, FiLogIn } from 'react-icons/fi';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 import { getSignInTitleByHost } from '../../components/services/tenantTitles';
@@ -34,7 +33,7 @@ const SignIn: React.FC = () => {
   }, [isLoggedIn, prevLocation.state, navigate, dispatch]);
 
   const [formData, setFormData] = useState({
-    email: '',
+    loginId: '',
     password: '',
     remember: false,
   });
@@ -53,7 +52,7 @@ const SignIn: React.FC = () => {
   const handleLogin = (e: any) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
+    if (!formData.loginId || !formData.password) {
       dispatch({
         type: 'AUTH/login/error',
         payload: { message: 'Please add the required info.' },
@@ -64,7 +63,7 @@ const SignIn: React.FC = () => {
 
     dispatch(
       login({
-        email: formData.email,
+        loginId: formData.loginId,
         password: formData.password,
         remember: formData.remember,
         callback: () => {},
@@ -82,7 +81,7 @@ const SignIn: React.FC = () => {
   const handleSetUser = () => {
     setFormData({
       ...formData,
-      email: 'lutforurc@gmail.com',
+      loginId: 'lutforurc@gmail.com',
       password: 'Lutfor01911282149#',
     });
 
@@ -155,16 +154,17 @@ const SignIn: React.FC = () => {
                 <form onSubmit={handleLogin}>
                   <div className="mb-4">
                     <label className="mb-2.5 block font-medium text-black dark:text-white">
-                      Email
+                      Email or Phone
                     </label>
                     <div className="relative">
                       <input
-                        type="email"
-                        name="email"
+                        type="text"
+                        name="loginId"
                         id="emailaddress"
-                        value={formData.email}
+                        value={formData.loginId}
                         onChange={handleChange}
-                        placeholder="Enter your email"
+                        placeholder="Enter email or phone number"
+                        autoComplete="username"
                         className="w-full border border-stroke bg-transparent py-2 pl-4 pr-4 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                       />
                     </div>
