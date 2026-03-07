@@ -203,11 +203,11 @@ const SalarySheetGenerate = ({ user }: any) => {
     },
     {
       key: "name",
-      header: "Employee",
+      header: "Name of Employee",
       render: (row: SalaryRow) => (
         <>
           <div className="font-semibold">{row.name}</div>
-          <div className="text-xs text-gray-800 dark:text-gray-200">
+          <div className="text-xs text-gray-600 dark:text-gray-400">
             {row.designation_name}
           </div>
         </>
