@@ -220,11 +220,16 @@ const SalarySheetGenerate = ({ user }: any) => {
       cellClass: "text-right",
       render: (row: SalaryRow) => (
         <InputElement
-          type="number"
-          value={row.working_days}
+          type="text"
+          value={String(Math.max(0, Number(row.working_days) || 0))}
           className="text-right w-24 !md:w-20"
+          inputMode="numeric"
+          pattern="[0-9]*"
           onChange={(e) => {
-            const inputDays = Number(e.target.value);
+            const rawValue = e.target.value;
+            const digitsOnly = rawValue.replace(/\D/g, "");
+            const normalizedValue = digitsOnly.replace(/^0+(?=\d)/, "");
+            const inputDays = normalizedValue === "" ? 0 : Number(normalizedValue);
             const safeDays = Math.max(
               0,
               Math.min(selectedMonthDays, Number.isFinite(inputDays) ? inputDays : 0)
@@ -383,14 +388,21 @@ const SalarySheetGenerate = ({ user }: any) => {
     setMonthId(value.toString());
     setMonthText(e.target.selectedOptions[0]?.text || "");
 
-    const parsedMonth = Number(value);
+    const [monthPart, yearPart] = String(value).split("-");
+    const parsedMonth = Number(monthPart);
+    const parsedYear = Number(yearPart);
+
     const now = new Date();
-    const year = now.getFullYear();
-    const fallbackDays = new Date(year, now.getMonth() + 1, 0).getDate();
+    const fallbackDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const daysInMonth =
-      Number.isFinite(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12
-        ? new Date(year, parsedMonth, 0).getDate()
+      Number.isFinite(parsedMonth) &&
+      parsedMonth >= 1 &&
+      parsedMonth <= 12 &&
+      Number.isFinite(parsedYear) &&
+      parsedYear >= 1900
+        ? new Date(parsedYear, parsedMonth, 0).getDate()
         : fallbackDays;
+
     setSelectedMonthDays(daysInMonth);
     setEmployees((prev) => prev.map((emp) => ({ ...emp, working_days: daysInMonth })));
   };
@@ -453,17 +465,10 @@ const SalarySheetGenerate = ({ user }: any) => {
               }}
               buttonLoading={saveButtonLoading}
               label="Generate Salary"
-              className="whitespace-nowrap h-8"
+              className="whitespace-nowrap h-9"
               icon={<FiSave className="mr-2" />}
             />
           )}
-
-          <ButtonLoading
-            onClick={() => window.print()}
-            label="Print"
-            icon={<FiPrinter className="mr-2" />}
-            className="whitespace-nowrap p-2"
-          />
         </div>
       </div>
 
