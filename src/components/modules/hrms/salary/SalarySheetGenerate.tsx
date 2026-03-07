@@ -146,21 +146,27 @@ const SalarySheetGenerate = ({ user }: any) => {
   };
 
   /* ================= CALCULATIONS ================= */
-  const totalSalary = (emp: SalaryRow) => {
+  const proratedAmount = (amount: number, days: number) => {
     const monthDays = selectedMonthDays > 0 ? selectedMonthDays : 30;
-    const payableDays = Number(emp.working_days) || 0;
-    const basic = Number(emp.basic_salary) || 0;
-    const allowance = Number(emp.others_allowance) || 0;
-    return ((basic + allowance) / monthDays) * payableDays;
+    if (days <= 0 || monthDays <= 0) return 0;
+    return roundUpToNearestTen((amount / monthDays) * days);
+  };
+
+  const proratedBasicSalary = (emp: SalaryRow) =>
+    proratedAmount(Number(emp.basic_salary) || 0, Number(emp.working_days) || 0);
+
+  const proratedOtherAllowance = (emp: SalaryRow) =>
+    proratedAmount(Number(emp.others_allowance) || 0, Number(emp.working_days) || 0);
+
+  const totalSalary = (emp: SalaryRow) => {
+    return proratedBasicSalary(emp) + proratedOtherAllowance(emp);
   };
 
   const netSalary = (emp: SalaryRow) => {
     const days = Number(emp.working_days) || 0;
     const monthDays = selectedMonthDays > 0 ? selectedMonthDays : 30;
     if (days <= 0 || monthDays <= 0) return 0;
-    const gross = (Number(emp.basic_salary) || 0) + (Number(emp.others_allowance) || 0);
-    const calculated = (gross / monthDays) * days;
-    const roundedGross = roundUpToNearestTen(calculated);
+    const roundedGross = totalSalary(emp);
     const loanDed = Number(emp.loan_balance) || 0;
     return Math.max(0, roundedGross - loanDed);
   };
@@ -168,8 +174,8 @@ const SalarySheetGenerate = ({ user }: any) => {
   const grandTotals = useMemo(() => {
     return employees.reduce(
       (acc, emp) => {
-        acc.basic_salary += Number(emp.basic_salary) || 0;
-        acc.others_allowance += Number(emp.others_allowance) || 0;
+        acc.basic_salary += proratedBasicSalary(emp);
+        acc.others_allowance += proratedOtherAllowance(emp);
         acc.total_salary += totalSalary(emp);
         acc.loan_deduction += Number(emp.loan_balance) || 0; // ✅ total loan ded = sum loan_balance
         acc.net_deduction += Number(emp.net_deduction) || 0;
@@ -185,7 +191,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         net_salary: 0,
       }
     );
-  }, [employees]);
+  }, [employees, selectedMonthDays]);
 
   /* ================= TABLE COLUMNS ================= */
   const columns = [
@@ -240,7 +246,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       render: (row: SalaryRow) => (
         <InputElement
           type="number"
-          value={row.basic_salary}
+          value={proratedBasicSalary(row)}
           className="text-right w-24 !md:w-20"
           onChange={(e) => handleInputChange(row.id, "basic_salary", e.target.value)}
           disabled={true} 
@@ -256,7 +262,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       render: (row: SalaryRow) => (
         <InputElement
           type="number"
-          value={row.others_allowance}
+          value={proratedOtherAllowance(row)}
           className="text-right w-24 !md:w-20"
           onChange={(e) => handleInputChange(row.id, "others_allowance", e.target.value)}
           disabled={true} 
@@ -269,7 +275,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       headerClass: "text-right w-24",
       cellClass: "text-right font-semibold text-green-700 dark:text-green-400 w-24",
       render: (row: SalaryRow) =>
-        thousandSeparator(roundUpToNearestTen(totalSalary(row)), 0),
+        thousandSeparator(totalSalary(row), 0),
     },
 
     // ✅ Loan Ded. input এখন loan_balance edit করবে
@@ -324,14 +330,8 @@ const SalarySheetGenerate = ({ user }: any) => {
       // তাহলে loan_balance কে loan_deduction হিসেবে পাঠিয়ে দিন (safe mapping)
       const payloadEmployees = employees.map((e) => ({
         ...e,
-        basic_salary: roundUpToNearestTen(
-          ((Number(e.basic_salary) || 0) / (selectedMonthDays || 30)) *
-            (Number(e.working_days) || 0)
-        ),
-        others_allowance: roundUpToNearestTen(
-          ((Number(e.others_allowance) || 0) / (selectedMonthDays || 30)) *
-            (Number(e.working_days) || 0)
-        ),
+        basic_salary: proratedBasicSalary(e),
+        others_allowance: proratedOtherAllowance(e),
         loan_balance: Number(e.loan_balance) || 0,
 
         // ✅ IMPORTANT: save loan_deduction = loan_balance
