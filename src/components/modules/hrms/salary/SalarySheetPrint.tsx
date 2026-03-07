@@ -128,6 +128,12 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
 
     const metaInfo = getMeta(meta);
 
+
+    console.log('====================================');
+    console.log("rows", rows);
+    console.log('====================================');
+
+
     return (
       <div ref={ref} className="print-root text-gray-900">
         <PrintStyles />
@@ -208,7 +214,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tr>
                     <th style={{ fontSize: fs }}>SL</th>
                     <th className='text-left' style={{ fontSize: fs }}>Employee Name</th>
-                    <th className='text-left' style={{ fontSize: fs }}>Designation</th>
+                    <th className='text-left' style={{ fontSize: fs, textAlign: 'center' }}>Days</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Salary</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Mobile</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Total</th>
@@ -227,8 +233,11 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs, textAlign: 'center' }}>
                           {h.serial_no ?? idx + 1}
                         </td>
-                        <td style={{ fontSize: fs }}>{h.name || '-'}</td>
-                        <td style={{ fontSize: fs }}>{h.designation_name || ''}</td>
+                        <td style={{ fontSize: fs }}>
+                          <span className='block m-0 leading-tight'>{h.name || '-'}</span>
+                          <span className='block m-0 leading-tight'>{h.designation_name || '-'}</span>
+                        </td>
+                        <td style={{ fontSize: fs, textAlign: 'center' }}>{h.working_days || ''}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
                           {thousandSeparator(row.basic_salary ?? 0, 0)}
                         </td>
@@ -247,7 +256,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs, textAlign: 'right', fontWeight: 600 }}>
                           {thousandSeparator(row.payment_amount ?? 0, 0)}
                         </td>
-                        <td style={{ fontSize: fs }}>
+                        <td style={{ fontSize: fs, textAlign: 'center' }}>
                           {row.vr_no}</td>
                       </tr>
                     );
