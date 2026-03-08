@@ -51,6 +51,7 @@ interface branchItem {
   use_bangla: boolean;
   report_zero_bal: boolean;
   manufactur_control: boolean;
+  sms_service: boolean;
 }
 
 const AddBranch = () => {
@@ -89,6 +90,7 @@ const AddBranch = () => {
     use_bangla: false,
     report_zero_bal: false,
     manufactur_control: false,
+    sms_service: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const dispatch = useDispatch();
@@ -104,6 +106,11 @@ const AddBranch = () => {
   useEffect(() => {
     dispatch(getBranchSettings());
   }, []);
+
+
+  console.log('====================================');
+  console.log("settings", settings?.data?.user?.id);
+  console.log('====================================');
 
 
 
@@ -131,6 +138,7 @@ const AddBranch = () => {
         have_customer_sl: b.have_customer_sl == 1 || b.have_customer_sl === '1',
         stock_report_type: b.stock_report_type == 1 || b.stock_report_type === '1',
         use_bangla: b.use_bangla == 1 || b.use_bangla === '1',
+        sms_service: b.sms_service == 1 || b.sms_service === '1',
       }));
     }
   }, [branchEditData?.editData]);
@@ -435,6 +443,18 @@ const AddBranch = () => {
               />
 
             </div>
+            {settings?.data?.user?.id === 1 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                <Checkbox
+                  id="sms_service"
+                  name="sms_service"
+                  checked={formData.sms_service}
+                  onChange={handleOnChange}
+                  label="SMS Service"
+                  className="mb-4"
+                />
+              </div>
+            )}
 
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
