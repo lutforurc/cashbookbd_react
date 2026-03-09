@@ -53,6 +53,8 @@ interface branchItem {
   report_zero_bal: boolean;
   manufactur_control: boolean;
   sms_service: boolean;
+  received_sms: boolean;
+  purchase_sms: boolean;
 }
 
 const AddBranch = () => {
@@ -92,6 +94,8 @@ const AddBranch = () => {
     report_zero_bal: false,
     manufactur_control: false,
     sms_service: false,
+    received_sms: false,
+    purchase_sms: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const dispatch = useDispatch();
@@ -107,13 +111,6 @@ const AddBranch = () => {
   useEffect(() => {
     dispatch(getBranchSettings());
   }, []);
-
-
-  console.log('====================================');
-  console.log("settings", settings?.data?.user?.id);
-  console.log('====================================');
-
-
 
   useEffect(() => {
     if (branchEditData?.editData?.branch) {
@@ -140,6 +137,8 @@ const AddBranch = () => {
         stock_report_type: b.stock_report_type == 1 || b.stock_report_type === '1',
         use_bangla: b.use_bangla == 1 || b.use_bangla === '1',
         sms_service: b.sms_service == 1 || b.sms_service === '1',
+        received_sms: b.received_sms == 1 || b.received_sms === '1',
+        purchase_sms: b.purchase_sms == 1 || b.purchase_sms === '1',
       }));
     }
   }, [branchEditData?.editData]);
@@ -242,7 +241,7 @@ const AddBranch = () => {
                 name={'pad_heading_print'}
                 label="Select Print Heading"
                 onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent mt-1"
+                className="h-[2.1rem] bg-transparent"
                 defaultValue={formData?.pad_heading_print || ''}
                 data={printPadHeading}
               />
@@ -262,7 +261,7 @@ const AddBranch = () => {
                 name={'print_size'}
                 label="Select Printer Settings"
                 onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent mt-1"
+                className="h-[2.1rem] bg-transparent"
                 defaultValue={formData?.print_size || ''}
                 data={printerSettings}
               />
@@ -281,7 +280,7 @@ const AddBranch = () => {
                 name={'paper_size'}
                 label="Select Page Size"
                 onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent mt-1"
+                className="h-[2.1rem] bg-transparent"
                 defaultValue={formData?.paper_size || ''}
                 data={printPadHeading}
               />
@@ -310,7 +309,7 @@ const AddBranch = () => {
                 name={'money_format'}
                 label="Select Money Format"
                 onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent mt-1"
+                className="h-[2.1rem] bg-transparent"
                 defaultValue={formData?.money_format || ''}
                 data={moneySpellFormat}
               />
@@ -339,7 +338,7 @@ const AddBranch = () => {
                 name={'status'}
                 label="Select Status"
                 onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent mt-1"
+                className="h-[2.1rem] bg-transparent"
                 defaultValue={formData?.status?.toString() ?? ''}
                 data={status}
               />
@@ -463,9 +462,24 @@ const AddBranch = () => {
                   label="SMS Service"
                   className="mb-4"
                 />
+                <Checkbox
+                  id="received_sms"
+                  name="received_sms"
+                  checked={formData.received_sms}
+                  onChange={handleOnChange}
+                  label="Received SMS"
+                  className="mb-4"
+                />
+                <Checkbox
+                  id="purchase_sms"
+                  name="purchase_sms"
+                  checked={formData.purchase_sms}
+                  onChange={handleOnChange}
+                  label="Purchase SMS"
+                  className="mb-4"
+                />
               </div>
             )}
-
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
             {branchEditData.editData?.branch ? (
