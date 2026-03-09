@@ -106,6 +106,7 @@ const smsSlice = createSlice({
       .addCase(getSmsLogs.pending, state => {
         state.loading = true;
         state.error = null;
+        state.logs = [];
       })
       .addCase(getSmsLogs.fulfilled, (state, action) => {
         state.loading = false;
@@ -116,6 +117,14 @@ const smsSlice = createSlice({
       .addCase(getSmsLogs.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to load SMS logs';
+        state.logs = [];
+        state.pagination = {
+          ...state.pagination,
+          total: 0,
+          from: null,
+          to: null,
+          last_page: 1,
+        };
       });
   },
 });

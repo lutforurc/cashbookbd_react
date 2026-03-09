@@ -1,19 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiArrowLeft, FiSearch } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import Link from '../../utils/others/Link';
 import Loader from '../../../common/Loader';
 import Table from '../../utils/others/Table';
-import Pagination from '../../utils/utils-functions/Pagination';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { chartDateTime } from '../../utils/utils-functions/formatDate';
 import { getSmsLogs } from './smsSlice';
-import InputElement from '../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import SearchInput from '../../utils/fields/SearchInput';
+import Pagination from '../../utils/utils-functions/Pagination';
 
 const SendSms = (user: any) => {
   const dispatch = useDispatch();
@@ -23,19 +20,14 @@ const SendSms = (user: any) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [branchId, setBranchId] = useState<string>(auth?.me?.branch_id?.toString() || '');
-  const [mobile, setMobile] = useState<string>('');
   const [appliedBranchId, setAppliedBranchId] = useState<string>(auth?.me?.branch_id?.toString() || '');
   const [appliedMobile, setAppliedMobile] = useState<string>('');
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [buttonLoading, setButtonLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1); 
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    // setIsSelected(user.user.branch_id);
-    // setBranchId(user.user.branch_id);
-    // setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
   }, []);
 
   useEffect(() => {
@@ -67,20 +59,10 @@ const SendSms = (user: any) => {
   }, [smsState?.logs, page, perPage]);
 
   const handlePageChange = (nextPage: number) => {
+    setCurrentPage(nextPage);
     setPage(nextPage);
   };
 
-  const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = Number(e.target.value) || 10;
-    setPerPage(value);
-    setPage(1);
-  };
-
-  const handleApplyFilter = () => {
-    setAppliedBranchId(branchId.trim());
-    setAppliedMobile(mobile.trim());
-    setPage(1);
-  };
 
   const columns = [
     { key: 'serial_no', header: 'Sl.', headerClass: 'text-center', cellClass: 'text-center' },
@@ -102,16 +84,15 @@ const SendSms = (user: any) => {
   ];
 
   const handleSelectChange = (page: any) => {
+    setCurrentPage(1);
     setPerPage(page.target.value);
     setPage(1);
-    // setCurrentPage(1);
-    // setTotalPages(Math.ceil(userList.data.total / page.target.value));
-    // setTableData(userList.data.data);
   };
   const handleSearchButton = () => {
+    setAppliedMobile(search.trim());
+    setAppliedBranchId(branchId.trim());
     setCurrentPage(1);
     setPage(1);
-    // dispatch(getUser({ page: 1, perPage, search })); // Use 'search' instead
   };
 
 
@@ -158,14 +139,9 @@ const SendSms = (user: any) => {
           {smsState?.loading ? <Loader /> : ''}
           <Table columns={columns} data={tableData} />
         </div>
-
-        <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          Total: {smsState?.pagination?.total || 0}
-        </div>
-
         {totalPages > 1 ? (
           <Pagination
-            currentPage={smsState?.pagination?.current_page || page}
+            currentPage={currentPage}
             totalPages={totalPages}
             handlePageChange={handlePageChange}
           />
