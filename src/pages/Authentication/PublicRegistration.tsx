@@ -17,9 +17,9 @@ type RegistrationForm = {
   email: string;
   password: string;
   password_confirmation: string;
-  branch_name: string;
+  // branch_name: string;
   contact_person: string;
-  notes: string;
+  // notes: string;
 };
 
 const initialForm: RegistrationForm = {
@@ -30,9 +30,9 @@ const initialForm: RegistrationForm = {
   email: '',
   password: '',
   password_confirmation: '',
-  branch_name: '',
+  // branch_name: '',
   contact_person: '',
-  notes: '',
+  // notes: '',
 };
 
 const REGISTRATION_PAYLOAD_KEY = 'public_register_payload';
@@ -54,10 +54,15 @@ const PublicRegistration: React.FC = () => {
   const getErrorMessage = (error: any): string => {
     const responseData = error?.response?.data;
     const errorMessage = responseData?.message;
+    const nestedErrorMessage = responseData?.error?.message;
     const validationErrors = responseData?.errors;
 
     if (typeof errorMessage === 'string' && errorMessage.trim()) {
       return errorMessage;
+    }
+
+    if (typeof nestedErrorMessage === 'string' && nestedErrorMessage.trim()) {
+      return nestedErrorMessage;
     }
 
     if (validationErrors && typeof validationErrors === 'object') {
@@ -122,7 +127,7 @@ const PublicRegistration: React.FC = () => {
       'email',
       'password',
       'password_confirmation',
-      'branch_name',
+      // 'branch_name',
       'contact_person',
     ];
 
@@ -171,7 +176,7 @@ const PublicRegistration: React.FC = () => {
         },
       });
     } catch (error: any) {
-      toast.error(getErrorMessage(error));
+      toast.info(getErrorMessage(error));
     } finally {
       setSubmitting(false);
     }
@@ -206,7 +211,7 @@ const PublicRegistration: React.FC = () => {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Branch Name *
                 </label>
@@ -218,7 +223,7 @@ const PublicRegistration: React.FC = () => {
                   placeholder="Belkuchi Branch"
                   className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
-              </div>
+              </div> */}
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
@@ -276,7 +281,7 @@ const PublicRegistration: React.FC = () => {
                 />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="">
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Address *
                 </label>
@@ -336,7 +341,7 @@ const PublicRegistration: React.FC = () => {
                 </div>
               </div>
 
-              <div className="md:col-span-2">
+              {/* <div className="md:col-span-2">
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   Notes
                 </label>
@@ -348,7 +353,7 @@ const PublicRegistration: React.FC = () => {
                   placeholder="New registration via mobile app"
                   className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
-              </div>
+              </div> */}
             </div>
 
             <button

@@ -80,10 +80,15 @@ const PublicRegistrationOtp: React.FC = () => {
   const getErrorMessage = (error: any): string => {
     const responseData = error?.response?.data;
     const errorMessage = responseData?.message;
+    const nestedErrorMessage = responseData?.error?.message;
     const validationErrors = responseData?.errors;
 
     if (typeof errorMessage === 'string' && errorMessage.trim()) {
       return errorMessage;
+    }
+
+    if (typeof nestedErrorMessage === 'string' && nestedErrorMessage.trim()) {
+      return nestedErrorMessage;
     }
 
     if (validationErrors && typeof validationErrors === 'object') {
@@ -203,7 +208,7 @@ const PublicRegistrationOtp: React.FC = () => {
 
       toast.success('A new OTP has been sent.');
     } catch (error: any) {
-      toast.error(getErrorMessage(error));
+      toast.info(getErrorMessage(error));
     } finally {
       setResending(false);
     }
