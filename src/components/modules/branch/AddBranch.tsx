@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../common/Loader';
 import Link from '../../utils/others/Link';
 import { getBranchSettings } from '../settings/settingsSlice';
+import { toast } from 'react-toastify';
 interface branchItem {
   id: string | number;
   branch_id?: string | number;
@@ -166,19 +167,28 @@ const AddBranch = () => {
     dispatch(
       updateBranch(formData, (res: any) => {
         if (res?.success) {
+          toast.success(res?.message || 'Branch updated successfully');
           navigate('/branch/branch-list');
+          return;
         }
+
+        toast.info(res?.error?.message || res?.message || 'Failed to update branch');
       })
     );
   };
 
-  const handleBranchSave = async () => {
-    try {
-      await dispatch(storeBranch(formData)).unwrap();
-      setFormData(initialBranch); // ✔ এখানে ঠিক আছে
-    } catch (error) {
-      console.error(error);
-    }
+  const handleBranchSave = () => {
+    dispatch(
+      storeBranch(formData, (res: any) => {
+        if (res?.success) {
+          toast.success(res?.message || 'Branch saved successfully');
+          setFormData(initialBranch);
+          return;
+        }
+
+        toast.info(res?.error?.message || res?.message || 'Failed to save branch');
+      })
+    );
   };
   return (
     <>
@@ -476,7 +486,7 @@ const AddBranch = () => {
               />
             )}
             <ButtonLoading
-              onClick={handleBranchSave}
+              onClick={() => setFormData(initialBranch)}
               buttonLoading={buttonLoading}
               label="Reset"
               className="whitespace-nowrap text-center mr-0 p-2"
