@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import SidebarLinkGroup from './SidebarLinkGroup'; 
+import SidebarLinkGroup from './SidebarLinkGroup';
 import {
   FiActivity,
   FiBarChart2,
@@ -53,7 +53,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
 
   useEffect(() => {
-    setPermissions(settings.data.permissions); 
+    setPermissions(settings.data.permissions);
   }, [settings.data.permissions]);
 
   useEffect(() => {
@@ -178,10 +178,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/accounts/bank/receive' ||
                     pathname === '/accounts/bank/payment' ||
                     pathname === routes.employee_loan ||
-                    
+
                     pathname === '/accounts/journal' ||
-                    
-                    
+
+
                     pathname.includes('forms')
                   }
                   menuId="transaction"
@@ -198,7 +198,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/accounts/bank/receive' ||
                           pathname === '/accounts/bank/payment' ||
                           pathname === '/accounts/employee-loan' ||
-                          pathname === '/accounts/journal' || 
+                          pathname === '/accounts/journal' ||
                           pathname.includes('/accounts/cash/receive')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -296,7 +296,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          
+
                           {hasPermission(permissions, 'journal.create') && (
                             <li>
                               <NavLink
@@ -402,18 +402,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             hasPermission(permissions, 'product.received.create') ||
                             hasPermission(permissions, 'branch.transfer.create') ||
                             hasPermission(permissions, 'inventory.transfer.create')) && ( */}
-                              <li>
-                                <NavLink
-                                  to={routes.branch_received}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-white')
-                                  }
-                                >
-                                  Branch Receive
-                                </NavLink>
-                              </li>
-                            {/* // )} */}
+                          <li>
+                            <NavLink
+                              to={routes.branch_received}
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              Branch Receive
+                            </NavLink>
+                          </li>
+                          {/* // )} */}
                           {(hasPermission(permissions, 'branch.transfer.create') ||
                             hasPermission(permissions, 'inventory.transfer.create') ||
                             hasPermission(permissions, 'product.transfer.create') ||
@@ -474,6 +474,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname.includes('/reports/group-report') ||
                           pathname.includes('/reports/labour/ledger') ||
                           pathname.includes('/reports/mitch-match') ||
+                          pathname.includes(routes.profit_loss) ||
                           pathname.includes('reports/ledger')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -508,7 +509,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           {hasPermission(permissions, 'cashbook.view') && (
                             <li>
                               <NavLink
-                                to={ routes.profit_loss} //"/reports/profit-loss"
+                                to={routes.profit_loss} //"/reports/profit-loss"
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
@@ -947,6 +948,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/category/category-list' ||
                     pathname === '/category/edit' ||
                     pathname === '/product/product-list' ||
+                    pathname === '/brand/brand-list' ||
                     pathname === '/product/edit' ||
                     pathname.includes('forms')
                   }
@@ -958,8 +960,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/product/product-list' ||
-                          pathname === '/category/category-list') &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 
+                          ${(
+                            pathname === '/product/product-list' ||
+                            pathname === '/brand/brand-list' ||
+                            pathname === '/category/category-list') &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
                         onClick={(e) => {
@@ -1073,7 +1078,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          
+
                           {hasPermission(permissions, 'branch.view') && (
                             <li>
                               <NavLink
@@ -1382,6 +1387,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/hrms/employees' ||
                           pathname === '/hrms/salary/salary-generate' ||
                           pathname === routes.employee_loan_balance ||
+                          pathname === routes.employee_loan_ledger ||
                           pathname.includes('/hrms/salary-sheet')
                         ) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
@@ -1453,7 +1459,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 Loan Ledger
                               </NavLink>
                             </li>
-                           )} 
+                          )}
 
                           {hasPermission(permissions, 'salary.sheet.view') && (
                             <li>
@@ -1781,110 +1787,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   Customer Dashboard
                 </NavLink>
               </li>
-
-              {/* UI Elements */}
-              <SidebarLinkGroup
-                activeCondition={pathname === '/ui' || pathname.includes('ui')}
-                menuId="ui-elements"
-                open={openMenu === 'ui-elements'}
-                handleClick={() => handleMenuClick('ui-elements')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/ui' || pathname.includes('ui')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <svg
-                        className="fill-current"
-                        width="18"
-                        height="19"
-                        viewBox="0 0 18 19"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g clipPath="url(#clip0_130_9807)">
-                          <path
-                            d="M15.7501 0.55835H2.2501C1.29385 0.55835 0.506348 1.34585 0.506348 2.3021V7.53335C0.506348 8.4896 1.29385 9.2771 2.2501 9.2771H15.7501C16.7063 9.2771 17.4938 8.4896 17.4938 7.53335V2.3021C17.4938 1.34585 16.7063 0.55835 15.7501 0.55835ZM16.2563 7.53335C16.2563 7.8146 16.0313 8.0396 15.7501 8.0396H2.2501C1.96885 8.0396 1.74385 7.8146 1.74385 7.53335V2.3021C1.74385 2.02085 1.96885 1.79585 2.2501 1.79585H15.7501C16.0313 1.79585 16.2563 2.02085 16.2563 2.3021V7.53335Z"
-                            fill=""
-                          />
-                          <path
-                            d="M6.13135 10.9646H2.2501C1.29385 10.9646 0.506348 11.7521 0.506348 12.7083V15.8021C0.506348 16.7583 1.29385 17.5458 2.2501 17.5458H6.13135C7.0876 17.5458 7.8751 16.7583 7.8751 15.8021V12.7083C7.90322 11.7521 7.11572 10.9646 6.13135 10.9646ZM6.6376 15.8021C6.6376 16.0833 6.4126 16.3083 6.13135 16.3083H2.2501C1.96885 16.3083 1.74385 16.0833 1.74385 15.8021V12.7083C1.74385 12.4271 1.96885 12.2021 2.2501 12.2021H6.13135C6.4126 12.2021 6.6376 12.4271 6.6376 12.7083V15.8021Z"
-                            fill=""
-                          />
-                          <path
-                            d="M15.75 10.9646H11.8688C10.9125 10.9646 10.125 11.7521 10.125 12.7083V15.8021C10.125 16.7583 10.9125 17.5458 11.8688 17.5458H15.75C16.7063 17.5458 17.4938 16.7583 17.4938 15.8021V12.7083C17.4938 11.7521 16.7063 10.9646 15.75 10.9646ZM16.2562 15.8021C16.2562 16.0833 16.0312 16.3083 15.75 16.3083H11.8688C11.5875 16.3083 11.3625 16.0833 11.3625 15.8021V12.7083C11.3625 12.4271 11.5875 12.2021 11.8688 12.2021H15.75C16.0312 12.2021 16.2562 12.4271 16.2562 12.7083V15.8021Z"
-                            fill=""
-                          />
-                        </g>
-                        <defs>
-                          <clipPath id="clip0_130_9807">
-                            <rect
-                              width="18"
-                              height="18"
-                              fill="white"
-                              transform="translate(0 0.052124)"
-                            />
-                          </clipPath>
-                        </defs>
-                      </svg>
-                      UI Elements
-                      <svg
-                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'}`}
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                          fill=""
-                        />
-                      </svg>
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/ui/alerts"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Alerts
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/ui/buttons"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Buttons
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
             </ul>
           </div>
         </nav>

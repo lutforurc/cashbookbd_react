@@ -66,17 +66,13 @@ const CoaL1 = () => {
     const columns = [
         {
             key: 'serial',
-            header: 'Sl. No.', 
+            header: 'Sl. No.',
             headerClass: 'text-center',
             cellClass: 'text-center',
         },
         {
             key: 'name',
-            header: 'Chart of Account L1', 
-        },
-        {
-            key: 'company_name',
-            header: 'Company Name', 
+            header: 'Chart of Account L1',
         },
         {
             key: 'action',
@@ -85,15 +81,24 @@ const CoaL1 = () => {
             cellClass: 'text-center',
             render: (data: any) => (
                 <div className="flex justify-center items-center">
-                    <button onClick={() => { }} className="text-blue-500">
-                        <FiBook className="cursor-pointer" />
-                    </button>
-                    <button onClick={() => { }} className="text-blue-500  ml-2">
-                        <FiEdit2 className="cursor-pointer" />
-                    </button>
-                    <button onClick={() => { }} className="text-red-500 ml-2">
-                        <FiTrash2 className="cursor-pointer" />
-                    </button>
+                    <>
+                        {1 === 2 ? (
+                            <>
+                                <button onClick={() => { }} className="text-blue-500">
+                                    <FiBook className="cursor-pointer" />
+                                </button>
+                                <button onClick={() => { }} className="text-blue-500  ml-2">
+                                    <FiEdit2 className="cursor-pointer" />
+                                </button>
+                                <button onClick={() => { }} className="text-red-500 ml-2">
+                                    <FiTrash2 className="cursor-pointer" />
+                                </button>
+                            </>
+                        ) : 
+                        <>
+                        Don't have permission
+                        </>}
+                    </>
                 </div>
             ),
         },
@@ -120,7 +125,7 @@ const CoaL1 = () => {
                         className="whitespace-nowrap"
                     />
                 </div>
-                <Link to="/category/create" className="text-nowrap">
+                <Link to="/category/create" className="text-nowrap hidden">
                     New COA L1
                 </Link>
             </div>

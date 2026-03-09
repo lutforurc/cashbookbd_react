@@ -128,7 +128,7 @@ const CoaL4 = () => {
                         className="whitespace-nowrap"
                     />
                 </div>
-                <Link to="/category/create" className="text-nowrap">
+                <Link to="/category/create" className="text-nowrap hidden">
                     New COA L4
                 </Link>
             </div>
