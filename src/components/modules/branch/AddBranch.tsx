@@ -55,6 +55,8 @@ interface branchItem {
   sms_service: boolean;
   received_sms: boolean;
   purchase_sms: boolean;
+  sales_sms: boolean;
+  payment_sms: boolean;
 }
 
 const AddBranch = () => {
@@ -96,6 +98,8 @@ const AddBranch = () => {
     sms_service: false,
     received_sms: false,
     purchase_sms: false,
+    sales_sms: false,
+    payment_sms: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const dispatch = useDispatch();
@@ -139,6 +143,8 @@ const AddBranch = () => {
         sms_service: b.sms_service == 1 || b.sms_service === '1',
         received_sms: b.received_sms == 1 || b.received_sms === '1',
         purchase_sms: b.purchase_sms == 1 || b.purchase_sms === '1',
+        sales_sms: b.sales_sms == 1 || b.sales_sms === '1',
+        payment_sms: b.payment_sms == 1 || b.payment_sms === '1',
       }));
     }
   }, [branchEditData?.editData]);
@@ -470,6 +476,14 @@ const AddBranch = () => {
                   label="Received SMS"
                   className="mb-4"
                 />
+                 <Checkbox
+                  id="sales_sms"
+                  name="sales_sms"
+                  checked={formData.sales_sms}
+                  onChange={handleOnChange}
+                  label="Sales SMS"
+                  className="mb-4"
+                />
                 <Checkbox
                   id="purchase_sms"
                   name="purchase_sms"
@@ -478,6 +492,15 @@ const AddBranch = () => {
                   label="Purchase SMS"
                   className="mb-4"
                 />
+                <Checkbox
+                  id="payment_sms"
+                  name="payment_sms"
+                  checked={formData.payment_sms}
+                  onChange={handleOnChange}
+                  label="Payment SMS"
+                  className="mb-4"
+                />
+               
               </div>
             )}
           </div>
