@@ -203,7 +203,7 @@ const AddUser = () => {
                 target: { name: 'branch_id', value: selectedValue.target.value },
               })
             }
-            className="w-full font-medium text-sm p-1.5 h-11"
+            className="w-full font-medium text-sm p-1.5 h-9"
             branchDdl={dropdownData}
             defaultValue={formData.branch_id || ''}
           />
@@ -215,7 +215,7 @@ const AddUser = () => {
           name="lang"
           placeholder="Enter Language"
           label="Language"
-          className="py-2"
+          className="py-2 h-9"
           onChange={handleOnChange}
         />
 
@@ -225,7 +225,7 @@ const AddUser = () => {
           name="password"
           placeholder="Enter Password"
           label="Password"
-          className=""
+          className="py-2 h-9"
           onChange={handleOnChange}
         />
 
@@ -235,7 +235,7 @@ const AddUser = () => {
           name="confirmPassword"
           placeholder="Enter Confirm Password"
           label="Confirm Password"
-          className=""
+          className="py-2 h-9"
           onChange={handleOnChange}
         />
 
@@ -244,14 +244,14 @@ const AddUser = () => {
             onClick={handleUserSave}
             buttonLoading={users.isLoading}
             label="Save"
-            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
+            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-9"
           />
           <ButtonLoading
             onClick={handleBack}
             buttonLoading={users.isLoading}
             label="Back"
-            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
-          />
+            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-9"
+          /> 
         </div>
       </div>
     </div>

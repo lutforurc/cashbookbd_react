@@ -211,12 +211,19 @@ const SignIn: React.FC = () => {
 
                   <div className="mb-2">
 
-                    <ButtonLoading icon={
-                     <div className='md:hidden'>
-                       <FiLogIn className="h-5 w-5" />
-                     </div>
-                    } type="submit" label='Sign In' className='p-3 w-full' />
+                     <ButtonLoading icon={
+                      <div className='md:hidden'>
+                        <FiLogIn className="h-5 w-5" />
+                      </div>
+                     } type="submit" label='Sign In' className='p-3 w-full' />
                   </div>
+
+                  <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
+                    New here?{' '}
+                    <Link to={ROUTES.public_register} className="text-primary hover:underline">
+                      Register your company
+                    </Link>
+                  </p>
                 </form>
               </div>
 

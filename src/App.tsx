@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import SignIn from './pages/Authentication/SignIn';
+import PublicRegistration from './pages/Authentication/PublicRegistration';
+import PublicRegistrationOtp from './pages/Authentication/PublicRegistrationOtp';
 import Calendar from './pages/Calendar';
 import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
@@ -334,6 +336,8 @@ function App() {
 
           {/* Public Routes */}
           <Route path={routes.login} element={<SignIn />} />
+          <Route path={routes.public_register} element={<PublicRegistration />} />
+          <Route path={routes.public_register_otp} element={<PublicRegistrationOtp />} />
           <Route path={routes.customerLogin} element={<CustomerLogin />} />
 
           {/* No Access Route */}
