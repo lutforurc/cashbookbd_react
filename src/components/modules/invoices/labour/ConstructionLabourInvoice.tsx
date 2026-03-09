@@ -581,7 +581,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                     onClick={searchInvoice}
                     buttonLoading={false}
                     label=""
-                    className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute -right-1 top-6"
+                    className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute -right-5 top-6"
                     icon={<FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />}
                   />
                 </div>

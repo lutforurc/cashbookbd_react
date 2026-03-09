@@ -30,6 +30,7 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
 }) => {
   label = label || '';
   const resolvedIcon = icon ? icon : <FiArrowRightCircle className="h-5 w-5" />;
+  const hasLabel = label.trim().length > 0;
   return (
     <button
       id={id}
@@ -48,8 +49,8 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
           </>
         ) : (
           <>
-            <span className="block md:hidden">{resolvedIcon}</span>
-            <span className='hidden md:block'>{label}</span>
+            <span className={hasLabel ? 'block md:hidden' : 'block'}>{resolvedIcon}</span>
+            {hasLabel ? <span className="hidden md:block">{label}</span> : null}
           </>
         )}
       </span>

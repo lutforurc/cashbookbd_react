@@ -66,12 +66,13 @@ const buildCategoryWiseRows = (rows: any[]) => {
   return finalRows;
 };
 
-const ProductStockNormal = (user: any) => {
+const ProductStockNormal = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const categoryData = useSelector((state: any) => state.category);
   const stock = useSelector((state: any) => state.stock);
   const brand = useSelector((state: any) => state.brand);
+  const authUser = user?.user ?? user;
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
@@ -192,9 +193,11 @@ const ProductStockNormal = (user: any) => {
 
       setStartDate(parsedDate);
       setEndDate(parsedDate);
-      setBranchId(user.user.branch_id);
+      if (authUser?.branch_id) {
+        setBranchId(authUser.branch_id);
+      }
     }
-  }, [branchDdlData?.protectedData]);
+  }, [branchDdlData?.protectedData, authUser?.branch_id]);
 
   const columns = [
     {

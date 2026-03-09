@@ -80,12 +80,13 @@ const buildBrandCategoryRows = (rows: any[]) => {
   return finalRows;
 };
 
-const ProductStock = ({ user }: any) => {
+const ProductStock = ( user : any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const categoryData = useSelector((state: any) => state.category);
   const stock = useSelector((state: any) => state.stock);
   const brand = useSelector((state: any) => state.brand);
+  const authUser = user?.user ?? user;
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
@@ -93,7 +94,7 @@ const ProductStock = ({ user }: any) => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [search, setSearchValue] = useState('');
 
-  const [branchId, setBranchId] = useState<number | string | ''>(user?.user?.branch_id || '');
+  const [branchId, setBranchId] = useState<number | string | ''>(authUser?.branch_id || '');
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -102,6 +103,8 @@ const ProductStock = ({ user }: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(35);
   const [fontSize, setFontSize] = useState<number>(11);
+
+
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -114,6 +117,10 @@ const ProductStock = ({ user }: any) => {
       setDdlCategory(categoryData.ddlData.data.category || []);
     }
   }, [categoryData]);
+
+
+
+
 
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
@@ -134,11 +141,11 @@ const ProductStock = ({ user }: any) => {
       setStartDate(parsedDate);
       setEndDate(parsedDate);
 
-      if (user?.user?.branch_id) {
-        setBranchId(user.user.branch_id);
+      if (authUser?.branch_id) {
+        setBranchId(authUser.branch_id);
       }
     }
-  }, [branchDdlData?.protectedData, user]);
+  }, [branchDdlData?.protectedData, authUser?.branch_id]);
 
   const handleBranchChange = (e: any) => {
     const val = e.target ? e.target.value : e;
@@ -312,7 +319,7 @@ const ProductStock = ({ user }: any) => {
               <Loader />
             ) : (
               <BranchDropdown
-                defaultValue={user?.user?.branch_id}
+                defaultValue={authUser?.branch_id}
                 onChange={handleBranchChange}
                 className="w-full text-sm p-2 border "
                 branchDdl={dropdownData}
