@@ -1032,6 +1032,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/user/user-list' ||
                     pathname === '/admin/dayclose' ||
                     pathname === '/order/order-list' ||
+                    pathname === routes.sms_send ||
                     pathname.includes('forms')
                   }
                   menuId="admin"
@@ -1051,6 +1052,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/admin/voucher/type-change' ||
                           pathname === '/admin/image-upload' ||
                           pathname === '/admin/bulk-upload' ||
+                          pathname === routes.sms_send ||
                           pathname === '/admin/jumpdate' ||
                           pathname === '/orders/avg-price' ||
                           pathname.includes('/branch/branch-list')) &&
@@ -1210,6 +1212,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
+                          <li>
+                            <NavLink
+                              to={routes.sms_send}
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              SMS Logs
+                            </NavLink>
+                          </li>
                         </ul>
                       </div>
                     </React.Fragment>

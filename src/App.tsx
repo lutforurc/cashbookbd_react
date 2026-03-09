@@ -193,7 +193,7 @@ function App() {
             </Route>
             <Route path={routes.user_edit} element={<EditUser user={me} />} />
             <Route path={routes.installment_list} element={<InstallmentDetails />} />
-            <Route path={routes.sms_send} element={<SendSms />} />
+            <Route path={routes.sms_send} element={<SendSms user={me} />} />
 
 
 
