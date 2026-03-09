@@ -150,7 +150,7 @@ const SignIn: React.FC = () => {
               ) : null}
 
               {/* ✅ Card: border ছিল না, add করা হলো */}
-              <div className="rounded-xl  border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-8 mt-6">
+              <div className="rounded-xl  border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark p-6 sm:p-6 ">
                 <form onSubmit={handleLogin}>
                   <div className="mb-4">
                     <label className="mb-2.5 block font-medium text-black dark:text-white">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiSave } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import ROUTES from '../../components/services/appRoutes';
 import {
@@ -8,6 +8,8 @@ import {
   API_REGISTER_REQUEST_OTP_URL,
 } from '../../components/services/apiRoutes';
 import httpService from '../../components/services/httpService';
+import InputElement from '../../components/utils/fields/InputElement';
+import { ButtonLoading } from '../UiElements/CustomButtons';
 
 type RegistrationForm = {
   company_name: string;
@@ -188,11 +190,11 @@ const PublicRegistration: React.FC = () => {
         <div className="w-full max-w-3xl rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-8">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-black dark:text-white">
-              Public Registration
+              Registration your company
             </h2>
-            <p className="mt-1 text-sm text-black/60 dark:text-white/60">
+            {/* <p className="mt-1 text-sm text-black/60 dark:text-white/60">
               Create your account and request OTP for verification.
-            </p>
+            </p> */}
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -206,8 +208,8 @@ const PublicRegistration: React.FC = () => {
                   name="company_name"
                   value={formData.company_name}
                   onChange={handleChange}
-                  placeholder="Sinthia Electronics"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  placeholder="ABC Traders Ltd"
+                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
 
@@ -229,13 +231,14 @@ const PublicRegistration: React.FC = () => {
                 <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                   User Name *
                 </label>
+                
                 <input
                   type="text"
                   name="user_name"
                   value={formData.user_name}
                   onChange={handleChange}
-                  placeholder="Lutfor"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  placeholder="John Doe"
+                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
 
@@ -248,7 +251,7 @@ const PublicRegistration: React.FC = () => {
                   name="contact_person"
                   value={formData.contact_person}
                   onChange={handleChange}
-                  placeholder="Md Lutfor"
+                  placeholder="John Doe"
                   className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
@@ -262,8 +265,8 @@ const PublicRegistration: React.FC = () => {
                   name="mobile"
                   value={formData.mobile}
                   onChange={handleChange}
-                  placeholder="01811282149"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  placeholder="01711******"
+                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
 
@@ -276,8 +279,8 @@ const PublicRegistration: React.FC = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="sinthia@example.com"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  placeholder="abc@example.com"
+                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
 
@@ -290,8 +293,8 @@ const PublicRegistration: React.FC = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  placeholder="Sherpur, Bogura"
-                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  placeholder="H # 123, Road # 45, Gulshan, Dhaka."
+                  className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
 
@@ -306,7 +309,7 @@ const PublicRegistration: React.FC = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter password"
-                    className="w-full border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className="w-full border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                   />
                   <button
                     type="button"
@@ -329,8 +332,9 @@ const PublicRegistration: React.FC = () => {
                     value={formData.password_confirmation}
                     onChange={handleChange}
                     placeholder="Re-enter password"
-                    className="w-full border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className="w-full border border-stroke bg-transparent px-4 py-2.5 pr-12 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                   />
+                  {/* className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm px-5 text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center ${className}`} */}
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
@@ -355,14 +359,24 @@ const PublicRegistration: React.FC = () => {
                 />
               </div> */}
             </div>
+              
+             <ButtonLoading
+             type="submit"
+                            //  onClick={handleBranchUpdate}
+                            //  buttonLoading={buttonLoading}
+              label={submitting ? 'Requesting OTP...' : 'Request OTP'}
+              disabled={submitting}
+              className="whitespace-nowrap text-center mr-0 p-2 w-full mt-6 flex items-center justify-center"
+              icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
+            />
 
-            <button
+            {/* <button
               type="submit"
               disabled={submitting}
               className="mt-6 w-full bg-primary px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Requesting OTP...' : 'Request OTP'}
-            </button>
+            </button> */}
 
             <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
               Already have an account?{' '}
