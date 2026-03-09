@@ -153,6 +153,7 @@ export const API_BRANCH_EDIT_URL = `${API_BASE_URL}/branch/branch-edit/`;
 export const API_BRANCH_UPDATE_URL = `${API_BASE_URL}/branch/branch-update`;
 export const API_BRANCH_STORE_URL = `${API_BASE_URL}/branch/branch-store`;
 export const API_BRANCH_STATUS_URL = `${API_BASE_URL}/branch/branch-status`;
+export const API_SEND_SMS_URL = `${API_BASE_URL}/send-sms`;
 
 export const API_ALL_DDL_BRANCH_URL = `${API_BASE_URL}/branch/ddl/all-branch`;
 export const API_ALL_DDL_PROTECTED_BRANCH_URL = `${API_BASE_URL}/branch/ddl/protected-branch`;

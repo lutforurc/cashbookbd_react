@@ -112,6 +112,7 @@ import ProductStockIndex from './components/modules/reports/productstock/Product
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTransfer';
 import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
+import SendSms from './components/modules/sms/SendSms';
 
 
 
@@ -192,6 +193,7 @@ function App() {
             </Route>
             <Route path={routes.user_edit} element={<EditUser user={me} />} />
             <Route path={routes.installment_list} element={<InstallmentDetails />} />
+            <Route path={routes.sms_send} element={<SendSms />} />
 
 
 

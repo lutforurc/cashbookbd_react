@@ -55,6 +55,7 @@ const ROUTES = {
   branch_store: '/branch/branch-store',
   branch_all_ddl_list: '/branch/ddl/all-branch',
   branch_ddl_protected_list: '/branch/ddl/protected-branch',
+  sms_send: '/sms/send',
 
   // Nav Switcher
   nav_vertical: '/nav-vertical',

@@ -63,6 +63,7 @@ import profitLossSlice from './components/modules/reports/profit-loss/profitLoss
 import unitSalePaymentsSlice from './components/modules/real-estate/checks/unitSalePaymentsSlice';
 import branchTransferSlice from './components/modules/warehouse-transfer/warehouseTransferSlice';
 import branchReceivedSlice from './components/modules/warehouse-received/warehouseReceivedSlice';
+import smsSlice from './components/modules/sms/smsSlice';
 
 
 const store = configureStore({
@@ -131,6 +132,7 @@ const store = configureStore({
     unitPayments: unitSalePaymentsSlice,
     branchTransfer: branchTransferSlice,
     branchReceived: branchReceivedSlice,
+    sms: smsSlice,
   },
 });
 
