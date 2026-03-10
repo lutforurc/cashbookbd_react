@@ -29,7 +29,6 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
   buttonLoading = false,
 }) => {
   const safeLabel = typeof label === 'string' || typeof label === 'number' ? String(label) : '';
- 
 
   const resolvedIcon = icon ? icon : <FiArrowRightCircle className="h-5 w-5" />;
   const hasLabel = safeLabel.trim().length > 0;

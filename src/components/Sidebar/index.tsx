@@ -1038,6 +1038,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/admin/dayclose' ||
                     pathname === '/order/order-list' ||
                     pathname === routes.sms_send ||
+                    pathname === routes.sms_template_list ||
+                    pathname === routes.sms_template_create ||
+                    pathname.includes('/sms/templates/edit/') ||
                     pathname.includes('forms')
                   }
                   menuId="admin"
@@ -1058,6 +1061,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname === '/admin/image-upload' ||
                           pathname === '/admin/bulk-upload' ||
                           pathname === routes.sms_send ||
+                          pathname === routes.sms_template_list ||
+                          pathname === routes.sms_template_create ||
+                          pathname.includes('/sms/templates/edit/') ||
                           pathname === '/admin/jumpdate' ||
                           pathname === '/orders/avg-price' ||
                           pathname.includes('/branch/branch-list')) &&
@@ -1226,6 +1232,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               }
                             >
                               SMS Logs
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
+                              to={routes.sms_template_list}
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              SMS Templates
                             </NavLink>
                           </li>
                         </ul>

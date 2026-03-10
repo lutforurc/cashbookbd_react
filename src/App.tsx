@@ -115,6 +115,9 @@ import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTransfer';
 import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
 import SendSms from './components/modules/sms/SendSms';
+import SmsTemplateList from './components/modules/sms/SmsTemplateList';
+import SmsTemplateCreate from './components/modules/sms/SmsTemplateCreate';
+import SmsTemplateEdit from './components/modules/sms/SmsTemplateEdit';
 
 
 
@@ -196,6 +199,9 @@ function App() {
             <Route path={routes.user_edit} element={<EditUser user={me} />} />
             <Route path={routes.installment_list} element={<InstallmentDetails />} />
             <Route path={routes.sms_send} element={<SendSms user={me} />} />
+            <Route path={routes.sms_template_list} element={<SmsTemplateList />} />
+            <Route path={routes.sms_template_create} element={<SmsTemplateCreate />} />
+            <Route path={routes.sms_template_edit} element={<SmsTemplateEdit />} />
 
 
 
