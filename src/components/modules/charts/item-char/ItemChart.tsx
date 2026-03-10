@@ -96,7 +96,7 @@ const ItemChart = (user) => {
               <BranchDropdown
                 defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
+                className="w-full font-medium text-sm h-9.5"
                 branchDdl={dropdownData}
               />
             </div>

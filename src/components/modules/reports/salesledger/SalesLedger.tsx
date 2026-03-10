@@ -381,7 +381,7 @@ const SalesLedger = (user: any) => {
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
+                className="w-full font-medium text-sm h-10"
                 branchDdl={dropdownData}
               />
             </div>

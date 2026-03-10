@@ -262,7 +262,7 @@ const LoanBalance = (user: any) => {
           </div>
         </div>
 
-        <div className="relative no-scrollbar mt-4">
+        <div className="relative no-scrollbar mt-2">
           <div className="relative h-full">
             {employeeLoan?.loanBalanceLoading === true ? <Loader /> : ''}
             <Table columns={columns} data={tableData || []} noDataMessage="No loan balance data found." />

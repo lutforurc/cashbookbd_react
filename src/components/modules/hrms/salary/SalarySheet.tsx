@@ -263,7 +263,7 @@ const SalarySheet = ({ user }: any) => {
     <div>
       <HelmetTitle title={"Salary Sheet"} />
 
-      <div className="flex overflow-x-auto justify-between mb-1">
+      <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">
           <div className="mr-2">
             <div className="w-full">
@@ -273,7 +273,7 @@ const SalarySheet = ({ user }: any) => {
                   const value = e.target.value;
                   setBranchId(value === "" ? "" : Number(value));
                 }}
-                className="w-60 font-medium text-sm p-2 mr-2 "
+                className="min-w-60 font-medium text-sm p-2 mr-2 "
                 branchDdl={dropdownData}
               />
             </div>
