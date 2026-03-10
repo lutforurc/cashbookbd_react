@@ -41,7 +41,7 @@ const DueInstallment = (user: any) => {
   const [status, setStatus] = useState<string | null>(null);
   const [upComingDays, setUpComingDays] = useState<number | null>(7);
   const [pageSize, setPageSize] = useState<number | null>(5);
-    const [fontSize, setFontSize] = useState<number>(10);
+  const [fontSize, setFontSize] = useState<number>(10);
   const [showModal, setShowModal] = useState(false);
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
   const [amount, setAmount] = useState<number | string>('');
@@ -186,7 +186,7 @@ const DueInstallment = (user: any) => {
     }
   };
 
-    const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
 
     if (!isNaN(value)) {
@@ -325,8 +325,8 @@ const DueInstallment = (user: any) => {
     <>
       <div>
         <HelmetTitle title="Due Installments" />
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-2 mb-3">
-          <div>
+        <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-12">
+          <div className="min-w-0 md:col-span-3">
             <label>Select Branch</label>
             {branchDdlData.isLoading && <Loader />}
             <BranchDropdown
@@ -336,25 +336,27 @@ const DueInstallment = (user: any) => {
               branchDdl={dropdownData}
             />
           </div>
-          <div>
-            <label>Start Date</label>
-            <InputDatePicker
-              setCurrentDate={setStartDate}
-              className="font-medium text-sm w-full h-8"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
-            />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:col-span-3">
+            <div className="min-w-0">
+              <label>Start Date</label>
+              <InputDatePicker
+                setCurrentDate={setStartDate}
+                className="font-medium text-sm w-full h-8"
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
+              />
+            </div>
+            <div className="min-w-0">
+              <label>End Date</label>
+              <InputDatePicker
+                setCurrentDate={setEndDate}
+                className="font-medium text-sm w-full h-8"
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
+              />
+            </div>
           </div>
-          <div>
-            <label>End Date</label>
-            <InputDatePicker
-              setCurrentDate={setEndDate}
-              className="font-medium text-sm w-full h-8"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-            />
-          </div>
-           <div>
+          <div className="min-w-0 md:col-span-2">
             <DropdownCommon
               id="business_type_id"
               name={'business_type_id'}
@@ -365,15 +367,14 @@ const DueInstallment = (user: any) => {
               data={InstallmentStatus}
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 md:col-span-2">
             <InputElement
               id="upcoming_days"
               value={upComingDays?.toString() || ''}
               name="upcoming_days"
               placeholder="Upcoming"
               label="Soon"
-              className="h-8 bg-transparent w-14"
+              className="h-8 w-full bg-transparent"
               onChange={handleUpcomingChange}
             />
             <InputElement
@@ -386,20 +387,20 @@ const DueInstallment = (user: any) => {
               onChange={handlePageSizeChange}
             />
             <InputElement
-                id="fontSize"
-                name="fontSize"
-                label="Font"
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type='text'
-                className="font-medium text-sm h-8 w-12"
-              />
+              id="fontSize"
+              name="fontSize"
+              label="Font"
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type='text'
+              className="font-medium text-sm h-8 w-full"
+            />
           </div>
-          <div className="flex flex-row items-center justify-center md:mt-6">
-            <div className="-ml-14 mr-3">
-              <PrintButton onClick={handlePrint} className='ml-4 mt-0 md:top-6 text-white bg-gray-700 h-8' />
+          <div className="min-w-0 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between md:col-span-2 md:self-end">
+            <div className="w-full sm:w-auto">
+              <PrintButton onClick={handlePrint} className='mt-0 h-8 w-full bg-gray-700 text-white sm:w-auto' />
             </div>
-            <div className="">
+            <div className="min-w-0 w-full sm:w-auto flex justify-start sm:justify-end">
               <ToggleSwitch
                 label="Show All"
                 checked={!dueOnly}
@@ -428,7 +429,7 @@ const DueInstallment = (user: any) => {
                   endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : ''}
                   statusLabel={dueOnly ? 'Due Only' : 'All'}
                   showAll={!dueOnly}
-                  rowsPerPage={ Number(pageSize)}
+                  rowsPerPage={Number(pageSize)}
                   fontSize={Number(fontSize)}
                 />
               </div>

@@ -417,13 +417,13 @@ const Employees = ({ user }: any) => {
           <div className="flex">
             <SelectOption
               onChange={handleSelectChange}
-              className="mr-1"
+              className="mr-1 h-9.5"
             /> 
             <ButtonLoading
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
-              className="whitespace-nowrap"
+              className="whitespace-nowrap h-9.5"
             />
           </div>
         </div>
@@ -436,7 +436,7 @@ const Employees = ({ user }: any) => {
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type='text'
-              className="font-medium text-sm h-10 w-12"
+              className="font-medium text-sm h-9.5 w-12"
             />
           </div>
           <div className="">
@@ -447,7 +447,7 @@ const Employees = ({ user }: any) => {
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type='text'
-              className="font-medium text-sm h-10 w-12"
+              className="font-medium text-sm h-9.5 w-12"
             />
           </div>
           <PrintButton
