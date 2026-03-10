@@ -214,6 +214,9 @@ const InstallmentDetails = () => {
     return acc + (isNaN(value) ? 0 : value);
   }, 0);
 
+
+
+
   return (
     <div className="p-4">
       <HelmetTitle title={'Installments'} />
