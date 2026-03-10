@@ -218,18 +218,15 @@ const SignIn: React.FC = () => {
                     } type="submit" label='Sign In' className='p-3 w-full' />
                   </div>
 
-                  {
-                    1 === 2 &&
-                    <>
+                  
+                    <div className='hidden'>
                       <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
                         New here?{' '}
                         <Link to={ROUTES.public_register} className="text-primary hover:underline">
                           Register your company
                         </Link>
                       </p>
-                    </>
-
-                  }
+                    </div>
 
                 </form>
               </div>
