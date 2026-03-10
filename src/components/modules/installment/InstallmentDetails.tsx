@@ -144,7 +144,7 @@ const InstallmentDetails = () => {
           {row.payments.length > 0 ? (
             <ButtonLoading
               onClick={() => handleInstallments(row.payments)}
-              label={row.installment_no}
+              label={row.installment_no ?? ""}
               className="mt-0 pt-1 pb-1 w-7 border border-black dark:border-white rounded-full"
             />
           ) : (

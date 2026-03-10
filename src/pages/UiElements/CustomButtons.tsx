@@ -5,7 +5,7 @@ import { FiArrowRightCircle, FiCheck } from 'react-icons/fi';
 interface ButtonProps {
   id?: string;
   name?: string;
-  label: string;
+  label?: React.ReactNode;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   className?: string;
@@ -28,9 +28,9 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
   onKeyDown,
   buttonLoading = false,
 }) => {
-  label = label || '';
+  const safeLabel = typeof label === 'string' ? label : '';
   const resolvedIcon = icon ? icon : <FiArrowRightCircle className="h-5 w-5" />;
-  const hasLabel = label.trim().length > 0;
+  const hasLabel = safeLabel.trim().length > 0;
   return (
     <button
       id={id}
@@ -45,12 +45,12 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
         {buttonLoading ? (
           <>
             <Spinner />
-            {label}
+            {safeLabel}
           </>
         ) : (
           <>
             <span className={hasLabel ? 'block md:hidden' : 'block'}>{resolvedIcon}</span>
-            {hasLabel ? <span className="hidden md:block">{label}</span> : null}
+            {hasLabel ? <span className="hidden md:block">{safeLabel}</span> : null}
           </>
         )}
       </span>
