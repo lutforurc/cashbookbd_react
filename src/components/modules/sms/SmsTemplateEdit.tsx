@@ -1,4 +1,3 @@
-import React from 'react';
 import SmsTemplateForm from './SmsTemplateForm';
 
 const SmsTemplateEdit = () => {

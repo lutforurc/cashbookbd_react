@@ -40,6 +40,11 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
     if (mode === 'edit' && templateId) {
       dispatch(fetchSmsTemplateById(templateId));
     }
+
+    return () => {
+      dispatch(clearSmsTemplateFormState());
+      dispatch(clearSmsTemplatePreview());
+    };
   }, [dispatch, mode, templateId]);
 
   useEffect(() => {
@@ -66,8 +71,9 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
   useEffect(() => {
     if (!smsState?.saveSuccessMessage) return;
     toast.success(smsState.saveSuccessMessage);
+    dispatch(clearSmsTemplateFormState());
     navigate(ROUTES.sms_template_list);
-  }, [navigate, smsState?.saveSuccessMessage]);
+  }, [dispatch, navigate, smsState?.saveSuccessMessage]);
 
   useEffect(() => {
     if (smsState?.saveError) {
@@ -279,8 +285,8 @@ const SmsTemplateForm: React.FC<SmsTemplateFormProps> = ({ mode }) => {
             type="submit"
             buttonLoading={smsState?.saveLoading}
             disabled={smsState?.saveLoading}
-            label={mode === 'edit' ? 'Update Template' : 'Save Template'}
-            className="h-10 whitespace-nowrap"
+            label={mode === 'edit' ? 'Update' : 'Save'}
+            className="h-10 w-30 whitespace-nowrap"
             icon={<FiSave className="text-white text-lg" />}
           />
 

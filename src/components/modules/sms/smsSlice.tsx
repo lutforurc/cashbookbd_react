@@ -252,13 +252,15 @@ const normalizeTemplateDetails = (payload: any): SmsTemplate => {
 };
 
 const normalizePreviewContent = (payload: any): string =>
+  payload?.data?.data?.preview ||
+  payload?.data?.data?.content ||
+  payload?.data?.data?.body ||
+  payload?.data?.data?.message ||
   payload?.data?.preview ||
-  payload?.preview ||
-  payload?.data?.message ||
-  payload?.message ||
   payload?.data?.content ||
-  payload?.content ||
   payload?.data?.body ||
+  payload?.preview ||
+  payload?.content ||
   payload?.body ||
   '';
 
