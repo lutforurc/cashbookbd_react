@@ -234,6 +234,9 @@ export const API_CASH_PAYMENT_STORE_URL = `${API_BASE_URL}/trading/cash/payment`
 export const API_CASH_PAYMENT_EDIT_URL = `${API_BASE_URL}/trading/cash/payment/api-edit`;
 export const API_CASH_PAYMENT_UPDATE_URL = `${API_BASE_URL}/trading/cash/payment/api-update`;
 
+// Journal url
+export const API_JOURNAL_STORE_URL = `${API_BASE_URL}/accounts/journal/store`;
+
 
 // Bank Received url
 export const API_BANK_RECEIVED_URL = `${API_BASE_URL}/general/bank/received`;
