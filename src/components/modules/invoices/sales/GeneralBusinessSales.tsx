@@ -161,48 +161,68 @@ const GeneralBusinessSales = () => {
     0,
   );
 
-  // Process `purchase.data` when it updates
+
+
+  console.log('====================================');
+  console.log("sales", sales);
+  console.log('====================================');
+
+
   useEffect(() => {
-    if (sales?.data?.invoice_date) {
-      const parsedDate = new Date(sales.data.invoice_date);
-      if (!isNaN(parsedDate.getTime())) {
-        setStartDate(parsedDate);
-      } else {
-        console.warn(
-          'Invalid date format in invoice_date:',
-          sales.data.invoice_date,
-        );
-        setStartDate(null);
-      }
+    if (!sales?.data?.transaction) {
+      setStartDate(null);
+      return;
+    }
+
+    const transaction = sales.data.transaction;
+    const salesMaster = transaction.sales_master;
+
+    if (salesMaster?.transact_date) {
+      const parsedDate = new Date(salesMaster.transact_date);
+      setStartDate(!isNaN(parsedDate.getTime()) ? parsedDate : null);
     } else {
       setStartDate(null);
     }
-    if (sales?.data?.products) {
-      const products: Product[] = sales.data.products.map((product: any) => ({
-        id: product.id,
-        product: product.product,
-        product_name: product.product_name, // Replace with actual logic if available
-        unit: product.unit, // Replace with actual logic if available
-        qty: product.quantity,
-        price: product.price,
-        bag: product.bag,
-        warehouse: product.warehouse ? product.warehouse.toString() : '',
-      }));
 
-      if (products && products.length > 0) {
-        setFormData({
-          ...sales.data,
-          products,
-        });
-      } else {
-        setFormData({
-          ...sales.data,
-          products: [],
-        });
-        toast.success('Something went wrong!');
+    const products: Product[] =
+      salesMaster?.details?.map((detail: any) => ({
+        id: detail.id,
+        product: detail.product?.id || detail.product_id || 0,
+        product_name: detail.product?.name || '',
+        unit: detail.product?.unit?.name || '',
+        qty: Number(detail.quantity) || 0,
+        price: Number(detail.sales_price) || 0,
+        bag: detail.bag || '',
+        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+        variance: detail.weight_variance || '',
+        variance_type: detail.variance_type || '',
+      })) || [];
+
+    let accountName = '-';
+    if (transaction?.acc_transaction_master?.length > 0) {
+      for (const trxMaster of transaction.acc_transaction_master) {
+        for (const detail of trxMaster.acc_transaction_details || []) {
+          if (detail.coa_l4?.id === salesMaster?.customer_id) {
+            accountName = detail.coa_l4.name;
+            break;
+          }
+        }
+        if (accountName !== '-') break;
       }
     }
-  }, [sales?.data]);
+
+    setFormData((prevState) => ({
+      ...prevState,
+      mtmId: sales.data.mtmId || '',
+      account: salesMaster?.customer_id?.toString() || '',
+      accountName,
+      receivedAmt: salesMaster?.netpayment?.toString() || '',
+      discountAmt: parseFloat(salesMaster?.discount || '0') || 0,
+      vehicleNumber: salesMaster?.vehicle_no || '',
+      notes: salesMaster?.notes || '',
+      products,
+    }));
+  }, [sales?.data?.transaction, sales?.data?.mtmId]);
 
   const addProduct = () => {
     if (!validateProductData(productData)) return;
