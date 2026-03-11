@@ -32,6 +32,8 @@ import {
   generalSalesStore,
   generalSalesUpdate,
 } from './generalSalesSlice';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import { SalesType } from '../../../../common/dropdownData';
 
 interface Product {
   id: number;
@@ -61,6 +63,7 @@ const GeneralBusinessSales = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
+    const [salesType, setSalesType] = useState('1');
 
   const [permissions, setPermissions] = useState<any>([]);
 
@@ -140,7 +143,7 @@ const GeneralBusinessSales = () => {
       return;
     }
     dispatch(
-      generalSalesEdit({ invoiceNo: search }, (message: string) => {
+      generalSalesEdit({ invoiceNo: search, salesType: salesType }, (message: string) => {
         if (message) {
           toast.error(message);
         }
@@ -441,6 +444,10 @@ const GeneralBusinessSales = () => {
     }));
   }, [formData.products, formData.discountAmt]);
 
+  const handleSalesType = (e: any) => {
+    setSalesType(e.target.value);
+  };
+
   return (
     <>
       <HelmetTitle title="General Sales Invoice" />
@@ -541,8 +548,8 @@ const GeneralBusinessSales = () => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
-            <div className="grid grid-cols-2 md:gap-x-1 mt-2 ">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+            <div className="grid grid-cols-2 md:gap-x-1 mt-3 ">
               <p className="text-sm font-bold dark:text-white">Total Tk.</p>
               <span className="text-sm font-bold dark:text-white">
                 {' '}
@@ -550,7 +557,18 @@ const GeneralBusinessSales = () => {
               </span>
             </div>
             {hasPermission(permissions, 'sales.edit') && (
-              <div className="relative">
+              <>
+              <div className="mt-2">
+                  <DropdownCommon
+                    id="saleType"
+                    name="saleType"
+                    onChange={handleSalesType}
+                    defaultValue={productData?.variance_type || ''}
+                    data={SalesType}
+                    className="w-full h-8.5"
+                  />
+                </div>
+              <div className="relative mt-2">
                 <div className="w-full ">
                   <InputOnly
                     id="search"
@@ -575,6 +593,7 @@ const GeneralBusinessSales = () => {
                   }
                 />
               </div>
+              </>
             )}
           </div>
         </div>
@@ -662,7 +681,7 @@ const GeneralBusinessSales = () => {
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
-                  className="whitespace-nowrap text-center mr-0 py-1.5"
+                  className="whitespace-nowrap text-center mr-0 py-1.5 h-8"
                   icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
                 />
               ) : (
@@ -671,7 +690,7 @@ const GeneralBusinessSales = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
-                  className="whitespace-nowrap text-center mr-0"
+                  className="whitespace-nowrap text-center mr-0 h-8"
                   icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -692,7 +711,7 @@ const GeneralBusinessSales = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit className="text-white text-lg ml-2 mr-2  h-8" />}
                 />
               ) : (
                 <ButtonLoading
@@ -710,10 +729,10 @@ const GeneralBusinessSales = () => {
                 label="Reset"
                 className="whitespace-nowrap text-center mr-0"
                 icon={
-                  <FiRefreshCcw className="text-white text-lg ml-2  mr-2" />
+                  <FiRefreshCcw className="text-white text-lg ml-2  mr-2  h-8" />
                 }
               />
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
+              <Link to="/dashboard" className="text-nowrap justify-center mr-0  h-8">
                 <FiHome className="text-white text-lg ml-2  mr-2" />
                 <span className="hidden md:block">{'Home'}</span>
               </Link>
