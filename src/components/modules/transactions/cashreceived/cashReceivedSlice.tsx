@@ -16,27 +16,43 @@ import { API_CASH_RECEIVED_EDIT_URL, API_CASH_RECEIVED_UPDATE_URL, API_CASH_RECE
 
 export const storeCashReceived = (data: any) => (dispatch: any) => {
   dispatch({ type: CASH_RECEIVED_STORE_PENDING });
-  httpService.post(API_CASH_RECEIVED_URL, data)
+  return httpService.post(API_CASH_RECEIVED_URL, data)
     .then((res) => {
 
       const _data = res.data;
+      const errorMessage =
+        _data?.error?.message || _data?.message || 'Something went wrong.';
       if (_data.success) {
         dispatch({
           type: CASH_RECEIVED_STORE_SUCCESS,
           payload: _data.data.data,
         });
+        return {
+          success: true,
+          data: _data.data.data,
+          message: _data.message,
+        };
       } else {
         dispatch({
           type: CASH_RECEIVED_STORE_ERROR,
-          payload: _data.error.message,
+          payload: errorMessage,
         });
+        return {
+          success: false,
+          message: errorMessage,
+        };
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      const errorMessage = err?.message || 'Something went wrong.';
       dispatch({
         type: CASH_RECEIVED_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: errorMessage,
       });
+      return {
+        success: false,
+        message: errorMessage,
+      };
     });
 };
 

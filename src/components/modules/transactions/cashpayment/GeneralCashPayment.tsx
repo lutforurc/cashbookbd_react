@@ -26,8 +26,7 @@ import {
 } from './cashPaymentSlice';
 import InputOnly from '../../../utils/fields/InputOnly';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
-import useCtrlS from '../../../utils/hooks/useCtrlS';
-import { validateForm } from '../../../utils/utils-functions/validationUtils';
+import useCtrlS from '../../../utils/hooks/useCtrlS'; 
 import { useNavigate } from 'react-router-dom';
 
 interface PaymentItem {

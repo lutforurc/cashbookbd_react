@@ -61,7 +61,8 @@ const GeneralCashReceived = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [isUpdateButton, setIsUpdateButton] = useState(false);
-    const navigate = useNavigate();
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const navigate = useNavigate();
 
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
@@ -79,8 +80,10 @@ const GeneralCashReceived = () => {
   };
 
   const handleCashReceivedSave = async () => {
+    setSaveButtonLoading(true);
     if (tableData.length === 0) {
       toast.error('Please add some transactions.');
+      setSaveButtonLoading(false);
       return;
     }
 
@@ -101,25 +104,24 @@ const GeneralCashReceived = () => {
 
     // Dispatch the updated data to your store or API
     try {
-      await dispatch(storeCashReceived(updatedTableData));
+      const response: any = await dispatch(storeCashReceived(updatedTableData) as any);
+
+      if (response?.success) {
+        toast.success(response.message || 'Saved successfully.');
+        setFormData(initialReceivedItem);
+        setTableData([]);
+        setIsUpdating(false);
+        setIsUpdateButton(false);
+        setUpdateId(null);
+      } else {
+        toast.error(response?.message || 'Error saving transactions.');
+      }
     } catch (error) {
-      console.error('Error saving transactions:', error);
+      toast.error('Error saving transactions.');
+    } finally {
+      setSaveButtonLoading(false);
     }
   };
-
-  useEffect(() => {
-    toast.success(cashReceived.data);
-    setFormData({
-      id: formData.id,
-      mtmId: '',
-      account: formData.account,
-      accountName: formData.accountName,
-      remarks: '',
-      amount: '',
-      currentProduct: null,
-    }); // Reset form data
-    setTableData([]); // Clear the table
-  }, [cashReceived.data]);
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -403,9 +405,10 @@ const GeneralCashReceived = () => {
                 />
               ) : (
                 <ButtonLoading
+                  disabled={saveButtonLoading}
                   onClick={handleCashReceivedSave}
-                  buttonLoading={buttonLoading}
-                  label="Save"
+                  buttonLoading={saveButtonLoading}
+                  label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
                   icon={
                     <FiSave className="text-white text-lg ml-2  mr-2 " />
@@ -413,9 +416,9 @@ const GeneralCashReceived = () => {
                 />
               )}
               <ButtonLoading
-                // disabled={saveButtonLoading}
+                disabled={saveButtonLoading}
                 onClick={handleHome}
-                // buttonLoading={saveButtonLoading}
+                buttonLoading={saveButtonLoading}
                 label={`Home`}
                 className="whitespace-nowrap text-center mr-0 p-2"
                 icon={
