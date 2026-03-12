@@ -23,6 +23,18 @@ const logBranchPad = (message: string, details?: unknown) => {
   console.debug(`[BranchPad] ${message}`, details);
 };
 
+const describeImageSource = (url: string) => {
+  if (loadedImageUrls.has(url)) {
+    return 'memory-cache';
+  }
+
+  if (imageLoadPromises.has(url)) {
+    return 'in-flight';
+  }
+
+  return 'network';
+};
+
 const preloadImage = (url: string) => {
   if (loadedImageUrls.has(url)) {
     logBranchPad('memory cache hit', { url });
@@ -96,6 +108,13 @@ const BranchPad = () => {
         return;
       }
 
+      logBranchPad('resolved image path', {
+        imagePath,
+        resolvedImagePath,
+        source: describeImageSource(resolvedImagePath),
+        shouldStripPublicPrefix,
+      });
+
       if (/^(data:|blob:)/i.test(resolvedImagePath) || typeof window === 'undefined') {
         logBranchPad('using direct image source', { url: resolvedImagePath });
         setCachedImageSrc(resolvedImagePath);
@@ -119,6 +138,7 @@ const BranchPad = () => {
           logBranchPad('falling back to raw image source after preload error', {
             url: resolvedImagePath,
             error,
+            source: describeImageSource(resolvedImagePath),
           });
           setCachedImageSrc(resolvedImagePath);
         }
