@@ -6,6 +6,9 @@ import { chartDateTime } from './formatDate';
 const loadedImageUrls = new Set<string>();
 const imageLoadPromises = new Map<string, Promise<string>>();
 const isDebugEnabled = import.meta.env.DEV;
+const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
+  API_REMOTE_URL,
+);
 
 const logBranchPad = (message: string, details?: unknown) => {
   if (!isDebugEnabled) {
@@ -80,7 +83,7 @@ const BranchPad = () => {
         ? imagePath
         : `${API_REMOTE_URL}/${imagePath
             .replace(/^\/+/, '')
-            .replace(/^public\//i, '')}`
+            .replace(shouldStripPublicPrefix ? /^public\//i : /$^/, '')}`
       : '';
 
   useEffect(() => {

@@ -19,6 +19,11 @@ import Link from '../../utils/others/Link';
 import { getBranchSettings } from '../settings/settingsSlice';
 import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
+
+const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
+  API_REMOTE_URL,
+);
+
 interface branchItem {
   id: string | number;
   branch_id?: string | number;
@@ -62,7 +67,9 @@ interface branchItem {
 const resolveImageUrl = (path?: string) => {
   if (!path) return '';
   if (/^(https?:|data:|blob:)/i.test(path)) return path;
-  const normalizedPath = path.replace(/^\/+/, '').replace(/^public\//i, '');
+  const normalizedPath = path
+    .replace(/^\/+/, '')
+    .replace(shouldStripPublicPrefix ? /^public\//i : /$^/, '');
   return `${API_REMOTE_URL}/${normalizedPath}`;
 };
 
