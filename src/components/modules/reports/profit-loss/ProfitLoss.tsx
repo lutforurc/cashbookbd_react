@@ -499,7 +499,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="text-black dark:text-white p-2">Net Purchase</td>
-              <td className={`text-black dark:text-white p-2 text-right border-t ${report.trading.purchaseDiscountCredit || report.trading.purchaseReturnCredit ? 'dark:border-gray-100 border-gray-600' : ''}`}></td>
+              <td className={`text-black dark:text-white p-2 text-right ${report.trading.purchaseDiscountCredit || report.trading.purchaseReturnCredit ? 'border-t  dark:border-gray-100 border-gray-600' : ''}`}></td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netPurchase)}</td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
             </tr>
@@ -543,7 +543,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="text-black dark:text-white p-2">Net Sales</td>
-              <td className={`text-black dark:text-white p-2 text-right border-t   ${report.trading.salesDiscountDebit || report.trading.salesReturnDebit ? 'dark:border-gray-100 border-gray-600' : ''}`}></td>
+              <td className={`text-black dark:text-white p-2 text-right ${report.trading.salesDiscountDebit || report.trading.salesReturnDebit ? 'border-t dark:border-gray-100 border-gray-600' : ''}`}></td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(0)}</td>
               <td className="text-black dark:text-white p-2 text-right">{fmtZero(report.trading.netSalesCredit)}</td>
             </tr>
@@ -603,7 +603,7 @@ const ProfitLoss = (user: any) => {
 
             <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
               <td className="p-2">Total Expense</td>
-              <td className={`text-black dark:text-white p-2 text-right border-t w-30 ${report.net.expenses.length > 0 ? 'dark:border-gray-100 border-gray-600' : ''}`}></td>
+              <td className={`text-black dark:text-white p-2 text-right w-30 ${report.net.expenses.length > 0 ? 'border-t  dark:border-gray-100 border-gray-600' : ''}`}></td>
               <td className="p-2 text-right">{fmtZero(report.net.totalExpense)}</td>
               <td className="p-2 text-right"></td>
             </tr>
