@@ -155,6 +155,7 @@ const AddBranch = () => {
       setFormData(prev => ({
         ...prev,
         ...b,
+        pad_heading_print: b.pad_heading_print != null ? String(b.pad_heading_print) : '',
 
         // 🔑 CHECKBOX FIX
         is_opening: b.is_opening == 1 || b.is_opening === '1',
@@ -346,7 +347,7 @@ const AddBranch = () => {
               />
             </div>
 
-            {formData?.pad_heading_print === '3' && (
+            {Number(formData?.pad_heading_print) === 3 && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                   <div className="flex flex-col">
