@@ -9,10 +9,10 @@ const PadPrinting = () => {
 
   return (
     <div>
-      {Number(settings?.branch?.pad_heading_print) === 1 ? (
-        <BranchPad />
-      ) : (
+      {Number(settings?.branch?.pad_heading_print) === 2 ? (
         <CompanyPad />
+      ) : (
+        <BranchPad />
       )}
     </div>
   );

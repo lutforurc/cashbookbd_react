@@ -88,8 +88,16 @@ export const getBranch = ({ page, perPage, search = '' }: branchListParam) => (d
 
 export const updateBranch = (data: any, callback: any) => (dispatch: any) => {
   dispatch({ type: BRANCH_UPDATE_PENDING });
+  const config =
+    data instanceof FormData
+      ? {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      : undefined;
   httpService
-    .post(API_BRANCH_UPDATE_URL, data)
+    .post(API_BRANCH_UPDATE_URL, data, config)
     .then((res) => {
       let _data = res.data;
       if (_data.success) {
@@ -112,6 +120,9 @@ export const updateBranch = (data: any, callback: any) => (dispatch: any) => {
         type: BRANCH_UPDATE_ERROR,
         payload: err,
       });
+      if ('function' === typeof callback) {
+        callback({ success: false, error: err });
+      }
     });
 };
 
@@ -178,8 +189,16 @@ export const branchStatus = (id: number, enabled: boolean) => async (dispatch: a
 
 export const storeBranch = (data: any, callback: any) => (dispatch: any) => {
   dispatch({ type: BRANCH_STORE_PENDING });
+  const config =
+    data instanceof FormData
+      ? {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      : undefined;
   httpService
-    .post(API_BRANCH_STORE_URL, data)
+    .post(API_BRANCH_STORE_URL, data, config)
     .then((res) => {
       let _data = res.data;
       if (_data.success) {
@@ -202,6 +221,9 @@ export const storeBranch = (data: any, callback: any) => (dispatch: any) => {
         type: BRANCH_STORE_ERROR,
         payload: 'Something went wrong.',
       });
+      if ('function' === typeof callback) {
+        callback({ success: false, error: er });
+      }
     });
 };
 

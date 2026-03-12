@@ -3,15 +3,13 @@ import InputElement from '../../utils/fields/InputElement';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import {
-  businessTypes,
   moneySpellFormat,
-  officeTypes,
   printerSettings,
   printPadHeading,
   status,
 } from '../../utils/fields/DataConstant';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import { FiArrowLeft, FiHome, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { FiArrowLeft, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import Checkbox from '../../utils/fields/Checkbox';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
@@ -20,6 +18,7 @@ import Loader from '../../../common/Loader';
 import Link from '../../utils/others/Link';
 import { getBranchSettings } from '../settings/settingsSlice';
 import { toast } from 'react-toastify';
+import { API_REMOTE_URL } from '../../services/apiRoutes';
 interface branchItem {
   id: string | number;
   branch_id?: string | number;
@@ -57,7 +56,37 @@ interface branchItem {
   purchase_sms: boolean;
   sales_sms: boolean;
   payment_sms: boolean;
+  pad_header_image?: string;
 }
+
+const resolveImageUrl = (path?: string) => {
+  if (!path) return '';
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+  const normalizedPath = path.replace(/^\/+/, '').replace(/^public\//i, '');
+  return `${API_REMOTE_URL}/${normalizedPath}`;
+};
+
+const buildBranchFormData = (data: branchItem, file: File | null) => {
+  const payload = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (key === 'pad_header_image') return;
+
+    if (typeof value === 'boolean') {
+      payload.append(key, value ? '1' : '0');
+      return;
+    }
+
+    payload.append(key, String(value));
+  });
+
+  if (file) {
+    payload.append('pad_header_image', file);
+  }
+
+  return payload;
+};
 
 const AddBranch = () => {
   const navigate = useNavigate();
@@ -100,8 +129,11 @@ const AddBranch = () => {
     purchase_sms: false,
     sales_sms: false,
     payment_sms: false,
+    pad_header_image: '',
   };
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
+  const [padHeaderPreview, setPadHeaderPreview] = useState('');
   const dispatch = useDispatch();
 
   const { id } = useParams();
@@ -145,11 +177,39 @@ const AddBranch = () => {
         purchase_sms: b.purchase_sms == 1 || b.purchase_sms === '1',
         sales_sms: b.sales_sms == 1 || b.sales_sms === '1',
         payment_sms: b.payment_sms == 1 || b.payment_sms === '1',
+        pad_header_image:
+          b.pad_header_image ||
+          b.pad_heading_image ||
+          b.letterhead_image ||
+          b.pad_image ||
+          b.header_image ||
+          '',
       }));
+
+      setPadHeaderFile(null);
+      setPadHeaderPreview(
+        resolveImageUrl(
+          b.pad_header_image ||
+          b.pad_heading_image ||
+          b.letterhead_image ||
+          b.pad_image ||
+          b.header_image ||
+          '',
+        ),
+      );
     }
   }, [branchEditData?.editData]);
 
   const [formData, setFormData] = useState<branchItem>(initialBranch);
+
+  useEffect(() => {
+    return () => {
+      if (padHeaderPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(padHeaderPreview);
+      }
+    };
+  }, [padHeaderPreview]);
+
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, type, value, checked } = e.target;
 
@@ -168,9 +228,29 @@ const AddBranch = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handlePadImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+
+    if (padHeaderPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(padHeaderPreview);
+    }
+
+    setPadHeaderFile(file);
+
+    if (!file) {
+      setPadHeaderPreview(resolveImageUrl(formData.pad_header_image));
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setPadHeaderPreview(previewUrl);
+  };
+
   const handleBranchUpdate = () => {
+    setButtonLoading(true);
     dispatch(
-      updateBranch(formData, (res: any) => {
+      updateBranch(buildBranchFormData(formData, padHeaderFile), (res: any) => {
+        setButtonLoading(false);
         if (res?.success) {
           toast.success(res?.message || 'Branch updated successfully');
           navigate('/branch/branch-list');
@@ -183,11 +263,15 @@ const AddBranch = () => {
   };
 
   const handleBranchSave = () => {
+    setButtonLoading(true);
     dispatch(
-      storeBranch(formData, (res: any) => {
+      storeBranch(buildBranchFormData(formData, padHeaderFile), (res: any) => {
+        setButtonLoading(false);
         if (res?.success) {
           toast.success(res?.message || 'Branch saved successfully');
           setFormData(initialBranch);
+          setPadHeaderFile(null);
+          setPadHeaderPreview('');
           return;
         }
 
@@ -219,7 +303,7 @@ const AddBranch = () => {
                 label="Select Branch Type"
                 onChange={handleOnSelectChange}
                 value={formData?.branch_types_id || ''}
-                className="h-[2.1rem] bg-transparent mt-1"
+                className="h-[2.1rem] bg-transparent"
                 data={settings?.branchSettings?.branchType}
               />
               <DropdownCommon
@@ -228,7 +312,7 @@ const AddBranch = () => {
                 label="Select Business Type"
                 onChange={handleOnSelectChange}
                 value={formData?.business_type_id || ''}
-                className="h-[2.1rem] bg-transparent mt-1"
+                className="h-[2.1rem] bg-transparent"
                 data={settings?.branchSettings?.businessType}
               />
             </div>
@@ -247,8 +331,8 @@ const AddBranch = () => {
                 name={'pad_heading_print'}
                 label="Select Print Heading"
                 onChange={handleOnSelectChange}
+                value={formData?.pad_heading_print || ''}
                 className="h-[2.1rem] bg-transparent"
-                defaultValue={formData?.pad_heading_print || ''}
                 data={printPadHeading}
               />
               <InputElement
@@ -261,6 +345,48 @@ const AddBranch = () => {
                 onChange={handleOnChange}
               />
             </div>
+
+            {formData?.pad_heading_print === '3' && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="pad_header_image"
+                      className="text-black dark:text-white"
+                    >
+                      Pad Header Image
+                    </label>
+                    <input
+                      id="pad_header_image"
+                      name="pad_header_image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePadImageChange}
+                      className="form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent dark:border-gray-600 dark:text-white"
+                    />
+                    <span className="mt-1 text-xs text-gray-500">
+                      This image will print when `Custom Image Pad` is selected.
+                    </span>
+                  </div>
+                  <div className="md:col-span-2">
+                    {padHeaderPreview ? (
+                      <div className="rounded border border-gray-300 p-2">
+                        <img
+                          src={padHeaderPreview}
+                          alt="Pad header preview"
+                          className="max-h-28 w-full object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-full min-h-28 items-center justify-center rounded border border-dashed border-gray-300 text-sm text-gray-500">
+                        No image selected
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
               <DropdownCommon
                 id="print_size"
@@ -476,7 +602,7 @@ const AddBranch = () => {
                   label="Received SMS"
                   className="mb-4"
                 />
-                 <Checkbox
+                <Checkbox
                   id="sales_sms"
                   name="sales_sms"
                   checked={formData.sales_sms}
@@ -500,7 +626,7 @@ const AddBranch = () => {
                   label="Payment SMS"
                   className="mb-4"
                 />
-               
+
               </div>
             )}
           </div>
@@ -523,7 +649,14 @@ const AddBranch = () => {
               />
             )}
             <ButtonLoading
-              onClick={() => setFormData(initialBranch)}
+              onClick={() => {
+                if (padHeaderPreview.startsWith('blob:')) {
+                  URL.revokeObjectURL(padHeaderPreview);
+                }
+                setFormData(initialBranch);
+                setPadHeaderFile(null);
+                setPadHeaderPreview('');
+              }}
               buttonLoading={buttonLoading}
               label="Reset"
               className="whitespace-nowrap text-center mr-0 p-2"
