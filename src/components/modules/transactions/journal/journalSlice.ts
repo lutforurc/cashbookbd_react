@@ -35,12 +35,12 @@ export const saveJournalPayment = createAsyncThunk<
       return res.data;
     }
 
-    return rejectWithValue(res.data?.message || 'Journal payment save failed');
+    return rejectWithValue(res.data?.message || 'Journal save failed');
   } catch (error: any) {
     return rejectWithValue(
       error?.response?.data?.message ||
         error?.message ||
-        'Journal payment save failed',
+        'Journal save failed',
     );
   }
 });
@@ -67,11 +67,11 @@ const journalSlice = createSlice({
         state.loading = false;
         state.error = null;
         state.savedData = action.payload?.data ?? action.payload;
-        state.message = action.payload?.message || 'Journal payment saved successfully';
+        state.message = action.payload?.message || 'Journal saved successfully';
       })
       .addCase(saveJournalPayment.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Journal payment save failed';
+        state.error = action.payload || 'Journal save failed';
       });
   },
 });

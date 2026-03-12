@@ -143,7 +143,7 @@ const Journal = () => {
 
     return (
         <>
-            <HelmetTitle title="Journal Payment" />
+            <HelmetTitle title="Journal Entry" />
             <div className="mb-4 w-full px-2 md:px-0 flex justify-center">
                 <form
                     id="journal-payment-form"
