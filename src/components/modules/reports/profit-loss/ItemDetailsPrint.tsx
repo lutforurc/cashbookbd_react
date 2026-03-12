@@ -49,7 +49,6 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 11;
     const cellPy = fs <= 11 ? "py-[0.5px]" : fs <= 15 ? "py-[.9px]" : "py-1";
 
-    // rowsPerPage default (font অনুযায়ী)
     const rp =
       Number.isFinite(rowsPerPage)
         ? (rowsPerPage as number)
