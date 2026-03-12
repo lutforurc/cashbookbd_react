@@ -159,6 +159,16 @@ const ProfitLoss = (user: any) => {
     return null;
   }, [profitLossState?.data]);
 
+  const hasReportData = useMemo(() => {
+    const trading = apiData?.trading;
+    const netprofit = apiData?.netprofit;
+
+    return (
+      (Array.isArray(trading) && trading.length > 0) ||
+      (Array.isArray(netprofit) && netprofit.length > 0)
+    );
+  }, [apiData]);
+
   const report = useMemo(() => {
     const trading: TradingRow[] = apiData?.trading || [];
     const netprofit: NetRow[] = apiData?.netprofit || [];
@@ -405,11 +415,19 @@ const ProfitLoss = (user: any) => {
         </div>
       </div>
       {/* ===== Report ===== */}
-      <ProfitLossReport
-        loading={profitLossState?.loading}
-        report={report}
-        loader={<Loader />}
-      />
+      {hasReportData ? (
+        <ProfitLossReport
+          loading={profitLossState?.loading}
+          report={report}
+          loader={<Loader />}
+        />
+      ) : (
+        <div className="rounded border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+          {profitLossState?.loading
+            ? "Profit/Loss report loading..."
+            : "Press Run to view the report. Once the data is loaded, the Profit/Loss Report will be displayed here."}
+        </div>
+      )}
 
       {/* ===== Hidden Print ===== */}
       <div className="hidden">
