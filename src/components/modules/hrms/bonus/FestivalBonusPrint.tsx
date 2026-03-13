@@ -128,7 +128,7 @@ const FestivalBonusPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th style={{ fontSize: fs }} className="text-left">Employee</th>
                     <th style={{ fontSize: fs }}>Basic Salary</th>
                     <th style={{ fontSize: fs }}>Bonus %</th>
-                    <th style={{ fontSize: fs }}>Bonus Amount</th>
+                    <th style={{ fontSize: fs }}>Bonus</th>
                     <th style={{ fontSize: fs }}>Paid</th>
                     <th style={{ fontSize: fs }}>Due</th>
                     <th style={{ fontSize: fs }}>Payment Vr.</th>

@@ -177,7 +177,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
         })
       ).unwrap();
 
-      toast.success(response?.message || "Festival bonus generated successfully");
+      toast.success(response?.message || "Bonus generated successfully");
       setShowConfirm(false);
       setEmployees([]);
     } catch (error: any) {
@@ -224,7 +224,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
 
   return (
     <>
-      <HelmetTitle title="Festival Bonus Generate" />
+      <HelmetTitle title="Bonus Generate" />
       {(loading || searchLoading) && <Loader />}
 
       <div className="space-y-6">

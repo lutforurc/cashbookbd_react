@@ -140,7 +140,7 @@ const bonusSlice = createSlice({
       })
       .addCase(festivalBonusGenerate.fulfilled, (state, action) => {
         state.loading = false;
-        state.message = action.payload?.message || "Festival bonus generated successfully";
+        state.message = action.payload?.message || "Bonus generated successfully";
       })
       .addCase(festivalBonusGenerate.rejected, (state, action) => {
         state.loading = false;

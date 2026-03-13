@@ -8,6 +8,7 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import YearDropdown from "../../../utils/components/YearDropdown";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
+import InputElement from "../../../utils/fields/InputElement";
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
@@ -198,36 +199,40 @@ const FestivalBonus = ({ user }: any) => {
 
   return (
     <>
-      <HelmetTitle title="Festival Bonus" />
+      <HelmetTitle title="Festival Bonus Reports" />
       {loading && <Loader />}
 
       <div className="space-y-6">
-        <div className="rounded-sm border border-slate-200 bg-white px-6 py-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Festival Bonus Reports</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-            Review yearly bonus batches, print sheets, and complete partial or full bonus payments from one place.
-          </p>
-          <p className="hidden">
-            Bonus batch, payment status, print view and partial payment এখান থেকে manage করতে পারবেন।
-          </p>
-          <p className="hidden">
-            বছরভিত্তিক bonus batch, payment status, print view এবং partial payment এখান থেকে manage করতে পারবেন।
-          </p>
-        </div>
-
         <div className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <form onSubmit={handleSearch} className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Branch</label>
-              <BranchDropdown branches={dropdownData} value={branchId} onChange={(e: any) => setBranchId(e.target.value)} />
+            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Branch</label>
+              <BranchDropdown
+                defaultValue={branchId?.toString()}
+                onChange={(e: any) => {
+                  const value = e.target.value;
+                  setBranchId(value === "" ? "" : Number(value));
+                }}
+                className="w-60 font-medium text-sm p-2 mr-2"
+                branchDdl={dropdownData}
+              />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Year</label>
-              <YearDropdown name="year" value={yearId} onChange={(e: any) => setYearId(e.target.value)} />
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Year</label>
+              <YearDropdown className="h-9" name="year" value={yearId} onChange={(e: any) => setYearId(e.target.value)} />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Print Font Size</label>
-              <input value={fontSize} onChange={(e) => setFontSize(Number(e.target.value) || 11)} type="number" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none" />
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Font Size</label>
+              <InputElement
+                id="print_font_size"
+                value={String(fontSize)}
+                name="print_font_size"
+                placeholder="Enter Print Font Size"
+                label=""
+                className="mt-0"
+                type="number"
+                onChange={(e) => setFontSize(Number(e.target.value) || 11)}
+              />
             </div>
             <div className="flex items-end">
               <ButtonLoading onClick={handleSearch} label="Search" className="w-full bg-blue-600 px-5 py-2 hover:bg-blue-700" />

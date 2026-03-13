@@ -1483,7 +1483,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Festival Bonus Generate
+                                Bonus Generate
                               </NavLink>
                             </li>
                           )}
@@ -1536,7 +1536,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Festival Bonus Reports
+                                Bonus Reports
                               </NavLink>
                             </li>
                           )}
