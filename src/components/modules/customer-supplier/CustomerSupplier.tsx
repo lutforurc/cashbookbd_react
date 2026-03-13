@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiEdit2, FiPlus, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiEdit2, FiPlus, FiRefreshCcw, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -13,7 +13,6 @@ import { getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { render } from "react-dom";
 import { getSettings } from "../settings/settingsSlice";
 
 const CustomerSupplier = () => {
@@ -26,6 +25,7 @@ const CustomerSupplier = () => {
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [tableData, setTableData] = useState([]);
+  const [editedRows, setEditedRows] = useState<Record<number, any>>({});
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
@@ -74,8 +74,72 @@ const CustomerSupplier = () => {
 
 
   const handleInputChange = (id: number, field: string, value: string) => {
-    setTableData(prev => prev.map(row => row.id === id ? { ...row, [field]: value } : row)
+    setEditedRows((prev) => ({
+      ...prev,
+      [id]: {
+        ...(prev[id] || {}),
+        [field]: value,
+      },
+    }));
+  };
+
+  const isRowDirty = (row: any) => {
+    const edited = editedRows[row.id];
+    if (!edited) return false;
+
+    const opening0 = row.openingbalance ?? "";
+    const ledger0 = row.ledger_page ?? "";
+    const opening1 = edited.openingbalance ?? opening0;
+    const ledger1 = edited.ledger_page ?? ledger0;
+
+    return (
+      String(opening1 ?? "") !== String(opening0 ?? "") ||
+      String(ledger1 ?? "") !== String(ledger0 ?? "")
     );
+  };
+
+  const handleSaveRow = (row: any) => {
+    const edited = editedRows[row.id];
+    if (!edited) return;
+
+    const payload = {
+      openingbalance: edited.openingbalance ?? row.openingbalance ?? "",
+      ledger_page: edited.ledger_page ?? row.ledger_page ?? "",
+    };
+
+    dispatch(
+      updateCustomerFromUI({
+        id: row.id,
+        data: payload,
+      })
+    )
+      .unwrap()
+      .then((res) => {
+        if (res?.message && res?.success) {
+          setTableData((prev) =>
+            prev.map((item) => (item.id === row.id ? { ...item, ...payload } : item))
+          );
+          setEditedRows((prev) => {
+            const copy = { ...prev };
+            delete copy[row.id];
+            return copy;
+          });
+          toast.success(res.message);
+        } else {
+          toast.info(res.message);
+        }
+      })
+      .catch((err) => {
+        toast.error(err?.message || "Update failed");
+      });
+  };
+
+  const handleCancelRow = (row: any) => {
+    setEditedRows((prev) => {
+      const copy = { ...prev };
+      delete copy[row.id];
+      return copy;
+    });
   };
 
 
@@ -113,17 +177,11 @@ const CustomerSupplier = () => {
         <InputElement
           type="number"   // 🔥 FIX HERE
           placeholder="Opening"
-          value={row.openingbalance ?? ""}
+          value={editedRows[row.id]?.openingbalance ?? row.openingbalance ?? ""}
           className="text-right w-20"
           onChange={(e) =>
             handleInputChange(row.id, "openingbalance", e.target.value)
           }
-          onBlur={() => handleInputBlur(row, "openingbalance")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.currentTarget.blur();
-            }
-          }}
         />
       ),
     },
@@ -163,17 +221,11 @@ const CustomerSupplier = () => {
         <InputElement
           type="text"   // 🔥 FIX HERE
           placeholder="Ledger Page"
-          value={row.ledger_page ?? ""}
+          value={editedRows[row.id]?.ledger_page ?? row.ledger_page ?? ""}
           className="text-center w-35"
           onChange={(e) =>
             handleInputChange(row.id, "ledger_page", e.target.value)
           }
-          onBlur={() => handleInputBlur(row, "ledger_page")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.currentTarget.blur();
-            }
-          }}
         />
       ),
     },
@@ -220,8 +272,27 @@ const CustomerSupplier = () => {
     {
       key: "action",
       header: "Action",
-      render: (row: any) => (
+      render: (row: any) => {
+        const dirty = isRowDirty(row);
+
+        return (
         <div className="flex justify-center items-center gap-2">
+          <ButtonLoading
+            icon=""
+            className="py-1 px-2"
+            label="Save"
+            type="button"
+            disabled={!dirty}
+            onClick={() => handleSaveRow(row)}
+          />
+          <ButtonLoading
+            icon={<FiRefreshCcw />}
+            className="py-1 px-2"
+            label="Cancel"
+            type="button"
+            disabled={!editedRows[row.id]}
+            onClick={() => handleCancelRow(row)}
+          />
 
           {/* ===== Guarantor Slot (fixed) ===== */}
           <div className="w-4 flex justify-center">
@@ -261,7 +332,7 @@ const CustomerSupplier = () => {
           </div>
 
         </div>
-      )
+      )},
     },
   ];
 
