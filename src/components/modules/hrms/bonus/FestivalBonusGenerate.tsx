@@ -264,34 +264,31 @@ const FestivalBonusGenerate = ({ user }: any) => {
 
         <div className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
-            <div>
-              <div className="mt-1">
-                <label className="mb-0 block text-sm font-medium text-slate-700 dark:text-white">Branch</label>
-              {/* <BranchDropdown branches={dropdownData} value={branchId} onChange={(e: any) => setBranchId(e.target.value)} /> */}
+            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Branch</label>
               <BranchDropdown
                 defaultValue={branchId?.toString()}
                 onChange={(e: any) => {
                   const value = e.target.value;
                   setBranchId(value === "" ? "" : Number(value));
                 }}
-                className="w-60 font-medium text-sm p-2 mr-2 "
+                className="w-60 font-medium text-sm p-2 mr-2"
                 branchDdl={dropdownData}
               />
-              </div>
             </div>
-            <div>
-              <div className="mt-1">
-                <label className="ml-2 mb-0 block text-sm font-medium text-slate-700 dark:text-white">Bonus Month</label>
-                <MonthDropdown
-                  id="bonus_month_id"
-                  name="bonus_month_id"
-                  value={monthId}
-                  onChange={handleMonthChange}
-                  className="h-8.5 bg-transparent ml-2 mr-2 min-w-35"
-                />
-              </div>
+
+            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Bonus Month</label>
+              <MonthDropdown
+                id="bonus_month_id"
+                name="bonus_month_id"
+                value={monthId}
+                onChange={handleMonthChange}
+                className="h-8.5 bg-transparent min-w-35"
+              />
             </div>
-            <div>
+
+            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
               <DropdownCommon
                 id="bonus_title"
                 name="bonus_title"
@@ -302,35 +299,60 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 data={bonusTitleOptions}
               />
             </div>
-            <div>
-              <div className="mt-1">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-white">Bonus % of Basic</label>
-              <InputElement value={bonusPercent} onChange={(e) => setBonusPercent(e.target.value)} type="number" inputMode="decimal" className="w-full" />
-              </div>
+
+            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Bonus % of Basic</label>
+              <InputElement
+                value={bonusPercent}
+                onChange={(e) => setBonusPercent(e.target.value)}
+                type="number"
+                inputMode="decimal"
+                className="w-full"
+              />
             </div>
           </div>
 
           {bonusTitle === "Other" && (
-            <div className="mt-4">
+            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white">Custom Bonus Title</label>
               <InputElement value={customBonusTitle} onChange={(e) => setCustomBonusTitle(e.target.value)} className="w-full" />
             </div>
           )}
 
           <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1fr_auto]">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Designation Level</label>
-              <MultiSelectDropdown options={designationLevelOptions} selected={selectedLevels} setSelected={setSelectedLevels} placeholder="All levels" />
+            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white">Designation Level</label>
+              <MultiSelectDropdown
+                options={designationLevelOptions}
+                value={selectedLevels}
+                onChange={setSelectedLevels}
+                placeholder="All levels"
+              />
             </div>
+
             <div className="flex items-end">
-              <ButtonLoading onClick={handleSearch} label="Load Employees" icon={<FiSearch className="h-4 w-4" />} className="w-full whitespace-nowrap bg-blue-600 px-5 py-2 hover:bg-blue-700 xl:w-auto" />
+              <ButtonLoading
+                onClick={handleSearch}
+                label="Load Employees"
+                icon={<FiSearch className="h-4 w-4" />}
+                className="w-full whitespace-nowrap bg-blue-600 px-5 py-2 hover:bg-blue-700 xl:w-auto"
+              />
             </div>
           </div>
 
-          <div className="mt-4 rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
-            <span className="font-semibold">{resolvedBonusTitle || "Bonus title"}</span>
-            {" | "}Month: <span className="font-semibold">{monthText || "Not selected"}</span>
-            {" | "}Rate: <span className="font-semibold">{resolvedPercent.toFixed(2)}%</span>
+          <div className="mt-4 grid grid-cols-1 gap-3 rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 md:grid-cols-3">
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Bonus Title</span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">{resolvedBonusTitle || "Not selected"}</div>
+            </div>
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Bonus Month</span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">{monthText || "Not selected"}</div>
+            </div>
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Rate</span>
+              <div className="font-semibold text-slate-900 dark:text-slate-100">{resolvedPercent.toFixed(2)}%</div>
+            </div>
           </div>
         </div>
 
