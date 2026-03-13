@@ -126,43 +126,6 @@ const AddCoaL4 = () => {
               className="text-sm"
             />
           </div>
-
-          <div>
-            <label className={fieldLabelClass}>
-              Reporting To<span className="text-red-500">*</span>
-            </label>
-            <DdlMultiline
-              id="reporting_to"
-              name="reporting_to"
-              acType="L4"
-              placeholder="Select Reporting To"
-              value={
-                formData.reporting_to
-                  ? {
-                    value: formData.reporting_to,
-                    label: formData.reporting_to_label || formData.reporting_to,
-                  }
-                  : null
-              }
-              onSelect={handleSelect('reporting_to', 'reporting_to_label')}
-              className="text-sm"
-            />
-          </div>
-
-          <div>
-            <label className={fieldLabelClass}>
-              SKU Code <span className="text-red-500">*</span>
-            </label>
-            <InputElement
-              id="sku_code"
-              name="sku_code"
-              value={formData.sku_code}
-              onChange={handleInputChange('sku_code')}
-              placeholder="Enter SKU Code"
-              className={""}
-            />
-          </div>
-
           <div>
             <label className={fieldLabelClass}>
               Chart of Accounts (Level-4) <span className="text-red-500">*</span>
