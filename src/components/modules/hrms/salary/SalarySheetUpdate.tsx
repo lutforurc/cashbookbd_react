@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -6,11 +7,12 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import Table from "../../../utils/others/Table";
 import InputElement from "../../../utils/fields/InputElement";
+import ConfirmModal from "../../../utils/components/ConfirmModalProps";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import routes from "../../../services/appRoutes";
-import { salarySheetPrint, salarySheetUpdate } from "./salarySlice";
+import { salarySheetPrint, salarySheetRowDelete, salarySheetUpdate } from "./salarySlice";
 
 type SalaryHistory = {
   name?: string;
@@ -71,7 +73,7 @@ const inferMonthlyAmount = (
   return roundUpToNearestTen((currentAmount / workingDays) * selectedMonthDays);
 };
 
-const SalarySheetUpdate = ({ user }: any) => {
+const SalarySheetUpdate = ( user : any) => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,6 +83,9 @@ const SalarySheetUpdate = ({ user }: any) => {
   const returnYearId = location.state?.yearId ? String(location.state.yearId) : "";
   const [rows, setRows] = useState<UpdateRow[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [deleteLoadingId, setDeleteLoadingId] = useState<number | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedDeleteRow, setSelectedDeleteRow] = useState<UpdateRow | null>(null);
   const [selectedMonthDays, setSelectedMonthDays] = useState<number>(30);
 
   useEffect(() => {
@@ -208,6 +213,50 @@ const SalarySheetUpdate = ({ user }: any) => {
     }
   };
 
+  const handleDeleteClick = (row: UpdateRow) => {
+    if (Number(row.payment_amount || 0) > 0) {
+      toast.info("Paid salary row cannot be deleted");
+      return;
+    }
+
+    setSelectedDeleteRow(row);
+    setShowConfirm(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!sourceRow || !selectedDeleteRow) return;
+
+    setDeleteLoadingId(selectedDeleteRow.id);
+
+    try {
+      const response = await dispatch(
+        salarySheetRowDelete({
+          row: sourceRow,
+          salary_payment_id: selectedDeleteRow.id,
+        })
+      ).unwrap();
+
+      toast.success(response?.message || "Salary row deleted successfully");
+
+      const nextRows = rows.filter((item) => item.id !== selectedDeleteRow.id);
+      setRows(nextRows);
+      setShowConfirm(false);
+      setSelectedDeleteRow(null);
+
+      if (nextRows.length === 0) {
+        navigate(routes.hrms_salary_sheet_list, {
+          state: {
+            yearId: returnYearId,
+          },
+        });
+      }
+    } catch (error: any) {
+      toast.error(typeof error === "string" ? error : error?.message || "Salary row delete failed");
+    } finally {
+      setDeleteLoadingId(null);
+    }
+  };
+
   const columns = [
     {
       key: "serial_no",
@@ -332,6 +381,27 @@ const SalarySheetUpdate = ({ user }: any) => {
       cellClass: "text-right",
       render: (row: UpdateRow) => thousandSeparator(Number(row.payment_amount || 0), 0),
     },
+    {
+      key: "action",
+      header: "Action",
+      headerClass: "text-center",
+      cellClass: "text-center",
+      render: (row: UpdateRow) => (
+        <button
+          type="button"
+          onClick={() => handleDeleteClick(row)}
+          disabled={saveLoading || deleteLoadingId === row.id || Number(row.payment_amount || 0) > 0}
+          className="inline-flex items-center justify-center text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+          title={Number(row.payment_amount || 0) > 0 ? "Paid salary cannot be deleted" : "Delete salary row"}
+        >
+          {deleteLoadingId === row.id ? (
+            <span className="text-xs">Deleting...</span>
+          ) : (
+            <FiTrash2 className="text-lg" />
+          )}
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -340,10 +410,10 @@ const SalarySheetUpdate = ({ user }: any) => {
 
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+          {/* <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
             Salary Sheet Update
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
+          </h1> */}
+          <p className="text-xl text-slate-600 dark:text-slate-100 font-semibold">
             {sourceRow?.payment_month ? formatPaymentMonth(sourceRow.payment_month) : ""}
           </p>
         </div>
@@ -397,6 +467,26 @@ const SalarySheetUpdate = ({ user }: any) => {
         {salary.loading ? <Loader /> : null}
         <Table columns={columns} data={rows} className="" />
       </div>
+
+      <ConfirmModal
+        show={showConfirm}
+        title="Confirm Deletion"
+        message={
+          <>
+            Are you sure you want to delete salary for
+            <span className="block font-bold mt-1">
+              {getHistory(selectedDeleteRow?.history).name || "this employee"} ?
+            </span>
+          </>
+        }
+        loading={deleteLoadingId !== null}
+        onCancel={() => {
+          setShowConfirm(false);
+          setSelectedDeleteRow(null);
+        }}
+        onConfirm={handleDeleteConfirmed}
+        className="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 };
