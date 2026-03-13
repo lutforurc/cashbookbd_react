@@ -33,6 +33,13 @@ const EditProduct = () => {
 
   const [buttonLoading, setButtonLoading] = useState(false);
 
+
+
+  console.log('====================================');
+  console.log("category", category);
+  console.log('====================================');
+
+
   useEffect(() => {
     dispatch(getCategoryDdl({ search: '' }));
 

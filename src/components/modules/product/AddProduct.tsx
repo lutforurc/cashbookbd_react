@@ -362,7 +362,7 @@ const AddProduct = () => {
               name="product_type"
               className="h-[2.20rem] w-full"
               data={category?.ddlData?.data?.product_type}
-              defaultValue={formData?.product_type?.toString() ?? ''}
+              value={formData?.product_type?.toString() ?? ''}
             />
           </div>
 
@@ -374,7 +374,7 @@ const AddProduct = () => {
               name="unit_id"
               className="h-[2.20rem] w-full"
               data={category?.ddlData?.data?.unit}
-              defaultValue={formData?.unit_id?.toString() ?? ''}
+              value={formData?.unit_id?.toString() ?? ''}
             />
           </div>
         </div>

@@ -109,11 +109,10 @@ const AddBranding = () => {
 
 
     try {
-              const response = await dispatch(saveBrand(formData)).unwrap();
-          toast.success('Employee saved successfully');
-   
+        const response = await dispatch(saveBrand(formData)).unwrap();
+          toast.success(response.message || 'Manufacturer saved successfully');
         } catch (err: any) {
-          toast.error(err?.message || 'Failed to save employee');
+          toast.error(err?.message || 'Failed to save manufacturer');
         } finally {
          setButtonLoading(false);
         }
