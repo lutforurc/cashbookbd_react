@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { FiArrowLeft, FiPrinter } from "react-icons/fi";
+import { toast } from "react-toastify";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import Checkbox from "../../../utils/fields/Checkbox";
 import InputElement from "../../../utils/fields/InputElement";
@@ -127,6 +128,11 @@ const SalaryPaymentSelectionModal = ({
   };
 
   const handleSubmit = () => {
+    if (selectedIds.length === 0) {
+      toast.info("Please select Employee select");
+      return;
+    }
+
     const payload = selectedIds
       .map((id) => {
         const row = rows.find((item) => item.id === id);
@@ -211,8 +217,8 @@ const SalaryPaymentSelectionModal = ({
           <table className="min-w-full text-sm">
             <thead className="bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-100">
               <tr>
-                <th className="px-3 py-3 text-left">Mark</th>
-                <th className="px-3 py-3 text-left">SL</th>
+                <th className="px-3 py-3 text-center w-6">Mark</th>
+                <th className="px-3 py-3 text-center w-6">SL</th>
                 <th className="px-3 py-3 text-left">Employee</th>
                 <th className="px-3 py-3 text-center">Days</th>
                 <th className="px-3 py-3 text-right">Net Salary</th>
@@ -232,7 +238,7 @@ const SalaryPaymentSelectionModal = ({
                     key={row.id}
                     className="border-t border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700/40"
                   >
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-3 py-2 align-top item-center ">
                       <Checkbox
                         id={`salary_row_${row.id}`}
                         name={`salary_row_${row.id}`}
@@ -309,7 +315,7 @@ const SalaryPaymentSelectionModal = ({
             <ButtonLoading
               onClick={handleSubmit}
               buttonLoading={loading}
-              disabled={loading || selectedSummary.count === 0 || hasInvalidSelection}
+              disabled={loading || hasInvalidSelection}
               label="Pay Selected"
               className="whitespace-nowrap bg-emerald-600 px-4 py-2 hover:bg-emerald-700"
             />
