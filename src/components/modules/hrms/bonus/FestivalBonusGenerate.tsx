@@ -9,6 +9,7 @@ import { fetchEmployeeSettings } from "../employee/employeeSlice";
 import { festivalBonusGenerate, festivalBonusView } from "./bonusSlice";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import MonthDropdown from "../../../utils/components/MonthDropdown";
 import MultiSelectDropdown from "../../../utils/utils-functions/MultiSelectDropdown";
 import InputElement from "../../../utils/fields/InputElement";
@@ -70,6 +71,10 @@ const FestivalBonusGenerate = ({ user }: any) => {
   const designationLevelOptions = designationLevel.map((item: any) => ({
     value: item.id,
     label: item.name,
+  }));
+  const bonusTitleOptions = BONUS_TEMPLATES.map((item) => ({
+    id: item.value,
+    name: item.label,
   }));
 
   const resolvedBonusTitle =
@@ -212,7 +217,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
       key: "bonus_amount",
       header: "Bonus Amount",
       headerClass: "text-right",
-      cellClass: "text-right font-semibold text-emerald-700",
+      cellClass: "text-right font-semibold text-blue-600 dark:text-blue-400",
       render: (row: any) => thousandSeparator(row.bonus_amount, 0),
     },
   ];
@@ -223,27 +228,33 @@ const FestivalBonusGenerate = ({ user }: any) => {
       {(loading || searchLoading) && <Loader />}
 
       <div className="space-y-6">
-        <div className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-emerald-50 shadow-sm">
+        <div className="rounded-sm border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="flex flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 shadow-sm">
+              <div className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
                 <FiGift className="h-4 w-4" />
-                Bangladesh HRM
+                HRM Bonus Module
               </div>
-              <h1 className="mt-3 text-2xl font-bold text-slate-900">Festival Bonus Generate</h1>
-              <p className="mt-2 max-w-2xl text-sm text-slate-600">
+              <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">Festival Bonus Generate</h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
+                Generate festival bonus batches based on a fixed percentage of basic salary.
+              </p>
+              <p className="hidden">
+                Basic salary-এর নির্দিষ্ট percentage অনুযায়ী Eid, Boishakh বা special bonus batch তৈরি করুন।
+              </p>
+              <p className="hidden">
                 Basic salary-এর নির্দিষ্ট percentage অনুযায়ী Eid, Boishakh বা special bonus batch তৈরি করুন।
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-sm md:min-w-[320px]">
-              <div className="rounded-xl border border-white/70 bg-white/90 px-4 py-3 shadow-sm">
-                <div className="text-slate-500">Eligible Employees</div>
-                <div className="mt-1 text-2xl font-bold text-slate-900">{totalEmployees}</div>
+              <div className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                <div className="text-slate-500 dark:text-slate-400">Eligible Employees</div>
+                <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{totalEmployees}</div>
               </div>
-              <div className="rounded-xl border border-white/70 bg-white/90 px-4 py-3 shadow-sm">
-                <div className="text-slate-500">Projected Bonus</div>
-                <div className="mt-1 text-2xl font-bold text-emerald-700">
+              <div className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                <div className="text-slate-500 dark:text-slate-400">Projected Bonus</div>
+                <div className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {thousandSeparator(totalBonus, 0)}
                 </div>
               </div>
@@ -251,38 +262,57 @@ const FestivalBonusGenerate = ({ user }: any) => {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Branch</label>
-              <BranchDropdown branches={dropdownData} value={branchId} onChange={(e: any) => setBranchId(e.target.value)} />
+              <div className="mt-1">
+                <label className="mb-0 block text-sm font-medium text-slate-700 dark:text-white">Branch</label>
+              {/* <BranchDropdown branches={dropdownData} value={branchId} onChange={(e: any) => setBranchId(e.target.value)} /> */}
+              <BranchDropdown
+                defaultValue={branchId?.toString()}
+                onChange={(e: any) => {
+                  const value = e.target.value;
+                  setBranchId(value === "" ? "" : Number(value));
+                }}
+                className="w-60 font-medium text-sm p-2 mr-2 "
+                branchDdl={dropdownData}
+              />
+              </div>
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Bonus Month</label>
-              <MonthDropdown
-                id="bonus_month_id"
-                name="bonus_month_id"
-                value={monthId}
-                onChange={handleMonthChange}
+              <div className="mt-1">
+                <label className="ml-2 mb-0 block text-sm font-medium text-slate-700 dark:text-white">Bonus Month</label>
+                <MonthDropdown
+                  id="bonus_month_id"
+                  name="bonus_month_id"
+                  value={monthId}
+                  onChange={handleMonthChange}
+                  className="h-8.5 bg-transparent ml-2 mr-2 min-w-35"
+                />
+              </div>
+            </div>
+            <div>
+              <DropdownCommon
+                id="bonus_title"
+                name="bonus_title"
+                label="Bonus Title"
+                onChange={(e) => setBonusTitle(e.target.value)}
+                value={bonusTitle}
+                className="h-[2.1rem] bg-transparent"
+                data={bonusTitleOptions}
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Bonus Title</label>
-              <select value={bonusTitle} onChange={(e) => setBonusTitle(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none">
-                {BONUS_TEMPLATES.map((item) => (
-                  <option key={item.value} value={item.value}>{item.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Bonus % of Basic</label>
+              <div className="mt-1">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white">Bonus % of Basic</label>
               <InputElement value={bonusPercent} onChange={(e) => setBonusPercent(e.target.value)} type="number" inputMode="decimal" className="w-full" />
+              </div>
             </div>
           </div>
 
           {bonusTitle === "Other" && (
             <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-slate-700">Custom Bonus Title</label>
+              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white">Custom Bonus Title</label>
               <InputElement value={customBonusTitle} onChange={(e) => setCustomBonusTitle(e.target.value)} className="w-full" />
             </div>
           )}
@@ -293,11 +323,11 @@ const FestivalBonusGenerate = ({ user }: any) => {
               <MultiSelectDropdown options={designationLevelOptions} selected={selectedLevels} setSelected={setSelectedLevels} placeholder="All levels" />
             </div>
             <div className="flex items-end">
-              <ButtonLoading onClick={handleSearch} label="Load Employees" icon={<FiSearch className="h-4 w-4" />} className="w-full whitespace-nowrap bg-amber-600 px-5 py-2 hover:bg-amber-700 xl:w-auto" />
+              <ButtonLoading onClick={handleSearch} label="Load Employees" icon={<FiSearch className="h-4 w-4" />} className="w-full whitespace-nowrap bg-blue-600 px-5 py-2 hover:bg-blue-700 xl:w-auto" />
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border border-dashed border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-slate-700">
+          <div className="mt-4 rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
             <span className="font-semibold">{resolvedBonusTitle || "Bonus title"}</span>
             {" | "}Month: <span className="font-semibold">{monthText || "Not selected"}</span>
             {" | "}Rate: <span className="font-semibold">{resolvedPercent.toFixed(2)}%</span>
@@ -307,24 +337,24 @@ const FestivalBonusGenerate = ({ user }: any) => {
         {employees.length > 0 && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <div className="text-sm text-slate-500">Total Basic Salary</div>
-                <div className="mt-2 text-2xl font-bold text-slate-900">{thousandSeparator(totalBasic, 0)}</div>
+              <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <div className="text-sm text-slate-500 dark:text-slate-400">Total Basic Salary</div>
+                <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{thousandSeparator(totalBasic, 0)}</div>
               </div>
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 shadow-sm">
-                <div className="text-sm text-emerald-700">Total Bonus Amount</div>
-                <div className="mt-2 text-2xl font-bold text-emerald-700">{thousandSeparator(totalBonus, 0)}</div>
+              <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <div className="text-sm text-slate-500 dark:text-slate-400">Total Bonus Amount</div>
+                <div className="mt-2 text-2xl font-bold text-blue-600 dark:text-blue-400">{thousandSeparator(totalBonus, 0)}</div>
               </div>
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-sm">
-                <div className="text-sm text-amber-700">Employees in Batch</div>
-                <div className="mt-2 text-2xl font-bold text-amber-700">{totalEmployees}</div>
+              <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <div className="text-sm text-slate-500 dark:text-slate-400">Employees in Batch</div>
+                <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{totalEmployees}</div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
               <Table columns={columns} data={employees} perPage={20} />
               <div className="mt-5 flex justify-end">
-                <ButtonLoading onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus Sheet" icon={<FiSave className="h-4 w-4" />} className="bg-emerald-600 px-5 py-2 hover:bg-emerald-700" />
+                <ButtonLoading onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus Sheet" icon={<FiSave className="h-4 w-4" />} className="bg-blue-600 px-5 py-2 hover:bg-blue-700" />
               </div>
             </div>
           </>
@@ -346,7 +376,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
         loading={saveButtonLoading}
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleGenerate}
-        className="bg-emerald-600 hover:bg-emerald-700"
+        className="bg-blue-600 hover:bg-blue-700"
       />
     </>
   );
