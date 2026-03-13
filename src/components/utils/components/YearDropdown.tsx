@@ -6,6 +6,7 @@ interface Props {
   id?: string;
   label?: string;
   className?: string;
+  value?: string;
   defaultValue?: string;
   onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
@@ -33,6 +34,7 @@ const YearDropdown: React.FC<Props> = ({
   name,
   label,
   className,
+  value,
   defaultValue = "",
   onChange,
 }) => {
@@ -49,6 +51,7 @@ const YearDropdown: React.FC<Props> = ({
       name={name}
       label={label}
       className={className}
+      value={value}
       data={yearData}
       defaultValue={defaultValue}
       onChange={onChange}

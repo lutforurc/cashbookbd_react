@@ -78,6 +78,7 @@ const SalarySheetUpdate = ({ user }: any) => {
   const salary = useSelector((state: any) => state.salary);
 
   const sourceRow = location.state?.row;
+  const returnYearId = location.state?.yearId ? String(location.state.yearId) : "";
   const [rows, setRows] = useState<UpdateRow[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
   const [selectedMonthDays, setSelectedMonthDays] = useState<number>(30);
@@ -85,12 +86,16 @@ const SalarySheetUpdate = ({ user }: any) => {
   useEffect(() => {
     if (!sourceRow) {
       toast.info("No salary sheet selected");
-      navigate(routes.hrms_salary_sheet_list);
+      navigate(routes.hrms_salary_sheet_list, {
+        state: {
+          yearId: returnYearId,
+        },
+      });
       return;
     }
 
     void dispatch(salarySheetPrint(sourceRow)).unwrap();
-  }, [dispatch, navigate, sourceRow]);
+  }, [dispatch, navigate, returnYearId, sourceRow]);
 
   useEffect(() => {
     setSelectedMonthDays(getMonthDaysFromPaymentMonth(sourceRow?.payment_month));
@@ -191,7 +196,11 @@ const SalarySheetUpdate = ({ user }: any) => {
 
       const response = await dispatch(salarySheetUpdate(payload)).unwrap();
       toast.success(response?.message || "Salary sheet updated successfully");
-      navigate(routes.hrms_salary_sheet_list);
+      navigate(routes.hrms_salary_sheet_list, {
+        state: {
+          yearId: returnYearId,
+        },
+      });
     } catch (error: any) {
       toast.error(typeof error === "string" ? error : error?.message || "Salary update failed");
     } finally {
@@ -225,6 +234,7 @@ const SalarySheetUpdate = ({ user }: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: UpdateRow) => (
+        <div className="flex justify-end">
         <InputElement
           id={`working_days_${row.id}`}
           name={`working_days_${row.id}`}
@@ -242,6 +252,7 @@ const SalarySheetUpdate = ({ user }: any) => {
           inputMode="numeric"
           className="w-20 text-right"
         />
+        </div>
       ),
     },
     {
@@ -250,6 +261,7 @@ const SalarySheetUpdate = ({ user }: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: UpdateRow) => (
+        <div className="flex justify-end">
         <InputElement
           id={`basic_salary_${row.id}`}
           name={`basic_salary_${row.id}`}
@@ -259,6 +271,7 @@ const SalarySheetUpdate = ({ user }: any) => {
           className="w-28 text-right"
           disabled={true}
         />
+        </div>
       ),
     },
     {
@@ -267,6 +280,7 @@ const SalarySheetUpdate = ({ user }: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: UpdateRow) => (
+        <div className="flex justify-end">
         <InputElement
           id={`others_allowance_${row.id}`}
           name={`others_allowance_${row.id}`}
@@ -276,6 +290,7 @@ const SalarySheetUpdate = ({ user }: any) => {
           className="w-28 text-right"
           disabled={true}
         />
+        </div>
       ),
     },
     {
@@ -291,14 +306,16 @@ const SalarySheetUpdate = ({ user }: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: UpdateRow) => (
-        <InputElement
-          id={`loan_deduction_${row.id}`}
-          name={`loan_deduction_${row.id}`}
-          value={row.loan_deduction}
-          onChange={(e) => handleInputChange(row.id, "loan_deduction", e.target.value)}
-          type="number"
-          className="w-28 text-right"
-        />
+        <div className="flex justify-end">
+          <InputElement
+            id={`loan_deduction_${row.id}`}
+            name={`loan_deduction_${row.id}`}
+            value={row.loan_deduction}
+            onChange={(e) => handleInputChange(row.id, "loan_deduction", e.target.value)}
+            type="number"
+            className="w-28 text-right"
+          />
+        </div>
       ),
     },
     {
@@ -333,39 +350,45 @@ const SalarySheetUpdate = ({ user }: any) => {
 
         <div className="flex gap-2">
           <ButtonLoading
-            onClick={() => navigate(routes.hrms_salary_sheet_list)}
+            onClick={() =>
+              navigate(routes.hrms_salary_sheet_list, {
+                state: {
+                  yearId: returnYearId,
+                },
+              })
+            }
             label="Back"
-            className="whitespace-nowrap bg-slate-500 hover:bg-slate-600"
+            className="whitespace-nowrap bg-slate-500 hover:bg-slate-600 px-6 py-1"
           />
           <ButtonLoading
             onClick={handleUpdate}
             buttonLoading={saveLoading}
             disabled={saveLoading || rows.length === 0}
             label="Update Salary"
-            className="whitespace-nowrap bg-blue-600 hover:bg-blue-700"
+            className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 px-6 py-1"
           />
         </div>
       </div>
 
       <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-5">
-        <div className="rounded-lg border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
-          <div className="text-xs text-slate-500">Basic</div>
+        <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+          <div className="text-xs dark:text-slate-300 text-slate-700">Basic</div>
           <div className="font-semibold">{thousandSeparator(totals.basic, 0)}</div>
         </div>
-        <div className="rounded-lg border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
-          <div className="text-xs text-slate-500">Allowance</div>
+        <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+          <div className="text-xs dark:text-slate-300 text-slate-700">Allowance</div>
           <div className="font-semibold">{thousandSeparator(totals.allowance, 0)}</div>
         </div>
-        <div className="rounded-lg border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
-          <div className="text-xs text-slate-500">Gross</div>
+        <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+          <div className="text-xs dark:text-slate-300 text-slate-700">Gross</div>
           <div className="font-semibold">{thousandSeparator(totals.gross, 0)}</div>
         </div>
-        <div className="rounded-lg border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
-          <div className="text-xs text-slate-500">Loan</div>
+        <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+          <div className="text-xs dark:text-slate-300 text-slate-700">Loan</div>
           <div className="font-semibold">{thousandSeparator(totals.loan, 0)}</div>
         </div>
-        <div className="rounded-lg border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
-          <div className="text-xs text-slate-500">Net</div>
+        <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+          <div className="text-xs dark:text-slate-300 text-slate-700">Net</div>
           <div className="font-semibold">{thousandSeparator(totals.net, 0)}</div>
         </div>
       </div>

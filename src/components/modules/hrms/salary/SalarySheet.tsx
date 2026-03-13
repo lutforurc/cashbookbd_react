@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { employeeSalaryPaymentFull, fetchSalarySheet } from "../employee/employeeSlice";
 import { toast } from "react-toastify";
@@ -26,6 +26,7 @@ const SalarySheet = ({ user }: any) => {
   const settings = useSelector((state: any) => state.settings);
 
   const dispatch: any = useDispatch();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const [perPage, setPerPage] = useState<number>(10);
@@ -44,6 +45,7 @@ const SalarySheet = ({ user }: any) => {
   const [loading, setLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedSheetRow, setSelectedSheetRow] = useState<any>(null);
+  const restoredYearId = location.state?.yearId ? String(location.state.yearId) : "";
 
   useEffect(() => {
     setMeta(salary?.salarySheet?.meta || []);
@@ -54,6 +56,13 @@ const SalarySheet = ({ user }: any) => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user?.branch_id);
   }, []);
+
+  useEffect(() => {
+    if (restoredYearId) {
+      setYearId(restoredYearId);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, navigate, restoredYearId]);
 
   useEffect(() => {
     if (yearId === "") return;
@@ -120,6 +129,7 @@ const SalarySheet = ({ user }: any) => {
       navigate(routes.hrms_salary_sheet_update, {
         state: {
           row,
+          yearId,
         },
       });
     }
@@ -194,7 +204,7 @@ const SalarySheet = ({ user }: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) => {
-        const dueAmount = Number(row.net_salary || 0) - Number(row.payment_amount || 0);
+      const dueAmount = Number(row.net_salary || 0) - Number(row.payment_amount || 0);
 
         return (
           <>
@@ -208,7 +218,7 @@ const SalarySheet = ({ user }: any) => {
                   e.target.value = "";
                   void handleActionChange(row, value);
                 }}
-                className="min-w-28 rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                className="min-w-28 border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               >
                 <option value="">Select</option>
                 <option value="update">Update</option>
@@ -307,6 +317,7 @@ const SalarySheet = ({ user }: any) => {
             <YearDropdown
               id="year_id"
               name="year_id"
+              value={yearId}
               className="h-[2.3rem] bg-transparent min-w-35"
               onChange={handleOnYearChange}
             />
