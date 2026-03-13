@@ -949,6 +949,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/category/edit' ||
                     pathname === '/product/product-list' ||
                     pathname === '/brand/brand-list' ||
+                    pathname === routes.product_unit_list ||
+                    pathname === routes.product_unit_create ||
+                    pathname.includes('/product-unit/unit-edit/') ||
                     pathname === '/product/edit' ||
                     pathname.includes('forms')
                   }
@@ -964,6 +967,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           ${(
                             pathname === '/product/product-list' ||
                             pathname === '/brand/brand-list' ||
+                            pathname === routes.product_unit_list ||
+                            pathname === routes.product_unit_create ||
+                            pathname.includes('/product-unit/unit-edit/') ||
                             pathname === '/category/category-list') &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -1019,6 +1025,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 }
                               >
                                 Product List
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'products.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_unit_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product Unit
                               </NavLink>
                             </li>
                           )}

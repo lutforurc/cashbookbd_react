@@ -111,6 +111,11 @@ const ROUTES = {
   brand_list: '/brand/brand-list',
   brand_create: '/brand/brand-create',
 
+  // Product Unit Route
+  product_unit_list: '/product-unit/unit-list',
+  product_unit_create: '/product-unit/unit-create',
+  product_unit_edit: '/product-unit/unit-edit/:id',
+
   // Category Route
   category_list: '/category/category-list',
   category_create: '/category/create',

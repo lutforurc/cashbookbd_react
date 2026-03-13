@@ -102,6 +102,8 @@ import AddEditUnitChargeType from './components/modules/real-estate/units/AddEdi
 import ChargeTypeList from './components/modules/real-estate/charge-types/ChargeTypeList';
 import AddBranding from './components/modules/product/brand/AddBranding';
 import Brands from './components/modules/product/brand/Brands';
+import AddProductUnit from './components/modules/product/unit/AddProductUnit';
+import ProductUnits from './components/modules/product/unit/ProductUnits';
 import EditCustomerSupplier from './components/modules/customer-supplier/EditCustomerSupplier';
 import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
 import RequirePermission from "./components/auth/RequirePermission";
@@ -241,6 +243,9 @@ function App() {
 
             <Route path={routes.brand_create} element={<AddBranding />} />
             <Route path={routes.brand_list} element={<Brands />} />
+            <Route path={routes.product_unit_list} element={<ProductUnits />} />
+            <Route path={routes.product_unit_create} element={<AddProductUnit />} />
+            <Route path={routes.product_unit_edit} element={<AddProductUnit />} />
 
             {/* Reports */}
             <Route path={routes.report_date_wise_total} element={<DateWiseData user={me} />} />

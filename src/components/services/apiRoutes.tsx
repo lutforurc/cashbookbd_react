@@ -285,6 +285,13 @@ export const API_BRAND_SAVE_URL = `${API_BASE_URL}/product/brand/store`;
 export const API_BRAND_EDIT_URL = `${API_BASE_URL}/product/brand/edit`;
 export const API_BRAND_UPDATE_URL = `${API_BASE_URL}/product/brand/update`;
 export const API_BRAND_DDL_URL = `${API_BASE_URL}/product/brand/ddl`;
+
+// Product Unit Route
+export const API_PRODUCT_UNIT_LIST_URL = `${API_BASE_URL}/product/unit/list`;
+export const API_PRODUCT_UNIT_SAVE_URL = `${API_BASE_URL}/product/unit/store`;
+export const API_PRODUCT_UNIT_EDIT_URL = `${API_BASE_URL}/product/unit/edit`;
+export const API_PRODUCT_UNIT_UPDATE_URL = `${API_BASE_URL}/product/unit/update`;
+export const API_PRODUCT_UNIT_DDL_URL = `${API_BASE_URL}/product/unit/ddl`;
 // Category Route
 export const API_CATEGORY_DDL_URL = `${API_BASE_URL}/category/category-ddl`;
 export const API_CATEGORY_LIST_URL = `${API_BASE_URL}/category/category-list`;

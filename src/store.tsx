@@ -57,6 +57,7 @@ import realEstateProjects from './components/modules/real-estate/project/project
 import buildingsSlice from './components/modules/real-estate/buildings/buildingsSlice';
 import unitSlice from './components/modules/real-estate/units/unitSlice';
 import brandSlice from './components/modules/product/brand/brandSlice';
+import productUnitSlice from './components/modules/product/unit/unitSlice';
 import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice';
 import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
 import profitLossSlice from './components/modules/reports/profit-loss/profitLossSlice';
@@ -129,6 +130,7 @@ const store = configureStore({
     buildings: buildingsSlice,
     buildingUnits: unitSlice,
     brand: brandSlice,
+    productUnit: productUnitSlice,
     unitSale: unitSaleSlice,
     unitPayments: unitSalePaymentsSlice,
     branchTransfer: branchTransferSlice,
