@@ -235,7 +235,6 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 <FiGift className="h-4 w-4" />
                 HRM Bonus Module
               </div>
-              <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">Festival Bonus Generate</h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
                 Generate festival bonus batches based on a fixed percentage of basic salary.
               </p>
