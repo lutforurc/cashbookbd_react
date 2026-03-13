@@ -227,7 +227,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
       <HelmetTitle title="Bonus Generate" />
       {(loading || searchLoading) && <Loader />}
 
-      <div className="space-y-6">
+      <div className="space-y-2">
         <div className="rounded-sm border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="flex flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
             <div>
@@ -235,7 +235,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 <FiGift className="h-4 w-4" />
                 HRM Bonus Module
               </div>
-              <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
+              <p className="mt-0 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
                 Generate festival bonus batches based on a fixed percentage of basic salary.
               </p>
               <p className="hidden">
@@ -244,6 +244,27 @@ const FestivalBonusGenerate = ({ user }: any) => {
               <p className="hidden">
                 Basic salary-এর নির্দিষ্ট percentage অনুযায়ী Eid, Boishakh বা special bonus batch তৈরি করুন।
               </p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
+                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Bonus % of Basic</label>
+                  <InputElement
+                    value={bonusPercent}
+                    onChange={(e) => setBonusPercent(e.target.value)}
+                    type="number"
+                    inputMode="decimal"
+                    className="w-full h-8.5"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <ButtonLoading
+                    onClick={handleSearch}
+                    label="Load Employees"
+                    icon={<FiSearch className="h-4 w-4" />}
+                    className="w-full whitespace-nowrap h-8.5  xl:w-auto"
+                  />
+                </div>
+              </div>
+
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-sm md:min-w-[320px]">
@@ -294,21 +315,21 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 label="Bonus Title"
                 onChange={(e) => setBonusTitle(e.target.value)}
                 value={bonusTitle}
-                className="h-[2.1rem] bg-transparent"
+                className="h-9 bg-transparent"
                 data={bonusTitleOptions}
               />
             </div>
-
             <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Bonus % of Basic</label>
-              <InputElement
-                value={bonusPercent}
-                onChange={(e) => setBonusPercent(e.target.value)}
-                type="number"
-                inputMode="decimal"
-                className="w-full"
+              <label className="mb-1block text-sm font-medium text-slate-700 dark:text-white">Designation Level</label>
+              <MultiSelectDropdown
+                options={designationLevelOptions}
+                value={selectedLevels}
+                onChange={setSelectedLevels}
+                placeholder="All levels"
+                className="h-8"
               />
             </div>
+
           </div>
 
           {bonusTitle === "Other" && (
@@ -319,24 +340,9 @@ const FestivalBonusGenerate = ({ user }: any) => {
           )}
 
           <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1fr_auto]">
-            <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-white">Designation Level</label>
-              <MultiSelectDropdown
-                options={designationLevelOptions}
-                value={selectedLevels}
-                onChange={setSelectedLevels}
-                placeholder="All levels"
-              />
-            </div>
 
-            <div className="flex items-end">
-              <ButtonLoading
-                onClick={handleSearch}
-                label="Load Employees"
-                icon={<FiSearch className="h-4 w-4" />}
-                className="w-full whitespace-nowrap bg-blue-600 px-5 py-2 hover:bg-blue-700 xl:w-auto"
-              />
-            </div>
+
+
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-3 rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 md:grid-cols-3">

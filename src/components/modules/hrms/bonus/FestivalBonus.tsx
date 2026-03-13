@@ -204,7 +204,7 @@ const FestivalBonus = ({ user }: any) => {
 
       <div className="space-y-6">
         <div className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          <form onSubmit={handleSearch} className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <form onSubmit={handleSearch} className="grid grid-cols-1 gap-2 md:grid-cols-4">
             <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Branch</label>
               <BranchDropdown
