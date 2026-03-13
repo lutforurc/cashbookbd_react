@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { employeeSalaryPaymentFull, fetchSalarySheet } from "../employee/employeeSlice";
 import { toast } from "react-toastify";
@@ -15,9 +14,9 @@ import YearDropdown from "../../../utils/components/YearDropdown";
 import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import SalarySheetPrint from "./SalarySheetPrint";
+import SalaryPaymentSelectionModal from "./SalaryPaymentSelectionModal";
 import { salarySheetPrint } from "./salarySlice";
 import { FiFileText } from "react-icons/fi";
-import ConfirmModal from "../../../utils/components/ConfirmModalProps";
 
 const SalarySheet = ({ user }: any) => {
   const employees = useSelector((state: any) => state.employees);
@@ -26,7 +25,6 @@ const SalarySheet = ({ user }: any) => {
   const settings = useSelector((state: any) => state.settings);
 
   const dispatch: any = useDispatch();
-  const navigate = useNavigate();
 
   const [perPage, setPerPage] = useState<number>(10);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -41,9 +39,9 @@ const SalarySheet = ({ user }: any) => {
   const printRef = useRef<HTMLDivElement>(null);
 
   // ✅ Confirm Modal state
-  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedSheetRow, setSelectedSheetRow] = useState<any>(null);
 
   useEffect(() => {
     setMeta(salary?.salarySheet?.meta || []);
@@ -94,33 +92,19 @@ const SalarySheet = ({ user }: any) => {
     render: (row: any) => row.main_trx?.branch?.name ?? "",
   };
 
-  // ✅ Modal open on click
-  const openRestoreConfirm = (row: any) => {
+  const openPaymentModal = async (row: any) => {
     if (!yearId) {
       toast.info("Please select year");
       return;
     }
-    setSelectedRow(row);
-    setShowRestoreConfirm(true);
-  };
-
-  // ✅ Confirm -> Salary Payment Full
-  const handleRestoreConfirmed = async () => {
-    if (!selectedRow) return;
-    setLoading(true);
 
     try {
-      await dispatch(employeeSalaryPaymentFull({ data: selectedRow })).unwrap();
-      toast.success("Payment completed successfully");
-
-      await dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
-    } catch (err: any) {
-      toast.error(err?.message || "Payment failed");
-      console.error(err);
-    } finally {
-      setLoading(false);
-      setShowRestoreConfirm(false);
-      setSelectedRow(null);
+      await dispatch(salarySheetPrint(row)).unwrap();
+      setSelectedSheetRow(row);
+      setShowPaymentModal(true);
+    } catch (error: any) {
+      console.error("Salary details load error:", error);
+      toast.error(typeof error === "string" ? error : error?.message || "Salary details load failed");
     }
   };
 
@@ -201,10 +185,10 @@ const SalarySheet = ({ user }: any) => {
               <span className="text-green-600">Paid</span>
             ) : (
               <button
-                onClick={() => openRestoreConfirm(row)} // ✅ confirm modal open
+                onClick={() => openPaymentModal(row)}
                 className="text-blue-600 hover:underline"
               >
-                <FiFileText size={18} title="Make payment?" />
+                <FiFileText size={18} title="Open salary payment list" />
               </button>
             )}
           </>
@@ -212,16 +196,6 @@ const SalarySheet = ({ user }: any) => {
       },
     },
   ];
-
-  // (Optional) keeping your old function – not used now (we call payment inside handleRestoreConfirmed)
-  const salaryPaymentDetails = async (row: any) => {
-    try {
-      await dispatch(employeeSalaryPaymentFull({ data: row })).unwrap();
-      dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -239,6 +213,10 @@ const SalarySheet = ({ user }: any) => {
     removeAfterPrint: true,
   });
 
+  const handleOnYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setYearId(e.target.value.toString());
+  };
+
   const handlePrint = async (row: any) => {
     try {
       await dispatch(salarySheetPrint(row)).unwrap();
@@ -249,14 +227,36 @@ const SalarySheet = ({ user }: any) => {
     }
   };
 
-  const handleOnYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setYearId(e.target.value.toString());
-  };
+  const handleSelectedSalaryPayment = async (paymentRows: Array<{ id: number; pay_amount: number }>) => {
+    if (!selectedSheetRow) return;
 
-  const getSelectedDue = () => {
-    const net = Number(selectedRow?.net_salary || 0);
-    const paid = Number(selectedRow?.payment_amount || 0);
-    return net - paid;
+    if (paymentRows.length === 0) {
+      toast.info("Please select at least one employee");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await dispatch(
+        employeeSalaryPaymentFull({
+          data: {
+            ...selectedSheetRow,
+            salary_payment_ids: paymentRows.map((item) => item.id),
+            payment_rows: paymentRows,
+          },
+        })
+      ).unwrap();
+
+      toast.success(response?.message || "Salary payment completed successfully");
+      await dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
+      await dispatch(salarySheetPrint(selectedSheetRow)).unwrap();
+    } catch (error: any) {
+      toast.error(error?.message || "Salary payment failed");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -342,28 +342,17 @@ const SalarySheet = ({ user }: any) => {
           />
         </div>
 
-        {/* ✅ Confirm Modal */}
-        <ConfirmModal
-          show={showRestoreConfirm}
-          title="Confirm Payment"
-          message={
-            <>
-              Proceed with salary payment for this month?
-              <span className="block font-bold mt-1">
-                {formatPaymentMonth(selectedRow?.payment_month)}
-              </span>
-              <span className="block mt-1">
-                Payment: <b>{thousandSeparator(getSelectedDue(), 0)}</b>
-              </span>
-            </>
-          }
+        <SalaryPaymentSelectionModal
+          open={showPaymentModal}
           loading={loading}
-          onCancel={() => {
-            setShowRestoreConfirm(false);
-            setSelectedRow(null);
+          rows={tableData}
+          paymentMonth={selectedSheetRow?.payment_month}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setSelectedSheetRow(null);
           }}
-          onConfirm={handleRestoreConfirmed}
-          className="bg-green-600 hover:bg-green-700"
+          onPrint={() => setShouldPrint(true)}
+          onSubmit={handleSelectedSalaryPayment}
         />
       </div>
     </div>
