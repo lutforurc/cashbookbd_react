@@ -128,6 +128,27 @@ const AddCoaL4 = () => {
           </div>
           <div>
             <label className={fieldLabelClass}>
+              Reporting To<span className="text-red-500">*</span>
+            </label>
+            <DdlMultiline
+              id="reporting_to"
+              name="reporting_to"
+              acType="L4"
+              placeholder="Select Reporting To"
+              value={
+                formData.reporting_to
+                  ? {
+                    value: formData.reporting_to,
+                    label: formData.reporting_to_label || formData.reporting_to,
+                  }
+                  : null
+              }
+              onSelect={handleSelect('reporting_to', 'reporting_to_label')}
+              className="text-sm"
+            />
+          </div>
+          <div>
+            <label className={fieldLabelClass}>
               Chart of Accounts (Level-4) <span className="text-red-500">*</span>
             </label>
             <InputElement
@@ -145,13 +166,13 @@ const AddCoaL4 = () => {
               type="submit"
               label="SAVE"
               buttonLoading={buttonLoading}
-              className="h-6 bg-[#3a4a59] px-3 !text-[10px] font-semibold uppercase tracking-wide hover:bg-[#4b637b]"
+              className="px-4 h-6 min-w-30"
             />
             <ButtonLoading
               type="button"
-              // label={"Back"}
+              label={"Back"}
               onClick={() => navigate(-1)}
-              className="inline-flex h-6 w-8 items-center justify-center bg-[#10a2e6] text-white hover:bg-[#0d8dca]"
+              className="px-4 h-6 min-w-30"
               icon={<FiArrowLeft className="text-sm" />}
             />
 
