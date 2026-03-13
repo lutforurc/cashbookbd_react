@@ -153,11 +153,11 @@ const bonusSlice = createSlice({
       .addCase(fetchFestivalBonusSheet.fulfilled, (state, action) => {
         state.loading = false;
         state.bonusSheet = action.payload;
-        state.message = action.payload?.message || "Festival bonus sheet loaded";
+        state.message = action.payload?.message || "Bonus sheet loaded";
       })
       .addCase(fetchFestivalBonusSheet.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Failed to fetch festival bonus sheet";
+        state.error = action.payload || "Failed to fetch bonus sheet";
       })
       .addCase(festivalBonusSheetPrint.pending, (state) => {
         state.loading = true;
@@ -169,7 +169,7 @@ const bonusSlice = createSlice({
       })
       .addCase(festivalBonusSheetPrint.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Failed to print festival bonus sheet";
+        state.error = action.payload || "Failed to print bonus sheet";
       })
       .addCase(festivalBonusPayment.pending, (state) => {
         state.loading = true;

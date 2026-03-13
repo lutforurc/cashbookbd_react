@@ -85,7 +85,7 @@ const FestivalBonus = ({ user }: any) => {
 
   const handlePrintAction = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: "Festival Bonus Sheet",
+    documentTitle: "Bonus Sheet",
     removeAfterPrint: true,
   });
 
@@ -199,7 +199,7 @@ const FestivalBonus = ({ user }: any) => {
 
   return (
     <>
-      <HelmetTitle title="Festival Bonus Reports" />
+      <HelmetTitle title="Bonus Reports" />
       {loading && <Loader />}
 
       <div className="space-y-6">

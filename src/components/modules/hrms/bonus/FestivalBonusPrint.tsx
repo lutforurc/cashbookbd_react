@@ -65,7 +65,7 @@ const getMeta = (meta?: string | any) => {
 const sum = (arr: number[]) => arr.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
 
 const FestivalBonusPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ rows, meta, title = "Festival Bonus Sheet", rowsPerPage = 8, fontSize = 10, vr_no, vr_date }, ref) => {
+  ({ rows, meta, title = "Bonus Sheet", rowsPerPage = 8, fontSize = 10, vr_no, vr_date }, ref) => {
     const safeRows = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(safeRows, rowsPerPage);
     const fs = fontSize;
