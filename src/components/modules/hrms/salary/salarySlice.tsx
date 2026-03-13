@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
-import { API_SALARY_GENERATE_URL, API_SALARY_SHEET_PRINT_URL, API_SALARY_VIEW_URL } from "../../../services/apiRoutes";
+import { API_SALARY_GENERATE_URL, API_SALARY_SHEET_PRINT_URL, API_SALARY_SHEET_UPDATE_URL, API_SALARY_VIEW_URL } from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
 
@@ -149,6 +149,28 @@ export const salaryGenerate = createAsyncThunk<any, SalaryGenerateRequest, { rej
 }
 );
 
+export const salarySheetUpdate = createAsyncThunk<any, any, { rejectValue: string }>(
+  "salary/salarySheetUpdate",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await httpService.post(API_SALARY_SHEET_UPDATE_URL, payload);
+
+      if (res.data?.success === true) {
+        return res.data;
+      }
+
+      return rejectWithValue(res.data?.message || "Salary update failed");
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to update salary sheet"
+      );
+    }
+  }
+);
+
 
 
 /* ================= SLICE ================= */
@@ -216,6 +238,21 @@ const salarySlice = createSlice({
         state.loading = false;
         state.error =
           action.payload || "Failed to generate salary";
+      })
+      .addCase(salarySheetUpdate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(salarySheetUpdate.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message =
+          action.payload?.message || "Salary sheet updated successfully";
+      })
+      .addCase(salarySheetUpdate.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload || "Failed to update salary sheet";
       });
   },
 });

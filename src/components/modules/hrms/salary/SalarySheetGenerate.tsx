@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FiSave, FiPrinter, FiTrash2, FiSearch } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
@@ -39,6 +40,7 @@ interface SalaryRow {
 /* ================= COMPONENT ================= */
 const SalarySheetGenerate = ({ user }: any) => {
   const dispatch = useDispatch<any>();
+  const location = useLocation();
 
   const { loading } = useSelector((state: any) => state.salary);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -61,12 +63,31 @@ const SalarySheetGenerate = ({ user }: any) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [designationLevels, setDesignationLevels] = useState<any[]>([]);
   const roundUpToNearestTen = (value: number) => Math.ceil(value / 10) * 10;
+  const updateContext = location.state as
+    | {
+        fromSalarySheet?: boolean;
+        branchId?: string | number;
+        monthId?: string;
+      }
+    | undefined;
 
   /* ================= INIT ================= */
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(fetchEmployeeSettings());
   }, [dispatch, user]);
+
+  useEffect(() => {
+    if (!updateContext?.fromSalarySheet) return;
+
+    if (updateContext.branchId !== undefined) {
+      setBranchId(updateContext.branchId);
+    }
+
+    if (updateContext.monthId) {
+      setMonthId(updateContext.monthId);
+    }
+  }, [updateContext]);
 
   useEffect(() => {
     setDesignationLevel(
@@ -134,6 +155,13 @@ const SalarySheetGenerate = ({ user }: any) => {
       setSearchLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!updateContext?.fromSalarySheet) return;
+    if (!monthId) return;
+
+    void handleSearchButton();
+  }, [monthId]);
 
   /* ================= HANDLERS ================= */
   const handleInputChange = (id: number, field: keyof SalaryRow, value: string) => {
@@ -438,6 +466,7 @@ const SalarySheetGenerate = ({ user }: any) => {
             <MonthDropdown
               id="month_id"
               name="month_id"
+              value={monthId}
               className="h-[2.3rem] bg-transparent ml-2 mr-2 min-w-35"
               onChange={handleOnMonthChange}
             />

@@ -437,6 +437,7 @@ export const API_SALARY_VIEW_URL = `${API_BASE_URL}/hrms/salary-view`;
 export const API_SALARY_GENERATE_URL = `${API_BASE_URL}/hrms/salary-generate`;
 export const API_SALARY_SHEET_URL = `${API_BASE_URL}/hrms/salary-sheet`;
 export const API_SALARY_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/salary-sheet-print`;
+export const API_SALARY_SHEET_UPDATE_URL = `${API_BASE_URL}/hrms/salary-sheet-update`;
 
 
 // Real Estate Area url

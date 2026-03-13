@@ -207,6 +207,7 @@ const ROUTES = {
   
   hrms_salary_sheet_list: '/hrms/salary-sheet',
   hrms_salary_generate: '/hrms/salary/salary-generate',
+  hrms_salary_sheet_update: '/hrms/salary-sheet/update',
 
   item_chart: '/item/item-chart',
 

@@ -86,6 +86,7 @@ import Employees from './components/modules/hrms/employee/Employees';
 import EmployeeEdit from './components/modules/hrms/employee/EmployeeEdit';
 import SalarySheetGenerate from './components/modules/hrms/salary/SalarySheetGenerate';
 import SalarySheet from './components/modules/hrms/salary/SalarySheet';
+import SalarySheetUpdate from './components/modules/hrms/salary/SalarySheetUpdate';
 import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
 import ChangeList from './components/modules/history/ChangeList';
 import AddEditProject from './components/modules/real-estate/project/AddEditProject';
@@ -330,6 +331,7 @@ function App() {
             <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
             <Route path={routes.hrms_employee_list} element={<Employees user={me} />} />
             <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
+            <Route path={routes.hrms_salary_sheet_update} element={<SalarySheetUpdate user={me} />} />
             <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
 
 

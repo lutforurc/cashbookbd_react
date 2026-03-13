@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { employeeSalaryPaymentFull, fetchSalarySheet } from "../employee/employeeSlice";
 import { toast } from "react-toastify";
@@ -16,7 +17,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import SalarySheetPrint from "./SalarySheetPrint";
 import SalaryPaymentSelectionModal from "./SalaryPaymentSelectionModal";
 import { salarySheetPrint } from "./salarySlice";
-import { FiFileText } from "react-icons/fi";
+import routes from "../../../services/appRoutes";
 
 const SalarySheet = ({ user }: any) => {
   const employees = useSelector((state: any) => state.employees);
@@ -25,6 +26,7 @@ const SalarySheet = ({ user }: any) => {
   const settings = useSelector((state: any) => state.settings);
 
   const dispatch: any = useDispatch();
+  const navigate = useNavigate();
 
   const [perPage, setPerPage] = useState<number>(10);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -108,6 +110,21 @@ const SalarySheet = ({ user }: any) => {
     }
   };
 
+  const handleActionChange = async (row: any, action: string) => {
+    if (action === "payment") {
+      await openPaymentModal(row);
+      return;
+    }
+
+    if (action === "update") {
+      navigate(routes.hrms_salary_sheet_update, {
+        state: {
+          row,
+        },
+      });
+    }
+  };
+
   const columns = [
     {
       key: "serial_no",
@@ -184,12 +201,19 @@ const SalarySheet = ({ user }: any) => {
             {dueAmount === 0 ? (
               <span className="text-green-600">Paid</span>
             ) : (
-              <button
-                onClick={() => openPaymentModal(row)}
-                className="text-blue-600 hover:underline"
+              <select
+                defaultValue=""
+                onChange={(e) => {
+                  const value = e.target.value;
+                  e.target.value = "";
+                  void handleActionChange(row, value);
+                }}
+                className="min-w-28 rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               >
-                <FiFileText size={18} title="Open salary payment list" />
-              </button>
+                <option value="">Select</option>
+                <option value="update">Update</option>
+                <option value="payment">Payment</option>
+              </select>
             )}
           </>
         );
