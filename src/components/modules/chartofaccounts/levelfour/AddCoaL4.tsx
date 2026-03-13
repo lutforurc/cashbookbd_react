@@ -16,8 +16,6 @@ type SelectOption = {
 };
 
 const fieldLabelClass = 'mb-2 text-[12px] font-semibold text-black dark:text-white';
-const underlineInputClass =
-  '!rounded-none !border-0 !border-b !border-gray-300 !bg-transparent !px-0 !py-1 text-sm focus:!border-blue-500 dark:!border-gray-600';
 
 const AddCoaL4 = () => {
   const navigate = useNavigate();
@@ -104,7 +102,7 @@ const AddCoaL4 = () => {
     <div>
       <HelmetTitle title="New Chart of Accounts (L-4)" />
 
-      <div className="mx-auto max-w-4xl rounded-sm border border-gray-300 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+      <div className="mx-auto max-w-4xl rounded-sm border border-gray-300  p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <h1 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-100">
           New Chart of Accounts (L-4)
         </h1>
@@ -141,9 +139,9 @@ const AddCoaL4 = () => {
               value={
                 formData.reporting_to
                   ? {
-                      value: formData.reporting_to,
-                      label: formData.reporting_to_label || formData.reporting_to,
-                    }
+                    value: formData.reporting_to,
+                    label: formData.reporting_to_label || formData.reporting_to,
+                  }
                   : null
               }
               onSelect={handleSelect('reporting_to', 'reporting_to_label')}
@@ -160,8 +158,8 @@ const AddCoaL4 = () => {
               name="sku_code"
               value={formData.sku_code}
               onChange={handleInputChange('sku_code')}
-              placeholder=""
-              className={underlineInputClass}
+              placeholder="Enter SKU Code"
+              className={""}
             />
           </div>
 
@@ -174,8 +172,8 @@ const AddCoaL4 = () => {
               name="name"
               value={formData.name}
               onChange={handleInputChange('name')}
-              placeholder=""
-              className={underlineInputClass}
+              placeholder="Chart of Accounts (Level-4)"
+              className={''}
             />
           </div>
 
@@ -193,7 +191,7 @@ const AddCoaL4 = () => {
               className="inline-flex h-6 w-8 items-center justify-center bg-[#10a2e6] text-white hover:bg-[#0d8dca]"
               icon={<FiArrowLeft className="text-sm" />}
             />
-              
+
           </div>
         </form>
       </div>
