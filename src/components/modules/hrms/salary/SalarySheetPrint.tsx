@@ -128,12 +128,6 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
 
     const metaInfo = getMeta(meta);
 
-
-    console.log('====================================');
-    console.log("rows", rows);
-    console.log('====================================');
-
-
     return (
       <div ref={ref} className="print-root text-gray-900">
         <PrintStyles />
@@ -256,8 +250,17 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs, textAlign: 'right', fontWeight: 600 }}>
                           {thousandSeparator(row.payment_amount ?? 0, 0)}
                         </td>
-                        <td style={{ fontSize: fs, textAlign: 'center' }}>
-                          {row.vr_no}</td>
+	                        <td style={{ fontSize: fs, textAlign: 'center' }}>
+	                          {String(row.vr_no || '')
+	                            .split(',')
+	                            .map((voucher: string) => voucher.trim())
+	                            .filter(Boolean)
+	                            .map((voucher: string, index: number) => (
+	                              <span key={`${voucher}-${index}`} className="block m-0 leading-tight">
+	                                {voucher}
+	                              </span>
+	                            ))}
+	                        </td>
                       </tr>
                     );
                   })}

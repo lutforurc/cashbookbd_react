@@ -160,7 +160,7 @@ const SalaryPaymentSelectionModal = ({
         <div className="mb-4 flex items-start justify-between gap-4  border border-slate-200 bg-white/95 px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/95">
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-              Salary Payment Selection
+              Salary Payment
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
               {paymentMonth
