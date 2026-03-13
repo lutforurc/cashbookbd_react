@@ -213,6 +213,8 @@ const ROUTES = {
   hrms_salary_sheet_list: '/hrms/salary-sheet',
   hrms_salary_generate: '/hrms/salary/salary-generate',
   hrms_salary_sheet_update: '/hrms/salary-sheet/update',
+  hrms_festival_bonus_generate: '/hrms/festival-bonus/generate',
+  hrms_festival_bonus_list: '/hrms/festival-bonus',
 
   item_chart: '/item/item-chart',
 

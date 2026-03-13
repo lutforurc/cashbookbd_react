@@ -51,6 +51,7 @@ import realEstateArea from './components/modules/real-estate/area/projectAreaSli
 import voucherSettings from './components/modules/vr_settings/voucherSettingsSlice';
 import historySlice from './components/modules/history/historySlice';
 import salarySlice from './components/modules/hrms/salary/salarySlice';
+import festivalBonusSlice from './components/modules/hrms/bonus/bonusSlice';
 import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice'; 
 import flatSlice from './components/modules/real-estate/building-flat/flatSlice'; 
 import realEstateProjects from './components/modules/real-estate/project/projectSlice';
@@ -124,6 +125,7 @@ const store = configureStore({
     voucherSettings: voucherSettings,
     history: historySlice,
     salary: salarySlice,
+    festivalBonus: festivalBonusSlice,
     employeeLoan: employeeLoanSlice, 
     realEstateProjects: realEstateProjects, 
     flats: flatSlice, 

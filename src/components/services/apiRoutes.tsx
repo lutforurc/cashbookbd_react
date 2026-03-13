@@ -446,6 +446,11 @@ export const API_SALARY_SHEET_URL = `${API_BASE_URL}/hrms/salary-sheet`;
 export const API_SALARY_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/salary-sheet-print`;
 export const API_SALARY_SHEET_UPDATE_URL = `${API_BASE_URL}/hrms/salary-sheet-update`;
 export const API_SALARY_SHEET_ROW_DELETE_URL = `${API_BASE_URL}/hrms/salary-sheet-row-delete`;
+export const API_FESTIVAL_BONUS_VIEW_URL = `${API_BASE_URL}/hrms/festival-bonus-view`;
+export const API_FESTIVAL_BONUS_GENERATE_URL = `${API_BASE_URL}/hrms/festival-bonus-generate`;
+export const API_FESTIVAL_BONUS_SHEET_URL = `${API_BASE_URL}/hrms/festival-bonus-sheet`;
+export const API_FESTIVAL_BONUS_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/festival-bonus-sheet-print`;
+export const API_FESTIVAL_BONUS_PAYMENT_URL = `${API_BASE_URL}/hrms/festival-bonus-payment`;
 
 
 // Real Estate Area url
