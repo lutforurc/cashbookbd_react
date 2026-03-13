@@ -119,7 +119,7 @@ const Product = (user: any) => {
   useEffect(() => {
     if (!product?.data) return;
 
-    const flatRows = normalizeProductRows(product);
+    const flatRows = normalizeProductRows({ data: product.data });
     const grouped = buildCategoryWiseRows(flatRows);
     setTableData(grouped);
 
@@ -131,7 +131,7 @@ const Product = (user: any) => {
       const total = product?.data?.total ?? 0;
       setTotalPages(Math.ceil(total / perPage));
     }
-  }, [product, perPage]);
+  }, [product?.data, perPage]);
 
   /* ================= HANDLERS ================= */
   const handleSearchButton = () => {
@@ -187,7 +187,7 @@ const Product = (user: any) => {
     if (!edited) return false;
 
     const qty0 = row.qty ?? row.openingbalance ?? '';
-    const rate0 = row.rate ?? '';
+    const rate0 = row.rate ?? row.purchase ?? '';
     const serial0 = row.serial_no ?? '';
 
     const qty1 = edited.qty ?? qty0 ?? '';
@@ -212,7 +212,7 @@ const Product = (user: any) => {
       product_id: row.product_id,
       branch_id: user.user.branch_id,
       qty: edited.qty ?? row.qty ?? row.openingbalance ?? 0,
-      rate: edited.rate ?? row.rate ?? 0,
+      rate: edited.rate ?? row.rate ?? row.purchase ?? 0,
       serial_no: edited.serial_no ?? row.serial_no ?? '',
     };
 
@@ -223,6 +223,21 @@ const Product = (user: any) => {
 
       if (result?.success && result?.message) {
         toast.success(result.message);
+
+        setTableData((prev) =>
+          prev.map((item) => {
+            if (isGroupRow(item) || item.product_id !== row.product_id) return item;
+
+            return {
+              ...item,
+              qty: payload.qty,
+              openingbalance: payload.qty,
+              rate: payload.rate,
+              purchase: payload.rate,
+              serial_no: payload.serial_no,
+            };
+          })
+        );
 
         // ✅ save হলে draft clear
         setEditedRows((prev) => {
@@ -312,13 +327,13 @@ const Product = (user: any) => {
       headerClass: 'text-center',
       cellClass: 'text-right',
       render: (row: any) => {
-        if (isGroupRow(row)) return '';
+        if (isGroupRow(row)) return ''; 
         return (
           <InputElement
             type="number"
             placeholder="Rate"
-            className="text-right w-24"
-            value={editedRows[row.product_id]?.rate ?? row.rate ?? ''}
+            className="text-right w-24" 
+            value={editedRows[row.product_id]?.rate ?? row.purchase ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'rate', e.target.value)}
           // ✅ onBlur removed (auto-save বন্ধ)
           />
