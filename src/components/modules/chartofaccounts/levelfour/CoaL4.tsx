@@ -10,6 +10,7 @@ import Loader from '../../../../common/Loader';
 import { getCoal4, getCoal4Ddl } from './coal4Sliders';
 import SearchInput from '../../../utils/fields/SearchInput';
 import Link from '../../../utils/others/Link';
+import routes from '../../../services/appRoutes';
 
 const CoaL4 = () => {
     const coal4 = useSelector((state) => state.coal4);
@@ -128,7 +129,7 @@ const CoaL4 = () => {
                         className="whitespace-nowrap"
                     />
                 </div>
-                <Link to="/category/create" className="text-nowrap hidden">
+                <Link to={routes.coal4_add} className="text-nowrap">
                     New COA L4
                 </Link>
             </div>

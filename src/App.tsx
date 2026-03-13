@@ -25,6 +25,7 @@ import EditCategory from './components/modules/category/EditCategory';
 import CashBook from './components/modules/reports/cashbook/CashBook';
 import Ledger from './components/modules/reports/ledger/Ledger';
 import CoaL4 from './components/modules/chartofaccounts/levelfour/CoaL4';
+import AddCoaL4 from './components/modules/chartofaccounts/levelfour/AddCoaL4';
 import CoaL3 from './components/modules/chartofaccounts/levelthree/CoaL3';
 import CoaL2 from './components/modules/chartofaccounts/leveltwo/CoaL2';
 import CoaL1 from './components/modules/chartofaccounts/levelone/CoaL1';
@@ -172,6 +173,7 @@ function App() {
             <Route path={routes.coal2_list} element={<CoaL2 />} />
             <Route path={routes.coal3_list} element={<CoaL3 />} />
             <Route path={routes.coal4_list} element={<CoaL4 />} />
+            <Route path={routes.coal4_add} element={<AddCoaL4 />} />
             <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
             <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
             <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
