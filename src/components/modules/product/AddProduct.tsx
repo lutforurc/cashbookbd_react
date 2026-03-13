@@ -38,6 +38,7 @@ const AddProduct = () => {
   const category = useSelector((state) => state.category);
   const product = useSelector((state) => state.product);
   const brand = useSelector((state) => state.brand);
+  const settings = useSelector((state) => state.settings);
   const categoryData = useSelector((state) => state.category);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -241,6 +242,11 @@ const AddProduct = () => {
   }));
 };
 
+console.log('====================================');
+console.log("category control", settings?.data?.branch?.warranty_controll);
+console.log('====================================');
+
+
   return (
     <div>
       <HelmetTitle title={formData?.id ? 'Edit Product' : 'Add New Product'} />
@@ -318,7 +324,7 @@ const AddProduct = () => {
           onChange={handleOnChange}
         />
 
-        {category?.data?.branch?.warranty_controll ? (
+        {settings?.data?.branch?.warranty_controll ? (
           <>
             <DropdownCommon
               id="warranty_type"
