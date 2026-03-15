@@ -254,7 +254,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                   data?.installments &&
                   data.installments.length > 0 && (
                     <div className="ml-10 w-[260px] overflow-hidden avoid-break">
-                      <span className='text-[14px] ml-7 '>Installment Details</span>
+                      <div><span className='text-[14px] flex justify-center underline'>Installment Details</span></div>
                       <div
                         className="grid grid-cols-[36px_96px_96px] border-b border-black bg-gray-50 px-3 py-1 font-semibold"
                         style={{ fontSize: fs - 0.5 }}
