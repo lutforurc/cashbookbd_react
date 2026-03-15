@@ -37,7 +37,6 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
       </div>
     );
   }
-
   const pages = chunkRows(details, rowsPerPage);
 
   const transactions = data?.acc_transaction_master || [];
@@ -188,32 +187,32 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                     >
 
                       {/* {row.serial_no && ( */}
-                        <div
-                          className="text-black"
-                          style={{ fontSize: fs - 1, lineHeight: 1.5 }}
-                        >
-                          {/* Category (optional) */}
-                          {row.product?.category?.name && (
-                            <span>{row.product.category.name}</span>
+                      <div
+                        className="text-black"
+                        style={{ fontSize: fs - 1, lineHeight: 1.5 }}
+                      >
+                        {/* Category (optional) */}
+                        {row.product?.category?.name && (
+                          <span>{row.product.category.name}</span>
+                        )}
+
+                        {row.product?.category?.name && <br />}
+
+                        {/* Brand + Product Name */}
+                        <span>
+                          {row.product?.brand?.name && (
+                            <>{row.product.brand.name} </>
                           )}
+                          {row.product?.name}
+                        </span>
 
-                          {row.product?.category?.name && <br />}
+                        <br />
 
-                          {/* Brand + Product Name */}
-                          <span>
-                            {row.product?.brand?.name && (
-                              <>{row.product.brand.name} </>
-                            )}
-                            {row.product?.name}
-                          </span>
-
-                          <br />
-
-                          {/* Serial */}
-                          { row.serial_no && (
-                            <span>SN: {row.serial_no}</span>
-                          )}
-                        </div>
+                        {/* Serial */}
+                        {row.serial_no && (
+                          <span>SN: {row.serial_no}</span>
+                        )}
+                      </div>
                       {/* )} */}
                     </td>
 
@@ -234,9 +233,24 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
             </tbody>
           </table>
 
+
+
           {/* ================= TOTALS (LAST PAGE ONLY) ================= */}
           {pageIndex === pages.length - 1 && (
-            <div className="mt-3 flex justify-end">
+            <div className="mt-3 flex items-start justify-between gap-4">
+              <div className="flex-1">
+                {data?.sales_master?.vehicle_no && (
+                  <div className="mt-2">
+                    <span
+                      className="inline-block border border-black px-2 py-1 font-semibold"
+                      style={{ fontSize: fs }}
+                    >
+                      Vehicle No: {data?.sales_master?.vehicle_no}
+                    </span>
+                  </div>
+                )}
+              </div>
+
               <table className="border-collapse">
                 <tbody>
                   <tr>
@@ -289,8 +303,6 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                     </td>
                   </tr>
 
-
-
                   {receivedAmount !== 0 && (
                     <tr>
                       <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
@@ -301,7 +313,6 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                       </td>
                     </tr>
                   )}
-
                   <tr>
                     <td className="border-black px-1 py-1 text-right font-bold" style={{ fontSize: fs }}>
                       Due Tk.
@@ -317,7 +328,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
               </table>
             </div>
           )}
-
+          
           {pageIndex === pages.length - 1 &&
             data?.installments &&
             data.installments.length > 0 && (
@@ -349,7 +360,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                   </div>
                 ))}
               </div>
-          )}
+            )}
 
           {/* ================= FOOTER ================= */}
           <div
