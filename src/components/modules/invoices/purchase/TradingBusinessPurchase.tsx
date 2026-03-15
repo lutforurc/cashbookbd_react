@@ -454,9 +454,14 @@ const TradingBusinessPurchase = () => {
     }
 
     dispatch(
-      purchaseStore(formData, function (message) {
+      purchaseStore(formData, function (message, success) {
+ 
         if (message) {
-          toast.error(message);
+          if (success) {
+            toast.success(message);
+          } else {
+            toast.info(message);
+          }
         }
         setTimeout(() => {
           setFormData((prevFormData) => ({
@@ -469,7 +474,7 @@ const TradingBusinessPurchase = () => {
             vehicleNumber: '',  
             products: [],
           }));
-            setStartDate(null); // <-- UI DatePicker reset
+          setStartDate(null); // <-- UI DatePicker reset
           setSaveButtonLoading(false);
         }, 1000);
       }),
