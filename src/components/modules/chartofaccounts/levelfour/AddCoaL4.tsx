@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import httpService from '../../../services/httpService';
-import { API_CHART_OF_ACCOUNTS_L4_URL } from '../../../services/apiRoutes';
+import { API_CHART_OF_ACCOUNTS_L4_STORE_URL, API_CHART_OF_ACCOUNTS_L4_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import ChartOfAccountsL3 from '../../../utils/utils-functions/ChartOfAccountsL3';
+import { useSelector } from 'react-redux';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 
 type SelectOption = {
   value: string | number;
@@ -17,18 +18,47 @@ type SelectOption = {
 };
 
 const fieldLabelClass = 'mb-2 text-[12px] font-semibold text-black dark:text-white';
+const DEFAULT_REPORTING_TO_ID = '3';
 
 const AddCoaL4 = () => {
   const navigate = useNavigate();
   const [buttonLoading, setButtonLoading] = useState(false);
+  const coal4 = useSelector((state: any) => state.coal4);
   const [formData, setFormData] = useState({
     coal3_id: '',
     coal3_label: '',
-    reporting_to: '',
+    reporting_to: DEFAULT_REPORTING_TO_ID,
     reporting_to_label: '',
-    sku_code: '',
     name: '',
   });
+
+  useEffect(() => {
+    const selectedItem = (coal4?.data?.reporttos || []).find(
+      (item: { id: string | number; name: string }) => String(item.id) === DEFAULT_REPORTING_TO_ID,
+    );
+
+    if (!selectedItem) {
+      return;
+    }
+
+    setFormData((prev) => {
+      if (
+        prev.reporting_to === DEFAULT_REPORTING_TO_ID &&
+        prev.reporting_to_label === selectedItem.name
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        reporting_to: prev.reporting_to || DEFAULT_REPORTING_TO_ID,
+        reporting_to_label:
+          prev.reporting_to === DEFAULT_REPORTING_TO_ID || !prev.reporting_to_label
+            ? selectedItem.name
+            : prev.reporting_to_label,
+      };
+    });
+  }, [coal4?.data?.reporttos]);
 
   const handleSelect =
     (field: 'coal3_id' | 'reporting_to', labelField: 'coal3_label' | 'reporting_to_label') =>
@@ -40,7 +70,20 @@ const AddCoaL4 = () => {
         }));
       };
 
-  const handleInputChange = (field: 'sku_code' | 'name') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    const selectedItem = (coal4?.data?.reporttos || []).find(
+      (item: { id: string | number; name: string }) => String(item.id) === value,
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      reporting_to: value,
+      reporting_to_label: selectedItem?.name ?? '',
+    }));
+  };
+
+  const handleInputChange = (field: 'name') => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [field]: e.target.value,
@@ -60,29 +103,24 @@ const AddCoaL4 = () => {
       return;
     }
 
-    if (!formData.sku_code.trim()) {
-      toast.error('SKU Code is required.');
-      return;
-    }
-
     if (!formData.name.trim()) {
       toast.error('Chart of Accounts (Level-4) is required.');
       return;
     }
 
+    const normalizedCode = formData.name.trim();
+
     const payload = {
       coal3_id: formData.coal3_id,
       l3_id: formData.coal3_id,
-      reporting_to: formData.reporting_to || null,
-      parent_id: formData.reporting_to || null,
-      sku_code: formData.sku_code.trim(),
-      code: formData.sku_code.trim(),
+      reporting_to: formData.reporting_to || null,  
+      code: normalizedCode,
       name: formData.name.trim(),
     };
 
     try {
       setButtonLoading(true);
-      const res = await httpService.post(API_CHART_OF_ACCOUNTS_L4_URL, payload);
+      const res = await httpService.post(API_CHART_OF_ACCOUNTS_L4_STORE_URL, payload);
       const data = res?.data;
 
       if (data?.success) {
@@ -128,24 +166,14 @@ const AddCoaL4 = () => {
             />
           </div>
           <div>
-            <label className={fieldLabelClass}>
-              Reporting To<span className="text-red-500">*</span>
-            </label>
-            <DdlMultiline
+            <DropdownCommon
               id="reporting_to"
-              name="reporting_to"
-              acType="L4"
-              placeholder="Select Reporting To"
-              value={
-                formData.reporting_to
-                  ? {
-                    value: formData.reporting_to,
-                    label: formData.reporting_to_label || formData.reporting_to,
-                  }
-                  : null
-              }
-              onSelect={handleSelect('reporting_to', 'reporting_to_label')}
-              className="text-sm"
+              name={'reporting_to'}
+              label="Reporting To"
+              onChange={handleOnSelectChange}
+              value={formData?.reporting_to || ''}
+              className="h-[2.1rem] bg-transparent"
+              data={coal4?.data?.reporttos || []}
             />
           </div>
           <div>
