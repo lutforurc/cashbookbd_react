@@ -250,7 +250,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                   </div>
                 )}
 
-                {/* {pageIndex === pages.length - 1 &&
+                {pageIndex === pages.length - 1 &&
                   data?.installments &&
                   data.installments.length > 0 && (
                     <div className="ml-10 w-[260px] overflow-hidden avoid-break">
@@ -281,7 +281,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                         </div>
                       ))}
                     </div>
-                  )} */}
+                  )}
               </div>
 
               <table className="border-collapse">
@@ -362,7 +362,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
             </div>
           )}
 
-          {pageIndex === pages.length - 1 &&
+          {/* {pageIndex === pages.length - 1 &&
             data?.installments &&
             data.installments.length > 0 && (
               <div className="ml-10 w-[260px] overflow-hidden avoid-break">
@@ -393,7 +393,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                   </div>
                 ))}
               </div>
-            )}
+            )} */}
 
           {/* ================= FOOTER ================= */}
           <div
