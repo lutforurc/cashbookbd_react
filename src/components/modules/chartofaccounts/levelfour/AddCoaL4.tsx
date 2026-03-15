@@ -9,6 +9,7 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import httpService from '../../../services/httpService';
 import { API_CHART_OF_ACCOUNTS_L4_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
+import ChartOfAccountsL3 from '../../../utils/utils-functions/ChartOfAccountsL3';
 
 type SelectOption = {
   value: string | number;
@@ -112,7 +113,7 @@ const AddCoaL4 = () => {
             <label className={fieldLabelClass}>
               Chart of Accounts (Level-3)<span className="text-red-500">*</span>
             </label>
-            <DdlMultiline
+            <ChartOfAccountsL3
               id="coal3_id"
               name="coal3_id"
               acType="L3"
