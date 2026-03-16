@@ -255,6 +255,8 @@ const BalanceSheet = (user: any) => {
       } as any) as any,
     );
 
+
+  
     if (profitLossAction?.meta?.requestStatus === "fulfilled") {
       const closingAmount = getClosingStockAmountFromProfitLoss(
         profitLossAction.payload,
