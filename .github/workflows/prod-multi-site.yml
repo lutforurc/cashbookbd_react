@@ -26,7 +26,8 @@ jobs:
             cashbookbdaccountsstaging,
             cashbookbdaccountseworld,
             cashbookbdaccountskbr,
-            cashbookbdaccountsaft
+            cashbookbdaccountsaft,
+            cashbookbdaccountsemporium
           ]
 
     steps:
@@ -61,6 +62,7 @@ jobs:
             cashbookbdaccountseworld) URL="https://eworld.cashbookbd.com" ;;
             cashbookbdaccountskbr) URL="https://kbr.cashbookbd.com" ;;
             cashbookbdaccountsaft) URL="https://aft.cashbookbd.com" ;;
+            cashbookbdaccountsemporium) URL="https://emporium.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac
 
@@ -115,6 +117,8 @@ jobs:
               echo "dir=/home/cashbookbdaccountskbr/htdocs/accounts.kbr.cashbookbd.com" ;;
             cashbookbdaccountsaft)
               echo "dir=/home/cashbookbdaccountsaft/htdocs/accounts.aft.cashbookbd.com" ;;
+            cashbookbdaccountsemporium)
+              echo "dir=/home/cashbookbdaccountsemporium/htdocs/accounts.emporium.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac >> $GITHUB_OUTPUT
 
