@@ -19,6 +19,7 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
+  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
@@ -34,6 +35,7 @@ import {
 } from './generalSalesSlice';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { SalesType } from '../../../../common/dropdownData';
+import QuickCustomerModal from './QuickCustomerModal';
 
 interface Product {
   id: number;
@@ -63,7 +65,8 @@ const GeneralBusinessSales = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
-    const [salesType, setSalesType] = useState('1');
+  const [salesType, setSalesType] = useState('1');
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
 
   const [permissions, setPermissions] = useState<any>([]);
 
@@ -115,6 +118,14 @@ const GeneralBusinessSales = () => {
       [key]: option.value,
       [accountName]: option.label,
     });
+  };
+
+  const openCustomerModal = () => {
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
   };
 
   const productSelectHandler = (option: any) => {
@@ -427,21 +438,21 @@ const GeneralBusinessSales = () => {
   };
 
   useEffect(() => {
-        if (formData.account == '17') {
-          setFormData((prevState) => ({
-            ...prevState,
-            receivedAmt: 
-              totalAmount > 0
-                ? (totalAmount - prevState.discountAmt).toString()
-                : '0',
-          }));
-        } else {
-          setFormData((prevState) => ({
-            ...prevState,
-            receivedAmt: '',
-          }));
-        }
-      }, [formData.account]);
+    if (formData.account == '17') {
+      setFormData((prevState) => ({
+        ...prevState,
+        receivedAmt:
+          totalAmount > 0
+            ? (totalAmount - prevState.discountAmt).toString()
+            : '0',
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        receivedAmt: '',
+      }));
+    }
+  }, [formData.account]);
 
 
   useEffect(() => {
@@ -477,23 +488,26 @@ const GeneralBusinessSales = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label htmlFor="">Select Customer</label>
+                <div className="flex items-center justify-between gap-2">
+                  <label htmlFor="">Select Customer</label>
+
+                </div>
                 <DdlMultiline
                   onSelect={customerAccountHandler}
                   defaultValue={
                     formData.account
                       ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
-                        }
+                        value: formData.account,
+                        label: formData.accountName, //productData.accountName
+                      }
                       : null
                   }
                   value={
                     formData.account
                       ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
-                        }
+                        value: formData.account,
+                        label: formData.accountName, //productData.accountName
+                      }
                       : null
                   }
                   onKeyDown={(e) => {
@@ -511,16 +525,31 @@ const GeneralBusinessSales = () => {
                   acType={'3'}
                 />
               </div>
-              <InputElement
-                id="vehicleNumber"
-                value={formData.vehicleNumber}
-                name="vehicleNumber"
-                placeholder={'Vehicle Number'}
-                label={'Vehicle Number'}
-                className={'py-1.5 '}
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')} // Pass the next field's ID
-              />
+              <div className="flex gap-2">
+                <div className='mt-6 -ml-2.5 mr-2 '>
+                  <button
+                    type="button"
+                    onClick={openCustomerModal}
+                    title="Add New Supplier"
+                    aria-label="Add New Supplier"
+                    className="inline-flex h-9.5 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                  >
+                    <FiUserPlus className="text-sm" />
+                  </button>
+                </div>
+                <div className='w-full'>
+                  <InputElement
+                    id="vehicleNumber"
+                    value={formData.vehicleNumber}
+                    name="vehicleNumber"
+                    placeholder={'Vehicle Number'}
+                    label={'Vehicle Number'}
+                    className={'py-1.5 '}
+                    onChange={handleOnChange}
+                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')} // Pass the next field's ID
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -578,7 +607,7 @@ const GeneralBusinessSales = () => {
             </div>
             {hasPermission(permissions, 'sales.edit') && (
               <>
-              <div className="mt-2">
+                <div className="mt-2">
                   <DropdownCommon
                     id="saleType"
                     name="saleType"
@@ -588,31 +617,31 @@ const GeneralBusinessSales = () => {
                     className="w-full h-8.5"
                   />
                 </div>
-              <div className="relative mt-2">
-                <div className="w-full ">
-                  <InputOnly
-                    id="search"
-                    value={search}
-                    name="search"
-                    placeholder={'Search Invoice'}
-                    label={''}
-                    className={'py-1 w-full'}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => handleInputKeyDown(e, 'searchInvoice')}
+                <div className="relative mt-2">
+                  <div className="w-full ">
+                    <InputOnly
+                      id="search"
+                      value={search}
+                      name="search"
+                      placeholder={'Search Invoice'}
+                      label={''}
+                      className={'py-1 w-full'}
+                      onChange={(e) => setSearch(e.target.value)}
+                      onKeyDown={(e) => handleInputKeyDown(e, 'searchInvoice')}
+                    />
+                  </div>
+                  <ButtonLoading
+                    id="searchInvoice"
+                    name="searchInvoice"
+                    onClick={searchInvoice}
+                    buttonLoading={buttonLoading}
+                    label=""
+                    className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute right-0 top-0 background-red-500 !pr-2 !pl-2"
+                    icon={
+                      <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
+                    }
                   />
                 </div>
-                <ButtonLoading
-                  id="searchInvoice"
-                  name="searchInvoice"
-                  onClick={searchInvoice}
-                  buttonLoading={buttonLoading}
-                  label=""
-                  className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute right-0 top-0 background-red-500 !pr-2 !pl-2"
-                  icon={
-                    <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
-                  }
-                />
-              </div>
               </>
             )}
           </div>
@@ -629,17 +658,17 @@ const GeneralBusinessSales = () => {
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   onKeyDown={(e) => {
@@ -845,6 +874,17 @@ const GeneralBusinessSales = () => {
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        onCustomerSaved={({ id, name }) => {
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+          }));
+        }}
+      />
     </>
   );
 };

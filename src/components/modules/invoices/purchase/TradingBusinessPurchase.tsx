@@ -21,6 +21,7 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
+  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import dayjs from 'dayjs';
@@ -45,6 +46,7 @@ import {
   handleSelectKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
 import utc from 'dayjs/plugin/utc';
+import QuickCustomerModal from '../sales/QuickCustomerModal';
 interface Product {
   id: number;
   product: number;
@@ -79,6 +81,7 @@ const TradingBusinessPurchase = () => {
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
 
   dayjs.extend(utc); 
       
@@ -138,6 +141,14 @@ const TradingBusinessPurchase = () => {
       [key]: option.value,
       [accountName]: option.label,
     });
+  };
+
+  const openCustomerModal = () => {
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
   };
 
 
@@ -633,9 +644,20 @@ const TradingBusinessPurchase = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label className="text-black dark:text-white" htmlFor="">
-                  Select Supplier
-                </label>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <label className="text-black dark:text-white" htmlFor="">
+                    Select Supplier
+                  </label>
+                  <button
+                    type="button"
+                    onClick={openCustomerModal}
+                    title="Add New Supplier"
+                    aria-label="Add New Supplier"
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                  >
+                    <FiUserPlus className="text-sm" />
+                  </button>
+                </div>
                 <DdlMultiline
                   id="account"
                   name="account"
@@ -1102,6 +1124,19 @@ const TradingBusinessPurchase = () => {
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        entityLabel="Supplier"
+        defaultTypeId="2"
+        onCustomerSaved={({ id, name }) => {
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+          }));
+        }}
+      />
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import Loader from '../../../../common/Loader';
-import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2, FiUserPlus, FiX, } from 'react-icons/fi';
+import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2, FiUserPlus } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
@@ -24,7 +24,6 @@ import { hasPermission } from '../../../utils/permissionChecker';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { SalesType } from '../../../../common/dropdownData';
-import { ClientType } from '../../../utils/fields/DataConstant';
 import {
   electronicsSalesEdit,
   electronicsSalesStore,
@@ -33,10 +32,7 @@ import {
 import { getServiceList } from '../../settings/settingsSlice'; 
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { getDdlArea } from '../../area/areaSlice';
-import DdlDynamicMultiline from '../../../utils/utils-functions/DdlDynamicMultiline';
-import { storeCustomer } from '../../customer-supplier/customerSlice';
-import { getCoal4DdlNext } from '../../chartofaccounts/levelfour/coal4DdlSlicer';
+import QuickCustomerModal from './QuickCustomerModal';
 
 interface Product {
   id: number;
@@ -68,29 +64,10 @@ interface editInstallmentData {
   payments: [];
 }
 
-interface QuickCustomerFormData {
-  name: string;
-  mobile: string;
-  manual_address: string;
-  type_id: string;
-  area_id: string;
-  areaName: string;
-}
-
-interface QuickCustomerOption {
-  value: string;
-  label: string;
-  label_2?: string;
-  label_3?: string;
-  label_4?: string;
-  label_5?: string;
-}
-
 const ElectronicsBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.electronicsSales);
   const settings = useSelector((s: any) => s.settings);
-  const area = useSelector((s: any) => s.area);
   const dispatch = useDispatch();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [updateButtonLoading, setUpdateButtonLoading] = useState(false);
@@ -112,16 +89,6 @@ const ElectronicsBusinessSales = () => {
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [editedInstallments, setEditedInstallments] = useState<editInstallmentData[]>([]);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
-  const [customerModalLoading, setCustomerModalLoading] = useState(false);
-  const [quickCustomerErrors, setQuickCustomerErrors] = useState<Partial<QuickCustomerFormData>>({});
-  const [quickCustomerForm, setQuickCustomerForm] = useState<QuickCustomerFormData>({
-    name: '',
-    mobile: '',
-    manual_address: '',
-    type_id: '1',
-    area_id: '',
-    areaName: '',
-  });
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
@@ -143,26 +110,8 @@ const ElectronicsBusinessSales = () => {
     dispatch(userCurrentBranch());
     dispatch(getServiceList());
     dispatch(getDdlWarehouse());
-    dispatch(getDdlArea());
     setPermissions(settings.data.permissions);
   }, []);
-
-  const formattedAreaData = useMemo(() => {
-    const areaList = Array.isArray(area?.area)
-      ? area.area
-      : Array.isArray(area?.area?.data)
-        ? area.area.data
-        : [];
-
-    return areaList.map((item: any) => ({
-      value: item?.id?.toString() || '',
-      label: item?.name || '',
-      label_2: item?.thana_name || '',
-      label_3: item?.district_name || '',
-      label_4: item?.mobile || '',
-      label_5: item?.manual_address || '',
-    }));
-  }, [area?.area]);
 
 
   useEffect(() => {
@@ -274,133 +223,12 @@ const ElectronicsBusinessSales = () => {
     setInstallmentData({ amount: 0, startDate: null, numberOfInstallments: 0 }); // Reset installment data
   };
 
-  const resetQuickCustomerForm = () => {
-    setQuickCustomerForm({
-      name: '',
-      mobile: '',
-      manual_address: '',
-      type_id: '1',
-      area_id: '',
-      areaName: '',
-    });
-    setQuickCustomerErrors({});
-  };
-
-  const handleQuickCustomerInput = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-    setQuickCustomerForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    setQuickCustomerErrors((prev) => ({
-      ...prev,
-      [name]: '',
-    }));
-  };
-
-  const handleQuickCustomerAreaSelect = (option: QuickCustomerOption | null) => {
-    setQuickCustomerForm((prev) => ({
-      ...prev,
-      area_id: option?.value || '',
-      areaName: option?.label || '',
-    }));
-  };
-
   const openCustomerModal = () => {
-    resetQuickCustomerForm();
     setShowCustomerModal(true);
   };
 
   const closeCustomerModal = () => {
     setShowCustomerModal(false);
-    resetQuickCustomerForm();
-  };
-
-  const validateQuickCustomerForm = () => {
-    const errors: Partial<QuickCustomerFormData> = {};
-
-    if (!quickCustomerForm.name.trim()) {
-      errors.name = 'Customer name is required';
-    }
-    if (!quickCustomerForm.mobile.trim()) {
-      errors.mobile = 'Mobile number is required';
-    }
-    if (!quickCustomerForm.manual_address.trim()) {
-      errors.manual_address = 'Address is required';
-    }
-    if (!quickCustomerForm.type_id) {
-      errors.type_id = 'Customer type is required';
-    }
-
-    setQuickCustomerErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleQuickCustomerSave = async () => {
-    if (!validateQuickCustomerForm()) {
-      toast.info('Please fill the required customer information');
-      return;
-    }
-
-    setCustomerModalLoading(true);
-    try {
-      const payload = {
-        name: quickCustomerForm.name.trim(),
-        mobile: quickCustomerForm.mobile.trim(),
-        manual_address: quickCustomerForm.manual_address.trim(),
-        type_id: quickCustomerForm.type_id,
-        area_id: quickCustomerForm.area_id,
-      };
-
-      const res: any = await dispatch(storeCustomer(payload as any)).unwrap();
-      const customerData = res?.data ?? res?.customer ?? res?.contact ?? null;
-      const customerId =
-        customerData?.id ??
-        customerData?.customer_id ??
-        customerData?.coa_l4_id ??
-        customerData?.value ??
-        null;
-
-      const customerName =
-        customerData?.name ??
-        customerData?.label ??
-        quickCustomerForm.name.trim();
-
-      let resolvedCustomerId = customerId;
-
-      if (!resolvedCustomerId) {
-        const lookupText = quickCustomerForm.mobile.trim() || customerName;
-        const lookupResponse: any = await dispatch(getCoal4DdlNext(lookupText, '3'));
-        const options = Array.isArray(lookupResponse?.payload) ? lookupResponse.payload : [];
-        const matchedCustomer = options.find((item: any) => {
-          const optionLabel = item?.label?.toString().trim().toLowerCase();
-          const optionMobile = item?.label_4?.toString().trim();
-          return (
-            optionLabel === customerName.trim().toLowerCase() ||
-            optionMobile === quickCustomerForm.mobile.trim()
-          );
-        });
-
-        resolvedCustomerId = matchedCustomer?.value ?? null;
-      }
-
-      if (resolvedCustomerId) {
-        setFormData((prev) => ({
-          ...prev,
-          account: resolvedCustomerId.toString(),
-          accountName: customerName,
-        }));
-      }
-
-      toast.success(res?.message || 'Customer saved successfully');
-      closeCustomerModal();
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to save customer');
-    } finally {
-      setCustomerModalLoading(false);
-    }
   };
 
   const handleSalesType = (e: any) => {
@@ -969,14 +797,14 @@ const ElectronicsBusinessSales = () => {
                 <div className="mt-9 ml-0 flex">
                   <div className='mr-2'>
                     <button
-                    type="button"
-                    onClick={openCustomerModal}
-                    title="Add New Customer"
-                    aria-label="Add New Customer"
-                    className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                  >
-                    <FiUserPlus className="text-sm" />
-                  </button>
+                      type="button"
+                      onClick={openCustomerModal}
+                      title="Add New Customer"
+                      aria-label="Add New Customer"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                    >
+                      <FiUserPlus className="text-sm" />
+                    </button>
                   </div>
                   <label className="flex items-center cursor-pointer">
                     <input
@@ -1624,137 +1452,17 @@ const ElectronicsBusinessSales = () => {
           fontSize={Number(fontSize)}
         />
       </div>
-      {showCustomerModal && (
-        <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6">
-          <div className="w-full max-w-2xl rounded-sm bg-white shadow-xl dark:bg-gray-800">
-            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-              <div>
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-                  Add New Customer
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Save customer and select it instantly for this invoice.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={closeCustomerModal}
-                className="rounded-sm p-1 text-gray-500 transition hover:bg-gray-100 hover:text-red-500 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                <FiX className="text-lg" />
-              </button>
-            </div>
-            <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Customer Type
-                </label>
-                <DropdownCommon
-                  id="type_id"
-                  name="type_id"
-                  onChange={handleQuickCustomerInput}
-                  value={quickCustomerForm.type_id}
-                  className="h-[2.4rem] bg-transparent"
-                  data={ClientType}
-                />
-                {quickCustomerErrors.type_id && (
-                  <p className="mt-1 text-xs text-red-500">{quickCustomerErrors.type_id}</p>
-                )}
-              </div>
-              <div>
-                <InputElement
-                  id="quick_customer_name"
-                  name="name"
-                  label="Customer Name"
-                  placeholder="Enter customer name"
-                  value={quickCustomerForm.name}
-                  onChange={handleQuickCustomerInput}
-                />
-                {quickCustomerErrors.name && (
-                  <p className="mt-1 text-xs text-red-500">{quickCustomerErrors.name}</p>
-                )}
-              </div>
-              <div>
-                <InputElement
-                  id="quick_customer_mobile"
-                  name="mobile"
-                  label="Mobile Number"
-                  placeholder="Enter mobile number"
-                  value={quickCustomerForm.mobile}
-                  onChange={handleQuickCustomerInput}
-                />
-                {quickCustomerErrors.mobile && (
-                  <p className="mt-1 text-xs text-red-500">{quickCustomerErrors.mobile}</p>
-                )}
-              </div>
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Select Area
-                </label>
-                <DdlDynamicMultiline
-                  onSelect={handleQuickCustomerAreaSelect}
-                  value={
-                    quickCustomerForm.area_id && quickCustomerForm.areaName
-                      ? {
-                        value: quickCustomerForm.area_id,
-                        label: quickCustomerForm.areaName,
-                      }
-                      : null
-                  }
-                  defaultValue={
-                    quickCustomerForm.area_id && quickCustomerForm.areaName
-                      ? {
-                        value: quickCustomerForm.area_id,
-                        label: quickCustomerForm.areaName,
-                      }
-                      : null
-                  }
-                  data={formattedAreaData}
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="quick_customer_address"
-                  className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200"
-                >
-                  Address
-                </label>
-                <textarea
-                  id="quick_customer_address"
-                  name="manual_address"
-                  rows={3}
-                  value={quickCustomerForm.manual_address}
-                  onChange={handleQuickCustomerInput}
-                  placeholder="Enter customer address"
-                  className="w-full rounded-xs border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
-                />
-                {quickCustomerErrors.manual_address && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {quickCustomerErrors.manual_address}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
-              <button
-                type="button"
-                onClick={closeCustomerModal}
-                className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <ButtonLoading
-                onClick={handleQuickCustomerSave}
-                buttonLoading={customerModalLoading}
-                label={customerModalLoading ? 'Saving...' : 'Save Customer'}
-                className="whitespace-nowrap text-center"
-                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
-                disabled={customerModalLoading}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        onCustomerSaved={({ id, name }) => {
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+          }));
+        }}
+      />
     </>
   );
 };

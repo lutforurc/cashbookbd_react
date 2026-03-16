@@ -20,6 +20,7 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
+  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import SelectWeightVariance from '../../../utils/utils-functions/SelectWeightVariance';
@@ -34,14 +35,15 @@ import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import dayjs from 'dayjs';
 import InputOnly from '../../../utils/fields/InputOnly';
-import { hasPermission } from '../../../utils/permissionChecker'; 
+import { hasPermission } from '../../../utils/permissionChecker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { SalesType } from '../../../../common/dropdownData';  
+import { SalesType } from '../../../../common/dropdownData';
 import utc from 'dayjs/plugin/utc';
 import {
   handleInputKeyDown,
   handleSelectKeyDown,
-} from '../../../utils/utils-functions/handleKeyDown'; 
+} from '../../../utils/utils-functions/handleKeyDown';
+import QuickCustomerModal from './QuickCustomerModal';
 
 interface Product {
   id: number;
@@ -53,7 +55,7 @@ interface Product {
   bag?: string;
   warehouse: string;
   variance?: string;
-  variance_type?: string; 
+  variance_type?: string;
 }
 
 const TradingBusinessSales = () => {
@@ -76,7 +78,8 @@ const TradingBusinessSales = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
-    dayjs.extend(utc); 
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  dayjs.extend(utc);
 
 
   useEffect(() => {
@@ -137,7 +140,15 @@ const TradingBusinessSales = () => {
     });
   };
 
-    const productSelectHandler = (option: any) => {
+  const openCustomerModal = () => {
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
+  };
+
+  const productSelectHandler = (option: any) => {
     const key = 'product'; // Set the desired key dynamically
     const accountName = 'product_name'; // Set the desired key dynamically
     const unit = 'unit'; // Set the desired key dynamically
@@ -160,7 +171,7 @@ const TradingBusinessSales = () => {
     // Update the lineTotal state with the new value
     setLineTotal(Number(newLineTotal.toFixed(0))); // Keep it as a string for display
   };
-    const resetProducts = () => {
+  const resetProducts = () => {
     setFormData(initialFormData); // Reset to the initial state
     setIsUpdateButton(false);
     isUpdating && setIsUpdating(false);
@@ -170,7 +181,7 @@ const TradingBusinessSales = () => {
     setSalesType(e.target.value);
   };
 
-  
+
 
   const searchInvoice = () => {
     if (!search) {
@@ -198,15 +209,15 @@ const TradingBusinessSales = () => {
   useEffect(() => {
     if (sales.data.transaction) {
       const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
-          id: detail.id,
-          product: detail.product.id,
-          product_name: detail.product.name,
-          serial_no: detail.serial_no,
-          unit: detail.product.unit.name,
-          qty: detail.quantity,
-          price: detail.sales_price,
-          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-        }),
+        id: detail.id,
+        product: detail.product.id,
+        product_name: detail.product.name,
+        serial_no: detail.serial_no,
+        unit: detail.product.unit.name,
+        qty: detail.quantity,
+        price: detail.sales_price,
+        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+      }),
       );
 
       // Find accountName
@@ -242,7 +253,7 @@ const TradingBusinessSales = () => {
         products: products || [],
       };
 
-      setFormData(updatedFormData); 
+      setFormData(updatedFormData);
     }
   }, [sales.data.transaction]);
 
@@ -412,20 +423,20 @@ const TradingBusinessSales = () => {
         tradingSalesStore(formData, function (message) {
           if (message) {
             toast.success(message);
-                    setTimeout(() => {
-                      setSaveButtonLoading(false);
-                      setFormData((prevFormData) => ({
-                        ...prevFormData,
-                        receivedAmt: '',
-                        discountAmt: 0,
-                        vehicleNumber: '',
-                        notes: '',
-                        invoice_no: '',
-                        invoice_date: '',   
-                        products: [],
-                      }));
-                      setSaveButtonLoading(false);
-                    }, 1000);
+            setTimeout(() => {
+              setSaveButtonLoading(false);
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                receivedAmt: '',
+                discountAmt: 0,
+                vehicleNumber: '',
+                notes: '',
+                invoice_no: '',
+                invoice_date: '',
+                products: [],
+              }));
+              setSaveButtonLoading(false);
+            }, 1000);
           } else {
             toast.info(message);
           }
@@ -685,7 +696,10 @@ const TradingBusinessSales = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label htmlFor="">Select Customer</label>
+                <div className="flex items-center justify-between gap-2">
+                  <label htmlFor="">Select Customer</label>
+
+                </div>
                 <DdlMultiline
                   onSelect={customerAccountHandler}
                   // defaultValue={formData.account ? {
@@ -694,9 +708,9 @@ const TradingBusinessSales = () => {
                   value={
                     formData.account
                       ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
-                        }
+                        value: formData.account,
+                        label: formData.accountName, //productData.accountName
+                      }
                       : null
                   }
                   onKeyDown={(e) => {
@@ -713,22 +727,39 @@ const TradingBusinessSales = () => {
                   acType={'3'}
                 />
               </div>
-              <InputElement
-                id="vehicleNumber"
-                value={formData.vehicleNumber}
-                name="vehicleNumber"
-                placeholder={'Vehicle Number'}
-                label={'Vehicle Number'}
-                className={'py-1.5'}
-                onChange={handleOnChange}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setTimeout(() => {
-                      handleSelectKeyDown(e, '#purchaseOrderNumber');
-                    }, 150);
-                  }
-                }}
-              />
+
+              <div className='flex gap-2'>
+                <div className='mt-7.5'>
+                  <button
+                    type="button"
+                    onClick={openCustomerModal}
+                    title="Add New Customer"
+                    aria-label="Add New Customer"
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                  >
+                    <FiUserPlus className="text-sm" />
+                  </button>
+                </div>
+
+                <div className='w-full'>
+                  <InputElement
+                  id="vehicleNumber"
+                  value={formData.vehicleNumber}
+                  name="vehicleNumber"
+                  placeholder={'Vehicle Number'}
+                  label={'Vehicle Number'}
+                  className={'py-1.5'}
+                  onChange={handleOnChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setTimeout(() => {
+                        handleSelectKeyDown(e, '#purchaseOrderNumber');
+                      }, 150);
+                    }
+                  }}
+                />
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -750,9 +781,9 @@ const TradingBusinessSales = () => {
                     value={
                       formData.purchaseOrderNumber
                         ? {
-                            value: formData.purchaseOrderNumber,
-                            label: formData.purchaseOrderText, //productData.accountName
-                          }
+                          value: formData.purchaseOrderNumber,
+                          label: formData.purchaseOrderText, //productData.accountName
+                        }
                         : null
                     }
                     onKeyDown={(e) => {
@@ -762,7 +793,7 @@ const TradingBusinessSales = () => {
                         }, 150);
                       }
                     }}
-                    // onKeyDown={(e) => handleInputKeyDown(e, 'salesOrderNumber')} // Pass the next field's ID
+                  // onKeyDown={(e) => handleInputKeyDown(e, 'salesOrderNumber')} // Pass the next field's ID
                   />
                 </div>
 
@@ -792,9 +823,9 @@ const TradingBusinessSales = () => {
                     value={
                       formData.salesOrderNumber
                         ? {
-                            value: formData.salesOrderNumber,
-                            label: formData.salesOrderText, //productData.accountName
-                          }
+                          value: formData.salesOrderNumber,
+                          label: formData.salesOrderText, //productData.accountName
+                        }
                         : null
                     }
                     onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')} // Pass the next field's ID
@@ -853,13 +884,13 @@ const TradingBusinessSales = () => {
                     }, 150);
                   }
                 }}
-                // onKeyDown={(e) => {
-                //   if (e.key === 'Enter') {
-                //     setTimeout(() => {
-                //       handleSelectKeyDown(e, '#products');
-                //     }, 150);
-                //   }
-                // }}
+              // onKeyDown={(e) => {
+              //   if (e.key === 'Enter') {
+              //     setTimeout(() => {
+              //       handleSelectKeyDown(e, '#products');
+              //     }, 150);
+              //   }
+              // }}
               />
             </div>
           </div>
@@ -946,9 +977,9 @@ const TradingBusinessSales = () => {
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                 />
@@ -1075,7 +1106,7 @@ const TradingBusinessSales = () => {
                   onClick={handleInvoiceSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
-                  
+
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
@@ -1187,6 +1218,17 @@ const TradingBusinessSales = () => {
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        onCustomerSaved={({ id, name }) => {
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+          }));
+        }}
+      />
     </>
   );
 };

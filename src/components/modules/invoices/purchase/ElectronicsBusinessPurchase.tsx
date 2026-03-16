@@ -21,6 +21,7 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
+  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator.tsx';
 import dayjs from 'dayjs';
@@ -34,6 +35,7 @@ import { electronicsPurchaseEdit, electronicsPurchaseStore, electronicsPurchaseU
 import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon.tsx';
 import { PurchaseType } from '../../../../common/dropdownData.tsx';
+import QuickCustomerModal from '../sales/QuickCustomerModal';
 
 interface Product {
   id: number;
@@ -66,6 +68,7 @@ const ElectronicsBusinessPurchase = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [purchaseType, setPurchaseType] = useState('2'); // Define state with type
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -132,6 +135,14 @@ const ElectronicsBusinessPurchase = () => {
       [key]: option.value,
       [accountName]: option.label,
     });
+  };
+
+  const openCustomerModal = () => {
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
   };
 
   const productSelectHandler = (option: any) => {
@@ -535,9 +546,20 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label className="text-black dark:text-white" htmlFor="">
-                  Select Supplier
-                </label>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <label className="text-black dark:text-white" htmlFor="">
+                    Select Supplier
+                  </label>
+                  <button
+                    type="button"
+                    onClick={openCustomerModal}
+                    title="Add New Supplier"
+                    aria-label="Add New Supplier"
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                  >
+                    <FiUserPlus className="text-sm" />
+                  </button>
+                </div>
                 <DdlMultiline
                   onSelect={supplierAccountHandler}
                   placeholder="Select Supplier"
@@ -928,6 +950,19 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        entityLabel="Supplier"
+        defaultTypeId="2"
+        onCustomerSaved={({ id, name }) => {
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+          }));
+        }}
+      />
     </>
   );
 };

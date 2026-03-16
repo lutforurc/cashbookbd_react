@@ -21,6 +21,7 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
+  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import dayjs from 'dayjs';
@@ -38,6 +39,7 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon.tsx';
 import { voucherTypes } from './../../../utils/fields/DataConstant';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown.tsx';
 import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
+import QuickCustomerModal from '../sales/QuickCustomerModal';
 
 interface Product {
   id: number;
@@ -69,6 +71,7 @@ const ConstructionBusinessPurchase = () => {
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -122,6 +125,14 @@ const ConstructionBusinessPurchase = () => {
       [key]: option.value,
       [accountName]: option.label,
     });
+  };
+
+  const openCustomerModal = () => {
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
   };
 
   const productSelectHandler = (option: any) => {
@@ -242,7 +253,7 @@ const ConstructionBusinessPurchase = () => {
   }, [purchase.data.transaction]);
 
   const totalAmount = formData.products.reduce(
-    (sum, row) =>  sum + Number(row.qty) * Number(row.price),
+    (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
   );
 
@@ -536,26 +547,26 @@ const ConstructionBusinessPurchase = () => {
   // }, [formData.account]);
 
   useEffect(() => {
-  const total = formData.products.reduce((acc, product) => {
-    const qty = parseFloat(product.qty?.toString() || '0') || 0;
-    const price = parseFloat(product.price?.toString() || '0') || 0;
-    return acc + qty * price;
-  }, 0);
+    const total = formData.products.reduce((acc, product) => {
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
+    }, 0);
 
-  const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
 
-  let netTotal = 0;
-  if (total > 0) {
-    netTotal = Math.floor(total - discount);
-  }
+    let netTotal = 0;
+    if (total > 0) {
+      netTotal = Math.floor(total - discount);
+    }
 
-  setFormData((prev) => ({
-    ...prev,
-    paymentAmt: netTotal.toString(),
-  }));
+    setFormData((prev) => ({
+      ...prev,
+      paymentAmt: netTotal.toString(),
+    }));
 
-  setLineTotal(netTotal); // ✅ Total Tk. এখান থেকেই আসবে
-}, [formData.products, formData.discountAmt]);
+    setLineTotal(netTotal); // ✅ Total Tk. এখান থেকেই আসবে
+  }, [formData.products, formData.discountAmt]);
 
   useCtrlS(handlePurchaseInvoiceSave);
 
@@ -568,9 +579,11 @@ const ConstructionBusinessPurchase = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label className="text-black dark:text-white" htmlFor="">
-                  Select Supplier
-                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-black dark:text-white" htmlFor="">
+                    Select Supplier
+                  </label>
+                </div>
                 <DdlMultiline
                   id="account"
                   name="account"
@@ -581,9 +594,9 @@ const ConstructionBusinessPurchase = () => {
                   value={
                     formData.account
                       ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
-                        }
+                        value: formData.account,
+                        label: formData.accountName, //productData.accountName
+                      }
                       : null
                   }
                   onKeyDown={(e) => {
@@ -601,16 +614,32 @@ const ConstructionBusinessPurchase = () => {
                   acType={'3'}
                 />
               </div>
-              <InputElement
-                id="notes"
-                value={formData.notes}
-                name="notes"
-                placeholder={'Notes'}
-                label={'Notes'}
-                className={'py-1.5'}
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Dynamically pass the next element's ID
-              />
+              <div className='flex'>
+                <div className='mt-6 -ml-2.5 mr-2 '>
+                  <button
+                    type="button"
+                    onClick={openCustomerModal}
+                    title="Add New Supplier"
+                    aria-label="Add New Supplier"
+                    className="inline-flex h-9.5 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                  >
+                    <FiUserPlus className="text-sm" />
+                  </button>
+                </div>
+
+                <div className='w-full'>
+                  <InputElement
+                    id="notes"
+                    value={formData.notes}
+                    name="notes"
+                    placeholder={'Notes'}
+                    label={'Notes'}
+                    className={'py-1.5'}
+                    onChange={handleOnChange}
+                    onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Dynamically pass the next element's ID
+                  />
+                </div>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
@@ -683,7 +712,7 @@ const ConstructionBusinessPurchase = () => {
               <div className="grid grid-cols-1 md:gap-x-1 -mb-1">
                 <span>Total Tk. </span>
                 <span className="text-xs font-bold dark:text-white">
-                  {thousandSeparator( Math.floor(totalAmount), 0)}
+                  {thousandSeparator(Math.floor(totalAmount), 0)}
                 </span>
               </div>
               {/* {hasPermission(permissions, 'purchase.edit') && (
@@ -776,17 +805,17 @@ const ConstructionBusinessPurchase = () => {
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   onKeyDown={(e) => {
@@ -1020,6 +1049,19 @@ const ConstructionBusinessPurchase = () => {
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        entityLabel="Supplier"
+        defaultTypeId="2"
+        onCustomerSaved={({ id, name }) => {
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+          }));
+        }}
+      />
     </>
   );
 };
