@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiGift, FiSave, FiSearch } from "react-icons/fi";
+import { FiGift, FiSave, FiSearch, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Loader from "../../../../common/Loader";
@@ -18,6 +18,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import ConfirmModal from "../../../utils/components/ConfirmModalProps";
 
 const BONUS_TEMPLATES = [
+  { value: "Durga-puja Bonus", label: "Durga-puja Bonus" },
   { value: "Eid-ul-Fitr Bonus", label: "Eid-ul-Fitr Bonus" },
   { value: "Eid-ul-Adha Bonus", label: "Eid-ul-Adha Bonus" },
   { value: "Pohela Boishakh Bonus", label: "Pohela Boishakh Bonus" },
@@ -45,6 +46,8 @@ const FestivalBonusGenerate = ({ user }: any) => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedDeleteEmployee, setSelectedDeleteEmployee] = useState<any | null>(null);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -157,6 +160,32 @@ const FestivalBonusGenerate = ({ user }: any) => {
       return;
     }
 
+    const payloadEmployees = employees
+      .map((row) => {
+        const employeeId = Number(row?.id ?? row?.employee_id ?? 0);
+
+        if (!employeeId) {
+          return null;
+        }
+
+        return {
+          ...row,
+          id: employeeId,
+          employee_id: employeeId,
+          basic_salary: Number(row?.basic_salary || 0),
+          bonus_percent: Number(row?.bonus_percent || 0),
+          bonus_amount: Number(row?.bonus_amount || 0),
+          name: row?.name || "",
+          designation_name: row?.designation_name || row?.designations?.name || "",
+        };
+      })
+      .filter(Boolean);
+
+    if (payloadEmployees.length === 0) {
+      toast.info("No valid employee found to generate bonus");
+      return;
+    }
+
     setSaveButtonLoading(true);
     try {
       const response = await dispatch(
@@ -166,14 +195,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
           bonus_title: resolvedBonusTitle,
           bonus_percent: resolvedPercent,
           level_ids: selectedLevels.map((item: any) => item.value),
-          employees: employees.map((row) => ({
-            employee_id: row.id,
-            basic_salary: Number(row.basic_salary || 0),
-            bonus_percent: Number(row.bonus_percent || 0),
-            bonus_amount: Number(row.bonus_amount || 0),
-            name: row.name,
-            designation_name: row.designation_name || "",
-          })),
+          employees: payloadEmployees,
         })
       ).unwrap();
 
@@ -185,6 +207,28 @@ const FestivalBonusGenerate = ({ user }: any) => {
     } finally {
       setSaveButtonLoading(false);
     }
+  };
+
+  const handleDeleteClick = (employee: any) => {
+    setSelectedDeleteEmployee(employee);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirmed = () => {
+    if (!selectedDeleteEmployee) return;
+
+    setEmployees((prev) =>
+      prev
+        .filter((row) => row.id !== selectedDeleteEmployee.id)
+        .map((row, index) => ({
+          ...row,
+          serial_no: index + 1,
+        }))
+    );
+
+    toast.success("Employee removed from bonus list");
+    setShowDeleteConfirm(false);
+    setSelectedDeleteEmployee(null);
   };
 
   const columns = [
@@ -219,6 +263,22 @@ const FestivalBonusGenerate = ({ user }: any) => {
       headerClass: "text-right",
       cellClass: "text-right font-semibold text-blue-600 dark:text-blue-400",
       render: (row: any) => thousandSeparator(row.bonus_amount, 0),
+    },
+    {
+      key: "action",
+      header: "Action",
+      headerClass: "text-center",
+      cellClass: "text-center",
+      render: (row: any) => (
+        <button
+          type="button"
+          onClick={() => handleDeleteClick(row)}
+          className="inline-flex items-center justify-center text-red-600 transition hover:text-red-700"
+          title="Remove from bonus list"
+        >
+          <FiTrash2 className="text-lg" />
+        </button>
+      ),
     },
   ];
 
@@ -404,6 +464,27 @@ const FestivalBonusGenerate = ({ user }: any) => {
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleGenerate}
         className="bg-blue-600 hover:bg-blue-700"
+      />
+
+      <ConfirmModal
+        show={showDeleteConfirm}
+        title="Remove Employee"
+        message={
+          <>
+            Remove from bonus list
+            <span className="mt-1 block font-bold">{selectedDeleteEmployee?.name || "-"}</span>
+            <span className="mt-1 block text-sm font-normal text-slate-600">
+              {selectedDeleteEmployee?.designation_name || "Employee"}
+            </span>
+          </>
+        }
+        loading={false}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setSelectedDeleteEmployee(null);
+        }}
+        onConfirm={handleDeleteConfirmed}
+        className="bg-red-600 hover:bg-red-700"
       />
     </>
   );

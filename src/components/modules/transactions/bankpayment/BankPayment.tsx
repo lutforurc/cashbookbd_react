@@ -486,9 +486,8 @@ const BankPayment = () => {
                     </>
                   )}
               </div>
-
               <div className="">
-                <label htmlFor="">Bank Received Account</label>
+                <label htmlFor="">Bank Payment Account</label>
                 <CategoryDropdown
                   onChange={bankPaymentAccountHandler}
                   className={`w-full font-medium text-sm ${formData.mtmId && '!border !border-red-800'}`}
