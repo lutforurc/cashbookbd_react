@@ -206,6 +206,8 @@ export const API_REPORT_CASHBOOK_URL = `${API_BASE_URL}/reports/cashbook`;
 
 // Profit Loss url
 export const API_REPORT_PROFIT_LOSS_URL = `${API_BASE_URL}/reports/profit-loss`;
+// Balance Sheet url
+export const API_REPORT_BALANCE_SHEET_URL = `${API_BASE_URL}/reports/balance-sheet`;
 // Cash Book url
 export const API_REPORT_DUE_LIST_URL = `${API_BASE_URL}/reports/duelist`;
 // Date Wise Report url

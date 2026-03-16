@@ -64,6 +64,7 @@ import productUnitSlice from './components/modules/product/unit/unitSlice';
 import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice';
 import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
 import profitLossSlice from './components/modules/reports/profit-loss/profitLossSlice';
+import balanceSheetSlice from './components/modules/reports/balance-sheet/balanceSheetSlice';
 import unitSalePaymentsSlice from './components/modules/real-estate/checks/unitSalePaymentsSlice';
 import branchTransferSlice from './components/modules/warehouse-transfer/warehouseTransferSlice';
 import branchReceivedSlice from './components/modules/warehouse-received/warehouseReceivedSlice';
@@ -85,6 +86,7 @@ const store = configureStore({
     branchDdl: branchDdlReducer,
     cashBook: cashBookReducer,
     profitLoss: profitLossSlice,
+    balanceSheet: balanceSheetSlice,
     ledger: ledgerReducer,
     labourLedger: labourLedgerSlice,
     coal1: coal1Reducer,
