@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FiSave } from 'react-icons/fi';
+import { FiHome, FiSave } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -108,54 +108,65 @@ const AddDesignationLevel = () => {
   };
 
   return (
-    <div>
+    <>
       <HelmetTitle title={formData?.id ? 'Edit Designation Level' : 'Add Designation Level'} />
 
-      {designationLevelState?.isLoading === true ? <Loader /> : null}
+      <div className="mx-auto mt-10 mb-10 w-full items-center md:w-4/5 lg:w-3/5 xl:w-2/5">
+        <div className="grid">
+          {designationLevelState?.isLoading === true ? <Loader /> : null}
 
-      <div className="mx-auto grid w-full max-w-[620px] grid-cols-1 gap-4 rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <InputElement
-          id="name"
-          value={formData.name}
-          name="name"
-          placeholder="Enter designation level name"
-          label="Level Name"
-          onChange={handleOnChange}
-        />
+          <div className="w-full">
+            <div className="mb-2">
+              <InputElement
+                id="name"
+                value={formData.name}
+                name="name"
+                placeholder="Enter designation level name"
+                label="Level Name"
+                onChange={handleOnChange}
+              />
+            </div>
 
-        <InputElement
-          id="description"
-          value={formData.description}
-          name="description"
-          placeholder="Enter short description"
-          label="Description"
-          onChange={handleOnChange}
-        />
+            <InputElement
+              id="description"
+              value={formData.description}
+              name="description"
+              placeholder="Enter short description"
+              label="Description"
+              onChange={handleOnChange}
+            />
+
+            <div className="mt-3 grid grid-cols-2 gap-x-1 gap-y-1">
+              {formData?.id ? (
+                <ButtonLoading
+                  onClick={handleUpdate}
+                  buttonLoading={buttonLoading}
+                  label={buttonLoading ? 'Updating...' : 'Update'}
+                  className="mr-0 whitespace-nowrap p-2 text-center"
+                  icon={<FiSave className="ml-2 mr-2 text-lg text-white" />}
+                />
+              ) : (
+                <ButtonLoading
+                  onClick={handleSave}
+                  buttonLoading={buttonLoading}
+                  label={buttonLoading ? 'Saving...' : 'Save'}
+                  className="mr-0 whitespace-nowrap p-2 text-center"
+                  icon={<FiSave className="ml-2 mr-2 text-lg text-white" />}
+                />
+              )}
+
+              <Link
+                to={ROUTES.hrms_designation_level_list}
+                className="mr-0 justify-center whitespace-nowrap p-2"
+              >
+                <FiHome className="ml-2 mr-2 text-lg text-white" />
+                <span>Back</span>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div className="mt-4 flex items-center justify-center">
-        {formData?.id ? (
-          <ButtonLoading
-            onClick={handleUpdate}
-            buttonLoading={buttonLoading}
-            label="Update"
-            className="mr-2 whitespace-nowrap py-1.5"
-          />
-        ) : (
-          <ButtonLoading
-            onClick={handleSave}
-            buttonLoading={buttonLoading}
-            label="Save"
-            className="mr-2 whitespace-nowrap p-1.5 text-center"
-            icon={<FiSave className="ml-2 mr-2 text-lg text-white" />}
-          />
-        )}
-
-        <Link to={ROUTES.hrms_designation_level_list} className="text-nowrap py-1.5">
-          Go to back
-        </Link>
-      </div>
-    </div>
+    </>
   );
 };
 

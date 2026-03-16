@@ -171,8 +171,8 @@ const CustomerSupplier = () => {
       {
       key: 'openingbalance',
       header: 'Opening',
-      headerClass: 'text-center',
-      cellClass: 'text-right',
+      headerClass: 'text-left',
+      cellClass: 'text-center',
       render: (row: any) => (
         <InputElement
           type="number"   // 🔥 FIX HERE
@@ -272,6 +272,7 @@ const CustomerSupplier = () => {
     {
       key: "action",
       header: "Action",
+      headerClass: 'text-center', 
       render: (row: any) => {
         const dirty = isRowDirty(row);
 
@@ -322,14 +323,14 @@ const CustomerSupplier = () => {
           </div>
 
           {/* ===== Delete Slot ===== */}
-          <div className="w-4 flex justify-center">
+          {/* <div className="w-4 flex justify-center">
             <button
               title="Delete"
               className="text-red-600 hover:text-red-800"
             >
               <FiTrash2 size={15} />
             </button>
-          </div>
+          </div> */}
 
         </div>
       )},
