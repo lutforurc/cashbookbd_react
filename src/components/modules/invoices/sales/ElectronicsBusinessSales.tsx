@@ -947,14 +947,7 @@ const ElectronicsBusinessSales = () => {
               <div>
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <label htmlFor="">Select Customer</label>
-                  <button
-                    type="button"
-                    onClick={openCustomerModal}
-                    className="inline-flex items-center gap-1 rounded-sm border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                  >
-                    <FiUserPlus className="text-sm" />
-                    New Customer
-                  </button>
+                  
                 </div>
                 <DdlMultiline
                   onSelect={customerAccountHandler}
@@ -973,7 +966,18 @@ const ElectronicsBusinessSales = () => {
                 />
               </div>
               <div>
-                <div className="mt-8 ml-5">
+                <div className="mt-9 ml-0 flex">
+                  <div className='mr-2'>
+                    <button
+                    type="button"
+                    onClick={openCustomerModal}
+                    title="Add New Customer"
+                    aria-label="Add New Customer"
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                  >
+                    <FiUserPlus className="text-sm" />
+                  </button>
+                  </div>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
