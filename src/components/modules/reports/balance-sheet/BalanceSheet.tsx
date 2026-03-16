@@ -103,22 +103,6 @@ const formatAmount = (amount: number) => {
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
-const SUMMARY_ONLY_GROUP_PATTERNS = [
-  "account receivable",
-  "accounts receivable",
-  "account payable",
-  "accounts payable",
-  "receivable",
-  "payable",
-];
-
-const shouldShowSummaryOnly = (groupName?: string) => {
-  const normalizedName = String(groupName || "").trim().toLowerCase();
-  return SUMMARY_ONLY_GROUP_PATTERNS.some((pattern) =>
-    normalizedName.includes(pattern),
-  );
-};
-
 const BalanceSheet = (user: any) => {
   const dispatch = useDispatch();
 
@@ -464,6 +448,8 @@ const BalanceSheet = (user: any) => {
             branchName={branchName}
             startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
             endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
             assets={assets.map(normalizeGroup)}
             liabilities={liabilities.map(normalizeGroup)}
             equity={equity.map(normalizeGroup)}
@@ -526,20 +512,12 @@ const SectionCard = ({
   fontSize: number;
 }) => {
   const rows = useMemo(() => {
-    return groups.flatMap((group) => [
-      {
-        key: `${group.group_name}-group`,
-        type: "group",
-        label: group.group_name || "",
-        amount: toNum(group.total),
-      },
-      ...((shouldShowSummaryOnly(group.group_name) ? [] : group.items || []).map((item, itemIndex) => ({
-        key: `${group.group_name}-${item.name}-${itemIndex}`,
-        type: "item",
-        label: item.name || "",
-        amount: toNum(item.balance),
-      }))),
-    ]);
+    return groups.map((group) => ({
+      key: `${group.group_name}-group`,
+      type: "group",
+      label: group.group_name || "",
+      amount: toNum(group.total),
+    }));
   }, [groups]);
 
   const visibleRows = rows.slice(0, Math.max(perPage, rows.length));

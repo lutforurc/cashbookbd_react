@@ -1,3 +1,6 @@
+import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import PrintStyles from "../../../utils/utils-functions/PrintStyles";
+
 type BalanceSheetItem = {
   name?: string;
   balance?: number;
@@ -13,6 +16,8 @@ type BalanceSheetPrintProps = {
   branchName: string;
   startDate: string;
   endDate: string;
+  rowsPerPage?: number;
+  fontSize?: number;
   assets: BalanceSheetGroup[];
   liabilities: BalanceSheetGroup[];
   equity: BalanceSheetGroup[];
@@ -34,35 +39,21 @@ const formatAmount = (amount: number) => {
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
-const SUMMARY_ONLY_GROUP_PATTERNS = [
-  "account receivable",
-  "accounts receivable",
-  "account payable",
-  "accounts payable",
-  "receivable",
-  "payable",
-];
-
-const shouldShowSummaryOnly = (groupName?: string) => {
-  const normalizedName = String(groupName || "").trim().toLowerCase();
-  return SUMMARY_ONLY_GROUP_PATTERNS.some((pattern) =>
-    normalizedName.includes(pattern),
-  );
-};
-
 const Section = ({
   title,
   groups,
   totalLabel,
   totalValue,
+  fontSize,
 }: {
   title: string;
   groups: BalanceSheetGroup[];
   totalLabel: string;
   totalValue: number;
+  fontSize: number;
 }) => (
   <div className="w-full">
-    <table className="w-full border-collapse text-sm">
+    <table className="w-full border-collapse" style={{ fontSize: `${fontSize}px` }}>
       <thead>
         <tr>
           <th className="border border-slate-300 bg-slate-100 px-3 py-2 text-left font-semibold text-slate-900">
@@ -102,16 +93,6 @@ const FragmentRow = ({ group }: { group: BalanceSheetGroup }) => (
         {formatAmount(Number(group.total || 0))}
       </td>
     </tr>
-    {(shouldShowSummaryOnly(group.group_name) ? [] : group.items || []).map((item, itemIndex) => (
-      <tr key={`${group.group_name}-${item.name}-${itemIndex}`}>
-        <td className="border border-slate-300 px-3 py-2 pl-8 text-slate-700">
-          {item.name}
-        </td>
-        <td className="border border-slate-300 px-3 py-2 text-right text-slate-700">
-          {formatAmount(Number(item.balance || 0))}
-        </td>
-      </tr>
-    ))}
   </>
 );
 
@@ -119,64 +100,78 @@ const BalanceSheetPrint = ({
   branchName,
   startDate,
   endDate,
+  rowsPerPage,
+  fontSize,
   assets,
   liabilities,
   equity,
   totals,
 }: BalanceSheetPrintProps) => {
-  return (
-    <div className="bg-white p-6 text-slate-900">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold">Balance Sheet</h1>
-        <p className="mt-1 text-sm">Branch: {branchName}</p>
-        <p className="text-sm">
-          Period: {startDate} to {endDate}
-        </p>
-        <p className="text-sm">As on: {endDate}</p>
-      </div>
+  const fs = Number.isFinite(fontSize) ? Number(fontSize) : 12;
+  const contentWidthClass =
+    Number.isFinite(rowsPerPage) && Number(rowsPerPage) <= 10 ? "gap-4" : "gap-6";
 
-      <div className="grid grid-cols-2 gap-6">
-        <Section
-          title="Assets"
-          groups={assets}
-          totalLabel="Total Assets"
-          totalValue={totals.assets}
-        />
-        <div className="space-y-6">
+  return (
+    <div className="bg-white p-6 text-slate-900 print-root">
+      <PrintStyles />
+      <div className="print-page">
+        <PadPrinting />
+
+        <div className="mb-6 text-center" style={{ fontSize: `${fs}px` }}>
+          <h1 className="font-bold" style={{ fontSize: `${fs + 10}px` }}>Balance Sheet</h1>
+          <p className="mt-1">Branch: {branchName}</p>
+          <p>
+            Period: {startDate} to {endDate}
+          </p>
+          <p>As on: {endDate}</p>
+        </div>
+
+        <div className={`grid grid-cols-2 ${contentWidthClass}`}>
           <Section
-            title="Liabilities"
-            groups={liabilities}
-            totalLabel="Liabilities Total"
-            totalValue={totals.liabilities}
+            title="Assets"
+            groups={assets}
+            totalLabel="Total Assets"
+            totalValue={totals.assets}
+            fontSize={fs}
           />
-          <Section
-            title="Equity"
-            groups={equity}
-            totalLabel="Equity Total"
-            totalValue={totals.equity}
-          />
-          <table className="w-full border-collapse text-sm">
-            <tbody>
-              <tr>
-                <td className="border border-slate-300 px-3 py-2 font-bold">
-                  Total Liabilities & Equity
-                </td>
-                <td className="border border-slate-300 px-3 py-2 text-right font-bold">
-                  {formatAmount(totals.liabilitiesAndEquity)}
-                </td>
-              </tr>
-              {Math.abs(totals.difference) > 0.009 && (
+          <div className="space-y-6">
+            <Section
+              title="Liabilities"
+              groups={liabilities}
+              totalLabel="Liabilities Total"
+              totalValue={totals.liabilities}
+              fontSize={fs}
+            />
+            <Section
+              title="Equity"
+              groups={equity}
+              totalLabel="Equity Total"
+              totalValue={totals.equity}
+              fontSize={fs}
+            />
+            <table className="w-full border-collapse" style={{ fontSize: `${fs}px` }}>
+              <tbody>
                 <tr>
-                  <td className="border border-amber-300 bg-amber-50 px-3 py-2 font-semibold text-amber-800">
-                    Difference
+                  <td className="border border-slate-300 px-3 py-2 font-bold">
+                    Total Liabilities & Equity
                   </td>
-                  <td className="border border-amber-300 bg-amber-50 px-3 py-2 text-right font-semibold text-amber-800">
-                    {formatAmount(totals.difference)}
+                  <td className="border border-slate-300 px-3 py-2 text-right font-bold">
+                    {formatAmount(totals.liabilitiesAndEquity)}
                   </td>
                 </tr>
-              )}
-            </tbody>
-          </table>
+                {Math.abs(totals.difference) > 0.009 && (
+                  <tr>
+                    <td className="border border-amber-300 bg-amber-50 px-3 py-2 font-semibold text-amber-800">
+                      Difference
+                    </td>
+                    <td className="border border-amber-300 bg-amber-50 px-3 py-2 text-right font-semibold text-amber-800">
+                      {formatAmount(totals.difference)}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
