@@ -1406,6 +1406,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 <SidebarLinkGroup
                   activeCondition={
                     pathname === '/hrms/employees' ||
+                    pathname.includes('/hrms/designation-levels') ||
+                    pathname.includes('/hrms/designations') ||
                     pathname === '/hrms/salary/salary-generate' ||
                     pathname === routes.employee_loan_balance ||
                     pathname.includes('/hrms/salary-sheet') ||
@@ -1416,13 +1418,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   open={openMenu === 'hrm'}
                   handleClick={() => handleMenuClick('hrm')}
                 >
-
                   {(handleClick, open) => (
                     <React.Fragment>
                       <NavLink
                         to="#"
                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
                           pathname === '/hrms/employees' ||
+                          pathname.includes('/hrms/designation-levels') ||
+                          pathname.includes('/hrms/designations') ||
                           pathname === '/hrms/salary/salary-generate' ||
                           pathname === routes.employee_loan_balance ||
                           pathname === routes.employee_loan_ledger ||
@@ -1434,9 +1437,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           }`}
                         onClick={(e) => {
                           e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
                         <FiClipboard />
@@ -1447,7 +1448,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {/* hrm.employee.view */}
                           {hasPermission(permissions, 'employee.view') && (
                             <li>
                               <NavLink
@@ -1458,6 +1458,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 }
                               >
                                 Employees
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'employee.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_designation_level_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Designation Levels
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'employee.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_designation_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Designations
                               </NavLink>
                             </li>
                           )}
@@ -1513,7 +1539,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-
                           {hasPermission(permissions, 'salary.sheet.view') && (
                             <li>
                               <NavLink
@@ -1862,3 +1887,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 };
 
 export default Sidebar;
+
+
+
+

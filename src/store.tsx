@@ -43,6 +43,8 @@ import areaSlice from './components/modules/area/areaSlice';
 import changeVoucherDateSlice from './components/modules/change_date/changeVoucherDateSlice';
 import customerAuthReducer from './features/customerAuthReducer';
 import employeeSlice from './components/modules/hrms/employee/employeeSlice';
+import designationLevelSlice from './components/modules/hrms/designation-level/designationLevelSlice';
+import hrmDesignationSlice from './components/modules/hrms/designation/hrmDesignationSlice';
 import electronicsSalesSlice from './components/modules/invoices/sales/electronicsSalesSlice';
 import labourLedgerSlice from './components/modules/reports/ledger-labour/labourLedgerSlice';
 import requisitionSlice from './components/modules/Requisition/requisitionSlice';
@@ -120,6 +122,8 @@ const store = configureStore({
     installment: installmentSlice,
     changeDate: changeVoucherDateSlice,
     employees: employeeSlice,
+    designationLevel: designationLevelSlice,
+    hrmDesignation: hrmDesignationSlice,
     requisition: requisitionSlice,
     realEstateArea: realEstateArea,
     voucherSettings: voucherSettings,
@@ -143,3 +147,4 @@ const store = configureStore({
 });
 
 export default store;
+

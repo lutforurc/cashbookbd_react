@@ -208,7 +208,14 @@ const ROUTES = {
   hrms_employee_list: '/hrms/employees',
   hrms_employee_add: '/hrms/employee/add', 
   hrms_employee_edit: '/hrms/employee/edit/:id', 
-  
+  hrms_designation_level_list: '/hrms/designation-levels',
+  hrms_designation_level_create: '/hrms/designation-levels/create',
+  hrms_designation_level_edit: '/hrms/designation-levels/edit/:id',
+  hrms_designation_level_edit_base: '/hrms/designation-levels/edit',
+  hrms_designation_list: '/hrms/designations',
+  hrms_designation_create: '/hrms/designations/create',
+  hrms_designation_edit: '/hrms/designations/edit/:id',
+  hrms_designation_edit_base: '/hrms/designations/edit',
   
   hrms_salary_sheet_list: '/hrms/salary-sheet',
   hrms_salary_generate: '/hrms/salary/salary-generate',
@@ -222,3 +229,5 @@ const ROUTES = {
 };
 
 export default ROUTES;
+
+

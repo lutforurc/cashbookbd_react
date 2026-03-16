@@ -84,6 +84,10 @@ import ChangeHistory from './components/modules/history/ChangeHistory';
 import EmployeeCreate from './components/modules/hrms/employee/EmployeeCreate';
 import Employees from './components/modules/hrms/employee/Employees';
 import EmployeeEdit from './components/modules/hrms/employee/EmployeeEdit';
+import DesignationLevels from './components/modules/hrms/designation-level/DesignationLevels';
+import AddDesignationLevel from './components/modules/hrms/designation-level/AddDesignationLevel';
+import HrmDesignations from './components/modules/hrms/designation/HrmDesignations';
+import AddHrmDesignation from './components/modules/hrms/designation/AddHrmDesignation';
 import SalarySheetGenerate from './components/modules/hrms/salary/SalarySheetGenerate';
 import SalarySheet from './components/modules/hrms/salary/SalarySheet';
 import SalarySheetUpdate from './components/modules/hrms/salary/SalarySheetUpdate';
@@ -337,14 +341,17 @@ function App() {
             {/* HRM */}
             <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
             <Route path={routes.hrms_employee_list} element={<Employees user={me} />} />
+            <Route path={routes.hrms_designation_level_list} element={<DesignationLevels />} />
+            <Route path={routes.hrms_designation_level_create} element={<AddDesignationLevel />} />
+            <Route path={routes.hrms_designation_level_edit} element={<AddDesignationLevel />} />
+            <Route path={routes.hrms_designation_list} element={<HrmDesignations />} />
+            <Route path={routes.hrms_designation_create} element={<AddHrmDesignation />} />
+            <Route path={routes.hrms_designation_edit} element={<AddHrmDesignation />} />
             <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
             <Route path={routes.hrms_salary_sheet_update} element={<SalarySheetUpdate user={me} />} />
             <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
             <Route path={routes.hrms_festival_bonus_generate} element={<FestivalBonusGenerate user={me} />} />
             <Route path={routes.hrms_festival_bonus_list} element={<FestivalBonus user={me} />} />
-
-
-
             <Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
 
             {/* All Cart */}
@@ -368,3 +375,7 @@ function App() {
 }
 
 export default App;
+
+
+
+

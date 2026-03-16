@@ -431,8 +431,19 @@ export const API_EMPLOYEE_EDIT_URL = `${API_BASE_URL}/hrms/employee/edit/`;
 export const API_EMPLOYEE_UPDATE_URL = `${API_BASE_URL}/hrms/employee/update/`;
 export const API_EMPLOYEE_FROM_UI_URL = `${API_BASE_URL}/hrms/employee/update/ui/`;
 export const API_EMPLOYEE_STATUS_URL = `${API_BASE_URL}/hrms/employee/status`;
+export const API_HRMS_DESIGNATION_LEVEL_LIST_URL = `${API_BASE_URL}/hrms/designation-levels/list`;
+export const API_HRMS_DESIGNATION_LEVEL_STORE_URL = `${API_BASE_URL}/hrms/designation-levels/store`;
+export const API_HRMS_DESIGNATION_LEVEL_EDIT_URL = `${API_BASE_URL}/hrms/designation-levels/edit`;
+export const API_HRMS_DESIGNATION_LEVEL_UPDATE_URL = `${API_BASE_URL}/hrms/designation-levels/update`;
+export const API_HRMS_DESIGNATION_LEVEL_DELETE_URL = `${API_BASE_URL}/hrms/designation-levels/delete`;
+export const API_HRMS_DESIGNATION_LEVEL_DDL_URL = `${API_BASE_URL}/hrms/designation-levels/ddl`;
+export const API_HRMS_DESIGNATION_LIST_URL = `${API_BASE_URL}/hrms/designations/list`;
+export const API_HRMS_DESIGNATION_STORE_URL = `${API_BASE_URL}/hrms/designations/store`;
+export const API_HRMS_DESIGNATION_EDIT_URL = `${API_BASE_URL}/hrms/designations/edit`;
+export const API_HRMS_DESIGNATION_UPDATE_URL = `${API_BASE_URL}/hrms/designations/update`;
+export const API_HRMS_DESIGNATION_DELETE_URL = `${API_BASE_URL}/hrms/designations/delete`;
+export const API_HRMS_DESIGNATION_DDL_URL = `${API_BASE_URL}/hrms/designations/ddl`;
 export const API_FULL_SALARY_PAYMENT_URL = `${API_BASE_URL}/hrms/salary-payment-full`;
-
 
 // Employee Loan Routes
 export const API_EMPLOYEE_LOAN_DISBURSEMENT_URL = `${API_BASE_URL}/hrms/loan/disbursement`;
@@ -496,3 +507,9 @@ export const API_UNIT_CHARGE_TYPE_LIST_URL = `${API_BASE_URL}/real-estate/units/
 
 // Unit Sale Routes
 export const API_UNIT_SALE_STORE_URL = `${API_BASE_URL}/real-estate/unit/sales`;
+
+
+
+
+
+
