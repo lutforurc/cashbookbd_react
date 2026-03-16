@@ -21,7 +21,6 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
-  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import dayjs from 'dayjs';
@@ -579,67 +578,51 @@ const ConstructionBusinessPurchase = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <div className="flex items-center justify-between gap-2">
-                  <label className="text-black dark:text-white" htmlFor="">
-                    Select Supplier
-                  </label>
-                </div>
-                <DdlMultiline
-                  id="account"
-                  name="account"
-                  onSelect={supplierAccountHandler}
-                  // defaultValue={formData.account ? {
-                  //     value: formData.account, label: formData.accountName, //productData.accountName
-                  // } : null}
-                  value={
-                    formData.account
-                      ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
+                <label className="text-black dark:text-white" htmlFor="">
+                  Select Supplier
+                </label>
+                <div className="flex items-start gap-1">
+                  <div className="min-w-0 flex-1">
+                    <DdlMultiline
+                      id="account"
+                      name="account"
+                      onSelect={supplierAccountHandler}
+                      actionOptionLabel="+ Add New Supplier"
+                      onActionSelect={openCustomerModal}
+                      value={
+                        formData.account
+                          ? {
+                            value: formData.account,
+                            label: formData.accountName,
+                          }
+                          : null
                       }
-                      : null
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      // Delay to allow react-select to complete selection
-                      setTimeout(() => {
-                        const input = document.querySelector(
-                          '#notes',
-                        ) as HTMLInputElement | null;
-                        if (input) input.focus();
-                        if (input) input.select();
-                      }, 150);
-                    }
-                  }}
-                  acType={'3'}
-                />
-              </div>
-              <div className='flex'>
-                <div className='mt-6 -ml-2.5 mr-2 '>
-                  <button
-                    type="button"
-                    onClick={openCustomerModal}
-                    title="Add New Supplier"
-                    aria-label="Add New Supplier"
-                    className="inline-flex h-9.5 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                  >
-                    <FiUserPlus className="text-sm" />
-                  </button>
-                </div>
-
-                <div className='w-full'>
-                  <InputElement
-                    id="notes"
-                    value={formData.notes}
-                    name="notes"
-                    placeholder={'Notes'}
-                    label={'Notes'}
-                    className={'py-1.5'}
-                    onChange={handleOnChange}
-                    onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Dynamically pass the next element's ID
-                  />
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setTimeout(() => {
+                            const input = document.querySelector(
+                              '#notes',
+                            ) as HTMLInputElement | null;
+                            if (input) input.focus();
+                            if (input) input.select();
+                          }, 150);
+                        }
+                      }}
+                      acType={'3'}
+                    />
+                  </div>
                 </div>
               </div>
+              <InputElement
+                id="notes"
+                value={formData.notes}
+                name="notes"
+                placeholder={'Notes'}
+                label={'Notes'}
+                className={'py-1.5'}
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement

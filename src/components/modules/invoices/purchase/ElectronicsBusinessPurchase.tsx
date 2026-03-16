@@ -21,7 +21,6 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
-  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator.tsx';
 import dayjs from 'dayjs';
@@ -546,44 +545,37 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <label className="text-black dark:text-white" htmlFor="">
-                    Select Supplier
-                  </label>
-                  <button
-                    type="button"
-                    onClick={openCustomerModal}
-                    title="Add New Supplier"
-                    aria-label="Add New Supplier"
-                    className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                  >
-                    <FiUserPlus className="text-sm" />
-                  </button>
+                <label className="text-black dark:text-white" htmlFor="">
+                  Select Supplier
+                </label>
+                <div className="min-w-0">
+                  <DdlMultiline
+                    onSelect={supplierAccountHandler}
+                    placeholder="Select Supplier"
+                    actionOptionLabel="+ Add New Supplier"
+                    onActionSelect={openCustomerModal}
+                    defaultValue={
+                      formData.account
+                        ? {
+                          value: formData.account,
+                          label: formData.accountName,
+                        }
+                        : null
+                    }
+                    value={
+                      formData.account
+                        ? {
+                          value: formData.account,
+                          label: formData.accountName,
+                        }
+                        : null
+                    }
+                    onKeyDown={(e) =>
+                      handleInputKeyDown(e, 'purchaseOrderNumber')
+                    }
+                    acType={'3'}
+                  />
                 </div>
-                <DdlMultiline
-                  onSelect={supplierAccountHandler}
-                  placeholder="Select Supplier"
-                  defaultValue={
-                    formData.account
-                      ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
-                      }
-                      : null
-                  }
-                  value={
-                    formData.account
-                      ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
-                      }
-                      : null
-                  }
-                  onKeyDown={(e) =>
-                    handleInputKeyDown(e, 'purchaseOrderNumber')
-                  } // Pass the next field's ID
-                  acType={'3'}
-                />
               </div>
               <InputElement
                 id="notes"

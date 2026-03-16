@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import Loader from '../../../../common/Loader';
-import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2, FiUserPlus } from 'react-icons/fi';
+import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
@@ -773,39 +773,31 @@ const ElectronicsBusinessSales = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <label htmlFor="">Select Customer</label>
-                  
+                <label htmlFor="">Select Customer</label>
+                <div className="mt-1 flex items-start gap-1">
+                  <div className="min-w-0 flex-1">
+                    <DdlMultiline
+                      onSelect={customerAccountHandler}
+                      placeholder="Select Customer"
+                      actionOptionLabel="+ Add New Customer"
+                      onActionSelect={openCustomerModal}
+                      defaultValue={
+                        formData.account
+                          ? { value: formData.account, label: formData.accountName }
+                          : null
+                      }
+                      value={
+                        formData.account
+                          ? { value: formData.account, label: formData.accountName }
+                          : null
+                      }
+                      acType={'3'}
+                    />
+                  </div>
                 </div>
-                <DdlMultiline
-                  onSelect={customerAccountHandler}
-                  placeholder="Select Customer"
-                  defaultValue={
-                    formData.account
-                      ? { value: formData.account, label: formData.accountName }
-                      : null
-                  }
-                  value={
-                    formData.account
-                      ? { value: formData.account, label: formData.accountName }
-                      : null
-                  }
-                  acType={'3'}
-                />
               </div>
               <div>
                 <div className="mt-9 ml-0 flex">
-                  <div className='mr-2'>
-                    <button
-                      type="button"
-                      onClick={openCustomerModal}
-                      title="Add New Customer"
-                      aria-label="Add New Customer"
-                      className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                    >
-                      <FiUserPlus className="text-sm" />
-                    </button>
-                  </div>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"

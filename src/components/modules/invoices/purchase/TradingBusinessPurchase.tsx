@@ -21,7 +21,6 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
-  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import dayjs from 'dayjs';
@@ -644,41 +643,36 @@ const TradingBusinessPurchase = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <label className="text-black dark:text-white" htmlFor="">
-                    Select Supplier
-                  </label>
-                  <button
-                    type="button"
-                    onClick={openCustomerModal}
-                    title="Add New Supplier"
-                    aria-label="Add New Supplier"
-                    className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                  >
-                    <FiUserPlus className="text-sm" />
-                  </button>
-                </div>
-                <DdlMultiline
-                  id="account"
-                  name="account"
-                  onSelect={supplierAccountHandler}
-                  value={
-                    formData.account
-                      ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
+                <label className="text-black dark:text-white" htmlFor="">
+                  Select Supplier
+                </label>
+                <div className="mt-1 flex items-start gap-1">
+                  <div className="min-w-0 flex-1">
+                    <DdlMultiline
+                      id="account"
+                      name="account"
+                      onSelect={supplierAccountHandler}
+                      actionOptionLabel="+ Add New Supplier"
+                      onActionSelect={openCustomerModal}
+                      value={
+                        formData.account
+                          ? {
+                              value: formData.account,
+                              label: formData.accountName,
+                            }
+                          : null
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setTimeout(() => {
+                            handleSelectKeyDown(e, '#purchaseOrderNumber');
+                          }, 150);
                         }
-                      : null
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setTimeout(() => {
-                        handleSelectKeyDown(e, '#purchaseOrderNumber');
-                      }, 150);
-                    }
-                  }}
-                  acType={'3'}
-                />
+                      }}
+                      acType={'3'}
+                    />
+                  </div>
+                </div>
               </div>
               <div className="relative">
                 <div>

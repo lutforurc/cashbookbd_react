@@ -12,6 +12,7 @@ interface OptionType {
   label_3?: string;
   label_4?: string;
   label_5?: string;
+  isAction?: boolean;
 }
 
 interface DropdownProps {
@@ -24,7 +25,11 @@ interface DropdownProps {
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
   placeholder?: string;
+  actionOptionLabel?: string;
+  onActionSelect?: () => void;
 }
+
+const ACTION_OPTION_VALUE = '__ddl_multiline_action__';
 
 const DdlMultiline: React.FC<DropdownProps> = ({
   id,
@@ -36,6 +41,8 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   onKeyDown,
   className,
   placeholder,
+  actionOptionLabel,
+  onActionSelect,
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
   const dispatch = useDispatch();
@@ -64,6 +71,13 @@ const DdlMultiline: React.FC<DropdownProps> = ({
               label_5: item.label_5,
             }),
           );
+          if (actionOptionLabel) {
+            formattedOptions.push({
+              value: ACTION_OPTION_VALUE,
+              label: actionOptionLabel,
+              isAction: true,
+            });
+          }
           callback(formattedOptions);
         } else {
           callback([]);
@@ -88,8 +102,15 @@ const DdlMultiline: React.FC<DropdownProps> = ({
           : '#d2d6dc',
       backgroundColor: darkMode ? '#1f212a' : '#fcfcfc',
       color: darkMode ? '#fff' : '#000',
-      boxShadow: state.isFocused ? 'none' : 'none',
+      boxShadow: state.isFocused ? 'none' : '',
       fontSize: '0.9rem',
+      '&:hover': {
+        borderColor: state.isFocused
+          ? 'rgb(59 130 246)'
+          : darkMode
+            ? '#363843'
+            : '#d2d6dc',
+      },
     }),
     option: (base, { isFocused, isSelected }) => ({
       ...base,
@@ -140,7 +161,13 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         className={`cash-react-select-container w-full dark:bg-black focus:border-blue-500 ${className}`}
         classNamePrefix="cash-react-select"
         loadOptions={loadOptions}
-        onChange={onSelect}
+        onChange={(selected) => {
+          if (selected?.isAction) {
+            onActionSelect?.();
+            return;
+          }
+          onSelect?.(selected);
+        }}
         onMenuOpen={() => setIsSelected(true)}
         onMenuClose={() => setIsSelected(false)}
         onKeyDown={onKeyDown}
@@ -149,13 +176,17 @@ const DdlMultiline: React.FC<DropdownProps> = ({
           <div>
             <div className="text-sm text-gray-900 dark:text-white focus:border-blue-500">
               {option.label}
+              {option.isAction ? null : (
+                <>
               {option?.label_4 && Number(option.label_4) > 0 && (
                 <span className="text-gray-600 dark:text-white text-sm">
                   {' '}({option.label_4})
                 </span>
               )}
+                </>
+              )}
             </div>
-            {isSelected && (
+            {isSelected && !option.isAction && (
               <div className="additional-info">
                 {option.label_5 && (
                   <div className="text-gray-600 dark:text-white text-sm">

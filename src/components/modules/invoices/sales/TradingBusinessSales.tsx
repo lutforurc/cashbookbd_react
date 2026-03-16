@@ -20,7 +20,6 @@ import {
   FiSave,
   FiSearch,
   FiTrash2,
-  FiUserPlus,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import SelectWeightVariance from '../../../utils/utils-functions/SelectWeightVariance';
@@ -696,70 +695,52 @@ const TradingBusinessSales = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <div className="flex items-center justify-between gap-2">
-                  <label htmlFor="">Select Customer</label>
-
-                </div>
-                <DdlMultiline
-                  onSelect={customerAccountHandler}
-                  // defaultValue={formData.account ? {
-                  //     value: formData.account, label: formData.accountName, //productData.accountName
-                  // } : null}
-                  value={
-                    formData.account
-                      ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
+                <label htmlFor="">Select Customer</label>
+                <div className="mt-1 flex items-start gap-1">
+                  <div className="min-w-0 flex-1">
+                    <DdlMultiline
+                      onSelect={customerAccountHandler}
+                      actionOptionLabel="+ Add New Customer"
+                      onActionSelect={openCustomerModal}
+                      value={
+                        formData.account
+                          ? {
+                            value: formData.account,
+                            label: formData.accountName,
+                          }
+                          : null
                       }
-                      : null
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setTimeout(() => {
+                            const input = document.querySelector(
+                              '#vehicleNumber',
+                            ) as HTMLInputElement | null;
+                            if (input) input.focus();
+                          }, 150);
+                        }
+                      }}
+                      acType={'3'}
+                    />
+                  </div>
+                </div>
+              </div>
+              <InputElement
+                id="vehicleNumber"
+                value={formData.vehicleNumber}
+                name="vehicleNumber"
+                placeholder={'Vehicle Number'}
+                label={'Vehicle Number'}
+                className={'py-1.5'}
+                onChange={handleOnChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setTimeout(() => {
+                      handleSelectKeyDown(e, '#purchaseOrderNumber');
+                    }, 150);
                   }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      // Delay to allow react-select to complete selection
-                      setTimeout(() => {
-                        const input = document.querySelector(
-                          '#vehicleNumber',
-                        ) as HTMLInputElement | null;
-                        if (input) input.focus();
-                      }, 150);
-                    }
-                  }}
-                  acType={'3'}
-                />
-              </div>
-
-              <div className='flex gap-2'>
-                <div className='mt-7.5'>
-                  <button
-                    type="button"
-                    onClick={openCustomerModal}
-                    title="Add New Customer"
-                    aria-label="Add New Customer"
-                    className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                  >
-                    <FiUserPlus className="text-sm" />
-                  </button>
-                </div>
-
-                <div className='w-full'>
-                  <InputElement
-                  id="vehicleNumber"
-                  value={formData.vehicleNumber}
-                  name="vehicleNumber"
-                  placeholder={'Vehicle Number'}
-                  label={'Vehicle Number'}
-                  className={'py-1.5'}
-                  onChange={handleOnChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setTimeout(() => {
-                        handleSelectKeyDown(e, '#purchaseOrderNumber');
-                      }, 150);
-                    }
-                  }}
-                />
-                </div>
-              </div>
+                }}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">

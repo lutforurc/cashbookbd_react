@@ -18,9 +18,6 @@
   .Toastify__toast-theme--light {
     @apply !bg-gray-800;
   }
-  .cash-react-select__control {
-    @apply !border-none;
-  }
   .cash-react-select-container
     .cash-react-select__control--menu-is-open
     .cash-react-select__single-value
