@@ -250,41 +250,8 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                   </div>
                 )}
 
-                {pageIndex === pages.length - 1 &&
-                  data?.installments &&
-                  data.installments.length > 0 && (
-                    <div className="ml-10 w-[260px] overflow-hidden avoid-break">
-                      <div><span className='text-[14px] flex justify-center underline'>Installment Details</span></div>
-                      <div
-                        className="grid grid-cols-[36px_96px_96px] border-b border-black bg-gray-50 px-3 py-1 font-semibold"
-                        style={{ fontSize: fs - 0.5 }}
-                      >
-                        <div className="text-center">SL</div>
-                        <div>Due Date</div>
-                        <div className="text-right">Amount</div>
-                      </div>
-
-                      {data.installments.map((inst: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="grid grid-cols-[36px_96px_96px] px-3 py-1.5 border-b border-gray-300 last:border-b-0"
-                          style={{ fontSize: fs }}
-                        >
-                          <div className="font-medium text-center">
-                            {idx + 1}
-                          </div>
-                          <div>
-                            {dayjs(inst.due_date).format('DD/MM/YYYY')}
-                          </div>
-                          <div className="text-right font-medium">
-                            {thousandSeparator(Number(inst.amount), 0)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                
               </div>
-
               <table className="border-collapse">
                 <tbody>
                   <tr>
@@ -360,6 +327,39 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                   </tr>
                 </tbody>
               </table>
+              {pageIndex === pages.length - 1 &&
+                  data?.installments &&
+                  data.installments.length > 0 && (
+                    <div className="ml-10 w-[260px] overflow-hidden avoid-break">
+                      <div><span className='text-[14px] flex justify-center underline'>Installment Details</span></div>
+                      <div
+                        className="grid grid-cols-[36px_96px_96px] border-b border-black bg-gray-50 px-3 py-1 font-semibold"
+                        style={{ fontSize: fs - 0.5 }}
+                      >
+                        <div className="text-center">SL</div>
+                        <div>Due Date</div>
+                        <div className="text-right">Amount</div>
+                      </div>
+
+                      {data.installments.map((inst: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="grid grid-cols-[36px_96px_96px] px-3 py-1.5 border-b border-gray-300 last:border-b-0"
+                          style={{ fontSize: fs }}
+                        >
+                          <div className="font-medium text-center">
+                            {idx + 1}
+                          </div>
+                          <div>
+                            {dayjs(inst.due_date).format('DD/MM/YYYY')}
+                          </div>
+                          <div className="text-right font-medium">
+                            {thousandSeparator(Number(inst.amount), 0)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
             </div>
           )}
 
