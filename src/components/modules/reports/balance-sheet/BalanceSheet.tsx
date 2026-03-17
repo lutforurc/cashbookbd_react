@@ -17,6 +17,7 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
 import { fetchProfitLoss } from "../profit-loss/profitLossSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 type ReportGroup = {
   group_name?: string;
@@ -95,10 +96,7 @@ const getClosingStockAmountFromProfitLoss = (data: any) => {
 };
 
 const formatAmount = (amount: number) => {
-  const formatted = Math.abs(amount).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const formatted = thousandSeparator(Math.abs(amount), 2);
 
   return amount < 0 ? `(${formatted})` : formatted;
 };
@@ -375,7 +373,7 @@ const BalanceSheet = (user: any) => {
         {!balanceSheetState?.loading && hasReportData && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <SummaryCard title="Total Assets" value={totals.assets} tone="emerald" />
+              <SummaryCard title="Total Assets" value={  totals.assets } tone="emerald" />
               <SummaryCard title="Liabilities + Equity" value={totals.liabilitiesAndEquity} tone="blue" />
               <SummaryCard title="Difference" value={totals.difference} tone={Math.abs(totals.difference) > 0.009 ? "amber" : "slate"} />
             </div>
@@ -427,7 +425,7 @@ const BalanceSheet = (user: any) => {
                     Liabilities + Equity
                   </p>
                   <p className="text-xl font-bold text-slate-900 dark:text-white">
-                    {formatAmount(totals.liabilitiesAndEquity)}
+                    {thousandSeparator(totals.liabilitiesAndEquity, 0)}
                   </p>
                 </div>
               </div>
@@ -565,7 +563,7 @@ const SectionCard = ({
                       : "text-slate-700 dark:text-slate-200"
                   }`}
                 >
-                  {formatAmount(row.amount)}
+                  {thousandSeparator(row.amount, 0)}
                 </td>
               </tr>
             ))}
@@ -576,7 +574,7 @@ const SectionCard = ({
                 {totalLabel}
               </td>
               <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                {formatAmount(totalValue)}
+                {thousandSeparator((totalValue), 0)}
               </td>
             </tr>
           </tfoot>

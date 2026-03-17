@@ -230,7 +230,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'cash.received.create') && currentBranch?.business_type_id === 4 && (
+                          {/* {hasPermission(permissions, 'cash.received.create') && currentBranch?.business_type_id === 4 && ( */}
                             <li>
                               <NavLink
                                 to={routes.installment_list}
@@ -242,7 +242,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 Installments
                               </NavLink>
                             </li>
-                          )}
+                          {/* )} */}
 
                           {hasPermission(permissions, 'cash.payment.create') && (
                             <li>

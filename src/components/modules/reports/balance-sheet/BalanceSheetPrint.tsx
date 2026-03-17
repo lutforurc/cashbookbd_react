@@ -1,5 +1,6 @@
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 type BalanceSheetItem = {
   name?: string;
@@ -30,13 +31,13 @@ type BalanceSheetPrintProps = {
   };
 };
 
-const formatAmount = (amount: number) => {
-  const formatted = Math.abs(amount).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+const formatAmount = (amount: number | string) => {
+  const sanitizedAmount =
+    typeof amount === "string" ? amount.replace(/,/g, "") : amount;
+  const numericAmount = Number(sanitizedAmount || 0);
+  const formatted = thousandSeparator(Math.abs(numericAmount), 2);
 
-  return amount < 0 ? `(${formatted})` : formatted;
+  return numericAmount < 0 ? `(${formatted})` : formatted;
 };
 
 const Section = ({
@@ -49,7 +50,7 @@ const Section = ({
   title: string;
   groups: BalanceSheetGroup[];
   totalLabel: string;
-  totalValue: number;
+  totalValue: string | number;
   fontSize: number;
 }) => (
   <div className="w-full">
@@ -118,8 +119,7 @@ const BalanceSheetPrint = ({
         <PadPrinting />
 
         <div className="mb-6 text-center" style={{ fontSize: `${fs}px` }}>
-          <h1 className="font-bold" style={{ fontSize: `${fs + 10}px` }}>Balance Sheet</h1>
-          <p className="mt-1">Branch: {branchName}</p>
+          <h1 className="font-bold mt-3" style={{ fontSize: `${fs + 10}px` }}>Balance Sheet</h1>
           <p>
             Period: {startDate} to {endDate}
           </p>
@@ -139,14 +139,14 @@ const BalanceSheetPrint = ({
               title="Liabilities"
               groups={liabilities}
               totalLabel="Liabilities Total"
-              totalValue={totals.liabilities}
+              totalValue={ thousandSeparator(totals.liabilities, 0)}
               fontSize={fs}
             />
             <Section
               title="Equity"
               groups={equity}
               totalLabel="Equity Total"
-              totalValue={totals.equity}
+              totalValue={ thousandSeparator(totals.equity, 0)}
               fontSize={fs}
             />
             <table className="w-full border-collapse" style={{ fontSize: `${fs}px` }}>
