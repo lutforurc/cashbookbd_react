@@ -88,6 +88,8 @@ const ROUTES = {
   report_cashbook: '/reports/cashbook',
   profit_loss: '/reports/profit-loss',
   balance_sheet: '/reports/balance-sheet',
+  trial_balance_level3: '/reports/trialbalance-level3',
+  trial_balance_level4: '/reports/trialbalance-level4',
   report_due_list: '/reports/due-list',
   report_date_wise_total: '/reports/date-wise-total-data',
   report_product_stock: '/reports/product/stock',

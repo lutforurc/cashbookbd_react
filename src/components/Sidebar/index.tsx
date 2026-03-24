@@ -444,6 +444,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === '/reports/cashbook' ||
                     pathname === routes.profit_loss || //'/reports/profit-loss' ||
                     pathname === routes.balance_sheet ||
+                    pathname === routes.trial_balance_level3 ||
+                    pathname === routes.trial_balance_level4 ||
                     pathname === '/reports/employee-installment' ||
                     pathname === '/reports/ledger' ||
                     pathname === '/reports/due-installments' ||
@@ -477,6 +479,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname.includes('/reports/mitch-match') ||
                           pathname.includes(routes.profit_loss) ||
                           pathname.includes(routes.balance_sheet) ||
+                          pathname.includes(routes.trial_balance_level3) ||
+                          pathname.includes(routes.trial_balance_level4) ||
                           pathname.includes('reports/ledger')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -531,6 +535,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 }
                               >
                                 Balance Sheet
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.trial_balance_level3}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Trial Balance L3
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.trial_balance_level4}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Trial Balance L4
                               </NavLink>
                             </li>
                           )}

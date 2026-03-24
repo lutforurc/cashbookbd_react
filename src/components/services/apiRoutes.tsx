@@ -208,6 +208,10 @@ export const API_REPORT_CASHBOOK_URL = `${API_BASE_URL}/reports/cashbook`;
 export const API_REPORT_PROFIT_LOSS_URL = `${API_BASE_URL}/reports/profit-loss`;
 // Balance Sheet url
 export const API_REPORT_BALANCE_SHEET_URL = `${API_BASE_URL}/reports/balance-sheet`;
+// Trial Balance Level 3 url
+export const API_REPORT_TRIAL_BALANCE_LEVEL3_URL = `${API_BASE_URL}/reports/trialbalance-level3`;
+// Trial Balance Level 4 url
+export const API_REPORT_TRIAL_BALANCE_LEVEL4_URL = `${API_BASE_URL}/reports/trialbalance-level4`;
 // Cash Book url
 export const API_REPORT_DUE_LIST_URL = `${API_BASE_URL}/reports/duelist`;
 // Date Wise Report url

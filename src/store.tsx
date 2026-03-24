@@ -65,6 +65,8 @@ import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice'
 import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
 import profitLossSlice from './components/modules/reports/profit-loss/profitLossSlice';
 import balanceSheetSlice from './components/modules/reports/balance-sheet/balanceSheetSlice';
+import trialBalanceLevel3Slice from './components/modules/reports/trial-balance-level3/trialBalanceLevel3Slice';
+import trialBalanceLevel4Slice from './components/modules/reports/trial-balance-level4/trialBalanceLevel4Slice';
 import unitSalePaymentsSlice from './components/modules/real-estate/checks/unitSalePaymentsSlice';
 import branchTransferSlice from './components/modules/warehouse-transfer/warehouseTransferSlice';
 import branchReceivedSlice from './components/modules/warehouse-received/warehouseReceivedSlice';
@@ -87,6 +89,8 @@ const store = configureStore({
     cashBook: cashBookReducer,
     profitLoss: profitLossSlice,
     balanceSheet: balanceSheetSlice,
+    trialBalanceLevel3: trialBalanceLevel3Slice,
+    trialBalanceLevel4: trialBalanceLevel4Slice,
     ledger: ledgerReducer,
     labourLedger: labourLedgerSlice,
     coal1: coal1Reducer,
