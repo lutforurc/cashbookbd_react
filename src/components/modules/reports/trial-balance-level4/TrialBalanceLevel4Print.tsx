@@ -141,26 +141,26 @@ const TrialBalanceLevel4Print = ({
             <tr>
               <td
                 colSpan={2}
-                className="border border-slate-300 px-1 py-1 font-bold text-right"
+                className="border border-slate-300 px-1 py-1  text-right"
               >
                 Grand Total
               </td>
-              <td className="border border-slate-300 px-1 py-1 text-right font-bold">
+              <td className="border border-slate-300 px-1 py-1 text-right ">
                 {thousandSeparator(totals.openingDebit, 0)}
               </td>
-              <td className="border border-slate-300 px-1 py-1 text-right font-bold">
+              <td className="border border-slate-300 px-1 py-1 text-right ">
                 {thousandSeparator(totals.openingCredit, 0)}
               </td>
-              <td className="border border-slate-300 px-1 py-1 text-right font-bold">
+              <td className="border border-slate-300 px-1 py-1 text-right ">
                 {thousandSeparator(totals.movementDebit, 0)}
               </td>
-              <td className="border border-slate-300 px-1 py-1 text-right font-bold">
+              <td className="border border-slate-300 px-1 py-1 text-right ">
                 {thousandSeparator(totals.movementCredit, 0)}
               </td>
-              <td className="border border-slate-300 px-1 py-1 text-right font-bold">
+              <td className="border border-slate-300 px-1 py-1 text-right ">
                 {thousandSeparator(totals.closingDebit, 0)}
               </td>
-              <td className="border border-slate-300 px-1 py-1 text-right font-bold">
+              <td className="border border-slate-300 px-1 py-1 text-right ">
                 {thousandSeparator(totals.closingCredit, 0)}
               </td>
             </tr>
