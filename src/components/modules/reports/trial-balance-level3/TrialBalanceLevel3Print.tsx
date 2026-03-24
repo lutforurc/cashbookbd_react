@@ -55,7 +55,6 @@ const TrialBalanceLevel3Print = ({
           <h1 className="mt-3 font-bold" style={{ fontSize: `${fs + 10}px` }}>
             Trial Balance Level 3
           </h1>
-          <p>{branchName}</p>
           <p>
             Period: {startDate} to {endDate}
           </p>
@@ -69,90 +68,100 @@ const TrialBalanceLevel3Print = ({
             <tr>
               <th
                 rowSpan={2}
-                className="border border-slate-300 bg-slate-100 px-3 py-2 text-left font-semibold"
+                className="border border-slate-300 bg-slate-100 px-2 py-0 text-center font-semibold"
+              >
+                Serial
+              </th>
+              <th
+                rowSpan={2}
+                className="border border-slate-300 bg-slate-100 px-2 py-0 text-left font-semibold"
               >
                 COA L3 Name
               </th>
-              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-3 py-2 text-center font-semibold">
+              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-2 py-0 text-center font-semibold">
                 Opening
               </th>
-              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-3 py-2 text-center font-semibold">
+              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-2 py-0 text-center font-semibold">
                 Movement
               </th>
-              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-3 py-2 text-center font-semibold">
+              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-2 py-0 text-center font-semibold">
                 Closing
               </th>
             </tr>
             <tr>
-              <th className="border border-slate-300 bg-slate-100 px-3 py-2 text-right font-semibold">
+              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
                 Dr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-3 py-2 text-right font-semibold">
+              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
                 Cr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-3 py-2 text-right font-semibold">
+              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
                 Dr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-3 py-2 text-right font-semibold">
+              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
                 Cr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-3 py-2 text-right font-semibold">
+              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
                 Dr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-3 py-2 text-right font-semibold">
+              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
                 Cr
               </th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {rows.map((row, index) => (
               <tr key={row.key}>
-                <td className="border border-slate-300 px-3 py-2">{row.name}</td>
-                <td className="border border-slate-300 px-3 py-2 text-right">
-                  {formatAmount(row.openingDebit)}
+                <td className="border border-slate-300 px-2 py-0 text-center">
+                  {index + 1}
                 </td>
-                <td className="border border-slate-300 px-3 py-2 text-right">
-                  {formatAmount(row.openingCredit)}
+                <td className="border border-slate-300 px-2 py-0">{row.name}</td>
+                <td className="border border-slate-300 px-2 py-0 text-right">
+                  {thousandSeparator(row.openingDebit, 0)}
                 </td>
-                <td className="border border-slate-300 px-3 py-2 text-right">
-                  {formatAmount(row.movementDebit)}
+                <td className="border border-slate-300 px-2 py-0 text-right">
+                  {thousandSeparator(row.openingCredit, 0)}
                 </td>
-                <td className="border border-slate-300 px-3 py-2 text-right">
-                  {formatAmount(row.movementCredit)}
+                <td className="border border-slate-300 px-2 py-0 text-right">
+                  {thousandSeparator(row.movementDebit, 0)}
                 </td>
-                <td className="border border-slate-300 px-3 py-2 text-right">
-                  {formatAmount(row.closingDebit)}
+                <td className="border border-slate-300 px-2 py-0 text-right">
+                  {thousandSeparator(row.movementCredit, 0)}
                 </td>
-                <td className="border border-slate-300 px-3 py-2 text-right">
-                  {formatAmount(row.closingCredit)}
+                <td className="border border-slate-300 px-2 py-0 text-right">
+                  {thousandSeparator(row.closingDebit, 0)}
+                </td>
+                <td className="border border-slate-300 px-2 py-0 text-right">
+                  {thousandSeparator(row.closingCredit, 0)}
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr>
-              <td
-                className="border border-slate-300 px-3 py-2 font-bold"
+              <td colSpan={2}
+                className="border border-slate-300 px-2 py-0 font-bold text-right "
               >
                 Grand Total
               </td>
-              <td className="border border-slate-300 px-3 py-2 text-right font-bold">
-                {formatAmount(totals.openingDebit)}
+              {/* <td className="border border-slate-300 px-2 py-0"></td> */}
+              <td className="border border-slate-300 px-2 py-0 text-right font-bold">
+                {thousandSeparator(totals.openingDebit,0)}
               </td>
-              <td className="border border-slate-300 px-3 py-2 text-right font-bold">
-                {formatAmount(totals.openingCredit)}
+              <td className="border border-slate-300 px-2 py-0 text-right font-bold">
+                {thousandSeparator(totals.openingCredit,0)}
               </td>
-              <td className="border border-slate-300 px-3 py-2 text-right font-bold">
-                {formatAmount(totals.movementDebit)}
+              <td className="border border-slate-300 px-2 py-0 text-right font-bold">
+                {thousandSeparator(totals.movementDebit,0)}
               </td>
-              <td className="border border-slate-300 px-3 py-2 text-right font-bold">
-                {formatAmount(totals.movementCredit)}
+              <td className="border border-slate-300 px-2 py-0 text-right font-bold">
+                {thousandSeparator(totals.movementCredit,0)}
               </td>
-              <td className="border border-slate-300 px-3 py-2 text-right font-bold">
-                {formatAmount(totals.closingDebit)}
+              <td className="border border-slate-300 px-2 py-0 text-right font-bold">
+                {thousandSeparator(totals.closingDebit,0)}
               </td>
-              <td className="border border-slate-300 px-3 py-2 text-right font-bold">
-                {formatAmount(totals.closingCredit)}
+              <td className="border border-slate-300 px-2 py-0 text-right font-bold">
+                {thousandSeparator(totals.closingCredit,0)}
               </td>
             </tr>
           </tfoot>
