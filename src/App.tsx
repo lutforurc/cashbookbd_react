@@ -125,6 +125,7 @@ import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import BalanceSheet from './components/modules/reports/balance-sheet/BalanceSheet';
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
+import LedgerWithProduct from './components/modules/reports/ledger-with-product/LedgerWithProduct';
 import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTransfer';
 import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
 import SendSms from './components/modules/sms/SendSms';
@@ -263,6 +264,7 @@ function App() {
             <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
             <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
             <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
+            <Route path={routes.customer_supplier_statement} element={<LedgerWithProduct user={me} />} />
             <Route path={routes.due_installment_list} element={<DueInstallment user={me} />} />
             <Route path={routes.employee_wise_installment} element={<StaffWiseDueInstallment user={me} />} />
             <Route path={routes.report_due_list} element={<DueList user={me} />} />

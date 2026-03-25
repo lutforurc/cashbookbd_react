@@ -214,6 +214,7 @@ export const API_REPORT_TRIAL_BALANCE_LEVEL3_URL = `${API_BASE_URL}/reports/tria
 export const API_REPORT_TRIAL_BALANCE_LEVEL4_URL = `${API_BASE_URL}/reports/trialbalance-level4`;
 // Cash Book url
 export const API_REPORT_DUE_LIST_URL = `${API_BASE_URL}/reports/duelist`;
+export const API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL = `${API_BASE_URL}/reports/ledger-with-product`;
 // Date Wise Report url
 export const API_DATE_WISE_TOTAL_URL = `${API_BASE_URL}/reports/date-wise-total-data`;
 
