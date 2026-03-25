@@ -446,7 +446,7 @@ const TrialBalanceLevel3 = (user: any) => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <SummaryCard
                 title="Closing Debit"
-                value={totals.closingDebit}
+                value={ totals.closingDebit}
                 tone="emerald"
               />
               <SummaryCard
@@ -535,7 +535,7 @@ const SummaryCard = ({
   return (
     <div className={`rounded-sm border p-5 shadow-default ${toneMap[tone]}`}>
       <p className="text-sm font-medium">{title}</p>
-      <p className="mt-2 text-2xl font-bold">{formatAmount(value)}</p>
+      <p className="mt-2 text-2xl font-bold">{thousandSeparator(value, 0)}</p>
     </div>
   );
 };
