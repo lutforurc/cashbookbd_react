@@ -141,6 +141,7 @@ const TrialBalanceLevel4 = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(20);
   const [fontSize, setFontSize] = useState<number>(12);
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -418,7 +419,15 @@ const TrialBalanceLevel4 = (user: any) => {
                 className="h-10 w-full rounded-sm"
               />
             </div>
-            <div>
+            <div className="grid grid-cols-2 gap-3">
+              <InputElement
+                type="number"
+                id="tbl4-rows-per-page"
+                label="Rows/Page"
+                value={rowsPerPage}
+                onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 20)}
+                className="h-10"
+              />
               <InputElement
                 type="number"
                 id="tbl4-font-size"
@@ -503,6 +512,7 @@ const TrialBalanceLevel4 = (user: any) => {
             startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
             endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
             rows={rows}
+            rowsPerPage={Number(rowsPerPage)}
             fontSize={Number(fontSize)}
             totals={totals}
           />
