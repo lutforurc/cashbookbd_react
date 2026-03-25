@@ -12,6 +12,7 @@ import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import InputElement from "../../../utils/fields/InputElement";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchProfitLoss } from "./profitLossSlice";
@@ -33,6 +34,13 @@ type NetRow = {
   name?: string;
   debit?: number | string;
   credit?: number | string;
+};
+
+type SelectedExpenseDetail = {
+  name: string;
+  debit: number;
+  credit: number;
+  netEffect: number;
 };
 
 const toNum = (v: any) => {
@@ -71,6 +79,8 @@ const ProfitLoss = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [selectedExpenseDetail, setSelectedExpenseDetail] =
+    useState<SelectedExpenseDetail | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -327,6 +337,15 @@ const ProfitLoss = (user: any) => {
     setFontSize(Number.isFinite(value) ? value : 12);
   };
 
+  const handleExpenseRowClick = (row: NetRow) => {
+    setSelectedExpenseDetail({
+      name: row.name || "Expense Details",
+      debit: toNum(row.debit),
+      credit: toNum(row.credit),
+      netEffect: toNum(row.debit) - toNum(row.credit),
+    });
+  };
+
   return (
     <div>
       <HelmetTitle title={"Profit Loss"} />
@@ -420,6 +439,7 @@ const ProfitLoss = (user: any) => {
           loading={profitLossState?.loading}
           report={report}
           loader={<Loader />}
+          onNetExpenseClick={handleExpenseRowClick}
         />
       ) : (
         <div className="rounded border border-dashed border-gray-300 bg-white p-6 ml-2 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
@@ -453,10 +473,117 @@ const ProfitLoss = (user: any) => {
         />
       </div>
 
+      <ExpenseDetailsModal
+        open={Boolean(selectedExpenseDetail)}
+        detail={selectedExpenseDetail}
+        onClose={() => setSelectedExpenseDetail(null)}
+      />
+
     </div>
   );
 };
 
 export default ProfitLoss;
+
+const ExpenseDetailsModal = ({
+  open,
+  detail,
+  onClose,
+}: {
+  open: boolean;
+  detail: SelectedExpenseDetail | null;
+  onClose: () => void;
+}) => {
+  if (!open || !detail) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] overflow-y-auto bg-slate-950/50 px-4 py-3"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center">
+        <div
+          className="my-2 flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="sticky top-0 z-10 flex items-start justify-between border-b border-stroke bg-white px-5 py-4 dark:border-strokedark dark:bg-boxdark">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                {detail.name}
+              </h3>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
+                NET PROFIT OR LOSS A/C expense details
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-stroke px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-strokedark dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="shrink-0 border-b border-stroke bg-slate-50 px-5 py-4 dark:border-strokedark dark:bg-slate-900/40">
+            <div className="grid gap-3 sm:grid-cols-3">
+            <ModalStat label="Debit" value={detail.debit} />
+            <ModalStat label="Credit" value={detail.credit} />
+            <ModalStat label="Net Expense" value={detail.netEffect} />
+          </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-5 pb-5">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="sticky top-0 z-20 border-b border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark dark:text-slate-300">
+                  <th className="px-3 py-3 text-left font-semibold">Particular</th>
+                  <th className="px-3 py-3 text-right font-semibold">Debit</th>
+                  <th className="px-3 py-3 text-right font-semibold">Credit</th>
+                  <th className="px-3 py-3 text-right font-semibold">Net Effect</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-stroke/70 text-slate-800 dark:border-strokedark dark:text-slate-100">
+                  <td className="px-3 py-3">{detail.name}</td>
+                  <td className="px-3 py-3 text-right">
+                    {detail.debit ? thousandSeparator(detail.debit, 2) : "-"}
+                  </td>
+                  <td className="px-3 py-3 text-right">
+                    {detail.credit ? thousandSeparator(detail.credit, 2) : "-"}
+                  </td>
+                  <td className="px-3 py-3 text-right font-semibold">
+                    {thousandSeparator(detail.netEffect, 2)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ModalStat = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) => {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/40">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+        {thousandSeparator(value, 2)}
+      </p>
+    </div>
+  );
+};
 
 

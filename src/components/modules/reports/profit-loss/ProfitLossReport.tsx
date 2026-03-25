@@ -43,6 +43,7 @@ type ProfitLossReportProps = {
   loading?: boolean;
   report: ProfitLossReportData;
   loader: ReactNode;
+  onNetExpenseClick?: (row: NetRow) => void;
 };
 
 const toNum = (v: any) => {
@@ -57,6 +58,7 @@ const ProfitLossReport = ({
   loading = false,
   report,
   loader,
+  onNetExpenseClick,
 }: ProfitLossReportProps) => {
   return (
     <div className="overflow-x-auto dark:bg-gray-800 dark:text-gray-300 p-3 rounded">
@@ -229,7 +231,19 @@ const ProfitLossReport = ({
 
           {report.net.expenses.map((r, idx) => (
             <tr key={`exp-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
-              <td className="p-2 pl-6">(-) {r.name}</td>
+              <td className="p-2 pl-6">
+                {onNetExpenseClick ? (
+                  <button
+                    type="button"
+                    onClick={() => onNetExpenseClick(r)}
+                    className="text-left text-sky-700 underline decoration-dotted underline-offset-4 transition hover:text-sky-900 dark:text-sky-300 dark:hover:text-sky-200"
+                  >
+                    (-) {r.name}
+                  </button>
+                ) : (
+                  <> (-) {r.name}</>
+                )}
+              </td>
               <td className="p-2 text-right">{fmtZero(toNum(r.debit))}</td>
               <td></td>
               <td className="p-2 text-right"></td>
