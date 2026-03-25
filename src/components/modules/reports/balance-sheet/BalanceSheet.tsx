@@ -12,92 +12,43 @@ import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import InputElement from "../../../utils/fields/InputElement";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
-import { fetchProfitLoss } from "../profit-loss/profitLossSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
-import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+
+type ReportItem = {
+  coa4_id?: number | null;
+  name?: string;
+  opening?: number | string;
+  movement?: number | string;
+  closing?: number | string;
+  balance?: number | string;
+};
 
 type ReportGroup = {
   group_name?: string;
+  opening?: number | string;
+  movement?: number | string;
+  closing?: number | string;
   total?: number | string;
-  items?: Array<{
-    name?: string;
-    balance?: number | string;
-  }>;
+  items?: ReportItem[];
 };
 
-type TradingRow = {
-  coal3_id?: number | string;
-  coal4_id?: number | string;
-  debit?: number | string;
-  credit?: number | string;
+type ColumnTotals = {
+  opening: number;
+  movement: number;
+  closing: number;
 };
 
 const toNum = (value: any) => {
-  const parsed = Number(value);
+  const parsed = Number(typeof value === "string" ? value.replace(/,/g, "") : value);
   return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const findClosingStockAmount = (data: any) => {
-  const candidates = [
-    data?.closing_stock,
-    data?.closingStock,
-    data?.closing_stock_amount,
-    data?.closingStockAmount,
-    data?.stock_value,
-    data?.stockValue,
-    data?.totals?.closing_stock,
-    data?.totals?.closingStock,
-  ];
-
-  for (const candidate of candidates) {
-    const amount = toNum(candidate);
-    if (amount !== 0) return amount;
-  }
-
-  return 0;
-};
-
-const getProfitLossApiData = (raw: any) => {
-  if (raw?.data?.data?.trading) return raw.data.data;
-  if (raw?.data?.trading) return raw.data;
-  if (raw?.trading) return raw;
-  if (raw?.summary?.closing_stock || raw?.summary?.opening_stock) return raw;
-  return null;
-};
-
-const sumClosingStockByCoal4Id = (rows: TradingRow[], coal4Id: number) => {
-  return rows
-    .filter((row) => Number(row.coal4_id) === coal4Id)
-    .reduce(
-      (acc, row) => {
-        acc.debit += toNum(row.debit);
-        acc.credit += toNum(row.credit);
-        return acc;
-      },
-      { debit: 0, credit: 0 },
-    );
-};
-
-const getClosingStockAmountFromProfitLoss = (data: any) => {
-  const normalizedData = getProfitLossApiData(data);
-  if (!normalizedData) return 0;
-
-  const tradingRows: TradingRow[] = normalizedData?.trading || [];
-  const fifoClosingStock = sumClosingStockByCoal4Id(tradingRows, 21).credit;
-  if (fifoClosingStock) return fifoClosingStock;
-
-  return (
-    findClosingStockAmount(normalizedData) ||
-    findClosingStockAmount(normalizedData?.summary)
-  );
 };
 
 const formatAmount = (amount: number) => {
   const formatted = thousandSeparator(Math.abs(amount), 2);
-
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
@@ -112,9 +63,12 @@ const BalanceSheet = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [closingStockAmount, setClosingStockAmount] = useState(0);
-  const [perPage, setPerPage] = useState<number>(14);
+  const [perPage, setPerPage] = useState<number>(40);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [selectedGroup, setSelectedGroup] = useState<{
+    title: string;
+    group: ReportGroup;
+  } | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -139,9 +93,7 @@ const BalanceSheet = (user: any) => {
           .split("/")
           .map((str: string) => Number(str.trim()));
 
-        if (isNaN(year) || year < 1900 || year > 2100) {
-          return;
-        }
+        if (!year || year < 1900 || year > 2100) return;
 
         setStartDate(new Date(year, 0, 1));
         setEndDate(new Date(year, month - 1, day));
@@ -164,57 +116,74 @@ const BalanceSheet = (user: any) => {
     return null;
   }, [balanceSheetState?.data]);
 
-  const { assets, injectedClosingStockAmount } = useMemo(() => {
-    const baseAssets = Array.isArray(apiData?.assets) ? [...apiData.assets] : [];
-    const hasClosingStock = baseAssets.some((group) =>
-      String(group?.group_name || "").trim().toLowerCase().includes("closing stock"),
-    );
-
-    if (hasClosingStock) {
-      return { assets: baseAssets, injectedClosingStockAmount: 0 };
-    }
-
-    const derivedClosingStockAmount =
-      findClosingStockAmount(apiData) || closingStockAmount;
-    if (!derivedClosingStockAmount) {
-      return { assets: baseAssets, injectedClosingStockAmount: 0 };
-    }
-
-    return {
-      assets: [
-        ...baseAssets,
-        {
-          group_name: "Closing Stock",
-          total: derivedClosingStockAmount,
-          items: [],
-        },
-      ],
-      injectedClosingStockAmount: derivedClosingStockAmount,
-    };
-  }, [apiData, closingStockAmount]);
-  const liabilities: ReportGroup[] = apiData?.liabilities || [];
-  const equity: ReportGroup[] = apiData?.equity || [];
+  const assets: ReportGroup[] = Array.isArray(apiData?.assets) ? apiData.assets : [];
+  const liabilities: ReportGroup[] = Array.isArray(apiData?.liabilities)
+    ? apiData.liabilities
+    : [];
+  const equity: ReportGroup[] = Array.isArray(apiData?.equity) ? apiData.equity : [];
 
   const totals = useMemo(() => {
-    const baseAssetsTotal = toNum(apiData?.totals?.assets);
-    const effectiveAssetsTotal = baseAssetsTotal + injectedClosingStockAmount;
-    const liabilitiesAndEquity = toNum(apiData?.totals?.liabilities_and_equity);
-
     return {
-      assets: effectiveAssetsTotal,
+      assets: toNum(apiData?.totals?.assets),
       liabilities: toNum(apiData?.totals?.liabilities),
       equity: toNum(apiData?.totals?.equity),
-      liabilitiesAndEquity,
-      difference: liabilitiesAndEquity - effectiveAssetsTotal,
+      liabilitiesAndEquity: toNum(apiData?.totals?.liabilities_and_equity),
+      difference: toNum(apiData?.totals?.difference),
+      assetsColumns: {
+        opening: toNum(apiData?.totals?.assets_columns?.opening),
+        movement: toNum(apiData?.totals?.assets_columns?.movement),
+        closing: toNum(apiData?.totals?.assets_columns?.closing),
+      },
+      liabilitiesColumns: {
+        opening: toNum(apiData?.totals?.liabilities_columns?.opening),
+        movement: toNum(apiData?.totals?.liabilities_columns?.movement),
+        closing: toNum(apiData?.totals?.liabilities_columns?.closing),
+      },
+      equityColumns: {
+        opening: toNum(apiData?.totals?.equity_columns?.opening),
+        movement: toNum(apiData?.totals?.equity_columns?.movement),
+        closing: toNum(apiData?.totals?.equity_columns?.closing),
+      },
+      differenceColumns: {
+        opening: toNum(apiData?.totals?.difference_columns?.opening),
+        movement: toNum(apiData?.totals?.difference_columns?.movement),
+        closing: toNum(apiData?.totals?.difference_columns?.closing),
+      },
     };
-  }, [apiData, injectedClosingStockAmount]);
+  }, [apiData]);
 
-  const hasReportData = assets.length > 0 || liabilities.length > 0 || equity.length > 0;
+  const hasReportData =
+    assets.length > 0 || liabilities.length > 0 || equity.length > 0;
+
+  const showDifferenceDebug = useMemo(() => {
+    return (
+      Math.abs(totals.difference) > 0.009 ||
+      Math.abs(totals.differenceColumns.opening) > 0.009 ||
+      Math.abs(totals.differenceColumns.movement) > 0.009 ||
+      Math.abs(totals.differenceColumns.closing) > 0.009
+    );
+  }, [totals]);
 
   const branchName = useMemo(() => {
-    const selected = dropdownData.find((branch: any) => Number(branch.id) === Number(branchId));
+    const selected = dropdownData.find(
+      (branch: any) => Number(branch.id) === Number(branchId),
+    );
     return selected?.name || "Selected Branch";
   }, [dropdownData, branchId]);
+
+  const reportDates = useMemo(() => {
+    return {
+      start:
+        apiData?.report_date?.start_date ||
+        (startDate ? dayjs(startDate).format("YYYY-MM-DD") : ""),
+      end:
+        apiData?.report_date?.end_date ||
+        (endDate ? dayjs(endDate).format("YYYY-MM-DD") : ""),
+      asOn:
+        apiData?.report_date?.as_on_date ||
+        (endDate ? dayjs(endDate).format("YYYY-MM-DD") : ""),
+    };
+  }, [apiData, startDate, endDate]);
 
   const handleBranchChange = (e: any) => {
     const value = Number(e.target.value);
@@ -222,37 +191,16 @@ const BalanceSheet = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select করুন");
-    if (!startDate || !endDate) return alert("Start/End Date দিন");
+    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
+    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
 
     setButtonLoading(true);
-    const formattedStartDate = dayjs(startDate).format("YYYY-MM-DD");
-    const formattedEndDate = dayjs(endDate).format("YYYY-MM-DD");
-
-    const profitLossAction = await dispatch(
-      fetchProfitLoss({
-        branch_id: Number(branchId),
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-      } as any) as any,
-    );
-
-
-  
-    if (profitLossAction?.meta?.requestStatus === "fulfilled") {
-      const closingAmount = getClosingStockAmountFromProfitLoss(
-        profitLossAction.payload,
-      );
-      setClosingStockAmount(closingAmount);
-    } else {
-      setClosingStockAmount(0);
-    }
 
     const balanceSheetAction = await dispatch(
       fetchBalanceSheet({
         branchId: Number(branchId),
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
+        startDate: dayjs(startDate).format("YYYY-MM-DD"),
+        endDate: dayjs(endDate).format("YYYY-MM-DD"),
       }) as any,
     );
 
@@ -282,7 +230,7 @@ const BalanceSheet = (user: any) => {
                   Balance Sheet
                 </h2>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Bangladesh accounting presentation with assets on the left and liabilities plus equity on the right.
+                  Summary view of assets, liabilities, and equity with drill-down details.
                 </p>
               </div>
 
@@ -373,10 +321,38 @@ const BalanceSheet = (user: any) => {
         {!balanceSheetState?.loading && hasReportData && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <SummaryCard title="Total Assets" value={  totals.assets } tone="emerald" />
-              <SummaryCard title="Liabilities + Equity" value={totals.liabilitiesAndEquity} tone="blue" />
-              <SummaryCard title="Difference" value={totals.difference} tone={Math.abs(totals.difference) > 0.009 ? "amber" : "slate"} />
+              <SummaryCard title="Total Assets" value={totals.assets} tone="emerald" />
+              <SummaryCard
+                title="Liabilities + Equity"
+                value={totals.liabilitiesAndEquity}
+                tone="blue"
+              />
+              <SummaryCard
+                title="Difference"
+                value={totals.difference}
+                tone={Math.abs(totals.difference) > 0.009 ? "amber" : "slate"}
+              />
             </div>
+
+            {showDifferenceDebug && (
+              <div className="rounded-sm border border-amber-200 bg-amber-50 shadow-default dark:border-amber-500/20 dark:bg-amber-500/10">
+                <div className="border-b border-amber-200 px-5 py-4 dark:border-amber-500/20">
+                  <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-100">
+                    Difference Debug
+                  </h3>
+                  <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+                    This section shows whether the mismatch is in opening, movement, or closing columns.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-4">
+                  <DebugCard title="Assets" values={totals.assetsColumns} />
+                  <DebugCard title="Liabilities" values={totals.liabilitiesColumns} />
+                  <DebugCard title="Equity" values={totals.equityColumns} />
+                  <DebugCard title="Difference" values={totals.differenceColumns} highlight />
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <SectionCard
@@ -385,8 +361,10 @@ const BalanceSheet = (user: any) => {
                 groups={assets}
                 totalLabel="Total Assets"
                 totalValue={totals.assets}
+                totalColumns={totals.assetsColumns}
                 perPage={perPage}
                 fontSize={fontSize}
+                onGroupClick={(group) => setSelectedGroup({ title: "Assets", group })}
               />
               <div className="space-y-6">
                 <SectionCard
@@ -395,8 +373,12 @@ const BalanceSheet = (user: any) => {
                   groups={liabilities}
                   totalLabel="Total Liabilities"
                   totalValue={totals.liabilities}
+                  totalColumns={totals.liabilitiesColumns}
                   perPage={perPage}
                   fontSize={fontSize}
+                  onGroupClick={(group) =>
+                    setSelectedGroup({ title: "Liabilities", group })
+                  }
                 />
                 <SectionCard
                   title="Equity"
@@ -404,8 +386,10 @@ const BalanceSheet = (user: any) => {
                   groups={equity}
                   totalLabel="Total Equity"
                   totalValue={totals.equity}
+                  totalColumns={totals.equityColumns}
                   perPage={perPage}
                   fontSize={fontSize}
+                  onGroupClick={(group) => setSelectedGroup({ title: "Equity", group })}
                 />
               </div>
             </div>
@@ -417,7 +401,7 @@ const BalanceSheet = (user: any) => {
                     Final Position
                   </h4>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
-                    As on {endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"} for {branchName}
+                    As on {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"} for {branchName}
                   </p>
                 </div>
                 <div className="text-right">
@@ -425,14 +409,14 @@ const BalanceSheet = (user: any) => {
                     Liabilities + Equity
                   </p>
                   <p className="text-xl font-bold text-slate-900 dark:text-white">
-                    {thousandSeparator(totals.liabilitiesAndEquity, 0)}
+                    {formatAmount(totals.liabilitiesAndEquity)}
                   </p>
                 </div>
               </div>
 
               {Math.abs(totals.difference) > 0.009 && (
                 <div className="mt-4 rounded-sm border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-600/40 dark:bg-amber-500/10 dark:text-amber-200">
-                  Difference detected: {formatAmount(totals.difference)}. Please review ledger mapping or period transactions.
+                  Difference detected: {formatAmount(totals.difference)}. Please review opening, movement, or group mapping.
                 </div>
               )}
             </div>
@@ -444,8 +428,8 @@ const BalanceSheet = (user: any) => {
         <div ref={printRef}>
           <BalanceSheetPrint
             branchName={branchName}
-            startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
-            endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
+            startDate={reportDates.start ? dayjs(reportDates.start).format("DD/MM/YYYY") : "-"}
+            endDate={reportDates.end ? dayjs(reportDates.end).format("DD/MM/YYYY") : "-"}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
             assets={assets.map(normalizeGroup)}
@@ -455,18 +439,59 @@ const BalanceSheet = (user: any) => {
           />
         </div>
       </div>
+
+      <GroupDetailsModal
+        open={Boolean(selectedGroup)}
+        title={selectedGroup?.title || ""}
+        group={selectedGroup?.group || null}
+        onClose={() => setSelectedGroup(null)}
+      />
     </>
   );
 };
 
 const normalizeGroup = (group: ReportGroup) => ({
   group_name: group.group_name || "",
-  total: toNum(group.total),
+  total: toNum(group.closing || group.total),
   items: (group.items || []).map((item) => ({
     name: item.name || "",
-    balance: toNum(item.balance),
+    balance: toNum(item.closing || item.balance),
   })),
 });
+
+const DebugCard = ({
+  title,
+  values,
+  highlight = false,
+}: {
+  title: string;
+  values: ColumnTotals;
+  highlight?: boolean;
+}) => {
+  const toneClass = highlight ? "text-amber-700 dark:text-amber-200" : "";
+
+  return (
+    <div className="rounded-sm border border-amber-200 bg-white p-4 dark:border-amber-500/20 dark:bg-boxdark">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {title}
+      </p>
+      <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+        <div className="flex items-center justify-between gap-3">
+          <span>Opening</span>
+          <span className={`font-semibold ${toneClass}`}>{formatAmount(values.opening)}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span>Movement</span>
+          <span className={`font-semibold ${toneClass}`}>{formatAmount(values.movement)}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span>Closing</span>
+          <span className={`font-semibold ${toneClass}`}>{formatAmount(values.closing)}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SummaryCard = ({
   title,
@@ -478,10 +503,14 @@ const SummaryCard = ({
   tone: "emerald" | "blue" | "amber" | "slate";
 }) => {
   const toneMap: Record<string, string> = {
-    emerald: "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-100",
-    blue: "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-100",
-    amber: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100",
-    slate: "border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-500/20 dark:bg-slate-500/10 dark:text-slate-100",
+    emerald:
+      "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-100",
+    blue:
+      "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-100",
+    amber:
+      "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100",
+    slate:
+      "border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-500/20 dark:bg-slate-500/10 dark:text-slate-100",
   };
 
   return (
@@ -498,23 +527,30 @@ const SectionCard = ({
   groups,
   totalLabel,
   totalValue,
+  totalColumns,
   perPage,
   fontSize,
+  onGroupClick,
 }: {
   title: string;
   accent: string;
   groups: ReportGroup[];
   totalLabel: string;
   totalValue: number;
+  totalColumns: ColumnTotals;
   perPage: number;
   fontSize: number;
+  onGroupClick: (group: ReportGroup) => void;
 }) => {
   const rows = useMemo(() => {
-    return groups.map((group) => ({
-      key: `${group.group_name}-group`,
-      type: "group",
+    return groups.map((group, index) => ({
+      key: `${group.group_name || "group"}-${index}-group`,
+      rawGroup: group,
       label: group.group_name || "",
-      amount: toNum(group.total),
+      opening: toNum(group.opening),
+      movement: toNum(group.movement),
+      closing: toNum(group.closing || group.total),
+      itemCount: (group.items || []).length,
     }));
   }, [groups]);
 
@@ -533,7 +569,13 @@ const SectionCard = ({
                 Particulars
               </th>
               <th className="px-5 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Amount
+                Opening
+              </th>
+              <th className="px-5 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Movement
+              </th>
+              <th className="px-5 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Closing
               </th>
             </tr>
           </thead>
@@ -541,29 +583,25 @@ const SectionCard = ({
             {visibleRows.map((row) => (
               <tr
                 key={row.key}
-                className={`border-b border-stroke last:border-b-0 dark:border-strokedark ${
-                  row.type === "group"
-                    ? "bg-slate-50 dark:bg-slate-800/50"
-                    : ""
-                }`}
+                onClick={() => onGroupClick(row.rawGroup)}
+                className="cursor-pointer border-b border-stroke bg-slate-50 transition hover:bg-slate-100 last:border-b-0 dark:border-strokedark dark:bg-slate-800/50 dark:hover:bg-slate-800"
               >
-                <td
-                  className={`px-5 py-3 text-slate-800 dark:text-slate-100 ${
-                    row.type === "group"
-                      ? "font-semibold"
-                      : "pl-9 text-slate-600 dark:text-slate-300"
-                  }`}
-                >
-                  {row.label}
+                <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>{row.label}</span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {row.itemCount} item{row.itemCount === 1 ? "" : "s"}
+                    </span>
+                  </div>
                 </td>
-                <td
-                  className={`px-5 py-3 text-right ${
-                    row.type === "group"
-                      ? "font-semibold text-slate-900 dark:text-white"
-                      : "text-slate-700 dark:text-slate-200"
-                  }`}
-                >
-                  {thousandSeparator(row.amount, 0)}
+                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
+                  {formatAmount(row.opening)}
+                </td>
+                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
+                  {formatAmount(row.movement)}
+                </td>
+                <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
+                  {formatAmount(row.closing)}
                 </td>
               </tr>
             ))}
@@ -574,7 +612,13 @@ const SectionCard = ({
                 {totalLabel}
               </td>
               <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                {thousandSeparator((totalValue), 0)}
+                {formatAmount(totalColumns.opening)}
+              </td>
+              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
+                {formatAmount(totalColumns.movement)}
+              </td>
+              <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
+                {formatAmount(totalColumns.closing || totalValue)}
               </td>
             </tr>
           </tfoot>
@@ -583,5 +627,133 @@ const SectionCard = ({
     </div>
   );
 };
+
+const GroupDetailsModal = ({
+  open,
+  title,
+  group,
+  onClose,
+}: {
+  open: boolean;
+  title: string;
+  group: ReportGroup | null;
+  onClose: () => void;
+}) => {
+  if (!open || !group) return null;
+
+  const items = group.items || [];
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] overflow-y-auto bg-slate-950/50 px-4 py-3"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center">
+      <div className="my-2 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stroke bg-white px-5 py-4 dark:border-strokedark dark:bg-boxdark">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              {title}: {group.group_name || "Details"}
+            </h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Clicked summary details are shown here.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="shrink-0 border-b border-stroke bg-slate-50 px-5 py-4 dark:border-strokedark dark:bg-slate-900/40">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <ModalStat label="Opening" value={toNum(group.opening)} />
+            <ModalStat label="Movement" value={toNum(group.movement)} />
+            <ModalStat label="Closing" value={toNum(group.closing || group.total)} />
+            <ModalStat label="Items" value={items.length} isCount />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 pb-5">
+          <table className="min-w-full">
+            <thead>
+              <tr className="sticky top-0 z-20 border-b border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  Particular
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  Opening
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  Movement
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  Closing
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.length > 0 ? (
+                items.map((item, index) => (
+                  <tr
+                    key={`${item.coa4_id || index}-${item.name || "item"}`}
+                    className="border-b border-stroke last:border-b-0 dark:border-strokedark"
+                  >
+                    <td className="px-4 py-3 text-slate-800 dark:text-slate-100">
+                      {item.name || "-"}
+                    </td>
+                    <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">
+                      {formatAmount(toNum(item.opening))}
+                    </td>
+                    <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">
+                      {formatAmount(toNum(item.movement))}
+                    </td>
+                    <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-white">
+                      {formatAmount(toNum(item.closing || item.balance))}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
+                  >
+                    No detailed items found for this summary.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+};
+
+const ModalStat = ({
+  label,
+  value,
+  isCount = false,
+}: {
+  label: string;
+  value: number;
+  isCount?: boolean;
+}) => (
+  <div className="rounded-sm border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-boxdark">
+    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      {label}
+    </p>
+    <p className="mt-2 text-lg font-bold text-slate-900 dark:text-white">
+      {isCount ? value : formatAmount(value)}
+    </p>
+  </div>
+);
 
 export default BalanceSheet;
