@@ -31,6 +31,13 @@ type TrialBalanceRow = {
   closingCredit: number;
 };
 
+type TrialBalanceDiagnosticRow = TrialBalanceRow & {
+  rowNetOpening: number;
+  rowNetMovement: number;
+  rowNetClosing: number;
+  rowDifference: number;
+};
+
 const toNum = (value: any) => {
   const numericValue = Number(
     typeof value === "string" ? value.replace(/,/g, "") : value,
@@ -218,6 +225,77 @@ const TrialBalanceLevel3 = (user: any) => {
         rows.reduce((sum, row) => sum + row.closingCredit, 0),
     };
   }, [rawReportData, rows]);
+
+  const diagnostics = useMemo(() => {
+    const rowTotals = rows.reduce(
+      (acc, row) => {
+        acc.openingDebit += row.openingDebit;
+        acc.openingCredit += row.openingCredit;
+        acc.movementDebit += row.movementDebit;
+        acc.movementCredit += row.movementCredit;
+        acc.closingDebit += row.closingDebit;
+        acc.closingCredit += row.closingCredit;
+        return acc;
+      },
+      {
+        openingDebit: 0,
+        openingCredit: 0,
+        movementDebit: 0,
+        movementCredit: 0,
+        closingDebit: 0,
+        closingCredit: 0,
+      },
+    );
+
+    const imbalanceRows: TrialBalanceDiagnosticRow[] = rows
+      .map((row) => {
+        const rowNetOpening = row.openingDebit - row.openingCredit;
+        const rowNetMovement = row.movementDebit - row.movementCredit;
+        const rowNetClosing = row.closingDebit - row.closingCredit;
+        const rowDifference = rowNetOpening + rowNetMovement - rowNetClosing;
+
+        return {
+          ...row,
+          rowNetOpening,
+          rowNetMovement,
+          rowNetClosing,
+          rowDifference,
+        };
+      })
+      .filter((row) => Math.abs(row.rowDifference) > 0.009)
+      .sort((a, b) => Math.abs(b.rowDifference) - Math.abs(a.rowDifference));
+
+    return {
+      rowTotals,
+      totalsGap: {
+        opening: totals.openingDebit - totals.openingCredit,
+        movement: totals.movementDebit - totals.movementCredit,
+        closing: totals.closingDebit - totals.closingCredit,
+      },
+      sourceVsRows: {
+        openingDebit: totals.openingDebit - rowTotals.openingDebit,
+        openingCredit: totals.openingCredit - rowTotals.openingCredit,
+        movementDebit: totals.movementDebit - rowTotals.movementDebit,
+        movementCredit: totals.movementCredit - rowTotals.movementCredit,
+        closingDebit: totals.closingDebit - rowTotals.closingDebit,
+        closingCredit: totals.closingCredit - rowTotals.closingCredit,
+      },
+      imbalanceRows,
+    };
+  }, [rows, totals]);
+
+  const showDifferenceDebug = useMemo(() => {
+    const hasTotalsGap =
+      Math.abs(diagnostics.totalsGap.opening) > 0.009 ||
+      Math.abs(diagnostics.totalsGap.movement) > 0.009 ||
+      Math.abs(diagnostics.totalsGap.closing) > 0.009;
+
+    const hasSourceVsRowsGap = Object.values(diagnostics.sourceVsRows).some(
+      (value) => Math.abs(value) > 0.009,
+    );
+
+    return hasTotalsGap || hasSourceVsRowsGap || diagnostics.imbalanceRows.length > 0;
+  }, [diagnostics]);
 
   const hasReportData = rows.length > 0;
 
@@ -464,6 +542,161 @@ const TrialBalanceLevel3 = (user: any) => {
                 }
               />
             </div>
+
+            {showDifferenceDebug && (
+            <div className="rounded-sm border border-amber-200 bg-amber-50 shadow-default dark:border-amber-500/20 dark:bg-amber-500/10">
+              <div className="border-b border-amber-200 px-5 py-4 dark:border-amber-500/20">
+                <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-100">
+                  Difference Debug
+                </h3>
+                <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+                  This section helps identify whether the mismatch is coming from backend totals or specific COA rows.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-3">
+                <div className="rounded-sm border border-amber-200 bg-white p-4 dark:border-amber-500/20 dark:bg-boxdark">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Totals Gap
+                  </p>
+                  <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Opening Dr - Cr</span>
+                      <span className="font-semibold">
+                        {thousandSeparator(diagnostics.totalsGap.opening, 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Movement Dr - Cr</span>
+                      <span className="font-semibold">
+                        {thousandSeparator(diagnostics.totalsGap.movement, 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Closing Dr - Cr</span>
+                      <span className="font-semibold text-amber-700 dark:text-amber-200">
+                        {thousandSeparator(diagnostics.totalsGap.closing, 0)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-sm border border-amber-200 bg-white p-4 dark:border-amber-500/20 dark:bg-boxdark">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Totals vs Rows
+                  </p>
+                  <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Opening Debit</span>
+                      <span className="font-semibold">
+                        {thousandSeparator(diagnostics.sourceVsRows.openingDebit, 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Opening Credit</span>
+                      <span className="font-semibold">
+                        {thousandSeparator(diagnostics.sourceVsRows.openingCredit, 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Movement Debit</span>
+                      <span className="font-semibold">
+                        {thousandSeparator(diagnostics.sourceVsRows.movementDebit, 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Movement Credit</span>
+                      <span className="font-semibold">
+                        {thousandSeparator(diagnostics.sourceVsRows.movementCredit, 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Closing Debit</span>
+                      <span className="font-semibold">
+                        {thousandSeparator(diagnostics.sourceVsRows.closingDebit, 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Closing Credit</span>
+                      <span className="font-semibold">
+                        {thousandSeparator(diagnostics.sourceVsRows.closingCredit, 0)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-sm border border-amber-200 bg-white p-4 dark:border-amber-500/20 dark:bg-boxdark">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Row Integrity
+                  </p>
+                  <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Imbalanced Rows</span>
+                      <span className="font-semibold">
+                        {diagnostics.imbalanceRows.length}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Largest Row Gap</span>
+                      <span className="font-semibold">
+                        {diagnostics.imbalanceRows[0]
+                          ? thousandSeparator(diagnostics.imbalanceRows[0].rowDifference, 0)
+                          : thousandSeparator(0, 0)}
+                      </span>
+                    </div>
+                    <p className="pt-2 text-xs text-slate-500 dark:text-slate-400">
+                      Formula checked per row: (Opening Dr - Cr) + (Movement Dr - Cr) = (Closing Dr - Cr)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {diagnostics.imbalanceRows.length > 0 && (
+                <div className="border-t border-amber-200 px-5 py-5 dark:border-amber-500/20">
+                  <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                    Top Imbalanced COA L3 Heads
+                  </h4>
+                  <div className="mt-3 overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-amber-200 text-left dark:border-amber-500/20">
+                          <th className="px-2 py-2">Code</th>
+                          <th className="px-2 py-2">COA L3 Name</th>
+                          <th className="px-2 py-2 text-right">Opening Net</th>
+                          <th className="px-2 py-2 text-right">Movement Net</th>
+                          <th className="px-2 py-2 text-right">Closing Net</th>
+                          <th className="px-2 py-2 text-right">Row Gap</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {diagnostics.imbalanceRows.slice(0, 10).map((row) => (
+                          <tr
+                            key={`debug-${row.key}`}
+                            className="border-b border-amber-100 dark:border-amber-500/10"
+                          >
+                            <td className="px-2 py-2">{row.code || "-"}</td>
+                            <td className="px-2 py-2">{row.name}</td>
+                            <td className="px-2 py-2 text-right">
+                              {thousandSeparator(row.rowNetOpening, 0)}
+                            </td>
+                            <td className="px-2 py-2 text-right">
+                              {thousandSeparator(row.rowNetMovement, 0)}
+                            </td>
+                            <td className="px-2 py-2 text-right">
+                              {thousandSeparator(row.rowNetClosing, 0)}
+                            </td>
+                            <td className="px-2 py-2 text-right font-semibold text-amber-700 dark:text-amber-200">
+                              {thousandSeparator(row.rowDifference, 0)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+            )}
 
             <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
               <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
