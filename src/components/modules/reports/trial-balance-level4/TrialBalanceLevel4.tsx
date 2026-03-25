@@ -360,7 +360,7 @@ const TrialBalanceLevel4 = (user: any) => {
     <>
       <HelmetTitle title="Trial Balance Level 4" />
 
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-4 md:px-6 2xl:px-8">
+      <div className="mx-auto space-y-6 px-4 py-4 md:px-6 2xl:px-8">
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">

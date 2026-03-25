@@ -221,7 +221,7 @@ const BalanceSheet = (user: any) => {
     <>
       <HelmetTitle title="Balance Sheet" />
 
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-4 md:px-6 2xl:px-8">
+      <div className="mx-auto space-y-6 px-4 py-4 md:px-6 2xl:px-8">
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -595,13 +595,13 @@ const SectionCard = ({
                   </div>
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
-                  {formatAmount(row.opening)}
+                  {thousandSeparator(row.opening, 0)}
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
-                  {formatAmount(row.movement)}
+                  {thousandSeparator(row.movement, 0)}
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
-                  {formatAmount(row.closing)}
+                  {thousandSeparator(row.closing, 0)}
                 </td>
               </tr>
             ))}
@@ -612,13 +612,13 @@ const SectionCard = ({
                 {totalLabel}
               </td>
               <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                {formatAmount(totalColumns.opening)}
+                {thousandSeparator(totalColumns.opening, 0)}
               </td>
               <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                {formatAmount(totalColumns.movement)}
+                {thousandSeparator(totalColumns.movement, 0)}
               </td>
               <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                {formatAmount(totalColumns.closing || totalValue)}
+                {thousandSeparator(totalColumns.closing || totalValue, 0)}
               </td>
             </tr>
           </tfoot>
