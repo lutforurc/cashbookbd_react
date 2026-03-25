@@ -50,7 +50,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     const fs = Number.isFinite(fontSize) ? fontSize : 9;
     const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
     const vrNoWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
-    const truckWidthClass = fs >= 12 ? 'w-24' : fs <= 10 ? 'w-20' : 'w-22';
+    const truckWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
