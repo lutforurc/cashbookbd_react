@@ -58,11 +58,11 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
         <style media="print">{`
           @page {
             size: A4 landscape;
-            margin: 10mm;
+            margin: 5mm;
           }
 
           .print-page {
-            min-height: calc(210mm - 10mm - 10mm - 8mm - 8mm) !important;
+            min-height: calc(210mm - 5mm - 5mm - 8mm - 8mm) !important;
           }
 
           .print-page:last-child {
@@ -139,8 +139,13 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                       {row.vr_no || ''}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                      <div>{row.product_name || row.trx_type || ''}</div>
+                    <td
+                      style={{ fontSize: fs, lineHeight: 0.95 }}
+                      className="border border-gray-900 px-2 py-[2px] align-middle"
+                    >
+                      <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }}>
+                        {row.product_name || row.trx_type || ''}
+                      </div>
                       {/* {row.remarks ? <div className="text-xs">{row.remarks}</div> : null} */}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">

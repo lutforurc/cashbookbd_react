@@ -100,8 +100,8 @@ const LedgerWithProduct = (user: any) => {
       <HelmetTitle title="Ledger with Product" />
 
       <div className="mx-auto space-y-4 ">
-        <div className="rounded-sm  ">
-          <div className="px-3 py-3 ">
+        <div className="  ">
+          <div className="">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[1.15fr_1.15fr_1.15fr_1.15fr_52px_52px_70px_56px] xl:items-end xl:gap-3">
               <div className="xl:min-w-0">
                 <label className="mb-1 block text-sm text-slate-100">Select Branch</label>
@@ -109,7 +109,7 @@ const LedgerWithProduct = (user: any) => {
                   branchDdl={dropdownData}
                   onChange={(e: any) => setBranchId(Number(e.target.value) || null)}
                   defaultValue={branchId ? String(branchId) : ''}
-                  className="h-10 rounded-sm border border-slate-600 bg-[#243040] px-3 text-white"
+                  className="h-10  border border-slate-600 bg-[#243040] px-3 text-white"
                 />
               </div>
 
@@ -132,7 +132,7 @@ const LedgerWithProduct = (user: any) => {
                   selectedDate={startDate}
                   setSelectedDate={setStartDate}
                   setCurrentDate={setStartDate}
-                  className="h-10 w-full rounded-sm border border-slate-600 bg-[#243040] text-white"
+                  className="h-10 w-full  border border-slate-600 bg-[#243040] text-white"
                 />
               </div>
 
@@ -142,7 +142,7 @@ const LedgerWithProduct = (user: any) => {
                   selectedDate={endDate}
                   setSelectedDate={setEndDate}
                   setCurrentDate={setEndDate}
-                  className="h-10 w-full rounded-sm border border-slate-600 bg-[#243040] text-white"
+                  className="h-10 w-full  border border-slate-600 bg-[#243040] text-white"
                 />
               </div>
 
@@ -190,13 +190,13 @@ const LedgerWithProduct = (user: any) => {
         </div>
 
         {statementState?.loading ? (
-          <div className="rounded-sm border border-stroke bg-white p-8 shadow-default dark:border-strokedark dark:bg-boxdark">
+          <div className=" border border-stroke bg-white p-8 shadow-default dark:border-strokedark dark:bg-boxdark">
             <Loader />
           </div>
         ) : null}
 
         {!statementState?.loading && !hasLoaded ? (
-          <div className="rounded-sm border border-slate-700 bg-[#1f2733] px-6 py-12 text-center shadow-default">
+          <div className=" border border-slate-700 bg-[#1f2733] px-6 py-12 text-center shadow-default">
             <h3 className="text-lg font-semibold text-white">
               No statement loaded yet
             </h3>
@@ -207,7 +207,7 @@ const LedgerWithProduct = (user: any) => {
         ) : null}
 
         {!statementState?.loading && hasLoaded ? (
-          <div className="overflow-hidden rounded-sm border border-slate-700 bg-[#1f2733] shadow-default">
+          <div className="overflow-hidden  border border-slate-700 bg-[#1f2733] shadow-default">
               <div className="overflow-x-auto">
                 <table
                   className="min-w-full table-fixed text-sm text-slate-100"
@@ -278,6 +278,34 @@ const LedgerWithProduct = (user: any) => {
                     )}
                   </tbody>
                 </table>
+              </div>
+              <div className="border-t border-slate-700 bg-[#243040] px-4 py-3">
+                <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm">
+                  <div className="text-slate-300">
+                    <span className="text-slate-400">Opening:</span>{' '}
+                    <span className="font-semibold text-slate-100">
+                      {formatAmount(summary?.opening_balance || 0)}
+                    </span>
+                  </div>
+                  <div className="text-slate-300">
+                    <span className="text-slate-400">Received:</span>{' '}
+                    <span className="font-semibold text-slate-100">
+                      {formatAmount(summary?.total_received || 0)}
+                    </span>
+                  </div>
+                  <div className="text-slate-300">
+                    <span className="text-slate-400">Payment:</span>{' '}
+                    <span className="font-semibold text-slate-100">
+                      {formatAmount(summary?.total_payment || 0)}
+                    </span>
+                  </div>
+                  <div className="text-slate-300">
+                    <span className="text-slate-400">Closing:</span>{' '}
+                    <span className="font-bold text-white">
+                      {formatAmount(summary?.closing_balance || 0)}
+                    </span>
+                  </div>
+                </div>
               </div>
           </div>
         ) : null}
