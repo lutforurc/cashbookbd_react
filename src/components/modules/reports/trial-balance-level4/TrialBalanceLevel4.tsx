@@ -534,7 +534,7 @@ const SummaryCard = ({
   return (
     <div className={`rounded-sm border p-5 shadow-default ${toneMap[tone]}`}>
       <p className="text-sm font-medium">{title}</p>
-      <p className="mt-2 text-2xl font-bold">{formatAmount(value)}</p>
+      <p className="mt-2 text-2xl font-bold">{ thousandSeparator (value, 0)}</p>
     </div>
   );
 };
