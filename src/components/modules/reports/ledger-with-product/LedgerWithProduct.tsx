@@ -20,6 +20,12 @@ const formatAmount = (value: any, precision = 0) => {
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
+const getVoucherType = (vrNo: any) => {
+  const prefix = String(vrNo || '').split('-')[0]?.trim();
+  const parsed = Number.parseInt(prefix, 10);
+  return Number.isNaN(parsed) ? prefix : String(parsed);
+};
+
 const LedgerWithProduct = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
@@ -58,9 +64,41 @@ const LedgerWithProduct = (user: any) => {
   }, [branchDdlData?.protectedData]);
 
   const reportData = statementState?.data || {};
-  const rows = Array.isArray(reportData?.rows) ? reportData.rows : [];
-  const summary = reportData?.summary || {};
+  const rawRows = Array.isArray(reportData?.rows) ? reportData.rows : [];
+  const rawSummary = reportData?.summary || {};
   const party = reportData?.party || {};
+
+  const rows = useMemo(
+    () =>
+      rawRows.map((row: any) => {
+        const voucherType = getVoucherType(row?.vr_no);
+        const total = Number(row?.total || 0);
+        const received = Number(row?.received || 0);
+        const payment = Number(row?.payment || 0);
+
+        return {
+          ...row,
+          received: voucherType === '4' && received === total ? 0 : received,
+          payment: voucherType === '3' && payment === total ? 0 : payment,
+        };
+      }),
+    [rawRows],
+  );
+
+  const summary = useMemo(
+    () => ({
+      ...rawSummary,
+      total_received: rows.reduce(
+        (sum: number, row: any) => sum + Number(row?.received || 0),
+        0,
+      ),
+      total_payment: rows.reduce(
+        (sum: number, row: any) => sum + Number(row?.payment || 0),
+        0,
+      ),
+    }),
+    [rawSummary, rows],
+  );
 
   const hasLoaded = !!statementState?.data;
   const hasTransactions = rows.length > 1;
