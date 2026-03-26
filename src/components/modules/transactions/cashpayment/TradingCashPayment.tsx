@@ -27,6 +27,7 @@ import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import InputOnly from '../../../utils/fields/InputOnly';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { useNavigate } from 'react-router-dom';
+import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 
 interface PaymentItem {
   id: string | number;
@@ -64,6 +65,7 @@ const TradingCashPayment = () => {
   const [search, setSearch] = useState(''); // State to store the search value
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const navigate = useNavigate();
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
@@ -81,6 +83,7 @@ const TradingCashPayment = () => {
   };
 
   const handleCashPaymentSave = async () => {
+    setSaveButtonLoading(true);
     if (tableData.length === 0) {
       toast.error('Please add some transactions.');
       return;
@@ -106,7 +109,10 @@ const TradingCashPayment = () => {
     try {
       await dispatch(storeCashPayment(tableData));
     } catch (error) {
+          setSaveButtonLoading(true);
       console.error('Error saving transactions:', error);
+    } finally {
+      setSaveButtonLoading(false);
     }
   };
 
@@ -410,7 +416,16 @@ const TradingCashPayment = () => {
                     }
                     : null
                 }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const nextElement = document.getElementById('remarks');
+                    if (nextElement) {
+                      nextElement.focus();
+                    }
+                  }
+                }}
                 acType={''}
+                className={'h-9'}
               />
             </div>
 
@@ -422,6 +437,7 @@ const TradingCashPayment = () => {
               label={'Enter Remarks'}
               className={''}
               onChange={handleOnChange}
+              onKeyDown={(e) => handleInputKeyDown(e, 'amount')}
             />
             <InputElement
               id="amount"
@@ -432,6 +448,7 @@ const TradingCashPayment = () => {
               type="number"
               className={''}
               onChange={handleOnChange}
+              onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
             />
             <div className="grid grid-cols-3 gap-x-1 gap-y-1">
               {isUpdating ? (
@@ -446,6 +463,8 @@ const TradingCashPayment = () => {
                 />
               ) : (
                 <ButtonLoading
+                  id="add_new_button"
+                  name="add_new_button"
                   onClick={handleAdd}
                   buttonLoading={buttonLoading}
                   label="Add New"
@@ -465,7 +484,8 @@ const TradingCashPayment = () => {
                 <ButtonLoading
                   onClick={handleCashPaymentSave}
                   buttonLoading={buttonLoading}
-                  label="Save"
+                  // label="Save"
+                  label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
                 />

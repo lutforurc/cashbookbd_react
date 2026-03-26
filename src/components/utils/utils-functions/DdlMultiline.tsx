@@ -31,6 +31,22 @@ interface DropdownProps {
 
 const ACTION_OPTION_VALUE = '__ddl_multiline_action__';
 
+const getControlHeightFromClassName = (className?: string) => {
+  if (!className) return undefined;
+
+  const arbitraryHeightMatch = className.match(/\bh-\[([^\]]+)\]/);
+  if (arbitraryHeightMatch) {
+    return arbitraryHeightMatch[1];
+  }
+
+  const tailwindHeightMatch = className.match(/\bh-(\d+(?:\.\d+)?)\b/);
+  if (tailwindHeightMatch) {
+    return `${Number(tailwindHeightMatch[1]) * 0.25}rem`;
+  }
+
+  return undefined;
+};
+
 const DdlMultiline: React.FC<DropdownProps> = ({
   id,
   name,
@@ -49,6 +65,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
 
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
+  const controlHeight = getControlHeightFromClassName(className);
 
   // Load Options (Asynchronous)
   const loadOptions = async (
@@ -94,7 +111,8 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   const customStyles: StylesConfig = {
     control: (provided, state) => ({
       ...provided,
-      minHeight: 'unset',
+      minHeight: controlHeight || '2.1rem',
+      height: controlHeight,
       borderRadius: '0.0rem',
       borderColor: state.isFocused
         ? 'rgb(59 130 246)'
@@ -145,12 +163,14 @@ const DdlMultiline: React.FC<DropdownProps> = ({
       color: darkMode ? '#9CA3AF' : '#c2c2c2',
       marginTop: 0,
       marginBottom: 0,
+      lineHeight: controlHeight,
     }),
     singleValue: (base) => ({
       ...base,
       color: darkMode ? '#fff' : '#000',
       marginTop: 0,
       marginBottom: 0,
+      lineHeight: controlHeight,
     }),
     input: (base) => ({
       ...base,
@@ -159,26 +179,33 @@ const DdlMultiline: React.FC<DropdownProps> = ({
       marginBottom: 0,
       paddingTop: 0,
       paddingBottom: 0,
+      height: controlHeight,
     }),
     valueContainer: (base) => ({
       ...base,
       paddingTop: 0,
       paddingBottom: 0,
+      height: controlHeight,
+      minHeight: controlHeight,
     }),
     indicatorsContainer: (base) => ({
       ...base,
       paddingTop: 0,
       paddingBottom: 0,
+      height: controlHeight,
+      minHeight: controlHeight,
     }),
     dropdownIndicator: (base) => ({
       ...base,
-      paddingTop: 4,
-      paddingBottom: 4,
+      paddingTop: 0,
+      paddingBottom: 0,
+      height: controlHeight,
     }),
     clearIndicator: (base) => ({
       ...base,
-      paddingTop: 4,
-      paddingBottom: 4,
+      paddingTop: 0,
+      paddingBottom: 0,
+      height: controlHeight,
     }),
   };
 
@@ -187,7 +214,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
       <AsyncSelect<OptionType>
         inputId={id}
         name={name}
-        className="cash-react-select-container w-full dark:bg-black focus:border-blue-500"
+        className={`cash-react-select-container w-full dark:bg-black focus:border-blue-500 ${className || ''}`}
         classNamePrefix="cash-react-select"
         classNames={{
           control: () => className || '',
