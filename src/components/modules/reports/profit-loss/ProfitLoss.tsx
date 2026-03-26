@@ -350,89 +350,91 @@ const ProfitLoss = (user: any) => {
     <div>
       <HelmetTitle title={"Profit Loss"} />
 
-      {/* ===== Filters ===== */}
-      <div className="flex justify-between mb-1">
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 w-full gap-2 text-black dark:text-white p-2">
-          <div>
-            <label>Select Branch</label>
-            <div className="w-full">
-              {branchDdlData?.isLoading ? <Loader /> : null}
-              <BranchDropdown
+        {/* ===== Filters ===== */}
+        <div className="mb-1">
+          <div className="flex w-full flex-col gap-3 p-2 text-black dark:text-white xl:flex-row xl:items-end">
+            <div className="min-w-0 xl:flex-[1.6]">
+              <label>Select Branch</label>
+              <div className="w-full">
+                {branchDdlData?.isLoading ? <Loader /> : null}
+                <BranchDropdown
                 defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
-                className="w-60 font-medium text-sm p-1.5"
+                className="w-full max-w-full font-medium text-sm p-1.5 h-8"
                 branchDdl={dropdownData}
-              />
-            </div>
-          </div>
-
-          <div className="w-full">
-            <label>Start Date</label>
-            <InputDatePicker
-              setCurrentDate={(d: any) => setStartDate(d)}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
-            />
-          </div>
-
-          <div className="w-full">
-            <label>End Date</label>
-            <InputDatePicker
-              setCurrentDate={(d: any) => setEndDate(d)}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-            />
-          </div>
-
-          <div className="flex w-full">
-            <div className="mr-2">
-              <InputElement
-                id="perPage"
-                name="perPage"
-                label="Rows"
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type="text"
-                className="font-medium text-sm h-9 w-12"
-              />
+                />
+              </div>
             </div>
 
-            <div className="mr-2">
-              <InputElement
-                id="fontSize"
-                name="fontSize"
-                label="Font"
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type="text"
-                className="font-medium text-sm h-9 w-12"
-              />
+            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[9.5rem_9.5rem_auto] lg:items-end xl:w-auto xl:shrink-0">
+              <div className="w-full min-w-0">
+                <label>Start Date</label>
+                <InputDatePicker
+                  setCurrentDate={(d: any) => setStartDate(d)}
+                  className="font-medium text-sm w-full h-8"
+                  selectedDate={startDate}
+                  setSelectedDate={setStartDate}
+                />
+              </div>
+
+              <div className="w-full min-w-0">
+                <label>End Date</label>
+                <InputDatePicker
+                  setCurrentDate={(d: any) => setEndDate(d)}
+                  className="font-medium text-sm w-full h-8"
+                  selectedDate={endDate}
+                  setSelectedDate={setEndDate}
+                />
+              </div>
+
+              <div className="flex w-full flex-wrap items-end gap-2 lg:w-auto lg:flex-nowrap">
+                <div className="w-[4.25rem] shrink-0">
+                  <InputElement
+                    id="perPage"
+                    name="perPage"
+                    label="Rows"
+                    value={perPage.toString()}
+                    onChange={handlePerPageChange}
+                    type="text"
+                    className="font-medium text-sm h-8 w-full"
+                  />
+                </div>
+
+                <div className="w-[4.25rem] shrink-0">
+                  <InputElement
+                    id="fontSize"
+                    name="fontSize"
+                    label="Font"
+                    value={fontSize.toString()}
+                    onChange={handleFontSizeChange}
+                    type="text"
+                    className="font-medium text-sm h-8 w-full"
+                  />
+                </div>
+
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  // buttonLoading={buttonLoading}
+                  label="Run"
+                  icon=""
+                  className="h-8 min-w-[4.75rem] shrink-0 pt-[0.45rem] pb-[0.45rem] sm:mt-6"
+                />
+
+                <PrintButton
+                  onClick={handlePrint}
+                  label=""
+                  className="h-8 shrink-0 pt-[0.45rem] pb-[0.45rem] sm:mt-6"
+                />
+
+                <PrintButton
+                  onClick={handleItemPrintButtonClick}
+                  label=""
+                  className="h-8.5 shrink-0 pt-[0.45rem] pb-[0.45rem] sm:mt-6"
+                />
+              </div>
             </div>
-
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              // buttonLoading={buttonLoading}
-              label="Run"
-              icon=""
-              className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
-            />
-
-            <PrintButton
-              onClick={handlePrint}
-              label=""
-              className="ml-2 mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
-            />
-
-            <PrintButton
-              onClick={handleItemPrintButtonClick}
-              label=""
-              className="ml-2 mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
-            />
           </div>
         </div>
-      </div>
       {/* ===== Report ===== */}
       {hasReportData ? (
         <ProfitLossReport

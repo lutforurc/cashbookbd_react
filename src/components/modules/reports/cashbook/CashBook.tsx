@@ -308,7 +308,7 @@ const CashBook = (user: any) => {
             <label htmlFor="">Start Date</label>
             <InputDatePicker
               setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full h-9"
+              className="font-medium text-sm w-full h-8"
               selectedDate={startDate}
               setSelectedDate={setStartDate}
             />
@@ -317,7 +317,7 @@ const CashBook = (user: any) => {
             <label htmlFor="">End Date</label>
             <InputDatePicker
               setCurrentDate={handleEndDate}
-              className="font-medium text-sm w-full h-9"
+              className="font-medium text-sm w-full h-8"
               selectedDate={endDate}
               setSelectedDate={setEndDate}
             />
@@ -331,7 +331,7 @@ const CashBook = (user: any) => {
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
                 type='text'
-                className="font-medium text-sm h-9 w-12"
+                className="font-medium text-sm h-8 w-12"
               />
             </div>
             <div className="mr-2">
@@ -342,7 +342,7 @@ const CashBook = (user: any) => {
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type='text'
-                className="font-medium text-sm h-9 w-12"
+                className="font-medium text-sm h-8 w-12"
               />
             </div>
             <ButtonLoading
@@ -350,12 +350,12 @@ const CashBook = (user: any) => {
               buttonLoading={buttonLoading}
               label="Run"
               icon=""
-              className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
+              className="mt-6 pt-[0.45rem] pb-[0.45rem] h-8"
             />
             <PrintButton
               onClick={handlePrint}
               label=""
-              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
+              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-8"
             />
           </div>
         </div>
