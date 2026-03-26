@@ -9,7 +9,7 @@ import {
   status,
 } from '../../utils/fields/DataConstant';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import { FiArrowLeft, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import Checkbox from '../../utils/fields/Checkbox';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
@@ -96,6 +96,7 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
 };
 
 const AddBranch = () => {
+  const steps = ['Basic Info', 'Print Setup', 'Feature Controls'];
   const navigate = useNavigate();
   const branchEditData = useSelector((state: any) => state.branchList);
   const settings = useSelector((state: any) => state.settings);
@@ -141,6 +142,7 @@ const AddBranch = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
   const [padHeaderPreview, setPadHeaderPreview] = useState('');
+  const [currentStep, setCurrentStep] = useState(0);
   const dispatch = useDispatch();
 
   const { id } = useParams();
@@ -287,6 +289,14 @@ const AddBranch = () => {
       })
     );
   };
+
+  const goToNextStep = () => {
+    setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+  };
+
+  const goToPreviousStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 0));
+  };
   return (
     <>
       <HelmetTitle title={formData?.id ? 'Edit Branch' : 'Add New Branch'} />
@@ -295,356 +305,421 @@ const AddBranch = () => {
 
         <>
           <div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <InputElement
-                id="name"
-                value={formData.name || ''}
-                name="name"
-                placeholder={'Enter Branch Name'}
-                label={'Enter Branch Name'}
-                className={''}
-                onChange={handleOnChange}
-              />
-              <DropdownCommon
-                id="branch_types_id"
-                name={'branch_types_id'}
-                label="Select Branch Type"
-                onChange={handleOnSelectChange}
-                value={formData?.branch_types_id || ''}
-                className="h-[2.1rem] bg-transparent"
-                data={settings?.branchSettings?.branchType}
-              />
-              <DropdownCommon
-                id="business_type_id"
-                name={'business_type_id'}
-                label="Select Business Type"
-                onChange={handleOnSelectChange}
-                value={formData?.business_type_id || ''}
-                className="h-[2.1rem] bg-transparent"
-                data={settings?.branchSettings?.businessType}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <InputElement
-                id="email"
-                value={formData.email || ''}
-                name="email"
-                placeholder={'Enter Branch Email'}
-                label={'Enter Branch Email'}
-                className={''}
-                onChange={handleOnChange}
-              />
-              <DropdownCommon
-                id="pad_heading_print"
-                name={'pad_heading_print'}
-                label="Select Print Heading"
-                onChange={handleOnSelectChange}
-                value={formData?.pad_heading_print || ''}
-                className="h-[2.1rem] bg-transparent"
-                data={printPadHeading}
-              />
-              <InputElement
-                id="address"
-                value={formData.address || ''}
-                name="address"
-                placeholder={'Enter Branch Address'}
-                label={'Enter Branch Address'}
-                className={''}
-                onChange={handleOnChange}
-              />
-            </div>
+            <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-3">
+              {steps.map((step, index) => {
+                const isActive = index === currentStep;
+                const isCompleted = index < currentStep;
 
-            {Number(formData?.pad_heading_print) === 3 && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                  <div className="flex flex-col">
-                    <label
-                      htmlFor="pad_header_image"
-                      className="text-black dark:text-white"
-                    >
-                      Pad Header Image
-                    </label>
-                    <input
-                      id="pad_header_image"
-                      name="pad_header_image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePadImageChange}
-                      className="form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent dark:border-gray-600 dark:text-white"
-                    />
-                    <span className="mt-1 text-xs text-gray-500">
-                      This image will print when `Custom Image Pad` is selected.
+                return (
+                  <button
+                    key={step}
+                    type="button"
+                    onClick={() => setCurrentStep(index)}
+                    className={`rounded border px-4 py-3 text-left transition ${
+                      isActive
+                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                        : isCompleted
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-gray-300 bg-white text-gray-600 dark:bg-transparent dark:text-gray-300'
+                    }`}
+                  >
+                    <span className="block text-xs font-semibold uppercase tracking-wide">
+                      Step {index + 1}
                     </span>
-                  </div>
-                  <div className="md:col-span-2">
-                    {padHeaderPreview ? (
-                      <div className="rounded border border-gray-300 p-2">
-                        <img
-                          src={padHeaderPreview}
-                          alt="Pad header preview"
-                          className="max-h-28 w-full object-contain"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-full min-h-28 items-center justify-center rounded border border-dashed border-gray-300 text-sm text-gray-500">
-                        No image selected
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <DropdownCommon
-                id="print_size"
-                name={'print_size'}
-                label="Select Printer Settings"
-                onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent"
-                defaultValue={formData?.print_size || ''}
-                data={printerSettings}
-              />
-              <InputElement
-                id="contact_person"
-                value={formData.contact_person || ''}
-                name="contact_person"
-                placeholder={'Enter Contact Person'}
-                label={'Enter Contact Person'}
-                className={''}
-                onChange={handleOnChange}
-              />
-
-              <DropdownCommon
-                id="paper_size"
-                name={'paper_size'}
-                label="Select Page Size"
-                onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent"
-                defaultValue={formData?.paper_size || ''}
-                data={printPadHeading}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <InputElement
-                id="purchase_note"
-                value={formData.purchase_note || ''}
-                name="purchase_note"
-                placeholder={'Purchase Invoice Note'}
-                label={'Purchase Invoice Note'}
-                className={''}
-                onChange={handleOnChange}
-              />
-              <InputElement
-                id="sales_note"
-                value={formData.sales_note || ''}
-                name="sales_note"
-                placeholder={'Sales Invoice Note'}
-                label={'Sales Invoice Note'}
-                className={''}
-                onChange={handleOnChange}
-              />
-              <DropdownCommon
-                id="money_format"
-                name={'money_format'}
-                label="Select Money Format"
-                onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent"
-                defaultValue={formData?.money_format || ''}
-                data={moneySpellFormat}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <InputElement
-                id="phone"
-                value={formData.phone || ''}
-                name="phone"
-                placeholder={'Enter Branch Phone'}
-                label={'Enter Branch Phone'}
-                className={''}
-                onChange={handleOnChange}
-              />
-              <InputElement
-                id="notes"
-                value={formData.notes || ''}
-                name="notes"
-                placeholder={'Enter notes'}
-                label={'Enter notes'}
-                className={''}
-                onChange={handleOnChange}
-              />
-              <DropdownCommon
-                id="status"
-                name={'status'}
-                label="Select Status"
-                onChange={handleOnSelectChange}
-                className="h-[2.1rem] bg-transparent"
-                defaultValue={formData?.status?.toString() ?? ''}
-                data={status}
-              />
+                    <span className="block text-sm font-medium">{step}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <InputElement
-                id="invoice_label"
-                value={formData.invoice_label || ''}
-                name="invoice_label"
-                placeholder={'Enter Invoice Label'}
-                label={'Enter Invoice Label'}
-                className={''}
-                onChange={handleOnChange}
-              />
-              <Checkbox
-                id="report_zero_bal"
-                name="report_zero_bal"
-                checked={formData.report_zero_bal}
-                onChange={handleOnChange}
-                label="Stock With Zero?"
-                className="mb-4 mt-3 md:mt-7" // Add any additional styling if needed
-              />
-              <Checkbox
-                id="manufactur_control"
-                name="manufactur_control"
-                checked={formData.manufactur_control}
-                onChange={handleOnChange}
-                label="Control Manufacture?"
-                className="mb-4  md:mt-7" // Add any additional styling if needed
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <Checkbox
-                id="warranty_controll"
-                name="warranty_controll"
-                checked={formData.warranty_controll}
-                onChange={handleOnChange}
-                label="Warranty Control?"
-                className="mb-4" // Add any additional styling if needed
-              />
-              <Checkbox
-                id="have_warehouse"
-                name="have_warehouse"
-                checked={formData.have_warehouse}
-                onChange={handleOnChange}
-                label="Multiple Warehouse?"
-                className="mb-4" // Add any additional styling if needed
-              />
-              <Checkbox
-                id="share_product_with_other_branch"
-                name="share_product_with_other_branch"
-                checked={formData.share_product_with_other_branch}
-                onChange={handleOnChange}
-                label="Product Share?"
-                className="mb-4" // Add any additional styling if needed
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <Checkbox
-                id="share_customer_with_other_branch"
-                name="share_customer_with_other_branch"
-                checked={formData.share_customer_with_other_branch}
-                onChange={handleOnChange}
-                label="Customer Share?"
-                className="mb-4" // Add any additional styling if needed
-              />
-              <Checkbox
-                id="have_customer_sl"
-                name="have_customer_sl"
-                checked={formData.have_customer_sl}
-                onChange={handleOnChange}
-                label="Use Customer Serial?"
-                className="mb-4" // Add any additional styling if needed
-              />
-
-              <Checkbox
-                id="use_bangla"
-                name="use_bangla"
-                checked={formData.use_bangla}
-                onChange={handleOnChange}
-                label="Use Bangla?"
-                className="mb-4" // Add any additional styling if needed
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <Checkbox
-                id="is_opening"
-                name="is_opening"
-                checked={formData.is_opening}
-                onChange={handleOnChange}
-                label="Opening ongoing?"
-                className="mb-4" // Add any additional styling if needed
-              />
-              <Checkbox
-                id="have_is_guaranter"
-                name="have_is_guaranter"
-                checked={formData.have_is_guaranter}
-                onChange={handleOnChange}
-                label="Use Guarantor?"
-                className="mb-4"
-              />
-              <Checkbox
-                id="stock_report_type"
-                name="stock_report_type"
-                checked={formData.stock_report_type}
-                onChange={handleOnChange}
-                label="Stock: Brand->Category->Item"
-                className="mb-4"
-              />
-
-            </div>
-            {settings?.data?.user?.id === 1 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                <Checkbox
-                  id="sms_service"
-                  name="sms_service"
-                  checked={formData.sms_service}
-                  onChange={handleOnChange}
-                  label="SMS Service"
-                  className="mb-4"
-                />
-                <Checkbox
-                  id="received_sms"
-                  name="received_sms"
-                  checked={formData.received_sms}
-                  onChange={handleOnChange}
-                  label="Received SMS"
-                  className="mb-4"
-                />
-                <Checkbox
-                  id="sales_sms"
-                  name="sales_sms"
-                  checked={formData.sales_sms}
-                  onChange={handleOnChange}
-                  label="Sales SMS"
-                  className="mb-4"
-                />
-                <Checkbox
-                  id="purchase_sms"
-                  name="purchase_sms"
-                  checked={formData.purchase_sms}
-                  onChange={handleOnChange}
-                  label="Purchase SMS"
-                  className="mb-4"
-                />
-                <Checkbox
-                  id="payment_sms"
-                  name="payment_sms"
-                  checked={formData.payment_sms}
-                  onChange={handleOnChange}
-                  label="Payment SMS"
-                  className="mb-4"
-                />
-
+            <div className="mb-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                  {steps[currentStep]}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {currentStep === 0 && 'Branch identity, contact details, and status.'}
+                  {currentStep === 1 && 'Print preferences, invoice settings, and document notes.'}
+                  {currentStep === 2 && 'Operational controls, sharing options, and SMS preferences.'}
+                </p>
               </div>
-            )}
+
+              {currentStep === 0 && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <InputElement
+                      id="name"
+                      value={formData.name || ''}
+                      name="name"
+                      placeholder={'Enter Branch Name'}
+                      label={'Enter Branch Name'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <DropdownCommon
+                      id="branch_types_id"
+                      name={'branch_types_id'}
+                      label="Select Branch Type"
+                      onChange={handleOnSelectChange}
+                      value={formData?.branch_types_id || ''}
+                      className="h-[2.1rem] bg-transparent"
+                      data={settings?.branchSettings?.branchType}
+                    />
+                    <DropdownCommon
+                      id="business_type_id"
+                      name={'business_type_id'}
+                      label="Select Business Type"
+                      onChange={handleOnSelectChange}
+                      value={formData?.business_type_id || ''}
+                      className="h-[2.1rem] bg-transparent"
+                      data={settings?.branchSettings?.businessType}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <InputElement
+                      id="email"
+                      value={formData.email || ''}
+                      name="email"
+                      placeholder={'Enter Branch Email'}
+                      label={'Enter Branch Email'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <InputElement
+                      id="phone"
+                      value={formData.phone || ''}
+                      name="phone"
+                      placeholder={'Enter Branch Phone'}
+                      label={'Enter Branch Phone'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <InputElement
+                      id="contact_person"
+                      value={formData.contact_person || ''}
+                      name="contact_person"
+                      placeholder={'Enter Contact Person'}
+                      label={'Enter Contact Person'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <InputElement
+                      id="address"
+                      value={formData.address || ''}
+                      name="address"
+                      placeholder={'Enter Branch Address'}
+                      label={'Enter Branch Address'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <InputElement
+                      id="notes"
+                      value={formData.notes || ''}
+                      name="notes"
+                      placeholder={'Enter notes'}
+                      label={'Enter notes'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <DropdownCommon
+                      id="status"
+                      name={'status'}
+                      label="Select Status"
+                      onChange={handleOnSelectChange}
+                      className="h-[2.1rem] bg-transparent"
+                      value={formData?.status?.toString() ?? ''}
+                      data={status}
+                    />
+                  </div>
+                </>
+              )}
+
+              {currentStep === 1 && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <DropdownCommon
+                      id="pad_heading_print"
+                      name={'pad_heading_print'}
+                      label="Select Print Heading"
+                      onChange={handleOnSelectChange}
+                      value={formData?.pad_heading_print || ''}
+                      className="h-[2.1rem] bg-transparent"
+                      data={printPadHeading}
+                    />
+                    <DropdownCommon
+                      id="print_size"
+                      name={'print_size'}
+                      label="Select Printer Settings"
+                      onChange={handleOnSelectChange}
+                      className="h-[2.1rem] bg-transparent"
+                      value={formData?.print_size || ''}
+                      data={printerSettings}
+                    />
+                    <DropdownCommon
+                      id="paper_size"
+                      name={'paper_size'}
+                      label="Select Page Size"
+                      onChange={handleOnSelectChange}
+                      className="h-[2.1rem] bg-transparent"
+                      value={formData?.paper_size || ''}
+                      data={printPadHeading}
+                    />
+                  </div>
+
+                  {Number(formData?.pad_heading_print) === 3 && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <div className="flex flex-col">
+                        <label
+                          htmlFor="pad_header_image"
+                          className="text-black dark:text-white"
+                        >
+                          Pad Header Image
+                        </label>
+                        <input
+                          id="pad_header_image"
+                          name="pad_header_image"
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePadImageChange}
+                          className="form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent dark:border-gray-600 dark:text-white"
+                        />
+                        <span className="mt-1 text-xs text-gray-500">
+                          This image will print when `Custom Image Pad` is selected.
+                        </span>
+                      </div>
+                      <div className="md:col-span-2">
+                        {padHeaderPreview ? (
+                          <div className="rounded border border-gray-300 p-2">
+                            <img
+                              src={padHeaderPreview}
+                              alt="Pad header preview"
+                              className="max-h-28 w-full object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-full min-h-28 items-center justify-center rounded border border-dashed border-gray-300 text-sm text-gray-500">
+                            No image selected
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <InputElement
+                      id="purchase_note"
+                      value={formData.purchase_note || ''}
+                      name="purchase_note"
+                      placeholder={'Purchase Invoice Note'}
+                      label={'Purchase Invoice Note'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <InputElement
+                      id="sales_note"
+                      value={formData.sales_note || ''}
+                      name="sales_note"
+                      placeholder={'Sales Invoice Note'}
+                      label={'Sales Invoice Note'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <DropdownCommon
+                      id="money_format"
+                      name={'money_format'}
+                      label="Select Money Format"
+                      onChange={handleOnSelectChange}
+                      className="h-[2.1rem] bg-transparent"
+                      value={formData?.money_format || ''}
+                      data={moneySpellFormat}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <InputElement
+                      id="invoice_label"
+                      value={formData.invoice_label || ''}
+                      name="invoice_label"
+                      placeholder={'Enter Invoice Label'}
+                      label={'Enter Invoice Label'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                  </div>
+                </>
+              )}
+
+              {currentStep === 2 && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <Checkbox
+                      id="report_zero_bal"
+                      name="report_zero_bal"
+                      checked={formData.report_zero_bal}
+                      onChange={handleOnChange}
+                      label="Stock With Zero?"
+                      className="mb-4 mt-3 md:mt-7"
+                    />
+                    <Checkbox
+                      id="manufactur_control"
+                      name="manufactur_control"
+                      checked={formData.manufactur_control}
+                      onChange={handleOnChange}
+                      label="Control Manufacture?"
+                      className="mb-4 md:mt-7"
+                    />
+                    <Checkbox
+                      id="warranty_controll"
+                      name="warranty_controll"
+                      checked={formData.warranty_controll}
+                      onChange={handleOnChange}
+                      label="Warranty Control?"
+                      className="mb-4 md:mt-7"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <Checkbox
+                      id="have_warehouse"
+                      name="have_warehouse"
+                      checked={formData.have_warehouse}
+                      onChange={handleOnChange}
+                      label="Multiple Warehouse?"
+                      className="mb-4"
+                    />
+                    <Checkbox
+                      id="share_product_with_other_branch"
+                      name="share_product_with_other_branch"
+                      checked={formData.share_product_with_other_branch}
+                      onChange={handleOnChange}
+                      label="Product Share?"
+                      className="mb-4"
+                    />
+                    <Checkbox
+                      id="share_customer_with_other_branch"
+                      name="share_customer_with_other_branch"
+                      checked={formData.share_customer_with_other_branch}
+                      onChange={handleOnChange}
+                      label="Customer Share?"
+                      className="mb-4"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <Checkbox
+                      id="have_customer_sl"
+                      name="have_customer_sl"
+                      checked={formData.have_customer_sl}
+                      onChange={handleOnChange}
+                      label="Use Customer Serial?"
+                      className="mb-4"
+                    />
+                    <Checkbox
+                      id="use_bangla"
+                      name="use_bangla"
+                      checked={formData.use_bangla}
+                      onChange={handleOnChange}
+                      label="Use Bangla?"
+                      className="mb-4"
+                    />
+                    <Checkbox
+                      id="is_opening"
+                      name="is_opening"
+                      checked={formData.is_opening}
+                      onChange={handleOnChange}
+                      label="Opening ongoing?"
+                      className="mb-4"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <Checkbox
+                      id="have_is_guaranter"
+                      name="have_is_guaranter"
+                      checked={formData.have_is_guaranter}
+                      onChange={handleOnChange}
+                      label="Use Guarantor?"
+                      className="mb-4"
+                    />
+                    <Checkbox
+                      id="stock_report_type"
+                      name="stock_report_type"
+                      checked={formData.stock_report_type}
+                      onChange={handleOnChange}
+                      label="Stock: Brand->Category->Item"
+                      className="mb-4"
+                    />
+                  </div>
+
+                  {settings?.data?.user?.id === 1 && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <Checkbox
+                        id="sms_service"
+                        name="sms_service"
+                        checked={formData.sms_service}
+                        onChange={handleOnChange}
+                        label="SMS Service"
+                        className="mb-4"
+                      />
+                      <Checkbox
+                        id="received_sms"
+                        name="received_sms"
+                        checked={formData.received_sms}
+                        onChange={handleOnChange}
+                        label="Received SMS"
+                        className="mb-4"
+                      />
+                      <Checkbox
+                        id="sales_sms"
+                        name="sales_sms"
+                        checked={formData.sales_sms}
+                        onChange={handleOnChange}
+                        label="Sales SMS"
+                        className="mb-4"
+                      />
+                      <Checkbox
+                        id="purchase_sms"
+                        name="purchase_sms"
+                        checked={formData.purchase_sms}
+                        onChange={handleOnChange}
+                        label="Purchase SMS"
+                        className="mb-4"
+                      />
+                      <Checkbox
+                        id="payment_sms"
+                        name="payment_sms"
+                        checked={formData.payment_sms}
+                        onChange={handleOnChange}
+                        label="Payment SMS"
+                        className="mb-4"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-            {branchEditData.editData?.branch ? (
+          <div className="mb-2 grid grid-cols-2 gap-2 md:grid-cols-4">
+            <ButtonLoading
+              onClick={goToPreviousStep}
+              buttonLoading={false}
+              disabled={currentStep === 0}
+              label="Previous"
+              className="w-full whitespace-nowrap p-2 text-center disabled:cursor-not-allowed disabled:opacity-50"
+              icon={<FiArrowLeft className="text-white text-lg ml-2 mr-2" />}
+            />
+            {currentStep < steps.length - 1 ? (
+              <ButtonLoading
+                onClick={goToNextStep}
+                buttonLoading={false}
+                label="Next"
+                className="w-full whitespace-nowrap p-2 text-center"
+                icon={<FiArrowRight className="text-white text-lg ml-2 mr-2" />}
+              />
+            ) : branchEditData.editData?.branch ? (
               <ButtonLoading
                 onClick={handleBranchUpdate}
                 buttonLoading={buttonLoading}
                 label="Update"
-                className="whitespace-nowrap text-center mr-0 p-2"
+                className="w-full whitespace-nowrap p-2 text-center"
                 icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
               />
             ) : (
@@ -652,7 +727,7 @@ const AddBranch = () => {
                 onClick={handleBranchSave}
                 buttonLoading={buttonLoading}
                 label="Save"
-                className="whitespace-nowrap text-center mr-0 p-2"
+                className="w-full whitespace-nowrap p-2 text-center"
                 icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
               />
             )}
@@ -664,13 +739,17 @@ const AddBranch = () => {
                 setFormData(initialBranch);
                 setPadHeaderFile(null);
                 setPadHeaderPreview('');
+                setCurrentStep(0);
               }}
               buttonLoading={buttonLoading}
               label="Reset"
-              className="whitespace-nowrap text-center mr-0 p-2"
+              className="w-full whitespace-nowrap p-2 text-center"
               icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
             />
-            <Link to="/branch/branch-list" className="text-nowrap justify-center mr-0 P-2">
+            <Link
+              to="/branch/branch-list"
+              className="flex w-full items-center justify-center text-nowrap rounded bg-gray-700 p-2 text-white transition hover:bg-blue-400 dark:hover:bg-blue-400"
+            >
               <FiArrowLeft className="mr-2" /> Back
             </Link>
           </div>
