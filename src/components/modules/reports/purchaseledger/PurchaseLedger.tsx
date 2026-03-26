@@ -33,6 +33,8 @@ const PurchaseLedger = (user: any) => {
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
   const [productId, setProductId] = useState<number | null>(null);
+  const [selectedLedgerOption, setSelectedLedgerOption] = useState<any>(null);
+  const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [hideIcon, setHideIcon] = useState<boolean>(true);
@@ -94,14 +96,36 @@ const PurchaseLedger = (user: any) => {
   }, [branchDdlData?.protectedData]);
 
   const selectedLedgerOptionHandler = (option: any) => {
+    if (!option) {
+      setLedgerAccount(null);
+      setSelectedLedgerOption(null);
+      return;
+    }
+
     setLedgerAccount(option.value);
+    setSelectedLedgerOption({
+      value: option.value,
+      label: option.label,
+    });
   };
   const selectedProduct = (option: any) => {
     if (option === null) {
       setProductId(null); // Reset value
+      setSelectedProductOption(null);
     } else {
       setProductId(option.value); // Normal select
+      setSelectedProductOption({
+        value: option.value,
+        label: option.label,
+      });
     }
+  };
+
+  const handleResetFilters = () => {
+    setLedgerAccount(null);
+    setProductId(null);
+    setSelectedLedgerOption(null);
+    setSelectedProductOption(null);
   };
 
 
@@ -356,12 +380,16 @@ const PurchaseLedger = (user: any) => {
           </div>
           <div className="">
             <label htmlFor="">Select Account</label>
-            <DdlMultiline acType={''} onSelect={selectedLedgerOptionHandler} />
+            <DdlMultiline
+              acType={''}
+              onSelect={selectedLedgerOptionHandler}
+              value={selectedLedgerOption}
+            />
           </div>
           <div className="relative">
             <label htmlFor="">Select Product</label>
             <div
-              className={`w-[37.6px] h-[37.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-l-[0.5px] absolute top-6 right-0 dark:text-white text-black flex items-center justify-center text-xs z-99 cursor-pointer bg-[#fff] dark:bg-[#24303F]`}
+              // className={`w-[37.6px] h-[37.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-l-[0.5px] absolute top-6 right-0 dark:text-white text-black flex items-center justify-center text-xs z-99 cursor-pointer bg-[#fff] dark:bg-[#24303F]`}
               onClick={() => selectedProduct(null)}
             >
               <FaRotateRight
@@ -372,28 +400,29 @@ const PurchaseLedger = (user: any) => {
             <ProductDropdown
               onSelect={selectedProduct}
               className="appearance-none"
+              value={selectedProductOption}
             />
           </div>
           <div className="sm:grid md:flex gap-x-3 ">
-            <div className="w-full">
+            <div className="w-full md:max-w-40">
               <label htmlFor="">Start Date</label>
               <InputDatePicker
                 setCurrentDate={handleStartDate}
-                className="w-full font-medium text-sm h-9"
+                className="w-full font-medium text-xs h-9.5"
                 selectedDate={startDate}
                 setSelectedDate={setStartDate}
               />
             </div>
-            <div className="w-full">
+            <div className="w-full md:max-w-40">
               <label htmlFor="">End Date</label>
               <InputDatePicker
                 setCurrentDate={handleEndDate}
-                className="font-medium text-sm w-full h-9"
+                className="font-medium text-xs w-full h-9.5"
                 selectedDate={endDate}
                 setSelectedDate={setEndDate}
               />
             </div>
-            <div className='grid grid-cols-4 md:flex items-end gap-x-3'>
+            <div className='grid grid-cols-5 md:flex items-end gap-x-3'>
               <InputElement
                 id="perPage"
                 name="perPage"
@@ -426,6 +455,15 @@ const PurchaseLedger = (user: any) => {
                 label=""
                 className="mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
               />
+              <div className="mt-6 md:mt-6 w-full">
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon=""
+                  className="pt-[0.45rem] pb-[0.45rem] w-full h-9"
+                />
+              </div>
             </div>
           </div>
         </div>
