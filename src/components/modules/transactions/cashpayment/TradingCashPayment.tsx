@@ -425,7 +425,7 @@ const TradingCashPayment = () => {
                   }
                 }}
                 acType={''}
-                className={'h-9'}
+                className={'h-8'}
               />
             </div>
 
