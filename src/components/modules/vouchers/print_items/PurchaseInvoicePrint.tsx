@@ -32,7 +32,11 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
     const transactions = data?.acc_transaction_master || [];
     const trxDetails = transactions.flatMap((t: any) => t?.acc_transaction_details || []);
     const supplierFallback =
-      trxDetails.find((d: any) => d?.coa_l4?.cust_party_infos)?.coa_l4?.cust_party_infos || {};
+      trxDetails.find(
+        (d: any) =>
+          Number(d?.coa4_id) === Number(purchaseMaster?.supplier_id) &&
+          d?.coa_l4?.cust_party_infos,
+      )?.coa_l4?.cust_party_infos || {};
     const supplierName = purchaseMaster?.name || supplierFallback?.name || '-';
     const supplierMobile = purchaseMaster?.mobile || supplierFallback?.mobile || '';
     const supplierAddress =
@@ -42,12 +46,14 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
       '';
 
     const totalAmount = Number(purchaseMaster?.total ?? 0);
-    const discountAmount = Number(purchaseMaster?.discount ?? 0);
-    const netAmount = Number(purchaseMaster?.netpayment ?? totalAmount - discountAmount);
-    const paidAmount = trxDetails.reduce(
-      (sum: number, row: any) => sum + Number(row?.credit ?? 0),
-      0,
-    );
+    const discountFromLedger = trxDetails
+      .filter((row: any) => Number(row?.coa4_id) === 40)
+      .reduce((sum: number, row: any) => sum + Number(row?.credit ?? 0), 0);
+    const discountAmount = discountFromLedger || Number(purchaseMaster?.discount ?? 0);
+    const netAmount = totalAmount - discountAmount;
+    const paidAmount = trxDetails
+      .filter((row: any) => Number(row?.coa4_id) === 17)
+      .reduce((sum: number, row: any) => sum + Number(row?.credit ?? 0), 0);
     const dueAmount = Math.max(netAmount - paidAmount, 0);
 
     return (

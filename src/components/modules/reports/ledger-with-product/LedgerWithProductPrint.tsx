@@ -146,7 +146,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }}>
                         {row.product_name || row.trx_type || ''}
                       </div>
-                      {/* {row.remarks ? <div className="text-xs">{row.remarks}</div> : null} */}
+                      {row.remarks ? <div className="text-xs">{row.remarks}</div> : null}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                       {row.truck_no || ''}

@@ -26,6 +26,31 @@ const getVoucherType = (vrNo: any) => {
   return Number.isNaN(parsed) ? prefix : String(parsed);
 };
 
+const getCashAmount = (row: any, key: 'debit' | 'credit') => {
+  const masters = Array.isArray(row?.acc_transaction_master)
+    ? row.acc_transaction_master
+    : row?.acc_transaction_master
+      ? [row.acc_transaction_master]
+      : [];
+
+  return masters.reduce((sum: number, master: any) => {
+    const details = Array.isArray(master?.acc_transaction_details)
+      ? master.acc_transaction_details
+      : [];
+
+    return (
+      sum +
+      details
+        .filter((detail: any) => Number(detail?.coa4_id) === 17)
+        .reduce(
+          (detailSum: number, detail: any) =>
+            detailSum + Number(detail?.[key] || 0),
+          0,
+        )
+    );
+  }, 0);
+};
+
 const LedgerWithProduct = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
@@ -73,8 +98,12 @@ const LedgerWithProduct = (user: any) => {
       rawRows.map((row: any) => {
         const voucherType = getVoucherType(row?.vr_no);
         const total = Number(row?.total || 0);
-        const received = Number(row?.received || 0);
-        const payment = Number(row?.payment || 0);
+        const rawReceived = Number(row?.received || 0);
+        const rawPayment = Number(row?.payment || 0);
+        const cashReceived = getCashAmount(row, 'debit');
+        const cashPayment = getCashAmount(row, 'credit');
+        const received = cashReceived > 0 ? cashReceived : rawReceived;
+        const payment = cashPayment > 0 ? cashPayment : rawPayment;
 
         return {
           ...row,
