@@ -696,7 +696,7 @@ const TradingBusinessSales = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label htmlFor="">Select Customer</label>
-                <div className="mt-1 flex items-start gap-1">
+                <div className="flex items-start gap-1">
                   <div className="min-w-0 flex-1">
                     <DdlMultiline
                       onSelect={customerAccountHandler}
