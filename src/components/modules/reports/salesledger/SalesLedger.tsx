@@ -38,6 +38,8 @@ const SalesLedger = (user: any) => {
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
   const [productId, setProductId] = useState<number | null>(null);
+  const [selectedLedgerOption, setSelectedLedgerOption] = useState<any>(null);
+  const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
@@ -112,11 +114,38 @@ const SalesLedger = (user: any) => {
   }, [branchDdlData?.protectedData]);
 
   const selectedLedgerOptionHandler = (option: any) => {
+    if (!option) {
+      setLedgerAccount(null);
+      setSelectedLedgerOption(null);
+      return;
+    }
+
     setLedgerAccount(option.value);
+    setSelectedLedgerOption({
+      value: option.value,
+      label: option.label,
+    });
   };
 
   const selectedProduct = (option: any) => {
+    if (!option) {
+      setProductId(null);
+      setSelectedProductOption(null);
+      return;
+    }
+
     setProductId(option.value);
+    setSelectedProductOption({
+      value: option.value,
+      label: option.label,
+    });
+  };
+
+  const handleResetFilters = () => {
+    setLedgerAccount(null);
+    setProductId(null);
+    setSelectedLedgerOption(null);
+    setSelectedProductOption(null);
   };
 
   const columns = [
@@ -381,7 +410,7 @@ const SalesLedger = (user: any) => {
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm h-10"
+                className="w-full font-medium text-sm h-8"
                 branchDdl={dropdownData}
               />
             </div>
@@ -389,20 +418,29 @@ const SalesLedger = (user: any) => {
 
           <div className="">
             <label htmlFor="">Select Account</label>
-            <DdlMultiline acType={''} onSelect={selectedLedgerOptionHandler} />
+            <DdlMultiline
+              acType={''}
+              onSelect={selectedLedgerOptionHandler}
+              value={selectedLedgerOption}
+              className='h-8'
+            />
           </div>
 
           <div className="">
             <label htmlFor="">Select Product</label>
-            <ProductDropdown onSelect={selectedProduct} />
+            <ProductDropdown
+              onSelect={selectedProduct}
+              value={selectedProductOption}
+              className='h-8'
+            />
           </div>
 
-          <div className="sm:grid md:flex gap-x-3 ">
+          <div className="sm:grid md:flex gap-x-1 ">
             <div className="w-full">
               <label htmlFor="">Start Date</label>
               <InputDatePicker
                 setCurrentDate={handleStartDate}
-                className="w-full font-medium text-sm h-9"
+                className="w-full font-medium text-sm h-8"
                 selectedDate={startDate}
                 setSelectedDate={setStartDate}
               />
@@ -412,16 +450,16 @@ const SalesLedger = (user: any) => {
               <label htmlFor="">End Date</label>
               <InputDatePicker
                 setCurrentDate={handleEndDate}
-                className="font-medium text-sm w-full h-9"
+                className="font-medium text-sm w-full h-8"
                 selectedDate={endDate}
                 setSelectedDate={setEndDate}
               />
             </div>
 
             {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
-            <div className="mt-1 md:mt-6 w-full flex items-center gap-2">
+            <div className="mt-1 md:mt-6 w-full flex items-center gap-1">
               <div className="flex gap-2">
-                <div className="w-16">
+                <div className="">
                   <InputElement
                     id="perPage"
                     name="perPage"
@@ -429,11 +467,11 @@ const SalesLedger = (user: any) => {
                     value={rowsPerPage}
                     onChange={(e) => setRowsPerPage(clampInt(e.target.value, 1, 200, 12))}
                     type='text'
-                    className="font-medium text-sm h-9 w-12"
+                    className="font-medium text-sm h-8 w-12"
                   />
                 </div>
 
-                <div className="w-16">
+                <div className="">
                   <InputElement
                     id="fontSize"
                     name="fontSize"
@@ -442,7 +480,7 @@ const SalesLedger = (user: any) => {
                     // onChange={(e) => setFontSize(clampInt(e.target.value, 6, 10, 12))}
                     onChange={handleFontSizeChange}
                     type='text'
-                    className="font-medium text-sm h-9 w-12"
+                    className="font-medium text-sm h-8 w-12"
                   />
                 </div>
               </div>
@@ -459,6 +497,14 @@ const SalesLedger = (user: any) => {
                 onClick={handlePrint}
                 className="pt-[0.45rem] pb-[0.45rem]"
                 disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
+
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset"
+                icon=""
+                className="pt-[0.45rem] pb-[0.45rem] w-full h-8"
               />
             </div>
           </div>

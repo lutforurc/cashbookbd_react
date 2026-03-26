@@ -68,6 +68,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   const customStyles: StylesConfig = {
     control: (provided, state) => ({
       ...provided,
+      minHeight: 'unset',
       borderRadius: '0.0rem',
       borderColor: state.isFocused ? 'rgb(59 130 246)' : darkMode ? '#363843' : '#d2d6dc',
       backgroundColor: darkMode ? '#1f212a' : '#fcfcfc',
@@ -109,14 +110,42 @@ const ProductDropdown: React.FC<DropdownProps> = ({
     placeholder: (base) => ({
       ...base,
       color: darkMode ? '#9CA3AF' : '#c2c2c2',
+      marginTop: 0,
+      marginBottom: 0,
     }),
     singleValue: (base) => ({
       ...base,
       color: darkMode ? '#fff' : '#000',
+      marginTop: 0,
+      marginBottom: 0,
     }),
     input: (base) => ({
       ...base,
       color: darkMode ? '#fff' : '#000',
+      marginTop: 0,
+      marginBottom: 0,
+      paddingTop: 0,
+      paddingBottom: 0,
+    }),
+    valueContainer: (base) => ({
+      ...base,
+      paddingTop: 0,
+      paddingBottom: 0,
+    }),
+    indicatorsContainer: (base) => ({
+      ...base,
+      paddingTop: 0,
+      paddingBottom: 0,
+    }),
+    dropdownIndicator: (base) => ({
+      ...base,
+      paddingTop: 4,
+      paddingBottom: 4,
+    }),
+    clearIndicator: (base) => ({
+      ...base,
+      paddingTop: 4,
+      paddingBottom: 4,
     }),
   };
 
@@ -125,10 +154,11 @@ const ProductDropdown: React.FC<DropdownProps> = ({
       <AsyncSelect<OptionType>
         inputId={id}
         name={name}
-        // className="cash-react-select-container w-full dark:bg-black"
-        className={`cash-react-select-container w-full dark:bg-black focus:border-blue-500 ${className}`} 
-
+        className="cash-react-select-container w-full dark:bg-black focus:border-blue-500"
         classNamePrefix="cash-react-select"
+        classNames={{
+          control: () => className || '',
+        }}
         loadOptions={loadOptions}
         onChange={onSelect}
         onMenuOpen={() => setIsSelected(true)}

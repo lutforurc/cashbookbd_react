@@ -51,8 +51,8 @@ const TrialBalanceLevel3Print = ({
       <div className="print-page">
         <PadPrinting />
 
-        <div className="mb-6 text-center" style={{ fontSize: `${fs}px` }}>
-          <h1 className="mt-3 font-bold" style={{ fontSize: `${fs + 10}px` }}>
+        <div className="mb-4 text-center" style={{ fontSize: `${fs}px` }}>
+          <h1 className="mt-1 font-bold" style={{ fontSize: `${fs + 10}px` }}>
             Trial Balance Level 3
           </h1>
           <p>
@@ -140,7 +140,7 @@ const TrialBalanceLevel3Print = ({
           <tfoot>
             <tr>
               <td colSpan={2}
-                className="border border-slate-300 px-2 py-0 text-right "
+                className="border border-slate-300 px-2 py-0 text-right font-semibold"
               >
                 Grand Total
               </td>

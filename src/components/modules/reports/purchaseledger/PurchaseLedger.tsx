@@ -384,12 +384,12 @@ const PurchaseLedger = (user: any) => {
               acType={''}
               onSelect={selectedLedgerOptionHandler}
               value={selectedLedgerOption}
+              className='h-9'
             />
           </div>
           <div className="relative">
             <label htmlFor="">Select Product</label>
             <div
-              // className={`w-[37.6px] h-[37.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-l-[0.5px] absolute top-6 right-0 dark:text-white text-black flex items-center justify-center text-xs z-99 cursor-pointer bg-[#fff] dark:bg-[#24303F]`}
               onClick={() => selectedProduct(null)}
             >
               <FaRotateRight
