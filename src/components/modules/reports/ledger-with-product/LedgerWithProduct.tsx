@@ -10,7 +10,8 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider'; 
+import ConfirmModal from '../../../utils/components/ConfirmModalProps';
+import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchCustomerSupplierStatement } from './ledgerWithProductSlice';
 import LedgerWithProductPrint from './LedgerWithProductPrint';
 
@@ -64,8 +65,17 @@ const LedgerWithProduct = (user: any) => {
   const [partyLabel, setPartyLabel] = useState<string>('');
   const [rowsPerPage, setRowsPerPage] = useState<number>(16);
   const [fontSize, setFontSize] = useState<number>(10);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState('Notice');
+  const [modalMessage, setModalMessage] = useState<React.ReactNode>('');
 
   const printRef = useRef<HTMLDivElement>(null);
+
+  const openMessageModal = (title: string, message: React.ReactNode) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setShowMessageModal(true);
+  };
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
@@ -138,9 +148,18 @@ const LedgerWithProduct = (user: any) => {
   }, [dropdownData, branchId]);
 
   const handleRun = async () => {
-    if (!branchId) return alert('Branch select করুন');
-    if (!partyId) return alert('Customer / Supplier select করুন');
-    if (!startDate || !endDate) return alert('Start/End Date দিন');
+    if (!branchId) {
+      openMessageModal('Validation', 'Please select branch.');
+      return;
+    }
+    if (!partyId) {
+      openMessageModal('Validation', 'Please select customer or supplier.');
+      return;
+    }
+    if (!startDate || !endDate) {
+      openMessageModal('Validation', 'Please select start date and end date.');
+      return;
+    }
 
     const action = await dispatch(
       fetchCustomerSupplierStatement({
@@ -152,7 +171,7 @@ const LedgerWithProduct = (user: any) => {
     );
 
     if (action?.meta?.requestStatus !== 'fulfilled') {
-      alert(action?.payload || 'Statement load failed');
+      openMessageModal('Report Load Failed', action?.payload || 'Statement load failed');
     }
   };
 
@@ -171,25 +190,26 @@ const LedgerWithProduct = (user: any) => {
           <div className="">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[1.15fr_1.15fr_1.15fr_1.15fr_52px_52px_70px_56px] xl:items-end xl:gap-3">
               <div className="xl:min-w-0">
-                <label className="mb-1 block text-sm text-slate-100">Select Branch</label>
+                <div>
+                  {' '}
+                  <label htmlFor="">Select Branch</label>
+                </div>
                 <BranchDropdown
                   branchDdl={dropdownData}
                   onChange={(e: any) => setBranchId(Number(e.target.value) || null)}
                   defaultValue={branchId ? String(branchId) : ''}
-                  className="h-10  border border-slate-600 bg-[#243040] px-3 text-white"
+                  className="w-full font-medium text-sm h-8.5"
                 />
               </div>
 
               <div className="xl:min-w-0">
-                <label className="mb-1 block text-sm text-slate-100">
-                  Select Ledger
-                </label>
+                <label htmlFor="">Select Ledger</label>
                 <DdlMultiline
                   onSelect={(option: any) => {
                     setPartyId(option?.value ? Number(option.value) : null);
                     setPartyLabel(option?.label || '');
                   }}
-                  className="dark:bg-[#243040]"
+                  className='h-8.5'
                 />
               </div>
 
@@ -199,7 +219,7 @@ const LedgerWithProduct = (user: any) => {
                   selectedDate={startDate}
                   setSelectedDate={setStartDate}
                   setCurrentDate={setStartDate}
-                  className="h-10 w-full  border border-slate-600 bg-[#243040] text-white"
+                  className="font-medium text-sm w-full h-8.5"
                 />
               </div>
 
@@ -209,7 +229,7 @@ const LedgerWithProduct = (user: any) => {
                   selectedDate={endDate}
                   setSelectedDate={setEndDate}
                   setCurrentDate={setEndDate}
-                  className="h-10 w-full  border border-slate-600 bg-[#243040] text-white"
+                  className="font-medium text-sm w-full h-8.5"
                 />
               </div>
 
@@ -220,7 +240,7 @@ const LedgerWithProduct = (user: any) => {
                   label="Rows"
                   value={rowsPerPage}
                   onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 16)}
-                  className="h-10 border border-slate-600 bg-[#243040] text-center text-white"
+                  className="font-medium text-sm w-full h-8.5"
                 />
               </div>
 
@@ -231,7 +251,7 @@ const LedgerWithProduct = (user: any) => {
                   label="Font"
                   value={fontSize}
                   onChange={(e: any) => setFontSize(Number(e.target.value) || 10)}
-                  className="h-10 border border-slate-600 bg-[#243040] text-center text-white"
+                  className="font-medium text-sm w-full h-8.5"
                 />
               </div>
 
@@ -240,7 +260,7 @@ const LedgerWithProduct = (user: any) => {
                   label="Run"
                   onClick={handleRun}
                   buttonLoading={statementState?.loading}
-                  className="mt-6 h-10 w-full border-0 bg-slate-600 px-4 text-white hover:bg-slate-500 xl:mt-0"
+                  className="mt-6 h-8.5 w-full border-0 bg-slate-600 px-4 text-white hover:bg-slate-500 xl:mt-0"
                 />
               </div>
 
@@ -248,7 +268,7 @@ const LedgerWithProduct = (user: any) => {
                 <PrintButton
                   label=""
                   onClick={handlePrint}
-                  className="mt-6 h-10 w-full border-0 bg-slate-600 px-3 text-white hover:bg-slate-500 xl:mt-0"
+                  className="mt-6 h-8.5 w-full border-0 bg-slate-600 px-3 text-white hover:bg-slate-500 xl:mt-0"
                   disabled={!rows.length}
                 />
               </div>
@@ -257,123 +277,123 @@ const LedgerWithProduct = (user: any) => {
         </div>
 
         {statementState?.loading ? (
-          <div className=" border border-stroke bg-white p-8 shadow-default dark:border-strokedark dark:bg-boxdark">
+          <div className="rounded-sm border border-slate-200 bg-white p-8 shadow-default dark:border-slate-700 dark:bg-[#1f2733]">
             <Loader />
           </div>
         ) : null}
 
         {!statementState?.loading && !hasLoaded ? (
-          <div className=" border border-slate-700 bg-[#1f2733] px-6 py-12 text-center shadow-default">
-            <h3 className="text-lg font-semibold text-white">
+          <div className="rounded-sm border border-slate-200 bg-white px-6 py-12 text-center shadow-default dark:border-slate-700 dark:bg-[#1f2733]">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
               No statement loaded yet
             </h3>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
               Select branch, customer/supplier and date range, then click Load Report.
             </p>
           </div>
         ) : null}
 
         {!statementState?.loading && hasLoaded ? (
-          <div className="overflow-hidden  border border-slate-700 bg-[#1f2733] shadow-default">
-              <div className="overflow-x-auto">
-                <table
-                  className="min-w-full table-fixed text-sm text-slate-100"
-                  style={{ fontSize: `${fontSize}px` }}
-                >
-                  <thead className="bg-[#3a475c] text-xs uppercase text-slate-100">
-                    <tr>
-                      <th className="px-3 py-3 text-center">Sl. No</th>
-                      <th className="px-3 py-3 text-center">Vr Date</th>
-                      <th className="px-3 py-3 text-left">Vr No</th>
-                      <th className="px-3 py-3 text-left">Description</th>
-                      <th className="px-3 py-3 text-left">Truck No</th>
-                      <th className="px-3 py-3 text-right">Qty</th>
-                      <th className="px-3 py-3 text-right">Rate</th>
-                      <th className="px-3 py-3 text-right">Total</th>
-                      <th className="px-3 py-3 text-right">Received</th>
-                      <th className="px-3 py-3 text-right">Payment</th>
-                      <th className="px-3 py-3 text-right">Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.length ? (
-                      rows.map((row: any, index: number) => (
-                        <tr
-                          key={`${row.vr_no}-${index}`}
-                          className="border-t border-slate-700 bg-[#243040] transition-colors hover:bg-[#2b394b]"
-                        >
-                          <td className="px-3 py-3 text-center">{row.sl_number || ''}</td>
-                          <td className="px-3 py-3 text-center">
-                            {row.vr_date ? row.vr_date : ''}
-                          </td>
-                          <td className="px-3 py-3">{row.vr_no || ''}</td>
-                          <td className="px-3 py-3">
-                            <div className="whitespace-normal">{row.product_name || row.trx_type || '-'}</div>
-                            {row.remarks ? (
-                              <div className="mt-1 text-xs text-slate-300">{row.remarks}</div>
-                            ) : null}
-                          </td>
-                          <td className="px-3 py-3">{row.truck_no || ''}</td>
-                          <td className="px-3 py-3 text-right">
-                            {Number(row.quantity || 0)
-                              ? thousandSeparator(Number(row.quantity || 0), 2)
-                              : '-'}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {Number(row.total || 0) ? formatAmount(row.total) : '-'}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {Number(row.received || 0) ? formatAmount(row.received) : '-'}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {Number(row.payment || 0) ? formatAmount(row.payment) : '-'}
-                          </td>
-                          <td className="px-3 py-3 text-right font-semibold">
-                            {formatAmount(row.balance)}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={11} className="px-3 py-8 text-center text-slate-300">
-                          {hasTransactions ? 'No statement rows found' : 'No transactions found'}
+          <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-default dark:border-slate-700 dark:bg-[#1f2733]">
+            <div className="overflow-x-auto">
+              <table
+                className="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
+                style={{ fontSize: `${fontSize}px` }}
+              >
+                <thead className="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[#3a475c] dark:text-slate-100">
+                  <tr>
+                    <th className="px-3 py-3 text-center">Sl. No</th>
+                    <th className="px-3 py-3 text-center">Vr Date</th>
+                    <th className="px-3 py-3 text-left">Vr No</th>
+                    <th className="px-3 py-3 text-left">Description</th>
+                    <th className="px-3 py-3 text-left">Truck No</th>
+                    <th className="px-3 py-3 text-right">Qty</th>
+                    <th className="px-3 py-3 text-right">Rate</th>
+                    <th className="px-3 py-3 text-right">Total</th>
+                    <th className="px-3 py-3 text-right">Received</th>
+                    <th className="px-3 py-3 text-right">Payment</th>
+                    <th className="px-3 py-3 text-right">Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.length ? (
+                    rows.map((row: any, index: number) => (
+                      <tr
+                        key={`${row.vr_no}-${index}`}
+                        className="border-t border-slate-200 bg-white transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-[#243040] dark:hover:bg-[#2b394b]"
+                      >
+                        <td className="px-3 py-3 text-center">{row.sl_number || ''}</td>
+                        <td className="px-3 py-3 text-center">
+                          {row.vr_date ? row.vr_date : ''}
+                        </td>
+                        <td className="px-3 py-3">{row.vr_no || ''}</td>
+                        <td className="px-3 py-3">
+                          <div className="whitespace-normal">{row.product_name || row.trx_type || '-'}</div>
+                          {row.remarks ? (
+                            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.remarks}</div>
+                          ) : null}
+                        </td>
+                        <td className="px-3 py-3">{row.truck_no || ''}</td>
+                        <td className="px-3 py-3 text-right">
+                          {Number(row.quantity || 0)
+                            ? thousandSeparator(Number(row.quantity || 0), 2)
+                            : '-'}
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          {Number(row.total || 0) ? formatAmount(row.total) : '-'}
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          {Number(row.received || 0) ? formatAmount(row.received) : '-'}
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          {Number(row.payment || 0) ? formatAmount(row.payment) : '-'}
+                        </td>
+                        <td className="px-3 py-3 text-right font-semibold">
+                          {formatAmount(row.balance)}
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="border-t border-slate-700 bg-[#243040] px-4 py-3">
-                <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm">
-                  <div className="text-slate-300">
-                    <span className="text-slate-400">Opening:</span>{' '}
-                    <span className="font-semibold text-slate-100">
-                      {formatAmount(summary?.opening_balance || 0)}
-                    </span>
-                  </div>
-                  <div className="text-slate-300">
-                    <span className="text-slate-400">Received:</span>{' '}
-                    <span className="font-semibold text-slate-100">
-                      {formatAmount(summary?.total_received || 0)}
-                    </span>
-                  </div>
-                  <div className="text-slate-300">
-                    <span className="text-slate-400">Payment:</span>{' '}
-                    <span className="font-semibold text-slate-100">
-                      {formatAmount(summary?.total_payment || 0)}
-                    </span>
-                  </div>
-                  <div className="text-slate-300">
-                    <span className="text-slate-400">Closing:</span>{' '}
-                    <span className="font-bold text-white">
-                      {formatAmount(summary?.closing_balance || 0)}
-                    </span>
-                  </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={11} className="px-3 py-8 text-center text-slate-500 dark:text-slate-300">
+                        {hasTransactions ? 'No statement rows found' : 'No transactions found'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-[#243040]">
+              <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm">
+                <div className="text-slate-600 dark:text-slate-300">
+                  <span className="text-slate-500 dark:text-slate-400">Opening:</span>{' '}
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">
+                    {formatAmount(summary?.opening_balance || 0)}
+                  </span>
+                </div>
+                <div className="text-slate-600 dark:text-slate-300">
+                  <span className="text-slate-500 dark:text-slate-400">Received:</span>{' '}
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">
+                    {formatAmount(summary?.total_received || 0)}
+                  </span>
+                </div>
+                <div className="text-slate-600 dark:text-slate-300">
+                  <span className="text-slate-500 dark:text-slate-400">Payment:</span>{' '}
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">
+                    {formatAmount(summary?.total_payment || 0)}
+                  </span>
+                </div>
+                <div className="text-slate-600 dark:text-slate-300">
+                  <span className="text-slate-500 dark:text-slate-400">Closing:</span>{' '}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {formatAmount(summary?.closing_balance || 0)}
+                  </span>
                 </div>
               </div>
+            </div>
           </div>
         ) : null}
       </div>
@@ -395,8 +415,22 @@ const LedgerWithProduct = (user: any) => {
           />
         </div>
       </div>
+
+      <ConfirmModal
+        show={showMessageModal}
+        title={modalTitle}
+        message={modalMessage}
+        confirmLabel="OK"
+        cancelLabel="Close"
+        loading={false}
+        onCancel={() => setShowMessageModal(false)}
+        onConfirm={() => setShowMessageModal(false)}
+        showCancelButton={false}
+        className="bg-primary hover:bg-primary/90"
+      />
     </>
   );
 };
 
 export default LedgerWithProduct;
+

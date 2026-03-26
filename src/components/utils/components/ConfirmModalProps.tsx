@@ -10,6 +10,7 @@ interface ConfirmModalProps {
   message: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
+  showCancelButton?: boolean;
   loading?: boolean;
   className?: string;
   onConfirm: () => void;
@@ -22,6 +23,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   message,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
+  showCancelButton = true,
   loading = false,
   className = "",
   onConfirm,
@@ -30,23 +32,23 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-gray-900 text-white rounded-lg shadow-lg w-96 p-5">
-        <h3 className="text-lg font-semibold mb-4">{title}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="w-96 rounded-lg bg-white p-5 text-slate-800 shadow-lg dark:bg-gray-900 dark:text-white">
+        <h3 className="mb-4 text-lg font-semibold">{title}</h3>
 
         <div className="mb-4">{message}</div>
 
         <div className="flex justify-center gap-3">
-          {/* Cancel Button */}
-          <ButtonLoading
-            onClick={onCancel}
-            label={cancelLabel}
-            className="whitespace-nowrap h-8 bg-gray-500 hover:bg-gray-600"
-            icon={<FiX className="text-white text-lg mr-2" />}
-            disabled={loading}
-          />
+          {showCancelButton ? (
+            <ButtonLoading
+              onClick={onCancel}
+              label={cancelLabel}
+              className="h-8 whitespace-nowrap bg-slate-500 hover:bg-slate-600 dark:bg-gray-500 dark:hover:bg-gray-600"
+              icon={<FiX className="text-white text-lg mr-2" />}
+              disabled={loading}
+            />
+          ) : null}
 
-          {/* Confirm Button */}
           <DeleteButton
             label={confirmLabel}
             onClick={onConfirm}
