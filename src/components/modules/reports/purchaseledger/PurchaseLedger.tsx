@@ -49,8 +49,8 @@ const PurchaseLedger = (user: any) => {
   }, []);
 
   useEffect(() => {
-    if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
-      setTableData(ledgerData?.data);
+    if (!ledgerData.isLoading) {
+      setTableData(Array.isArray(ledgerData?.data) ? ledgerData.data : []);
     }
   }, [ledgerData]);
 
