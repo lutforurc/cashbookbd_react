@@ -151,8 +151,9 @@ const LabourLedger = (user: any) => {
             <label htmlFor="">Select Account</label>
             <DdlMultiline
               onSelect={selectedLedgerOptionHandler}
-              className="w-full font-medium text-sm"
+              className="w-full font-medium text-sm h-9"
               acType={''}
+
             />
           </div>
 
@@ -161,6 +162,7 @@ const LabourLedger = (user: any) => {
             <LabourDropdown
               value={selectedLabourOption} // ✅ pass selected option
               onSelect={selectedLabourOptionHandler}
+              className="w-full font-medium text-sm h-8.5"
             />
           </div>
 

@@ -293,7 +293,7 @@ const Ledger = (user: any) => {
 
           <div className="">
             <label htmlFor="">Select Ledger</label>
-            <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} />
+            <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='h-9' />
           </div>
 
           <div className="w-full">
