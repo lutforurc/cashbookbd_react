@@ -464,6 +464,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                       : null
                   }
                   acType={"3"}
+                  className="h-9"
                 />
               </div>
 
@@ -473,7 +474,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                 value={state.notes}
                 placeholder={"Notes"}
                 label={"Notes"}
-                className={"py-1 h-9.5"}
+                className={"py-1 h-9"}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, "bill_no")}
               />

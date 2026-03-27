@@ -585,7 +585,7 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
                 name="notes"
                 placeholder={'Notes'}
                 label={'Notes'}
-                className={'py-1.5'}
+                className={'py-1.5 h-8.5'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'product')} // Dynamically pass the next element's ID
               />
@@ -727,6 +727,7 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
                       : null
                   }
                   onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')} // Pass the next field's ID
+                  className='h-9'
                 />
               </div>
               <div>

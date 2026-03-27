@@ -325,10 +325,10 @@ const AddBranch = () => {
                     onClick={() => setCurrentStep(index)}
                     className={`rounded border px-4 py-3 text-left transition ${
                       isActive
-                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                        ? 'border-blue-600 text-black-0 dark:text-white'
                         : isCompleted
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-300 bg-white text-gray-600 dark:bg-transparent dark:text-gray-300'
+                          ? 'border-green-500  text-green-700'
+                          : 'border-gray-300  text-gray-600 dark:bg-transparent dark:text-gray-300'
                     }`}
                   >
                     <span className="block text-xs font-semibold uppercase tracking-wide">

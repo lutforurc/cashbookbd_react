@@ -198,7 +198,7 @@ const LedgerWithProduct = (user: any) => {
                   branchDdl={dropdownData}
                   onChange={(e: any) => setBranchId(Number(e.target.value) || null)}
                   defaultValue={branchId ? String(branchId) : ''}
-                  className="w-full font-medium text-sm h-8.5"
+                  className="w-full font-medium text-sm h-8.5 pl-1"
                 />
               </div>
 

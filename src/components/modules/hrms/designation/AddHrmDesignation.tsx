@@ -171,7 +171,7 @@ const AddHrmDesignation = () => {
                 value={formData.level_id}
                 onChange={handleSelectChange}
                 data={levelOptions}
-                className="mt-[2px] h-[42px] bg-white dark:bg-transparent"
+                className="h-9"
               />
             </div>
 

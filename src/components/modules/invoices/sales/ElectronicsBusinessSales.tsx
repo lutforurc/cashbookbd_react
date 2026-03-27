@@ -1077,6 +1077,7 @@ const ElectronicsBusinessSales = () => {
                       }
                       : null
                   }
+                  className='h-9'
                 />
               </div>
               <div>
@@ -1084,7 +1085,7 @@ const ElectronicsBusinessSales = () => {
                 {warehouse.isLoading === true ? <Loader /> : ''}
                 <WarehouseDropdown
                   onChange={handleWarehouseChange}
-                  className="w-60 font-medium text-sm p-2"
+                  className="w-60 font-medium text-sm p-2 h-9"
                   warehouseDdl={warehouseDdlData}
                   defaultValue={productData?.warehouse || ''}
                 />

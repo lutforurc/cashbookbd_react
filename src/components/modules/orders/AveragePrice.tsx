@@ -128,7 +128,7 @@ const AveragePrice = (user: any) => {
                     </div>
                     <div className=''>
                         <label htmlFor="">Select Order</label>
-                        <OrderDropdown onSelect={selectedOrderOptionHandler} heightPx='32px' />
+                        <OrderDropdown  onSelect={selectedOrderOptionHandler}  />
                     </div>
                     <div className=''>
                         <div>
@@ -137,7 +137,7 @@ const AveragePrice = (user: any) => {
                                 name={'category_type_id'}
                                 label="Report Type"
                                 onChange={handleReportTypeChange}
-                                className="h-8 bg-transparent"
+                                className="h-9 bg-transparent"
                                 data={orderType} />
                         </div>
                     </div>
