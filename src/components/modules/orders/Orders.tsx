@@ -26,6 +26,7 @@ const Orders = () => {
   const [search, setSearchValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [orderType, setOrderType] = useState('');
+  const [selectedLinkedOrder, setSelectedLinkedOrder] = useState<any | null>(null);
 
   useEffect(() => {
     dispatch(getOrders({ page, perPage, search, orderType }));
@@ -60,6 +61,12 @@ const Orders = () => {
   const handleOrderChange = (e: any) => {
     setOrderType(e.target.value);
   };
+  const openLinkedOrdersModal = (row: any) => {
+    setSelectedLinkedOrder(row);
+  };
+  const closeLinkedOrdersModal = () => {
+    setSelectedLinkedOrder(null);
+  };
   useEffect(() => {
     setTableData(orders?.data?.data);
   }, [orders?.data]);
@@ -86,7 +93,7 @@ const Orders = () => {
         render: (data: any) => (
             <p>
             <span className="block">{data.product_name}</span>
-            <span className="block">{ thousandSeparator(data.trx_quantity)}</span>
+            <span className="block">{ thousandSeparator(data.trx_quantity, 0)}</span>
             </p>
         ),
     },
@@ -103,7 +110,17 @@ const Orders = () => {
     //   cellClass: 'text-right',
       render: (data: any) => (
         <p>
-          <span className="block">{data.order_number}</span>
+          {(data.linked_order_count ?? data.linked_orders_count ?? 0) > 0 ? (
+            <button
+              type="button"
+              className="block text-left text-blue-600 hover:underline"
+              onClick={() => openLinkedOrdersModal(data)}
+            >
+              {data.order_number}
+            </button>
+          ) : (
+            <span className="block">{data.order_number}</span>
+          )}
           <span className="block">{data.order_date}</span>
         </p>
       ),
@@ -243,6 +260,95 @@ const Orders = () => {
           ''
         )}
       </div>
+
+      {selectedLinkedOrder && (
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-3"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              closeLinkedOrdersModal();
+            }
+          }}
+        >
+          <div className="w-full max-w-3xl rounded-sm bg-white shadow-lg dark:bg-gray-800">
+            <div className="flex items-center justify-between border-b px-4 py-3 dark:border-gray-700">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                  Linked Orders
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Order No: {selectedLinkedOrder.order_number}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="text-sm text-red-500 hover:underline"
+                onClick={closeLinkedOrdersModal}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="p-4">
+              <div className="mb-3 text-sm text-gray-700 dark:text-gray-300">
+                Total Linked Orders:{' '}
+                {thousandSeparator(
+                  selectedLinkedOrder.linked_order_count ??
+                    selectedLinkedOrder.linked_orders_count ??
+                    0,
+                  0,
+                )}
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300">
+                  <thead className="bg-gray-200 text-xs uppercase dark:bg-gray-700">
+                    <tr>
+                      <th className="px-3 py-2 text-center">Sl. No.</th>
+                      <th className="px-3 py-2">Company Name</th>
+                      <th className="px-3 py-2 text-right">Order Qty</th>
+                      <th className="px-3 py-2 text-right">Order Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.isArray(selectedLinkedOrder.linked_orders) &&
+                    selectedLinkedOrder.linked_orders.length > 0 ? (
+                      selectedLinkedOrder.linked_orders.map((item: any, index: number) => (
+                        <tr
+                          key={item.id ?? index}
+                          className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
+                        >
+                          <td className="px-3 py-2 text-center">
+                            {item.serial ?? index + 1}
+                          </td>
+                          <td className="px-3 py-2">
+                            {item.company_name || '-'}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            {thousandSeparator(item.order_qty ?? 0, 0)}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            {thousandSeparator(item.order_rate ?? 0, 2)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-3 py-4 text-center text-gray-500 dark:text-gray-400"
+                        >
+                          No linked orders found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

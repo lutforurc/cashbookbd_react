@@ -38,6 +38,10 @@ export const getDdlOrders =
     const params = new URLSearchParams();
     params.set('q', search);
 
+    if (filters.orderType) {
+      params.set('order_type', filters.orderType);
+    }
+
     const response = await fetch(`${API_ORDERS_DDL_URL}?${params.toString()}`,
       {
         method: 'GET',
