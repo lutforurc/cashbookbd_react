@@ -344,7 +344,7 @@ console.log('====================================');
               label="Select Waranty/Guaranty Type"
               onChange={handleOnChange}
               name="warranty_type"
-              className="h-[2.20rem] mt-1"
+              className="h-[2.20rem]"
               data={warrantyTypeOptions}
               value={formData?.warranty_type?.toString() || '0'}
             />

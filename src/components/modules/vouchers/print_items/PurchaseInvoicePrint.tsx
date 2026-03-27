@@ -276,9 +276,9 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
           </div>
         ))}
 
-        <div className="mt-2 text-xs text-gray-700">
+        {/* <div className="mt-2 text-xs text-gray-700">
           * This invoice is system generated.
-        </div>
+        </div> */}
       </div>
     );
   },
