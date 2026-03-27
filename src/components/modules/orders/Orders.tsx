@@ -126,6 +126,61 @@ const Orders = () => {
       ),
     },
     {
+      key: 'reference_order',
+      header: (
+        <p>
+          <span className="block">Reference Order</span>
+          <span className="block">Base Qty</span>
+        </p>
+      ),
+      render: (data: any) => (
+        <p>
+          <span className="block">
+            {data.reference_order?.order_number || data.ref_order_number || '-'}
+          </span>
+          <span className="block">
+            {data.base_order_quantity != null || data.reference_order?.total_order != null
+              ? thousandSeparator(
+                  data.base_order_quantity ?? data.reference_order?.total_order ?? 0,
+                  0,
+                )
+              : '-'}
+          </span>
+        </p>
+      ),
+    },
+    {
+      key: 'linked_summary',
+      header: (
+        <p className="text-right">
+          <span className="block">Linked Orders</span>
+          <span className="block">Linked Qty</span>
+          <span className="block">Remaining Qty</span>
+        </p>
+      ),
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (data: any) => (
+        <p className="text-right">
+          <span className="block">
+            {data.linked_order_count != null || data.linked_orders_count != null
+              ? thousandSeparator(data.linked_order_count ?? data.linked_orders_count ?? 0, 0)
+              : '-'}
+          </span>
+          <span className="block">
+            {data.linked_quantity != null
+              ? thousandSeparator(data.linked_quantity, 0)
+              : '-'}
+          </span>
+          <span className="block">
+            {data.remaining_quantity != null
+              ? thousandSeparator(data.remaining_quantity, 0)
+              : '-'}
+          </span>
+        </p>
+      ),
+    },
+    {
       key: 'action',
       header: 'Action',
       headerClass: 'text-center',

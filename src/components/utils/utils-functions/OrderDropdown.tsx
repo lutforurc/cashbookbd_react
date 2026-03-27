@@ -13,6 +13,8 @@ interface OptionType {
     label_4?: string;
     label_5?: string;
     label_6?: string;
+    order_type?: string;
+    [key: string]: any;
 }
 
 interface DropdownProps {
@@ -23,9 +25,25 @@ interface DropdownProps {
     defaultValue?: { value: any, label: any } | null
     value: { value: any, label: any } | null
     onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void; // Optional onKeyDown prop
+    orderType?: string;
+    excludeId?: string | number;
+    refDirection?: 'reference' | 'linked';
+    isDisabled?: boolean;
 }
 
-const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultValue, value, id, name, onKeyDown }) => {
+const OrderDropdown: React.FC<DropdownProps> = ({
+    onSelect,
+    heightPx,
+    defaultValue,
+    value,
+    id,
+    name,
+    onKeyDown,
+    orderType,
+    excludeId,
+    refDirection,
+    isDisabled,
+}) => {
     const [isSelected, setIsSelected] = React.useState(false);
     const dispatch = useDispatch();
 
@@ -33,10 +51,24 @@ const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultVal
         if (inputValue.length >= 3) {
             try {
                 // Dispatch the action and wait for the fetched data
-                const response: any = await dispatch(getDdlOrders(inputValue));
+                const response: any = await dispatch(
+                    getDdlOrders(inputValue, {
+                        orderType,
+                        excludeId,
+                        refDirection,
+                    }),
+                );
                 // Check and format the fetched data
                 if (Array.isArray(response.payload)) {
-                    const formattedOptions: OptionType[] = response.payload.map((item: any) => ({
+                    const hasOrderTypeInPayload = response.payload.some(
+                        (item: any) => item?.order_type !== undefined && item?.order_type !== null,
+                    );
+
+                    const filteredPayload = orderType && hasOrderTypeInPayload
+                        ? response.payload.filter((item: any) => String(item.order_type) === String(orderType))
+                        : response.payload;
+
+                    const formattedOptions: OptionType[] = filteredPayload.map((item: any) => ({
                         value: item.value,
                         label: item.label,
                         label_2: item.label_2,
@@ -44,6 +76,8 @@ const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultVal
                         label_4: item.label_4,
                         label_5: item.label_5,
                         label_6: item.label_6,
+                        order_type: item.order_type,
+                        ...item,
                     }));
                     callback(formattedOptions);
                 } else {
@@ -71,6 +105,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultVal
                 onMenuOpen={() => setIsSelected(true)}
                 onMenuClose={() => setIsSelected(false)}
                 onKeyDown={onKeyDown} // Pass it to the input
+                isDisabled={isDisabled}
                 getOptionLabel={(option) => {
                     return option.label
                 }} // Show only primary label in selected input
@@ -104,7 +139,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultVal
                 }}
                 getOptionValue={(option) => option.value}
 
-                placeholder="Select Order"
+                placeholder={isDisabled ? "Select Order Type First" : "Select Order"}
                 styles={{
                     control: (base) => ({
                         ...base,

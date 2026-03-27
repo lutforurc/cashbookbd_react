@@ -23,29 +23,22 @@ import { getToken } from '../../../features/authReducer';
 
 
 
-interface orderParam {
-  page: number;
-  perPage: number;
-  search: string;
+interface OrderSearchFilters {
+  orderType?: string;
+  excludeId?: string | number;
+  refDirection?: 'reference' | 'linked';
 }
-
-interface orderStoreData {
-  product_name: string;
-  product_description: string;
-  category_id: string;
-  product_type: string;
-  purchase_price: string;
-  sales_price: string;
-  unit_id: string;
-  order_level: string;
-}
-
 
 // Live searching for Order
-export const getDdlOrders = (search = '') => async (dispatch: any) => {
+export const getDdlOrders =
+  (search = '', filters: OrderSearchFilters = {}) =>
+  async (dispatch: any) => {
   try {
     const token = getToken();
-    const response = await fetch(API_ORDERS_DDL_URL + `?q=${search}`,
+    const params = new URLSearchParams();
+    params.set('q', search);
+
+    const response = await fetch(`${API_ORDERS_DDL_URL}?${params.toString()}`,
       {
         method: 'GET',
         headers: {
@@ -103,6 +96,7 @@ interface formData {
   order_for: string;
   product_id: string;
   order_number: string;
+  ref_order_id?: string;
   delivery_location: string;
   order_date: number;
   last_delivery_date: string;

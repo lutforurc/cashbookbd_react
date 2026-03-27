@@ -15,6 +15,7 @@ import Link from '../../utils/others/Link'
 import { storeOrder } from './ordersSlice'
 import OrderTypes from '../../utils/utils-functions/OrderTypes'
 import { toast } from 'react-toastify'
+import OrderDropdown from '../../utils/utils-functions/OrderDropdown'
 // import Link from '../../../utils/others/Link';
 
 const AddOrder = (user: any) => {
@@ -33,6 +34,8 @@ const AddOrder = (user: any) => {
         order_for: string;
         product_id: string;
         order_number: string;
+        ref_order_id: string;
+        ref_order_text: string;
         delivery_location: string | null;
         order_date: string | null;
         last_delivery_date: string | null;
@@ -50,6 +53,8 @@ const AddOrder = (user: any) => {
         order_for: '',
         product_id: '',
         order_number: '',
+        ref_order_id: '',
+        ref_order_text: '',
         delivery_location: '',
         order_date: '',
         last_delivery_date: '',
@@ -87,6 +92,13 @@ const AddOrder = (user: any) => {
     const selectedProductOptionHandler = (option: any) => {
         setFormData({ ...formData, ['product_id']: option.value });
     };
+    const selectedReferenceOrderHandler = (option: any) => {
+        setFormData((prevState) => ({
+            ...prevState,
+            ref_order_id: option?.value || '',
+            ref_order_text: option?.label || '',
+        }));
+    };
 
     const handleOrderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -109,16 +121,43 @@ const AddOrder = (user: any) => {
     };
 
     const resetOrder = () => {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            products: [], // Reset only the products array
-        }));
+        setFormData({
+            branch_id: user.user.branch_id,
+            order_for: '',
+            product_id: '',
+            order_number: '',
+            ref_order_id: '',
+            ref_order_text: '',
+            delivery_location: '',
+            order_date: '',
+            last_delivery_date: '',
+            order_rate: '',
+            total_order: '',
+            order_type: '',
+            note: '',
+        });
+        setOrderDate(null);
+        setLastDeliveryDate(null);
     };
 
     const handleSelectChange = (e: any) => {
-        const key = 'order_type'; // Set the desired key dynamically
-        setFormData({ ...formData, [key]: e.target.value });
+        const nextOrderType = e.target.value;
+        setFormData((prevState) => ({
+            ...prevState,
+            order_type: nextOrderType,
+            ref_order_id: '',
+            ref_order_text: '',
+        }));
     };
+
+    const getOppositeOrderType = (orderType: string) => {
+        if (orderType === '1') return '2';
+        if (orderType === '2') return '1';
+        return '';
+    };
+
+    const referenceOrderType = getOppositeOrderType(formData.order_type);
+
     const handleSave = () => {
         // Check Required fields are not empty
         // const validationMessages = validateForm(formData, invoiceMessage);
@@ -132,7 +171,27 @@ const AddOrder = (user: any) => {
         //     return;
         // }
 
-        dispatch(storeOrder(formData, function (message) {
+        if (formData.ref_order_id && !referenceOrderType && (formData.order_type === '1' || formData.order_type === '2')) {
+            toast.info('Referenced order must be the opposite order type.');
+            return;
+        }
+
+        const payload = {
+            branch_id: formData.branch_id,
+            order_for: formData.order_for,
+            product_id: formData.product_id,
+            order_number: formData.order_number,
+            ref_order_id: formData.ref_order_id || null,
+            delivery_location: formData.delivery_location,
+            order_date: formData.order_date,
+            last_delivery_date: formData.last_delivery_date,
+            order_rate: formData.order_rate,
+            total_order: formData.total_order,
+            order_type: formData.order_type,
+            note: formData.note,
+        };
+
+        dispatch(storeOrder(payload, function (message) {
             if (message) {
                 toast.info(message);
             }
@@ -237,6 +296,34 @@ const AddOrder = (user: any) => {
                     className={'py-1.5'}
                     onChange={handleOrderChange}
                 />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
+                <div>
+                    <label htmlFor="">Reference Order</label>
+                    <OrderDropdown
+                        id="ref_order_id"
+                        name="ref_order_id"
+                        onSelect={selectedReferenceOrderHandler}
+                        value={
+                            formData.ref_order_id
+                                ? {
+                                    value: formData.ref_order_id,
+                                    label: formData.ref_order_text,
+                                }
+                                : null
+                        }
+                        orderType={referenceOrderType}
+                        refDirection="reference"
+                        isDisabled={!referenceOrderType}
+                    />
+                </div>
+                <div className='flex items-end'>
+                    <p className='text-sm text-gray-600 dark:text-gray-300'>
+                        {formData.order_type === '1' && 'Purchase orders can reference sales orders.'}
+                        {formData.order_type === '2' && 'Sales orders can reference purchase orders.'}
+                        {formData.order_type !== '1' && formData.order_type !== '2' && 'Select order type first if you want to link this order to another order.'}
+                    </p>
+                </div>
             </div>
             <div className="grid grid-cols-3 gap-x-1 gap-y-1 w-2/4 md:w-2/5 mx-auto">
                 <ButtonLoading
