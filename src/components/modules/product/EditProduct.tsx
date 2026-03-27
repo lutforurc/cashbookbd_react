@@ -10,13 +10,46 @@ import Loader from '../../../common/Loader';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
-// import { getProductById, updateProduct } from './productSlice';
+import { editProduct, updateProduct } from './productSlice';
+
+const parseWarrantyDetails = (warrantyDays: unknown, fallbackType?: unknown) => {
+  if (warrantyDays && typeof warrantyDays === 'object' && !Array.isArray(warrantyDays)) {
+    const record = warrantyDays as Record<string, unknown>;
+    const typeKey = Object.keys(record).find(key => /^\d+$/.test(key));
+
+    return {
+      warranty_type: String(typeKey || fallbackType || '0'),
+      warranty_days:
+        typeof record.day === 'string' || typeof record.day === 'number'
+          ? String(record.day)
+          : '',
+    };
+  }
+
+  return {
+    warranty_type: String(fallbackType || '0'),
+    warranty_days:
+      typeof warrantyDays === 'string' || typeof warrantyDays === 'number'
+        ? String(warrantyDays)
+        : '',
+  };
+};
 
 const EditProduct = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams(); // product ID from URL
   const category = useSelector((state) => state.category);
+  const product = useSelector((state) => state.product);
+  const warrantyTypeOptions = warrantyType.map(item => ({
+    ...item,
+    id: String(item.id),
+  }));
+
+  console.log('====================================');
+  console.log("product", product);
+  console.log('====================================');
+
 
   const [formData, setFormData] = useState({
     name: '',
@@ -32,26 +65,36 @@ const EditProduct = () => {
   });
 
   const [buttonLoading, setButtonLoading] = useState(false);
-
-
-
-  console.log('====================================');
-  console.log("category", category);
-  console.log('====================================');
-
-
   useEffect(() => {
     dispatch(getCategoryDdl({ search: '' }));
+  }, [dispatch]);
 
-    // fetch product data by ID
-    dispatch(getProductById(id)).then((res) => {
-      if (res.payload?.data) {
-        setFormData(res.payload.data);
-      } else {
-        toast.error('Failed to fetch product.');
-      }
-    });
-  }, [id]);
+  useEffect(() => {
+    if (id) {
+      dispatch(editProduct(id));
+    }
+  }, [id, dispatch]);
+
+  useEffect(() => {
+    const edit = product?.editData;
+    if (!edit) return;
+    const parsedWarranty = parseWarrantyDetails(edit?.warranty_days, edit?.warranty_type);
+    console.log('edit product payload', edit);
+    console.log('parsed warranty details', parsedWarranty);
+
+    setFormData(prev => ({
+      ...prev,
+      ...edit,
+      category_id: edit?.category_id != null ? String(edit.category_id) : '',
+      product_type: edit?.product_type != null ? String(edit.product_type) : '',
+      unit_id: edit?.unit_id != null ? String(edit.unit_id) : '',
+      warranty_type: parsedWarranty.warranty_type,
+      warranty_days: parsedWarranty.warranty_days,
+    }));
+  }, [product?.editData]);
+
+  console.log('render formData.warranty_type', formData.warranty_type);
+  console.log('render warrantyTypeOptions', warrantyTypeOptions);
 
   const handleOnChange = (e) => {
     const { value, type, name } = e.target;
@@ -107,15 +150,18 @@ const EditProduct = () => {
 
     setButtonLoading(true);
 
-    dispatch(updateProduct({ id, data: formData })).then((res) => {
-      setButtonLoading(false);
-      if (res.payload?.success) {
-        toast.success('Product updated successfully!');
-        navigate('/product/product-list');
-      } else {
-        toast.error('Failed to update product.');
-      }
-    });
+    dispatch(
+      updateProduct({ id, ...formData }, (res: any) => {
+        setButtonLoading(false);
+        if (res?.success) {
+          toast.success('Product updated successfully!');
+          navigate('/product/product-list');
+          return;
+        }
+
+        toast.error(res?.error?.message || res?.message || 'Failed to update product.');
+      }),
+    );
   };
 
   return (
@@ -123,6 +169,10 @@ const EditProduct = () => {
       <HelmetTitle title={'Edit Product'} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {category.isLoading && <Loader />}
+        <div className="md:col-span-2 rounded border border-yellow-500/40 bg-yellow-500/10 px-3 py-2 text-sm text-yellow-200">
+          debug: warranty_type=`{String(formData.warranty_type)}` warranty_days=`
+          {String(formData.warranty_days)}`
+        </div>
 
         <DropdownCommon
           id="category_id"
@@ -179,8 +229,8 @@ const EditProduct = () => {
               label="Select Waranty/Guaranty Type"
               name="warranty_type"
               className="h-[2.20rem] mt-1"
-              data={warrantyType}
-              value={formData.warranty_type}
+              data={warrantyTypeOptions}
+              value={String(formData.warranty_type ?? '0')}
               onChange={handleOnChange}
             />
             <InputElement

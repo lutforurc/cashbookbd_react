@@ -40,6 +40,10 @@ const AddProduct = () => {
   const brand = useSelector((state) => state.brand);
   const settings = useSelector((state) => state.settings);
   const categoryData = useSelector((state) => state.category);
+  const warrantyTypeOptions = warrantyType.map(item => ({
+    ...item,
+    id: String(item.id),
+  }));
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // const [themeMode, setThemeMode] = useState(string | null);
@@ -73,11 +77,20 @@ const AddProduct = () => {
 
       setFormData({
         ...edit,
-        warranty_type: warrantyTypeKey || '0',
+        category_id: edit?.category_id != null ? String(edit.category_id) : '',
+        product_type: edit?.product_type != null ? String(edit.product_type) : '',
+        unit_id: edit?.unit_id != null ? String(edit.unit_id) : '',
+        manufacture_id: edit?.manufacture_id != null ? String(edit.manufacture_id) : '',
+        warranty_type: String(warrantyTypeKey || edit?.warranty_type || '0'),
         warranty_days: edit?.warranty_days?.day || '',
       });
     }
   }, [product?.editData]);
+
+
+  console.log('====================================');
+  console.log("product", product);
+  console.log('====================================');
 
   useEffect(() => {
     if (id) {
@@ -332,8 +345,8 @@ console.log('====================================');
               onChange={handleOnChange}
               name="warranty_type"
               className="h-[2.20rem] mt-1"
-              data={warrantyType}
-              defaultValue={formData.warranty_type.toString() || '0'}
+              data={warrantyTypeOptions}
+              value={formData?.warranty_type?.toString() || '0'}
             />
             <InputElement
               id="warranty_days"

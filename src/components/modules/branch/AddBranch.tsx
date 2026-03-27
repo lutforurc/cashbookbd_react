@@ -100,6 +100,13 @@ const AddBranch = () => {
   const navigate = useNavigate();
   const branchEditData = useSelector((state: any) => state.branchList);
   const settings = useSelector((state: any) => state.settings);
+  const paperSizeOptions = [
+    { id: '', name: 'Select Invoice Page Size' },
+    ...((settings?.branchSettings?.paperSize || []).map((item: any) => ({
+      id: String(item?.id ?? ''),
+      name: item?.name ?? '',
+    })) as { id: string; name: string }[]),
+  ];
   const initialBranch: branchItem = {
     id: '',
     branch_id: '',
@@ -165,6 +172,7 @@ const AddBranch = () => {
         ...prev,
         ...b,
         pad_heading_print: b.pad_heading_print != null ? String(b.pad_heading_print) : '',
+        paper_size: b.paper_size != null ? String(b.paper_size) : '',
 
         // 🔑 CHECKBOX FIX
         is_opening: b.is_opening == 1 || b.is_opening === '1',
@@ -460,11 +468,11 @@ const AddBranch = () => {
                     <DropdownCommon
                       id="paper_size"
                       name={'paper_size'}
-                      label="Select Page Size"
+                      label="Invoice Page Size"
                       onChange={handleOnSelectChange}
                       className="h-[2.1rem] bg-transparent"
                       value={formData?.paper_size || ''}
-                      data={printPadHeading}
+                      data={paperSizeOptions}
                     />
                   </div>
 
