@@ -113,10 +113,10 @@ const Orders = () => {
           {(data.linked_order_count ?? data.linked_orders_count ?? 0) > 0 ? (
             <button
               type="button"
-              className="block text-left text-blue-600 hover:underline"
+              className="block text-left hover:underline font-semibold"
               onClick={() => openLinkedOrdersModal(data)}
             >
-              {data.order_number}
+             <span className='text-lg'> {data.order_number}</span>
             </button>
           ) : (
             <span className="block">{data.order_number}</span>
