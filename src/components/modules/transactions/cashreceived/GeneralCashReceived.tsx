@@ -418,7 +418,7 @@ const GeneralCashReceived = () => {
               <ButtonLoading
                 disabled={saveButtonLoading}
                 onClick={handleHome}
-                buttonLoading={saveButtonLoading}
+                buttonLoading={false}
                 label={`Home`}
                 className="whitespace-nowrap text-center mr-0 p-2"
                 icon={
