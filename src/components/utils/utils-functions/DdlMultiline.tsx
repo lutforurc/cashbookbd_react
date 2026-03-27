@@ -26,7 +26,7 @@ interface DropdownProps {
   className?: string;
   placeholder?: string;
   actionOptionLabel?: string;
-  onActionSelect?: () => void;
+  onActionSelect?: (inputValue: string) => void;
 }
 
 const ACTION_OPTION_VALUE = '__ddl_multiline_action__';
@@ -61,6 +61,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   onActionSelect,
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState('');
   const dispatch = useDispatch();
 
   const themeMode = useLocalStorage('color-theme', 'light');
@@ -229,10 +230,19 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         loadOptions={loadOptions}
         onChange={(selected) => {
           if (selected?.isAction) {
-            onActionSelect?.();
+            onActionSelect?.(inputValue.trim());
             return;
           }
           onSelect?.(selected);
+        }}
+        onInputChange={(nextValue, meta) => {
+          if (meta.action === 'input-change') {
+            setInputValue(nextValue);
+          }
+          if (meta.action === 'set-value' || meta.action === 'input-blur' || meta.action === 'menu-close') {
+            return nextValue;
+          }
+          return nextValue;
         }}
         onMenuOpen={() => setIsSelected(true)}
         onMenuClose={() => setIsSelected(false)}

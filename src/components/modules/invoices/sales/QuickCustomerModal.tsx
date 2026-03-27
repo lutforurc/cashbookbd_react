@@ -31,6 +31,7 @@ interface QuickCustomerModalProps {
   onCustomerSaved: (customer: { id: string; name: string }) => void;
   entityLabel?: string;
   defaultTypeId?: string;
+  initialName?: string;
 }
 
 const createInitialFormData = (defaultTypeId = '1'): QuickCustomerFormData => ({
@@ -48,6 +49,7 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
   onCustomerSaved,
   entityLabel = 'Customer',
   defaultTypeId = '1',
+  initialName = '',
 }) => {
   const dispatch = useDispatch<any>();
   const area = useSelector((s: any) => s.area);
@@ -63,9 +65,12 @@ const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
     }
 
     dispatch(getDdlArea());
-    setFormData(createInitialFormData(defaultTypeId));
+    setFormData({
+      ...createInitialFormData(defaultTypeId),
+      name: initialName,
+    });
     setErrors({});
-  }, [defaultTypeId, dispatch, isOpen]);
+  }, [defaultTypeId, dispatch, initialName, isOpen]);
 
   const formattedAreaData = useMemo(() => {
     const areaList = Array.isArray(area?.area)

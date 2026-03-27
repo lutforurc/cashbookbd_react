@@ -89,6 +89,7 @@ const ElectronicsBusinessSales = () => {
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [editedInstallments, setEditedInstallments] = useState<editInstallmentData[]>([]);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
@@ -223,7 +224,8 @@ const ElectronicsBusinessSales = () => {
     setInstallmentData({ amount: 0, startDate: null, numberOfInstallments: 0 }); // Reset installment data
   };
 
-  const openCustomerModal = () => {
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
     setShowCustomerModal(true);
   };
 
@@ -1447,6 +1449,7 @@ const ElectronicsBusinessSales = () => {
       <QuickCustomerModal
         isOpen={showCustomerModal}
         onClose={closeCustomerModal}
+        initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
           setFormData((prev) => ({
             ...prev,

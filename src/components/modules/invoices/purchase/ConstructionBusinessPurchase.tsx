@@ -71,6 +71,7 @@ const ConstructionBusinessPurchase = () => {
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -126,7 +127,8 @@ const ConstructionBusinessPurchase = () => {
     });
   };
 
-  const openCustomerModal = () => {
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
     setShowCustomerModal(true);
   };
 
@@ -1037,6 +1039,7 @@ const ConstructionBusinessPurchase = () => {
         onClose={closeCustomerModal}
         entityLabel="Supplier"
         defaultTypeId="2"
+        initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
           setFormData((prev) => ({
             ...prev,

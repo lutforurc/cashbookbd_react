@@ -68,6 +68,7 @@ const ElectronicsBusinessPurchase = () => {
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [purchaseType, setPurchaseType] = useState('2'); // Define state with type
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -136,7 +137,8 @@ const ElectronicsBusinessPurchase = () => {
     });
   };
 
-  const openCustomerModal = () => {
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
     setShowCustomerModal(true);
   };
 
@@ -947,6 +949,7 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
         onClose={closeCustomerModal}
         entityLabel="Supplier"
         defaultTypeId="2"
+        initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
           setFormData((prev) => ({
             ...prev,

@@ -66,6 +66,7 @@ const GeneralBusinessSales = () => {
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [salesType, setSalesType] = useState('1');
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
 
   const [permissions, setPermissions] = useState<any>([]);
 
@@ -119,7 +120,8 @@ const GeneralBusinessSales = () => {
     });
   };
 
-  const openCustomerModal = () => {
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
     setShowCustomerModal(true);
   };
 
@@ -488,7 +490,7 @@ const GeneralBusinessSales = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label htmlFor="">Select Customer</label>
-                <div className="mt-1 flex items-start gap-1">
+                <div className="flex items-start gap-1">
                   <div className="min-w-0 flex-1">
                     <DdlMultiline
                       onSelect={customerAccountHandler}
@@ -863,6 +865,7 @@ const GeneralBusinessSales = () => {
       <QuickCustomerModal
         isOpen={showCustomerModal}
         onClose={closeCustomerModal}
+        initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
           setFormData((prev) => ({
             ...prev,

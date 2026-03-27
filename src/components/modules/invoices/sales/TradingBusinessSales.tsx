@@ -78,6 +78,7 @@ const TradingBusinessSales = () => {
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
   dayjs.extend(utc);
 
 
@@ -139,7 +140,8 @@ const TradingBusinessSales = () => {
     });
   };
 
-  const openCustomerModal = () => {
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
     setShowCustomerModal(true);
   };
 
@@ -1202,6 +1204,7 @@ const TradingBusinessSales = () => {
       <QuickCustomerModal
         isOpen={showCustomerModal}
         onClose={closeCustomerModal}
+        initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
           setFormData((prev) => ({
             ...prev,
