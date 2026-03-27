@@ -308,6 +308,8 @@ const Orders = () => {
                       <th className="px-3 py-2">Company Name</th>
                       <th className="px-3 py-2 text-right">Order Qty</th>
                       <th className="px-3 py-2 text-right">Order Rate</th>
+                      <th className="px-3 py-2 text-right">Delivery Qty</th>
+                      <th className="px-3 py-2 text-right">Remaining Qty</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -329,6 +331,12 @@ const Orders = () => {
                           </td>
                           <td className="px-3 py-2 text-right">
                             {thousandSeparator(item.order_rate ?? 0, 2)}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            {thousandSeparator(item.delivery_qty ?? 0, 0)}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            {thousandSeparator(item.remaining_qty ?? 0, 0)}
                           </td>
                         </tr>
                       ))
