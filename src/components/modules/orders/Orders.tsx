@@ -9,7 +9,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
-import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
 import checkNumber from '../../utils/utils-functions/numberCheck';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import { render } from 'react-dom';
@@ -270,8 +270,8 @@ const Orders = () => {
             }
           }}
         >
-          <div className="w-full max-w-3xl rounded-sm bg-white shadow-lg dark:bg-gray-800">
-            <div className="flex items-center justify-between border-b px-4 py-3 dark:border-gray-700">
+          <div className="w-full max-w-3xl border border-slate-200 bg-slate-50 shadow-2xl ring-1 ring-black/5 dark:border-slate-600 dark:bg-slate-800 dark:ring-white/10">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-600 dark:bg-slate-700">
               <div>
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">
                   Linked Orders
@@ -282,14 +282,15 @@ const Orders = () => {
               </div>
               <button
                 type="button"
-                className="text-sm text-red-500 hover:underline"
+                className="rounded-md p-1.5 text-gray-500 transition hover:bg-red-50 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-200 dark:text-gray-300 dark:hover:bg-red-500/10 dark:hover:text-red-400 dark:focus:ring-red-500/30"
+                aria-label="Close linked orders modal"
                 onClick={closeLinkedOrdersModal}
               >
-                Close
+                <FiX size={18} />
               </button>
             </div>
 
-            <div className="p-4">
+            <div className="bg-slate-50 p-4 dark:bg-slate-800">
               <div className="mb-3 text-sm text-gray-700 dark:text-gray-300">
                 Total Linked Orders:{' '}
                 {thousandSeparator(
@@ -300,7 +301,7 @@ const Orders = () => {
                 )}
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto border border-slate-200 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-900">
                 <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300">
                   <thead className="bg-gray-200 text-xs uppercase dark:bg-gray-700">
                     <tr>
