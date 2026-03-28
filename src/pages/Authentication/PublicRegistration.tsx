@@ -126,7 +126,7 @@ const PublicRegistration: React.FC = () => {
       'address',
       'mobile',
       'user_name',
-      'email',
+      // 'email',
       'password',
       'password_confirmation',
       // 'branch_name',
@@ -265,7 +265,7 @@ const PublicRegistration: React.FC = () => {
                   name="mobile"
                   value={formData.mobile}
                   onChange={handleChange}
-                  placeholder="01711******"
+                  placeholder="017********"
                   className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white"
                 />
               </div>
@@ -314,6 +314,7 @@ const PublicRegistration: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
+                    tabIndex={-1}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-primary"
                   >
                     {showPassword ? <FiEyeOff /> : <FiEye />}
@@ -338,6 +339,7 @@ const PublicRegistration: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    tabIndex={-1}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-primary"
                   >
                     {showConfirmPassword ? <FiEyeOff /> : <FiEye />}

@@ -219,7 +219,7 @@ const SignIn: React.FC = () => {
                   </div>
 
                   
-                    <div className='hidden'>
+                    <div className=''>
                       <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
                         New here?{' '}
                         <Link to={ROUTES.public_register} className="text-primary hover:underline">
