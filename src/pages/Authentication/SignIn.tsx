@@ -18,6 +18,7 @@ const SignIn: React.FC = () => {
   const hostname = window.location.hostname;
   const shouldShowCompanyRegistration =
     window.location.origin === 'https://app.cashbookbd.com' ||
+    window.location.origin === 'https://accounts.staging.cashbookbd.com' ||
     window.location.origin === 'http://localhost:5173';
 
   const prevLocation = useLocation();
