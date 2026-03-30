@@ -18,6 +18,7 @@ interface Props {
   placeholder?: string;
   className?: string;
   selectionLabel?: string;
+  isDisabled?: boolean;
 }
 
 /* ===== Option with ✔ ===== */
@@ -62,6 +63,7 @@ const MultiSelectDropdown = ({
   placeholder = 'Select',
   className,
   selectionLabel = 'item',
+  isDisabled = false,
 }: Props) => {
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
@@ -164,6 +166,7 @@ const MultiSelectDropdown = ({
       options={options}
       value={value}
       onChange={(selected) => onChange(selected as Option[])}
+      isDisabled={isDisabled}
       placeholder={placeholder}
       styles={styles}
       className={className}

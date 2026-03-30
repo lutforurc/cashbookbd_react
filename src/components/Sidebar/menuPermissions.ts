@@ -71,4 +71,12 @@ export const MENU_PERMISSIONS = {
     'cs.update',
     'cs.view',
   ],
+  chart_of_accounts: [
+    'coa.l1.view',
+    'coa.l2.view',
+    'coa.l3.view',
+    'coa.l4.view',
+  ],
+  analytics: ['product.stock.view', 'product.in.out', 'group.report'],
+  customer_dashboard: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'],
 };

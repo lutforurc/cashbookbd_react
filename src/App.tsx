@@ -182,11 +182,19 @@ function App() {
             <Route path={'hello-bangladesh'} element={<ReportComponent />} />
 
             {/* Chart of Accounts */}
-            <Route path={routes.coal1_list} element={<CoaL1 />} />
-            <Route path={routes.coal2_list} element={<CoaL2 />} />
-            <Route path={routes.coal3_list} element={<CoaL3 />} />
-            <Route path={routes.coal4_list} element={<CoaL4 />} />
-            <Route path={routes.coal4_add} element={<AddCoaL4 />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l1.view']} loading={permissionsLoading} />}>
+              <Route path={routes.coal1_list} element={<CoaL1 />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l2.view']} loading={permissionsLoading} />}>
+              <Route path={routes.coal2_list} element={<CoaL2 />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l3.view']} loading={permissionsLoading} />}>
+              <Route path={routes.coal3_list} element={<CoaL3 />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l4.view']} loading={permissionsLoading} />}>
+              <Route path={routes.coal4_list} element={<CoaL4 />} />
+              <Route path={routes.coal4_add} element={<AddCoaL4 />} />
+            </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.customer} loading={permissionsLoading} />}>
               <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
               <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
@@ -413,7 +421,9 @@ function App() {
             </Route>
 
             {/* Also show customer dashboard if admin wants */}
-            <Route path={routes.customer_dashboard} element={<CustomerDashboard />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create']} loading={permissionsLoading} />}>
+              <Route path={routes.customer_dashboard} element={<CustomerDashboard />} />
+            </Route>
 
 
             {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
@@ -464,7 +474,9 @@ function App() {
 
             {/* All Cart */}
 
-            <Route path={routes.item_chart} element={<ItemChart user={me} />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'product.in.out', 'group.report']} loading={permissionsLoading} />}>
+              <Route path={routes.item_chart} element={<ItemChart user={me} />} />
+            </Route>
 
           </Route>
 

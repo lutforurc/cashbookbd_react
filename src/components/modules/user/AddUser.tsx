@@ -22,6 +22,7 @@ type MultiOption = {
 const initialFormData = {
   name: '',
   email: '',
+  phone: '',
   description: '',
   password: '',
   confirmPassword: '',
@@ -62,6 +63,8 @@ const AddUser = () => {
     [roles?.roles?.data?.data],
   );
 
+  const ownerRoleSelected = selectedRoles.some((item) => item.label?.toLowerCase() === 'owner');
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
     dispatch(getRoles() as any);
@@ -90,6 +93,16 @@ const AddUser = () => {
       role_id: selectedRoles[0] ? String(selectedRoles[0].value) : '',
     }));
   }, [selectedRoles]);
+
+  const handleRolesChange = (items: MultiOption[]) => {
+    const pickedOwner = items.find((item) => item.label?.toLowerCase() === 'owner');
+    if (pickedOwner) {
+      setSelectedRoles([pickedOwner]);
+      return;
+    }
+
+    setSelectedRoles(items);
+  };
 
   const handleOnChange = (e: any) => {
     const { value, type, name } = e.target;
@@ -177,6 +190,15 @@ const AddUser = () => {
           className=""
           onChange={handleOnChange}
         />
+        <InputElement
+          id="phone"
+          value={formData.phone}
+          name="phone"
+          placeholder="Enter Mobile Number"
+          label="Mobile Number"
+          className=""
+          onChange={handleOnChange}
+        />
 
         <div>
           <div>
@@ -185,12 +207,27 @@ const AddUser = () => {
           <MultiSelectDropdown
             options={roleOptions}
             value={selectedRoles}
-            onChange={setSelectedRoles}
+            onChange={handleRolesChange}
             placeholder="Select roles"
             selectionLabel="role"
             className="w-full"
           />
+          {ownerRoleSelected && (
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              Owner user can only keep the Owner role.
+            </p>
+          )}
         </div>
+
+        <InputElement
+          id="lang"
+          value={formData.lang}
+          name="lang"
+          placeholder="Enter Language"
+          label="Language"
+          className="py-2 h-9"
+          onChange={handleOnChange}
+        />
 
         <div>
           <div>
@@ -208,16 +245,6 @@ const AddUser = () => {
             defaultValue={formData.branch_id || ''}
           />
         </div>
-
-        <InputElement
-          id="lang"
-          value={formData.lang}
-          name="lang"
-          placeholder="Enter Language"
-          label="Language"
-          className="py-2 h-9"
-          onChange={handleOnChange}
-        />
 
         <PasswordElement
           id="password"

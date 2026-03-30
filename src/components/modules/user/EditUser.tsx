@@ -47,6 +47,7 @@ const EditUser = (user: any) => {
         usr_id: id,
         name: '',
         email: '',
+        phone: '',
         description: '',
         password: '',
         confirmPassword: '',
@@ -60,12 +61,15 @@ const EditUser = (user: any) => {
         label: item.name,
     }));
 
+    const isOwnerUser = selectedRoles.some((item) => item.label?.toLowerCase() === 'owner');
+
     useEffect(() => {
         if (showUser.editData) {
             setFormData((prevData) => ({
                 ...prevData,
                 name: showUser.editData.name || '',
                 email: showUser.editData.email || '',
+                phone: showUser.editData.phone || '',
                 role_id: String(showUser.editData.role_id || ''),
                 lang: showUser.editData.lang || '',
                 branch_id: String(showUser.editData.branch_id || ''),
@@ -87,7 +91,8 @@ const EditUser = (user: any) => {
             incomingRoleIds.includes(String(option.value))
         );
 
-        setSelectedRoles(preselected);
+        const hasOwner = preselected.some((item) => item.label?.toLowerCase() === 'owner');
+        setSelectedRoles(hasOwner ? preselected.filter((item) => item.label?.toLowerCase() === 'owner') : preselected);
     }, [showUser?.editData, roles?.roles?.data?.data]);
 
     useEffect(() => {
@@ -96,6 +101,16 @@ const EditUser = (user: any) => {
             role_id: selectedRoles[0] ? String(selectedRoles[0].value) : '',
         }));
     }, [selectedRoles]);
+
+    const handleRolesChange = (items: MultiOption[]) => {
+        const pickedOwner = items.find((item) => item.label?.toLowerCase() === 'owner');
+        if (pickedOwner) {
+            setSelectedRoles([pickedOwner]);
+            return;
+        }
+
+        setSelectedRoles(items);
+    };
 
 
 
@@ -169,9 +184,18 @@ const EditUser = (user: any) => {
                         <label htmlFor="">Email Address</label>
                     </div>
                     <div>
-                        <span>{showUser.editData.email || formData.email}</span>
+                        <span>{showUser.editData.email || formData.email || '-'}</span>
                     </div>
                 </div>
+                <InputElement
+                    id="phone"
+                    value={formData.phone}
+                    name="phone"
+                    placeholder={'Enter mobile number'}
+                    label={'Mobile Number'}
+                    className={''}
+                    onChange={handleOnChange}
+                />
 
                 <InputElement
                     id="name"
@@ -189,11 +213,16 @@ const EditUser = (user: any) => {
                     <MultiSelectDropdown
                         options={roleOptions}
                         value={selectedRoles}
-                        onChange={setSelectedRoles}
+                        onChange={handleRolesChange}
                         placeholder="Select roles"
                         selectionLabel="role"
                         className="w-full"
                     />
+                    {isOwnerUser && (
+                        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                            Owner user can only keep the Owner role.
+                        </p>
+                    )}
                 </div>
                 <div>
                     <div>

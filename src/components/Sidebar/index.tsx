@@ -402,17 +402,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             hasPermission(permissions, 'product.received.create') ||
                             hasPermission(permissions, 'branch.transfer.create') ||
                             hasPermission(permissions, 'inventory.transfer.create')) && ( */}
-                          <li>
-                            <NavLink
-                              to={routes.branch_received}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Branch Receive
-                            </NavLink>
-                          </li>
+                          {(hasPermission(permissions, 'branch.received.create') ||
+                            hasPermission(permissions, 'inventory.received.create') ||
+                            hasPermission(permissions, 'product.received.create')) && (
+                              <li>
+                                <NavLink
+                                  to={routes.branch_received}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Branch Receive
+                                </NavLink>
+                              </li>
+                            )}
                           {/* // )} */}
                           {(hasPermission(permissions, 'branch.transfer.create') ||
                             hasPermission(permissions, 'inventory.transfer.create') ||
@@ -438,7 +442,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               )}
 
               {/* Reports */}
-              {hasMenuPermission(permissions, 'invoice') && (
+              {hasMenuPermission(permissions, 'reports') && (
                 <SidebarLinkGroup
                   activeCondition={
                     pathname === '/reports/cashbook' ||
@@ -1758,186 +1762,198 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
 
               {/* Chart of Accounts */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/coal4/coal4-list' || pathname.includes('forms')
-                }
-                menuId="chart-of-accounts"
-                open={openMenu === 'chart-of-accounts'}
-                handleClick={() => handleMenuClick('chart-of-accounts')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/coal1/coal1-list' ||
-                        pathname === '/coal2/coal2-list' ||
-                        pathname === '/coal3/coal3-list' ||
-                        pathname === '/coal4/coal4-list' ||
-                        pathname.includes('/coal4/coal4-list')) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiServer />
-                      Chart of Accounts
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/coal1/coal1-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            CoA L1
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/coal2/coal2-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            CoA L2
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/coal3/coal3-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            CoA L3
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            to="/coal4/coal4-list"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            CoA L4
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
+              {hasMenuPermission(permissions, 'chart_of_accounts') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/coal4/coal4-list' || pathname.includes('forms')
+                  }
+                  menuId="chart-of-accounts"
+                  open={openMenu === 'chart-of-accounts'}
+                  handleClick={() => handleMenuClick('chart-of-accounts')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/coal1/coal1-list' ||
+                          pathname === '/coal2/coal2-list' ||
+                          pathname === '/coal3/coal3-list' ||
+                          pathname === '/coal4/coal4-list' ||
+                          pathname.includes('/coal4/coal4-list')) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiServer />
+                        Chart of Accounts
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'coa.l1.view') && (
+                            <li>
+                              <NavLink
+                                to="/coal1/coal1-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                CoA L1
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'coa.l2.view') && (
+                            <li>
+                              <NavLink
+                                to="/coal2/coal2-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                CoA L2
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'coa.l3.view') && (
+                            <li>
+                              <NavLink
+                                to="/coal3/coal3-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                CoA L3
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'coa.l4.view') && (
+                            <li>
+                              <NavLink
+                                to="/coal4/coal4-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                CoA L4
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
 
 
-              {/* Chart of Accounts */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/item/item-chart' || pathname.includes('forms')
-                }
-                menuId="al-charts"
-                open={openMenu === 'al-charts'}
-                handleClick={() => handleMenuClick('al-charts')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="#"
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
-                        pathname === '/item/item-chart' ||
-                        pathname.includes('/item/item-chart')
-                      ) &&
-                        'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                        }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiBarChart2 />
-                      Analytics
-                    </NavLink>
-                    <div
-                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
-                        }`}
-                    >
-                      <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
-                          <NavLink
-                            to="/item/item-chart"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Comparison
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </div>
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
+              {/* Analytics */}
+              {hasMenuPermission(permissions, 'analytics') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/item/item-chart' || pathname.includes('forms')
+                  }
+                  menuId="al-charts"
+                  open={openMenu === 'al-charts'}
+                  handleClick={() => handleMenuClick('al-charts')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
+                          pathname === '/item/item-chart' ||
+                          pathname.includes('/item/item-chart')
+                        ) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiBarChart2 />
+                        Analytics
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <NavLink
+                              to="/item/item-chart"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              Comparison
+                            </NavLink>
+                          </li>
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
 
 
               {/* Customer Dashboard */}
-              <li>
-                <NavLink
-                  to="/customer-dashboard"
-
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/coal1/coal1-list' ||
-                    pathname === '/customer-dashboard') &&
-                    'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                    }`}
-                >
-                  <svg
-                    className="fill-current"
-                    width="18"
-                    height="19"
-                    viewBox="0 0 18 19"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+              {hasMenuPermission(permissions, 'customer_dashboard') && (
+                <li>
+                  <NavLink
+                    to="/customer-dashboard"
+                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${pathname === '/customer-dashboard' &&
+                      'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                      }`}
                   >
-                    <g clipPath="url(#clip0_130_9801)">
-                      <path
-                        d="M10.8563 0.55835C10.5188 0.55835 10.2095 0.8396 10.2095 1.20522V6.83022C10.2095 7.16773 10.4907 7.4771 10.8563 7.4771H16.8751C17.0438 7.4771 17.2126 7.39272 17.3251 7.28022C17.4376 7.1396 17.4938 6.97085 17.4938 6.8021C17.2688 3.28647 14.3438 0.55835 10.8563 0.55835ZM11.4751 6.15522V1.8521C13.8095 2.13335 15.6938 3.8771 16.1438 6.18335H11.4751V6.15522Z"
-                        fill=""
-                      />
-                      <path
-                        d="M15.3845 8.7427H9.1126V2.69582C9.1126 2.35832 8.83135 2.07707 8.49385 2.07707C8.40947 2.07707 8.3251 2.07707 8.24072 2.07707C3.96572 2.04895 0.506348 5.53645 0.506348 9.81145C0.506348 14.0864 3.99385 17.5739 8.26885 17.5739C12.5438 17.5739 16.0313 14.0864 16.0313 9.81145C16.0313 9.6427 16.0313 9.47395 16.0032 9.33332C16.0032 8.99582 15.722 8.7427 15.3845 8.7427ZM8.26885 16.3083C4.66885 16.3083 1.77197 13.4114 1.77197 9.81145C1.77197 6.3802 4.47197 3.53957 7.8751 3.3427V9.36145C7.8751 9.69895 8.15635 10.0083 8.52197 10.0083H14.7938C14.6813 13.4958 11.7845 16.3083 8.26885 16.3083Z"
-                        fill=""
-                      />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_130_9801">
-                        <rect
-                          width="18"
-                          height="18"
-                          fill="white"
-                          transform="translate(0 0.052124)"
+                    <svg
+                      className="fill-current"
+                      width="18"
+                      height="19"
+                      viewBox="0 0 18 19"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g clipPath="url(#clip0_130_9801)">
+                        <path
+                          d="M10.8563 0.55835C10.5188 0.55835 10.2095 0.8396 10.2095 1.20522V6.83022C10.2095 7.16773 10.4907 7.4771 10.8563 7.4771H16.8751C17.0438 7.4771 17.2126 7.39272 17.3251 7.28022C17.4376 7.1396 17.4938 6.97085 17.4938 6.8021C17.2688 3.28647 14.3438 0.55835 10.8563 0.55835ZM11.4751 6.15522V1.8521C13.8095 2.13335 15.6938 3.8771 16.1438 6.18335H11.4751V6.15522Z"
+                          fill=""
                         />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                  Customer Dashboard
-                </NavLink>
-              </li>
+                        <path
+                          d="M15.3845 8.7427H9.1126V2.69582C9.1126 2.35832 8.83135 2.07707 8.49385 2.07707C8.40947 2.07707 8.3251 2.07707 8.24072 2.07707C3.96572 2.04895 0.506348 5.53645 0.506348 9.81145C0.506348 14.0864 3.99385 17.5739 8.26885 17.5739C12.5438 17.5739 16.0313 14.0864 16.0313 9.81145C16.0313 9.6427 16.0313 9.47395 16.0032 9.33332C16.0032 8.99582 15.722 8.7427 15.3845 8.7427ZM8.26885 16.3083C4.66885 16.3083 1.77197 13.4114 1.77197 9.81145C1.77197 6.3802 4.47197 3.53957 7.8751 3.3427V9.36145C7.8751 9.69895 8.15635 10.0083 8.52197 10.0083H14.7938C14.6813 13.4958 11.7845 16.3083 8.26885 16.3083Z"
+                          fill=""
+                        />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_130_9801">
+                          <rect
+                            width="18"
+                            height="18"
+                            fill="white"
+                            transform="translate(0 0.052124)"
+                          />
+                        </clipPath>
+                      </defs>
+                    </svg>
+                    Customer Dashboard
+                  </NavLink>
+                </li>
+              )}
             </ul>
           </div>
         </nav>

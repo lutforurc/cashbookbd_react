@@ -8,6 +8,8 @@ import { formatRoleNameForCashBook } from '../../utils/utils-functions/formatRol
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { toast } from 'react-toastify';
 import { FiPlus } from 'react-icons/fi';
+import httpService from '../../services/httpService';
+import { API_GET_SELECTED_PERMISSIONS_URL } from '../../services/apiRoutes';
 
 interface Permission {
   id: number;
@@ -29,6 +31,8 @@ const Roles = () => {
   const [roleId, setRoleId] = useState<number>(0);
   const [updating, setUpdating] = useState(false);
   const [addingRole, setAddingRole] = useState(false);
+  const [catalogPermissions, setCatalogPermissions] = useState<Permission[]>([]);
+  const isOwnerRoleSelected = selectedRole?.name?.toLowerCase() === 'owner';
 
   useEffect(() => {
     dispatch(getRoles());
@@ -36,12 +40,52 @@ const Roles = () => {
   }, []);
 
   useEffect(() => {
-    if (Array.isArray(rolesPermissions.permissions?.data?.data)) {
-      setPermissions(rolesPermissions.permissions.data.data);
-    } else {
-      setPermissions([]);
-    }
-  }, [rolesPermissions.permissions?.data?.data]);
+    const availablePermissions = Array.isArray(rolesPermissions.permissions?.data?.data)
+      ? rolesPermissions.permissions.data.data
+      : [];
+
+    const rolePermissions = Array.isArray(rolesPermissions.selectedPermissions?.data?.data)
+      ? rolesPermissions.selectedPermissions.data.data
+      : [];
+
+    const basePermissions = catalogPermissions.length > 0 ? catalogPermissions : availablePermissions;
+    const mergedPermissions = [...basePermissions];
+    const existingIds = new Set(mergedPermissions.map((perm: Permission) => perm.id));
+
+    rolePermissions.forEach((perm: Permission) => {
+      if (!existingIds.has(perm.id)) {
+        mergedPermissions.push(perm);
+        existingIds.add(perm.id);
+      }
+    });
+
+    mergedPermissions.sort((a, b) => {
+      const groupCompare = (a.group_name || '').localeCompare(b.group_name || '');
+      if (groupCompare !== 0) return groupCompare;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+
+    setPermissions(mergedPermissions);
+  }, [catalogPermissions, rolesPermissions.permissions?.data?.data, rolesPermissions.selectedPermissions?.data?.data]);
+
+  useEffect(() => {
+    const ownerRole = roles.find((role) => role.name?.toLowerCase() === 'owner');
+    if (!ownerRole) return;
+
+    const loadOwnerPermissions = async () => {
+      try {
+        const { data } = await httpService.get(`${API_GET_SELECTED_PERMISSIONS_URL}/${ownerRole.id}`);
+        const ownerPermissions = Array.isArray(data?.data?.data) ? data.data.data : [];
+        if (ownerPermissions.length > 0) {
+          setCatalogPermissions(ownerPermissions);
+        }
+      } catch {
+        // keep current fallback behavior if owner permissions can't be loaded
+      }
+    };
+
+    loadOwnerPermissions();
+  }, [roles]);
 
   useEffect(() => {
     setRoles(rolesPermissions.roles?.data?.data || []);
@@ -69,6 +113,7 @@ const Roles = () => {
   };
 
   const handlePermissionChange = (permName: string) => {
+    if (isOwnerRoleSelected) return;
     setSelectedPermissions((prev) =>
       prev.includes(permName)
         ? prev.filter((p) => p !== permName)
@@ -93,6 +138,7 @@ const Roles = () => {
     allPermissionNames.every((name) => selectedPermissions.includes(name));
 
   const handleRootToggle = (checked: boolean) => {
+    if (isOwnerRoleSelected) return;
     setSelectedPermissions(checked ? allPermissionNames : []);
   };
 
@@ -100,6 +146,7 @@ const Roles = () => {
   const handleUpdatePermissions = async () => {
     if (updating) return; // double click block
     if (!selectedRole) return toast.info("No role selected");
+    if (isOwnerRoleSelected) return toast.info("Owner role cannot be modified");
     if (selectedPermissions.length === 0) return toast.info("No permissions selected");
 
     setUpdating(true);
@@ -139,8 +186,20 @@ const Roles = () => {
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
             Permissions
           </h2>
-          <ToggleSwitch label="All" checked={isAllSelected} onChange={handleRootToggle} />
+          <ToggleSwitch
+            label="All"
+            checked={isAllSelected}
+            onChange={handleRootToggle}
+            disabled={isOwnerRoleSelected}
+            preserveCheckedColorWhenDisabled={isOwnerRoleSelected}
+          />
         </div>
+
+        {isOwnerRoleSelected && (
+          <p className="mb-4 text-sm text-amber-600 dark:text-amber-400">
+            Owner role protected. এই role-এর permission পরিবর্তন করা যাবে না।
+          </p>
+        )}
 
         {Object.keys(groupedPermissions).map((group) => {
           const perms = groupedPermissions[group];
@@ -170,6 +229,8 @@ const Roles = () => {
                   label="All"
                   checked={allSelectedInGroup}
                   onChange={handleGroupToggle}
+                  disabled={isOwnerRoleSelected}
+                  preserveCheckedColorWhenDisabled={isOwnerRoleSelected}
                 />
               </div>
 
@@ -180,6 +241,8 @@ const Roles = () => {
                     label={formatRoleNameForCashBook(perm.name)}
                     checked={selectedPermissions.includes(perm.name)}
                     onChange={() => handlePermissionChange(perm.name)}
+                    disabled={isOwnerRoleSelected}
+                    preserveCheckedColorWhenDisabled={isOwnerRoleSelected}
                   />
                 ))}
               </ul>
