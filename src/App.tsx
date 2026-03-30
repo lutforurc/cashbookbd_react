@@ -138,6 +138,7 @@ import MySubscription from './components/modules/subscription/MySubscription';
 import PaymentSubmit from './components/modules/subscription/PaymentSubmit';
 import BillingHistory from './components/modules/subscription/BillingHistory';
 import SubscriptionAdmin from './components/modules/subscription/SubscriptionAdmin';
+import RequireUserQuota from './components/auth/RequireUserQuota';
 
 
 
@@ -253,7 +254,9 @@ function App() {
                 />
               }
             >
-              <Route path={routes.user_add} element={<AddUser />} />
+              <Route element={<RequireUserQuota />}>
+                <Route path={routes.user_add} element={<AddUser />} />
+              </Route>
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['installment.create']} loading={permissionsLoading} />}>
               <Route path={routes.installment_list} element={<InstallmentDetails />} />

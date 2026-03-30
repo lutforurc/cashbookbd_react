@@ -17,6 +17,7 @@ import { hasPermission } from '../../utils/permissionChecker';
 const UserList = () => {
   const userList = useSelector((state) => state.users);
   const settings = useSelector((state: any) => state.settings);
+  const subscription = useSelector((state: any) => state.subscription);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userPermissions = settings?.data?.permissions || [];
@@ -34,6 +35,9 @@ const UserList = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const maxUsers = subscription?.current?.max_users;
+  const currentUsers = Number(userList?.data?.total || 0);
+  const userLimitReached = typeof maxUsers === 'number' && maxUsers > 0 && currentUsers >= maxUsers;
 
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);
@@ -81,6 +85,19 @@ const UserList = () => {
   const handleAddUser = () => {
     if (!canCreateUser) {
       toast.error('You are not authorized to create user.');
+      return;
+    }
+    if (userLimitReached) {
+      toast.error(`User limit reached (${currentUsers}/${maxUsers}).`);
+      navigate('/no-access', {
+        state: {
+          from: routes.user_add,
+          reason: 'subscription_quota',
+          quota_type: 'users',
+          quota_limit: maxUsers,
+          current_usage: currentUsers,
+        },
+      });
       return;
     }
     navigate(routes.user_add);
@@ -210,7 +227,7 @@ const UserList = () => {
           <ButtonLoading
             onClick={handleAddUser}
             buttonLoading={false}
-            label="Add User"
+            label={userLimitReached ? `User Limit Full (${currentUsers}/${maxUsers})` : "Add User"}
             className="whitespace-nowrap ml-2"
             icon=""
           />

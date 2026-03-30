@@ -28,6 +28,25 @@ import {
 
 import httpService from '../../services/httpService';
 
+const extractApiErrorMessage = (payload: any, fallback = 'Something went wrong.'): string => {
+  const validationErrors = payload?.errors;
+  if (validationErrors && typeof validationErrors === 'object') {
+    const firstFieldErrors = Object.values(validationErrors).find(
+      (value) => Array.isArray(value) && value.length > 0,
+    ) as string[] | undefined;
+
+    if (firstFieldErrors?.[0]) {
+      return firstFieldErrors[0];
+    }
+  }
+
+  return (
+    payload?.error?.message ||
+    payload?.message ||
+    fallback
+  );
+};
+
 /** ✅ NEW: Upload action types (এখানেই add করলাম যাতে পুরোনো constants ফাইল না ভাঙে) */
 export const USER_PHOTO_UPLOAD_PENDING = 'USER_PHOTO_UPLOAD_PENDING';
 export const USER_PHOTO_UPLOAD_SUCCESS = 'USER_PHOTO_UPLOAD_SUCCESS';
@@ -116,10 +135,19 @@ export const updateUser = (data: any, callback: any) => (dispatch: any) => {
       }
     })
     .catch((err) => {
+      const message = extractApiErrorMessage(err?.response?.data, 'Something went wrong.');
       dispatch({
         type: USER_UPDATE_ERROR,
-        payload: err,
+        payload: message,
       });
+      if ('function' === typeof callback) {
+        callback({
+          success: false,
+          error: {
+            message,
+          },
+        });
+      }
     });
 };
 
@@ -145,10 +173,19 @@ export const storeUser = (data: any, callback: any) => (dispatch: any) => {
       }
     })
     .catch((er) => {
+      const message = extractApiErrorMessage(er?.response?.data, 'Something went wrong.');
       dispatch({
         type: USER_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: message,
       });
+      if ('function' === typeof callback) {
+        callback({
+          success: false,
+          error: {
+            message,
+          },
+        });
+      }
     });
 };
 
