@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import routes from '../../services/appRoutes';
 import { fetchSubscriptionPlans } from './subscriptionSlice';
+import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 
 const Pricing: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -60,16 +61,19 @@ const Pricing: React.FC = () => {
               <li>{plan.description || 'Manual approval based subscription plan'}</li>
             </ul>
 
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 to={`${routes.subscription_payment_submit}?plan_id=${plan.id}`}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white"
+                className="inline-flex"
               >
-                Pay Manually
+                <ButtonLoading
+                  label="Pay Manually"
+                  className="whitespace-nowrap text-center mr-0 py-2"
+                />
               </Link>
               <Link
                 to={routes.my_subscription}
-                className="rounded-lg border border-stroke px-4 py-2 text-sm font-medium text-black dark:border-strokedark dark:text-white"
+                className="text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm px-5 text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center whitespace-nowrap py-2"
               >
                 Current Status
               </Link>

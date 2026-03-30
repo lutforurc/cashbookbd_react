@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import routes from '../../services/appRoutes';
 import { fetchCurrentSubscription } from './subscriptionSlice';
+import Link from '../../utils/others/Link';
 
 const MySubscription: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -122,19 +122,19 @@ const MySubscription: React.FC = () => {
             <div className="mt-5 space-y-3">
               <Link
                 to={routes.subscription_payment_submit}
-                className="block rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-white"
+                className="flex w-full items-center justify-center whitespace-nowrap p-2"
               >
                 Submit Payment
               </Link>
               <Link
                 to={routes.subscription_billing_history}
-                className="block rounded-lg border border-stroke px-4 py-2 text-center text-sm font-medium text-black dark:border-strokedark dark:text-white"
+                className="flex w-full items-center justify-center whitespace-nowrap p-2"
               >
                 Billing History
               </Link>
               <Link
                 to={routes.subscription_pricing}
-                className="block rounded-lg border border-stroke px-4 py-2 text-center text-sm font-medium text-black dark:border-strokedark dark:text-white"
+                className="flex w-full items-center justify-center whitespace-nowrap p-2"
               >
                 Compare Plans
               </Link>
@@ -159,19 +159,19 @@ const MySubscription: React.FC = () => {
             <div className="mt-5 space-y-3">
               <Link
                 to={routes.subscription_pricing}
-                className="block rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-white"
+                className="flex w-full items-center justify-center whitespace-nowrap p-2"
               >
                 View Plans
               </Link>
               <Link
                 to={routes.subscription_payment_submit}
-                className="block rounded-lg border border-stroke px-4 py-2 text-center text-sm font-medium text-black dark:border-strokedark dark:text-white"
+                className="flex w-full items-center justify-center whitespace-nowrap p-2"
               >
                 Submit Payment
               </Link>
               <Link
                 to={routes.subscription_billing_history}
-                className="block rounded-lg border border-stroke px-4 py-2 text-center text-sm font-medium text-black dark:border-strokedark dark:text-white"
+                className="flex w-full items-center justify-center whitespace-nowrap p-2"
               >
                 Billing History
               </Link>
