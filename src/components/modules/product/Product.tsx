@@ -14,7 +14,6 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { useNavigate } from 'react-router-dom';
 import InputElement from '../../utils/fields/InputElement';
 import { toast } from 'react-toastify';
-import { getSettings } from '../settings/settingsSlice';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
@@ -94,15 +93,17 @@ const Product = (user: any) => {
   const [brandId, setBrandId] = useState<number | string | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
+  const didInitRef = useRef(false);
   const [fontSize, setFontSize] = useState<number>(12);
   const [rowsPerPage, setRowsPerPage] = useState<number>(25);
 
   /* ================= INIT ================= */
   useEffect(() => {
-    dispatch(getSettings() as any);
+    if (didInitRef.current) return;
+    didInitRef.current = true;
     dispatch(getCategoryDdl() as any);
     dispatch(fetchBrandDdl() as any);
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (Array.isArray(categoryData?.ddlData?.data?.category)) {
@@ -112,7 +113,7 @@ const Product = (user: any) => {
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
+    // dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
   }, [page, perPage, categoryId, brandId, appliedSearch]);
 
   /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
@@ -141,7 +142,7 @@ const Product = (user: any) => {
     setCurrentPage(1);
     setAppliedSearch(search);
 
-    dispatch(getProduct({ page: 1, perPage, categoryId, brandId, search }) as any);
+    // dispatch(getProduct({ page: 1, perPage, categoryId, brandId, search }) as any);
   };
 
   const handlePageChange = (p: number) => {

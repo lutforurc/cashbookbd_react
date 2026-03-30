@@ -37,10 +37,23 @@ class SubscriptionService
             ->first();
 
         if (!$subscription) {
+            $subscription = $this->ensureCompanyTrialSubscription($companyId, $user?->id);
+        }
+
+        if (!$subscription) {
             return null;
         }
 
-        return $this->formatSubscription($subscription);
+        return $this->formatSubscription(
+            $this->syncSubscriptionLifecycle($subscription, $user?->id)
+        );
+    }
+
+    public function ensureCompanyTrialSubscription(int $companyId, ?int $userId = null): ?array
+    {
+        return $this->formatSubscription(
+            $this->provisionTrialSubscription($companyId, $userId)
+        );
     }
 
     public function getCompanyPayments(?Authenticatable $user): array
@@ -178,7 +191,7 @@ class SubscriptionService
             ->when($status !== null && $status !== '', fn (Builder $query) => $query->where('ts.status', $status))
             ->orderByDesc('ts.id')
             ->get()
-            ->map(fn ($subscription) => $this->formatSubscription($subscription))
+            ->map(fn ($subscription) => $this->formatSubscription($this->syncSubscriptionLifecycle($subscription)))
             ->all();
     }
 
@@ -424,6 +437,137 @@ class SubscriptionService
                 'p.currency as plan_currency',
                 'c.name as company_name',
             ]);
+    }
+
+    private function provisionTrialSubscription(int $companyId, ?int $userId): ?object
+    {
+        return DB::transaction(function () use ($companyId, $userId): ?object {
+            $existing = $this->subscriptionBaseQuery()
+                ->where('ts.company_id', $companyId)
+                ->orderByDesc('ts.id')
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing) {
+                return $existing;
+            }
+
+            $plan = DB::table('saas_plans')
+                ->where('is_active', 1)
+                ->where('trial_days', '>', 0)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->first();
+
+            if (!$plan) {
+                $plan = DB::table('saas_plans')
+                    ->where('is_active', 1)
+                    ->orderBy('sort_order')
+                    ->orderBy('id')
+                    ->first();
+            }
+
+            if (!$plan) {
+                return null;
+            }
+
+            $now = Carbon::now();
+            $trialDays = max((int) $plan->trial_days, 0);
+            $trialEndAt = $trialDays > 0 ? $now->copy()->addDays($trialDays) : null;
+            $endDate = $trialEndAt?->toDateString();
+
+            $subscriptionId = DB::table('saas_tenant_subscriptions')->insertGetId([
+                'company_id' => $companyId,
+                'plan_id' => $plan->id,
+                'subscription_code' => 'SUB-' . strtoupper(Str::padLeft((string) random_int(1, 999999), 6, '0')),
+                'status' => $trialDays > 0 ? 'trialing' : 'pending_payment',
+                'access_status' => $trialDays > 0 ? 'full' : 'billing_only',
+                'start_date' => $now->toDateString(),
+                'end_date' => $endDate,
+                'trial_start_at' => $trialDays > 0 ? $now : null,
+                'trial_end_at' => $trialEndAt,
+                'next_billing_date' => $endDate ?: $now->toDateString(),
+                'notes' => $trialDays > 0
+                    ? sprintf('Auto-provisioned %d day trial for new company.', $trialDays)
+                    : 'Auto-provisioned subscription placeholder for new company.',
+                'created_by' => $userId,
+                'updated_by' => $userId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $this->logActivity(
+                $subscriptionId,
+                $companyId,
+                'trial_auto_provisioned',
+                [
+                    'plan_id' => (int) $plan->id,
+                    'trial_days' => $trialDays,
+                ],
+                $userId
+            );
+
+            return $this->subscriptionBaseQuery()
+                ->where('ts.id', $subscriptionId)
+                ->first();
+        });
+    }
+
+    private function syncSubscriptionLifecycle(?object $subscription, ?int $userId = null): ?object
+    {
+        if (!$subscription) {
+            return null;
+        }
+
+        if (!$this->shouldMarkSubscriptionExpired($subscription)) {
+            return $subscription;
+        }
+
+        $now = Carbon::now();
+
+        DB::table('saas_tenant_subscriptions')
+            ->where('id', $subscription->id)
+            ->update([
+                'status' => 'expired',
+                'access_status' => 'blocked',
+                'updated_by' => $userId,
+                'updated_at' => $now,
+            ]);
+
+        $this->logActivity(
+            (int) $subscription->id,
+            (int) $subscription->company_id,
+            'subscription_expired',
+            [
+                'previous_status' => $subscription->status,
+                'previous_access_status' => $subscription->access_status,
+            ],
+            $userId
+        );
+
+        return $this->subscriptionBaseQuery()
+            ->where('ts.id', $subscription->id)
+            ->first();
+    }
+
+    private function shouldMarkSubscriptionExpired(object $subscription): bool
+    {
+        if (in_array($subscription->status, ['expired', 'suspended', 'cancelled'], true)) {
+            return false;
+        }
+
+        $now = Carbon::now();
+        $today = $now->toDateString();
+
+        if ($subscription->status === 'trialing' && $subscription->trial_end_at) {
+            return Carbon::parse($subscription->trial_end_at)->lt($now);
+        }
+
+        if (in_array($subscription->status, ['trialing', 'active'], true) && $subscription->end_date) {
+            return Carbon::parse($subscription->end_date)->toDateString() < $today;
+        }
+
+        return false;
     }
 
     private function formatPlan(object $plan, array $features): array

@@ -22,4 +22,14 @@ Available endpoints:
 - `POST /api/admin/subscription/payments/{paymentId}/approve`
 - `POST /api/admin/subscription/payments/{paymentId}/reject`
 
+New company trial provisioning:
+- After inserting a new company during signup/registration, call `SubscriptionService::ensureCompanyTrialSubscription($companyId, $userId)`.
+- This writes the initial trial row into `saas_tenant_subscriptions` immediately.
+- Example:
+
+```php
+app(\App\Support\SubscriptionService::class)
+    ->ensureCompanyTrialSubscription($companyId, $userId);
+```
+
 If your backend already has a base `Controller.php`, use the existing file and ignore the scaffold copy here.

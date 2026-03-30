@@ -26,6 +26,7 @@ const SubscriptionStatusBanner: React.FC<SubscriptionStatusBannerProps> = ({
 }) => {
   if (!subscription) return null;
   if (!subscription.status) return null;
+  if (subscription.status !== 'expired') return null;
 
   const tone = statusToneMap[subscription.status] || statusToneMap.active;
   const planName = subscription.plan_name || 'Current plan';
@@ -35,12 +36,12 @@ const SubscriptionStatusBanner: React.FC<SubscriptionStatusBannerProps> = ({
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-semibold capitalize">
-            {planName} - {subscription.status.replace('_', ' ')}
+            {planName} - Subscription expired
           </p>
           <p className="text-xs opacity-90">
             {subscription.end_date
-              ? `Current access until ${subscription.end_date}`
-              : 'Subscription status loaded from billing service.'}
+              ? `Your access expired on ${subscription.end_date}. Renew to restore menu access.`
+              : 'Your subscription has expired. Renew to restore menu access.'}
           </p>
         </div>
         <div className="flex gap-4 text-sm font-medium">
