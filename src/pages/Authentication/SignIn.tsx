@@ -16,6 +16,9 @@ const SignIn: React.FC = () => {
 
   const [checkPassword, setCheckPassword] = useState(true);
   const hostname = window.location.hostname;
+  const shouldShowCompanyRegistration =
+    window.location.origin === 'https://app.cashbookbd.com' ||
+    window.location.origin === 'http://localhost:5173';
 
   const prevLocation = useLocation();
   const dispatch = useDispatch();
@@ -218,15 +221,16 @@ const SignIn: React.FC = () => {
                     } type="submit" label='Sign In' className='p-3 w-full' />
                   </div>
 
-                  
-                    <div className=''>
-                      <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
-                        New here?{' '}
-                        <Link to={ROUTES.public_register} className="text-primary hover:underline">
-                          Register your company
-                        </Link>
-                      </p>
-                    </div>
+                    {shouldShowCompanyRegistration && (
+                      <div className=''>
+                        <p className="mt-4 text-center text-sm text-black/70 dark:text-white/70">
+                          New here?{' '}
+                          <Link to={ROUTES.public_register} className="text-primary hover:underline">
+                            Register your company
+                          </Link>
+                        </p>
+                      </div>
+                    )}
 
                 </form>
               </div>
