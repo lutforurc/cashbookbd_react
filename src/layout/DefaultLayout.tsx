@@ -1,19 +1,30 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/Header/index';
 import Sidebar from '../components/Sidebar/index';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import ROUTES from '../components/services/appRoutes';
+import { fetchCurrentSubscription } from '../components/modules/subscription/subscriptionSlice';
+import SubscriptionStatusBanner from '../components/modules/subscription/SubscriptionStatusBanner';
 
 interface DefaultLayoutProps {
   isLoggedIn: boolean;
   isLoading: boolean;
-  user: any; // You can specify the type of user more precisely, if known
+  user: any;
 }
 
 const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, user }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const dispatch = useDispatch<any>();
+  const subscription = useSelector((state: any) => state.subscription);
+
+  useEffect(() => {
+    if (!isLoggedIn || isLoading || !user) return;
+    if (subscription.initialized) return;
+    if (subscription.loadingCurrent) return;
+    dispatch(fetchCurrentSubscription());
+  }, [dispatch, isLoading, isLoggedIn, subscription.initialized, subscription.loadingCurrent, user]);
 
   return isLoggedIn ? (
     <div className="dark:bg-boxdark-2 dark:text-bodydark">
@@ -32,7 +43,8 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
           {/* <!-- ===== Main Content Start ===== --> */}
           <main>
             {/* <div className="mx-auto max-w-screen-2xl p-4 2xl:p-6">  */}
-            <div className="mx-auto max-w-screen-max-w-4xl p-4 2xl:p-6"> 
+            <div className="mx-auto max-w-screen-max-w-4xl p-4 2xl:p-6">
+              <SubscriptionStatusBanner subscription={subscription.current} />
               <Outlet />
             </div>
           </main>

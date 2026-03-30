@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import SignIn from './pages/Authentication/SignIn';
 import PublicRegistration from './pages/Authentication/PublicRegistration';
 import PublicRegistrationOtp from './pages/Authentication/PublicRegistrationOtp';
@@ -132,26 +132,40 @@ import SendSms from './components/modules/sms/SendSms';
 import SmsTemplateList from './components/modules/sms/SmsTemplateList';
 import SmsTemplateCreate from './components/modules/sms/SmsTemplateCreate';
 import SmsTemplateEdit from './components/modules/sms/SmsTemplateEdit';
+import RequireSubscription from './components/auth/RequireSubscription';
+import Pricing from './components/modules/subscription/Pricing';
+import MySubscription from './components/modules/subscription/MySubscription';
+import PaymentSubmit from './components/modules/subscription/PaymentSubmit';
+import BillingHistory from './components/modules/subscription/BillingHistory';
+import SubscriptionAdmin from './components/modules/subscription/SubscriptionAdmin';
 
 
 
 
 function App() {
-  const [loading, setLoading] = useState<boolean>(true);
   const dispatch = useDispatch();
 
   const { isLoggedIn, isLoading, me } = useSelector((s: any) => s.auth);
   const currentBranch = useSelector((s: any) => s.branchList);
   const companyName = currentBranch?.currentBranch?.company?.name;
   const settings = useSelector((s: any) => s.settings);
+  const subscription = useSelector((s: any) => s.subscription);
 
   const userPermissions = settings?.data?.permissions ?? [];
   const permissionsLoading = settings?.loading ?? false;
   const userCreatePermissions = ['all.user.create', 'user.create', 'user.store', 'all.user.add'];
+  const subscriptionSafeRoutes = [
+    routes.main,
+    routes.dashboard,
+    routes.my_subscription,
+    routes.subscription_pricing,
+    routes.subscription_payment_submit,
+    routes.subscription_billing_history,
+    routes.profile,
+  ];
 
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
     dispatch(authCheck());
   }, []);
 
@@ -175,42 +189,60 @@ function App() {
           <Route path="/" element={<DefaultLayout isLoggedIn={isLoggedIn} isLoading={isLoading} user={me} />}>
             <Route path={routes.main} element={<DashboardIndex />} />
             <Route path={routes.dashboard} element={<DashboardIndex />} />
-            <Route path={routes.calendar} element={<Calendar />} />
             <Route path={routes.profile} element={<Profile />} />
-            <Route path={routes.formElements} element={<FormElements />} />
-            <Route path={routes.formLayout} element={<FormLayout />} />
-            <Route path={'hello-bangladesh'} element={<ReportComponent />} />
-
-            {/* Chart of Accounts */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l1.view']} loading={permissionsLoading} />}>
-              <Route path={routes.coal1_list} element={<CoaL1 />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l2.view']} loading={permissionsLoading} />}>
-              <Route path={routes.coal2_list} element={<CoaL2 />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l3.view']} loading={permissionsLoading} />}>
-              <Route path={routes.coal3_list} element={<CoaL3 />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l4.view']} loading={permissionsLoading} />}>
-              <Route path={routes.coal4_list} element={<CoaL4 />} />
-              <Route path={routes.coal4_add} element={<AddCoaL4 />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.customer} loading={permissionsLoading} />}>
-              <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
-              <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
-              <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
+            <Route path={routes.subscription_pricing} element={<Pricing />} />
+            <Route path={routes.my_subscription} element={<MySubscription />} />
+            <Route path={routes.subscription_payment_submit} element={<PaymentSubmit />} />
+            <Route path={routes.subscription_billing_history} element={<BillingHistory />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['roles.view', 'all.user.view']} loading={permissionsLoading} />}>
+              <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
             </Route>
 
-            {/* UI */}
-            <Route path={routes.buttons} element={<Buttons />} />
-            <Route path={routes.alert} element={<Alerts />} />
+            <Route
+              element={
+                <RequireSubscription
+                  loading={subscription.loadingCurrent}
+                  initialized={subscription.initialized}
+                  current={subscription.current}
+                  allowedPaths={subscriptionSafeRoutes}
+                />
+              }
+            >
+              <Route path={routes.calendar} element={<Calendar />} />
+              <Route path={routes.formElements} element={<FormElements />} />
+              <Route path={routes.formLayout} element={<FormLayout />} />
+              <Route path={'hello-bangladesh'} element={<ReportComponent />} />
 
-            {/* Settings */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.view']} loading={permissionsLoading} />}>
-              <Route path={routes.branch_list} element={<BranchList />} />
-              <Route path={routes.branch_add} element={<AddBranch />} />
-              <Route path={routes.branch_edit} element={<AddBranch />} />
-            </Route>
+              {/* Chart of Accounts */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l1.view']} loading={permissionsLoading} />}>
+                <Route path={routes.coal1_list} element={<CoaL1 />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l2.view']} loading={permissionsLoading} />}>
+                <Route path={routes.coal2_list} element={<CoaL2 />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l3.view']} loading={permissionsLoading} />}>
+                <Route path={routes.coal3_list} element={<CoaL3 />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l4.view']} loading={permissionsLoading} />}>
+                <Route path={routes.coal4_list} element={<CoaL4 />} />
+                <Route path={routes.coal4_add} element={<AddCoaL4 />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.customer} loading={permissionsLoading} />}>
+                <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
+                <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
+                <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
+              </Route>
+
+              {/* UI */}
+              <Route path={routes.buttons} element={<Buttons />} />
+              <Route path={routes.alert} element={<Alerts />} />
+
+              {/* Settings */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.view']} loading={permissionsLoading} />}>
+                <Route path={routes.branch_list} element={<BranchList />} />
+                <Route path={routes.branch_add} element={<AddBranch />} />
+                <Route path={routes.branch_edit} element={<AddBranch />} />
+              </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view']} loading={permissionsLoading} />}>
               <Route path={routes.user_list} element={<UserList />} />
               <Route path={routes.user_edit} element={<EditUser user={me} />} />
@@ -229,10 +261,10 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['installment.create']} loading={permissionsLoading} />}>
               <Route path={routes.installment_list} element={<InstallmentDetails />} />
             </Route>
-            <Route path={routes.sms_send} element={<SendSms user={me} />} />
-            <Route path={routes.sms_template_list} element={<SmsTemplateList />} />
-            <Route path={routes.sms_template_create} element={<SmsTemplateCreate />} />
-            <Route path={routes.sms_template_edit} element={<SmsTemplateEdit />} />
+              <Route path={routes.sms_send} element={<SendSms user={me} />} />
+              <Route path={routes.sms_template_list} element={<SmsTemplateList />} />
+              <Route path={routes.sms_template_create} element={<SmsTemplateCreate />} />
+              <Route path={routes.sms_template_edit} element={<SmsTemplateEdit />} />
 
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['check.register.view']} loading={permissionsLoading} />}>
               <Route path={routes.unit_payment_list} element={<UnitSalePaymentList />} />
@@ -472,10 +504,10 @@ function App() {
               <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
             </Route>
 
-            {/* All Cart */}
-
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'product.in.out', 'group.report']} loading={permissionsLoading} />}>
-              <Route path={routes.item_chart} element={<ItemChart user={me} />} />
+              {/* All Cart */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'product.in.out', 'group.report']} loading={permissionsLoading} />}>
+                <Route path={routes.item_chart} element={<ItemChart user={me} />} />
+              </Route>
             </Route>
 
           </Route>

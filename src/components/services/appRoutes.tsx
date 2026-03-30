@@ -3,6 +3,11 @@ const ROUTES = {
   public_register: '/register',
   public_register_otp: '/register/otp',
   logout: '/logout',
+  subscription_pricing: '/subscription/pricing',
+  my_subscription: '/subscription/my-plan',
+  subscription_payment_submit: '/subscription/payment-submit',
+  subscription_billing_history: '/subscription/billing-history',
+  subscription_admin: '/subscription/admin',
 
   // Customer Login
   customerLogin: '/customer/login',

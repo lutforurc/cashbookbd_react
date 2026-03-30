@@ -169,6 +169,39 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 )}
               </SidebarLinkGroup>
 
+              <li>
+                <NavLink
+                  to={routes.my_subscription}
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${
+                    pathname === routes.my_subscription ||
+                    pathname === routes.subscription_pricing ||
+                    pathname === routes.subscription_payment_submit ||
+                    pathname === routes.subscription_billing_history
+                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                      : ''
+                  }`}
+                >
+                  <FiBook />
+                  Subscription
+                </NavLink>
+              </li>
+
+              {(hasPermission(permissions, 'roles.view') || hasPermission(permissions, 'all.user.view')) && (
+                <li>
+                  <NavLink
+                    to={routes.subscription_admin}
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${
+                      pathname === routes.subscription_admin
+                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                        : ''
+                    }`}
+                  >
+                    <FiLayers />
+                    Subscription Admin
+                  </NavLink>
+                </li>
+              )}
+
               {/* Transaction */}
               {hasMenuPermission(permissions, 'transaction') && (
                 <SidebarLinkGroup

@@ -73,6 +73,7 @@ import branchTransferSlice from './components/modules/warehouse-transfer/warehou
 import branchReceivedSlice from './components/modules/warehouse-received/warehouseReceivedSlice';
 import smsSlice from './components/modules/sms/smsSlice';
 import journalSlice from './components/modules/transactions/journal/journalSlice';
+import subscriptionSlice from './components/modules/subscription/subscriptionSlice';
 
 
 const store = configureStore({
@@ -151,6 +152,7 @@ const store = configureStore({
     branchReceived: branchReceivedSlice,
     sms: smsSlice,
     journal: journalSlice,
+    subscription: subscriptionSlice,
   },
 });
 
