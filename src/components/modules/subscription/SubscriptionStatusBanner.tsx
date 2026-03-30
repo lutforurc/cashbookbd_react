@@ -21,14 +21,32 @@ const statusToneMap: Record<string, string> = {
     'border-gray-300 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
 };
 
+const isDateExpired = (value?: string | null): boolean => {
+  if (!value) return false;
+
+  const expiry = new Date(value);
+  if (Number.isNaN(expiry.getTime())) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return expiry < today;
+};
+
 const SubscriptionStatusBanner: React.FC<SubscriptionStatusBannerProps> = ({
   subscription,
 }) => {
   if (!subscription) return null;
   if (!subscription.status) return null;
-  if (subscription.status !== 'expired') return null;
 
-  const tone = statusToneMap[subscription.status] || statusToneMap.active;
+  const isExpired =
+    subscription.status === 'expired' ||
+    isDateExpired(subscription.end_date) ||
+    (subscription.status === 'trialing' && isDateExpired((subscription as any).trial_end_at));
+
+  if (!isExpired) return null;
+
+  const tone = statusToneMap.expired || statusToneMap.active;
   const planName = subscription.plan_name || 'Current plan';
 
   return (

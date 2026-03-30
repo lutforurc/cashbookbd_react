@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { storeDayClose } from './daycloseSlice';
 import { toast } from 'react-toastify';
 import { addDayInDate } from '../../utils/utils-functions/addDayInDate';
-import { getSettings } from '../settings/settingsSlice';
 import { FaPersonSkating } from "react-icons/fa6";
 import { hasPermission } from '../../utils/permissionChecker';
 import { useNavigate } from 'react-router-dom';
@@ -43,13 +42,9 @@ const Dayclose = () => {
                 next_date: addDayInDate(settings?.data?.trx_dt, 1)
             });
             setCurrentDate(settings.data.trx_dt);
-            setNextDate(settings.data.trx_dt);
             setNextDate(addDayInDate(settings.data.trx_dt, 1));
         }
-
-        dispatch(getSettings());
-        
-    }, [settings.data.trx_dt, dayclose?.data?.trx_date]);
+    }, [settings?.data?.trx_dt]);
 
     // Update localStorage when settings change
     useEffect(() => {
@@ -62,7 +57,7 @@ const Dayclose = () => {
     useEffect(() => {
         const handleStorageChange = (event) => {
             if (event.key === 'settings_updated') {
-                dispatch(getSettings());
+                window.location.reload();
             }
         };
 

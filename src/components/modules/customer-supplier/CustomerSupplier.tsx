@@ -13,7 +13,6 @@ import { getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { getSettings } from "../settings/settingsSlice";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -34,14 +33,10 @@ const CustomerSupplier = () => {
 
 
 
-  useEffect(() => {
-    dispatch(getSettings());
-  }, []);
-
   // 🔥 First API Call and on pagination change
   useEffect(() => {
     dispatch(getCustomer({ page, per_page: perPage, search }));
-  }, [page, perPage]);
+  }, [dispatch, page, perPage]);
 
   // 🔥 Update table when redux updates
   useEffect(() => {

@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { toast } from 'react-toastify';
 import { addDayInDate } from '../../utils/utils-functions/addDayInDate';
-import { getSettings } from '../settings/settingsSlice';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import InputDatePicker from '../../utils/fields/DatePicker';
@@ -61,14 +60,13 @@ const VoucherApproval = () => {
       setNextDate(settings.data.trx_dt);
       setNextDate(addDayInDate(settings.data.trx_dt, 1));
     }
-    dispatch(getSettings());
-  }, [settings.data.trx_dt, dayclose?.data?.trx_date]);
+  }, [settings?.data?.trx_dt]);
 
   // Listen for changes in other tabs
   useEffect(() => {
     const handleStorageChange = (event) => {
       if (event.key === 'settings_updated') {
-        dispatch(getSettings());
+        window.location.reload();
       }
     };
 

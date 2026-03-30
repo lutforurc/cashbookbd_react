@@ -155,13 +155,10 @@ function App() {
   const permissionsLoading = settings?.loading ?? false;
   const userCreatePermissions = ['all.user.create', 'user.create', 'user.store', 'all.user.add'];
   const subscriptionSafeRoutes = [
-    routes.main,
-    routes.dashboard,
     routes.my_subscription,
     routes.subscription_pricing,
     routes.subscription_payment_submit,
     routes.subscription_billing_history,
-    routes.profile,
   ];
 
 

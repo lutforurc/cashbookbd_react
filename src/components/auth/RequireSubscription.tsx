@@ -14,6 +14,18 @@ type Props = {
 const restrictedStatuses = new Set(['expired', 'suspended', 'cancelled']);
 const restrictedAccessStatuses = new Set(['billing_only', 'blocked']);
 
+const isDateExpired = (value?: string | null): boolean => {
+  if (!value) return false;
+
+  const expiry = new Date(value);
+  if (Number.isNaN(expiry.getTime())) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return expiry < today;
+};
+
 const RequireSubscription: React.FC<Props> = ({
   loading = false,
   initialized = false,
@@ -31,11 +43,15 @@ const RequireSubscription: React.FC<Props> = ({
 
   if (!initialized || !current) return <Outlet />;
 
-  const hasRestrictedStatus =
+  const hasRestrictedStatusByState =
     (current.status && restrictedStatuses.has(current.status)) ||
     (current.access_status && restrictedAccessStatuses.has(current.access_status));
 
-  if (!hasRestrictedStatus) return <Outlet />;
+  const hasRestrictedStatusByDate =
+    isDateExpired((current as any)?.end_date) ||
+    (current?.status === 'trialing' && isDateExpired((current as any)?.trial_end_at));
+
+  if (!hasRestrictedStatusByState && !hasRestrictedStatusByDate) return <Outlet />;
 
   return (
     <Navigate
