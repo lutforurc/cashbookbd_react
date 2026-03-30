@@ -187,19 +187,26 @@ function App() {
             <Route path={routes.coal3_list} element={<CoaL3 />} />
             <Route path={routes.coal4_list} element={<CoaL4 />} />
             <Route path={routes.coal4_add} element={<AddCoaL4 />} />
-            <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
-            <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
-            <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.customer} loading={permissionsLoading} />}>
+              <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />
+              <Route path={routes.supplier_customer_add} element={<AddCustomerSupplier />} />
+              <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
+            </Route>
 
             {/* UI */}
             <Route path={routes.buttons} element={<Buttons />} />
             <Route path={routes.alert} element={<Alerts />} />
 
             {/* Settings */}
-            <Route path={routes.branch_list} element={<BranchList />} />
-            <Route path={routes.branch_add} element={<AddBranch />} />
-            <Route path={routes.branch_edit} element={<AddBranch />} />
-            <Route path={routes.user_list} element={<UserList />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.view']} loading={permissionsLoading} />}>
+              <Route path={routes.branch_list} element={<BranchList />} />
+              <Route path={routes.branch_add} element={<AddBranch />} />
+              <Route path={routes.branch_edit} element={<AddBranch />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view']} loading={permissionsLoading} />}>
+              <Route path={routes.user_list} element={<UserList />} />
+              <Route path={routes.user_edit} element={<EditUser user={me} />} />
+            </Route>
             <Route
               element={
                 <RequirePermission
@@ -211,86 +218,153 @@ function App() {
             >
               <Route path={routes.user_add} element={<AddUser />} />
             </Route>
-            <Route path={routes.user_edit} element={<EditUser user={me} />} />
-            <Route path={routes.installment_list} element={<InstallmentDetails />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['installment.create']} loading={permissionsLoading} />}>
+              <Route path={routes.installment_list} element={<InstallmentDetails />} />
+            </Route>
             <Route path={routes.sms_send} element={<SendSms user={me} />} />
             <Route path={routes.sms_template_list} element={<SmsTemplateList />} />
             <Route path={routes.sms_template_create} element={<SmsTemplateCreate />} />
             <Route path={routes.sms_template_edit} element={<SmsTemplateEdit />} />
 
-
-
-            <Route path={routes.unit_payment_list} element={<UnitSalePaymentList />} />
-            <Route path={routes.unit_payment_edit} element={<UnitSalePaymentEdit />} />
-            <Route path={routes.unit_payment_entry} element={<UnitSalePaymentEntry />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['check.register.view']} loading={permissionsLoading} />}>
+              <Route path={routes.unit_payment_list} element={<UnitSalePaymentList />} />
+              <Route path={routes.unit_payment_edit} element={<UnitSalePaymentEdit />} />
+              <Route path={routes.unit_payment_entry} element={<UnitSalePaymentEntry />} />
+            </Route>
 
             {/* Day Close */}
-            <Route path={routes.day_close} element={<Dayclose />} />
-            <Route path={routes.day_jump} element={<JumpDate />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['dayclose.create']} loading={permissionsLoading} />}>
+              <Route path={routes.day_close} element={<Dayclose />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['dayclose.jumpdate']} loading={permissionsLoading} />}>
+              <Route path={routes.day_jump} element={<JumpDate />} />
+            </Route>
 
             {/* Category */}
-            <Route path={routes.category_list} element={<Category />} />
-            <Route path={routes.category_create} element={<AddCategory />} />
-            <Route path={routes.category_edit} element={<EditCategory />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['category.view']} loading={permissionsLoading} />}>
+              <Route path={routes.category_list} element={<Category />} />
+              <Route path={routes.category_create} element={<AddCategory />} />
+              <Route path={routes.category_edit} element={<EditCategory />} />
+            </Route>
 
             {/* Transactions */}
-            <Route path={routes.cash_received} element={<CashReceivedIndex />} />
-            <Route path={routes.cash_payment} element={<CashPaymentIndex />} />
-            <Route path={routes.bank_receive} element={<BankReceived />} />
-            <Route path={routes.bank_payment} element={<BankPayment />} />
-            <Route path={routes.employee_loan} element={<EmployeeLoan />} />
-            <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
-            <Route path={routes.employee_loan_balance} element={<LoanBalance user={me} />} />
-            <Route path={routes.journal} element={<Journal />} />
-            <Route path={routes.branch_transfer} element={<BranchTransfer />} />
-            <Route path={routes.branch_received} element={<WarehouseReceived />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cash.received.create']} loading={permissionsLoading} />}>
+              <Route path={routes.cash_received} element={<CashReceivedIndex />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cash.payment.create']} loading={permissionsLoading} />}>
+              <Route path={routes.cash_payment} element={<CashPaymentIndex />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.received.create']} loading={permissionsLoading} />}>
+              <Route path={routes.bank_receive} element={<BankReceived />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.payment.create']} loading={permissionsLoading} />}>
+              <Route path={routes.bank_payment} element={<BankPayment />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.loan.create']} loading={permissionsLoading} />}>
+              <Route path={routes.employee_loan} element={<EmployeeLoan />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.ledger.view']} loading={permissionsLoading} />}>
+              <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
+              <Route path={routes.employee_loan_balance} element={<LoanBalance user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
+              <Route path={routes.journal} element={<Journal />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create']} loading={permissionsLoading} />}>
+              <Route path={routes.branch_transfer} element={<BranchTransfer />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create', 'inventory.received.create', 'product.received.create']} loading={permissionsLoading} />}>
+              <Route path={routes.branch_received} element={<WarehouseReceived />} />
+            </Route>
 
             {/* Products */}
-            <Route path={routes.product_list} element={<Product user={me} />} />
-            <Route path={routes.product_create} element={<AddProduct />} />
-            <Route path={routes.product_edit} element={<AddProduct />} />
-
-
-            <Route path={routes.brand_create} element={<AddBranding />} />
-            <Route path={routes.brand_list} element={<Brands />} />
-            <Route path={routes.product_unit_list} element={<ProductUnits />} />
-            <Route path={routes.product_unit_create} element={<AddProductUnit />} />
-            <Route path={routes.product_unit_edit} element={<AddProductUnit />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view']} loading={permissionsLoading} />}>
+              <Route path={routes.product_list} element={<Product user={me} />} />
+              <Route path={routes.product_create} element={<AddProduct />} />
+              <Route path={routes.product_edit} element={<AddProduct />} />
+              <Route path={routes.brand_create} element={<AddBranding />} />
+              <Route path={routes.brand_list} element={<Brands />} />
+              <Route path={routes.product_unit_list} element={<ProductUnits />} />
+              <Route path={routes.product_unit_create} element={<AddProductUnit />} />
+              <Route path={routes.product_unit_edit} element={<AddProductUnit />} />
+            </Route>
 
             {/* Reports */}
-            <Route path={routes.report_date_wise_total} element={<DateWiseData user={me} />} />
-            <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
-            <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
-            <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
-            <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
-            <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
-            <Route path={routes.customer_supplier_statement} element={<LedgerWithProduct user={me} />} />
-            <Route path={routes.due_installment_list} element={<DueInstallment user={me} />} />
-            <Route path={routes.employee_wise_installment} element={<StaffWiseDueInstallment user={me} />} />
-            <Route path={routes.report_due_list} element={<DueList user={me} />} />
-            <Route path={routes.report_ledger} element={<Ledger user={me} />} />
-            <Route path={routes.report_labour_ledger} element={<LabourLedger user={me} />} />
-            <Route path={routes.purchase_ledger} element={<PurchaseLedger user={me} />} />
-            <Route path={routes.sales_ledger} element={<SalesLedger user={me} />} />
-            <Route path={routes.mitch_match} element={<MitchMatch user={me} />} />
-            <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
-            <Route path={routes.report_product_stock} element={<ProductStockIndex user={me} />} />
-            <Route path={routes.cat_wise_in_out} element={<CatWiseInOut user={me} />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['date.wise.total']} loading={permissionsLoading} />}>
+              <Route path={routes.report_date_wise_total} element={<DateWiseData user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
+              <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
+              <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
+              <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
+              <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.customer']} loading={permissionsLoading} />}>
+              <Route path={routes.customer_supplier_statement} element={<LedgerWithProduct user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['installment.create']} loading={permissionsLoading} />}>
+              <Route path={routes.due_installment_list} element={<DueInstallment user={me} />} />
+              <Route path={routes.employee_wise_installment} element={<StaffWiseDueInstallment user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.due.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_due_list} element={<DueList user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_ledger} element={<Ledger user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.labour']} loading={permissionsLoading} />}>
+              <Route path={routes.report_labour_ledger} element={<LabourLedger user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.ledger']} loading={permissionsLoading} />}>
+              <Route path={routes.purchase_ledger} element={<PurchaseLedger user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.ledger']} loading={permissionsLoading} />}>
+              <Route path={routes.sales_ledger} element={<SalesLedger user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['mitch.match']} loading={permissionsLoading} />}>
+              <Route path={routes.mitch_match} element={<MitchMatch user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report']} loading={permissionsLoading} />}>
+              <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_product_stock} element={<ProductStockIndex user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.out']} loading={permissionsLoading} />}>
+              <Route path={routes.cat_wise_in_out} element={<CatWiseInOut user={me} />} />
+            </Route>
 
             {/* Orders */}
-            <Route path={routes.order_list} element={<Orders />} />
-            <Route path={routes.order_add} element={<AddOrder user={me} />} />
-            <Route path={routes.order_avg_price} element={<AveragePrice user={me} />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.view']} loading={permissionsLoading} />}>
+              <Route path={routes.order_list} element={<Orders />} />
+              <Route path={routes.order_add} element={<AddOrder user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.avg.price']} loading={permissionsLoading} />}>
+              <Route path={routes.order_avg_price} element={<AveragePrice user={me} />} />
+            </Route>
 
             {/* Utilities */}
-            <Route path={routes.image_upload} element={<MultipleImageUpload user={me} />} />
-            <Route path={routes.bulk_upload} element={<BulkImageUpload user={me} />} />
-            <Route path={routes.admin_voucher_approval} element={<VoucherApproval />} />
-
-
-            <Route path={routes.admin_remove_approval} element={<RemoveApproval />} />
-            <Route path={routes.admin_change_voucher_type} element={<ChangeVoucherType />} />
-            <Route path={routes.admin_change_date} element={<ChangeDate />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.photo.upload']} loading={permissionsLoading} />}>
+              <Route path={routes.image_upload} element={<MultipleImageUpload user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['bulk.photo.upload']} loading={permissionsLoading} />}>
+              <Route path={routes.bulk_upload} element={<BulkImageUpload user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.approval']} loading={permissionsLoading} />}>
+              <Route path={routes.admin_voucher_approval} element={<VoucherApproval />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['remove.approval']} loading={permissionsLoading} />}>
+              <Route path={routes.admin_remove_approval} element={<RemoveApproval />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['change.vourcher.type']} loading={permissionsLoading} />}>
+              <Route path={routes.admin_change_voucher_type} element={<ChangeVoucherType />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.date.change']} loading={permissionsLoading} />}>
+              <Route path={routes.admin_change_date} element={<ChangeDate />} />
+            </Route>
 
             {/* Roles & Permissions */}
             {/* Fully menu protected, please implement for all menus */}
@@ -300,23 +374,43 @@ function App() {
             </Route>
 
 
-            <Route path={routes.requisition} element={<Requisitions user={me} />} />
-            <Route path={routes.requisition_create} element={<RequisitionForm />} />
-            <Route path={routes.requisition_comparison} element={<Comparison user={me} />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['requisition.create']} loading={permissionsLoading} />}>
+              <Route path={routes.requisition} element={<Requisitions user={me} />} />
+              <Route path={routes.requisition_create} element={<RequisitionForm />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['requisition.comparison']} loading={permissionsLoading} />}>
+              <Route path={routes.requisition_comparison} element={<Comparison user={me} />} />
+            </Route>
 
 
             {/* Voucher Delete */}
-            <Route path={routes.installment_delete} element={<InstallmentDelete />} />
-            <Route path={routes.voucher_delete} element={<VoucherDelete />} />
-            <Route path={routes.recyclebin} element={<Recyclebin />} />
-            <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />
-            <Route path={routes.voucher_activity} element={<ChangeList user={me} />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['installment.delete']} loading={permissionsLoading} />}>
+              <Route path={routes.installment_delete} element={<InstallmentDelete />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.delete']} loading={permissionsLoading} />}>
+              <Route path={routes.voucher_delete} element={<VoucherDelete />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.recycle']} loading={permissionsLoading} />}>
+              <Route path={routes.recyclebin} element={<Recyclebin />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.history']} loading={permissionsLoading} />}>
+              <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.changes']} loading={permissionsLoading} />}>
+              <Route path={routes.voucher_activity} element={<ChangeList user={me} />} />
+            </Route>
             {/* voucher_activity: '/vr-settings/voucher-activity', */}
 
             {/* Invoices */}
-            <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
-            <Route path={routes.inv_sales} element={<SalesIndex />} />
-            <Route path={routes.inv_labour} element={<ConstructionLabourInvoice />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_sales} element={<SalesIndex />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.invoice.create']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_labour} element={<ConstructionLabourInvoice />} />
+            </Route>
 
             {/* Also show customer dashboard if admin wants */}
             <Route path={routes.customer_dashboard} element={<CustomerDashboard />} />
@@ -347,20 +441,26 @@ function App() {
 
 
             {/* HRM */}
-            <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
-            <Route path={routes.hrms_employee_list} element={<Employees user={me} />} />
-            <Route path={routes.hrms_designation_level_list} element={<DesignationLevels />} />
-            <Route path={routes.hrms_designation_level_create} element={<AddDesignationLevel />} />
-            <Route path={routes.hrms_designation_level_edit} element={<AddDesignationLevel />} />
-            <Route path={routes.hrms_designation_list} element={<HrmDesignations />} />
-            <Route path={routes.hrms_designation_create} element={<AddHrmDesignation />} />
-            <Route path={routes.hrms_designation_edit} element={<AddHrmDesignation />} />
-            <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
-            <Route path={routes.hrms_salary_sheet_update} element={<SalarySheetUpdate user={me} />} />
-            <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
-            <Route path={routes.hrms_festival_bonus_generate} element={<FestivalBonusGenerate user={me} />} />
-            <Route path={routes.hrms_festival_bonus_list} element={<FestivalBonus user={me} />} />
-            <Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.view']} loading={permissionsLoading} />}>
+              <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
+              <Route path={routes.hrms_employee_list} element={<Employees user={me} />} />
+              <Route path={routes.hrms_designation_level_list} element={<DesignationLevels />} />
+              <Route path={routes.hrms_designation_level_create} element={<AddDesignationLevel />} />
+              <Route path={routes.hrms_designation_level_edit} element={<AddDesignationLevel />} />
+              <Route path={routes.hrms_designation_list} element={<HrmDesignations />} />
+              <Route path={routes.hrms_designation_create} element={<AddHrmDesignation />} />
+              <Route path={routes.hrms_designation_edit} element={<AddHrmDesignation />} />
+              <Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.generate']} loading={permissionsLoading} />}>
+              <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
+              <Route path={routes.hrms_festival_bonus_generate} element={<FestivalBonusGenerate user={me} />} />
+              <Route path={routes.hrms_festival_bonus_list} element={<FestivalBonus user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.sheet.view']} loading={permissionsLoading} />}>
+              <Route path={routes.hrms_salary_sheet_update} element={<SalarySheetUpdate user={me} />} />
+              <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
+            </Route>
 
             {/* All Cart */}
 
