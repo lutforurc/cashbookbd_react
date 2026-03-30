@@ -629,7 +629,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'ledger.customer') && (
+                          {(hasPermission(permissions, 'ledger.view') ||
+                            hasPermission(permissions, 'ledger.customer')) && (
                             <li>
                               <NavLink
                                 to="/reports/ledger"

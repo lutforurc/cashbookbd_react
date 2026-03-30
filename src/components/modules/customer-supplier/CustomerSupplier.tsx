@@ -22,35 +22,26 @@ const CustomerSupplier = () => {
   const [search, setSearchValue] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [tableData, setTableData] = useState([]);
   const [editedRows, setEditedRows] = useState<Record<number, any>>({});
-  const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
   const [selectedGuarantors, setSelectedGuarantors] = useState<any[]>([]);
   const navigate = useNavigate();
+  const customerPageData = customers?.customer || {};
+  const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
+  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
+  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
 
 
 
   // 🔥 First API Call and on pagination change
   useEffect(() => {
     dispatch(getCustomer({ page, per_page: perPage, search }));
-  }, [dispatch, page, perPage]);
-
-  // 🔥 Update table when redux updates
-  useEffect(() => {
-    if (customers.customer?.data) {
-      setTableData(customers.customer.data);
-      setTotalPages(customers.customer.last_page || 1);
-    }
-  }, [customers.customer]);
+  }, [dispatch, page, perPage, search]);
 
   // 🔥 Search Button
   const handleSearchButton = () => {
-    setCurrentPage(1);
     setPage(1);
-    dispatch(getCustomer({ page, per_page: perPage, search }));
   };
 
 
@@ -108,17 +99,15 @@ const CustomerSupplier = () => {
         data: payload,
       })
     )
-      .unwrap()
+        .unwrap()
       .then((res) => {
         if (res?.message && res?.success) {
-          setTableData((prev) =>
-            prev.map((item) => (item.id === row.id ? { ...item, ...payload } : item))
-          );
           setEditedRows((prev) => {
             const copy = { ...prev };
             delete copy[row.id];
             return copy;
           });
+          dispatch(getCustomer({ page, per_page: perPage, search }));
           toast.success(res.message);
         } else {
           toast.info(res.message);

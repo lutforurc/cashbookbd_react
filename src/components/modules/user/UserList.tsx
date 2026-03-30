@@ -122,17 +122,17 @@ const UserList = () => {
       .filter(Boolean);
   };
 
-  const getRoleDisplayNames = (row: any): string[] => {
-    const fromRoles = extractRoleNames(row?.roles);
-    if (fromRoles.length > 0) return fromRoles;
+  const getPrimaryRoleName = (row: any): string => {
+    const fromRoleName = extractRoleNames(row?.role_name);
+    if (fromRoleName.length > 0) return fromRoleName[0];
 
     const fromRole = extractRoleNames(row?.role);
-    if (fromRole.length > 0) return fromRole;
+    if (fromRole.length > 0) return fromRole[0];
 
-    const fromRoleName = extractRoleNames(row?.role_name);
-    if (fromRoleName.length > 0) return fromRoleName;
+    const fromRoles = extractRoleNames(row?.roles);
+    if (fromRoles.length > 0) return fromRoles[fromRoles.length - 1];
 
-    return [];
+    return '';
   };
 
   const columns = [
@@ -158,19 +158,12 @@ const UserList = () => {
       key: 'role',
       header: 'Role',
       render: (row: any) => {
-        const roleNames = getRoleDisplayNames(row);
-        if (roleNames.length === 0) return <span>-</span>;
+        const roleName = getPrimaryRoleName(row);
+        if (!roleName) return <span>-</span>;
         return (
-          <div className="flex flex-wrap gap-1.5">
-            {roleNames.map((name, index) => (
-              <span
-                key={`${row?.user_id || row?.id || 'role'}-${index}`}
-                className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
+          <span className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+            {roleName}
+          </span>
         );
       },
     },

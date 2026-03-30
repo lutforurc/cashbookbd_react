@@ -142,10 +142,41 @@ const MySubscription: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-stroke p-8 text-center text-sm text-bodydark2 dark:border-strokedark">
-          {loadingCurrent
-            ? 'Loading subscription details...'
-            : 'No subscription data found yet. Connect the backend endpoint to show live data.'}
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="rounded-xl border border-dashed border-stroke p-8 text-center text-sm text-bodydark2 dark:border-strokedark lg:col-span-2">
+            {loadingCurrent
+              ? 'Loading subscription details...'
+              : 'No subscription data found yet. You can still choose a plan and submit a manual payment request.'}
+          </div>
+
+          <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+            <h3 className="text-lg font-semibold text-black dark:text-white">
+              Manual Subscription
+            </h3>
+            <p className="mt-2 text-sm text-bodydark2">
+              Choose a plan and submit your payment for admin approval.
+            </p>
+            <div className="mt-5 space-y-3">
+              <Link
+                to={routes.subscription_pricing}
+                className="block rounded-lg bg-primary px-4 py-2 text-center text-sm font-medium text-white"
+              >
+                View Plans
+              </Link>
+              <Link
+                to={routes.subscription_payment_submit}
+                className="block rounded-lg border border-stroke px-4 py-2 text-center text-sm font-medium text-black dark:border-strokedark dark:text-white"
+              >
+                Submit Payment
+              </Link>
+              <Link
+                to={routes.subscription_billing_history}
+                className="block rounded-lg border border-stroke px-4 py-2 text-center text-sm font-medium text-black dark:border-strokedark dark:text-white"
+              >
+                Billing History
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </div>

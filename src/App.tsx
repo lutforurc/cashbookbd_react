@@ -349,7 +349,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.due.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_due_list} element={<DueList user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.view']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.view', 'ledger.customer']} loading={permissionsLoading} />}>
               <Route path={routes.report_ledger} element={<Ledger user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.labour']} loading={permissionsLoading} />}>

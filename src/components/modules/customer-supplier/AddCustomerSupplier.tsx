@@ -14,7 +14,6 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Link from '../../utils/others/Link';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
-import { getSettings } from '../settings/settingsSlice';
 
 const AddCustomerSupplier = () => {
   const area = useSelector((state: any) => state.area);
@@ -23,7 +22,6 @@ const AddCustomerSupplier = () => {
 
   useEffect(() => {
     dispatch(getDdlArea());
-    dispatch(getSettings());
   }, [dispatch]);
 
   const formattedAreaData = useMemo(
@@ -36,7 +34,7 @@ const AddCustomerSupplier = () => {
         label_4: item?.mobile || '',
         label_5: item?.manual_address || '',
       })) || [],
-    [area],
+    [area?.area?.data],
   );
 
   const validationSchema = Yup.object().shape({

@@ -143,15 +143,16 @@ const EditUser = (user: any) => {
 
     const handleUserUpdate = (e: any) => {
         e.preventDefault();
+        if (selectedRoles.length === 0) {
+            toast.error('Please select at least one role.');
+            return;
+        }
 
-        const roleIds = selectedRoles.map((item) => {
-            const numericId = Number(item.value);
-            return Number.isNaN(numericId) ? item.value : numericId;
-        });
+        const roleIds = selectedRoles.map((item) => Number(item.value));
 
         const payload = {
             ...formData,
-            role_id: selectedRoles[0] ? String(selectedRoles[0].value) : '',
+            role_id: Number(selectedRoles[0].value),
             role_ids: roleIds,
         };
 
