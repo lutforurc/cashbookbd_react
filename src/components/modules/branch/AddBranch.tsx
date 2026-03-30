@@ -158,15 +158,29 @@ const AddBranch = () => {
     if (id) {
       dispatch(editBranch(id));
     }
-  }, [id]);
+  }, [dispatch, id]);
 
   useEffect(() => {
-    dispatch(getBranchSettings());
-  }, []);
+    if (
+      settings?.branchSettings?.branchType?.length &&
+      settings?.branchSettings?.businessType?.length &&
+      settings?.branchSettings?.paperSize?.length
+    ) {
+      return;
+    }
+
+    dispatch(getBranchSettings(undefined) as any);
+  }, [
+    dispatch,
+    settings?.branchSettings?.branchType?.length,
+    settings?.branchSettings?.businessType?.length,
+    settings?.branchSettings?.paperSize?.length,
+  ]);
 
   useEffect(() => {
-    if (branchEditData?.editData?.branch) {
-      const b = branchEditData.editData.branch;
+    const branch = branchEditData?.editData?.branch;
+    if (branch) {
+      const b = branch;
 
       setFormData(prev => ({
         ...prev,
@@ -216,7 +230,7 @@ const AddBranch = () => {
         ),
       );
     }
-  }, [branchEditData?.editData]);
+  }, [branchEditData?.editData?.branch]);
 
   const [formData, setFormData] = useState<branchItem>(initialBranch);
 
@@ -243,7 +257,10 @@ const AddBranch = () => {
 
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
   };
 
   const handlePadImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
