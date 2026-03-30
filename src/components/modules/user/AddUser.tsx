@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import { getDdlAllBranch } from '../branch/ddlBranchSlider';
+import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { getRoles } from '../roles/rolesSlice';
 import routes from '../../services/appRoutes';
 import InputElement from '../../utils/fields/InputElement';
@@ -63,12 +63,12 @@ const AddUser = () => {
   );
 
   useEffect(() => {
-    dispatch(getDdlAllBranch() as any);
+    dispatch(getDdlProtectedBranch() as any);
     dispatch(getRoles() as any);
   }, []);
 
   useEffect(() => {
-    setDropdownData(branchDdlData?.data?.data || []);
+    setDropdownData(branchDdlData?.protectedData?.data || []);
   }, [branchDdlData]);
 
   useEffect(() => {

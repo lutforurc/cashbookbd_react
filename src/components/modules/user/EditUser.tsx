@@ -4,7 +4,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useDispatch, useSelector } from 'react-redux';
-import { getDdlAllBranch } from '../branch/ddlBranchSlider';
+import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
 import PasswordElement from '../../utils/fields/PasswordElement';
@@ -31,7 +31,7 @@ const EditUser = (user: any) => {
     const { id } = useParams<{ id: string }>();
 
     useEffect(() => {
-        dispatch(getDdlAllBranch());
+        dispatch(getDdlProtectedBranch());
         dispatch(getRoles());
     }, []);
     useEffect(() => {
@@ -40,7 +40,7 @@ const EditUser = (user: any) => {
 
 
     useEffect(() => {
-        setDropdownData(branchDdlData?.data?.data);
+        setDropdownData(branchDdlData?.protectedData?.data || []);
     }, [branchDdlData]);
 
     const [formData, setFormData] = useState({
