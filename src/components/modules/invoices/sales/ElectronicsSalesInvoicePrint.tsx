@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import dayjs from 'dayjs';
+import { useDispatch, useSelector } from 'react-redux';
+import { chartDateTime, formatLongDateUsdToBd } from '../../../utils/utils-functions/formatDate';
+import numberToWords from '../../../utils/utils-functions/numberToWords';
 
 type Props = {
   data: any; // sales.data
   rowsPerPage?: number;
   fontSize?: number;
 };
+
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
   if (!Array.isArray(data) || size <= 0) return [[]];
@@ -18,14 +22,18 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
-const ElectronicsSalesInvoicePrint = React.forwardRef<
-  HTMLDivElement,
-  Props
->(({ data, rowsPerPage = 10, fontSize = 10 }, ref) => {
+const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ data, rowsPerPage = 10, fontSize = 10 }, ref) => {
+ 
+  const settings = useSelector((state: any) => state.settings);
+
+
+  console.log('====================================');
+  console.log("data", data);
+  console.log('====================================');
+
   if (!data?.sales_master) {
     return <div ref={ref}>No invoice data</div>;
   }
-
   const details = data.sales_master.details || [];
   if (!details.length) {
     return (
@@ -237,23 +245,22 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
 
           {/* ================= TOTALS (LAST PAGE ONLY) ================= */}
           {pageIndex === pages.length - 1 && (
-            <div className="mt-3 flex items-start justify-between gap-4">
-              <div className="flex-1">
-                {data?.sales_master?.vehicle_no && (
-                  <div className="mt-2">
-                    <span
-                      className="inline-block border border-black px-2 py-1 font-semibold"
-                      style={{ fontSize: fs }}
-                    >
-                      Vehicle No: {data?.sales_master?.vehicle_no}
-                    </span>
-                  </div>
-                )}
+            <div className="mt-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  {data?.sales_master?.vehicle_no && (
+                    <div className="mt-2">
+                      <span
+                        className="inline-block border border-black px-2 py-1 font-semibold"
+                        style={{ fontSize: fs }}
+                      >
+                        Vehicle No: {data?.sales_master?.vehicle_no}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                
-              </div>
-
-              <table className="border-collapse">
+                <table className="border-collapse">
                 <tbody>
                   <tr>
                     <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
@@ -327,13 +334,40 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<
                     </td>
                   </tr>
                 </tbody>
-              </table>
+
+                
+                </table>
+              </div>
+
+              <div
+                className="w-full pt-4 text-left leading-snug"
+                style={{ fontSize: fs - 0.25, textAlign: 'left' }}
+              >
+                <span className="font-medium">In Words:</span>{' '}
+                <span className="font-semibold tracking-wide">
+                  {numberToWords(
+                    (grandTotal + tdsAmount + serviceChargeAmount) - discountAmount - receivedAmount,
+                  )}{' '}
+                  Taka Only
+                </span>
+              </div>
+
+              <div className="flex items-end justify-end pt-8 pr-8">
+                <div className="text-left" style={{ fontSize: fs }}>
+                  <div className="border-t border-black min-w-[140px] text-center">
+                    {settings?.data?.user?.name}
+                  </div>
+                  <div className="text-center leading-none mt-0.5">
+                    {chartDateTime(data?.created_at)}
+                  </div>
+                </div>
+              </div>
+
             </div>
           )}
 
-          {pageIndex === pages.length - 1 &&
-            data?.installments &&
-            data.installments.length > 0 && (
+          {settings?.data?.branch?.show_instalment_list === true && pageIndex === pages.length - 1 &&
+            data?.installments && data.installments.length > 0 && (
               <div className="ml-10 w-[260px] overflow-hidden avoid-break">
                 <h2 className='block w-full text-center text-xs'>Installment Details</h2>
                 <div
