@@ -4,7 +4,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useDispatch, useSelector } from 'react-redux';
-import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
+import { getDdlAllBranch } from '../branch/ddlBranchSlider';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
 import PasswordElement from '../../utils/fields/PasswordElement';
@@ -31,7 +31,7 @@ const EditUser = (user: any) => {
     const { id } = useParams<{ id: string }>();
 
     useEffect(() => {
-        dispatch(getDdlProtectedBranch());
+        dispatch(getDdlAllBranch());
         dispatch(getRoles());
     }, []);
     useEffect(() => {
@@ -40,8 +40,18 @@ const EditUser = (user: any) => {
 
 
     useEffect(() => {
-        setDropdownData(branchDdlData?.protectedData?.data || []);
-    }, [branchDdlData]);
+        if (Array.isArray(branchDdlData?.data)) {
+            setDropdownData(branchDdlData.data);
+            return;
+        }
+
+        if (Array.isArray(branchDdlData?.data?.data)) {
+            setDropdownData(branchDdlData.data.data);
+            return;
+        }
+
+        setDropdownData([]);
+    }, [branchDdlData?.data]);
 
     const [formData, setFormData] = useState({
         usr_id: id,
