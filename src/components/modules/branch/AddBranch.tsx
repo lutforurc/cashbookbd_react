@@ -62,6 +62,7 @@ interface branchItem {
   sales_sms: boolean;
   payment_sms: boolean;
   pad_header_image?: string;
+  show_instalment_list: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -145,6 +146,7 @@ const AddBranch = () => {
     sales_sms: false,
     payment_sms: false,
     pad_header_image: '',
+    show_instalment_list: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -670,6 +672,14 @@ const AddBranch = () => {
                       checked={formData.stock_report_type}
                       onChange={handleOnChange}
                       label="Stock: Brand->Category->Item"
+                      className="mb-4"
+                    />
+                    <Checkbox
+                      id="show_instalment_list"
+                      name="show_instalment_list"
+                      checked={formData.show_instalment_list}
+                      onChange={handleOnChange}
+                      label="Show Instalment List in Invoice"
                       className="mb-4"
                     />
                   </div>
