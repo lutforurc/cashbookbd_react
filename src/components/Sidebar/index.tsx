@@ -1182,7 +1182,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'all.user.view') && (
+                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
                             <li>
                               <NavLink
                                 to="/user/user-list"
