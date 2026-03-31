@@ -66,6 +66,33 @@ const PaymentSubmit: React.FC = () => {
   }, [selectedPlanFromQuery]);
 
   useEffect(() => {
+    const selectedPlan = plans.find((plan: any) => Number(plan.id) === Number(form.plan_id));
+
+    if (!selectedPlan) {
+      setForm((prev) => ({
+        ...prev,
+        amount: '',
+      }));
+      return;
+    }
+
+    const billingMonths = Math.max(1, Number(form.billing_months || 1));
+    const planAmount = Number(selectedPlan.price || 0) * billingMonths;
+
+    setForm((prev) => {
+      const nextAmount = planAmount.toFixed(2);
+      if (prev.amount === nextAmount) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        amount: nextAmount,
+      };
+    });
+  }, [plans, form.plan_id, form.billing_months]);
+
+  useEffect(() => {
     if (submitSuccessMessage) {
       toast.success(submitSuccessMessage);
       navigate(routes.subscription_billing_history, { replace: true });
@@ -193,7 +220,7 @@ const PaymentSubmit: React.FC = () => {
               step="0.01"
               name="amount"
               value={form.amount}
-              onChange={handleChange}
+              readOnly
               className={fieldClassName}
             />
           </div>
