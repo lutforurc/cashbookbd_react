@@ -38,16 +38,33 @@ const EditCustomerSupplier = () => {
 
   const editCustomer = customers?.editCustomer;
   const editLoading = customers?.editLoading;
+  const hasAreaOptions = Array.isArray(area?.area) ? area.area.length > 0 : Array.isArray(area?.area?.data) ? area.area.data.length > 0 : false;
+  const hasSettings = Boolean(settings?.data && Object.keys(settings.data).length);
+  const currentEditId = editCustomer?.id ? Number(editCustomer.id) : null;
 
   /* ================= LOAD NEEDED DATA ================= */
   useEffect(() => {
-    dispatch(getDdlArea());
-    dispatch(getSettings());
+    if (!hasAreaOptions && !area?.loading) {
+      dispatch(getDdlArea());
+    }
 
-    if (id) {
+    if (!hasSettings && !settings?.loading) {
+      dispatch(getSettings());
+    }
+
+    if (id && currentEditId !== Number(id) && !editLoading) {
       dispatch(getCustomerForEdit(Number(id)));
     }
-  }, [dispatch, id]);
+  }, [
+    area?.loading,
+    currentEditId,
+    dispatch,
+    editLoading,
+    hasAreaOptions,
+    hasSettings,
+    id,
+    settings?.loading,
+  ]);
 
  
 

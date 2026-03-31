@@ -64,7 +64,7 @@ jobs:
             cashbookbdaccountskbr) URL="https://kbr.cashbookbd.com" ;;
             cashbookbdaccountsaft) URL="https://aft.cashbookbd.com" ;;
             cashbookbdaccountsemporium) URL="https://emporium.cashbookbd.com" ;;
-            cashbookbdappsaasuser) URL="https://app.cashbookbd.com" ;;
+            cashbookbdappsaasuser) URL="https://my.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac
 

@@ -91,7 +91,20 @@
 // export const API_SIGNUP_URL = `${API_BASE_URL}api/user/signup`;
 
 // export const API_REMOTE_URL = 'https://nibirnirman.cashbookbd.com';
-export const API_REMOTE_URL = import.meta.env.VITE_API_URL;
+const RUNTIME_API_HOST_OVERRIDES: Record<string, string> = {
+  'app.cashbookbd.com': 'https://my.cashbookbd.com',
+};
+
+const resolveApiRemoteUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    const runtimeOverride = RUNTIME_API_HOST_OVERRIDES[window.location.hostname];
+    if (runtimeOverride) return runtimeOverride;
+  }
+
+  return import.meta.env.VITE_API_URL;
+};
+
+export const API_REMOTE_URL = resolveApiRemoteUrl();
 
 
 export const API_CSRF_COOKIES = `${API_REMOTE_URL}/sanctum/csrf-cookie`;
