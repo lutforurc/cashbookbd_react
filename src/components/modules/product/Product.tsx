@@ -113,7 +113,7 @@ const Product = (user: any) => {
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    // dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
+    dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
   }, [page, perPage, categoryId, brandId, appliedSearch]);
 
   /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
@@ -141,8 +141,6 @@ const Product = (user: any) => {
     setPage(1);
     setCurrentPage(1);
     setAppliedSearch(search);
-
-    // dispatch(getProduct({ page: 1, perPage, categoryId, brandId, search }) as any);
   };
 
   const handlePageChange = (p: number) => {
