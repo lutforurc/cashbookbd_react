@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import OtpInput from '../../components/Forms/OtpInput';
+import { FiSave, FiSend } from 'react-icons/fi';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import ROUTES from '../../components/services/appRoutes';
@@ -8,6 +10,7 @@ import {
   API_REGISTER_VERIFY_OTP_URL,
 } from '../../components/services/apiRoutes';
 import httpService from '../../components/services/httpService';
+import { ButtonLoading } from '../UiElements/CustomButtons';
 
 type RegisterPayload = {
   company_name: string;
@@ -73,9 +76,9 @@ const PublicRegistrationOtp: React.FC = () => {
     setOtpSession(resolvedSession);
   }, [state?.otp_session]);
 
-  console.log('====================================');
-  console.log("sessionFromState", state?.otp_session);
-  console.log('====================================');
+  // console.log('====================================');
+  // console.log("sessionFromState", state?.otp_session);
+  // console.log('====================================');
 
   const getErrorMessage = (error: any): string => {
     const responseData = error?.response?.data;
@@ -227,23 +230,27 @@ const PublicRegistrationOtp: React.FC = () => {
             <label className="mb-2 block text-sm font-medium text-black dark:text-white">
               OTP Code
             </label>
-            <input
-              type="text"
-              inputMode="numeric"
+            <OtpInput
               value={otp}
-              maxLength={8}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-              placeholder="Enter OTP"
-              className="w-full border border-stroke bg-transparent px-4 py-2.5 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              onChange={setOtp}
+              numInputs={6}
+              renderInput={(props) => (
+                <input
+                  {...props}
+                  className="!h-10 !w-10 rounded border border-slate-300 bg-white text-center text-xl font-semibold text-slate-700 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 mx-0 shadow-sm sm:!h-12 sm:!w-12 dark:border-slate-600 dark:bg-form-input dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900/30"
+                />
+              )}
             />
 
-            <button
+            
+            <ButtonLoading
               type="submit"
+              buttonLoading={submitting}
+              label={submitting ? 'Verifying...' : 'Verify OTP'}
               disabled={submitting}
-              className="mt-5 w-full bg-primary px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {submitting ? 'Verifying...' : 'Verify OTP'}
-            </button>
+              className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center bg-primary hover:bg-primary focus:bg-primary disabled:cursor-not-allowed disabled:opacity-60"
+              icon={<FiSend className="text-white text-lg ml-2 mr-2" />}
+            />
           </form>
 
           <button

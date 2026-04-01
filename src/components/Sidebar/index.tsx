@@ -1911,6 +1911,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 </SidebarLinkGroup>
               )}
 
+
+              {(hasPermission(permissions, 'user.subscription') || hasPermission(permissions, 'all.user.view')) && (
               <li>
                 <NavLink
                   to={routes.my_subscription}
@@ -1927,8 +1929,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   Subscription
                 </NavLink>
               </li>
+              )}
 
-              {(hasPermission(permissions, 'roles.view') || hasPermission(permissions, 'all.user.view')) && (
+              {(hasPermission(permissions, 'admin.subscription') || hasPermission(permissions, 'all.user.view')) && (
                 <li>
                   <NavLink
                     to={routes.subscription_admin}
