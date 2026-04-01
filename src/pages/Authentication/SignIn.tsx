@@ -211,6 +211,12 @@ const SignIn: React.FC = () => {
                       />
                       Remember me
                     </label>
+                    <Link
+                      to={ROUTES.forgot_password}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
                   </div>
 
                   <div className="mb-2">

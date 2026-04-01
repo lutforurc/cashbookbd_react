@@ -1,7 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\SubscriptionController;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('forgot-password')->group(function (): void {
+    Route::post('/request-otp', [PasswordResetController::class, 'requestOtp']);
+    Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp']);
+    Route::post('/reset', [PasswordResetController::class, 'reset']);
+});
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::prefix('subscription')->group(function (): void {

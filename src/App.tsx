@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import SignIn from './pages/Authentication/SignIn';
+import ForgotPassword from './pages/Authentication/ForgotPassword';
 import PublicRegistration from './pages/Authentication/PublicRegistration';
 import PublicRegistrationOtp from './pages/Authentication/PublicRegistrationOtp';
 import Calendar from './pages/Calendar';
@@ -514,6 +515,7 @@ function App() {
 
           {/* Public Routes */}
           <Route path={routes.login} element={<SignIn />} />
+          <Route path={routes.forgot_password} element={<ForgotPassword />} />
           <Route path={routes.public_register} element={<PublicRegistration />} />
           <Route path={routes.public_register_otp} element={<PublicRegistrationOtp />} />
           <Route path={routes.customerLogin} element={<CustomerLogin />} />

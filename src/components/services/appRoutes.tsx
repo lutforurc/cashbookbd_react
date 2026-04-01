@@ -1,5 +1,6 @@
 const ROUTES = {
   login: '/login',
+  forgot_password: '/forgot-password',
   public_register: '/register',
   public_register_otp: '/register/otp',
   logout: '/logout',
