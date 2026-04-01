@@ -4,7 +4,6 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { chartDateTime, formatLongDateUsdToBd } from '../../../utils/utils-functions/formatDate';
-import numberToWords from '../../../utils/utils-functions/numberToWords';
 
 type Props = {
   data: any; // sales.data
@@ -25,11 +24,6 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ data, rowsPerPage = 10, fontSize = 10 }, ref) => {
 
   const settings = useSelector((state: any) => state.settings);
-
-
-  console.log('====================================');
-  console.log("data?.inword", data?.user?.name);
-  console.log('====================================');
 
 
   if (!data?.sales_master) {
