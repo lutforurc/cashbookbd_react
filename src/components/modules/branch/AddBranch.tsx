@@ -208,6 +208,10 @@ const AddBranch = () => {
         have_customer_sl: b.have_customer_sl == 1 || b.have_customer_sl === '1',
         stock_report_type: b.stock_report_type == 1 || b.stock_report_type === '1',
         use_bangla: b.use_bangla == 1 || b.use_bangla === '1',
+        show_instalment_list:
+          b.show_instalment_list == 1 || b.show_instalment_list === '1',
+        show_spelling_of_money:
+          b.show_spelling_of_money == 1 || b.show_spelling_of_money === '1',
         sms_service: b.sms_service == 1 || b.sms_service === '1',
         received_sms: b.received_sms == 1 || b.received_sms === '1',
         purchase_sms: b.purchase_sms == 1 || b.purchase_sms === '1',

@@ -28,13 +28,9 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
 
 
   console.log('====================================');
-  console.log("data?.inword", data?.inword);
+  console.log("data?.inword", data?.user?.name);
   console.log('====================================');
 
-
-  console.log('====================================');
-  console.log("settings?.data?.branch?.show_spelling_of_money", settings?.data?.branch?.show_spelling_of_money);
-  console.log('====================================');
 
   if (!data?.sales_master) {
     return <div ref={ref}>No invoice data</div>;
@@ -364,7 +360,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
               <div className="flex items-end justify-end pt-8 pr-8">
                 <div className="text-left" style={{ fontSize: fs }}>
                   <div className="border-t border-black min-w-[140px] text-center">
-                    {settings?.data?.user?.name}
+                    {data?.user?.name}
                   </div>
                   <div className="text-center leading-none mt-0.5">
                     {chartDateTime(data?.created_at)}
