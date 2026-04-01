@@ -2,7 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import OtpInput from '../../components/Forms/OtpInput';
 import { FiSave, FiSend } from 'react-icons/fi';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+import { userCurrentBranch } from '../../components/modules/branch/branchSlice';
+import { getSettings } from '../../components/modules/settings/settingsSlice';
 import ROUTES from '../../components/services/appRoutes';
 import {
   API_CSRF_COOKIES,
@@ -10,6 +13,7 @@ import {
   API_REGISTER_VERIFY_OTP_URL,
 } from '../../components/services/apiRoutes';
 import httpService from '../../components/services/httpService';
+import { storeToken } from '../../features/authReducer';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 
 type RegisterPayload = {
@@ -30,6 +34,7 @@ const REGISTRATION_PAYLOAD_KEY = 'public_register_payload';
 const PublicRegistrationOtp: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [otp, setOtp] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [resending, setResending] = useState(false);
@@ -133,11 +138,24 @@ const PublicRegistrationOtp: React.FC = () => {
         { xsrfHeaderName: 'X-XSRF-TOKEN', withCredentials: true },
       );
 
+      const token = response?.data?.data?.token;
+      const user = response?.data?.data?.user;
+
+      if (token && user) {
+        storeToken(token, true);
+        dispatch({
+          type: 'AUTH/login/success',
+          payload: user,
+        });
+        dispatch(userCurrentBranch() as any);
+        dispatch(getSettings() as any);
+      }
+
       toast.success(response?.data?.message || 'Registration completed successfully.');
       sessionStorage.removeItem('public_register_otp_session');
       sessionStorage.removeItem('public_register_mobile');
       sessionStorage.removeItem(REGISTRATION_PAYLOAD_KEY);
-      navigate(ROUTES.login, { replace: true });
+      navigate(ROUTES.dashboard, { replace: true });
     } catch (error: any) {
       toast.error(getErrorMessage(error));
     } finally {
