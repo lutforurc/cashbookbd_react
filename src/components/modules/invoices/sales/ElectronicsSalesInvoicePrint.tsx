@@ -334,7 +334,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                 </table>
               </div>
 
-              {Boolean(settings?.data?.branch?.show_spelling_of_money) && (
+              {settings?.data?.branch?.show_spelling_of_money == '1' && (
                 <div
                   className="w-full pt-4 text-left leading-snug"
                   style={{ fontSize: fs - 0.25, textAlign: 'left' }}
@@ -365,7 +365,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
             </div>
           )}
 
-          {settings?.data?.branch?.show_instalment_list === true && pageIndex === pages.length - 1 &&
+          {settings?.data?.branch?.show_instalment_list == '1' && pageIndex === pages.length - 1 &&
             data?.installments && data.installments.length > 0 && (
               <div className="ml-10 w-[260px] overflow-hidden avoid-break">
                 <h2 className='block w-full text-center text-xs'>Installment Details</h2>
