@@ -340,12 +340,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                   style={{ fontSize: fs - 0.25, textAlign: 'left' }}
                 >
                   <span className="tracking-wide">
-                    { 
-                      
-                       data?.inword
-                      
-
-                    }
+                    { data?.inword}
                   </span>
                 </div>
               )}
@@ -370,7 +365,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
               <div className="ml-10 w-[260px] overflow-hidden avoid-break">
                 <h2 className='block w-full text-center text-xs'>Installment Details</h2>
                 <div
-                  className="grid grid-cols-[36px_96px_96px] border-b border-black bg-gray-50 px-3 py-1 font-semibold"
+                  className="grid grid-cols-[36px_96px_96px] border-b-[0.5px] border-black px-3 py-1 font-semibold"
                   style={{ fontSize: fs - 0.5 }}
                 >
                   <div className="text-center">SL</div>
@@ -379,20 +374,10 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                 </div>
 
                 {data.installments.map((inst: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-[36px_96px_96px] px-3 py-1.5 border-b border-gray-300 last:border-b-0"
-                    style={{ fontSize: fs }}
-                  >
-                    <div className="font-medium text-center">
-                      {idx + 1}
-                    </div>
-                    <div>
-                      {dayjs(inst.due_date).format('DD/MM/YYYY')}
-                    </div>
-                    <div className="text-right font-medium">
-                      {thousandSeparator(Number(inst.amount), 0)}
-                    </div>
+                  <div key={idx} className="grid grid-cols-[36px_96px_96px] px-3 py-1 border-b-[0.5px] border-gray-300 last:border-b-0" style={{ fontSize: fs }}>
+                    <div className="font-medium text-center">{idx + 1}</div>
+                    <div>{dayjs(inst.due_date).format('DD/MM/YYYY')}</div>
+                    <div className="text-right font-medium">{thousandSeparator(Number(inst.amount), 0)}</div>
                   </div>
                 ))}
               </div>
