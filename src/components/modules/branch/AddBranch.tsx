@@ -64,6 +64,7 @@ interface branchItem {
   pad_header_image?: string;
   show_instalment_list: boolean;
   show_spelling_of_money: boolean;
+  need_demo_tutorial: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -149,6 +150,7 @@ const AddBranch = () => {
     pad_header_image: '',
     show_instalment_list: false,
     show_spelling_of_money: false,
+    need_demo_tutorial: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -694,6 +696,14 @@ const AddBranch = () => {
                       checked={formData.show_spelling_of_money}
                       onChange={handleOnChange}
                       label="Show spelling of money in invoice?"
+                      className="mb-4"
+                    />
+                    <Checkbox
+                      id="need_demo_tutorial"
+                      name="need_demo_tutorial"
+                      checked={formData.need_demo_tutorial}
+                      onChange={handleOnChange}
+                      label="Need Demo Tutorial?"
                       className="mb-4"
                     />
                   </div>
