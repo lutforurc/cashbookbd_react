@@ -11,6 +11,7 @@ export const hasAnyPermission = (
   requiredAnyOf: string[]
 ): boolean => {
   const names = normalizePermissions(permissions);
+  if (names.includes('*')) return true;
   return requiredAnyOf.some((r) => names.includes(r));
 };
 
@@ -19,5 +20,6 @@ export const hasAllPermissions = (
   requiredAll: string[]
 ): boolean => {
   const names = normalizePermissions(permissions);
+  if (names.includes('*')) return true;
   return requiredAll.every((r) => names.includes(r));
 };

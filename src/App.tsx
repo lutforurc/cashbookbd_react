@@ -162,6 +162,9 @@ const extractRoleNames = (value: any): string[] => {
     .filter(Boolean);
 };
 
+const PRIVILEGED_ROLE_NAMES = ['super administrator', 'administrator', 'dba'];
+const PRIVILEGED_ROLE_IDS = [1, 2];
+
 
 
 
@@ -173,8 +176,18 @@ function App() {
   const companyName = currentBranch?.currentBranch?.company?.name;
   const settings = useSelector((s: any) => s.settings);
   const subscription = useSelector((s: any) => s.subscription);
+  const authRoleNames = [
+    ...extractRoleNames(me?.role_name),
+    ...extractRoleNames(me?.role),
+    ...extractRoleNames(me?.roles),
+  ];
+  const isPrivilegedUser =
+    authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName)) ||
+    PRIVILEGED_ROLE_IDS.includes(Number(me?.role_id));
 
-  const userPermissions = settings?.data?.permissions ?? [];
+  const userPermissions = isPrivilegedUser
+    ? [{ id: 0, name: '*', group_name: '*', guard_name: 'web', created_at: '', updated_at: '' }]
+    : settings?.data?.permissions ?? [];
   const permissionsLoading = settings?.loading ?? false;
   const userCreatePermissions = ['all.user.create', 'user.create', 'user.store', 'all.user.add'];
   const subscriptionSafeRoutes = [

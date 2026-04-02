@@ -23,6 +23,9 @@ import './Sidebar.css';
 import routes from '../services/appRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
 
+const PRIVILEGED_ROLE_NAMES = ['super administrator', 'administrator', 'dba'];
+const PRIVILEGED_ROLE_IDS = [1, 2];
+
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -50,13 +53,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const handleMenuClick = (menuId: string) => {
     setOpenMenu(openMenu === menuId ? null : menuId); // Toggle the clicked menu, close others
   };
-
-
-
-  useEffect(() => {
-    setPermissions(settings.data.permissions);
-  }, [settings.data.permissions]);
-
   const extractRoleNames = (value: any): string[] => {
     if (!value) return [];
 
@@ -75,6 +71,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       .map((item) => item.replace(/<[^>]+>/g, '').trim().toLowerCase())
       .filter(Boolean);
   };
+
+  const authRoleNames = [
+    ...extractRoleNames(authMe?.role_name),
+    ...extractRoleNames(authMe?.role),
+    ...extractRoleNames(authMe?.roles),
+  ];
+  const isPrivilegedUser =
+    authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName)) ||
+    PRIVILEGED_ROLE_IDS.includes(Number(authMe?.role_id));
+
+  useEffect(() => {
+    if (isPrivilegedUser) {
+      setPermissions([{ name: '*' }]);
+      return;
+    }
+
+    setPermissions(settings.data.permissions ?? []);
+  }, [isPrivilegedUser, settings.data.permissions]);
 
   const canSeeSubscriptionAdmin = true;
 
