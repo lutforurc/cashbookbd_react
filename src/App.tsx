@@ -143,6 +143,25 @@ import SubscriptionPlanList from './components/modules/subscription/Subscription
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
 import RequireUserQuota from './components/auth/RequireUserQuota';
 
+const extractRoleNames = (value: any): string[] => {
+  if (!value) return [];
+
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => extractRoleNames(typeof item === 'string' ? item : item?.name ?? item))
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'object') {
+    return extractRoleNames(value?.name ?? '');
+  }
+
+  return String(value)
+    .split(',')
+    .map((item) => item.replace(/<[^>]+>/g, '').trim().toLowerCase())
+    .filter(Boolean);
+};
+
 
 
 
@@ -195,12 +214,10 @@ function App() {
             <Route path={routes.my_subscription} element={<MySubscription />} />
             <Route path={routes.subscription_payment_submit} element={<PaymentSubmit />} />
             <Route path={routes.subscription_billing_history} element={<BillingHistory />} />
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['admin.subscription', 'roles.view']} loading={permissionsLoading} />}>
-              <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
-              <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
-              <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
-              <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
-            </Route>
+            <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
+            <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
+            <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
+            <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
 
             <Route
               element={

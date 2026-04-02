@@ -1,13 +1,21 @@
 import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useEffect, useState } from 'react';
-import { getPermissions, getRoles, getSelectedPermissions, updateRolePermissions } from './userManagementSlice';
+import {
+  getOwnerRoleGroup,
+  getPermissions,
+  getRoles,
+  getSelectedPermissions,
+  syncOwnerRoleGroup,
+  updateOwnerRoleGroup,
+  updateRolePermissions,
+} from './userManagementSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { formatRoleNameForCashBook } from '../../utils/utils-functions/formatRoleName';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { toast } from 'react-toastify';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiRefreshCw } from 'react-icons/fi';
 import httpService from '../../services/httpService';
 import { API_GET_SELECTED_PERMISSIONS_URL } from '../../services/apiRoutes';
 
@@ -16,14 +24,42 @@ interface Permission {
   name: string;
   group_name: string;
 }
+
 interface Role {
   id: number;
   name: string;
 }
 
+const OWNER_ROLE_FALLBACK_ID = -999999;
+const PLAN_ROLE_FALLBACKS: Role[] = [
+  { id: -999998, name: 'Starter' },
+  { id: -999997, name: 'Business' },
+  { id: -999996, name: 'Enterprise' },
+];
+
+const extractRoleNames = (value: any): string[] => {
+  if (!value) return [];
+
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => extractRoleNames(typeof item === 'string' ? item : item?.name ?? item))
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'object') {
+    return extractRoleNames(value?.name ?? '');
+  }
+
+  return String(value)
+    .split(',')
+    .map((item) => item.replace(/<[^>]+>/g, '').trim())
+    .filter(Boolean);
+};
+
 const Roles = () => {
   const dispatch = useDispatch();
   const rolesPermissions = useSelector((state: any) => state.userManagement);
+  const authMe = useSelector((state: any) => state.auth?.me);
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -31,13 +67,15 @@ const Roles = () => {
   const [roleId, setRoleId] = useState<number>(0);
   const [updating, setUpdating] = useState(false);
   const [addingRole, setAddingRole] = useState(false);
+  const [syncingOwnerRoles, setSyncingOwnerRoles] = useState(false);
   const [catalogPermissions, setCatalogPermissions] = useState<Permission[]>([]);
   const isOwnerRoleSelected = selectedRole?.name?.toLowerCase() === 'owner';
+  const ownerRoleGroup = rolesPermissions.ownerRoleGroup?.data;
 
   useEffect(() => {
-    dispatch(getRoles());
-    dispatch(getPermissions());
-  }, []);
+    dispatch(getRoles() as any);
+    dispatch(getPermissions() as any);
+  }, [dispatch]);
 
   useEffect(() => {
     const availablePermissions = Array.isArray(rolesPermissions.permissions?.data?.data)
@@ -88,32 +126,90 @@ const Roles = () => {
   }, [roles]);
 
   useEffect(() => {
-    setRoles(rolesPermissions.roles?.data?.data || []);
-  }, [rolesPermissions.roles?.data?.data]);
+    const rawRoles = rolesPermissions.roles;
+    const incomingRoles = Array.isArray(rawRoles?.data?.data)
+      ? rawRoles.data.data
+      : Array.isArray(rawRoles?.data)
+        ? rawRoles.data
+        : Array.isArray(rawRoles)
+          ? rawRoles
+          : [];
+
+    const fallbackRoleNames = [
+      ...extractRoleNames(authMe?.role_name),
+      ...extractRoleNames(authMe?.role),
+      ...extractRoleNames(authMe?.roles),
+    ];
+
+    const fallbackRoles: Role[] = fallbackRoleNames.map((name, index) => ({
+      id: -(index + 1),
+      name,
+    }));
+
+    const mergedRoles = [...incomingRoles, ...fallbackRoles];
+    const hasOwnerRole = mergedRoles.some(
+      (role: Role) => role?.name?.trim().toLowerCase() === 'owner'
+    );
+
+    if (!hasOwnerRole) {
+      mergedRoles.push({
+        id: OWNER_ROLE_FALLBACK_ID,
+        name: 'Owner',
+      });
+    }
+
+    PLAN_ROLE_FALLBACKS.forEach((planRole) => {
+      const alreadyExists = mergedRoles.some(
+        (role: Role) => role?.name?.trim().toLowerCase() === planRole.name.toLowerCase()
+      );
+
+      if (!alreadyExists) {
+        mergedRoles.push(planRole);
+      }
+    });
+
+    const uniqueRoles = mergedRoles.filter((role: Role, index: number, arr: Role[]) => {
+      return index === arr.findIndex((item: Role) => {
+        if (item.id === role.id) return true;
+        return item.name?.trim().toLowerCase() === role.name?.trim().toLowerCase();
+      });
+    });
+
+    setRoles(uniqueRoles.filter((role) => role?.id && role?.name));
+  }, [authMe?.role, authMe?.role_name, authMe?.roles, rolesPermissions.roles]);
 
   useEffect(() => {
-    if (selectedRole) {
-      dispatch(getSelectedPermissions(selectedRole.id));
+    if (!selectedRole) return;
+
+    if (selectedRole.name?.toLowerCase() === 'owner') {
+      dispatch(getOwnerRoleGroup() as any);
+      return;
     }
+
+    dispatch(getSelectedPermissions(selectedRole.id) as any);
   }, [dispatch, selectedRole]);
 
   useEffect(() => {
+    if (isOwnerRoleSelected && Array.isArray(ownerRoleGroup?.permissions)) {
+      setSelectedPermissions(ownerRoleGroup.permissions.map((p: any) => p.name));
+      return;
+    }
+
     if (rolesPermissions.selectedPermissions?.data?.data) {
       setSelectedPermissions(
         rolesPermissions.selectedPermissions.data.data.map((p: any) => p.name)
       );
     }
-  }, [rolesPermissions.selectedPermissions?.data?.data]);
+  }, [isOwnerRoleSelected, ownerRoleGroup?.permissions, rolesPermissions.selectedPermissions?.data?.data]);
 
   const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const roleId = parseInt(event.target.value);
-    setRoleId(roleId);
-    const role = roles.find((r) => r.id === roleId);
+    const nextRoleId = parseInt(event.target.value);
+    setRoleId(nextRoleId);
+    const role = roles.find((r) => r.id === nextRoleId);
     setSelectedRole(role || null);
   };
 
   const handlePermissionChange = (permName: string) => {
-    if (isOwnerRoleSelected) return;
     setSelectedPermissions((prev) =>
       prev.includes(permName)
         ? prev.filter((p) => p !== permName)
@@ -138,38 +234,66 @@ const Roles = () => {
     allPermissionNames.every((name) => selectedPermissions.includes(name));
 
   const handleRootToggle = (checked: boolean) => {
-    if (isOwnerRoleSelected) return;
     setSelectedPermissions(checked ? allPermissionNames : []);
   };
 
-  // Update permissions of the selected role
+  const handleSyncOwnerRoles = async () => {
+    if (syncingOwnerRoles) return;
+
+    setSyncingOwnerRoles(true);
+    try {
+      const res = await dispatch(syncOwnerRoleGroup() as any).unwrap();
+      toast.success(res?.message || 'Owner role group synced successfully');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to sync owner roles');
+    } finally {
+      setSyncingOwnerRoles(false);
+    }
+  };
+
   const handleUpdatePermissions = async () => {
-    if (updating) return; // double click block
-    if (!selectedRole) return toast.info("No role selected");
-    if (isOwnerRoleSelected) return toast.info("Owner role cannot be modified");
-    if (selectedPermissions.length === 0) return toast.info("No permissions selected");
+    if (updating) return;
+    if (!selectedRole) return toast.info('No role selected');
+    if (selectedPermissions.length === 0) return toast.info('No permissions selected');
 
     setUpdating(true);
     try {
-      await dispatch(updateRolePermissions({ roleId, selectedPermissions })).unwrap();
-      toast.success(rolesPermissions?.updatePermission?.message || "Permissions updated successfully");
-    } catch (error) {
-      toast.error(error.message || "Failed to update permissions");
+      if (isOwnerRoleSelected) {
+        const permissionIds = permissions
+          .filter((perm) => selectedPermissions.includes(perm.name))
+          .map((perm) => perm.id);
+
+        const res = await dispatch(updateOwnerRoleGroup(permissionIds) as any).unwrap();
+        toast.success(res?.message || 'Owner role group updated successfully');
+      } else {
+        await dispatch(updateRolePermissions({ roleId, selectedPermissions }) as any).unwrap();
+        toast.success(rolesPermissions?.updatePermission?.message || 'Permissions updated successfully');
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to update permissions');
     } finally {
       setUpdating(false);
     }
   };
-
-
 
   return (
     <div>
       <HelmetTitle title="Role List" />
 
       <div className="flex justify-end mb-1 gap-2">
-        <ButtonLoading className="p-2 w-30" icon="" onClick={handleUpdatePermissions}  buttonLoading={updating} label="Update" />
-        <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className='mr-2' />} onClick={() => { }} buttonLoading={addingRole} label="Add Role" />
+        <ButtonLoading className="p-2 w-30" icon="" onClick={handleUpdatePermissions} buttonLoading={updating} label="Update" />
+        {isOwnerRoleSelected && (
+          <ButtonLoading
+            className="p-2 w-44"
+            icon={<FiRefreshCw size={16} className="mr-2" />}
+            onClick={handleSyncOwnerRoles}
+            buttonLoading={syncingOwnerRoles}
+            label="Sync Owners"
+          />
+        )}
+        <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className="mr-2" />} onClick={() => {}} buttonLoading={addingRole} label="Add Role" />
       </div>
+
       <div className="overflow-y-auto">
         <DropdownCommon
           className="h-10 px-2"
@@ -181,7 +305,6 @@ const Roles = () => {
       </div>
 
       <div className="text-sm mt-6">
-        {/* Root-level Select All */}
         <div className="mb-4 flex items-center justify-between border-b pb-2 border-gray-300 dark:border-gray-700">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
             Permissions
@@ -190,15 +313,14 @@ const Roles = () => {
             label="All"
             checked={isAllSelected}
             onChange={handleRootToggle}
-            disabled={isOwnerRoleSelected}
-            preserveCheckedColorWhenDisabled={isOwnerRoleSelected}
           />
         </div>
 
         {isOwnerRoleSelected && (
-          <p className="mb-4 text-sm text-amber-600 dark:text-amber-400">
-            Owner role protected. এই role-এর permission পরিবর্তন করা যাবে না।
-          </p>
+          <div className="mb-4 rounded border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300">
+            Owner Role Group mode active. এখানে permission change করলে সব company-এর Owner role-এ sync হবে.
+            {ownerRoleGroup?.owner_roles_count ? ` Managed Owner roles: ${ownerRoleGroup.owner_roles_count}.` : ''}
+          </div>
         )}
 
         {Object.keys(groupedPermissions).map((group) => {
@@ -229,8 +351,6 @@ const Roles = () => {
                   label="All"
                   checked={allSelectedInGroup}
                   onChange={handleGroupToggle}
-                  disabled={isOwnerRoleSelected}
-                  preserveCheckedColorWhenDisabled={isOwnerRoleSelected}
                 />
               </div>
 
@@ -241,8 +361,6 @@ const Roles = () => {
                     label={formatRoleNameForCashBook(perm.name)}
                     checked={selectedPermissions.includes(perm.name)}
                     onChange={() => handlePermissionChange(perm.name)}
-                    disabled={isOwnerRoleSelected}
-                    preserveCheckedColorWhenDisabled={isOwnerRoleSelected}
                   />
                 ))}
               </ul>

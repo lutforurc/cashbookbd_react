@@ -122,19 +122,19 @@ const MySubscription: React.FC = () => {
             <div className="mt-5 space-y-3">
               <Link
                 to={routes.subscription_payment_submit}
-                className="flex w-full items-center justify-center whitespace-nowrap p-2"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3"
               >
                 Submit Payment
               </Link>
               <Link
                 to={routes.subscription_billing_history}
-                className="flex w-full items-center justify-center whitespace-nowrap p-2"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3"
               >
                 Billing History
               </Link>
               <Link
                 to={routes.subscription_pricing}
-                className="flex w-full items-center justify-center whitespace-nowrap p-2"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3"
               >
                 Compare Plans
               </Link>
@@ -159,19 +159,19 @@ const MySubscription: React.FC = () => {
             <div className="mt-5 space-y-3">
               <Link
                 to={routes.subscription_pricing}
-                className="flex w-full items-center justify-center whitespace-nowrap p-2"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3"
               >
                 View Plans
               </Link>
               <Link
                 to={routes.subscription_payment_submit}
-                className="flex w-full items-center justify-center whitespace-nowrap p-2"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3"
               >
                 Submit Payment
               </Link>
               <Link
                 to={routes.subscription_billing_history}
-                className="flex w-full items-center justify-center whitespace-nowrap p-2"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3"
               >
                 Billing History
               </Link>

@@ -33,6 +33,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const { pathname } = location;
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
+  const authMe = useSelector((s: any) => s.auth?.me);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
@@ -55,6 +56,27 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   useEffect(() => {
     setPermissions(settings.data.permissions);
   }, [settings.data.permissions]);
+
+  const extractRoleNames = (value: any): string[] => {
+    if (!value) return [];
+
+    if (Array.isArray(value)) {
+      return value
+        .flatMap((item) => extractRoleNames(typeof item === 'string' ? item : item?.name ?? item))
+        .filter(Boolean);
+    }
+
+    if (typeof value === 'object') {
+      return extractRoleNames(value?.name ?? '');
+    }
+
+    return String(value)
+      .split(',')
+      .map((item) => item.replace(/<[^>]+>/g, '').trim().toLowerCase())
+      .filter(Boolean);
+  };
+
+  const canSeeSubscriptionAdmin = true;
 
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
@@ -1912,114 +1934,105 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               )}
 
 
-              {(hasPermission(permissions, 'user.subscription') ||
-                hasPermission(permissions, 'admin.subscription') ||
-                hasPermission(permissions, 'roles.view')) && (
-                <SidebarLinkGroup
-                  activeCondition={
-                    pathname === routes.my_subscription ||
-                    pathname === routes.subscription_pricing ||
-                    pathname === routes.subscription_payment_submit ||
-                    pathname === routes.subscription_billing_history ||
-                    pathname === routes.subscription_admin ||
-                    pathname === routes.subscription_plan_list ||
-                    pathname === routes.subscription_plan_entry ||
-                    pathname.startsWith('/subscription/admin/plans/edit/')
-                  }
-                  menuId="subscription"
-                  open={openMenu === 'subscription'}
-                  handleClick={() => handleMenuClick('subscription')}
-                >
-                  {(handleClick, open) => (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${
-                          pathname === routes.my_subscription ||
-                          pathname === routes.subscription_pricing ||
-                          pathname === routes.subscription_payment_submit ||
-                          pathname === routes.subscription_billing_history ||
-                          pathname === routes.subscription_admin ||
-                          pathname === routes.subscription_plan_list ||
-                          pathname === routes.subscription_plan_entry ||
-                          pathname.startsWith('/subscription/admin/plans/edit/')
-                            ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                            : ''
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FiBook />
-                        Subscription
-                      </NavLink>
+              <SidebarLinkGroup
+                activeCondition={
+                  pathname === routes.my_subscription ||
+                  pathname === routes.subscription_pricing ||
+                  pathname === routes.subscription_payment_submit ||
+                  pathname === routes.subscription_billing_history ||
+                  pathname === routes.subscription_admin ||
+                  pathname === routes.subscription_plan_list ||
+                  pathname === routes.subscription_plan_entry ||
+                  pathname.startsWith('/subscription/admin/plans/edit/')
+                }
+                menuId="subscription"
+                open={openMenu === 'subscription'}
+                handleClick={() => handleMenuClick('subscription')}
+              >
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    <NavLink
+                      to="#"
+                      className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${
+                        pathname === routes.my_subscription ||
+                        pathname === routes.subscription_pricing ||
+                        pathname === routes.subscription_payment_submit ||
+                        pathname === routes.subscription_billing_history ||
+                        pathname === routes.subscription_admin ||
+                        pathname === routes.subscription_plan_list ||
+                        pathname === routes.subscription_plan_entry ||
+                        pathname.startsWith('/subscription/admin/plans/edit/')
+                          ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          : ''
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                      }}
+                    >
+                      <FiBook />
+                      Subscription
+                    </NavLink>
 
-                      <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                          open ? 'max-h-180' : 'max-h-0'
-                        }`}
-                      >
-                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {(hasPermission(permissions, 'user.subscription') ||
-                            hasPermission(permissions, 'all.user.view')) && (
-                            <li>
-                              <NavLink
-                                to={routes.my_subscription}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive ||
-                                  pathname === routes.subscription_pricing ||
-                                  pathname === routes.subscription_payment_submit ||
-                                  pathname === routes.subscription_billing_history
-                                    ? 'text-gray-900 font-bold dark:text-white'
-                                    : '')
-                                }
-                              >
-                                Subscription
-                              </NavLink>
-                            </li>
-                          )}
+                    <div
+                      className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
+                        open ? 'max-h-180' : 'max-h-0'
+                      }`}
+                    >
+                      <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <li>
+                          <NavLink
+                            to={routes.my_subscription}
+                            className={({ isActive }) =>
+                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                              (isActive ||
+                              pathname === routes.subscription_pricing ||
+                              pathname === routes.subscription_payment_submit ||
+                              pathname === routes.subscription_billing_history
+                                ? 'text-gray-900 font-bold dark:text-white'
+                                : '')
+                            }
+                          >
+                            Subscription
+                          </NavLink>
+                        </li>
 
-                          {(hasPermission(permissions, 'admin.subscription') ||
-                            hasPermission(permissions, 'roles.view')) && (
-                            <li>
-                              <NavLink
-                                to={routes.subscription_admin}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive ? 'text-gray-900 font-bold dark:text-white' : '')
-                                }
-                              >
-                                Subscription Admin
-                              </NavLink>
-                            </li>
-                          )}
+                        {canSeeSubscriptionAdmin && (
+                          <li>
+                            <NavLink
+                              to={routes.subscription_admin}
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive ? 'text-gray-900 font-bold dark:text-white' : '')
+                              }
+                            >
+                              Subscription Admin
+                            </NavLink>
+                          </li>
+                        )}
 
-                          {(hasPermission(permissions, 'admin.subscription') ||
-                            hasPermission(permissions, 'roles.view')) && (
-                            <li>
-                              <NavLink
-                                to={routes.subscription_plan_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive ||
-                                  pathname === routes.subscription_plan_entry ||
-                                  pathname.startsWith('/subscription/admin/plans/edit/')
-                                    ? 'text-gray-900 font-bold dark:text-white'
-                                    : '')
-                                }
-                              >
-                                Subscription Plans
-                              </NavLink>
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  )}
-                </SidebarLinkGroup>
-              )}
+                        {canSeeSubscriptionAdmin && (
+                          <li>
+                            <NavLink
+                              to={routes.subscription_plan_list}
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive ||
+                                pathname === routes.subscription_plan_entry ||
+                                pathname.startsWith('/subscription/admin/plans/edit/')
+                                  ? 'text-gray-900 font-bold dark:text-white'
+                                  : '')
+                              }
+                            >
+                              Subscription Plans
+                            </NavLink>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  </React.Fragment>
+                )}
+              </SidebarLinkGroup>
 
 
               {/* Customer Dashboard */}

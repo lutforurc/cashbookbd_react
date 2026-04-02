@@ -403,6 +403,8 @@ export const API_ROLE_STORE_URL = `${API_BASE_URL}/role/create/new`;
 export const API_GET_PERMISSIONS_URL = `${API_BASE_URL}/role/permission-list`;
 export const API_GET_SELECTED_PERMISSIONS_URL = `${API_BASE_URL}/role/selected-permissions`;
 export const API_UPDATE_ROLE_PERMISSIONS_URL = `${API_BASE_URL}/role/role-permission-assign`;
+export const API_OWNER_ROLE_GROUP_URL = `${API_BASE_URL}/admin/owner-role-group`;
+export const API_OWNER_ROLE_GROUP_SYNC_URL = `${API_BASE_URL}/admin/owner-role-group/sync`;
 
 // Voucher Approval Routes
 export const API_VOUCHER_APPROVAL_STORE_URL = `${API_BASE_URL}/admin/voucher/voucher-approval-all`;
