@@ -139,6 +139,8 @@ import MySubscription from './components/modules/subscription/MySubscription';
 import PaymentSubmit from './components/modules/subscription/PaymentSubmit';
 import BillingHistory from './components/modules/subscription/BillingHistory';
 import SubscriptionAdmin from './components/modules/subscription/SubscriptionAdmin';
+import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
+import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
 import RequireUserQuota from './components/auth/RequireUserQuota';
 
 
@@ -193,8 +195,11 @@ function App() {
             <Route path={routes.my_subscription} element={<MySubscription />} />
             <Route path={routes.subscription_payment_submit} element={<PaymentSubmit />} />
             <Route path={routes.subscription_billing_history} element={<BillingHistory />} />
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['roles.view', 'all.user.view']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['admin.subscription', 'roles.view']} loading={permissionsLoading} />}>
               <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
+              <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
+              <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
+              <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
             </Route>
 
             <Route

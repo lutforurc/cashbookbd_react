@@ -229,6 +229,62 @@ class SubscriptionService
             ->all();
     }
 
+    public function getAdminPlans(): array
+    {
+        return DB::table('saas_plans')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($plan) => $this->formatPlan($plan, $this->getFeaturesForPlan((int) $plan->id)))
+            ->all();
+    }
+
+    public function getPlanById(int $planId): array
+    {
+        $plan = DB::table('saas_plans')->where('id', $planId)->first();
+
+        if (!$plan) {
+            throw new RuntimeException('Subscription plan not found.');
+        }
+
+        return $this->formatPlan($plan, $this->getFeaturesForPlan($planId));
+    }
+
+    public function createPlan(?Authenticatable $user, array $payload): array
+    {
+        $normalized = $this->normalizePlanPayload($payload);
+        $this->ensureUniquePlanSlug($normalized['slug']);
+
+        $planId = DB::table('saas_plans')->insertGetId([
+            ...$normalized,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        return $this->getPlanById($planId);
+    }
+
+    public function updatePlan(?Authenticatable $user, int $planId, array $payload): array
+    {
+        $existing = DB::table('saas_plans')->where('id', $planId)->first();
+
+        if (!$existing) {
+            throw new RuntimeException('Subscription plan not found.');
+        }
+
+        $normalized = $this->normalizePlanPayload($payload);
+        $this->ensureUniquePlanSlug($normalized['slug'], $planId);
+
+        DB::table('saas_plans')
+            ->where('id', $planId)
+            ->update([
+                ...$normalized,
+                'updated_at' => Carbon::now(),
+            ]);
+
+        return $this->getPlanById($planId);
+    }
+
     public function assignSubscription(?Authenticatable $user, array $payload): array
     {
         $plan = DB::table('saas_plans')->where('id', $payload['plan_id'])->first();
@@ -583,9 +639,59 @@ class SubscriptionService
             'max_users' => $plan->max_users !== null ? (int) $plan->max_users : null,
             'max_branches' => $plan->max_branches !== null ? (int) $plan->max_branches : null,
             'max_transactions_per_month' => $plan->max_transactions_per_month !== null ? (int) $plan->max_transactions_per_month : null,
+            'sort_order' => isset($plan->sort_order) ? (int) $plan->sort_order : 0,
+            'is_active' => isset($plan->is_active) ? (bool) $plan->is_active : true,
             'description' => $plan->description,
             'features' => $features,
         ];
+    }
+
+    private function normalizePlanPayload(array $payload): array
+    {
+        $name = trim((string) $payload['name']);
+        $slug = trim((string) ($payload['slug'] ?? ''));
+        $slug = $slug !== '' ? Str::slug($slug) : Str::slug($name);
+
+        if ($slug === '') {
+            throw new RuntimeException('Plan slug could not be generated.');
+        }
+
+        return [
+            'name' => $name,
+            'slug' => $slug,
+            'billing_interval' => trim((string) $payload['billing_interval']),
+            'price' => (float) $payload['price'],
+            'currency' => strtoupper(trim((string) $payload['currency'])),
+            'trial_days' => (int) ($payload['trial_days'] ?? 0),
+            'max_users' => $this->nullableInt($payload['max_users'] ?? null),
+            'max_branches' => $this->nullableInt($payload['max_branches'] ?? null),
+            'max_transactions_per_month' => $this->nullableInt($payload['max_transactions_per_month'] ?? null),
+            'sort_order' => (int) ($payload['sort_order'] ?? 0),
+            'description' => $payload['description'] ?? null,
+            'is_active' => !empty($payload['is_active']) ? 1 : 0,
+        ];
+    }
+
+    private function ensureUniquePlanSlug(string $slug, ?int $ignoreId = null): void
+    {
+        $query = DB::table('saas_plans')->where('slug', $slug);
+
+        if ($ignoreId !== null) {
+            $query->where('id', '!=', $ignoreId);
+        }
+
+        if ($query->exists()) {
+            throw new RuntimeException('This plan slug is already in use.');
+        }
+    }
+
+    private function nullableInt($value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (int) $value;
     }
 
     private function formatSubscription(?object $subscription): ?array

@@ -97,6 +97,70 @@ class SubscriptionController extends Controller
         ]);
     }
 
+    public function adminPlans(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->subscriptionService->getAdminPlans(),
+        ]);
+    }
+
+    public function adminPlan(int $planId): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->subscriptionService->getPlanById($planId),
+        ]);
+    }
+
+    public function storePlan(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'slug' => ['nullable', 'string', 'max:150'],
+            'billing_interval' => ['required', 'string', 'max:50'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'currency' => ['required', 'string', 'max:10'],
+            'trial_days' => ['nullable', 'integer', 'min:0'],
+            'max_users' => ['nullable', 'integer', 'min:0'],
+            'max_branches' => ['nullable', 'integer', 'min:0'],
+            'max_transactions_per_month' => ['nullable', 'integer', 'min:0'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Subscription plan created successfully.',
+            'data' => $this->subscriptionService->createPlan($request->user(), $validated),
+        ]);
+    }
+
+    public function updatePlan(Request $request, int $planId): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'slug' => ['nullable', 'string', 'max:150'],
+            'billing_interval' => ['required', 'string', 'max:50'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'currency' => ['required', 'string', 'max:10'],
+            'trial_days' => ['nullable', 'integer', 'min:0'],
+            'max_users' => ['nullable', 'integer', 'min:0'],
+            'max_branches' => ['nullable', 'integer', 'min:0'],
+            'max_transactions_per_month' => ['nullable', 'integer', 'min:0'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Subscription plan updated successfully.',
+            'data' => $this->subscriptionService->updatePlan($request->user(), $planId, $validated),
+        ]);
+    }
+
     public function assign(Request $request): JsonResponse
     {
         $validated = $request->validate([

@@ -9,6 +9,9 @@ const ROUTES = {
   subscription_payment_submit: '/subscription/payment-submit',
   subscription_billing_history: '/subscription/billing-history',
   subscription_admin: '/subscription/admin',
+  subscription_plan_list: '/subscription/admin/plans',
+  subscription_plan_entry: '/subscription/admin/plans/entry',
+  subscription_plan_edit: '/subscription/admin/plans/edit/:id',
 
   // Customer Login
   customerLogin: '/customer/login',

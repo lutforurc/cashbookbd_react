@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { FiCheck, FiX } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -8,6 +9,7 @@ import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import routes from '../../services/appRoutes';
 import {
   approveSubscriptionPayment,
   assignSubscriptionToCompany,
@@ -135,10 +137,23 @@ const SubscriptionAdmin: React.FC = () => {
       <HelmetTitle title="Subscription Admin" />
 
       <div className="rounded border border-gray-400 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Subscription Admin</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Review tenant subscriptions, pending manual payments, and activation status.
-        </p>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Subscription Admin</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Review tenant subscriptions, pending manual payments, and activation status.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Link to={routes.subscription_plan_list} className="inline-flex">
+              <ButtonLoading label="Plan List" className="h-10 px-4" />
+            </Link>
+            <Link to={routes.subscription_plan_entry} className="inline-flex">
+              <ButtonLoading label="New Plan" className="h-10 px-4" />
+            </Link>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">

@@ -7,6 +7,7 @@ import {
   API_SUBSCRIPTION_ADMIN_COMPANIES_URL,
   API_SUBSCRIPTION_ADMIN_OVERVIEW_URL,
   API_SUBSCRIPTION_ADMIN_PAYMENTS_URL,
+  API_SUBSCRIPTION_ADMIN_PLANS_URL,
   API_SUBSCRIPTION_ADMIN_TENANTS_URL,
   API_SUBSCRIPTION_PAYMENT_HISTORY_URL,
   API_SUBSCRIPTION_PAYMENT_SUBMIT_URL,
@@ -40,8 +41,25 @@ export interface SubscriptionPlan {
   max_users?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;
+  sort_order?: number;
+  is_active?: boolean;
   description?: string | null;
   features?: SubscriptionFeature[];
+}
+
+export interface SubscriptionPlanPayload {
+  name: string;
+  slug?: string;
+  billing_interval: string;
+  price: number;
+  currency: string;
+  trial_days: number;
+  max_users?: number | null;
+  max_branches?: number | null;
+  max_transactions_per_month?: number | null;
+  sort_order?: number;
+  is_active: boolean;
+  description?: string;
 }
 
 export interface CurrentSubscription {
@@ -141,6 +159,11 @@ interface SubscriptionState {
   adminTenants: AdminTenantSubscription[];
   adminPayments: AdminSubscriptionPayment[];
   adminCompanies: SubscriptionCompanyOption[];
+  adminPlans: SubscriptionPlan[];
+  editingPlan: SubscriptionPlan | null;
+  loadingAdminPlans: boolean;
+  loadingPlanDetails: boolean;
+  savingPlan: boolean;
 }
 
 const initialState: SubscriptionState = {
@@ -160,6 +183,11 @@ const initialState: SubscriptionState = {
   adminTenants: [],
   adminPayments: [],
   adminCompanies: [],
+  adminPlans: [],
+  editingPlan: null,
+  loadingAdminPlans: false,
+  loadingPlanDetails: false,
+  savingPlan: false,
 };
 
 const getErrorMessage = (error: any, fallback: string): string => {
@@ -355,6 +383,64 @@ export const assignSubscriptionToCompany = createAsyncThunk<
   }
 });
 
+export const fetchAdminPlans = createAsyncThunk<
+  SubscriptionPlan[],
+  void,
+  { rejectValue: string }
+>('subscription/adminPlansList', async (_, thunkAPI) => {
+  try {
+    const res = await httpService.get(API_SUBSCRIPTION_ADMIN_PLANS_URL);
+    return extractArray<SubscriptionPlan>(res.data);
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error, 'Failed to load plans'));
+  }
+});
+
+export const fetchAdminPlan = createAsyncThunk<
+  SubscriptionPlan | null,
+  number,
+  { rejectValue: string }
+>('subscription/adminPlanDetails', async (planId, thunkAPI) => {
+  try {
+    const res = await httpService.get(`${API_SUBSCRIPTION_ADMIN_PLANS_URL}/${planId}`);
+    return extractObject<SubscriptionPlan>(res.data);
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error, 'Failed to load plan details'));
+  }
+});
+
+export const createSubscriptionPlan = createAsyncThunk<
+  { message: string; data: SubscriptionPlan | null },
+  SubscriptionPlanPayload,
+  { rejectValue: string }
+>('subscription/createPlan', async (payload, thunkAPI) => {
+  try {
+    const res = await httpService.post(API_SUBSCRIPTION_ADMIN_PLANS_URL, payload);
+    return {
+      message: res?.data?.message || 'Subscription plan created successfully.',
+      data: extractObject<SubscriptionPlan>(res.data),
+    };
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error, 'Failed to create plan'));
+  }
+});
+
+export const updateSubscriptionPlan = createAsyncThunk<
+  { message: string; data: SubscriptionPlan | null },
+  { id: number; payload: SubscriptionPlanPayload },
+  { rejectValue: string }
+>('subscription/updatePlan', async ({ id, payload }, thunkAPI) => {
+  try {
+    const res = await httpService.post(`${API_SUBSCRIPTION_ADMIN_PLANS_URL}/${id}`, payload);
+    return {
+      message: res?.data?.message || 'Subscription plan updated successfully.',
+      data: extractObject<SubscriptionPlan>(res.data),
+    };
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error, 'Failed to update plan'));
+  }
+});
+
 const subscriptionSlice = createSlice({
   name: 'subscription',
   initialState,
@@ -362,6 +448,9 @@ const subscriptionSlice = createSlice({
     clearSubscriptionFeedback(state) {
       state.error = null;
       state.submitSuccessMessage = null;
+    },
+    resetEditingPlan(state) {
+      state.editingPlan = null;
     },
   },
   extraReducers: (builder) => {
@@ -501,9 +590,69 @@ const subscriptionSlice = createSlice({
       .addCase(assignSubscriptionToCompany.rejected, (state, action) => {
         state.updatingAdminPayment = false;
         state.error = action.payload || 'Failed to assign subscription';
+      })
+      .addCase(fetchAdminPlans.pending, (state) => {
+        state.loadingAdminPlans = true;
+        state.error = null;
+      })
+      .addCase(fetchAdminPlans.fulfilled, (state, action) => {
+        state.loadingAdminPlans = false;
+        state.adminPlans = action.payload;
+      })
+      .addCase(fetchAdminPlans.rejected, (state, action) => {
+        state.loadingAdminPlans = false;
+        state.error = action.payload || 'Failed to load plans';
+      })
+      .addCase(fetchAdminPlan.pending, (state) => {
+        state.loadingPlanDetails = true;
+        state.error = null;
+      })
+      .addCase(fetchAdminPlan.fulfilled, (state, action) => {
+        state.loadingPlanDetails = false;
+        state.editingPlan = action.payload;
+      })
+      .addCase(fetchAdminPlan.rejected, (state, action) => {
+        state.loadingPlanDetails = false;
+        state.error = action.payload || 'Failed to load plan details';
+      })
+      .addCase(createSubscriptionPlan.pending, (state) => {
+        state.savingPlan = true;
+        state.error = null;
+        state.submitSuccessMessage = null;
+      })
+      .addCase(createSubscriptionPlan.fulfilled, (state, action) => {
+        state.savingPlan = false;
+        state.submitSuccessMessage = action.payload.message;
+        if (action.payload.data) {
+          state.adminPlans = [action.payload.data, ...state.adminPlans];
+        }
+      })
+      .addCase(createSubscriptionPlan.rejected, (state, action) => {
+        state.savingPlan = false;
+        state.error = action.payload || 'Failed to create plan';
+      })
+      .addCase(updateSubscriptionPlan.pending, (state) => {
+        state.savingPlan = true;
+        state.error = null;
+        state.submitSuccessMessage = null;
+      })
+      .addCase(updateSubscriptionPlan.fulfilled, (state, action) => {
+        state.savingPlan = false;
+        state.submitSuccessMessage = action.payload.message;
+        state.editingPlan = action.payload.data;
+
+        if (action.payload.data) {
+          state.adminPlans = state.adminPlans.map((plan) =>
+            plan.id === action.payload.data?.id ? action.payload.data : plan,
+          );
+        }
+      })
+      .addCase(updateSubscriptionPlan.rejected, (state, action) => {
+        state.savingPlan = false;
+        state.error = action.payload || 'Failed to update plan';
       });
   },
 });
 
-export const { clearSubscriptionFeedback } = subscriptionSlice.actions;
+export const { clearSubscriptionFeedback, resetEditingPlan } = subscriptionSlice.actions;
 export default subscriptionSlice.reducer;

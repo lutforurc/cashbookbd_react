@@ -126,6 +126,7 @@ export const API_SUBSCRIPTION_ADMIN_TENANTS_URL = `${API_BASE_URL}/admin/subscri
 export const API_SUBSCRIPTION_ADMIN_PAYMENTS_URL = `${API_BASE_URL}/admin/subscription/payment-requests`;
 export const API_SUBSCRIPTION_ADMIN_APPROVE_PAYMENT_URL = `${API_BASE_URL}/admin/subscription/payments`;
 export const API_SUBSCRIPTION_ADMIN_ASSIGN_URL = `${API_BASE_URL}/admin/subscription/assign`;
+export const API_SUBSCRIPTION_ADMIN_PLANS_URL = `${API_BASE_URL}/admin/subscription/plans`;
 // export const API_LOGIN_URL = API_BASE_URL + '/login';
 export const API_LOGOUT_URL = `${API_BASE_URL}/logout`;
 // export const API_LOGOUT_URL = API_BASE_URL + '/logout';

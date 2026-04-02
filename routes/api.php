@@ -23,6 +23,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/companies', [SubscriptionController::class, 'companies']);
         Route::get('/tenant-subscriptions', [SubscriptionController::class, 'tenantSubscriptions']);
         Route::get('/payment-requests', [SubscriptionController::class, 'paymentRequests']);
+        Route::get('/plans', [SubscriptionController::class, 'adminPlans']);
+        Route::get('/plans/{planId}', [SubscriptionController::class, 'adminPlan']);
+        Route::post('/plans', [SubscriptionController::class, 'storePlan']);
+        Route::post('/plans/{planId}', [SubscriptionController::class, 'updatePlan']);
         Route::post('/assign', [SubscriptionController::class, 'assign']);
         Route::post('/payments/{paymentId}/approve', [SubscriptionController::class, 'approvePayment']);
         Route::post('/payments/{paymentId}/reject', [SubscriptionController::class, 'rejectPayment']);
