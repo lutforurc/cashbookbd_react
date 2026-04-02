@@ -1,4 +1,3 @@
-// src/components/auth/RequirePermission.tsx
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { hasAllPermissions, hasAnyPermission, Permission } from "../Sidebar/permissionUtils";
@@ -7,8 +6,8 @@ type Props = {
   permissions: Permission[] | undefined | null;
   anyOf?: string[];
   allOf?: string[];
-  redirectTo?: string;   // default: /no-access
-  loading?: boolean;     // ✅ add
+  redirectTo?: string;
+  loading?: boolean;
 };
 
 const RequirePermission: React.FC<Props> = ({
@@ -16,16 +15,16 @@ const RequirePermission: React.FC<Props> = ({
   anyOf,
   allOf,
   redirectTo = "/no-access",
-  loading = false,       // ✅ add
+  loading = false,
 }) => {
   const location = useLocation();
+  const hasResolvedPermissions = Array.isArray(permissions) && permissions.length > 0;
 
-  // ✅ permissions/settings loading থাকলে redirect না করে wait
-  if (loading) return null;
+  // Keep the current route visible during background settings refreshes.
+  if (loading && !hasResolvedPermissions) return null;
 
   const okAny = anyOf ? hasAnyPermission(permissions, anyOf) : true;
   const okAll = allOf ? hasAllPermissions(permissions, allOf) : true;
-
   const isAllowed = okAny && okAll;
 
   if (!isAllowed) {

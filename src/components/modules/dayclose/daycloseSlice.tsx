@@ -7,7 +7,7 @@ export const storeDayClose = (
   callback?: (message: string) => void
 ) => (dispatch: any) => {
   dispatch({ type: DAYCLOSE_STORE_PENDING });
-  httpService.post(API_DAYCLOSE_STORE_URL, data)
+  return httpService.post(API_DAYCLOSE_STORE_URL, data)
     .then((res) => {
       const _data = res.data;
       if (_data.success) {
@@ -18,6 +18,7 @@ export const storeDayClose = (
         if ('function' == typeof callback) {
           callback(_data.data.data.current_date);
         }
+        return _data.data.data;
       } else {
         dispatch({
           type: DAYCLOSE_STORE_ERROR,
@@ -26,6 +27,7 @@ export const storeDayClose = (
         if ('function' == typeof callback) {
           callback(_data.message);
         }
+        return Promise.reject(_data.error.message);
       }
     })
     .catch((err) => {
@@ -36,6 +38,7 @@ export const storeDayClose = (
       if ('function' == typeof callback) {
         callback(err.message);
       }
+      return Promise.reject(err);
     });
 };
 
