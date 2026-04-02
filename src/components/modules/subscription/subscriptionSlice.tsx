@@ -334,6 +334,20 @@ export const fetchAdminSubscriptionPayments = createAsyncThunk<
     const res = await httpService.get(API_SUBSCRIPTION_ADMIN_PAYMENTS_URL);
     return extractArray<AdminSubscriptionPayment>(res.data);
   } catch (error: any) {
+    const missingRouteMessage = getErrorMessage(error, '');
+
+    if (missingRouteMessage.includes('api/admin/subscription/payment-requests')) {
+      try {
+        const fallbackUrl = API_SUBSCRIPTION_ADMIN_PAYMENTS_URL.replace('/payment-requests', '/payments');
+        const fallbackRes = await httpService.get(fallbackUrl);
+        return extractArray<AdminSubscriptionPayment>(fallbackRes.data);
+      } catch (fallbackError: any) {
+        return thunkAPI.rejectWithValue(
+          getErrorMessage(fallbackError, 'Failed to load payment requests'),
+        );
+      }
+    }
+
     return thunkAPI.rejectWithValue(getErrorMessage(error, 'Failed to load payment requests'));
   }
 });

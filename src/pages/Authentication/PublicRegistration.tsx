@@ -195,7 +195,7 @@ const PublicRegistration: React.FC = () => {
                 Registration your company
               </h2>
               <a
-                href="https://www.youtube.com/watch?v=v909PO1kirU"
+                href="https://youtu.be/_7OsFnaHeXI"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Watch registration video"

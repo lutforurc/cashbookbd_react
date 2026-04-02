@@ -7,6 +7,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -357,6 +358,11 @@ class SubscriptionService
                 $user?->id
             );
 
+            $this->syncPrimaryCompanyUserRoleForPlan(
+                (int) $payload['company_id'],
+                (int) $plan->id
+            );
+
             return $this->formatSubscription(
                 $this->subscriptionBaseQuery()->where('ts.id', $subscriptionId)->first()
             );
@@ -420,6 +426,11 @@ class SubscriptionService
                     'new_end_date' => $endDate->toDateString(),
                 ],
                 $user?->id
+            );
+
+            $this->syncPrimaryCompanyUserRoleForPlan(
+                (int) $subscription->company_id,
+                (int) $payment->plan_id
             );
 
             return $this->formatSubscription(
@@ -562,6 +573,8 @@ class SubscriptionService
                 ],
                 $userId
             );
+
+            $this->assignStarterRoleToPrimaryCompanyUser($companyId);
 
             return $this->subscriptionBaseQuery()
                 ->where('ts.id', $subscriptionId)
@@ -781,6 +794,233 @@ class SubscriptionService
         }
 
         throw new RuntimeException('Unable to resolve company id for the authenticated user.');
+    }
+
+    public function assignStarterRoleToPrimaryCompanyUser(int $companyId): void
+    {
+        $starterRoleId = $this->ensureRoleExists('Starter', $companyId);
+
+        if ($starterRoleId === null) {
+            return;
+        }
+
+        $this->updatePrimaryCompanyUserRole($companyId, $starterRoleId);
+    }
+
+    public function syncPrimaryCompanyUserRoleForPlan(int $companyId, int $planId): void
+    {
+        $plan = DB::table('saas_plans')->where('id', $planId)->first(['id', 'name', 'slug']);
+
+        if (!$plan) {
+            return;
+        }
+
+        $candidateNames = array_values(array_unique(array_filter([
+            trim((string) ($plan->name ?? '')),
+            trim((string) ($plan->slug ?? '')),
+            Str::headline((string) ($plan->slug ?? '')),
+        ])));
+
+        $primaryPlanId = DB::table('saas_plans')
+            ->where('is_active', 1)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->value('id');
+
+        if ((int) $planId === (int) $primaryPlanId || strtolower((string) $plan->slug) === 'starter-monthly') {
+            array_unshift($candidateNames, 'Starter');
+        }
+
+        $roleId = null;
+
+        foreach ($candidateNames as $candidateName) {
+            $roleId = $this->ensureRoleExists($candidateName, $companyId);
+            if ($roleId !== null) {
+                break;
+            }
+        }
+
+        if ($roleId === null) {
+            return;
+        }
+
+        $this->updatePrimaryCompanyUserRole($companyId, $roleId);
+    }
+
+    private function updatePrimaryCompanyUserRole(int $companyId, int $roleId): void
+    {
+        foreach ($this->candidateUserTables() as $table) {
+            if (!Schema::hasTable($table)) {
+                continue;
+            }
+
+            $companyColumn = $this->firstExistingColumn($table, ['company_id', 'current_company_id']);
+            $roleColumn = $this->firstExistingColumn($table, ['role_id']);
+            $primaryKey = $this->firstExistingColumn($table, ['id', 'user_id']) ?? 'id';
+            $updatedAtColumn = $this->firstExistingColumn($table, ['updated_at']);
+
+            if (
+                $companyColumn === null ||
+                $roleColumn === null ||
+                !Schema::hasColumn($table, $primaryKey)
+            ) {
+                continue;
+            }
+
+            $primaryUserId = DB::table($table)
+                ->where($companyColumn, $companyId)
+                ->orderBy($primaryKey)
+                ->value($primaryKey);
+
+            if (!$primaryUserId) {
+                continue;
+            }
+
+            $updateData = [$roleColumn => $roleId];
+            if ($updatedAtColumn !== null) {
+                $updateData[$updatedAtColumn] = Carbon::now();
+            }
+
+            DB::table($table)
+                ->where($primaryKey, $primaryUserId)
+                ->update($updateData);
+
+            return;
+        }
+    }
+
+    private function ensureRoleExists(string $roleName, ?int $companyId = null): ?int
+    {
+        $normalizedRoleName = trim($roleName);
+
+        if ($normalizedRoleName === '') {
+            return null;
+        }
+
+        $existingRoleId = $this->resolveRoleIdByNames([$normalizedRoleName], $companyId);
+
+        if ($existingRoleId !== null) {
+            return $existingRoleId;
+        }
+
+        if (!Schema::hasTable('roles')) {
+            return null;
+        }
+
+        $now = Carbon::now();
+        $insert = [
+            'name' => $normalizedRoleName,
+            'guard_name' => 'web',
+        ];
+
+        if (Schema::hasColumn('roles', 'created_at')) {
+            $insert['created_at'] = $now;
+        }
+
+        if (Schema::hasColumn('roles', 'updated_at')) {
+            $insert['updated_at'] = $now;
+        }
+
+        if (Schema::hasColumn('roles', 'company_id')) {
+            $insert['company_id'] = null;
+        }
+
+        if (Schema::hasColumn('roles', 'team_id')) {
+            $insert['team_id'] = null;
+        }
+
+        if (Schema::hasColumn('roles', 'role_group_code')) {
+            $insert['role_group_code'] = null;
+        }
+
+        if (Schema::hasColumn('roles', 'role_group_sync_enabled')) {
+            $insert['role_group_sync_enabled'] = 0;
+        }
+
+        $newRoleId = (int) DB::table('roles')->insertGetId($insert);
+        $this->copyBaselinePermissionsToRole($newRoleId);
+
+        return $newRoleId > 0 ? $newRoleId : null;
+    }
+
+    private function resolveRoleIdByNames(array $names, ?int $companyId = null): ?int
+    {
+        $normalizedNames = array_values(array_unique(array_filter(array_map(
+            fn ($name) => trim((string) $name),
+            $names
+        ))));
+
+        if ($normalizedNames === []) {
+            return null;
+        }
+
+        $query = DB::table('roles')
+            ->where('guard_name', 'web')
+            ->whereIn(DB::raw('LOWER(name)'), array_map('strtolower', $normalizedNames));
+
+        if (Schema::hasColumn('roles', 'company_id')) {
+            $query->where(function ($builder) use ($companyId): void {
+                if ($companyId !== null) {
+                    $builder->where('company_id', $companyId);
+                }
+
+                $builder->orWhereNull('company_id');
+            })
+            ->orderByRaw('CASE WHEN company_id IS NULL THEN 1 ELSE 0 END');
+        }
+
+        $role = $query->orderBy('id')->first(['id']);
+
+        return $role?->id ? (int) $role->id : null;
+    }
+
+    private function copyBaselinePermissionsToRole(int $roleId): void
+    {
+        if (!Schema::hasTable('role_has_permissions') || !Schema::hasTable('permissions')) {
+            return;
+        }
+
+        $permissionIds = DB::table('role_has_permissions')
+            ->where('role_id', function ($query): void {
+                $query->select('id')
+                    ->from('roles')
+                    ->whereRaw('LOWER(name) = ?', ['owner'])
+                    ->orderBy('id')
+                    ->limit(1);
+            })
+            ->pluck('permission_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($permissionIds === []) {
+            return;
+        }
+
+        $rows = array_map(
+            fn ($permissionId) => [
+                'permission_id' => $permissionId,
+                'role_id' => $roleId,
+            ],
+            array_values(array_unique($permissionIds))
+        );
+
+        DB::table('role_has_permissions')->insert($rows);
+    }
+
+    private function candidateUserTables(): array
+    {
+        return ['users', 'tbl_users', 'user', 'com_users'];
+    }
+
+    private function firstExistingColumn(string $table, array $columns): ?string
+    {
+        foreach ($columns as $column) {
+            if (Schema::hasColumn($table, $column)) {
+                return $column;
+            }
+        }
+
+        return null;
     }
 
     private function logActivity(int $subscriptionId, int $companyId, string $action, array $details, ?int $userId): void

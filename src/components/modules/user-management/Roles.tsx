@@ -30,36 +30,9 @@ interface Role {
   name: string;
 }
 
-const OWNER_ROLE_FALLBACK_ID = -999999;
-const PLAN_ROLE_FALLBACKS: Role[] = [
-  { id: -999998, name: 'Starter' },
-  { id: -999997, name: 'Business' },
-  { id: -999996, name: 'Enterprise' },
-];
-
-const extractRoleNames = (value: any): string[] => {
-  if (!value) return [];
-
-  if (Array.isArray(value)) {
-    return value
-      .flatMap((item) => extractRoleNames(typeof item === 'string' ? item : item?.name ?? item))
-      .filter(Boolean);
-  }
-
-  if (typeof value === 'object') {
-    return extractRoleNames(value?.name ?? '');
-  }
-
-  return String(value)
-    .split(',')
-    .map((item) => item.replace(/<[^>]+>/g, '').trim())
-    .filter(Boolean);
-};
-
 const Roles = () => {
   const dispatch = useDispatch();
   const rolesPermissions = useSelector((state: any) => state.userManagement);
-  const authMe = useSelector((state: any) => state.auth?.me);
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -71,6 +44,10 @@ const Roles = () => {
   const [catalogPermissions, setCatalogPermissions] = useState<Permission[]>([]);
   const isOwnerRoleSelected = selectedRole?.name?.toLowerCase() === 'owner';
   const ownerRoleGroup = rolesPermissions.ownerRoleGroup?.data;
+  const rolePermissions = Array.isArray(rolesPermissions.selectedPermissions?.data?.data)
+    ? rolesPermissions.selectedPermissions.data.data
+    : [];
+  const isCompanyBoundRoleView = !isOwnerRoleSelected && roles.length === 1;
 
   useEffect(() => {
     dispatch(getRoles() as any);
@@ -81,10 +58,17 @@ const Roles = () => {
     const availablePermissions = Array.isArray(rolesPermissions.permissions?.data?.data)
       ? rolesPermissions.permissions.data.data
       : [];
+    
+    if (isCompanyBoundRoleView) {
+      const sortedPermissions = [...rolePermissions].sort((a, b) => {
+        const groupCompare = (a.group_name || '').localeCompare(b.group_name || '');
+        if (groupCompare !== 0) return groupCompare;
+        return (a.name || '').localeCompare(b.name || '');
+      });
 
-    const rolePermissions = Array.isArray(rolesPermissions.selectedPermissions?.data?.data)
-      ? rolesPermissions.selectedPermissions.data.data
-      : [];
+      setPermissions(sortedPermissions);
+      return;
+    }
 
     const basePermissions = catalogPermissions.length > 0 ? catalogPermissions : availablePermissions;
     const mergedPermissions = [...basePermissions];
@@ -104,7 +88,7 @@ const Roles = () => {
     });
 
     setPermissions(mergedPermissions);
-  }, [catalogPermissions, rolesPermissions.permissions?.data?.data, rolesPermissions.selectedPermissions?.data?.data]);
+  }, [catalogPermissions, isCompanyBoundRoleView, rolePermissions, rolesPermissions.permissions?.data?.data]);
 
   useEffect(() => {
     const ownerRole = roles.find((role) => role.name?.toLowerCase() === 'owner');
@@ -135,48 +119,21 @@ const Roles = () => {
           ? rawRoles
           : [];
 
-    const fallbackRoleNames = [
-      ...extractRoleNames(authMe?.role_name),
-      ...extractRoleNames(authMe?.role),
-      ...extractRoleNames(authMe?.roles),
-    ];
-
-    const fallbackRoles: Role[] = fallbackRoleNames.map((name, index) => ({
-      id: -(index + 1),
-      name,
-    }));
-
-    const mergedRoles = [...incomingRoles, ...fallbackRoles];
-    const hasOwnerRole = mergedRoles.some(
-      (role: Role) => role?.name?.trim().toLowerCase() === 'owner'
-    );
-
-    if (!hasOwnerRole) {
-      mergedRoles.push({
-        id: OWNER_ROLE_FALLBACK_ID,
-        name: 'Owner',
-      });
-    }
-
-    PLAN_ROLE_FALLBACKS.forEach((planRole) => {
-      const alreadyExists = mergedRoles.some(
-        (role: Role) => role?.name?.trim().toLowerCase() === planRole.name.toLowerCase()
-      );
-
-      if (!alreadyExists) {
-        mergedRoles.push(planRole);
-      }
-    });
-
-    const uniqueRoles = mergedRoles.filter((role: Role, index: number, arr: Role[]) => {
+    const uniqueRoles = incomingRoles.filter((role: Role, index: number, arr: Role[]) => {
       return index === arr.findIndex((item: Role) => {
         if (item.id === role.id) return true;
         return item.name?.trim().toLowerCase() === role.name?.trim().toLowerCase();
       });
     });
 
-    setRoles(uniqueRoles.filter((role) => role?.id && role?.name));
-  }, [authMe?.role, authMe?.role_name, authMe?.roles, rolesPermissions.roles]);
+    const nextRoles = uniqueRoles.filter((role) => role?.id && role?.name);
+    setRoles(nextRoles);
+
+    if (nextRoles.length === 1) {
+      setRoleId(nextRoles[0].id);
+      setSelectedRole(nextRoles[0]);
+    }
+  }, [rolesPermissions.roles]);
 
   useEffect(() => {
     if (!selectedRole) return;
@@ -210,6 +167,7 @@ const Roles = () => {
   };
 
   const handlePermissionChange = (permName: string) => {
+    if (isCompanyBoundRoleView) return;
     setSelectedPermissions((prev) =>
       prev.includes(permName)
         ? prev.filter((p) => p !== permName)
@@ -234,6 +192,7 @@ const Roles = () => {
     allPermissionNames.every((name) => selectedPermissions.includes(name));
 
   const handleRootToggle = (checked: boolean) => {
+    if (isCompanyBoundRoleView) return;
     setSelectedPermissions(checked ? allPermissionNames : []);
   };
 
@@ -254,6 +213,7 @@ const Roles = () => {
   const handleUpdatePermissions = async () => {
     if (updating) return;
     if (!selectedRole) return toast.info('No role selected');
+    if (isCompanyBoundRoleView) return toast.info('This company role is view only.');
     if (selectedPermissions.length === 0) return toast.info('No permissions selected');
 
     setUpdating(true);
@@ -281,7 +241,9 @@ const Roles = () => {
       <HelmetTitle title="Role List" />
 
       <div className="flex justify-end mb-1 gap-2">
-        <ButtonLoading className="p-2 w-30" icon="" onClick={handleUpdatePermissions} buttonLoading={updating} label="Update" />
+        {!isCompanyBoundRoleView && (
+          <ButtonLoading className="p-2 w-30" icon="" onClick={handleUpdatePermissions} buttonLoading={updating} label="Update" />
+        )}
         {isOwnerRoleSelected && (
           <ButtonLoading
             className="p-2 w-44"
@@ -291,7 +253,9 @@ const Roles = () => {
             label="Sync Owners"
           />
         )}
-        <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className="mr-2" />} onClick={() => {}} buttonLoading={addingRole} label="Add Role" />
+        {!isCompanyBoundRoleView && (
+          <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className="mr-2" />} onClick={() => {}} buttonLoading={addingRole} label="Add Role" />
+        )}
       </div>
 
       <div className="overflow-y-auto">
@@ -309,17 +273,25 @@ const Roles = () => {
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
             Permissions
           </h2>
-          <ToggleSwitch
-            label="All"
-            checked={isAllSelected}
-            onChange={handleRootToggle}
-          />
+          {!isCompanyBoundRoleView && (
+            <ToggleSwitch
+              label="All"
+              checked={isAllSelected}
+              onChange={handleRootToggle}
+            />
+          )}
         </div>
 
         {isOwnerRoleSelected && (
           <div className="mb-4 rounded border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300">
             Owner Role Group mode active. এখানে permission change করলে সব company-এর Owner role-এ sync হবে.
             {ownerRoleGroup?.owner_roles_count ? ` Managed Owner roles: ${ownerRoleGroup.owner_roles_count}.` : ''}
+          </div>
+        )}
+
+        {isCompanyBoundRoleView && (
+          <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+            This company role is view only. Only the permissions assigned from API are shown here.
           </div>
         )}
 
@@ -347,11 +319,13 @@ const Roles = () => {
                 <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
                   {group}
                 </h3>
-                <ToggleSwitch
-                  label="All"
-                  checked={allSelectedInGroup}
-                  onChange={handleGroupToggle}
-                />
+                {!isCompanyBoundRoleView && (
+                  <ToggleSwitch
+                    label="All"
+                    checked={allSelectedInGroup}
+                    onChange={handleGroupToggle}
+                  />
+                )}
               </div>
 
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -360,6 +334,8 @@ const Roles = () => {
                     key={perm.id}
                     label={formatRoleNameForCashBook(perm.name)}
                     checked={selectedPermissions.includes(perm.name)}
+                    disabled={isCompanyBoundRoleView}
+                    preserveCheckedColorWhenDisabled
                     onChange={() => handlePermissionChange(perm.name)}
                   />
                 ))}

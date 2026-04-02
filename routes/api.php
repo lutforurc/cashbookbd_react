@@ -31,17 +31,18 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::prefix('admin/subscription')->group(function (): void {
-        Route::get('/overview', [SubscriptionController::class, 'adminOverview']);
-        Route::get('/companies', [SubscriptionController::class, 'companies']);
-        Route::get('/tenant-subscriptions', [SubscriptionController::class, 'tenantSubscriptions']);
-        Route::get('/payment-requests', [SubscriptionController::class, 'paymentRequests']);
-        Route::get('/plans', [SubscriptionController::class, 'adminPlans']);
-        Route::get('/plans/{planId}', [SubscriptionController::class, 'adminPlan']);
-        Route::post('/plans', [SubscriptionController::class, 'storePlan']);
-        Route::post('/plans/{planId}', [SubscriptionController::class, 'updatePlan']);
-        Route::post('/assign', [SubscriptionController::class, 'assign']);
-        Route::post('/payments/{paymentId}/approve', [SubscriptionController::class, 'approvePayment']);
-        Route::post('/payments/{paymentId}/reject', [SubscriptionController::class, 'rejectPayment']);
+        Route::get('/overview', [SubscriptionController::class, 'adminOverview'])->name('api/admin/subscription/overview');
+        Route::get('/companies', [SubscriptionController::class, 'companies'])->name('api/admin/subscription/companies');
+        Route::get('/tenant-subscriptions', [SubscriptionController::class, 'tenantSubscriptions'])->name('api/admin/subscription/tenant-subscriptions');
+        Route::get('/payment-requests', [SubscriptionController::class, 'paymentRequests'])->name('api/admin/subscription/payment-requests');
+        Route::get('/payments', [SubscriptionController::class, 'paymentRequests'])->name('api/admin/subscription/payments');
+        Route::get('/plans', [SubscriptionController::class, 'adminPlans'])->name('api/admin/subscription/plans');
+        Route::get('/plans/{planId}', [SubscriptionController::class, 'adminPlan'])->name('api/admin/subscription/plans/show');
+        Route::post('/plans', [SubscriptionController::class, 'storePlan'])->name('api/admin/subscription/plans/store');
+        Route::post('/plans/{planId}', [SubscriptionController::class, 'updatePlan'])->name('api/admin/subscription/plans/update');
+        Route::post('/assign', [SubscriptionController::class, 'assign'])->name('api/admin/subscription/assign');
+        Route::post('/payments/{paymentId}/approve', [SubscriptionController::class, 'approvePayment'])->name('api/admin/subscription/payments/approve');
+        Route::post('/payments/{paymentId}/reject', [SubscriptionController::class, 'rejectPayment'])->name('api/admin/subscription/payments/reject');
     });
 
     Route::prefix('admin/owner-role-group')->group(function (): void {
