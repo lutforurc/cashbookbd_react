@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { addDayInDate } from '../../utils/utils-functions/addDayInDate';
 import { getSettings } from '../settings/settingsSlice';
 import { FaArrowLeft } from "react-icons/fa6"; 
+import { useNavigate } from 'react-router-dom';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { formatDateBdToUsd } from '../../utils/utils-functions/formatDate'; 
 
@@ -19,13 +20,23 @@ interface Props {
 
 const JumpDate = () => {
     const settings = useSelector((s: any) => s.settings);
+    const dayclose = useSelector((state: any) => state.dayclose);
+    const navigate = useNavigate();
+    const [currentDate, setCurrentDate] = useState<string>('');
+    const [nextDate, setNextDate] = useState<string>('');
     const dispatch = useDispatch();
     const [startDate, setStartDate] = useState<Date | null>(null);
-    const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+      const [saveButtonLoading, setSaveButtonLoading] = useState(false);
     const [formData, setFormData] = useState({
         current_date: "",
         next_date: "",
     });
+
+    useEffect(() => {
+        if (currentDate) {
+          setStartDate( formatDateBdToUsd (currentDate) );
+        }
+      }, [currentDate]);
 
     const handleOnChange = (e: any) => {
         const { name, value } = e.target;
@@ -42,23 +53,35 @@ const JumpDate = () => {
         });
     }, [startDate]);
 
+
+    // Update localStorage when settings change
     useEffect(() => {
         if (settings?.data?.trx_dt) {
-            const parsedDate = formatDateBdToUsd(settings.data.trx_dt);
-
             setFormData({
                 current_date: settings?.data?.trx_dt,
                 next_date: addDayInDate(settings?.data?.trx_dt, 1)
             });
-
-            setStartDate((prev) => {
-                const nextTime = parsedDate?.getTime?.() ?? null;
-                const prevTime = prev?.getTime?.() ?? null;
-
-                return prevTime === nextTime ? prev : parsedDate;
-            });
+            setCurrentDate(settings.data.trx_dt);
+            setNextDate(settings.data.trx_dt);
+            setNextDate(addDayInDate(settings.data.trx_dt, 1));
         }
-    }, [settings?.data?.trx_dt]);
+        dispatch(getSettings());
+    }, [settings.data.trx_dt, dayclose?.data?.trx_date]);
+
+    // Listen for changes in other tabs
+    useEffect(() => {
+        const handleStorageChange = (event) => {
+            if (event.key === 'settings_updated') {
+                dispatch(getSettings());
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [dispatch]);
 
 
 
@@ -68,7 +91,6 @@ const JumpDate = () => {
         await dispatch(storeDayClose(formData, function (message) {
             toast.success(`${message} has been saved.`);
         }));
-        dispatch(getSettings());
 
         setTimeout(() => {
             setSaveButtonLoading(false);
@@ -77,7 +99,8 @@ const JumpDate = () => {
     const handleStartDate = (e: any) => {
         setStartDate(e);
     };
-
+ 
+    const buttonLoading = true;
     return (
         <>
             <HelmetTitle title="Jump Date" />
