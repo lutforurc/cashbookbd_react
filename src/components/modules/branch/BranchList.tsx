@@ -10,6 +10,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../../utils/fields/ActionButton';
+import { FaYoutube } from 'react-icons/fa';
 
 const BranchList = () => {
   const branchList = useSelector((state) => state.branchList);
@@ -133,7 +134,20 @@ const BranchList = () => {
 
   return (
     <div className=''>
-      <HelmetTitle title={'Branch List'} />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title={'Branch List'} />
+        <a
+          href="https://youtu.be/mWvu7T-spJg"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Watch registration video"
+          title="Watch registration video"
+          className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition  dark:text-red-400"
+        >
+          <FaYoutube className="text-base" />
+        </a>
+      </div>
+      
       <div className="flex justify-between mb-1">
         <SelectOption onChange={handleSelectChange} />
         <ButtonLoading
