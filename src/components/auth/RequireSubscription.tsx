@@ -4,6 +4,8 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 type Props = {
   loading?: boolean;
   initialized?: boolean;
+  error?: string | null;
+  bypass?: boolean;
   current?: {
     status?: string;
     access_status?: string;
@@ -29,6 +31,8 @@ const isDateExpired = (value?: string | null): boolean => {
 const RequireSubscription: React.FC<Props> = ({
   loading = false,
   initialized = false,
+  error = null,
+  bypass = false,
   current,
   allowedPaths = [],
 }) => {
@@ -37,11 +41,28 @@ const RequireSubscription: React.FC<Props> = ({
 
   const isAllowedPath = allowedPaths.some((path) => pathname === path);
 
+  if (bypass) return <Outlet />;
+
   if (isAllowedPath) return <Outlet />;
 
   if (loading && !initialized) return null;
 
-  if (!initialized || !current) return <Outlet />;
+  if (!initialized) return <Outlet />;
+
+  if (error || !current) {
+    return (
+      <Navigate
+        to="/no-access"
+        replace
+        state={{
+          from: pathname,
+          reason: 'subscription',
+          status: current?.status || 'unavailable',
+          access_status: current?.access_status || 'blocked',
+        }}
+      />
+    );
+  }
 
   const hasRestrictedStatusByState =
     (current.status && restrictedStatuses.has(current.status)) ||

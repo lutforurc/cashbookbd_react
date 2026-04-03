@@ -493,6 +493,7 @@ const subscriptionSlice = createSlice({
       .addCase(fetchCurrentSubscription.rejected, (state, action) => {
         state.loadingCurrent = false;
         state.initialized = true;
+        state.current = null;
         state.error = action.payload || 'Failed to load subscription';
       })
       .addCase(fetchSubscriptionPayments.pending, (state) => {

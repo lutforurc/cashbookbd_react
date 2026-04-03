@@ -179,7 +179,7 @@ class SubscriptionService
 
     public function getCompanies(): array
     {
-        return DB::table('companies')
+        return DB::table($this->companyTable())
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(fn ($company) => (array) $company)
@@ -201,7 +201,7 @@ class SubscriptionService
         return DB::table('saas_subscription_payments as sp')
             ->leftJoin('saas_tenant_subscriptions as ts', 'ts.id', '=', 'sp.subscription_id')
             ->leftJoin('saas_plans as p', 'p.id', '=', 'sp.plan_id')
-            ->leftJoin('companies as c', 'c.id', '=', 'sp.company_id')
+            ->leftJoin($this->companyTable() . ' as c', 'c.id', '=', 'sp.company_id')
             ->when($paymentStatus !== null && $paymentStatus !== '', fn (Builder $query) => $query->where('sp.payment_status', $paymentStatus))
             ->orderByRaw("CASE WHEN sp.payment_status = 'pending' THEN 0 ELSE 1 END")
             ->orderByDesc('sp.id')
@@ -482,7 +482,7 @@ class SubscriptionService
     {
         return DB::table('saas_tenant_subscriptions as ts')
             ->leftJoin('saas_plans as p', 'p.id', '=', 'ts.plan_id')
-            ->leftJoin('companies as c', 'c.id', '=', 'ts.company_id')
+            ->leftJoin($this->companyTable() . ' as c', 'c.id', '=', 'ts.company_id')
             ->select([
                 'ts.id',
                 'ts.company_id',
@@ -1010,6 +1010,19 @@ class SubscriptionService
     private function candidateUserTables(): array
     {
         return ['users', 'tbl_users', 'user', 'com_users'];
+    }
+
+    private function companyTable(): string
+    {
+        if (Schema::hasTable('companies')) {
+            return 'companies';
+        }
+
+        if (Schema::hasTable('com_companies')) {
+            return 'com_companies';
+        }
+
+        throw new RuntimeException('Company table not found.');
     }
 
     private function firstExistingColumn(string $table, array $columns): ?string

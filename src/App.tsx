@@ -164,6 +164,7 @@ const extractRoleNames = (value: any): string[] => {
 
 const PRIVILEGED_ROLE_NAMES = ['super administrator', 'administrator', 'dba'];
 const PRIVILEGED_ROLE_IDS = [1, 2];
+const SUBSCRIPTION_EXEMPT_COMPANY_IDS = new Set([1]);
 
 
 
@@ -181,9 +182,11 @@ function App() {
     ...extractRoleNames(me?.role),
     ...extractRoleNames(me?.roles),
   ];
+  const currentCompanyId = Number(me?.company_id || 0);
   const isPrivilegedUser =
     authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName)) ||
     PRIVILEGED_ROLE_IDS.includes(Number(me?.role_id));
+  const bypassSubscriptionEnforcement = SUBSCRIPTION_EXEMPT_COMPANY_IDS.has(currentCompanyId);
 
   const userPermissions = isPrivilegedUser
     ? [{ id: 0, name: '*', group_name: '*', guard_name: 'web', created_at: '', updated_at: '' }]
@@ -220,28 +223,30 @@ function App() {
 
           {/* Admin + Authenticated User Section */}
           <Route path="/" element={<DefaultLayout isLoggedIn={isLoggedIn} isLoading={isLoading} user={me} />}>
-            <Route path={routes.main} element={<DashboardIndex />} />
-            <Route path={routes.dashboard} element={<DashboardIndex />} />
-            <Route path={routes.profile} element={<Profile />} />
             <Route path={routes.subscription_pricing} element={<Pricing />} />
             <Route path={routes.my_subscription} element={<MySubscription />} />
             <Route path={routes.subscription_payment_submit} element={<PaymentSubmit />} />
             <Route path={routes.subscription_billing_history} element={<BillingHistory />} />
-            <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
-            <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
-            <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
-            <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
 
             <Route
               element={
                 <RequireSubscription
                   loading={subscription.loadingCurrent}
                   initialized={subscription.initialized}
+                  error={subscription.error}
+                  bypass={bypassSubscriptionEnforcement}
                   current={subscription.current}
                   allowedPaths={subscriptionSafeRoutes}
                 />
               }
             >
+              <Route path={routes.main} element={<DashboardIndex />} />
+              <Route path={routes.dashboard} element={<DashboardIndex />} />
+              <Route path={routes.profile} element={<Profile />} />
+              <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
+              <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
+              <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
+              <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
               <Route path={routes.calendar} element={<Calendar />} />
               <Route path={routes.formElements} element={<FormElements />} />
               <Route path={routes.formLayout} element={<FormLayout />} />
