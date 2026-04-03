@@ -11,6 +11,7 @@ import {
 import httpService from '../../components/services/httpService';
 import InputElement from '../../components/utils/fields/InputElement';
 import { ButtonLoading } from '../UiElements/CustomButtons';
+import HelmetTitle from '../../components/utils/others/HelmetTitle';
 
 type RegistrationForm = {
   company_name: string;
@@ -187,15 +188,15 @@ const PublicRegistration: React.FC = () => {
 
   return (
     <div className="fixed inset-0 overflow-y-auto bg-white dark:bg-boxdark">
+      
       <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8">
         <div className="w-full max-w-3xl rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-8">
           <div className="mb-6">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-2xl font-bold text-black dark:text-white">
-                Registration your company
-              </h2>
+              
+              <HelmetTitle title="Registration your company" />
               <a
-                href="https://youtu.be/_7OsFnaHeXI"
+                href="https://youtu.be/qqxJ1EiyGjs"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Watch registration video"
