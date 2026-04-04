@@ -21,6 +21,7 @@ import {
   fetchSubscriptionPlans,
   rejectSubscriptionPayment,
 } from './subscriptionSlice';
+import { chartDate, chartDateTime, formatDateUsdToBd } from '../../utils/utils-functions/formatDate';
 
 const SubscriptionAdmin: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -141,7 +142,7 @@ const SubscriptionAdmin: React.FC = () => {
           <div>
             <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Subscription Admin</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Review tenant subscriptions, pending manual payments, and activation status.
+              Review subscriptions, pending manual payments, and activation status.
             </p>
           </div>
 
@@ -311,7 +312,7 @@ const SubscriptionAdmin: React.FC = () => {
       <div className="grid gap-6 xl:grid-cols-2">
         <section className="overflow-hidden rounded border border-gray-400 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="border-b border-gray-300 px-4 py-3 dark:border-gray-700">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-white">Tenant Subscriptions</h2>
+            <h2 className="text-base font-semibold text-gray-800 dark:text-white">Subscriptions</h2>
           </div>
 
           <div className="overflow-x-auto">
@@ -335,7 +336,7 @@ const SubscriptionAdmin: React.FC = () => {
                     <td className="px-4 py-3">{tenant.plan_name || '-'}</td>
                     <td className="px-4 py-3">{tenant.status || '-'}</td>
                     <td className="px-4 py-3">{tenant.access_status || '-'}</td>
-                    <td className="px-4 py-3">{tenant.end_date || '-'}</td>
+                    <td className="px-4 py-3">{ chartDate(tenant.end_date) || '-'}</td>
                   </tr>
                 ))}
 
@@ -385,7 +386,7 @@ const SubscriptionAdmin: React.FC = () => {
                   </p>
                   <p>Months: {payment.billing_months || 1}</p>
                   <p>Sender: {payment.sender_number || '-'}</p>
-                  <p>Paid At: {payment.paid_at || payment.created_at || '-'}</p>
+                  <p>Paid At: { chartDateTime(payment.created_at) || '-'}</p>
                 </div>
 
                 {payment.payment_status === 'pending' && (

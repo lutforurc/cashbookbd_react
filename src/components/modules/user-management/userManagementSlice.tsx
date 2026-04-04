@@ -56,6 +56,9 @@ const normalizeRolesPayload = (roles: any[]) => {
     .map((role: any) => ({
       id: role?.id ?? role?.value ?? role?.role_id ?? null,
       name: role?.name ?? role?.label ?? role?.title ?? '',
+      can_edit_permissions: role?.can_edit_permissions,
+      is_plan_role: role?.is_plan_role,
+      role_source: role?.role_source,
     }))
     .filter((role: any) => role.id !== null && String(role.name || '').trim() !== '')
     .filter((role: any, index: number, arr: any[]) => {

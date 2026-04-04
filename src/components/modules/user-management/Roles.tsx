@@ -2,12 +2,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useEffect, useState } from 'react';
 import {
-  getOwnerRoleGroup,
   getPermissions,
   getRoles,
   getSelectedPermissions,
-  syncOwnerRoleGroup,
-  updateOwnerRoleGroup,
   updateRolePermissions,
 } from './userManagementSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -15,9 +12,7 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { formatRoleNameForCashBook } from '../../utils/utils-functions/formatRoleName';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { toast } from 'react-toastify';
-import { FiPlus, FiRefreshCw } from 'react-icons/fi';
-import httpService from '../../services/httpService';
-import { API_GET_SELECTED_PERMISSIONS_URL } from '../../services/apiRoutes';
+import { FiPlus } from 'react-icons/fi';
 
 interface Permission {
   id: number;
@@ -28,6 +23,9 @@ interface Permission {
 interface Role {
   id: number;
   name: string;
+  can_edit_permissions?: boolean;
+  is_plan_role?: boolean;
+  role_source?: string;
 }
 
 const Roles = () => {
@@ -40,14 +38,11 @@ const Roles = () => {
   const [roleId, setRoleId] = useState<number>(0);
   const [updating, setUpdating] = useState(false);
   const [addingRole, setAddingRole] = useState(false);
-  const [syncingOwnerRoles, setSyncingOwnerRoles] = useState(false);
-  const [catalogPermissions, setCatalogPermissions] = useState<Permission[]>([]);
-  const isOwnerRoleSelected = selectedRole?.name?.toLowerCase() === 'owner';
-  const ownerRoleGroup = rolesPermissions.ownerRoleGroup?.data;
   const rolePermissions = Array.isArray(rolesPermissions.selectedPermissions?.data?.data)
     ? rolesPermissions.selectedPermissions.data.data
     : [];
-  const isCompanyBoundRoleView = !isOwnerRoleSelected && roles.length === 1;
+  const isCompanyBoundRoleView = roles.length === 1;
+  const isReadonlyRole = selectedRole ? selectedRole.can_edit_permissions === false : isCompanyBoundRoleView;
 
   useEffect(() => {
     dispatch(getRoles() as any);
@@ -70,8 +65,7 @@ const Roles = () => {
       return;
     }
 
-    const basePermissions = catalogPermissions.length > 0 ? catalogPermissions : availablePermissions;
-    const mergedPermissions = [...basePermissions];
+    const mergedPermissions = [...availablePermissions];
     const existingIds = new Set(mergedPermissions.map((perm: Permission) => perm.id));
 
     rolePermissions.forEach((perm: Permission) => {
@@ -88,26 +82,7 @@ const Roles = () => {
     });
 
     setPermissions(mergedPermissions);
-  }, [catalogPermissions, isCompanyBoundRoleView, rolePermissions, rolesPermissions.permissions?.data?.data]);
-
-  useEffect(() => {
-    const ownerRole = roles.find((role) => role.name?.toLowerCase() === 'owner');
-    if (!ownerRole) return;
-
-    const loadOwnerPermissions = async () => {
-      try {
-        const { data } = await httpService.get(`${API_GET_SELECTED_PERMISSIONS_URL}/${ownerRole.id}`);
-        const ownerPermissions = Array.isArray(data?.data?.data) ? data.data.data : [];
-        if (ownerPermissions.length > 0) {
-          setCatalogPermissions(ownerPermissions);
-        }
-      } catch {
-        // keep current fallback behavior if owner permissions can't be loaded
-      }
-    };
-
-    loadOwnerPermissions();
-  }, [roles]);
+  }, [isCompanyBoundRoleView, rolePermissions, rolesPermissions.permissions?.data?.data]);
 
   useEffect(() => {
     const rawRoles = rolesPermissions.roles;
@@ -132,32 +107,25 @@ const Roles = () => {
     if (nextRoles.length === 1) {
       setRoleId(nextRoles[0].id);
       setSelectedRole(nextRoles[0]);
+    } else if (!selectedRole && nextRoles.length > 0) {
+      setRoleId(nextRoles[0].id);
+      setSelectedRole(nextRoles[0]);
     }
-  }, [rolesPermissions.roles]);
+  }, [rolesPermissions.roles, selectedRole]);
 
   useEffect(() => {
     if (!selectedRole) return;
-
-    if (selectedRole.name?.toLowerCase() === 'owner') {
-      dispatch(getOwnerRoleGroup() as any);
-      return;
-    }
 
     dispatch(getSelectedPermissions(selectedRole.id) as any);
   }, [dispatch, selectedRole]);
 
   useEffect(() => {
-    if (isOwnerRoleSelected && Array.isArray(ownerRoleGroup?.permissions)) {
-      setSelectedPermissions(ownerRoleGroup.permissions.map((p: any) => p.name));
-      return;
-    }
-
     if (rolesPermissions.selectedPermissions?.data?.data) {
       setSelectedPermissions(
         rolesPermissions.selectedPermissions.data.data.map((p: any) => p.name)
       );
     }
-  }, [isOwnerRoleSelected, ownerRoleGroup?.permissions, rolesPermissions.selectedPermissions?.data?.data]);
+  }, [rolesPermissions.selectedPermissions?.data?.data]);
 
   const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const nextRoleId = parseInt(event.target.value);
@@ -167,7 +135,7 @@ const Roles = () => {
   };
 
   const handlePermissionChange = (permName: string) => {
-    if (isCompanyBoundRoleView) return;
+    if (isReadonlyRole) return;
     setSelectedPermissions((prev) =>
       prev.includes(permName)
         ? prev.filter((p) => p !== permName)
@@ -192,43 +160,20 @@ const Roles = () => {
     allPermissionNames.every((name) => selectedPermissions.includes(name));
 
   const handleRootToggle = (checked: boolean) => {
-    if (isCompanyBoundRoleView) return;
+    if (isReadonlyRole) return;
     setSelectedPermissions(checked ? allPermissionNames : []);
-  };
-
-  const handleSyncOwnerRoles = async () => {
-    if (syncingOwnerRoles) return;
-
-    setSyncingOwnerRoles(true);
-    try {
-      const res = await dispatch(syncOwnerRoleGroup() as any).unwrap();
-      toast.success(res?.message || 'Owner role group synced successfully');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to sync owner roles');
-    } finally {
-      setSyncingOwnerRoles(false);
-    }
   };
 
   const handleUpdatePermissions = async () => {
     if (updating) return;
     if (!selectedRole) return toast.info('No role selected');
-    if (isCompanyBoundRoleView) return toast.info('This company role is view only.');
+    if (isReadonlyRole) return toast.info('Plan role permissions cannot be changed. Only company custom roles are editable.');
     if (selectedPermissions.length === 0) return toast.info('No permissions selected');
 
     setUpdating(true);
     try {
-      if (isOwnerRoleSelected) {
-        const permissionIds = permissions
-          .filter((perm) => selectedPermissions.includes(perm.name))
-          .map((perm) => perm.id);
-
-        const res = await dispatch(updateOwnerRoleGroup(permissionIds) as any).unwrap();
-        toast.success(res?.message || 'Owner role group updated successfully');
-      } else {
-        await dispatch(updateRolePermissions({ roleId, selectedPermissions }) as any).unwrap();
-        toast.success(rolesPermissions?.updatePermission?.message || 'Permissions updated successfully');
-      }
+      await dispatch(updateRolePermissions({ roleId, selectedPermissions }) as any).unwrap();
+      toast.success(rolesPermissions?.updatePermission?.message || 'Permissions updated successfully');
     } catch (error: any) {
       toast.error(error?.message || 'Failed to update permissions');
     } finally {
@@ -241,17 +186,8 @@ const Roles = () => {
       <HelmetTitle title="Role List" />
 
       <div className="flex justify-end mb-1 gap-2">
-        {!isCompanyBoundRoleView && (
+        {!isReadonlyRole && (
           <ButtonLoading className="p-2 w-30" icon="" onClick={handleUpdatePermissions} buttonLoading={updating} label="Update" />
-        )}
-        {isOwnerRoleSelected && (
-          <ButtonLoading
-            className="p-2 w-44"
-            icon={<FiRefreshCw size={16} className="mr-2" />}
-            onClick={handleSyncOwnerRoles}
-            buttonLoading={syncingOwnerRoles}
-            label="Sync Owners"
-          />
         )}
         {!isCompanyBoundRoleView && (
           <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className="mr-2" />} onClick={() => {}} buttonLoading={addingRole} label="Add Role" />
@@ -265,6 +201,7 @@ const Roles = () => {
           onChange={handleRoleChange}
           label="Roles"
           data={roles}
+          value={roleId ? String(roleId) : undefined}
         />
       </div>
 
@@ -273,7 +210,7 @@ const Roles = () => {
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
             Permissions
           </h2>
-          {!isCompanyBoundRoleView && (
+          {!isReadonlyRole && (
             <ToggleSwitch
               label="All"
               checked={isAllSelected}
@@ -282,16 +219,11 @@ const Roles = () => {
           )}
         </div>
 
-        {isOwnerRoleSelected && (
-          <div className="mb-4 rounded border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300">
-            Owner Role Group mode active. এখানে permission change করলে সব company-এর Owner role-এ sync হবে.
-            {ownerRoleGroup?.owner_roles_count ? ` Managed Owner roles: ${ownerRoleGroup.owner_roles_count}.` : ''}
-          </div>
-        )}
-
-        {isCompanyBoundRoleView && (
+        {isReadonlyRole && (
           <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-            This company role is view only. Only the permissions assigned from API are shown here.
+            {selectedRole?.is_plan_role
+              ? 'This is a plan role. Its permissions are fixed and cannot be changed here.'
+              : 'Only company Owner-created custom roles are editable here.'}
           </div>
         )}
 
@@ -319,7 +251,7 @@ const Roles = () => {
                 <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
                   {group}
                 </h3>
-                {!isCompanyBoundRoleView && (
+                {!isReadonlyRole && (
                   <ToggleSwitch
                     label="All"
                     checked={allSelectedInGroup}
@@ -334,7 +266,7 @@ const Roles = () => {
                     key={perm.id}
                     label={formatRoleNameForCashBook(perm.name)}
                     checked={selectedPermissions.includes(perm.name)}
-                    disabled={isCompanyBoundRoleView}
+                    disabled={isReadonlyRole}
                     preserveCheckedColorWhenDisabled
                     onChange={() => handlePermissionChange(perm.name)}
                   />

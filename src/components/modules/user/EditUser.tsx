@@ -71,8 +71,6 @@ const EditUser = (user: any) => {
         label: item.name,
     }));
 
-    const isOwnerUser = selectedRoles.some((item) => item.label?.toLowerCase() === 'owner');
-
     useEffect(() => {
         if (showUser.editData) {
             setFormData((prevData) => ({
@@ -101,8 +99,7 @@ const EditUser = (user: any) => {
             incomingRoleIds.includes(String(option.value))
         );
 
-        const hasOwner = preselected.some((item) => item.label?.toLowerCase() === 'owner');
-        setSelectedRoles(hasOwner ? preselected.filter((item) => item.label?.toLowerCase() === 'owner') : preselected);
+        setSelectedRoles(preselected);
     }, [showUser?.editData, roles?.roles?.data?.data]);
 
     useEffect(() => {
@@ -113,12 +110,6 @@ const EditUser = (user: any) => {
     }, [selectedRoles]);
 
     const handleRolesChange = (items: MultiOption[]) => {
-        const pickedOwner = items.find((item) => item.label?.toLowerCase() === 'owner');
-        if (pickedOwner) {
-            setSelectedRoles([pickedOwner]);
-            return;
-        }
-
         setSelectedRoles(items);
     };
 
@@ -229,11 +220,6 @@ const EditUser = (user: any) => {
                         selectionLabel="role"
                         className="w-full"
                     />
-                    {isOwnerUser && (
-                        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                            Owner user can only keep the Owner role.
-                        </p>
-                    )}
                 </div>
                 <div>
                     <div>

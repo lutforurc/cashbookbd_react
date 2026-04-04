@@ -63,8 +63,6 @@ const AddUser = () => {
     [roles?.roles?.data?.data],
   );
 
-  const ownerRoleSelected = selectedRoles.some((item) => item.label?.toLowerCase() === 'owner');
-
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
     dispatch(getRoles() as any);
@@ -95,12 +93,6 @@ const AddUser = () => {
   }, [selectedRoles]);
 
   const handleRolesChange = (items: MultiOption[]) => {
-    const pickedOwner = items.find((item) => item.label?.toLowerCase() === 'owner');
-    if (pickedOwner) {
-      setSelectedRoles([pickedOwner]);
-      return;
-    }
-
     setSelectedRoles(items);
   };
 
@@ -213,11 +205,6 @@ const AddUser = () => {
             selectionLabel="role"
             className="w-full"
           />
-          {ownerRoleSelected && (
-            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-              Owner user can only keep the Owner role.
-            </p>
-          )}
         </div>
 
         <InputElement
