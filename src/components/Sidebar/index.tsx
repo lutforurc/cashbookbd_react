@@ -1994,6 +1994,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       }`}
                     >
                       <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        
+                         {hasMenuPermission(permissions, 'subscription.view') && (
                         <li>
                           <NavLink
                             to={routes.my_subscription}
@@ -2010,8 +2012,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             Subscription
                           </NavLink>
                         </li>
+                         )}
 
-                        {canSeeSubscriptionAdmin && (
+                        {/* INSERT INTO `permissions` (`id`, `name`, `group_name`, `guard_name`, `created_at`, `updated_at`) VALUES (NULL, 'subscription.plans', 'Subscriptions', 'web', '2022-03-16 13:40:01', '2022-03-16 13:40:01'); */}
+                        {/* INSERT INTO `permissions` (`id`, `name`, `group_name`, `guard_name`, `created_at`, `updated_at`) VALUES (NULL, 'subscription.view', 'Subscriptions', 'web', '2022-03-16 13:40:01', '2022-03-16 13:40:01'); */}
+                        {/* INSERT INTO `permissions` (`id`, `name`, `group_name`, `guard_name`, `created_at`, `updated_at`) VALUES (NULL, 'subscription.history', 'Subscriptions', 'web', '2022-03-16 13:40:01', '2022-03-16 13:40:01'); */}
+                        {hasMenuPermission(permissions, 'subscription.history') && (
                           <li>
                             <NavLink
                               to={routes.subscription_admin}
@@ -2020,12 +2026,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive ? 'text-gray-900 font-bold dark:text-white' : '')
                               }
                             >
-                              Subscription Admin
+                              Subscription History
                             </NavLink>
                           </li>
                         )}
-
-                        {canSeeSubscriptionAdmin && (
+                        
+                         {hasMenuPermission(permissions, 'subscription.plans') && (
                           <li>
                             <NavLink
                               to={routes.subscription_plan_list}
