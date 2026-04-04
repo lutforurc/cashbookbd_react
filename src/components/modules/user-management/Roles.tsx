@@ -28,11 +28,15 @@ interface Role {
   role_source?: string;
   subscription_plan_id?: number | null;
   role_group_code?: string | null;
+  is_company_owned_role?: boolean;
+  company_id?: number | null;
+  team_id?: number | null;
 }
 
 const Roles = () => {
   const dispatch = useDispatch();
   const rolesPermissions = useSelector((state: any) => state.userManagement);
+  const auth = useSelector((state: any) => state.auth);
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -43,13 +47,18 @@ const Roles = () => {
   const rolePermissions = Array.isArray(rolesPermissions.selectedPermissions?.data?.data)
     ? rolesPermissions.selectedPermissions.data.data
     : [];
+  const currentCompanyId = Number(auth?.me?.company_id || 0);
+  const isSoftwareCompanyUser = currentCompanyId <= 1;
   const isCompanyBoundRoleView = roles.length === 1;
   const isReadonlyRole = selectedRole
-    ? selectedRole.can_edit_permissions === false
-      || selectedRole.is_plan_role === true
-      || selectedRole.role_source === 'plan'
-      || selectedRole.role_source === 'global'
-      || selectedRole.subscription_plan_id !== null && selectedRole.subscription_plan_id !== undefined
+    ? isSoftwareCompanyUser
+      ? selectedRole.is_company_owned_role === true
+        || (!!selectedRole.team_id && !!selectedRole.company_id)
+      : selectedRole.can_edit_permissions === false
+        || selectedRole.is_plan_role === true
+        || selectedRole.role_source === 'plan'
+        || selectedRole.role_source === 'global'
+        || selectedRole.subscription_plan_id !== null && selectedRole.subscription_plan_id !== undefined
     : isCompanyBoundRoleView;
 
   useEffect(() => {
@@ -229,9 +238,11 @@ const Roles = () => {
 
         {isReadonlyRole && (
           <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-            {selectedRole?.role_source === 'company'
-              ? 'Only company Owner-created custom roles are editable here.'
-              : 'This is a global role. Company users cannot change its permissions because it would affect other companies too.'}
+            {selectedRole?.is_company_owned_role
+              ? 'This is a company-owned role. Software Company user cannot change its permissions here.'
+              : isSoftwareCompanyUser
+                ? 'This global role can be managed by Software Company user.'
+                : 'This is a global role. Company users cannot change its permissions because it would affect other companies too.'}
           </div>
         )}
 
