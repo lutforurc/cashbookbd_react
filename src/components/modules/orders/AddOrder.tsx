@@ -37,6 +37,7 @@ const AddOrder = (user: any) => {
     interface FormData {
         branch_id: string;
         order_for: string;
+        order_for_text: string;
         product_id: string;
         order_number: string;
         ref_order_id: string;
@@ -56,6 +57,7 @@ const AddOrder = (user: any) => {
     const [formData, setFormData] = useState<FormData>({
         branch_id: '',
         order_for: '',
+        order_for_text: '',
         product_id: '',
         order_number: '',
         ref_order_id: '',
@@ -100,6 +102,11 @@ const AddOrder = (user: any) => {
         setFormData((prev) => ({
             branch_id: locationOrder?.branch_id?.toString?.() || prev.branch_id || initialBranchId,
             order_for: locationOrder?.customer_id?.toString?.() || prev.order_for || '',
+            order_for_text:
+                locationOrder?.order_for ||
+                locationOrder?.customer_name ||
+                prev.order_for_text ||
+                '',
             product_id: locationOrder?.product_id?.toString?.() || prev.product_id || '',
             order_number: locationOrder?.order_number ?? prev.order_number,
             ref_order_id: locationOrder?.ref_order_id?.toString?.() || prev.ref_order_id || '',
@@ -146,6 +153,11 @@ const AddOrder = (user: any) => {
         setFormData({
             branch_id: editData?.branch_id?.toString?.() ?? '',
             order_for: editData?.order_for?.toString?.() ?? '',
+            order_for_text:
+                editData?.order_for_name ??
+                editData?.customer_name ??
+                editData?.order_for ??
+                '',
             product_id: editData?.product_id?.toString?.() ?? '',
             order_number: editData?.order_number ?? '',
             ref_order_id: editData?.ref_order_id?.toString?.() ?? '',
@@ -169,9 +181,9 @@ const AddOrder = (user: any) => {
         if (!formData.order_for) return null;
         return {
             value: formData.order_for,
-            label: ordersState?.editData?.order_for_name || locationOrder?.order_for || formData.order_for,
+            label: formData.order_for_text || formData.order_for,
         };
-    }, [formData.order_for, locationOrder?.order_for, ordersState?.editData?.order_for_name]);
+    }, [formData.order_for, formData.order_for_text]);
 
     const selectedProduct = useMemo(() => {
         if (!formData.product_id) return null;
@@ -182,7 +194,11 @@ const AddOrder = (user: any) => {
     }, [formData.product_id, locationOrder?.product_name, ordersState?.editData?.product_name]);
 
     const selectedLedgerOptionHandler = (option: any) => {
-        setFormData({ ...formData, ['order_for']: option?.value || '' });
+        setFormData((prevState) => ({
+            ...prevState,
+            order_for: option?.value?.toString?.() || '',
+            order_for_text: option?.label || '',
+        }));
     };
     const selectedProductOptionHandler = (option: any) => {
         setFormData({ ...formData, ['product_id']: option?.value || '' });
@@ -219,6 +235,7 @@ const AddOrder = (user: any) => {
         setFormData({
             branch_id: initialBranchId,
             order_for: '',
+            order_for_text: '',
             product_id: '',
             order_number: '',
             ref_order_id: '',

@@ -81,7 +81,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         if (Array.isArray(response.payload)) {
           const formattedOptions: OptionType[] = response.payload.map(
             (item: any) => ({
-              value: item.value,
+              value: item?.value?.toString?.() || '',
               label: item.label,
               label_2: item.label_2,
               label_3: item.label_3,
