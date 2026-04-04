@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS saas_plans (
   trial_days INT UNSIGNED NOT NULL DEFAULT 0,
   max_employees INT UNSIGNED DEFAULT NULL,
   max_customers INT UNSIGNED DEFAULT NULL,
+  max_products INT UNSIGNED DEFAULT NULL,
   max_users INT UNSIGNED DEFAULT NULL,
   max_branches INT UNSIGNED DEFAULT NULL,
   max_transactions_per_month INT UNSIGNED DEFAULT NULL,
@@ -108,17 +109,18 @@ CREATE TABLE IF NOT EXISTS saas_subscription_activity_logs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO saas_plans
-  (id, name, slug, billing_interval, price, currency, trial_days, max_employees, max_customers, max_users, max_branches, max_transactions_per_month, sort_order, is_active, description)
+  (id, name, slug, billing_interval, price, currency, trial_days, max_employees, max_customers, max_products, max_users, max_branches, max_transactions_per_month, sort_order, is_active, description)
 VALUES
-  (1, 'Starter', 'starter-monthly', 'monthly', 999.00, 'BDT', 15, 10, 100, 3, 1, 3000, 1, 1, 'Small business starter plan'),
-  (2, 'Business', 'business-monthly', 'monthly', 2499.00, 'BDT', 15, 30, 1000, 10, 3, 15000, 2, 1, 'Growing business plan'),
-  (3, 'Enterprise', 'enterprise-monthly', 'monthly', 5999.00, 'BDT', 30, 100, 10000, 50, 10, 100000, 3, 1, 'Large organization plan')
+  (1, 'Starter', 'starter-monthly', 'monthly', 999.00, 'BDT', 15, 10, 100, 500, 3, 1, 3000, 1, 1, 'Small business starter plan'),
+  (2, 'Business', 'business-monthly', 'monthly', 2499.00, 'BDT', 15, 30, 1000, 5000, 10, 3, 15000, 2, 1, 'Growing business plan'),
+  (3, 'Enterprise', 'enterprise-monthly', 'monthly', 5999.00, 'BDT', 30, 100, 10000, 50000, 50, 10, 100000, 3, 1, 'Large organization plan')
 ON DUPLICATE KEY UPDATE
   name = VALUES(name),
   price = VALUES(price),
   trial_days = VALUES(trial_days),
   max_employees = VALUES(max_employees),
   max_customers = VALUES(max_customers),
+  max_products = VALUES(max_products),
   max_users = VALUES(max_users),
   max_branches = VALUES(max_branches),
   max_transactions_per_month = VALUES(max_transactions_per_month),

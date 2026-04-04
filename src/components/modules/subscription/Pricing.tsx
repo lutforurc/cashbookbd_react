@@ -71,6 +71,12 @@ const Pricing: React.FC = () => {
                   </span>
                 </li>
                 <li className="flex items-start justify-between gap-4">
+                  <span className="font-medium text-slate-500 dark:text-slate-300">Products</span>
+                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                    {plan.max_products ?? 'Unlimited'}
+                  </span>
+                </li>
+                <li className="flex items-start justify-between gap-4">
                   <span className="font-medium text-slate-500 dark:text-slate-300">Users</span>
                   <span className="text-right font-semibold text-slate-900 dark:text-white">
                     {plan.max_users ?? 'Unlimited'}

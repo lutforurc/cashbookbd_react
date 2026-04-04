@@ -40,6 +40,7 @@ export interface SubscriptionPlan {
   trial_days: number;
   max_employees?: number | null;
   max_customers?: number | null;
+  max_products?: number | null;
   max_users?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;
@@ -58,6 +59,7 @@ export interface SubscriptionPlanPayload {
   trial_days: number;
   max_employees?: number | null;
   max_customers?: number | null;
+  max_products?: number | null;
   max_users?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;

@@ -28,6 +28,7 @@ type PlanFormState = {
   trial_days: string;
   max_employees: string;
   max_customers: string;
+  max_products: string;
   max_users: string;
   max_branches: string;
   max_transactions_per_month: string;
@@ -59,6 +60,7 @@ const initialForm: PlanFormState = {
   trial_days: '0',
   max_employees: '',
   max_customers: '',
+  max_products: '',
   max_users: '',
   max_branches: '',
   max_transactions_per_month: '',
@@ -103,6 +105,7 @@ const SubscriptionPlanForm: React.FC = () => {
       trial_days: String(editingPlan.trial_days ?? 0),
       max_employees: editingPlan.max_employees ?? '',
       max_customers: editingPlan.max_customers ?? '',
+      max_products: editingPlan.max_products ?? '',
       max_users: editingPlan.max_users ?? '',
       max_branches: editingPlan.max_branches ?? '',
       max_transactions_per_month: editingPlan.max_transactions_per_month ?? '',
@@ -160,6 +163,7 @@ const SubscriptionPlanForm: React.FC = () => {
         trial_days: String(editingPlan.trial_days ?? 0),
         max_employees: editingPlan.max_employees ?? '',
         max_customers: editingPlan.max_customers ?? '',
+        max_products: editingPlan.max_products ?? '',
         max_users: editingPlan.max_users ?? '',
         max_branches: editingPlan.max_branches ?? '',
         max_transactions_per_month: editingPlan.max_transactions_per_month ?? '',
@@ -198,6 +202,7 @@ const SubscriptionPlanForm: React.FC = () => {
       trial_days: Number(form.trial_days || 0),
       max_employees: toNullableNumber(form.max_employees),
       max_customers: toNullableNumber(form.max_customers),
+      max_products: toNullableNumber(form.max_products),
       max_users: toNullableNumber(form.max_users),
       max_branches: toNullableNumber(form.max_branches),
       max_transactions_per_month: toNullableNumber(form.max_transactions_per_month),
@@ -328,6 +333,16 @@ const SubscriptionPlanForm: React.FC = () => {
             label="Max Customers"
             type="number"
             value={form.max_customers}
+            onChange={handleChange as any}
+            inputMode="numeric"
+            placeholder="Blank = Unlimited"
+          />
+          <InputElement
+            id="max_products"
+            name="max_products"
+            label="Max Products"
+            type="number"
+            value={form.max_products}
             onChange={handleChange as any}
             inputMode="numeric"
             placeholder="Blank = Unlimited"
