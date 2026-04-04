@@ -26,6 +26,8 @@ interface Role {
   can_edit_permissions?: boolean;
   is_plan_role?: boolean;
   role_source?: string;
+  subscription_plan_id?: number | null;
+  role_group_code?: string | null;
 }
 
 const Roles = () => {
@@ -42,7 +44,13 @@ const Roles = () => {
     ? rolesPermissions.selectedPermissions.data.data
     : [];
   const isCompanyBoundRoleView = roles.length === 1;
-  const isReadonlyRole = selectedRole ? selectedRole.can_edit_permissions === false : isCompanyBoundRoleView;
+  const isReadonlyRole = selectedRole
+    ? selectedRole.can_edit_permissions === false
+      || selectedRole.is_plan_role === true
+      || selectedRole.role_source === 'plan'
+      || selectedRole.role_source === 'global'
+      || selectedRole.subscription_plan_id !== null && selectedRole.subscription_plan_id !== undefined
+    : isCompanyBoundRoleView;
 
   useEffect(() => {
     dispatch(getRoles() as any);
@@ -221,9 +229,9 @@ const Roles = () => {
 
         {isReadonlyRole && (
           <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-            {selectedRole?.is_plan_role
-              ? 'This is a plan role. Its permissions are fixed and cannot be changed here.'
-              : 'Only company Owner-created custom roles are editable here.'}
+            {selectedRole?.role_source === 'company'
+              ? 'Only company Owner-created custom roles are editable here.'
+              : 'This is a global role. Company users cannot change its permissions because it would affect other companies too.'}
           </div>
         )}
 

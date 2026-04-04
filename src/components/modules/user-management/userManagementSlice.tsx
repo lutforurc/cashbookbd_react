@@ -59,6 +59,8 @@ const normalizeRolesPayload = (roles: any[]) => {
       can_edit_permissions: role?.can_edit_permissions,
       is_plan_role: role?.is_plan_role,
       role_source: role?.role_source,
+      subscription_plan_id: role?.subscription_plan_id ?? null,
+      role_group_code: role?.role_group_code ?? null,
     }))
     .filter((role: any) => role.id !== null && String(role.name || '').trim() !== '')
     .filter((role: any, index: number, arr: any[]) => {

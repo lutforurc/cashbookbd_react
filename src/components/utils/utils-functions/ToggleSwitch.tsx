@@ -18,13 +18,19 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
     : 'w-10 h-5 bg-gray-300 rounded-full peer-checked:bg-blue-600 peer-disabled:bg-gray-400 transition-colors';
 
   return (
-    <label className={`inline-flex max-w-full flex-wrap items-center gap-1 select-none ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+    <label
+      className={`inline-flex max-w-full flex-wrap items-center gap-1 select-none ${disabled ? 'cursor-not-allowed pointer-events-none opacity-80' : 'cursor-pointer'}`}
+      aria-disabled={disabled}
+    >
       <div className="relative">
         <input
           type="checkbox"
           checked={checked}
           disabled={disabled}
-          onChange={(e) => onChange(e.target.checked)}
+          onChange={(e) => {
+            if (disabled) return;
+            onChange(e.target.checked);
+          }}
           className="sr-only peer"
         />
         <div className={trackClass}></div>
