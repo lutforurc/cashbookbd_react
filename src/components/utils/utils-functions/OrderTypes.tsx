@@ -4,14 +4,22 @@ interface OrderProps {
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   className?: string;
   id?: string;
+  value?: string;
 }
 
 const OrderTypes: React.FC<OrderProps> = ({
   onChange,
   className,
   id,
+  value,
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>("");
+
+  React.useEffect(() => {
+    if (value !== undefined) {
+      setSelectedValue(value);
+    }
+  }, [value]);
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedValue(event.target.value); // Update internal state

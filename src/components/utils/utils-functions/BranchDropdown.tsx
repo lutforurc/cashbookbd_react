@@ -7,6 +7,7 @@ interface SelectOptionProps {
   className?: string | undefined;
   id?: string | undefined;
   defaultValue?: string | undefined; // New prop for default value
+  value?: string | undefined;
 }
 
 const BranchDropdown: React.FC<SelectOptionProps> = ({
@@ -15,7 +16,8 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
   onChange,
   className,
   id,
-  defaultValue
+  defaultValue,
+  value,
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>(defaultValue || '');
 
@@ -25,6 +27,12 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
       setSelectedValue(defaultValue);
     }
   }, [defaultValue]);
+
+  useEffect(() => {
+    if (value !== undefined) {
+      setSelectedValue(value);
+    }
+  }, [value]);
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedValue(event.target.value);

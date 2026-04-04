@@ -422,6 +422,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.view']} loading={permissionsLoading} />}>
               <Route path={routes.order_list} element={<Orders />} />
               <Route path={routes.order_add} element={<AddOrder user={me} />} />
+              <Route path={routes.order_edit} element={<AddOrder user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.avg.price']} loading={permissionsLoading} />}>
               <Route path={routes.order_avg_price} element={<AveragePrice user={me} />} />

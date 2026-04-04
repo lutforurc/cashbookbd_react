@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getOrders } from './ordersSlice';
+import { useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
@@ -18,6 +19,7 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 const Orders = () => {
   const orders = useSelector((state) => state.orders);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [totalPages, setTotalPages] = useState(0);
   const [tableData, setTableData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -206,7 +208,7 @@ const Orders = () => {
           <button onClick={() => {}} className="text-blue-500">
             <FiBook className="cursor-pointer" />
           </button>
-          <button onClick={() => {}} className="text-blue-500  ml-2">
+          <button onClick={() => navigate(`/orders/edit/${data.id}`, { state: { order: data } })} className="text-blue-500  ml-2">
             <FiEdit2 className="cursor-pointer" />
           </button>
           <button onClick={() => {}} className="text-red-500 ml-2">

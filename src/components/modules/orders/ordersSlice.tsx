@@ -107,9 +107,9 @@ interface formData {
   order_rate: string;
   total_order: string;
   order_type: string;
-  note: string;
+  notes: string;
 }
-export const storeOrder = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+export const storeOrder = (data: formData, callback?: (response: any) => void) => (dispatch: any) => {
   dispatch({ type: ORDER_STORE_PENDING });
   httpService.post(API_ORDERS_STORE_URL, data)
     .then((res) => {
@@ -120,7 +120,7 @@ export const storeOrder = (data: formData, callback?: (message: string) => void)
           payload: _data.data.data,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data);
         }
       } else {
         dispatch({
@@ -128,18 +128,88 @@ export const storeOrder = (data: formData, callback?: (message: string) => void)
           payload: _data.error.message,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data);
         }
       }
     })
     .catch((err) => {
+      const fallbackMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error?.message ||
+        err?.message ||
+        'Something went wrong.';
       dispatch({
         type: ORDER_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: fallbackMessage,
       });
       if ('function' == typeof callback) {
-        callback(err.message);
+        callback({ success: false, message: fallbackMessage });
       }
+    });
+};
+
+export const editOrder = (id: string | number, callback?: (response: any) => void) => (dispatch: any) => {
+  dispatch({ type: ORDER_EDIT_PENDING });
+  httpService.get(`${API_ORDERS_LIST_URL}?id=${id}`)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: ORDER_EDIT_SUCCESS,
+          payload: _data.data.data,
+        });
+      } else {
+        dispatch({
+          type: ORDER_EDIT_ERROR,
+          payload: _data.error.message,
+        });
+        callback?.(_data);
+      }
+    })
+    .catch((err) => {
+      const fallbackMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error?.message ||
+        err?.message ||
+        'Something went wrong.';
+      dispatch({
+        type: ORDER_EDIT_ERROR,
+        payload: fallbackMessage,
+      });
+      callback?.({ success: false, message: fallbackMessage });
+    });
+};
+
+export const updateOrder = (data: any, callback?: (response: any) => void) => (dispatch: any) => {
+  dispatch({ type: ORDER_UPDATE_PENDING });
+  httpService.post(API_ORDERS_STORE_URL, data)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: ORDER_UPDATE_SUCCESS,
+          payload: _data.data.data,
+        });
+        callback?.(_data);
+      } else {
+        dispatch({
+          type: ORDER_UPDATE_ERROR,
+          payload: _data.error.message,
+        });
+        callback?.(_data);
+      }
+    })
+    .catch((err) => {
+      const fallbackMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error?.message ||
+        err?.message ||
+        'Something went wrong.';
+      dispatch({
+        type: ORDER_UPDATE_ERROR,
+        payload: fallbackMessage,
+      });
+      callback?.({ success: false, message: fallbackMessage });
     });
 };
 
