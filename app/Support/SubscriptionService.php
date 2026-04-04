@@ -525,8 +525,46 @@ class SubscriptionService
                 ->lockForUpdate()
                 ->first();
 
+            $plan = null;
+
             if ($existing) {
-                return $existing;
+                $plan = DB::table('saas_plans')
+                    ->where('id', $existing->plan_id)
+                    ->first();
+
+                $trialDays = max((int) ($plan->trial_days ?? 0), 0);
+                $needsTrialDates = $trialDays > 0 && (!$existing->trial_start_at || !$existing->trial_end_at);
+
+                if (!$needsTrialDates) {
+                    return $existing;
+                }
+
+                $trialStartAt = Carbon::parse($existing->start_date ?: Carbon::now());
+                $trialEndAt = $trialStartAt->copy()->addDays($trialDays);
+
+                DB::table('saas_tenant_subscriptions')
+                    ->where('id', $existing->id)
+                    ->update([
+                        'trial_start_at' => $trialStartAt,
+                        'trial_end_at' => $trialEndAt,
+                        'updated_by' => $userId,
+                        'updated_at' => Carbon::now(),
+                    ]);
+
+                $this->logActivity(
+                    (int) $existing->id,
+                    $companyId,
+                    'trial_dates_backfilled',
+                    [
+                        'plan_id' => (int) ($existing->plan_id ?? 0),
+                        'trial_days' => $trialDays,
+                    ],
+                    $userId
+                );
+
+                return $this->subscriptionBaseQuery()
+                    ->where('ts.id', $existing->id)
+                    ->first();
             }
 
             $plan = DB::table('saas_plans')
