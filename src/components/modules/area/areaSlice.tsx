@@ -25,16 +25,22 @@ type ErrorResponse = { message: string };
 interface AreaState {
   area: Area[];
   loading: boolean;
+  loaded: boolean;
   error: string | null;
 }
 
 const initialState: AreaState = {
   area: [],
   loading: false,
+  loaded: false,
   error: null,
 };
 
-export const getDdlArea = createAsyncThunk<Area[], AreaRequestPayload | void, { rejectValue: ErrorResponse }>(
+export const getDdlArea = createAsyncThunk<
+  Area[],
+  AreaRequestPayload | void,
+  { rejectValue: ErrorResponse; state: { area: AreaState } }
+>(
   'getDdlArea/fetch',
   async (payload, { rejectWithValue }) => {
     try {
@@ -47,6 +53,18 @@ export const getDdlArea = createAsyncThunk<Area[], AreaRequestPayload | void, { 
         message: 'Failed to fetch areas',
       });
     }
+  },
+  {
+    condition: (payload, { getState }) => {
+      const { area } = getState();
+      const hasSearch = Boolean(payload?.searchName?.trim());
+
+      if (hasSearch) {
+        return true;
+      }
+
+      return !area.loading && !area.loaded;
+    },
   }
 );
 
@@ -66,10 +84,12 @@ const areaSlice = createSlice({
       })
       .addCase(getDdlArea.fulfilled, (state, action) => {
         state.loading = false;
+        state.loaded = true;
         state.area = action.payload;
       })
       .addCase(getDdlArea.rejected, (state, action) => {
         state.loading = false;
+        state.loaded = true;
         state.error = action.payload?.message || 'Something went wrong!';
       });
   },

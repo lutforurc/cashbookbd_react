@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FieldArray, useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
@@ -35,36 +35,40 @@ const EditCustomerSupplier = () => {
   const area = useSelector((state: any) => state.area);
   const settings = useSelector((state: any) => state.settings);
   const customers = useSelector((state: any) => state.customers);
+  const fetchedSettingsRef = useRef(false);
+  const fetchedEditIdRef = useRef<number | null>(null);
 
   const editCustomer = customers?.editCustomer;
   const editLoading = customers?.editLoading;
-  const hasAreaOptions = Array.isArray(area?.area) ? area.area.length > 0 : Array.isArray(area?.area?.data) ? area.area.data.length > 0 : false;
+  const areaList = Array.isArray(area?.area)
+    ? area.area
+    : Array.isArray(area?.area?.data)
+      ? area.area.data
+      : [];
   const hasSettings = Boolean(settings?.data && Object.keys(settings.data).length);
-  const currentEditId = editCustomer?.id ? Number(editCustomer.id) : null;
 
   /* ================= LOAD NEEDED DATA ================= */
   useEffect(() => {
-    if (!hasAreaOptions && !area?.loading) {
+    if (!area?.loaded && !area?.loading) {
       dispatch(getDdlArea());
     }
 
-    if (!hasSettings && !settings?.loading) {
+    if (!hasSettings && !settings?.loading && !fetchedSettingsRef.current) {
+      fetchedSettingsRef.current = true;
       dispatch(getSettings());
     }
+  }, [area?.loaded, area?.loading, dispatch, hasSettings, settings?.loading]);
 
-    if (id && currentEditId !== Number(id) && !editLoading) {
-      dispatch(getCustomerForEdit(Number(id)));
+  useEffect(() => {
+    const editId = Number(id);
+
+    if (!id || Number.isNaN(editId) || fetchedEditIdRef.current === editId) {
+      return;
     }
-  }, [
-    area?.loading,
-    currentEditId,
-    dispatch,
-    editLoading,
-    hasAreaOptions,
-    hasSettings,
-    id,
-    settings?.loading,
-  ]);
+
+    fetchedEditIdRef.current = editId;
+    dispatch(getCustomerForEdit(editId));
+  }, [dispatch, id]);
 
  
 
@@ -72,7 +76,7 @@ const EditCustomerSupplier = () => {
   /* ================= AREA FORMAT ================= */
   const formattedAreaData = useMemo(
     () =>
-      area?.area?.data?.map((item: any) => ({
+      areaList.map((item: any) => ({
         value: item?.id?.toString() || "",
         label: item?.name || "",
         label_2: item?.thana_name || "",
@@ -80,7 +84,7 @@ const EditCustomerSupplier = () => {
         label_4: item?.mobile || "",
         label_5: item?.manual_address || "",
       })) || [],
-    [area]
+    [areaList]
   );
 
   /* ================= VALIDATION ================= */
@@ -175,7 +179,6 @@ const EditCustomerSupplier = () => {
                   formik.setFieldValue("areaName", option?.label ?? "");
                 }}
                 value={selectedArea || null}
-                defaultValue={selectedArea || null}
                 data={formattedAreaData}
               />
               {formik.errors.area_id && formik.touched.area_id && (
