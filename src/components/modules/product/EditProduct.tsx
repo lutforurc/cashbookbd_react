@@ -41,6 +41,8 @@ const EditProduct = () => {
   const { id } = useParams(); // product ID from URL
   const category = useSelector((state) => state.category);
   const product = useSelector((state) => state.product);
+  const productTypeOptions = category?.data?.product_type || [];
+  const unitOptions = category?.data?.unit || [];
   const warrantyTypeOptions = warrantyType.map(item => ({
     ...item,
     id: String(item.id),
@@ -92,6 +94,33 @@ const EditProduct = () => {
       warranty_days: parsedWarranty.warranty_days,
     }));
   }, [product?.editData]);
+
+  useEffect(() => {
+    setFormData(prev => {
+      const next = { ...prev };
+      let changed = false;
+
+      if (
+        Array.isArray(productTypeOptions) &&
+        productTypeOptions.length > 0 &&
+        !productTypeOptions.some((item: any) => String(item.id) === String(prev.product_type ?? ''))
+      ) {
+        next.product_type = String(productTypeOptions[0].id);
+        changed = true;
+      }
+
+      if (
+        Array.isArray(unitOptions) &&
+        unitOptions.length > 0 &&
+        !unitOptions.some((item: any) => String(item.id) === String(prev.unit_id ?? ''))
+      ) {
+        next.unit_id = String(unitOptions[0].id);
+        changed = true;
+      }
+
+      return changed ? next : prev;
+    });
+  }, [productTypeOptions, unitOptions]);
 
   console.log('render formData.warranty_type', formData.warranty_type);
   console.log('render warrantyTypeOptions', warrantyTypeOptions);

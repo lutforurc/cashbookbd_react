@@ -66,6 +66,8 @@ const AddProduct = () => {
   const { id } = useParams();
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  const productTypeOptions = category?.ddlData?.data?.product_type || [];
+  const unitOptions = category?.ddlData?.data?.unit || [];
 
   useEffect(() => {
     if (product?.editData) {
@@ -245,6 +247,33 @@ const AddProduct = () => {
       setCategoryId(categoryData.ddlData[0]?.id ?? null);
     }
   }, [categoryData]);
+
+  useEffect(() => {
+    setFormData((prev) => {
+      const next = { ...prev };
+      let changed = false;
+
+      if (
+        Array.isArray(productTypeOptions) &&
+        productTypeOptions.length > 0 &&
+        !productTypeOptions.some((item: any) => String(item.id) === String(prev.product_type ?? ''))
+      ) {
+        next.product_type = String(productTypeOptions[0].id);
+        changed = true;
+      }
+
+      if (
+        Array.isArray(unitOptions) &&
+        unitOptions.length > 0 &&
+        !unitOptions.some((item: any) => String(item.id) === String(prev.unit_id ?? ''))
+      ) {
+        next.unit_id = String(unitOptions[0].id);
+        changed = true;
+      }
+
+      return changed ? next : prev;
+    });
+  }, [productTypeOptions, unitOptions]);
 
   const handleBrandChange = (selectedOption: any) => {
   const selectedId = selectedOption?.value ?? '';
