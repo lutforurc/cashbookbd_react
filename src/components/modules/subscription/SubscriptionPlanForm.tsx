@@ -11,10 +11,13 @@ import routes from '../../services/appRoutes';
 import {
   clearSubscriptionFeedback,
   createSubscriptionPlan,
+  type SubscriptionFeature,
   fetchAdminPlan,
   resetEditingPlan,
   updateSubscriptionPlan,
 } from './subscriptionSlice';
+
+type FeatureSelection = Record<string, boolean>;
 
 type PlanFormState = {
   name: string;
@@ -23,6 +26,8 @@ type PlanFormState = {
   price: string;
   currency: string;
   trial_days: string;
+  max_employees: string;
+  max_customers: string;
   max_users: string;
   max_branches: string;
   max_transactions_per_month: string;
@@ -31,6 +36,20 @@ type PlanFormState = {
   description: string;
 };
 
+const FEATURE_DEFINITIONS: SubscriptionFeature[] = [
+  { feature_key: 'accounting', feature_name: 'Accounting Module', feature_value: '1' },
+  { feature_key: 'hrms', feature_name: 'HRMS Module', feature_value: '1' },
+  { feature_key: 'inventory', feature_name: 'Inventory Module', feature_value: '1' },
+  { feature_key: 'sms', feature_name: 'SMS Module', feature_value: '1' },
+  { feature_key: 'list_customers', feature_name: 'List Customers', feature_value: '1' },
+];
+
+const createInitialFeatureSelection = (): FeatureSelection =>
+  FEATURE_DEFINITIONS.reduce<FeatureSelection>((acc, feature) => {
+    acc[feature.feature_key] = false;
+    return acc;
+  }, {});
+
 const initialForm: PlanFormState = {
   name: '',
   slug: '',
@@ -38,6 +57,8 @@ const initialForm: PlanFormState = {
   price: '',
   currency: 'BDT',
   trial_days: '0',
+  max_employees: '',
+  max_customers: '',
   max_users: '',
   max_branches: '',
   max_transactions_per_month: '',
@@ -53,6 +74,7 @@ const SubscriptionPlanForm: React.FC = () => {
   const isEdit = Boolean(id);
   const { editingPlan, loadingPlanDetails, savingPlan, error } = useSelector((state: any) => state.subscription);
   const [form, setForm] = useState<PlanFormState>(initialForm);
+  const [selectedFeatures, setSelectedFeatures] = useState<FeatureSelection>(createInitialFeatureSelection());
 
   useEffect(() => {
     dispatch(clearSubscriptionFeedback());
@@ -79,6 +101,8 @@ const SubscriptionPlanForm: React.FC = () => {
       price: editingPlan.price !== undefined ? String(editingPlan.price) : '',
       currency: editingPlan.currency || 'BDT',
       trial_days: String(editingPlan.trial_days ?? 0),
+      max_employees: editingPlan.max_employees ?? '',
+      max_customers: editingPlan.max_customers ?? '',
       max_users: editingPlan.max_users ?? '',
       max_branches: editingPlan.max_branches ?? '',
       max_transactions_per_month: editingPlan.max_transactions_per_month ?? '',
@@ -86,6 +110,14 @@ const SubscriptionPlanForm: React.FC = () => {
       is_active: editingPlan.is_active ? '1' : '0',
       description: editingPlan.description || '',
     } as PlanFormState);
+
+    const nextSelectedFeatures = createInitialFeatureSelection();
+    (editingPlan.features || []).forEach((feature) => {
+      if (feature?.feature_key && Object.prototype.hasOwnProperty.call(nextSelectedFeatures, feature.feature_key)) {
+        nextSelectedFeatures[feature.feature_key] = String(feature.feature_value ?? '0') === '1';
+      }
+    });
+    setSelectedFeatures(nextSelectedFeatures);
   }, [editingPlan, isEdit]);
 
   useEffect(() => {
@@ -126,6 +158,8 @@ const SubscriptionPlanForm: React.FC = () => {
         price: String(editingPlan.price ?? ''),
         currency: editingPlan.currency || 'BDT',
         trial_days: String(editingPlan.trial_days ?? 0),
+        max_employees: editingPlan.max_employees ?? '',
+        max_customers: editingPlan.max_customers ?? '',
         max_users: editingPlan.max_users ?? '',
         max_branches: editingPlan.max_branches ?? '',
         max_transactions_per_month: editingPlan.max_transactions_per_month ?? '',
@@ -133,10 +167,18 @@ const SubscriptionPlanForm: React.FC = () => {
         is_active: editingPlan.is_active ? '1' : '0',
         description: editingPlan.description || '',
       } as PlanFormState);
+      const nextSelectedFeatures = createInitialFeatureSelection();
+      (editingPlan.features || []).forEach((feature) => {
+        if (feature?.feature_key && Object.prototype.hasOwnProperty.call(nextSelectedFeatures, feature.feature_key)) {
+          nextSelectedFeatures[feature.feature_key] = String(feature.feature_value ?? '0') === '1';
+        }
+      });
+      setSelectedFeatures(nextSelectedFeatures);
       return;
     }
 
     setForm(initialForm);
+    setSelectedFeatures(createInitialFeatureSelection());
   };
 
   const toNullableNumber = (value: string) => {
@@ -154,9 +196,16 @@ const SubscriptionPlanForm: React.FC = () => {
       price: Number(form.price || 0),
       currency: form.currency.trim() || 'BDT',
       trial_days: Number(form.trial_days || 0),
+      max_employees: toNullableNumber(form.max_employees),
+      max_customers: toNullableNumber(form.max_customers),
       max_users: toNullableNumber(form.max_users),
       max_branches: toNullableNumber(form.max_branches),
       max_transactions_per_month: toNullableNumber(form.max_transactions_per_month),
+      features: FEATURE_DEFINITIONS.map((feature) => ({
+        feature_key: feature.feature_key,
+        feature_name: feature.feature_name,
+        feature_value: selectedFeatures[feature.feature_key] ? '1' : '0',
+      })),
       sort_order: Number(form.sort_order || 0),
       is_active: form.is_active === '1',
       description: form.description.trim() || undefined,
@@ -178,6 +227,13 @@ const SubscriptionPlanForm: React.FC = () => {
 
     toast.success(action?.message || (isEdit ? 'Plan updated successfully.' : 'Plan created successfully.'));
     navigate(routes.subscription_plan_list);
+  };
+
+  const handleFeatureToggle = (featureKey: string) => {
+    setSelectedFeatures((prev) => ({
+      ...prev,
+      [featureKey]: !prev[featureKey],
+    }));
   };
 
   return (
@@ -257,6 +313,26 @@ const SubscriptionPlanForm: React.FC = () => {
           />
 
           <InputElement
+            id="max_employees"
+            name="max_employees"
+            label="Max Employees"
+            type="number"
+            value={form.max_employees}
+            onChange={handleChange as any}
+            inputMode="numeric"
+            placeholder="Blank = Unlimited"
+          />
+          <InputElement
+            id="max_customers"
+            name="max_customers"
+            label="Max Customers"
+            type="number"
+            value={form.max_customers}
+            onChange={handleChange as any}
+            inputMode="numeric"
+            placeholder="Blank = Unlimited"
+          />
+          <InputElement
             id="max_users"
             name="max_users"
             label="Max Users"
@@ -298,6 +374,39 @@ const SubscriptionPlanForm: React.FC = () => {
               placeholder="Optional plan details"
               className="w-full rounded-xs border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
             />
+          </div>
+
+          <div className="md:col-span-2 xl:col-span-4">
+            <p className="mb-2 block text-sm text-gray-900 dark:text-white">Included Features</p>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {FEATURE_DEFINITIONS.map((feature) => (
+                <label
+                  key={feature.feature_key}
+                  className="flex items-center justify-between gap-3 rounded border border-gray-300 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <span>{feature.feature_name}</span>
+                  <span
+                    onClick={(event) => {
+                      event.preventDefault();
+                      handleFeatureToggle(feature.feature_key);
+                    }}
+                    className={`relative flex h-6 w-12 items-center rounded-full p-1 transition-colors duration-300 border cursor-pointer ${
+                      selectedFeatures[feature.feature_key]
+                        ? 'border-blue-600 bg-gray-300 dark:bg-gray-700'
+                        : 'border-gray-400 bg-gray-300 dark:bg-gray-700'
+                    }`}
+                  >
+                    <span
+                      className={`h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                        selectedFeatures[feature.feature_key]
+                          ? 'translate-x-5 !bg-blue-600'
+                          : 'translate-x-0'
+                      }`}
+                    />
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -256,11 +256,17 @@ class SubscriptionService
         $normalized = $this->normalizePlanPayload($payload);
         $this->ensureUniquePlanSlug($normalized['slug']);
 
-        $planId = DB::table('saas_plans')->insertGetId([
-            ...$normalized,
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-        ]);
+        $planId = DB::transaction(function () use ($normalized, $payload): int {
+            $planId = DB::table('saas_plans')->insertGetId([
+                ...$normalized,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+            $this->syncPlanFeatures($planId, $payload['features'] ?? []);
+
+            return $planId;
+        });
 
         return $this->getPlanById($planId);
     }
@@ -276,12 +282,16 @@ class SubscriptionService
         $normalized = $this->normalizePlanPayload($payload);
         $this->ensureUniquePlanSlug($normalized['slug'], $planId);
 
-        DB::table('saas_plans')
-            ->where('id', $planId)
-            ->update([
-                ...$normalized,
-                'updated_at' => Carbon::now(),
-            ]);
+        DB::transaction(function () use ($planId, $normalized, $payload): void {
+            DB::table('saas_plans')
+                ->where('id', $planId)
+                ->update([
+                    ...$normalized,
+                    'updated_at' => Carbon::now(),
+                ]);
+
+            $this->syncPlanFeatures($planId, $payload['features'] ?? []);
+        });
 
         return $this->getPlanById($planId);
     }
@@ -649,6 +659,8 @@ class SubscriptionService
             'price' => (float) $plan->price,
             'currency' => $plan->currency,
             'trial_days' => (int) $plan->trial_days,
+            'max_employees' => $plan->max_employees !== null ? (int) $plan->max_employees : null,
+            'max_customers' => $plan->max_customers !== null ? (int) $plan->max_customers : null,
             'max_users' => $plan->max_users !== null ? (int) $plan->max_users : null,
             'max_branches' => $plan->max_branches !== null ? (int) $plan->max_branches : null,
             'max_transactions_per_month' => $plan->max_transactions_per_month !== null ? (int) $plan->max_transactions_per_month : null,
@@ -676,6 +688,8 @@ class SubscriptionService
             'price' => (float) $payload['price'],
             'currency' => strtoupper(trim((string) $payload['currency'])),
             'trial_days' => (int) ($payload['trial_days'] ?? 0),
+            'max_employees' => $this->nullableInt($payload['max_employees'] ?? null),
+            'max_customers' => $this->nullableInt($payload['max_customers'] ?? null),
             'max_users' => $this->nullableInt($payload['max_users'] ?? null),
             'max_branches' => $this->nullableInt($payload['max_branches'] ?? null),
             'max_transactions_per_month' => $this->nullableInt($payload['max_transactions_per_month'] ?? null),
@@ -705,6 +719,34 @@ class SubscriptionService
         }
 
         return (int) $value;
+    }
+
+    private function syncPlanFeatures(int $planId, array $features): void
+    {
+        DB::table('saas_plan_features')->where('plan_id', $planId)->delete();
+
+        if ($features === []) {
+            return;
+        }
+
+        $now = Carbon::now();
+
+        $rows = collect($features)
+            ->filter(fn ($feature) => is_array($feature) && !empty($feature['feature_key']) && !empty($feature['feature_name']))
+            ->map(fn (array $feature) => [
+                'plan_id' => $planId,
+                'feature_key' => trim((string) $feature['feature_key']),
+                'feature_name' => trim((string) $feature['feature_name']),
+                'feature_value' => (string) ($feature['feature_value'] ?? '0') === '1' ? '1' : '0',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])
+            ->values()
+            ->all();
+
+        if ($rows !== []) {
+            DB::table('saas_plan_features')->insert($rows);
+        }
     }
 
     private function formatSubscription(?object $subscription): ?array

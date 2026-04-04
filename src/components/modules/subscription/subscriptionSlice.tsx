@@ -38,6 +38,8 @@ export interface SubscriptionPlan {
   price: number;
   currency: string;
   trial_days: number;
+  max_employees?: number | null;
+  max_customers?: number | null;
   max_users?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;
@@ -54,9 +56,12 @@ export interface SubscriptionPlanPayload {
   price: number;
   currency: string;
   trial_days: number;
+  max_employees?: number | null;
+  max_customers?: number | null;
   max_users?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;
+  features?: SubscriptionFeature[];
   sort_order?: number;
   is_active: boolean;
   description?: string;
