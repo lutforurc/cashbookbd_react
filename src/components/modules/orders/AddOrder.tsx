@@ -17,6 +17,7 @@ import OrderTypes from '../../utils/utils-functions/OrderTypes'
 import { toast } from 'react-toastify'
 import OrderDropdown from '../../utils/utils-functions/OrderDropdown'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import useCtrlS from '../../utils/hooks/useCtrlS'
 // import Link from '../../../utils/others/Link';
 
 const AddOrder = (user: any) => {
@@ -33,6 +34,7 @@ const AddOrder = (user: any) => {
     const [orderDate, setOrderDate] = useState<Date | null>(null); // Define state with type
     const [lastDeliveryDate, setLastDeliveryDate] = useState<Date | null>(null); // Define state with type
     const [buttonLoading, setButtonLoading] = useState(false);
+    const [referenceOrderFocusTrigger, setReferenceOrderFocusTrigger] = useState(0);
 
     interface FormData {
         branch_id: string;
@@ -342,12 +344,17 @@ const AddOrder = (user: any) => {
             if (response?.message) {
                 toast.info(response.message);
             }
+            if (response?.success && !isEditMode) {
+                resetOrder();
+            }
             if (response?.success && isEditMode) {
                 navigate('/order/order-list');
             }
         }));
     };
 
+
+    useCtrlS(handleSave); 
     return (
         <div>
             <HelmetTitle title={isEditMode ? 'Edit Order' : 'Create Order'} />
@@ -450,9 +457,14 @@ const AddOrder = (user: any) => {
                         setSelectedDate={setOrderDate}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.blur();
                                 const nextElement = document.getElementById('last_delivery_date');
                                 if (nextElement) {
-                                    nextElement.focus();
+                                    window.setTimeout(() => {
+                                        nextElement.focus();
+                                    }, 0);
                                 }
                             }
                         }}
@@ -471,9 +483,14 @@ const AddOrder = (user: any) => {
                         setSelectedDate={setLastDeliveryDate}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.blur();
                                 const nextElement = document.getElementById('order_rate');
                                 if (nextElement) {
-                                    nextElement.focus();
+                                    window.setTimeout(() => {
+                                        nextElement.focus();
+                                    }, 0);
                                 }
                             }
                         }}
@@ -549,19 +566,8 @@ const AddOrder = (user: any) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
                             e.stopPropagation();
-
-                            window.setTimeout(() => {
-                                const selectInput = document.getElementById('ref_order_id');
-                                const selectControl =
-                                    selectInput?.closest('.cash-react-select-container')?.querySelector('.cash-react-select__control') ||
-                                    document.querySelector('.cash-react-select-container .cash-react-select__control');
-                                const nextElement = selectControl || selectInput;
-
-                                if (nextElement instanceof HTMLElement) {
-                                    nextElement.focus();
-                                    nextElement.click();
-                                }
-                            }, 0);
+                            e.currentTarget.blur();
+                            setReferenceOrderFocusTrigger((prev) => prev + 1);
                         }
                     }}
                 />
@@ -584,6 +590,20 @@ const AddOrder = (user: any) => {
                         orderType={referenceOrderType}
                         refDirection="reference"
                         isDisabled={!referenceOrderType}
+                        focusTrigger={referenceOrderFocusTrigger}
+                         onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.currentTarget.blur();
+                                    const nextElement = document.getElementById('save_btn');
+                                    if (nextElement) {
+                                        window.setTimeout(() => {
+                                            nextElement.focus();
+                                        }, 0);
+                                    }
+                                }
+                            }}
                     />
                 </div>
                 {/* <div className='flex items-end'>
@@ -596,6 +616,8 @@ const AddOrder = (user: any) => {
             </div>
             <div className="grid grid-cols-3 gap-x-1 gap-y-1 w-2/4 md:w-2/5 mx-auto">
                 <ButtonLoading
+                    id='save_btn'
+                    name='save_btn'
                     onClick={handleSave}
                     buttonLoading={buttonLoading}
                     label={isEditMode ? "Update" : "Save"}
@@ -603,6 +625,8 @@ const AddOrder = (user: any) => {
                     icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
                 />
                 <ButtonLoading
+                    id='reset_btn'
+                    name='reset_btn'
                     onClick={resetOrder}
                     buttonLoading={buttonLoading}
                     label="Reset"

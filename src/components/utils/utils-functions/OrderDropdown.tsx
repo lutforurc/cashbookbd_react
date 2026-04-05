@@ -29,6 +29,7 @@ interface DropdownProps {
     excludeId?: string | number;
     refDirection?: 'reference' | 'linked';
     isDisabled?: boolean;
+    focusTrigger?: number;
 }
 
 const OrderDropdown: React.FC<DropdownProps> = ({
@@ -43,9 +44,21 @@ const OrderDropdown: React.FC<DropdownProps> = ({
     excludeId,
     refDirection,
     isDisabled,
+    focusTrigger,
 }) => {
     const [isSelected, setIsSelected] = React.useState(false);
     const dispatch = useDispatch();
+    const selectRef = React.useRef<any>(null);
+
+    React.useEffect(() => {
+        if (!focusTrigger || isDisabled) {
+            return;
+        }
+
+        window.setTimeout(() => {
+            selectRef.current?.focus?.();
+        }, 0);
+    }, [focusTrigger, isDisabled]);
 
     const loadOptions = async (inputValue: string, callback: (options: OptionType[]) => void) => {
         if (inputValue.length >= 3) {
@@ -96,7 +109,9 @@ const OrderDropdown: React.FC<DropdownProps> = ({
     return (
         <div className="dark:bg-black focus:border-blue-500 ">
             <AsyncSelect<OptionType>
+                ref={selectRef}
                 id={id}
+                inputId={id}
                 name={name}
                 className="cash-react-select-container w-full dark:bg-black focus:border-blue-500 "
                 classNamePrefix="cash-react-select"
@@ -105,6 +120,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                 onMenuOpen={() => setIsSelected(true)}
                 onMenuClose={() => setIsSelected(false)}
                 onKeyDown={onKeyDown} // Pass it to the input
+                openMenuOnFocus
                 isDisabled={isDisabled}
                 getOptionLabel={(option) => {
                     return option.label
