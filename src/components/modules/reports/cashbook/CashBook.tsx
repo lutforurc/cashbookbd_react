@@ -172,10 +172,11 @@ const CashBook = (user: any) => {
 	            <a href="http://localhost:5173/reports/ledger" target="_blank">
 	              <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
 	              {row?.pay_branch_name ? (
-	                <p className="text-sm text-green-500">{row.pay_branch_name}</p>
+	                <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.pay_branch_name}</p>
 	              ) : (
 	                ''
 	              )}
+                {/* text-sky-500 */}
 	              {row.somity ? (
 	                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
 	              ) : (
