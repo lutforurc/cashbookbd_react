@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import TradingCashReceived from './TradingCashReceived';
 import GeneralCashReceived from './GeneralCashReceived';
+import HeadOfficeCashReceived from './HeadOfficeCashReceived';
 import { useEffect } from 'react';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import Loader from '../../../../common/Loader';
@@ -22,6 +23,7 @@ if (!currentBranch || !currentBranch.business_type_id) {
 }
 
   const components: { [key: number]: JSX.Element } = {
+    1: <HeadOfficeCashReceived />,
     4: <GeneralCashReceived />,
     8: <TradingCashReceived />,
   };
