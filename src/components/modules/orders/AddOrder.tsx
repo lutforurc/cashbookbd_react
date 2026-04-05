@@ -39,6 +39,7 @@ const AddOrder = (user: any) => {
         order_for: string;
         order_for_text: string;
         product_id: string;
+        product_name: string;
         order_number: string;
         ref_order_id: string;
         ref_order_text: string;
@@ -59,6 +60,7 @@ const AddOrder = (user: any) => {
         order_for: '',
         order_for_text: '',
         product_id: '',
+        product_name: '',
         order_number: '',
         ref_order_id: '',
         ref_order_text: '',
@@ -108,6 +110,12 @@ const AddOrder = (user: any) => {
                 prev.order_for_text ||
                 '',
             product_id: locationOrder?.product_id?.toString?.() || prev.product_id || '',
+            product_name:
+                locationOrder?.product_name ||
+                locationOrder?.product?.name ||
+                locationOrder?.product ||
+                prev.product_name ||
+                '',
             order_number: locationOrder?.order_number ?? prev.order_number,
             ref_order_id: locationOrder?.ref_order_id?.toString?.() || prev.ref_order_id || '',
             ref_order_text:
@@ -159,6 +167,11 @@ const AddOrder = (user: any) => {
                 editData?.order_for ??
                 '',
             product_id: editData?.product_id?.toString?.() ?? '',
+            product_name:
+                editData?.product_name ??
+                editData?.product?.name ??
+                editData?.product ??
+                '',
             order_number: editData?.order_number ?? '',
             ref_order_id: editData?.ref_order_id?.toString?.() ?? '',
             ref_order_text: editData?.ref_order_text ?? '',
@@ -189,9 +202,22 @@ const AddOrder = (user: any) => {
         if (!formData.product_id) return null;
         return {
             value: formData.product_id,
-            label: ordersState?.editData?.product_name || locationOrder?.product_name || formData.product_id,
+            label:
+                formData.product_name ||
+                ordersState?.editData?.product_name ||
+                ordersState?.editData?.product?.name ||
+                locationOrder?.product_name ||
+                locationOrder?.product?.name ||
+                formData.product_id,
         };
-    }, [formData.product_id, locationOrder?.product_name, ordersState?.editData?.product_name]);
+    }, [
+        formData.product_id,
+        formData.product_name,
+        locationOrder?.product,
+        locationOrder?.product_name,
+        ordersState?.editData?.product,
+        ordersState?.editData?.product_name,
+    ]);
 
     const selectedLedgerOptionHandler = (option: any) => {
         setFormData((prevState) => ({
@@ -201,7 +227,11 @@ const AddOrder = (user: any) => {
         }));
     };
     const selectedProductOptionHandler = (option: any) => {
-        setFormData({ ...formData, ['product_id']: option?.value || '' });
+        setFormData((prevState) => ({
+            ...prevState,
+            product_id: option?.value?.toString?.() || '',
+            product_name: option?.label || '',
+        }));
     };
     const selectedReferenceOrderHandler = (option: any) => {
         setFormData((prevState) => ({
@@ -237,6 +267,7 @@ const AddOrder = (user: any) => {
             order_for: '',
             order_for_text: '',
             product_id: '',
+            product_name: '',
             order_number: '',
             ref_order_id: '',
             ref_order_text: '',
