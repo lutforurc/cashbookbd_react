@@ -369,13 +369,33 @@ const AddOrder = (user: any) => {
                 </div>
                 <div className=''>
                     <label htmlFor="">Order For</label>
-                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} value={selectedOrderFor} />
+                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} value={selectedOrderFor}
+
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const nextElement = document.getElementById('product_id');
+                                if (nextElement) {
+                                    nextElement.focus();
+                                }
+                            }
+                        }}
+
+                    />
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <div>
                     <label htmlFor="">Select Product</label>
-                    <ProductDropdown onSelect={selectedProductOptionHandler} value={selectedProduct} />
+                    <ProductDropdown onSelect={selectedProductOptionHandler} value={selectedProduct} id='product_id' name='product_id'
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const nextElement = document.getElementById('order_number');
+                                if (nextElement) {
+                                    nextElement.focus();
+                                }
+                            }
+                        }} />
+
                 </div>
                 <InputElement id="order_number"
                     value={formData.order_number}
@@ -384,24 +404,55 @@ const AddOrder = (user: any) => {
                     label={'Enter Order Number'}
                     className={'py-1.5'}
                     onChange={handleOrderChange}
+
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            const nextElement = document.getElementById('delivery_location');
+                            if (nextElement) {
+                                nextElement.focus();
+                            }
+                        }
+                    }}
+
                 />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <InputElement id="delivery_location"
-                    value={formData.delivery_location}
+                    value={formData.delivery_location || ''}
+
                     name="delivery_location"
                     placeholder={'Delivery Location'}
                     label={'Delivery Location'}
                     className={'py-1.5'}
                     onChange={handleOrderChange}
+
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            const nextElement = document.getElementById('order_date');
+                            if (nextElement) {
+                                nextElement.focus();
+                            }
+                        }
+                    }}
+
                 />
                 <div className='w-full'>
                     <label htmlFor="">Order Date</label>
                     <InputDatePicker
+                        id='order_date'
+                        name='order_date'
                         setCurrentDate={handleOrderDate}
                         className=" w-full p-1.5"
                         selectedDate={orderDate}
                         setSelectedDate={setOrderDate}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const nextElement = document.getElementById('last_delivery_date');
+                                if (nextElement) {
+                                    nextElement.focus();
+                                }
+                            }
+                        }}
                     />
                 </div>
             </div>
@@ -409,43 +460,107 @@ const AddOrder = (user: any) => {
                 <div className='w-full'>
                     <label htmlFor="">Last Delivery Date</label>
                     <InputDatePicker
+                        id='last_delivery_date'
+                        name='last_delivery_date'
                         setCurrentDate={handleLastDeliveryDate}
                         className=" w-full p-1.5"
                         selectedDate={lastDeliveryDate}
                         setSelectedDate={setLastDeliveryDate}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const nextElement = document.getElementById('order_rate');
+                                if (nextElement) {
+                                    nextElement.focus();
+                                }
+                            }
+                        }}
                     />
                 </div>
                 <InputElement id="order_rate"
-                    value={formData.order_rate}
+                    value={formData.order_rate || 0}
                     name="order_rate"
                     placeholder={'Order Rate'}
                     label={'Order Rate'}
                     className={'py-1.5'}
                     onChange={handleOrderChange}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            const nextElement = document.getElementById('total_order');
+                            if (nextElement) {
+                                nextElement.focus();
+                            }
+                        }
+                    }}
                 />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                     <InputElement id="total_order"
-                        value={formData.total_order}
+                        value={formData.total_order || 0}
                         name="total_order"
                         placeholder={'Total Order Qty'}
                         label={'Total Order Qty'}
                         className={'py-1.5'}
                         onChange={handleOrderChange}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const nextElement = document.getElementById('order_type');
+                                if (nextElement) {
+                                    nextElement.focus();
+                                }
+                            }
+                        }}
                     />
                     <div>
                         <label className='mb-0 block'>Order Type</label>
-                        <OrderTypes onChange={handleSelectChange} className='h-9 w-full' value={formData.order_type} />
+                        <OrderTypes
+                            onChange={handleSelectChange}
+                            className='h-9 w-full'
+                            value={formData.order_type}
+                            id='order_type'
+                            name='order_type'
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.currentTarget.blur();
+                                    const nextElement = document.getElementById('notes');
+                                    if (nextElement) {
+                                        window.setTimeout(() => {
+                                            nextElement.focus();
+                                        }, 0);
+                                    }
+                                }
+                            }}
+                        />
                     </div>
                 </div>
                 <InputElement id="notes"
-                    value={formData.notes}
+                    value={formData.notes || ''}
                     name="notes"
                     placeholder={'Note'}
                     label={'Note'}
                     className={'py-1.5'}
                     onChange={handleOrderChange}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            window.setTimeout(() => {
+                                const selectInput = document.getElementById('ref_order_id');
+                                const selectControl =
+                                    selectInput?.closest('.cash-react-select-container')?.querySelector('.cash-react-select__control') ||
+                                    document.querySelector('.cash-react-select-container .cash-react-select__control');
+                                const nextElement = selectControl || selectInput;
+
+                                if (nextElement instanceof HTMLElement) {
+                                    nextElement.focus();
+                                    nextElement.click();
+                                }
+                            }, 0);
+                        }
+                    }}
                 />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
@@ -468,13 +583,13 @@ const AddOrder = (user: any) => {
                         isDisabled={!referenceOrderType}
                     />
                 </div>
-                <div className='flex items-end'>
+                {/* <div className='flex items-end'>
                     <p className='text-sm text-gray-600 dark:text-gray-300'>
                         {formData.order_type === '1' && 'Purchase orders can reference sales orders.'}
                         {formData.order_type === '2' && 'Sales orders can reference purchase orders.'}
                         {formData.order_type !== '1' && formData.order_type !== '2' && 'Select order type first if you want to link this order to another order.'}
                     </p>
-                </div>
+                </div> */}
             </div>
             <div className="grid grid-cols-3 gap-x-1 gap-y-1 w-2/4 md:w-2/5 mx-auto">
                 <ButtonLoading
