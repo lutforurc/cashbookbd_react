@@ -31,7 +31,6 @@ import CoaL3 from './components/modules/chartofaccounts/levelthree/CoaL3';
 import CoaL2 from './components/modules/chartofaccounts/leveltwo/CoaL2';
 import CoaL1 from './components/modules/chartofaccounts/levelone/CoaL1';
 import DueList from './components/modules/reports/duelist/DueList';
-import ProductStock from './components/modules/reports/productstock/ProductStock';
 import CatWiseInOut from './components/modules/reports/catwiseinout/CatWiseInOut';
 import EditUser from './components/modules/user/EditUser';
 import PurchaseLedger from './components/modules/reports/purchaseledger/PurchaseLedger';
