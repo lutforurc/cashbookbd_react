@@ -386,7 +386,8 @@ const AddOrder = (user: any) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <div>
                     <label htmlFor="">Select Product</label>
-                    <ProductDropdown onSelect={selectedProductOptionHandler} value={selectedProduct} id='product_id' name='product_id'
+                    <ProductDropdown onSelect={selectedProductOptionHandler} 
+                    value={selectedProduct} id='product_id' name='product_id'
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 const nextElement = document.getElementById('order_number');
@@ -394,7 +395,9 @@ const AddOrder = (user: any) => {
                                     nextElement.focus();
                                 }
                             }
-                        }} />
+                        }}
+                        className='h-10'
+                        />
 
                 </div>
                 <InputElement id="order_number"
@@ -477,7 +480,7 @@ const AddOrder = (user: any) => {
                     />
                 </div>
                 <InputElement id="order_rate"
-                    value={formData.order_rate || 0}
+                    value={formData.order_rate || ''}
                     name="order_rate"
                     placeholder={'Order Rate'}
                     label={'Order Rate'}
@@ -496,7 +499,7 @@ const AddOrder = (user: any) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                     <InputElement id="total_order"
-                        value={formData.total_order || 0}
+                        value={formData.total_order || ""}
                         name="total_order"
                         placeholder={'Total Order Qty'}
                         label={'Total Order Qty'}
