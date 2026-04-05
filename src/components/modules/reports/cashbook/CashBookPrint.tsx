@@ -15,6 +15,7 @@ export type CashRow = {
   vr_date?: string; // already formatted string
   vr_no?: string | number;
   nam?: string; // may contain HTML
+  pay_branch_name?: string;
   somity?: Somity | null;
   remarks?: string;
   credit?: number; // Received
