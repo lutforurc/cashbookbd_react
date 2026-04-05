@@ -134,15 +134,20 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                           <div className="w-full max-w-4xl leading-normal">
                             <div className="truncate leading-normal">
-                              <span
-                                className={`text-[${fs}px]`}
-                                dangerouslySetInnerHTML={{
-                                  __html: row?.nam || '',
-                                }}
-                              ></span>
-                              {row?.somity?.idfr_code && (
-                                <span className={`text-[${fs}px]`}>
-                                  {' '}
+	                              <span
+	                                className={`text-[${fs}px]`}
+	                                dangerouslySetInnerHTML={{
+	                                  __html: row?.nam || '',
+	                                }}
+	                              ></span>
+	                              {row?.pay_branch_name && (
+	                                <div className={` font-semibold text-[${fs}px]`}>
+	                                  {row.pay_branch_name}
+	                                </div>
+	                              )}
+	                              {row?.somity?.idfr_code && (
+	                                <span className={`text-[${fs}px]`}>
+	                                  {' '}
                                   ({row.somity.idfr_code})
                                 </span>
                               )}
