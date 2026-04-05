@@ -47,7 +47,7 @@ const initialPaymentItem: PaymentItem = {
   account: '',
   accountName: '',
   remarks: '',
-  amount: 0,
+  amount: '',
   currentProduct: undefined, // Use undefined instead of null
 };
 

@@ -72,7 +72,7 @@ const HeadOfficeCashPayment = () => {
       branchId,
       branchName,
       remarks: '',
-      amount: 0,
+      amount: '',
       currentProduct: undefined,
     }),
     [branchId, branchName],
