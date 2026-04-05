@@ -169,11 +169,16 @@ const CashBook = (user: any) => {
       render: (row: any) => (
         <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
           <div className="truncate">
-            <a href="http://localhost:5173/reports/ledger" target="_blank">
-              <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
-              {row.somity ? (
-                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
-              ) : (
+	            <a href="http://localhost:5173/reports/ledger" target="_blank">
+	              <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
+	              {row?.pay_branch_name ? (
+	                <p className="text-sm text-green-500">{row.pay_branch_name}</p>
+	              ) : (
+	                ''
+	              )}
+	              {row.somity ? (
+	                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
+	              ) : (
                 ''
               )}
               {row.somity && (

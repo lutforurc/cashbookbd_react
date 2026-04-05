@@ -17,9 +17,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
 import { toast } from 'react-toastify';
 import {
-  editHeadOfficeCashPayment,
-  storeHeadOfficeCashPayment,
-  updateHeadOfficeCashPayment,
+  editCashPayment,
+  storeCashPayment,
+  updateCashPayment,
 } from './cashPaymentSlice';
 import InputOnly from '../../../utils/fields/InputOnly';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
@@ -38,12 +38,6 @@ interface PaymentItem {
   remarks: string;
   amount: string | number;
   currentProduct?: { [key: string]: any } | null;
-}
-
-interface PaymentMetaItem {
-  key: string;
-  value: string;
-  label?: string;
 }
 
 const HeadOfficeCashPayment = () => {
@@ -113,71 +107,6 @@ const HeadOfficeCashPayment = () => {
     }));
   };
 
-  const getSelectedBranchMeta = () => {
-    const selectedBranch = dropdownData.find(
-      (branch: any) => String(branch?.id) === String(formData.branchId || branchId),
-    );
-
-    const resolvedBranchId = String(
-      selectedBranch?.id ?? formData.branchId ?? branchId ?? '',
-    );
-    const resolvedBranchName =
-      selectedBranch?.name ||
-      selectedBranch?.branch_name ||
-      formData.branchName ||
-      branchName;
-    const resolvedMtmId = String(
-      selectedBranch?.mtmId ??
-        selectedBranch?.mtm_id ??
-        formData.mtmId ??
-        '',
-    );
-
-    return {
-      resolvedBranchId,
-      resolvedBranchName,
-      resolvedMtmId,
-    };
-  };
-
-  const buildPaymentPayload = (rows: PaymentItem[]) => {
-    const { resolvedBranchId, resolvedBranchName, resolvedMtmId } =
-      getSelectedBranchMeta();
-
-    const normalizedRows = rows.map((row) => ({
-      ...row,
-      mtmId: row.mtmId || resolvedMtmId,
-      branchId: String(row.branchId || resolvedBranchId),
-      branchName: row.branchName || resolvedBranchName,
-    }));
-
-    const metas: PaymentMetaItem[] = [
-      {
-        key: 'project_id',
-        value: resolvedBranchId,
-        label: resolvedBranchName,
-      },
-    ];
-
-    return {
-      mtmId: resolvedMtmId,
-      branchId: resolvedBranchId,
-      branchName: resolvedBranchName,
-      projectId: resolvedBranchId,
-      projectName: resolvedBranchName,
-      meta: {
-        project_id: resolvedBranchId,
-        project_name: resolvedBranchName,
-        branch_id: resolvedBranchId,
-        branch_name: resolvedBranchName,
-      },
-      metas,
-      rows: normalizedRows,
-      details: normalizedRows,
-      transactions: normalizedRows,
-    };
-  };
-
   const handleCashPaymentSave = async () => {
     setSaveButtonLoading(true);
     if (tableData.length === 0) {
@@ -202,7 +131,7 @@ const HeadOfficeCashPayment = () => {
     setTableData(updatedTableData);
 
     try {
-      await dispatch(storeHeadOfficeCashPayment(buildPaymentPayload(updatedTableData)));
+      await dispatch(storeCashPayment(updatedTableData));
     } catch (error) {
       setSaveButtonLoading(false);
       console.error('Error saving transactions:', error);
@@ -221,8 +150,6 @@ const HeadOfficeCashPayment = () => {
       ...initialPaymentItem,
       account: prev.account,
       accountName: prev.accountName,
-      branchId: prev.branchId,
-      branchName: prev.branchName,
     }));
     setTableData([]);
   }, [cashPayment.data, initialPaymentItem]);
@@ -317,13 +244,7 @@ const HeadOfficeCashPayment = () => {
 
     setTableData(updatedTableData);
     setIsUpdating(false);
-    setFormData((prev) => ({
-      ...initialPaymentItem,
-      account: prev.account,
-      accountName: prev.accountName,
-      branchId: prev.branchId,
-      branchName: prev.branchName,
-    }));
+    setFormData(initialPaymentItem);
   };
 
   const searchTransaction = () => {
@@ -333,7 +254,7 @@ const HeadOfficeCashPayment = () => {
     }
     try {
       dispatch(
-        editHeadOfficeCashPayment({ invoiceNo: search }, (message: string) => {
+        editCashPayment({ invoiceNo: search }, (message: string) => {
           if (message) {
             toast.error(message);
           }
@@ -348,39 +269,23 @@ const HeadOfficeCashPayment = () => {
 
   useEffect(() => {
     if (Array.isArray(cashPayment.data)) {
-	      setTableData(
-	        cashPayment.data.map((item: any) => ({
-	          ...item,
-	          mtmId: String(item?.mtmId ?? item?.mtm_id ?? ''),
-	          branchId: String(item?.branchId ?? item?.branch_id ?? branchId),
-	          branchName: item?.branchName || item?.branch_name || branchName,
-	        })),
-	      );
-	      const firstItem = cashPayment.data[0];
-	      if (firstItem) {
-	        setFormData((prev) => ({
-	          ...prev,
-	          mtmId: String(firstItem?.mtmId ?? firstItem?.mtm_id ?? prev.mtmId ?? ''),
-	          branchId: String(
-	            firstItem?.branchId ?? firstItem?.branch_id ?? prev.branchId ?? branchId,
-	          ),
-	          branchName:
-	            firstItem?.branchName ||
-	            firstItem?.branch_name ||
-	            prev.branchName ||
-	            branchName,
-	        }));
-	      }
-	      setIsUpdateButton(true);
-	    }
-	  }, [cashPayment.isEdit]);
+      setTableData(
+        cashPayment.data.map((item: any) => ({
+          ...item,
+          branchId: String(item?.branchId ?? item?.branch_id ?? branchId),
+          branchName: item?.branchName || item?.branch_name || branchName,
+        })),
+      );
+      setIsUpdateButton(true);
+    }
+  }, [cashPayment.isEdit]);
 
   const handleInvoiceUpdate = async () => {
     try {
       setButtonLoading(true);
 
       await dispatch(
-        updateHeadOfficeCashPayment(buildPaymentPayload(tableData), (message: string) => {
+        updateCashPayment(tableData, (message: string) => {
           if (message) toast.info(message);
         }),
       );
@@ -409,26 +314,7 @@ const HeadOfficeCashPayment = () => {
   }, [cashPayment.isEdit]);
 
   const handleBranchChange = (e: any) => {
-    const selectedBranchId = String(e.target.value ?? '');
-    const selectedBranch = dropdownData.find(
-      (branch: any) => String(branch?.id) === selectedBranchId,
-    );
-
-    setFormData((prev) => ({
-      ...prev,
-      mtmId: String(
-        selectedBranch?.mtmId ??
-          selectedBranch?.mtm_id ??
-          prev.mtmId ??
-          '',
-      ),
-      branchId: selectedBranchId,
-      branchName:
-        selectedBranch?.name ||
-        selectedBranch?.branch_name ||
-        prev.branchName ||
-        branchName,
-    }));
+    setBranchId(e.target.value);
   };
 
   useCtrlS(handleCashPaymentSave);
@@ -511,7 +397,6 @@ const HeadOfficeCashPayment = () => {
                   onChange={handleBranchChange}
                   className="w-60 font-medium text-sm p-1.5 "
                   branchDdl={dropdownData}
-                  value={formData.branchId}
                 />
               </div>
             </div>

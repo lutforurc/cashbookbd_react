@@ -269,6 +269,9 @@ export const API_CASH_RECEIVED_UPDATE_URL = `${API_BASE_URL}/trading/cash/receiv
 export const API_CASH_PAYMENT_STORE_URL = `${API_BASE_URL}/trading/cash/payment`;
 export const API_CASH_PAYMENT_EDIT_URL = `${API_BASE_URL}/trading/cash/payment/api-edit`;
 export const API_CASH_PAYMENT_UPDATE_URL = `${API_BASE_URL}/trading/cash/payment/api-update`;
+export const API_HEAD_OFFICE_CASH_PAYMENT_STORE_URL = `${API_BASE_URL}/accounts/payment`;
+export const API_HEAD_OFFICE_CASH_PAYMENT_EDIT_URL = `${API_BASE_URL}/accounts/payment/api-edit`;
+export const API_HEAD_OFFICE_CASH_PAYMENT_UPDATE_URL = `${API_BASE_URL}/accounts/payment/api-update`;
 
 // Journal url
 export const API_JOURNAL_STORE_URL = `${API_BASE_URL}/accounts/journal/store`;

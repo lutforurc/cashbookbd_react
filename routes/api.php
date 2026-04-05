@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\RoleDirectoryController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\OwnerRoleGroupController;
+use App\Http\Controllers\Api\CashPaymentController;
 use App\Http\Controllers\Api\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,18 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/current', [SubscriptionController::class, 'current']);
         Route::get('/payments', [SubscriptionController::class, 'payments']);
         Route::post('/manual-payment', [SubscriptionController::class, 'manualPayment']);
+    });
+
+    Route::prefix('trading/cash/payment')->group(function (): void {
+        Route::post('/', [CashPaymentController::class, 'store']);
+        Route::post('/api-edit', [CashPaymentController::class, 'edit']);
+        Route::post('/api-update', [CashPaymentController::class, 'update']);
+    });
+
+    Route::prefix('accounts/payment')->group(function (): void {
+        Route::post('/', [CashPaymentController::class, 'store']);
+        Route::post('/api-edit', [CashPaymentController::class, 'edit']);
+        Route::post('/api-update', [CashPaymentController::class, 'update']);
     });
 
     Route::prefix('admin/subscription')->group(function (): void {
