@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getOrders } from './ordersSlice';
 import { useNavigate } from 'react-router-dom';
@@ -11,10 +11,27 @@ import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
 import { FiBook, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
-import checkNumber from '../../utils/utils-functions/numberCheck';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
-import { render } from 'react-dom';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+
+const toNumber = (value: any) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const pickFirstNumber = (source: any, keys: string[]) => {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (value !== undefined && value !== null && value !== '') {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+  }
+
+  return null;
+};
 
 const Orders = () => {
   const orders = useSelector((state) => state.orders);
@@ -72,6 +89,87 @@ const Orders = () => {
   useEffect(() => {
     setTableData(orders?.data?.data);
   }, [orders?.data]);
+
+  const derivedSummary = useMemo(() => {
+    return (Array.isArray(tableData) ? tableData : []).reduce(
+      (acc, row: any) => {
+        acc.totalOrder += toNumber(row?.total_order);
+        acc.baseOrderQuantity += toNumber(
+          row?.base_order_quantity ?? row?.reference_order?.total_order,
+        );
+        acc.linkedQuantity += toNumber(row?.linked_quantity);
+        acc.remainingQuantity += toNumber(row?.remaining_quantity);
+        return acc;
+      },
+      {
+        totalOrder: 0,
+        baseOrderQuantity: 0,
+        linkedQuantity: 0,
+        remainingQuantity: 0,
+      },
+    );
+  }, [tableData]);
+
+  const apiSummarySource = useMemo(() => {
+    return (
+      orders?.data?.summary ??
+      orders?.data?.totals ??
+      orders?.data?.meta?.summary ??
+      orders?.data?.meta?.totals ??
+      null
+    );
+  }, [orders?.data]);
+
+  const summary = useMemo(() => {
+    return {
+      totalOrder:
+        pickFirstNumber(apiSummarySource, ['total_order', 'trx_quantity', 'order_quantity']) ??
+        derivedSummary.totalOrder,
+      baseOrderQuantity:
+        pickFirstNumber(apiSummarySource, ['base_order_quantity', 'reference_order_quantity']) ??
+        derivedSummary.baseOrderQuantity,
+      linkedQuantity:
+        pickFirstNumber(apiSummarySource, ['linked_quantity', 'total_linked_quantity']) ??
+        derivedSummary.linkedQuantity,
+      remainingQuantity:
+        pickFirstNumber(apiSummarySource, ['remaining_quantity', 'total_remaining_quantity']) ??
+        derivedSummary.remainingQuantity,
+      fromApi: Boolean(apiSummarySource),
+    };
+  }, [apiSummarySource, derivedSummary]);
+
+  const footerRows = useMemo(
+    () => [
+      [
+        {
+          label: summary.fromApi ? 'Summary' : 'Page Summary',
+          colSpan: 4,
+          className: 'text-right',
+        },
+        {
+          label: thousandSeparator(summary.totalOrder, 0),
+          className: 'text-right',
+        },
+        {
+          label: thousandSeparator(summary.baseOrderQuantity, 0),
+          className: 'text-left',
+        },
+        {
+          label: (
+            <p className="text-right">
+              <span className="block">{thousandSeparator(summary.linkedQuantity, 0)}</span>
+              <span className="block">{thousandSeparator(summary.remainingQuantity, 0)}</span>
+            </p>
+          ),
+          className: 'text-right',
+        },
+        {
+          label: '',
+        },
+      ],
+    ],
+    [summary],
+  );
 
   const columns = [
     {
@@ -249,7 +347,7 @@ const Orders = () => {
 
       <div className="relative overflow-x-auto">
         {orders.isLoading == true ? <Loader /> : ''}
-        <Table columns={columns} data={tableData} className="" />
+        <Table columns={columns} data={tableData} className="" footerRows={footerRows} />
 
         {/* Pagination Controls */}
         {totalPages > 1 ? (
