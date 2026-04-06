@@ -66,12 +66,22 @@ interface orderParam {
   perPage: number;
   search: string;
   orderType: string;
+  orderFor?: string | number;
 }
 
-export const getOrders = ({ page, perPage, search = '', orderType = '' }: orderParam) =>
+export const getOrders = ({
+  page,
+  perPage,
+  search = '',
+  orderType = '',
+  orderFor = '',
+}: orderParam) =>
   (dispatch: any) => {
     dispatch({ type: ORDER_LIST_PENDING });
-    httpService.get(API_ORDERS_LIST_URL + `?page=${page}&per_page=${perPage}&search=${search}&order_type=${orderType}`)
+    httpService.get(
+      API_ORDERS_LIST_URL +
+        `?page=${page}&per_page=${perPage}&search=${search}&order_type=${orderType}&order_for=${orderFor}`,
+    )
       .then((res) => {
         let _data = res.data;
         if (_data.success) {

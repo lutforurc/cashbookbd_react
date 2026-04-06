@@ -16,6 +16,7 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../utils/fields/InputElement';
+import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -48,25 +49,59 @@ const Orders = () => {
   const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
   const [printFontSize, setPrintFontSize] = useState(12);
   const [search, setSearchValue] = useState('');
+  const [selectedLedger, setSelectedLedger] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [orderType, setOrderType] = useState('');
   const [selectedLinkedOrder, setSelectedLinkedOrder] = useState<any | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    dispatch(getOrders({ page, perPage, search, orderType }));
+    dispatch(
+      getOrders({
+        page,
+        perPage,
+        search,
+        orderType,
+        orderFor: selectedLedger?.value ?? '',
+      }),
+    );
     setTotalPages(Math.ceil(orders?.data?.total / perPage));
     setTableData(orders?.data?.data);
-  }, [page, perPage, orderType, orders?.data?.total]);
+  }, [page, perPage, orderType, selectedLedger?.value, orders?.data?.total]);
 
   const handleSearchButton = (e: any) => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(getOrders({ page, perPage, search, orderType }));
+    dispatch(
+      getOrders({
+        page,
+        perPage,
+        search,
+        orderType,
+        orderFor: selectedLedger?.value ?? '',
+      }),
+    );
     if (orders?.data?.total >= 0) {
       setTotalPages(Math.ceil(orders?.data?.total / perPage));
       setTableData(orders?.data?.data);
     }
+  };
+  const handleResetFilters = () => {
+    setSearchValue('');
+    setSelectedLedger(null);
+    setOrderType('');
+    setPage(1);
+    setCurrentPage(1);
+    setPerPage(10);
+    dispatch(
+      getOrders({
+        page: 1,
+        perPage: 10,
+        search: '',
+        orderType: '',
+        orderFor: '',
+      }),
+    );
   };
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);
@@ -85,6 +120,18 @@ const Orders = () => {
 
   const handleOrderChange = (e: any) => {
     setOrderType(e.target.value);
+  };
+  const handleLedgerSelect = (option: any) => {
+    setSelectedLedger(
+      option
+        ? {
+            value: option.value,
+            label: option.label,
+          }
+        : null,
+    );
+    setCurrentPage(1);
+    setPage(1);
   };
   const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value, 10);
@@ -347,14 +394,25 @@ const Orders = () => {
   return (
     <div>
       <HelmetTitle title={'Orders List'} />
-      <div className="flex overflow-x-auto justify-between mb-1">
-        <div className="flex items-end gap-2 overflow-x-auto">
+      <div className="flex flex-col gap-2 mb-1 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-wrap items-end gap-2">
           <SelectOption
             onChange={handleSelectChange}
-            className="h-9 shrink-0"
+            className="h-9"
           />
-          <OrderTypes onChange={handleOrderChange} className="h-9 shrink-0" />
-          <div className="flex flex-nowrap items-end shrink-0 min-w-[320px]">
+          <OrderTypes onChange={handleOrderChange} className="h-9" />
+          <div className="min-w-[260px]">
+            <label htmlFor="" className="mb-1 block text-sm">
+              Select Ledger
+            </label>
+            <DdlMultiline
+              onSelect={handleLedgerSelect}
+              acType={''}
+              value={selectedLedger}
+              className='h-9'
+            />
+          </div>
+          <div className="flex flex-nowrap items-end min-w-[320px]">
             <SearchInput
               search={search}
               setSearchValue={setSearchValue}
@@ -364,10 +422,16 @@ const Orders = () => {
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
+              className="whitespace-nowrap h-9 mr-2"
+            />
+            <ButtonLoading
+              onClick={handleResetFilters}
+              buttonLoading={false}
+              label="Reset"
               className="whitespace-nowrap h-9"
             />
           </div>
-          <div className="ml-2">
+          <div>
             <InputElement
               id="printRowsPerPage"
               name="printRowsPerPage"
@@ -378,7 +442,7 @@ const Orders = () => {
               className="h-9 w-14"
             />
           </div>
-          <div className="ml-2">
+          <div>
             <InputElement
               id="printFontSize"
               name="printFontSize"
@@ -392,10 +456,10 @@ const Orders = () => {
           <PrintButton
             onClick={handlePrint}
             label="Print"
-            className="ml-2 pt-[0.45rem] pb-[0.45rem] h-9 whitespace-nowrap"
+            className="pt-[0.45rem] pb-[0.45rem] h-9 whitespace-nowrap"
           />
         </div>
-        <Link to="/orders/add-order" className="text-nowrap">
+        <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto">
           New orders
         </Link>
       </div>
