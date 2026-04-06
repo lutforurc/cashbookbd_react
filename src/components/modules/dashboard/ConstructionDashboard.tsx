@@ -378,21 +378,25 @@ const ConstructionDashboard = () => {
                               </div>
                               <div className="text-xs min-[462px]:text-sm w-8 min-[462px]:w-10 ml-3 mr-2 text-right">
                                 {!item.remittance ? (
-                                  <div
-                                    onClick={() =>
-                                      !loadingItems[item.vr_no] &&
-                                      handleCheckCircleClick(item)
-                                    }
-                                    className="inline-block cursor-pointer"
-                                  >
-                                    {loadingItems[item.vr_no] ? (
-                                      <FaSpinner className="text-red-500 text-sm animate-spin" />
-                                    ) : successItems[item.vr_no] ? (
-                                      <FaCheckCircle className="inline-block text-green-500 text-sm" />
-                                    ) : (
-                                      <FaRightToBracket className="text-red-500 text-sm" />
-                                    )}
-                                  </div>
+                                  isHeadOfficeBranch ? (
+                                    <FaRightToBracket className="text-red-500 text-sm inline-block" />
+                                  ) : (
+                                    <div
+                                      onClick={() =>
+                                        !loadingItems[item.vr_no] &&
+                                        handleCheckCircleClick(item)
+                                      }
+                                      className="inline-block cursor-pointer"
+                                    >
+                                      {loadingItems[item.vr_no] ? (
+                                        <FaSpinner className="text-red-500 text-sm animate-spin" />
+                                      ) : successItems[item.vr_no] ? (
+                                        <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                                      ) : (
+                                        <FaRightToBracket className="text-red-500 text-sm" />
+                                      )}
+                                    </div>
+                                  )
                                 ) : (
                                   <FaCheckCircle className="inline-block text-green-500 text-sm" />
                                 )}
