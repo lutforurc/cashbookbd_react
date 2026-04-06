@@ -17,6 +17,7 @@ type Props = {
   orderTypeLabel?: string;
   summary?: OrderSummary;
   rowsPerPage?: number;
+  fontSize?: number;
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -59,12 +60,14 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
       orderTypeLabel,
       summary,
       rowsPerPage = 12,
+      fontSize = 12,
     },
     ref,
   ) => {
     const rowsArr = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
     const grandSummary = summary || buildSummary(rowsArr);
+    const fs = Number.isFinite(fontSize) ? fontSize : 12;
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -106,42 +109,42 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
               <table className="w-full table-fixed border-collapse">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="w-12 border border-gray-900 px-2 py-2 text-center">Sl.</th>
-                    <th className="border border-gray-900 px-2 py-2 text-left">Order For</th>
-                    <th className="border border-gray-900 px-2 py-2 text-left">Product / Trx. Qty</th>
-                    <th className="border border-gray-900 px-2 py-2 text-left">Order No. / Date</th>
-                    <th className="w-32 border border-gray-900 px-2 py-2 text-right">Order Rate / Qty</th>
-                    <th className="w-32 border border-gray-900 px-2 py-2 text-right">Reference / Base Qty</th>
-                    <th className="w-36 border border-gray-900 px-2 py-2 text-right">Linked / Remaining</th>
+                    <th style={{ fontSize: fs }} className="w-12 border border-gray-900 px-2 py-2 text-center">Sl.</th>
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">Order For</th>
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">Product / Trx. Qty</th>
+                    <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-left">Order No. / Date</th>
+                    <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-right">Order Rate / Qty</th>
+                    <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-right">Reference / Base Qty</th>
+                    <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-right">Linked / Remaining</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pageRows.length > 0 ? (
                     pageRows.map((row: any, index: number) => (
                       <tr key={row?.id ?? index} className="align-top">
-                        <td className="border border-gray-900 px-2 py-2 text-center">
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-center">
                           {row?.serial ?? index + 1}
                         </td>
-                        <td className="border border-gray-900 px-2 py-2">
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
                           {row?.order_for || '-'}
                         </td>
-                        <td className="border border-gray-900 px-2 py-2">
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
                           <span className="block">{row?.product_name || '-'}</span>
                           <span className="block text-right">
                             Trx. Qty {thousandSeparator(Number(row?.trx_quantity || 0), 0)}
                           </span>
                         </td>
-                        <td className="border border-gray-900 px-2 py-2">
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
                           <span className="block font-semibold">{row?.order_number || '-'}</span>
                           <span className="block">{row?.order_date || '-'}</span>
                         </td>
-                        <td className="border border-gray-900 px-2 py-2 text-right">
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                           <span className="block">{thousandSeparator(Number(row?.order_rate || 0), 2)}</span>
                           <span className="block">
                             {thousandSeparator(Number(row?.total_order || 0), 0)}
                           </span>
                         </td>
-                        <td className="border border-gray-900 px-2 py-2 text-right">
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                           <span className="block">
                             {row?.reference_order?.order_number || row?.ref_order_number || '-'}
                           </span>
@@ -149,7 +152,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                             {thousandSeparator(Number(row?.base_order_quantity || 0), 0)}
                           </span>
                         </td>
-                        <td className="border border-gray-900 px-2 py-2 text-right">
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                           <span className="block">
                             Linked {thousandSeparator(Number(row?.linked_quantity || 0), 0)}
                           </span>
@@ -163,6 +166,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                     <tr>
                       <td
                         colSpan={7}
+                        style={{ fontSize: fs }}
                         className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                       >
                         No data found
@@ -170,30 +174,63 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                     </tr>
                   )}
                 </tbody>
-                <tfoot>
-                  <tr className="bg-gray-100 font-semibold">
-                    <td colSpan={4} className="border border-gray-900 px-2 py-2 text-right">
-                      Page Total
-                    </td>
-                    <td className="border border-gray-900 px-2 py-2 text-right">
+	                <tfoot>
+	                  <tr className="bg-gray-100 font-semibold">
+	                    <td style={{ fontSize: fs }} colSpan={3} className="border border-gray-900 px-2 py-2 text-right">
+	                      Page Total
+	                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                       Order Qty {thousandSeparator(Number(pageSummary.totalOrder || 0), 0)}
                     </td>
-                    <td className="border border-gray-900 px-2 py-2 text-right">
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                       Base Qty {thousandSeparator(Number(pageSummary.baseOrderQuantity || 0), 0)}
                     </td>
-                    <td className="border border-gray-900 px-2 py-2 text-right">
-                      <span className="block">
-                        Linked Qty {thousandSeparator(Number(pageSummary.linkedQuantity || 0), 0)}
-                      </span>
-                      <span className="block">
-                        Remaining Qty {thousandSeparator(Number(pageSummary.remainingQuantity || 0), 0)}
-                      </span>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
+                      Linked Qty {thousandSeparator(Number(pageSummary.linkedQuantity || 0), 0)}
                     </td>
-                  </tr>
-                </tfoot>
+	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
+	                      Remaining Qty {thousandSeparator(Number(pageSummary.remainingQuantity || 0), 0)}
+	                    </td>
+	                  </tr>
+                    {pageIndex === pages.length - 1 ? (
+                      <tr className="bg-gray-100 font-semibold">
+                        <td
+                          style={{ fontSize: fs }}
+                          colSpan={3}
+                          className="border border-gray-900 px-2 py-2 text-right"
+                        >
+                          Grand Total
+                        </td>
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-2 text-right"
+                        >
+                          Order Qty {thousandSeparator(Number(grandSummary.totalOrder || 0), 0)}
+                        </td>
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-2 text-right"
+                        >
+                          Base Qty {thousandSeparator(Number(grandSummary.baseOrderQuantity || 0), 0)}
+                        </td>
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-2 text-right"
+                        >
+                          Linked Qty {thousandSeparator(Number(grandSummary.linkedQuantity || 0), 0)}
+                        </td>
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-2 text-right"
+                        >
+                          Remaining Qty {thousandSeparator(Number(grandSummary.remainingQuantity || 0), 0)}
+                        </td>
+                      </tr>
+                    ) : null}
+	                </tfoot>
               </table>
 
-              <div className="mt-3 flex items-center justify-between text-xs text-gray-900">
+              <div style={{ fontSize: fs }} className="mt-3 flex items-center justify-between text-xs text-gray-900">
                 <span>* This document is system generated.</span>
                 <span>
                   Page {pageIndex + 1} of {pages.length}
@@ -205,52 +242,6 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
           );
         })}
 
-        <div className="page-break" />
-
-        <div className="print-page orders-print-page">
-          <PadPrinting />
-
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-center">{title}</h1>
-            <div className="mt-2 text-center text-sm font-semibold">Grand Total Summary</div>
-          </div>
-
-          <table className="w-full table-fixed border-collapse">
-            <tbody>
-              <tr className="bg-slate-200 font-bold">
-                <td className="w-1/2 border border-gray-900 px-3 py-3 text-right">Order Qty</td>
-                <td className="border border-gray-900 px-3 py-3 text-right">
-                  {thousandSeparator(Number(grandSummary.totalOrder || 0), 0)}
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-gray-900 px-3 py-3 text-right font-semibold">Base Qty</td>
-                <td className="border border-gray-900 px-3 py-3 text-right">
-                  {thousandSeparator(Number(grandSummary.baseOrderQuantity || 0), 0)}
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-gray-900 px-3 py-3 text-right font-semibold">Linked Qty</td>
-                <td className="border border-gray-900 px-3 py-3 text-right">
-                  {thousandSeparator(Number(grandSummary.linkedQuantity || 0), 0)}
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-gray-900 px-3 py-3 text-right font-semibold">Remaining Qty</td>
-                <td className="border border-gray-900 px-3 py-3 text-right">
-                  {thousandSeparator(Number(grandSummary.remainingQuantity || 0), 0)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div className="mt-3 flex items-center justify-between text-xs text-gray-900">
-            <span>* This document is system generated.</span>
-            <span>
-              Summary Page
-            </span>
-          </div>
-        </div>
       </div>
     );
   },

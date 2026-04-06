@@ -15,6 +15,7 @@ import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
 import { useReactToPrint } from 'react-to-print';
+import InputElement from '../../utils/fields/InputElement';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -44,6 +45,8 @@ const Orders = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState(10);
+  const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
+  const [printFontSize, setPrintFontSize] = useState(12);
   const [search, setSearchValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [orderType, setOrderType] = useState('');
@@ -82,6 +85,14 @@ const Orders = () => {
 
   const handleOrderChange = (e: any) => {
     setOrderType(e.target.value);
+  };
+  const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number.parseInt(e.target.value, 10);
+    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : 12);
+  };
+  const handlePrintFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number.parseInt(e.target.value, 10);
+    setPrintFontSize(Number.isFinite(value) && value > 0 ? value : 12);
   };
   const openLinkedOrdersModal = (row: any) => {
     setSelectedLinkedOrder(row);
@@ -334,8 +345,8 @@ const Orders = () => {
 
 
   return (
-    <div>
-      <HelmetTitle title={'Orders List'} />
+      <div>
+        <HelmetTitle title={'Orders List'} />
       <div className="flex overflow-x-auto justify-between mb-1">
         <div className="flex">
           <SelectOption
@@ -354,6 +365,28 @@ const Orders = () => {
             label="Search"
             className="whitespace-nowrap"
           />
+          <div className="ml-2">
+            <InputElement
+              id="printRowsPerPage"
+              name="printRowsPerPage"
+              label=""
+              value={String(printRowsPerPage)}
+              onChange={handlePrintRowsChange}
+              type="text"
+              className="h-9 w-14"
+            />
+          </div>
+          <div className="ml-2">
+            <InputElement
+              id="printFontSize"
+              name="printFontSize"
+              label=""
+              value={String(printFontSize)}
+              onChange={handlePrintFontSizeChange}
+              type="text"
+              className="h-9 w-14"
+            />
+          </div>
           <PrintButton
             onClick={handlePrint}
             label="Print"
@@ -389,6 +422,8 @@ const Orders = () => {
           searchText={search}
           orderTypeLabel={orderTypeLabel}
           summary={summary}
+          rowsPerPage={Number(printRowsPerPage)}
+          fontSize={Number(printFontSize)}
         />
       </div>
 
