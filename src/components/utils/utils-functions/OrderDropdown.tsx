@@ -13,6 +13,7 @@ interface OptionType {
     label_4?: string;
     label_5?: string;
     label_6?: string;
+    label_7?: string;
     order_type?: string;
     [key: string]: any;
 }
@@ -89,6 +90,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         label_4: item.label_4,
                         label_5: item.label_5,
                         label_6: item.label_6,
+                        label_7: item.label_7,
                         order_type: item.order_type,
                         ...item,
                     }));
@@ -147,6 +149,9 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                                     )}
                                     {option.label_6 && (
                                         <div className="text-gray-600 dark:text-white text-sm">Last Date: {formatDate(option.label_6)}</div>
+                                    )}
+                                    {option.label_7 && (
+                                        <div className="text-gray-600 dark:text-white text-sm">Order Qty: {option.label_7}</div>
                                     )}
                                 </div>
                             )}
