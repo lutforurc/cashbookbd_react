@@ -212,16 +212,16 @@ const Orders = () => {
       key: 'product_name',
       header: (
         <p>
-            <span className="block">Product</span>
-            <span className="block">Trx. Qty</span>
+          <span className="block">Product</span>
+          <span className="block">Trx. Qty</span>
         </p>
       ),
-        render: (data: any) => (
-            <p>
-            <span className="block">{data.product_name}</span>
-            <span className="block">{ thousandSeparator(data.trx_quantity, 0)}</span>
-            </p>
-        ),
+      render: (data: any) => (
+        <p>
+          <span className="block">{data.product_name}</span>
+          <span className="block">{thousandSeparator(data.trx_quantity, 0)}</span>
+        </p>
+      ),
     },
 
     {
@@ -232,8 +232,8 @@ const Orders = () => {
           <span className="block">Order Date</span>
         </p>
       ),
-    //   headerClass: 'text-right',
-    //   cellClass: 'text-right',
+      //   headerClass: 'text-right',
+      //   cellClass: 'text-right',
       render: (data: any) => (
         <p>
           {(data.linked_order_count ?? data.linked_orders_count ?? 0) > 0 ? (
@@ -242,7 +242,7 @@ const Orders = () => {
               className="block text-left hover:underline font-semibold text-green-500 dark:text-yellow-300"
               onClick={() => openLinkedOrdersModal(data)}
             >
-             <span className=''> {data.order_number}</span>
+              <span className=''> {data.order_number}</span>
             </button>
           ) : (
             <span className="block">{data.order_number}</span>
@@ -284,9 +284,9 @@ const Orders = () => {
           <span className="block">
             {data.base_order_quantity != null || data.reference_order?.total_order != null
               ? thousandSeparator(
-                  data.base_order_quantity ?? data.reference_order?.total_order ?? 0,
-                  0,
-                )
+                data.base_order_quantity ?? data.reference_order?.total_order ?? 0,
+                0,
+              )
               : '-'}
           </span>
         </p>
@@ -329,13 +329,13 @@ const Orders = () => {
       headerClass: 'text-center',
       render: (data: any) => (
         <div className="flex justify-center items-center">
-          <button onClick={() => {}} className="text-blue-500">
+          <button onClick={() => { }} className="text-blue-500">
             <FiBook className="cursor-pointer" />
           </button>
           <button onClick={() => navigate(`/orders/edit/${data.id}`, { state: { order: data } })} className="text-blue-500  ml-2">
             <FiEdit2 className="cursor-pointer" />
           </button>
-          <button onClick={() => {}} className="text-red-500 ml-2">
+          <button onClick={() => { }} className="text-red-500 ml-2">
             <FiTrash2 className="cursor-pointer" />
           </button>
         </div>
@@ -345,26 +345,28 @@ const Orders = () => {
 
 
   return (
-      <div>
-        <HelmetTitle title={'Orders List'} />
+    <div>
+      <HelmetTitle title={'Orders List'} />
       <div className="flex overflow-x-auto justify-between mb-1">
-        <div className="flex">
+        <div className="flex items-end gap-2 overflow-x-auto">
           <SelectOption
             onChange={handleSelectChange}
-            className="mr-1 md:mr-2"
+            className="h-9 shrink-0"
           />
-          <OrderTypes onChange={handleOrderChange} className="mr-1 md:mr-2" />
-          <SearchInput
-            search={search}
-            setSearchValue={setSearchValue}
-            className="text-nowrap"
-          />
-          <ButtonLoading
-            onClick={handleSearchButton}
-            buttonLoading={buttonLoading}
-            label="Search"
-            className="whitespace-nowrap"
-          />
+          <OrderTypes onChange={handleOrderChange} className="h-9 shrink-0" />
+          <div className="flex flex-nowrap items-end shrink-0 min-w-[320px]">
+            <SearchInput
+              search={search}
+              setSearchValue={setSearchValue}
+              className="text-nowrap h-9 min-w-[220px]"
+            />
+            <ButtonLoading
+              onClick={handleSearchButton}
+              buttonLoading={buttonLoading}
+              label="Search"
+              className="whitespace-nowrap h-9"
+            />
+          </div>
           <div className="ml-2">
             <InputElement
               id="printRowsPerPage"
@@ -461,8 +463,8 @@ const Orders = () => {
                 Total Linked Orders:{' '}
                 {thousandSeparator(
                   selectedLinkedOrder.linked_order_count ??
-                    selectedLinkedOrder.linked_orders_count ??
-                    0,
+                  selectedLinkedOrder.linked_orders_count ??
+                  0,
                   0,
                 )}
               </div>
@@ -481,7 +483,7 @@ const Orders = () => {
                   </thead>
                   <tbody>
                     {Array.isArray(selectedLinkedOrder.linked_orders) &&
-                    selectedLinkedOrder.linked_orders.length > 0 ? (
+                      selectedLinkedOrder.linked_orders.length > 0 ? (
                       selectedLinkedOrder.linked_orders.map((item: any, index: number) => (
                         <tr
                           key={item.id ?? index}
