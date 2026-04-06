@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { dispatchRemittance, getDashboard } from './dashboardSlice';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import TransactionChart from './TransactionChart';
-import { FaCheckCircle, FaSpinner } from 'react-icons/fa';
+import { FaCheckCircle, FaMinus, FaPlus, FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 import {
@@ -22,6 +22,9 @@ const ConstructionDashboard = () => {
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
+  const protectedBranches = useSelector(
+    (s: any) => s.branchDdl?.protectedData?.data || [],
+  );
   const [displayMonth, setDisplayMonth] = useState<number | ''>('');
   const [branchId, setBranchId] = useState<number | null>(null);
   const [loadingItems, setLoadingItems] = useState<{ [key: string]: boolean }>(
@@ -31,6 +34,7 @@ const ConstructionDashboard = () => {
     {},
   ); // Track success state per item
   const [totalDebit, setTotalDebit] = useState(0); // State to store the total sum of debits
+  const [expandedBranchKey, setExpandedBranchKey] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(getDashboard());
@@ -39,15 +43,68 @@ const ConstructionDashboard = () => {
     dispatch(getDdlProtectedBranch());
   }, []);
 
-  useEffect(() => {
-    // Calculate the total sum of debits whenever the data is loaded
-    if (dashboard?.data?.receiveDetails?.receivedDetails) {
-      const total = dashboard?.data?.receiveDetails?.receivedDetails[
-        dashboard?.data?.branch?.id
-      ]?.reduce((sum: number, item: any) => sum + Number(item.debit), 0);
-      setTotalDebit(total); // Set the total sum of debits
-    }
+  const groupedReceiveDetails = useMemo(() => {
+    return dashboard?.data?.receiveDetails?.receivedDetails || {};
   }, [dashboard?.data?.receiveDetails?.receivedDetails]);
+
+  const isHeadOfficeBranch = currentBranch?.branch_types_id == 1;
+  const hasReceiveDetails = Object.values(groupedReceiveDetails).some(
+    (items): items is any[] => Array.isArray(items) && items.length > 0,
+  );
+
+  const branchNameMap = useMemo(() => {
+    const branchMap: Record<string, string> = {};
+
+    if (Array.isArray(protectedBranches)) {
+      protectedBranches.forEach((branch: any) => {
+        if (branch?.id != null) {
+          branchMap[String(branch.id)] =
+            branch.name || branch.branch_name || branch.label || '';
+        }
+      });
+    }
+
+    if (dashboard?.data?.branch?.id != null && dashboard?.data?.branch?.name) {
+      branchMap[String(dashboard.data.branch.id)] = dashboard.data.branch.name;
+    }
+
+    return branchMap;
+  }, [protectedBranches, dashboard?.data?.branch]);
+
+  useEffect(() => {
+    const entries = Object.entries(groupedReceiveDetails).filter(
+      ([, items]) => Array.isArray(items) && items.length > 0,
+    );
+
+    if (!entries.length) {
+      setExpandedBranchKey(null);
+      setTotalDebit(0);
+      return;
+    }
+
+    setExpandedBranchKey((prev) => {
+      if (!isHeadOfficeBranch) {
+        return entries[0]?.[0] || null;
+      }
+
+      return prev && entries.some(([branchKey]) => branchKey === prev)
+        ? prev
+        : null;
+    });
+
+    const total = entries.reduce((sum, [, items]) => {
+      const branchItems = Array.isArray(items) ? items : [];
+      return (
+        sum +
+        branchItems.reduce(
+          (branchSum: number, item: any) => branchSum + Number(item.debit || 0),
+          0,
+        )
+      );
+    }, 0);
+
+    setTotalDebit(total);
+  }, [groupedReceiveDetails, isHeadOfficeBranch]);
 
   useEffect(() => {
     const handleStorageChange = (event: any) => {
@@ -105,12 +162,18 @@ const ConstructionDashboard = () => {
     );
   };
 
+  const toggleBranchDetails = (branchKey: string) => {
+    if (!isHeadOfficeBranch) return;
+
+    setExpandedBranchKey((prev) => (prev === branchKey ? null : branchKey));
+  };
+
 
 
  
   return (
     <>
-      <HelmetTitle title="Dashboard" />
+      <HelmetTitle title="Construction Dashboard" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:text-xs xl:grid-cols-4 gap-10 flex-wrap">
         {dashboard.isLoading == false ? (
           <>
@@ -234,16 +297,10 @@ const ConstructionDashboard = () => {
         )}
       </div>
 
-      {!dashboard.isLoading &&
-        currentBranch?.business_type_id === 7 &&
-        Object.values(
-          dashboard?.data?.receiveDetails?.receivedDetails || {},
-        ).some(
-          (items): items is any[] => Array.isArray(items) && items.length > 0,
-        ) ? (
+      {!dashboard.isLoading && hasReceiveDetails ? (
         <>
-          <div className="grid grid-cols-1 xl:grid-cols-2 mt-6 ">
-            <div className="bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
+          <div className="grid grid-cols-1 mt-6">
+            <div className="w-full xl:w-[500px] bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
               <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 flex justify-between">
                 <span className="text-sm font-bold">
                   {!dashboard.isLoading && dashboard?.data?.transactionText}
@@ -253,46 +310,100 @@ const ConstructionDashboard = () => {
                 </span>
               </div>
               <div className="max-h-96 overflow-y-auto">
-                {' '}
-                {!dashboard.isLoading &&
-                  dashboard?.data?.receiveDetails?.receivedDetails &&
-                  dashboard?.data?.receiveDetails?.receivedDetails[
-                    dashboard?.data?.branch?.id
-                  ]?.map((item: any, index: number) => (
-                    <div className="p-2 flex items-center" key={item.vr_no}>
-                      <div className="text-xs min-[462px]:text-sm text-center w-6">{++index}</div>
-                      <div className="text-xs min-[462px]:text-sm w-20 min-[462px]:w-24 font-medium ">
-                        {formatDate(item.vr_date)}
-                      </div>
-                      <div className="text-xs min-[462px]:text-sm min-[462px]:w-10 font-medium flex-1">
-                        {item.vr_no}
-                      </div>
-                      <div className="text-xs min-[462px]:text-sm w-20 text-right">
-                        {thousandSeparator(item.debit, 0)}
-                      </div>
-                      <div className="text-xs min-[462px]:text-sm w-6 min-[462px]:w-10 mr-4 text-right">
-                        {!item.remittance ? (
-                          <div
-                            onClick={() =>
-                              !loadingItems[item.vr_no] &&
-                              handleCheckCircleClick(item)
-                            }
-                            className="inline-block cursor-pointer"
-                          >
-                            {loadingItems[item.vr_no] ? (
-                              <FaSpinner className="text-red-500 text-sm animate-spin" />
-                            ) : successItems[item.vr_no] ? (
-                              <FaCheckCircle className="inline-block text-green-500 text-sm" />
-                            ) : (
-                              <FaRightToBracket className="text-red-500 text-sm" />
-                            )}
-                          </div>
-                        ) : (
-                          <FaCheckCircle className="inline-block text-green-500 text-sm" />
-                        )}
-                      </div>
+                {Object.entries(groupedReceiveDetails).map(([branchKey, items]) => {
+                  if (!Array.isArray(items) || items.length === 0) {
+                    return null;
+                  }
+
+                  const branchTotal = items.reduce(
+                    (sum: number, item: any) => sum + Number(item.debit || 0),
+                    0,
+                  );
+                  const isExpanded =
+                    isHeadOfficeBranch ? expandedBranchKey === branchKey : true;
+                  const branchName =
+                    branchNameMap[branchKey] ||
+                    `Branch ${branchKey}`;
+
+                  return (
+                    <div
+                      className="border-b border-slate-200 last:border-b-0 dark:border-gray-600"
+                      key={branchKey}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleBranchDetails(branchKey)}
+                        className={`w-full px-3 py-2 text-left ${
+                          isHeadOfficeBranch ? 'cursor-pointer' : 'cursor-default'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 text-xs min-[462px]:text-sm">
+                          <span className="font-semibold flex-1">{branchName}</span>
+                          <span className="font-semibold whitespace-nowrap">
+                            <span className="mr-2"></span>
+                            <span>{thousandSeparator(branchTotal, 0)}</span>
+                          </span>
+                          <span className="w-5 text-right text-sky-600">
+                            {isHeadOfficeBranch ? (
+                              isExpanded ? (
+                                <FaMinus className="inline-block text-xs" />
+                              ) : (
+                                <FaPlus className="inline-block text-xs" />
+                              )
+                            ) : null}
+                          </span>
+                        </div>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="pb-1">
+                          {items.map((item: any, index: number) => (
+                            <div
+                              className="px-3 py-2 flex items-center border-t border-slate-100 dark:border-gray-600"
+                              key={`${branchKey}-${item.vr_no}-${index}`}
+                            >
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="text-xs min-[462px]:text-sm text-center w-6 shrink-0">
+                                  {index + 1}
+                                </div>
+                                <div className="text-xs min-[462px]:text-sm flex-[1.35] min-w-0 font-medium truncate">
+                                  {item.vr_no}
+                                </div>
+                                <div className="text-xs min-[462px]:text-sm flex-1 min-w-0 font-medium">
+                                  {formatDate(item.vr_date)}
+                                </div>
+                              </div>
+                              <div className="text-xs min-[462px]:text-sm w-26 min-[462px]:w-32 text-right shrink-0">
+                                {thousandSeparator(item.debit, 0)}
+                              </div>
+                              <div className="text-xs min-[462px]:text-sm w-8 min-[462px]:w-10 ml-3 mr-2 text-right">
+                                {!item.remittance ? (
+                                  <div
+                                    onClick={() =>
+                                      !loadingItems[item.vr_no] &&
+                                      handleCheckCircleClick(item)
+                                    }
+                                    className="inline-block cursor-pointer"
+                                  >
+                                    {loadingItems[item.vr_no] ? (
+                                      <FaSpinner className="text-red-500 text-sm animate-spin" />
+                                    ) : successItems[item.vr_no] ? (
+                                      <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                                    ) : (
+                                      <FaRightToBracket className="text-red-500 text-sm" />
+                                    )}
+                                  </div>
+                                ) : (
+                                  <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))}
+                  );
+                })}
               </div>
             </div>
           </div>
