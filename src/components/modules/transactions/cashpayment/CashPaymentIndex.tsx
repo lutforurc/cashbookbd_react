@@ -9,7 +9,7 @@ const CashPaymentIndex = () => {
   const settings = useSelector((state: any) => state.settings);
 
   const branchTypeId =
-    settings?.data?.branch?.branch_types_id ?? currentBranch?.business_type_id;
+    settings?.data?.branch?.business_type_id ?? currentBranch?.business_type_id;
 
   const components: { [key: number]: JSX.Element } = {
     1: <HeadOfficeCashPayment />,

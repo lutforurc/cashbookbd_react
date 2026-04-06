@@ -278,7 +278,7 @@ const TradingCashPayment = () => {
       setTableData(cashPayment.data); // Update tableData only if it's an array
       setIsUpdateButton(true);
     }
-  }, [cashPayment.isEdit]);
+  }, [cashPayment.data, cashPayment.isEdit]);
 
   const handleInvoiceUpdate = async () => {
     // Check Required fields are not empty
@@ -372,7 +372,9 @@ const TradingCashPayment = () => {
                     formData.purchaseOrderNumber
                       ? {
                         value: formData.purchaseOrderNumber,
-                        label: formData.purchaseOrderText, //productData.accountName
+                        label:
+                          formData.purchaseOrderText ||
+                          String(formData.purchaseOrderNumber), //productData.accountName
                       }
                       : null
                   }
@@ -380,7 +382,9 @@ const TradingCashPayment = () => {
                     formData.purchaseOrderNumber
                       ? {
                         value: formData.purchaseOrderNumber,
-                        label: formData.purchaseOrderText, //productData.accountName
+                        label:
+                          formData.purchaseOrderText ||
+                          String(formData.purchaseOrderNumber), //productData.accountName
                       }
                       : null
                   }
