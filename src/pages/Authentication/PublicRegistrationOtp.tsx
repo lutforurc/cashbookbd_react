@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { userCurrentBranch } from '../../components/modules/branch/branchSlice';
 import { getSettings } from '../../components/modules/settings/settingsSlice';
+import { fetchCurrentSubscription } from '../../components/modules/subscription/subscriptionSlice';
 import ROUTES from '../../components/services/appRoutes';
 import {
   API_CSRF_COOKIES,
@@ -124,7 +125,7 @@ const PublicRegistrationOtp: React.FC = () => {
       return;
     }
 
-    if (!state?.otp_session) {
+    if (!otpSession) {
       toast.error('OTP session not found. Please request OTP again.');
       return;
     }
@@ -149,6 +150,7 @@ const PublicRegistrationOtp: React.FC = () => {
         });
         dispatch(userCurrentBranch() as any);
         dispatch(getSettings() as any);
+        await dispatch(fetchCurrentSubscription() as any);
       }
 
       toast.success(response?.data?.message || 'Registration completed successfully.');

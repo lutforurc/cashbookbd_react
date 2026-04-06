@@ -38,7 +38,7 @@ class SubscriptionService
             ->first();
 
         if (!$subscription) {
-            $subscription = $this->ensureCompanyTrialSubscription($companyId, $user?->id);
+            $subscription = $this->provisionTrialSubscription($companyId, $user?->id);
         }
 
         if (!$subscription) {
@@ -534,30 +534,56 @@ class SubscriptionService
 
                 $trialDays = max((int) ($plan->trial_days ?? 0), 0);
                 $needsTrialDates = $trialDays > 0 && (!$existing->trial_start_at || !$existing->trial_end_at);
+                $needsTrialAccess =
+                    $trialDays > 0 &&
+                    (
+                        $existing->status !== 'trialing' ||
+                        $existing->access_status !== 'full' ||
+                        !$existing->start_date ||
+                        !$existing->end_date
+                    );
 
-                if (!$needsTrialDates) {
+                if (!$needsTrialDates && !$needsTrialAccess) {
                     return $existing;
                 }
 
                 $trialStartAt = Carbon::parse($existing->start_date ?: Carbon::now());
                 $trialEndAt = $trialStartAt->copy()->addDays($trialDays);
 
+                $updatePayload = [
+                    'updated_by' => $userId,
+                    'updated_at' => Carbon::now(),
+                ];
+
+                if ($needsTrialDates) {
+                    $updatePayload['trial_start_at'] = $trialStartAt;
+                    $updatePayload['trial_end_at'] = $trialEndAt;
+                }
+
+                if ($needsTrialAccess) {
+                    $updatePayload['status'] = 'trialing';
+                    $updatePayload['access_status'] = 'full';
+                    $updatePayload['start_date'] = $trialStartAt->toDateString();
+                    $updatePayload['end_date'] = $trialEndAt->toDateString();
+                    $updatePayload['next_billing_date'] = $trialEndAt->toDateString();
+
+                    if (empty($existing->notes)) {
+                        $updatePayload['notes'] = sprintf('Auto-restored %d day trial for new company.', $trialDays);
+                    }
+                }
+
                 DB::table('saas_tenant_subscriptions')
                     ->where('id', $existing->id)
-                    ->update([
-                        'trial_start_at' => $trialStartAt,
-                        'trial_end_at' => $trialEndAt,
-                        'updated_by' => $userId,
-                        'updated_at' => Carbon::now(),
-                    ]);
+                    ->update($updatePayload);
 
                 $this->logActivity(
                     (int) $existing->id,
                     $companyId,
-                    'trial_dates_backfilled',
+                    $needsTrialAccess ? 'trial_restored' : 'trial_dates_backfilled',
                     [
                         'plan_id' => (int) ($existing->plan_id ?? 0),
                         'trial_days' => $trialDays,
+                        'restored_status' => $needsTrialAccess,
                     ],
                     $userId
                 );
