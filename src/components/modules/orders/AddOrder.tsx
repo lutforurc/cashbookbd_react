@@ -321,6 +321,15 @@ const AddOrder = (user: any) => {
             return;
         }
 
+        if (!formData.order_date || !String(formData.order_date).trim()) {
+            toast.error('Order date is required.');
+            const orderDateElement = document.getElementById('order_date');
+            if (orderDateElement) {
+                orderDateElement.focus();
+            }
+            return;
+        }
+
         const payload = {
             ...(isEditMode ? { id } : {}),
             branch_id: formData.branch_id,
