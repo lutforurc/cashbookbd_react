@@ -402,9 +402,6 @@ const Orders = () => {
           />
           <OrderTypes onChange={handleOrderChange} className="h-9" />
           <div className="min-w-[260px]">
-            <label htmlFor="" className="mb-1 block text-sm">
-              Select Ledger
-            </label>
             <DdlMultiline
               onSelect={handleLedgerSelect}
               acType={''}
