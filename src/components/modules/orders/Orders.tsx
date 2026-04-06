@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getOrders } from './ordersSlice';
 import { useNavigate } from 'react-router-dom';
@@ -6,13 +6,15 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import SearchInput from '../../utils/fields/SearchInput';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
 import { FiBook, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import OrdersPrint from './OrdersPrint';
+import { useReactToPrint } from 'react-to-print';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -46,6 +48,7 @@ const Orders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [orderType, setOrderType] = useState('');
   const [selectedLinkedOrder, setSelectedLinkedOrder] = useState<any | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     dispatch(getOrders({ page, perPage, search, orderType }));
@@ -170,6 +173,18 @@ const Orders = () => {
     ],
     [summary],
   );
+
+  const orderTypeLabel = useMemo(() => {
+    if (orderType === '1') return 'Purchase Order';
+    if (orderType === '2') return 'Sales Order';
+    return 'All';
+  }, [orderType]);
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: 'Orders List Print',
+    removeAfterPrint: true,
+  });
 
   const columns = [
     {
@@ -339,6 +354,11 @@ const Orders = () => {
             label="Search"
             className="whitespace-nowrap"
           />
+          <PrintButton
+            onClick={handlePrint}
+            label="Print"
+            className="ml-2 pt-[0.45rem] pb-[0.45rem] h-9 whitespace-nowrap"
+          />
         </div>
         <Link to="/orders/add-order" className="text-nowrap">
           New orders
@@ -359,6 +379,17 @@ const Orders = () => {
         ) : (
           ''
         )}
+      </div>
+
+      <div className="hidden">
+        <OrdersPrint
+          ref={printRef}
+          rows={tableData || []}
+          title="Orders List Print"
+          searchText={search}
+          orderTypeLabel={orderTypeLabel}
+          summary={summary}
+        />
       </div>
 
       {selectedLinkedOrder && (
