@@ -130,12 +130,12 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
                           <span className="block">{row?.product_name || '-'}</span>
-                          <span className="block text-right">
+                          <span className="block">
                             Trx. Qty {thousandSeparator(Number(row?.trx_quantity || 0), 0)}
                           </span>
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
-                          <span className="block font-semibold">{row?.order_number || '-'}</span>
+                          <span className="block">{row?.order_number || '-'}</span>
                           <span className="block">{row?.order_date || '-'}</span>
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
