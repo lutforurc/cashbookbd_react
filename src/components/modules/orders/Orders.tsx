@@ -142,23 +142,23 @@ const Orders = () => {
     () => [
       [
         {
-          label: summary.fromApi ? 'Summary' : 'Page Summary',
+          label: summary.fromApi ? 'Grand Total' : 'Page Summary',
           colSpan: 4,
           className: 'text-right',
         },
         {
-          label: thousandSeparator(summary.totalOrder, 0),
+          label: `Order Qty ${thousandSeparator(summary.totalOrder, 0)}`,
           className: 'text-right',
         },
         {
-          label: thousandSeparator(summary.baseOrderQuantity, 0),
-          className: 'text-left',
+          label: `Base Qty ${thousandSeparator(summary.baseOrderQuantity, 0)}`,
+          className: 'text-right',
         },
         {
           label: (
             <p className="text-right">
-              <span className="block">{thousandSeparator(summary.linkedQuantity, 0)}</span>
-              <span className="block">{thousandSeparator(summary.remainingQuantity, 0)}</span>
+              <span className="block">{`Linked Qty ${thousandSeparator(summary.linkedQuantity, 0)}`}</span>
+              <span className="block">{`Remaining Qty ${thousandSeparator(summary.remainingQuantity, 0)}`}</span>
             </p>
           ),
           className: 'text-right',
