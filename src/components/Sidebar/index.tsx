@@ -568,7 +568,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'cashbook.view') && (
+
+                          {/* INSERT INTO `permissions` (`id`, `name`, `group_name`, `guard_name`, `created_at`, `updated_at`) VALUES (NULL, 'productwise.profit', 'Report', 'web', '2022-03-16 13:40:01', '2022-03-16 13:40:01'); */}
+                          {hasPermission(permissions, 'productwise.profit') && (
                             <li>
                               <NavLink
                                 to={routes.product_profit_loss}

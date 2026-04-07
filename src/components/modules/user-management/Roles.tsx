@@ -13,6 +13,7 @@ import { formatRoleNameForCashBook } from '../../utils/utils-functions/formatRol
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { toast } from 'react-toastify';
 import { FiPlus } from 'react-icons/fi';
+import { getSettings } from '../settings/settingsSlice';
 
 interface Permission {
   id: number;
@@ -70,17 +71,6 @@ const Roles = () => {
     const availablePermissions = Array.isArray(rolesPermissions.permissions?.data?.data)
       ? rolesPermissions.permissions.data.data
       : [];
-    
-    if (isCompanyBoundRoleView) {
-      const sortedPermissions = [...rolePermissions].sort((a, b) => {
-        const groupCompare = (a.group_name || '').localeCompare(b.group_name || '');
-        if (groupCompare !== 0) return groupCompare;
-        return (a.name || '').localeCompare(b.name || '');
-      });
-
-      setPermissions(sortedPermissions);
-      return;
-    }
 
     const mergedPermissions = [...availablePermissions];
     const existingIds = new Set(mergedPermissions.map((perm: Permission) => perm.id));
@@ -190,6 +180,7 @@ const Roles = () => {
     setUpdating(true);
     try {
       await dispatch(updateRolePermissions({ roleId, selectedPermissions }) as any).unwrap();
+      await dispatch(getSettings() as any);
       toast.success(rolesPermissions?.updatePermission?.message || 'Permissions updated successfully');
     } catch (error: any) {
       toast.error(error?.message || 'Failed to update permissions');

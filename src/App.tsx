@@ -379,10 +379,12 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
-              <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
               <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
               <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
               <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit']} loading={permissionsLoading} />}>
+              <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.customer']} loading={permissionsLoading} />}>
               <Route path={routes.customer_supplier_statement} element={<LedgerWithProduct user={me} />} />
