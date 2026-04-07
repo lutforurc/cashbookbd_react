@@ -27,6 +27,7 @@ export const MENU_PERMISSIONS = {
     'sales.ledger',
     'group.report',
     'mitch.match',
+    'productwise.profit',
   ],
   requisition: ['requisition.create', 'requisition.comparison'],
   products: ['products.view'],
