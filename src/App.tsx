@@ -122,6 +122,7 @@ import UnitSalePaymentEdit from './components/modules/real-estate/checks/UnitSal
 import UnitSalePaymentEntry from './components/modules/real-estate/checks/UnitSalePaymentEntry';
 import ProductStockIndex from './components/modules/reports/productstock/ProductStockIndex';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
+import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
 import BalanceSheet from './components/modules/reports/balance-sheet/BalanceSheet';
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
@@ -378,6 +379,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
+              <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
               <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
               <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
               <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />

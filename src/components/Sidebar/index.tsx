@@ -482,6 +482,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   activeCondition={
                     pathname === '/reports/cashbook' ||
                     pathname === routes.profit_loss || //'/reports/profit-loss' ||
+                    pathname === routes.product_profit_loss ||
                     pathname === routes.balance_sheet ||
                     pathname === routes.trial_balance_level3 ||
                     pathname === routes.trial_balance_level4 ||
@@ -518,6 +519,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname.includes('/reports/labour/ledger') ||
                           pathname.includes('/reports/mitch-match') ||
                           pathname.includes(routes.profit_loss) ||
+                          pathname.includes(routes.product_profit_loss) ||
                           pathname.includes(routes.balance_sheet) ||
                           pathname.includes(routes.trial_balance_level3) ||
                           pathname.includes(routes.trial_balance_level4) ||
@@ -563,6 +565,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 }
                               >
                                 Profit Loss
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_profit_loss}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product Profit Loss
                               </NavLink>
                             </li>
                           )}
