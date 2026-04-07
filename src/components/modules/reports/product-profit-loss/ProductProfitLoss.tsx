@@ -15,6 +15,7 @@ import httpService from "../../../services/httpService";
 import { API_REPORT_PRODUCT_PROFIT_LOSS_URL } from "../../../services/apiRoutes";
 import Table from "../../../utils/others/Table";
 import ProductProfitLossPrint from "./ProductProfitLossPrint";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 type ProductProfitRow = {
   sl?: number;
@@ -246,7 +247,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{formatNumber(row?.sold_qty, 0)}</div>
+        <div>{thousandSeparator(row?.sold_qty, 0)}</div>
       ),
     },
     {
@@ -255,7 +256,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{formatMoney(row?.unit_purchase_rate)}</div>
+        <div>{thousandSeparator( Number(row?.unit_purchase_rate), 0)}</div>
       ),
     },
     {
@@ -264,7 +265,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{formatMoney(row?.purchase_total)}</div>
+        <div>{thousandSeparator( Number(row?.purchase_total), 0)}</div>
       ),
     },
     {
@@ -273,7 +274,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{formatMoney(row?.unit_sale_rate)}</div>
+        <div>{thousandSeparator( Number(row?.unit_sale_rate), 0)}</div>
       ),
     },
     {
@@ -282,7 +283,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{formatMoney(row?.sale_total)}</div>
+        <div>{thousandSeparator( Number(row?.sale_total), 0)}</div>
       ),
     },
     {
@@ -291,7 +292,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{formatMoney(row?.profit)}</div>
+        <div>{thousandSeparator( Number(row?.profit), 0)}</div>
       ),
     },
     {
@@ -317,7 +318,7 @@ const ProductProfitLoss = (user: any) => {
             className: "text-left",
           },
           {
-            label: formatNumber(summary.totalQty, 0),
+            label: thousandSeparator(summary.totalQty, 0),
             className: "text-right",
           },
           {
@@ -325,7 +326,7 @@ const ProductProfitLoss = (user: any) => {
             className: "text-right",
           },
           {
-            label: formatMoney(summary.totalPurchase),
+            label: thousandSeparator(summary.totalPurchase, 0),
             className: "text-right",
           },
           {
@@ -333,19 +334,20 @@ const ProductProfitLoss = (user: any) => {
             className: "text-right",
           },
           {
-            label: formatMoney(summary.totalSales),
+            label: thousandSeparator(summary.totalSales, 0),
             className: "text-right",
           },
           {
-            label: `${getNetLabel(summary.totalProfit)}: ${formatMoney(
-              Math.abs(summary.totalProfit)
+            label: `${getNetLabel(summary.totalProfit)}: ${thousandSeparator(
+              Math.abs(summary.totalProfit),
+              0
             )}`,
             className: "text-right",
           },
           {
             label:
               summary.warningCount > 0
-                ? `${formatNumber(summary.warningCount, 0)} warning`
+                ? `${thousandSeparator(summary.warningCount, 0)} warning`
                 : "-",
           },
         ],
@@ -450,19 +452,19 @@ const ProductProfitLoss = (user: any) => {
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-wrap gap-2 text-xs">
                 <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Qty: {formatNumber(summary.totalQty, 0)}
+                  Qty: {thousandSeparator(summary.totalQty, 0)}
                 </span>
                 <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Purchase: {formatMoney(summary.totalPurchase)}
+                  Purchase: {thousandSeparator(summary.totalPurchase, 0)}
                 </span>
                 <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Sales: {formatMoney(summary.totalSales)}
+                  Sales: {thousandSeparator(summary.totalSales, 0)}
                 </span>
                 <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Profit: {formatMoney(summary.totalProfit)}
+                  Profit: {thousandSeparator(Math.abs(summary.totalProfit), 0)}
                 </span>
                 <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Warning: {formatNumber(summary.warningCount, 0)}
+                  Warning: {thousandSeparator(summary.warningCount, 0)}
                 </span>
               </div>
             </div>
