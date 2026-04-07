@@ -123,6 +123,7 @@ import UnitSalePaymentEntry from './components/modules/real-estate/checks/UnitSa
 import ProductStockIndex from './components/modules/reports/productstock/ProductStockIndex';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
+import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
 import BalanceSheet from './components/modules/reports/balance-sheet/BalanceSheet';
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
@@ -398,6 +399,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.view', 'ledger.customer']} loading={permissionsLoading} />}>
               <Route path={routes.report_ledger} element={<Ledger user={me} />} />
+              <Route path={routes.product_ledger_data} element={<ProductLedgerData user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.labour']} loading={permissionsLoading} />}>
               <Route path={routes.report_labour_ledger} element={<LabourLedger user={me} />} />

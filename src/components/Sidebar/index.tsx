@@ -487,6 +487,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname === routes.trial_balance_level3 ||
                     pathname === routes.trial_balance_level4 ||
                     pathname === routes.customer_supplier_statement ||
+                    pathname === routes.product_ledger_data ||
                     pathname === '/reports/employee-installment' ||
                     pathname === '/reports/ledger' ||
                     pathname === '/reports/due-installments' ||
@@ -524,6 +525,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname.includes(routes.trial_balance_level3) ||
                           pathname.includes(routes.trial_balance_level4) ||
                           pathname.includes(routes.customer_supplier_statement) ||
+                          pathname.includes(routes.product_ledger_data) ||
                           pathname.includes('reports/ledger')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -659,6 +661,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 }
                               >
                                 Ledger
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'ledger.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_ledger_data}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product In Out
                               </NavLink>
                             </li>
                           )}

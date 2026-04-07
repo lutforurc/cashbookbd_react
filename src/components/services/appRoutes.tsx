@@ -97,6 +97,7 @@ const ROUTES = {
   report_cashbook: '/reports/cashbook',
   profit_loss: '/reports/profit-loss',
   product_profit_loss: '/reports/product-profit-loss',
+  product_ledger_data: '/reports/product-ledger-data',
   balance_sheet: '/reports/balance-sheet',
   trial_balance_level3: '/reports/trialbalance-level3',
   trial_balance_level4: '/reports/trialbalance-level4',
