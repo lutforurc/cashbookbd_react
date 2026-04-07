@@ -381,6 +381,7 @@ export const API_CONSTRUCTION_LABOUR_UPDATE_URL = `${API_BASE_URL}/construction/
 // Orders Route
 export const API_ORDERS_DDL_URL = `${API_BASE_URL}/invoice/order/search`;
 export const API_ORDERS_LIST_URL = `${API_BASE_URL}/invoice/order/list`;
+export const API_ORDERS_TRANSACTION_URL = `${API_BASE_URL}/invoice/order/transaction`;
 export const API_ORDERS_EDIT_URL = `${API_BASE_URL}/invoice/order/edit/`;
 export const API_ORDERS_STORE_URL = `${API_BASE_URL}/invoice/order/store`;
 export const API_ORDERS_UPDATE_URL = `${API_BASE_URL}/invoice/order/update`;

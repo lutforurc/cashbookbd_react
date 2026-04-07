@@ -10,13 +10,17 @@ import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButt
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
-import { FiBook, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
+import { FiEdit2, FiEye, FiTrash2, FiX } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
+import OrderTransactionPrint from './OrderTransactionPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../utils/fields/InputElement';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
+import { API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
+import httpService from '../../services/httpService';
+import { toast } from 'react-toastify';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -54,6 +58,9 @@ const Orders = () => {
   const [orderType, setOrderType] = useState('');
   const [selectedLinkedOrder, setSelectedLinkedOrder] = useState<any | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
+  const transactionPrintRef = useRef<HTMLDivElement>(null);
+  const [selectedPrintOrder, setSelectedPrintOrder] = useState<any | null>(null);
+  const [printingOrderId, setPrintingOrderId] = useState<number | string | null>(null);
 
   useEffect(() => {
     dispatch(
@@ -244,6 +251,52 @@ const Orders = () => {
     removeAfterPrint: true,
   });
 
+  const handleTransactionPrint = useReactToPrint({
+    content: () => transactionPrintRef.current,
+    documentTitle: selectedPrintOrder?.order_number
+      ? `Order-${selectedPrintOrder.order_number}`
+      : 'Order Details Print',
+    removeAfterPrint: true,
+  });
+
+  useEffect(() => {
+    if (!selectedPrintOrder) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      handleTransactionPrint();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [handleTransactionPrint, selectedPrintOrder]);
+
+  const handleOrderTransactionPrint = async (order: any) => {
+    try {
+      setPrintingOrderId(order?.id ?? null);
+      const response = await httpService.get(`${API_ORDERS_TRANSACTION_URL}/${order?.id}`);
+      const payload =
+        response?.data?.data?.data ??
+        response?.data?.data ??
+        null;
+
+      if (!payload?.order) {
+        throw new Error('Order print payload not found');
+      }
+
+      setSelectedPrintOrder({
+        ...order,
+        ...payload.order,
+        transaction_rows: payload.transactions || [],
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error('Order print data load করা যায়নি।');
+    } finally {
+      setPrintingOrderId(null);
+    }
+  };
+
   const columns = [
     {
       key: 'serial',
@@ -376,8 +429,14 @@ const Orders = () => {
       headerClass: 'text-center',
       render: (data: any) => (
         <div className="flex justify-center items-center">
-          <button onClick={() => { }} className="text-blue-500">
-            <FiBook className="cursor-pointer" />
+          <button
+            type="button"
+            onClick={() => void handleOrderTransactionPrint(data)}
+            className="text-blue-500"
+            title="Open print page"
+            disabled={printingOrderId === data?.id}
+          >
+            <FiEye className="cursor-pointer" />
           </button>
           <button onClick={() => navigate(`/orders/edit/${data.id}`, { state: { order: data } })} className="text-blue-500  ml-2">
             <FiEdit2 className="cursor-pointer" />
@@ -485,6 +544,18 @@ const Orders = () => {
           searchText={search}
           orderTypeLabel={orderTypeLabel}
           summary={summary}
+          rowsPerPage={Number(printRowsPerPage)}
+          fontSize={Number(printFontSize)}
+        />
+
+        <OrderTransactionPrint
+          ref={transactionPrintRef}
+          order={selectedPrintOrder}
+          title={
+            selectedPrintOrder
+              ? `${selectedPrintOrder.order_type === 2 ? 'Sales' : 'Purchase'} Details`
+              : 'Order Details'
+          }
           rowsPerPage={Number(printRowsPerPage)}
           fontSize={Number(printFontSize)}
         />
