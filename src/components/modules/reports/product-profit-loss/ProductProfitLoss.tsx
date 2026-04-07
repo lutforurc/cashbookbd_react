@@ -1,16 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useReactToPrint } from "react-to-print";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import InputDatePicker from "../../../utils/fields/DatePicker";
-import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
+import InputElement from "../../../utils/fields/InputElement";
+import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import routes from "../../../services/appRoutes";
 import httpService from "../../../services/httpService";
 import { API_REPORT_PRODUCT_PROFIT_LOSS_URL } from "../../../services/apiRoutes";
+import Table from "../../../utils/others/Table";
+import ProductProfitLossPrint from "./ProductProfitLossPrint";
+
 type ProductProfitRow = {
   sl?: number;
   product_id?: number;
@@ -60,6 +65,8 @@ const ProductProfitLoss = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportRows, setReportRows] = useState<ProductProfitRow[]>([]);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
   const [summary, setSummary] = useState({
     totalQty: 0,
     totalPurchase: 0,
@@ -116,18 +123,30 @@ const ProductProfitLoss = (user: any) => {
   };
 
   const selectedBranchName = useMemo(() => {
-    const branch = dropdownData.find((item: any) => Number(item.id) === Number(branchId));
+    const branch = dropdownData.find(
+      (item: any) => Number(item.id) === Number(branchId)
+    );
     return branch?.name ?? "";
   }, [branchId, dropdownData]);
 
+  const tableData = useMemo(
+    () =>
+      reportRows.map((row, index) => ({
+        ...row,
+        sl: row?.sl ?? index + 1,
+      })),
+    [reportRows]
+  );
+  const printRef = useRef<HTMLDivElement>(null);
+
   const handleRunReport = async () => {
     if (!branchId) {
-      alert("Branch select করুন");
+      alert("Please select branch");
       return;
     }
 
     if (!startDate || !endDate) {
-      alert("Start/End Date দিন");
+      alert("Please select start and end date");
       return;
     }
 
@@ -138,11 +157,14 @@ const ProductProfitLoss = (user: any) => {
       const startDateValue = dayjs(startDate).format("YYYY-MM-DD");
       const endDateValue = dayjs(endDate).format("YYYY-MM-DD");
 
-      const response = await httpService.post(API_REPORT_PRODUCT_PROFIT_LOSS_URL, {
-        branch_id: Number(branchId),
-        startDate: startDateValue,
-        endDate: endDateValue,
-      });
+      const response = await httpService.post(
+        API_REPORT_PRODUCT_PROFIT_LOSS_URL,
+        {
+          branch_id: Number(branchId),
+          startDate: startDateValue,
+          endDate: endDateValue,
+        }
+      );
 
       const payload = response?.data;
 
@@ -178,191 +200,294 @@ const ProductProfitLoss = (user: any) => {
         warningCount: 0,
       });
       setError(
-        err?.response?.data?.message || err?.message || "Product profit loss load failed"
+        err?.response?.data?.message ||
+          err?.message ||
+          "Product profit loss load failed"
       );
     } finally {
       setButtonLoading(false);
     }
   };
 
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: "Product Profit Loss",
+    removeAfterPrint: true,
+  });
+
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setRowsPerPage(Number.isNaN(value) ? 12 : value);
+  };
+
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setFontSize(Number.isNaN(value) ? 12 : value);
+  };
+
+  const columns = [
+    {
+      key: "sl",
+      header: "SL",
+      headerClass: "text-center",
+      cellClass: "text-center",
+      render: (row: ProductProfitRow) => <div>{row?.sl ?? "-"}</div>,
+    },
+    {
+      key: "product_name",
+      header: "Product Name",
+      render: (row: ProductProfitRow) => (
+        <div className="font-medium">{row?.product_name || "-"}</div>
+      ),
+    },
+    {
+      key: "sold_qty",
+      header: "Sold Qty",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: ProductProfitRow) => (
+        <div>{formatNumber(row?.sold_qty, 0)}</div>
+      ),
+    },
+    {
+      key: "unit_purchase_rate",
+      header: "Unit Purchase",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: ProductProfitRow) => (
+        <div>{formatMoney(row?.unit_purchase_rate)}</div>
+      ),
+    },
+    {
+      key: "purchase_total",
+      header: "Purchase Total",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: ProductProfitRow) => (
+        <div>{formatMoney(row?.purchase_total)}</div>
+      ),
+    },
+    {
+      key: "unit_sale_rate",
+      header: "Unit Sale",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: ProductProfitRow) => (
+        <div>{formatMoney(row?.unit_sale_rate)}</div>
+      ),
+    },
+    {
+      key: "sale_total",
+      header: "Sale Total",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: ProductProfitRow) => (
+        <div>{formatMoney(row?.sale_total)}</div>
+      ),
+    },
+    {
+      key: "profit",
+      header: "Profit / Loss",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: ProductProfitRow) => (
+        <div>{formatMoney(row?.profit)}</div>
+      ),
+    },
+    {
+      key: "warning",
+      header: "Remarks",
+      render: (row: ProductProfitRow) =>
+        row?.warning ? (
+          <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
+            {row.warning}
+          </span>
+        ) : (
+          <div>-</div>
+        ),
+    },
+  ];
+
+  const footerRows = tableData.length
+    ? [
+        [
+          {
+            label: "Summary",
+            colSpan: 2,
+            className: "text-left",
+          },
+          {
+            label: formatNumber(summary.totalQty, 0),
+            className: "text-right",
+          },
+          {
+            label: "-",
+            className: "text-right",
+          },
+          {
+            label: formatMoney(summary.totalPurchase),
+            className: "text-right",
+          },
+          {
+            label: "-",
+            className: "text-right",
+          },
+          {
+            label: formatMoney(summary.totalSales),
+            className: "text-right",
+          },
+          {
+            label: `${getNetLabel(summary.totalProfit)}: ${formatMoney(
+              Math.abs(summary.totalProfit)
+            )}`,
+            className: "text-right",
+          },
+          {
+            label:
+              summary.warningCount > 0
+                ? `${formatNumber(summary.warningCount, 0)} warning`
+                : "-",
+          },
+        ],
+      ]
+    : undefined;
+
   return (
     <>
       <HelmetTitle title="Product Profit Loss" />
 
-      <div className="mx-auto w-full max-w-[1700px] text-gray-900 dark:text-white">
-        <div className="mb-5 rounded-sm border border-stroke bg-white px-5 py-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold">Product Profit Loss</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Profit Loss রিপোর্টের নিচে product-wise purchase, sales এবং profit দেখানোর জন্য এই page প্রস্তুত করা হয়েছে।
-              </p>
+      <div className="space-y-3 text-white">
+        
+        <div>
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+            <div className="flex flex-1 flex-wrap items-end gap-3">
+              <div className="min-w-[180px] flex-1">
+                <label className="mb-1 block text-sm text-slate-200">Select Branch</label>
+                <BranchDropdown
+                  branchDdl={dropdownData}
+                  onChange={handleBranchChange}
+                  value={branchId ? String(branchId) : undefined}
+                  className="h-10 border border-slate-600 bg-slate-800 text-white"
+                />
+              </div>
+
+              <div className="min-w-[180px] flex-1">
+                <InputDatePicker
+                  label="Start Date"
+                  selectedDate={startDate}
+                  setSelectedDate={setStartDate}
+                  setCurrentDate={setStartDate}
+                  className="h-10 w-full border border-slate-600 bg-slate-800 text-white"
+                />
+              </div>
+
+              <div className="min-w-[180px] flex-1">
+                <InputDatePicker
+                  label="End Date"
+                  selectedDate={endDate}
+                  setSelectedDate={setEndDate}
+                  setCurrentDate={setEndDate}
+                  className="h-10 w-full border border-slate-600 bg-slate-800 text-white"
+                />
+              </div>
             </div>
 
-            <Link
-              to={routes.profit_loss}
-              className="inline-flex items-center justify-center rounded-sm border border-stroke px-4 py-2 text-sm font-medium hover:bg-gray-100 dark:border-strokedark dark:hover:bg-meta-4"
-            >
-              Back To Profit Loss
-            </Link>
-          </div>
-        </div>
+            <div className="w-full xl:w-auto">
+              <div className="flex flex-wrap items-end gap-2 xl:flex-nowrap">
+                <div className="min-w-[62px] max-w-[62px] flex-1">
+                  <InputElement
+                    id="rowsPerPage"
+                    name="rowsPerPage"
+                    label="Rows"
+                    value={rowsPerPage.toString()}
+                    onChange={handleRowsPerPageChange}
+                    type="text"
+                    className="h-9 w-full border border-slate-600 bg-slate-800 text-white"
+                  />
+                </div>
 
-        <div className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-            <div className="xl:col-span-2">
-              <label className="mb-1 block text-sm">Select Branch</label>
-              <BranchDropdown
-                branchDdl={dropdownData}
-                onChange={handleBranchChange}
-                value={branchId ? String(branchId) : undefined}
-                className="h-11"
-              />
-            </div>
+                <div className="min-w-[62px] max-w-[62px] flex-1">
+                  <InputElement
+                    id="fontSize"
+                    name="fontSize"
+                    label="Font"
+                    value={fontSize.toString()}
+                    onChange={handleFontSizeChange}
+                    type="text"
+                    className="h-9 w-full border border-slate-600 bg-slate-800 text-white"
+                  />
+                </div>
 
-            <div>
-              <InputDatePicker
-                label="Start Date"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
-                setCurrentDate={setStartDate}
-                className="h-11 w-full"
-              />
-            </div>
+                <div className="min-w-[76px] max-w-[76px] flex-1">
+                  <ButtonLoading
+                    label="Run"
+                    onClick={handleRunReport}
+                    buttonLoading={buttonLoading}
+                    className="h-9 w-full border border-slate-600 bg-slate-800 px-3 text-white"
+                  />
+                </div>
 
-            <div>
-              <InputDatePicker
-                label="End Date"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
-                setCurrentDate={setEndDate}
-                className="h-11 w-full"
-              />
-            </div>
-
-            <div className="flex items-end">
-              <ButtonLoading
-                label="Run"
-                onClick={handleRunReport}
-                buttonLoading={buttonLoading}
-                className="h-11 w-full rounded-sm"
-              />
+                <div className="min-w-[58px] max-w-[58px] flex-1">
+                  <PrintButton
+                    onClick={handlePrint}
+                    label=""
+                    className="h-9 w-full border border-slate-600 bg-slate-800 px-0 text-white"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
           {error ? (
-            <div className="mt-4 rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950/30 dark:text-red-100">
+            <div className="mt-4 border border-red-500/60 bg-red-950/40 px-4 py-3 text-sm text-red-100">
               {error}
             </div>
           ) : null}
         </div>
 
-        <div className="mt-6 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-          <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
+        <div className="mt-2">
+          <div className="border-b border-slate-700 py-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">Product-wise Profit Table</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {lastRunMeta
-                    ? `${lastRunMeta.branchName || "Selected Branch"} | ${lastRunMeta.startDate} - ${lastRunMeta.endDate}`
-                    : "Run button চাপলে এই selected range-এর report এখানে দেখাবে।"}
-                </p>
-              </div>
-
               <div className="flex flex-wrap gap-2 text-xs">
-                <span className="rounded-full bg-gray-100 px-3 py-1 font-medium dark:bg-meta-4">
+                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
                   Qty: {formatNumber(summary.totalQty, 0)}
                 </span>
-                <span className="rounded-full bg-gray-100 px-3 py-1 font-medium dark:bg-meta-4">
+                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
                   Purchase: {formatMoney(summary.totalPurchase)}
                 </span>
-                <span className="rounded-full bg-gray-100 px-3 py-1 font-medium dark:bg-meta-4">
+                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
                   Sales: {formatMoney(summary.totalSales)}
                 </span>
-                <span className="rounded-full bg-gray-100 px-3 py-1 font-medium dark:bg-meta-4">
+                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
                   Profit: {formatMoney(summary.totalProfit)}
                 </span>
-                <span className="rounded-full bg-gray-100 px-3 py-1 font-medium dark:bg-meta-4">
+                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
                   Warning: {formatNumber(summary.warningCount, 0)}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1100px]">
-              <thead>
-                <tr className="border-b border-stroke bg-gray-2 text-left dark:border-strokedark dark:bg-meta-4">
-                  <th className="px-4 py-3 text-sm font-semibold">SL</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Product Name</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Sold Qty</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Unit Purchase</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Purchase Total</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Unit Sale</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Sale Total</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Profit / Loss</th>
-                  <th className="px-4 py-3 text-sm font-semibold">Remarks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reportRows.length > 0 ? (
-                  <>
-                    {reportRows.map((row, index) => (
-                      <tr
-                        key={`${row.product_name}-${index}`}
-                        className="border-b border-stroke dark:border-strokedark"
-                      >
-                        <td className="px-4 py-3 text-sm">{index + 1}</td>
-                        <td className="px-4 py-3 text-sm font-medium">{row.product_name}</td>
-                        <td className="px-4 py-3 text-sm">{formatNumber(row.sold_qty, 0)}</td>
-                        <td className="px-4 py-3 text-sm">{formatMoney(row.unit_purchase_rate)}</td>
-                        <td className="px-4 py-3 text-sm">{formatMoney(row.purchase_total)}</td>
-                        <td className="px-4 py-3 text-sm">{formatMoney(row.unit_sale_rate)}</td>
-                        <td className="px-4 py-3 text-sm">{formatMoney(row.sale_total)}</td>
-                        <td className="px-4 py-3 text-sm">{formatMoney(row.profit)}</td>
-                        <td className="px-4 py-3 text-sm">
-                          {row.warning ? (
-                            <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
-                              {row.warning}
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="border-t-2 border-stroke bg-gray-2 font-semibold dark:border-strokedark dark:bg-meta-4">
-                      <td className="px-4 py-3 text-sm" colSpan={2}>
-                        Summary
-                      </td>
-                      <td className="px-4 py-3 text-sm">{formatNumber(summary.totalQty, 0)}</td>
-                      <td className="px-4 py-3 text-sm">-</td>
-                      <td className="px-4 py-3 text-sm">{formatMoney(summary.totalPurchase)}</td>
-                      <td className="px-4 py-3 text-sm">-</td>
-                      <td className="px-4 py-3 text-sm">{formatMoney(summary.totalSales)}</td>
-                      <td className="px-4 py-3 text-sm">
-                        {getNetLabel(summary.totalProfit)}: {formatMoney(Math.abs(summary.totalProfit))}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {summary.warningCount > 0 ? `${formatNumber(summary.warningCount, 0)} warning` : "-"}
-                      </td>
-                    </tr>
-                  </>
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="px-5 py-14 text-center">
-                      <div className="mx-auto max-w-xl">
-                        <h3 className="text-lg font-semibold">No report data yet</h3>
-                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          Date range এবং branch select করে `Run` দিন। নতুন Laravel API থেকে product-wise purchase cost, sale amount এবং profit/loss এখানে দেখা যাবে।
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="pt-2">
+            <Table
+              columns={columns}
+              data={tableData || []}
+              footerRows={footerRows}
+              noDataMessage="No report data found. Select branch and date range, then click Run."
+            />
           </div>
+        </div>
+
+        <div className="hidden">
+          <ProductProfitLossPrint
+            ref={printRef}
+            rows={tableData || []}
+            startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : undefined}
+            endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : undefined}
+            title="Product Wise Profit Loss"
+            rowsPerPage={Number(rowsPerPage)}
+            fontSize={Number(fontSize)}
+          />
         </div>
       </div>
     </>
