@@ -26,6 +26,12 @@ import StockBookPrintNormal from './StockBookPrintNormal';
 // ✅ Category-wise helper
 // ======================
 const isGroupRow = (row: any) => row?.__type === 'GROUP';
+const isGrandTotalRow = (row: any) => row?.__type === 'GRAND_TOTAL';
+
+const toNumber = (value: any) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 
 const buildCategoryWiseRows = (rows: any[]) => {
   if (!Array.isArray(rows)) return [];
@@ -46,6 +52,12 @@ const buildCategoryWiseRows = (rows: any[]) => {
 
   const finalRows: any[] = [];
   let serial = 1;
+  const grandTotal = {
+    opening: 0,
+    stock_in: 0,
+    stock_out: 0,
+    balance: 0,
+  };
 
   for (const [cat, items] of map.entries()) {
     // category header row
@@ -56,11 +68,26 @@ const buildCategoryWiseRows = (rows: any[]) => {
 
     // items under category
     for (const it of items) {
+      grandTotal.opening += toNumber(it.opening);
+      grandTotal.stock_in += toNumber(it.stock_in);
+      grandTotal.stock_out += toNumber(it.stock_out);
+      grandTotal.balance += toNumber(it.balance);
       finalRows.push({
         ...it,
         sl_number: serial++,
       });
     }
+  }
+
+  if (sorted.length > 0) {
+    finalRows.push({
+      __type: 'GRAND_TOTAL',
+      product_name: 'Grand Total',
+      opening: grandTotal.opening,
+      stock_in: grandTotal.stock_in,
+      stock_out: grandTotal.stock_out,
+      balance: grandTotal.balance,
+    });
   }
 
   return finalRows;
@@ -205,12 +232,16 @@ const ProductStockNormal = ({ user }: any) => {
       header: 'Sl. No',
       headerClass: 'text-center',
       cellClass: 'text-center',
-      render: (row: any) => (isGroupRow(row) ? '' : row.sl_number),
+      render: (row: any) =>
+        isGroupRow(row) || isGrandTotalRow(row) ? '' : row.sl_number,
     },
     {
       key: 'product_name',
       header: 'Product Name',
       render: (row: any) => {
+        if (isGrandTotalRow(row)) {
+          return <div className="font-bold py-1">Grand Total</div>;
+        }
         if (isGroupRow(row)) {
           return (
             <div className="font-semibold py-1">
@@ -236,6 +267,13 @@ const ProductStockNormal = ({ user }: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
+        if (isGrandTotalRow(row)) {
+          return (
+            <p className="font-bold">
+              {thousandSeparator(Math.floor(row.opening || 0), 0)}
+            </p>
+          );
+        }
         return (
           <p>
             {thousandSeparator(Math.floor(row.opening), 0)}
@@ -255,6 +293,13 @@ const ProductStockNormal = ({ user }: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
+        if (isGrandTotalRow(row)) {
+          return (
+            <span className="text-sm font-bold">
+              {thousandSeparator(Math.floor(row.stock_in || 0), 0)}
+            </span>
+          );
+        }
         return row.stock_in ? (
           <span className="text-sm ">
             {thousandSeparator(Math.floor(row.stock_in), 0)} ({row.unit})
@@ -271,6 +316,13 @@ const ProductStockNormal = ({ user }: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
+        if (isGrandTotalRow(row)) {
+          return (
+            <span className="text-sm font-bold">
+              {thousandSeparator(Math.floor(row.stock_out || 0), 0)}
+            </span>
+          );
+        }
         return row.stock_out ? (
           <span className="text-sm ">
             {thousandSeparator(Math.floor(row.stock_out), 0)} ({row.unit})
@@ -287,6 +339,13 @@ const ProductStockNormal = ({ user }: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         if (isGroupRow(row)) return '';
+        if (isGrandTotalRow(row)) {
+          return (
+            <span className="text-sm font-bold">
+              {thousandSeparator(Math.floor(row.balance || 0), 0)}
+            </span>
+          );
+        }
         return Math.floor(row.balance) ? (
           <span className="text-sm ">
             {thousandSeparator(Math.floor(row.balance), 0)} ({row.unit})

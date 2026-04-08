@@ -24,6 +24,12 @@ import { fetchBrandDdl } from '../../product/brand/brandSlice';
 const isBrandRow = (row: any) => row?.__type === 'BRAND';
 const isCatRow = (row: any) => row?.__type === 'CAT';
 const isGroupRow = (row: any) => isBrandRow(row) || isCatRow(row);
+const isGrandTotalRow = (row: any) => row?.__type === 'GRAND_TOTAL';
+
+const toNumber = (value: any) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 
 const buildBrandCategoryRows = (rows: any[]) => {
   if (!Array.isArray(rows)) return [];
@@ -46,6 +52,12 @@ const buildBrandCategoryRows = (rows: any[]) => {
   }
 
   const finalRows: any[] = [];
+  const grandTotal = {
+    opening: 0,
+    stock_in: 0,
+    stock_out: 0,
+    balance: 0,
+  };
 
   for (const [brand, brandItems] of brandMap.entries()) {
     finalRows.push({
@@ -69,12 +81,27 @@ const buildBrandCategoryRows = (rows: any[]) => {
 
       let serial = 1;
       for (const it of items) {
+        grandTotal.opening += toNumber(it.opening);
+        grandTotal.stock_in += toNumber(it.stock_in);
+        grandTotal.stock_out += toNumber(it.stock_out);
+        grandTotal.balance += toNumber(it.balance);
         finalRows.push({
           ...it,
           sl_number: serial++,
         });
       }
     }
+  }
+
+  if (sorted.length > 0) {
+    finalRows.push({
+      __type: 'GRAND_TOTAL',
+      product_name: 'Grand Total',
+      opening: grandTotal.opening,
+      stock_in: grandTotal.stock_in,
+      stock_out: grandTotal.stock_out,
+      balance: grandTotal.balance,
+    });
   }
 
   return finalRows;
@@ -217,12 +244,16 @@ const ProductStock = ( user : any) => {
       header: 'Sl. No',
       headerClass: 'text-center',
       cellClass: 'text-center',
-      render: (row: any) => (isGroupRow(row) ? '' : row.sl_number),
+      render: (row: any) =>
+        isGroupRow(row) || isGrandTotalRow(row) ? '' : row.sl_number,
     },
     {
       key: 'product_name',
       header: 'Product Name',
       render: (row: any) => {
+        if (isGrandTotalRow(row)) {
+          return <div className="font-bold py-1">Grand Total</div>;
+        }
         if (isBrandRow(row)) {
           return <div className="font-bold py-1">{row.brand_name}</div>;
         }
@@ -246,6 +277,10 @@ const ProductStock = ( user : any) => {
       render: (row: any) =>
         isGroupRow(row) ? (
           ''
+        ) : isGrandTotalRow(row) ? (
+          <p className="font-bold">
+            {thousandSeparator(Math.floor(row.opening || 0), 0)}
+          </p>
         ) : (
           <p>
             {thousandSeparator(Math.floor(row.opening || 0), 0)}
@@ -261,6 +296,10 @@ const ProductStock = ( user : any) => {
       render: (row: any) =>
         isGroupRow(row) ? (
           ''
+        ) : isGrandTotalRow(row) ? (
+          <span className="text-sm font-bold">
+            {thousandSeparator(Math.floor(row.stock_in || 0), 0)}
+          </span>
         ) : row.stock_in ? (
           <span className="text-sm">
             {thousandSeparator(Math.floor(row.stock_in), 0)} ({row.unit})
@@ -277,6 +316,10 @@ const ProductStock = ( user : any) => {
       render: (row: any) =>
         isGroupRow(row) ? (
           ''
+        ) : isGrandTotalRow(row) ? (
+          <span className="text-sm font-bold">
+            {thousandSeparator(Math.floor(row.stock_out || 0), 0)}
+          </span>
         ) : row.stock_out ? (
           <span className="text-sm">
             {thousandSeparator(Math.floor(row.stock_out), 0)} ({row.unit})
@@ -293,6 +336,10 @@ const ProductStock = ( user : any) => {
       render: (row: any) =>
         isGroupRow(row) ? (
           ''
+        ) : isGrandTotalRow(row) ? (
+          <span className="text-sm font-bold">
+            {thousandSeparator(Math.floor(row.balance || 0), 0)}
+          </span>
         ) : Math.floor(row.balance || 0) ? (
           <span className="text-sm">
             {thousandSeparator(Math.floor(row.balance), 0)} ({row.unit})

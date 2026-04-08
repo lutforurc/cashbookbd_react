@@ -132,9 +132,9 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                 <span className="font-semibold">{order?.product_name || '-'}</span>
               </div>
               <div className="flex flex-wrap">
-                <span className="w-40">Order Qty:</span>
+                <span className="w-40">Order Details:</span>
                 <span className="font-semibold">
-                  {thousandSeparator(toNumber(order?.total_order), 0)} {order?.unit || ''}
+                  Order Qty: {thousandSeparator(toNumber(order?.total_order), 0)} {order?.unit || ''}, Rate: {thousandSeparator(toNumber(order?.order_rate), 2)}
                 </span>
               </div>
             </div>
