@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import dayjs from 'dayjs';
-import { useDispatch, useSelector } from 'react-redux';
-import { chartDateTime, formatLongDateUsdToBd } from '../../../utils/utils-functions/formatDate';
+import { useSelector } from 'react-redux';
+import { chartDateTime } from '../../../utils/utils-functions/formatDate';
 
 type Props = {
   data: any; // sales.data
@@ -42,26 +42,51 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
   }
   const pages = chunkRows(details, rowsPerPage);
 
-  const transactions = data?.acc_transaction_master || [];
-  const received = transactions
-    .flatMap((t: any) => t.acc_transaction_details)
+  const transactions = Array.isArray(data?.acc_transaction_master)
+    ? data.acc_transaction_master
+    : data?.acc_transaction_master
+      ? [data.acc_transaction_master]
+      : [];
+  const trxDetails = transactions.flatMap(
+    (t: any) => (Array.isArray(t?.acc_transaction_details) ? t.acc_transaction_details : []),
+  );
+  const received = trxDetails
     .find((d: any) => d.coa4_id === 17);
   const receivedAmount = received ? Number(received.debit) : 0;
 
-  const discount = transactions.flatMap((t: any) => t.acc_transaction_details).find((d: any) => d.coa4_id === 23);
+  const discount = trxDetails.find((d: any) => d.coa4_id === 23);
   const discountAmount = discount ? Number(discount.debit) : 0;
-  const tds = transactions.flatMap((t: any) => t.acc_transaction_details).find((d: any) => d.coa4_id === 41);
+  const tds = trxDetails.find((d: any) => d.coa4_id === 41);
   const tdsName = tds ? tds.coa_l4?.name : '';
   const tdsAmount = tds ? Number(tds.credit) : 0;
 
-  const serviceCharge = transactions.flatMap((t: any) => t.acc_transaction_details).find((d: any) => d.coa4_id === 42);
+  const serviceCharge = trxDetails.find((d: any) => d.coa4_id === 42);
   const serviceChargeName = serviceCharge ? serviceCharge.coa_l4?.name : '';
   const serviceChargeAmount = serviceCharge ? Number(serviceCharge.credit) : 0;
 
-  const customer =
-    data?.acc_transaction_master?.[0]?.acc_transaction_details?.find(
-      (d: any) => d.coa_l4?.cust_party_infos,
-    )?.coa_l4?.cust_party_infos;
+  const customerId = Number(data?.sales_master?.customer_id);
+  const customerDetail =
+    trxDetails.find(
+      (d: any) =>
+        Number(d?.coa4_id) === customerId ||
+        Number(d?.coa_l4?.id) === customerId,
+    ) ||
+    trxDetails.find((d: any) => d?.coa_l4?.cust_party_infos);
+  const customerInfo = customerDetail?.coa_l4?.cust_party_infos || {};
+  const customerName =
+    data?.sales_master?.name ||
+    customerInfo?.name ||
+    customerDetail?.coa_l4?.name ||
+    '-';
+  const customerMobile =
+    data?.sales_master?.mobile ||
+    customerInfo?.mobile ||
+    '';
+  const customerAddress =
+    data?.sales_master?.address ||
+    customerInfo?.address ||
+    customerInfo?.manual_address ||
+    '';
 
   const fs = fontSize;
 
@@ -119,19 +144,18 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
               <div className="space-y-1 col-span-2">
                 <div style={{ fontSize: fs }}>
                   <span className="font-semibold">Name:</span>{' '}
-                  {customer?.name}
+                  {customerName}
                 </div>
 
-                {customer?.mobile && (
+                {customerMobile && (
                   <div style={{ fontSize: fs }}>
-                    Mobile: {customer.mobile.replace(/^(\d{5})(\d+)/, "$1-$2")}
+                    Mobile: {String(customerMobile).replace(/^(\d{5})(\d+)/, '$1-$2')}
                   </div>
                 )}
 
-                {(customer?.address || customer?.manual_address) && (
+                {customerAddress && (
                   <div style={{ fontSize: fs }}>
-                    Address:{' '}
-                    {customer.address ?? customer.manual_address}
+                    Address: {customerAddress}
                   </div>
                 )}
               </div>
