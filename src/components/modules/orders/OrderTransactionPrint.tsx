@@ -136,6 +136,9 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
       `Order Qty: ${thousandSeparator(toNumber(order?.total_order), 0)} ${order?.unit || ''}, Rate: ${thousandSeparator(toNumber(order?.order_rate), 2)}`;
 
 
+      const receivedOrPaymentText = orderTypeLabel === 'Purchase' ? 'Payment' : 'Received';
+
+
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
         <PrintStyles />
@@ -144,60 +147,61 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
           <div key={pageIndex} className="print-page">
             <PadPrinting />
 
-            <div className="mt-5 flex items-start justify-between gap-8 text-xs md:text-sm">
-              <div className="min-w-0 flex-1 space-y-2 text-left">
-                <div className="flex flex-wrap">
+            <div className="mt-5 grid grid-cols-[auto_200px] items-start justify-between gap-x-6 text-xs leading-4 md:text-sm">
+              <div className="min-w-0 space-y-1 text-left">
+                <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">{partyLabel}:</span>
-                  <span className="font-semibold">{order?.order_for || '-'}</span>
+                  <span className="">{order?.order_for || '-'}</span>
                 </div>
-                <div className="flex flex-wrap">
+                <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Address:</span>
-                  <span className="font-semibold">{order?.address || '-'}</span>
+                  <span className="">{order?.address || '-'}</span>
                 </div>
                 { order?.mobile !=0  && (
-                <div className="flex flex-wrap">
+                <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Mobile:</span>
-                  <span className="font-semibold">{order?.mobile || '-'}</span>
+                  <span className="">{order?.mobile || '-'}</span>
                 </div>
                 )}
-                <div className="flex flex-wrap">
+                <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Duration:</span>
-                  <span className="font-semibold">{order?.duration || '-'}</span>
+                  <span className="">{order?.duration || '-'}</span>
                 </div>
-                <div className="flex flex-wrap">
+                <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Delivery Location:</span>
-                  <span className="font-semibold">{order?.delivery_location || '-'}</span>
+                  <span className="">{order?.delivery_location || '-'}</span>
                 </div>
-                <div className="flex flex-wrap">
+                <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Order No.</span>
-                  <span className="font-semibold">{order?.order_number || '-'}</span>
+                  <span className="">{order?.order_number || '-'}</span>
                 </div>
               </div>
 
-              <div className="ml-auto w-[220px] shrink-0 space-y-2 text-left">
-                <div className="flex flex-wrap">
+              <div className="justify-self-end w-[200px] space-y-1 text-left">
+                <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Product Name:</span>
-                  <span className="font-semibold">{order?.product_name || '-'}</span>
+                  <span className="">{order?.product_name || '-'}</span>
                 </div>
-                <div className="flex flex-wrap">
-                  <span className="w-24 shrink-0">Order Amount:</span>
-                  <span className="font-semibold">
-                    {thousandSeparator(computedOrderAmount, 0)}
+
+                <div className="flex flex-wrap leading-4">
+                  <span className="w-24 shrink-0">Order Rate:</span>
+                  <span className="">{thousandSeparator(toNumber(order?.order_rate), 2)}</span>
+                </div>
+                <div className="flex flex-wrap leading-4">
+                  <span className="w-24 shrink-0">Order Qty:</span>
+                  <span className="">{thousandSeparator(toNumber(order?.total_order), 0)} { order?.unit }</span>
+                </div>
+
+                <div className="flex flex-wrap leading-4">
+                  <span className="w-24 shrink-0">Amount:</span>
+                  <span className="">
+                    Tk. {thousandSeparator(computedOrderAmount, 0)}
                   </span>
-                </div>
-                
-                <div className="flex flex-wrap">
-                  <span className="w-24 shrink-0">Order Date</span>
-                  <span className="font-semibold">{formatPrintDate(order?.order_date)}</span>
-                </div>
-                <div className="flex flex-wrap">
-                  <span className="w-24 shrink-0">Delivery Date</span>
-                  <span className="font-semibold">{formatPrintDate(order?.last_delivery_date)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="my-4 text-center text-base font-bold underline">
+            <div className="mb-2 text-center text-base font-bold ">
               {title || `${orderTypeLabel} Details`}
             </div>
 
@@ -211,7 +215,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Weight</th>
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Rate</th>
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Amount</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Freight Charge</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">{receivedOrPaymentText}</th>
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Due Amount</th>
                 </tr>
               </thead>
