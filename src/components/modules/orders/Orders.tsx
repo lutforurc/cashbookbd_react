@@ -27,6 +27,9 @@ const toNumber = (value: any) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const getOrderRemainingQuantity = (row: any) =>
+  toNumber(row?.total_order) - toNumber(row?.trx_quantity);
+
 const pickFirstNumber = (source: any, keys: string[]) => {
   for (const key of keys) {
     const value = source?.[key];
@@ -162,6 +165,8 @@ const Orders = () => {
     return (Array.isArray(tableData) ? tableData : []).reduce(
       (acc, row: any) => {
         acc.totalOrder += toNumber(row?.total_order);
+        acc.totalTrxQuantity += toNumber(row?.trx_quantity);
+        acc.orderRemainingQuantity += getOrderRemainingQuantity(row);
         acc.baseOrderQuantity += toNumber(
           row?.base_order_quantity ?? row?.reference_order?.total_order,
         );
@@ -171,6 +176,8 @@ const Orders = () => {
       },
       {
         totalOrder: 0,
+        totalTrxQuantity: 0,
+        orderRemainingQuantity: 0,
         baseOrderQuantity: 0,
         linkedQuantity: 0,
         remainingQuantity: 0,
@@ -189,10 +196,17 @@ const Orders = () => {
   }, [orders?.data]);
 
   const summary = useMemo(() => {
+    const totalOrder =
+      pickFirstNumber(apiSummarySource, ['total_order', 'order_quantity', 'total_order_quantity']) ??
+      derivedSummary.totalOrder;
+    const totalTrxQuantity =
+      pickFirstNumber(apiSummarySource, ['total_trx_quantity', 'trx_quantity_total', 'trx_quantity']) ??
+      derivedSummary.totalTrxQuantity;
+
     return {
-      totalOrder:
-        pickFirstNumber(apiSummarySource, ['total_order', 'trx_quantity', 'order_quantity']) ??
-        derivedSummary.totalOrder,
+      totalOrder,
+      totalTrxQuantity,
+      orderRemainingQuantity: totalOrder - totalTrxQuantity,
       baseOrderQuantity:
         pickFirstNumber(apiSummarySource, ['base_order_quantity', 'reference_order_quantity']) ??
         derivedSummary.baseOrderQuantity,
@@ -210,8 +224,12 @@ const Orders = () => {
     () => [
       [
         {
-          label: summary.fromApi ? 'Grand Total' : 'Page Summary',
-          colSpan: 4,
+          label: `${summary.fromApi ? '' : ''} `,
+          colSpan: 2,
+          className: 'text-right',
+        },
+        {
+          label: `Total Trx. Qty ${thousandSeparator(summary.totalTrxQuantity, 0)}`,
           className: 'text-right',
         },
         {
@@ -219,14 +237,22 @@ const Orders = () => {
           className: 'text-right',
         },
         {
-          label: `Base Qty ${thousandSeparator(summary.baseOrderQuantity, 0)}`,
+          label: `Remaining Qty ${thousandSeparator(summary.orderRemainingQuantity, 0)}`,
+          className: 'text-right',
+        },
+        
+        {
+          label: (
+            <p className="text-right">
+              <span className="block">{`Linked Qty ${thousandSeparator(summary.linkedQuantity, 0)}`}</span>
+            </p>
+          ),
           className: 'text-right',
         },
         {
           label: (
             <p className="text-right">
-              <span className="block">{`Linked Qty ${thousandSeparator(summary.linkedQuantity, 0)}`}</span>
-              <span className="block">{`Remaining Qty ${thousandSeparator(summary.remainingQuantity, 0)}`}</span>
+              <span className="block">{`Link Remaining Qty ${thousandSeparator(summary.remainingQuantity, 0)}`}</span>
             </p>
           ),
           className: 'text-right',

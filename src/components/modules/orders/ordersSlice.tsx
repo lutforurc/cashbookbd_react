@@ -85,9 +85,26 @@ export const getOrders = ({
       .then((res) => {
         let _data = res.data;
         if (_data.success) {
+          const payloadRoot = _data.data ?? {};
+          const listPayload = payloadRoot.data ?? payloadRoot;
+          const normalizedPayload =
+            listPayload && typeof listPayload === 'object'
+              ? {
+                ...listPayload,
+                summary:
+                  payloadRoot.summary ??
+                  payloadRoot.totals ??
+                  payloadRoot.meta?.summary ??
+                  payloadRoot.meta?.totals ??
+                  listPayload.summary ??
+                  listPayload.totals ??
+                  null,
+              }
+              : listPayload;
+
           dispatch({
             type: ORDER_LIST_SUCCESS,
-            payload: _data.data.data,
+            payload: normalizedPayload,
           });
         } else {
           dispatch({
