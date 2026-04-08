@@ -65,12 +65,14 @@ const ChangeDate = () => {
       ...values,
       branch_id: Number(values.branch_id),
     };
-    await dispatch(
-      changeVoucherDate(payload, (msg: string) => {
-        toast.success(msg);
-      }),
-    );
-    setSubmitting(false);
+    try {
+      const message = await dispatch(changeVoucherDate(payload)).unwrap();
+      toast.success(message);
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to change voucher date');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleStartDate = (date: Date | null) => {
