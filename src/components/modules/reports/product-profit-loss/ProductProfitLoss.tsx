@@ -256,7 +256,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{thousandSeparator( Number(row?.unit_purchase_rate), 0)}</div>
+        <div>{thousandSeparator( Number(row?.unit_purchase_rate), 2)}</div>
       ),
     },
     {
@@ -274,7 +274,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{thousandSeparator( Number(row?.unit_sale_rate), 0)}</div>
+        <div>{thousandSeparator( Number(row?.unit_sale_rate), 2)}</div>
       ),
     },
     {

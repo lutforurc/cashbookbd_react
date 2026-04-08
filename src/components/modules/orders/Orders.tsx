@@ -319,7 +319,9 @@ const Orders = () => {
       render: (data: any) => (
         <p>
           <span className="block">{data.product_name}</span>
-          <span className="block">{thousandSeparator(data.trx_quantity, 0)}</span>
+          { data.trx_quantity == 0 ? "-" : (
+          <span className="block text-green-500 dark:text-yellow-300 font-semibold">{thousandSeparator(data.trx_quantity, 0)}</span>
+          )}
         </p>
       ),
     },
@@ -357,6 +359,7 @@ const Orders = () => {
         <p className="text-right">
           <span className="block">Order Rate</span>
           <span className="block">Order Qty</span>
+          <span className="block">Remaining Qty</span>
         </p>
       ),
       render: (data: any) => (
@@ -364,6 +367,9 @@ const Orders = () => {
           <span className="block">{data.order_rate}</span>
           <span className="block">
             {thousandSeparator(data.total_order, 0)}
+          </span>
+          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+            {thousandSeparator((Number(data.total_order) - Number(data.trx_quantity)), 0)}
           </span>
         </p>
       ),

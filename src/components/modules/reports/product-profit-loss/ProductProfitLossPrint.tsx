@@ -143,13 +143,13 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                         {thousandSeparator( Number(row?.sold_qty), 0)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator( Number(row?.unit_purchase_rate), 0)}
+                        {thousandSeparator( Number(row?.unit_purchase_rate), 2)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                         {thousandSeparator( Number(row?.purchase_total), 0)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator( Number(row?.unit_sale_rate), 0)}
+                        {thousandSeparator( Number(row?.unit_sale_rate), 2)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                         {thousandSeparator( Number(row?.sale_total), 0)}
