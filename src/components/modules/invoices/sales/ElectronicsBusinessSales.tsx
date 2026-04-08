@@ -90,6 +90,7 @@ const ElectronicsBusinessSales = () => {
   const [editedInstallments, setEditedInstallments] = useState<editInstallmentData[]>([]);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
@@ -186,10 +187,13 @@ const ElectronicsBusinessSales = () => {
   const customerAccountHandler = (option: any) => {
     const key = 'account';
     const accountName = 'accountName';
+    const isCashCustomer = Number(option?.value) === 17;
+    setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      receivedAmt: isCashCustomer ? formData.receivedAmt : '0',
     });
   };
 
@@ -401,6 +405,9 @@ const ElectronicsBusinessSales = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'receivedAmt' && Number(formData.account) !== 17) {
+      setIsReceivedAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -713,35 +720,43 @@ const ElectronicsBusinessSales = () => {
     const serviceCharge = Number(formData?.serviceCharge) || 0;
     const tdsAmount = Number(formData?.tdsAmount) || 0;
     const transportationAmt = Number(formData?.transportationAmt) || 0;
+    const discountAmt = Number(formData?.discountAmt) || 0;
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
       const price = parseFloat(product.price?.toString() || '0') || 0;
       return acc + qty * price;
     }, 0);
-
-    if (!formData.mtmId) {
-      if (Number(formData.account) === 17) {
+    const isCashCustomer = Number(formData.account) === 17;
+    const cashReceivedAmt = Math.max(
+      0,
+      total + serviceCharge + tdsAmount + transportationAmt - discountAmt,
+    ).toFixed(0);
+    if (isCashCustomer) {
+      if (formData.receivedAmt !== cashReceivedAmt) {
         setFormData((prev) => ({
           ...prev,
-          receivedAmt: Math.max(0, total - parseFloat(prev.discountAmt?.toString() || '0') + serviceCharge + tdsAmount + transportationAmt).toFixed(0),
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: '0',
+          receivedAmt: cashReceivedAmt,
         }));
       }
-    } else if (formData.mtmId) {
-      if (Number(formData.account) === 17) {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: Math.max(0, total - parseFloat(prev.discountAmt?.toString() || '0')).toFixed(0),
-        }));
-      } else {
-        setFormData((prev) => ({ ...prev, receivedAmt: sales.data.transaction.sales_master.netpayment.toString() }));
+      if (isReceivedAmtManuallyEdited) {
+        setIsReceivedAmtManuallyEdited(false);
       }
+    } else if (!isReceivedAmtManuallyEdited && formData.receivedAmt !== '0') {
+      setFormData((prev) => ({
+        ...prev,
+        receivedAmt: '0',
+      }));
     }
-  }, [formData.account]);
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.serviceCharge,
+    formData.tdsAmount,
+    formData.transportationAmt,
+    formData.products,
+    formData.receivedAmt,
+    isReceivedAmtManuallyEdited,
+  ]);
 
 
   const serviceList = (id: number, list: any[]) => {
@@ -1452,10 +1467,13 @@ const ElectronicsBusinessSales = () => {
         onClose={closeCustomerModal}
         initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
+          const isCashCustomer = Number(id) === 17;
+          setIsReceivedAmtManuallyEdited(false);
           setFormData((prev) => ({
             ...prev,
             account: id,
             accountName: name,
+            receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
           }));
         }}
       />
