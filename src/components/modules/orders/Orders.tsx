@@ -54,7 +54,7 @@ const Orders = () => {
   const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState(10);
   const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
-  const [printFontSize, setPrintFontSize] = useState(12);
+  const [printFontSize, setPrintFontSize] = useState(10);
   const [search, setSearchValue] = useState('');
   const [selectedLedger, setSelectedLedger] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -149,7 +149,7 @@ const Orders = () => {
   };
   const handlePrintFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value, 10);
-    setPrintFontSize(Number.isFinite(value) && value > 0 ? value : 12);
+    setPrintFontSize(Number.isFinite(value) && value > 0 ? value : 10);
   };
   const openLinkedOrdersModal = (row: any) => {
     setSelectedLinkedOrder(row);
