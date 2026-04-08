@@ -26,7 +26,7 @@ import {
 } from './cashPaymentSlice';
 import InputOnly from '../../../utils/fields/InputOnly';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
-import useCtrlS from '../../../utils/hooks/useCtrlS'; 
+import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { useNavigate } from 'react-router-dom';
 
 interface PaymentItem {
@@ -369,6 +369,7 @@ const GeneralCashPayment = () => {
                   }
                 }}
                 acType={''}
+                className="h-9.5"
               />
             </div>
 

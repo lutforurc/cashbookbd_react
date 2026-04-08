@@ -651,6 +651,7 @@ const TradingBusinessPurchase = () => {
                     <DdlMultiline
                       id="account"
                       name="account"
+                      className="h-9.5"
                       onSelect={supplierAccountHandler}
                       actionOptionLabel="+ Add New Supplier"
                       onActionSelect={openCustomerModal}
@@ -857,6 +858,7 @@ const TradingBusinessPurchase = () => {
                 <ProductDropdown
                   id="product"
                   name="product"
+                  className='h-9'
                   onSelect={productSelectHandler}
                   // defaultValue={
                   //   productData.product_name && productData.product

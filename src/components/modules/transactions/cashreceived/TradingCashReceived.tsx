@@ -381,6 +381,7 @@ const TradingCashReceived = () => {
               <DdlMultiline
                 id="account"
                 name="account"
+                className="h-9.5"
                 onSelect={selectedLedgerOptionHandler}
                 value={
                   formData.account

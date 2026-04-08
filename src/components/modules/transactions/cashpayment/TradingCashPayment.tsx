@@ -404,6 +404,7 @@ const TradingCashPayment = () => {
               <label htmlFor="">Select Account</label>
               <DdlMultiline
                 onSelect={selectedLedgerOptionHandler}
+                className="h-9.5"
                 defaultValue={
                   formData.account
                     ? {
@@ -428,8 +429,7 @@ const TradingCashPayment = () => {
                     }
                   }
                 }}
-                acType={''}
-                className={'h-8'}
+                acType={''} 
               />
             </div>
 

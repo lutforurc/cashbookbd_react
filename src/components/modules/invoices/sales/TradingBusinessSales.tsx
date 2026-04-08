@@ -43,6 +43,7 @@ import {
   handleSelectKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
 import QuickCustomerModal from './QuickCustomerModal';
+import useCtrlS from '../../../utils/hooks/useCtrlS';
 
 interface Product {
   id: number;
@@ -688,6 +689,10 @@ const TradingBusinessSales = () => {
     const variance_type = 'variance_type'; // Set the desired key dynamically
     setProductData({ ...productData, [variance_type]: e.target.value });
   };
+
+
+  useCtrlS(handleInvoiceSave);
+
   return (
     <>
       <HelmetTitle title="Sales Invoice" />
@@ -701,6 +706,7 @@ const TradingBusinessSales = () => {
                 <div className="flex items-start gap-1">
                   <div className="min-w-0 flex-1">
                     <DdlMultiline
+                      className='h-9.5'
                       onSelect={customerAccountHandler}
                       actionOptionLabel="+ Add New Customer"
                       onActionSelect={openCustomerModal}
@@ -936,6 +942,7 @@ const TradingBusinessSales = () => {
                 <ProductDropdown
                   id="products"
                   name="products"
+                  className='h-9'
                   onSelect={productSelectHandler}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
