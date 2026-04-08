@@ -475,7 +475,7 @@ const ProductStock = ( user : any) => {
         <div className="hidden">
           <StockBookPrint
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r))}
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r) && !isGrandTotalRow(r))}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Product Stock"

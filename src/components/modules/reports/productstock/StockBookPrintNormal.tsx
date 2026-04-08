@@ -47,7 +47,9 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
 
     const printableRows: PrintRow[] = useMemo(() => {
-      const rowsArr: StockRow[] = Array.isArray(rows) ? rows : [];
+      const rowsArr: StockRow[] = Array.isArray(rows)
+        ? rows.filter((row: any) => row?.__type !== 'GRAND_TOTAL')
+        : [];
 
       const sorted = [...rowsArr].sort((a, b) => {
         const c1 = String(a.cat_name || '').localeCompare(String(b.cat_name || ''));
