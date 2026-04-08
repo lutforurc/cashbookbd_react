@@ -176,7 +176,11 @@ const AddOrder = (user: any) => {
                 '',
             order_number: editData?.order_number ?? '',
             ref_order_id: editData?.ref_order_id?.toString?.() ?? '',
-            ref_order_text: editData?.ref_order_text ?? '',
+            ref_order_text:
+                editData?.ref_order_text ??
+                editData?.reference_order?.order_number ??
+                editData?.ref_order_number ??
+                '',
             delivery_location: editData?.delivery_location ?? '',
             order_date: editData?.order_date ?? '',
             last_delivery_date: editData?.last_delivery_date ?? '',

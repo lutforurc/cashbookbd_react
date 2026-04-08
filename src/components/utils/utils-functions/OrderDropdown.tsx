@@ -124,6 +124,8 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                 onKeyDown={onKeyDown} // Pass it to the input
                 openMenuOnFocus
                 isDisabled={isDisabled}
+                isClearable={!isDisabled}
+                escapeClearsValue
                 getOptionLabel={(option) => {
                     return option.label
                 }} // Show only primary label in selected input
