@@ -44,6 +44,131 @@ const pickFirstNumber = (source: any, keys: string[]) => {
   return null;
 };
 
+const pickFirstValue = (sources: any[], keys: string[]) => {
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+
+    for (const key of keys) {
+      const value = source?.[key];
+      if (value !== undefined && value !== null && value !== '') {
+        return value;
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const normalizeOrderPrintRow = (row: any, index: number, fallbackUnit?: string) => ({
+  id: row?.id ?? row?.detail_id ?? row?.transaction_id ?? `trx-${index + 1}`,
+  vr_no:
+    pickFirstValue([row], ['vr_no', 'invoice_no', 'inv_no', 'invoice', 'voucher_no', 'challan_no']) ?? '-',
+  date:
+    pickFirstValue([row], ['date', 'invoice_date', 'inv_date', 'vr_date', 'delivery_date', 'trx_date']) ?? '-',
+  vehicle_no:
+    pickFirstValue([row], ['vehicle_no', 'truck_no', 'lorry_no', 'transport_no', 'car_no']) ?? '-',
+  weight:
+    pickFirstValue([row], ['weight', 'delivery_qty', 'qty', 'quantity', 'trx_quantity', 'order_qty', 'net_weight']) ?? 0,
+  unit:
+    pickFirstValue([row], ['unit', 'unit_name', 'weight_unit', 'qty_unit']) ?? fallbackUnit ?? '',
+  rate:
+    pickFirstValue([row], ['rate', 'order_rate', 'unit_rate', 'unit_price', 'price']) ?? 0,
+  amount:
+    pickFirstValue([row], ['amount', 'line_amount', 'total_amount', 'bill_amount']) ?? 0,
+  freight_charge:
+    pickFirstValue([row], ['freight_charge', 'freight', 'freight_amount', 'transport_cost', 'carriage']) ?? 0,
+  due_amount:
+    pickFirstValue([row], ['due_amount', 'due', 'net_due', 'balance_amount']) ?? 0,
+});
+
+const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
+  const root = payload?.data ?? payload ?? {};
+  const orderForSource =
+    root?.orderFor ??
+    root?.order_for ??
+    root?.party ??
+    root?.customer ??
+    root?.supplier ??
+    null;
+  const orderSource =
+    root?.order ??
+    root?.invoice ??
+    root?.invoice_order ??
+    root?.header ??
+    root;
+
+  const sources = [orderSource, orderForSource, root, baseOrder];
+  const fallbackUnit =
+    pickFirstValue(sources, ['unit', 'unit_name', 'qty_unit']) ?? '';
+
+  const transactionSource =
+    root?.transactions ??
+    root?.transaction_rows ??
+    root?.details ??
+    root?.items ??
+    root?.rows ??
+    orderSource?.transactions ??
+    orderSource?.details ??
+    [];
+
+  const normalizedTransactions = Array.isArray(transactionSource)
+    ? transactionSource.map((row: any, index: number) => normalizeOrderPrintRow(row, index, fallbackUnit))
+    : [];
+
+  return {
+    ...baseOrder,
+    ...orderSource,
+    order_type: pickFirstValue(sources, ['order_type', 'type_id']) ?? baseOrder?.order_type,
+    order_for:
+      pickFirstValue(sources, ['order_for', 'party_name', 'supplier_name', 'customer_name', 'company_name', 'name']) ??
+      baseOrder?.order_for,
+    address:
+      pickFirstValue(sources, ['address', 'party_address', 'supplier_address', 'customer_address']) ??
+      baseOrder?.address,
+    mobile:
+      pickFirstValue(sources, ['mobile', 'phone', 'mobile_no', 'phone_no']) ??
+      baseOrder?.mobile,
+    duration:
+      pickFirstValue(sources, ['duration', 'date_range', 'period']) ??
+      baseOrder?.duration,
+    delivery_location:
+      pickFirstValue(sources, ['delivery_location', 'delivery_place', 'delivery_address', 'address']) ??
+      baseOrder?.delivery_location,
+    product_name:
+      pickFirstValue(sources, ['product_name', 'item_name', 'product']) ??
+      baseOrder?.product_name,
+    total_order:
+      pickFirstValue(sources, ['total_order', 'order_qty', 'quantity', 'qty']) ??
+      baseOrder?.total_order,
+    trx_quantity:
+      pickFirstValue(sources, ['trx_quantity', 'delivery_qty', 'delivered_qty']) ??
+      baseOrder?.trx_quantity,
+    order_rate:
+      pickFirstValue(sources, ['order_rate', 'rate', 'unit_rate', 'unit_price', 'price']) ??
+      baseOrder?.order_rate,
+    order_amount:
+      pickFirstValue(sources, ['order_amount', 'amount', 'total_amount', 'net_amount', 'bill_amount']) ??
+      (toNumber(baseOrder?.total_order) * toNumber(baseOrder?.order_rate)),
+    order_details_text:
+      pickFirstValue(sources, ['order_details', 'details_text', 'order_summary']) ??
+      undefined,
+    order_number:
+      pickFirstValue(sources, ['order_number', 'order_no', 'po_no']) ??
+      baseOrder?.order_number,
+    order_date:
+      pickFirstValue(sources, ['order_date', 'date', 'invoice_date']) ??
+      baseOrder?.order_date,
+    last_delivery_date:
+      pickFirstValue(sources, ['last_delivery_date', 'delivery_date', 'last_date']) ??
+      baseOrder?.last_delivery_date,
+    notes:
+      pickFirstValue(sources, ['notes', 'note', 'remark', 'remarks']) ??
+      baseOrder?.notes,
+    unit: fallbackUnit || baseOrder?.unit || '',
+    transaction_rows: normalizedTransactions,
+  };
+};
+
 const Orders = () => {
   const orders = useSelector((state) => state.orders);
   const dispatch = useDispatch();
@@ -306,15 +431,11 @@ const Orders = () => {
         response?.data?.data ??
         null;
 
-      if (!payload?.order) {
+      if (!payload) {
         throw new Error('Order print payload not found');
       }
 
-      setSelectedPrintOrder({
-        ...order,
-        ...payload.order,
-        transaction_rows: payload.transactions || [],
-      });
+      setSelectedPrintOrder(normalizeOrderPrintPayload(order, payload));
     } catch (error) {
       console.error(error);
       toast.error('Order print data load করা যায়নি।');

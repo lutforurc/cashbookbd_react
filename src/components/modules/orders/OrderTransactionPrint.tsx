@@ -7,6 +7,9 @@ type OrderRow = {
   id?: number | string;
   order_type?: number | string;
   order_for?: string;
+  address?: string;
+  mobile?: string;
+  duration?: string;
   delivery_location?: string;
   order_number?: string;
   product_name?: string;
@@ -14,6 +17,9 @@ type OrderRow = {
   trx_quantity?: number | string;
   order_rate?: number | string;
   order_date?: string;
+  last_delivery_date?: string;
+  order_amount?: number | string;
+  order_details_text?: string;
   notes?: string;
   unit?: string;
   transaction_rows?: PrintTransactionRow[];
@@ -27,7 +33,9 @@ export type PrintTransactionRow = {
   weight?: number | string;
   unit?: string;
   rate?: number | string;
+  amount?: number | string;
   freight_charge?: number | string;
+  due_amount?: number | string;
 };
 
 type Props = {
@@ -47,6 +55,21 @@ const getOrderTypeLabel = (value: string | number | undefined) => {
   if (String(value) === '2') return 'Sales';
   if (String(value) === '3') return 'Stock';
   return 'Order';
+};
+
+const formatPrintDate = (value?: string) => {
+  if (!value) return '-';
+
+  const parts = value.includes('-') ? value.split('-') : value.split('/');
+  if (parts.length !== 3) return value;
+
+  if (value.includes('-')) {
+    const [year, month, day] = parts;
+    return `${day}.${month}.${year}`;
+  }
+
+  const [day, month, year] = parts;
+  return `${day}.${month}.${year}`;
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -84,6 +107,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ order, title, rowsPerPage = 20, fontSize = 11 }, ref) => {
     const fs = Number.isFinite(fontSize) ? fontSize : 11;
     const orderTypeLabel = getOrderTypeLabel(order?.order_type);
+    const partyLabel = orderTypeLabel === 'Purchase' ? 'Supplier Name' : 'Customer Name';
     const transactionRows = Array.isArray(order?.transaction_rows) && order.transaction_rows.length > 0
       ? order.transaction_rows
       : buildFallbackTransactions(order);
@@ -94,17 +118,23 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
         const weight = toNumber(row.weight);
         const rate = toNumber(row.rate);
         const freight = toNumber(row.freight_charge);
-        const amount = weight * rate;
+        const amount = toNumber(row.amount) || (weight * rate);
+        const due = toNumber(row.due_amount) || (amount - freight);
 
         acc.weight += weight;
         acc.amount += amount;
         acc.freight += freight;
-        acc.due += amount - freight;
+        acc.due += due;
 
         return acc;
       },
       { weight: 0, amount: 0, freight: 0, due: 0 },
     );
+    const computedOrderAmount = toNumber(order?.order_amount) || (toNumber(order?.total_order) * toNumber(order?.order_rate));
+    const orderDetailsText =
+      order?.order_details_text ||
+      `Order Qty: ${thousandSeparator(toNumber(order?.total_order), 0)} ${order?.unit || ''}, Rate: ${thousandSeparator(toNumber(order?.order_rate), 2)}`;
+
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -114,34 +144,56 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
           <div key={pageIndex} className="print-page">
             <PadPrinting />
 
-            <div className="mt-4 space-y-1 text-xs md:text-sm">
-              <div className="flex flex-wrap">
-                <span className="w-40">Customer Name:</span>
-                <span className="font-semibold">{order?.order_for || '-'}</span>
+            <div className="mt-5 grid grid-cols-[1fr_auto] gap-x-10 gap-y-6 text-xs md:text-sm">
+              <div className="min-w-0 space-y-2">
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">{partyLabel}:</span>
+                  <span className="font-semibold">{order?.order_for || '-'}</span>
+                </div>
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Address:</span>
+                  <span className="font-semibold">{order?.address || '-'}</span>
+                </div>
+                { order?.mobile !=0  && (
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Mobile:</span>
+                  <span className="font-semibold">{order?.mobile || '-'}</span>
+                </div>
+                )}
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Duration:</span>
+                  <span className="font-semibold">{order?.duration || '-'}</span>
+                </div>
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Delivery Location:</span>
+                  <span className="font-semibold">{order?.delivery_location || '-'}</span>
+                </div>
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Order No.</span>
+                  <span className="font-semibold">{order?.order_number || '-'}</span>
+                </div>
               </div>
-              <div className="flex flex-wrap">
-                <span className="w-40">Delivery Location:</span>
-                <span className="font-semibold">{order?.delivery_location || '-'}</span>
-              </div>
-              <div className="flex flex-wrap">
-                <span className="w-40">Order Number:</span>
-                <span className="font-semibold">{order?.order_number || '-'}</span>
-              </div>
-              <div className="flex flex-wrap">
-                <span className="w-40">Product Name:</span>
-                <span className="font-semibold">{order?.product_name || '-'}</span>
-              </div>
-              <div className="flex flex-wrap">
-                <span className="w-40">Order Details:</span>
-                <span className="font-semibold">
-                  Order Qty: {thousandSeparator(toNumber(order?.total_order), 0)} {order?.unit || ''}, Rate: {thousandSeparator(toNumber(order?.order_rate), 2)}
-                </span>
-              </div>
-              <div className="flex flex-wrap">
-                <span className="w-40">Order Amount:</span>
-                <span className="font-semibold">
-                  {thousandSeparator((toNumber(order?.total_order) * toNumber(order?.order_rate)), 0)}
-                </span>
+
+              <div className="w-[290px] justify-self-end space-y-2 text-left">
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Product Name:</span>
+                  <span className="font-semibold">{order?.product_name || '-'}</span>
+                </div>
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Order Amount:</span>
+                  <span className="font-semibold">
+                    {thousandSeparator(computedOrderAmount, 0)}
+                  </span>
+                </div>
+                
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Order Date</span>
+                  <span className="font-semibold">{formatPrintDate(order?.order_date)}</span>
+                </div>
+                <div className="flex flex-wrap">
+                  <span className="w-36 shrink-0">Delivery Date</span>
+                  <span className="font-semibold">{formatPrintDate(order?.last_delivery_date)}</span>
+                </div>
               </div>
             </div>
 
@@ -170,8 +222,8 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                     const weight = toNumber(row.weight);
                     const rate = toNumber(row.rate);
                     const freight = toNumber(row.freight_charge);
-                    const amount = weight * rate;
-                    const due = amount - freight;
+                    const amount = toNumber(row.amount) || (weight * rate);
+                    const due = toNumber(row.due_amount) || (amount - freight);
 
                     return (
                       <tr key={row.id}>
