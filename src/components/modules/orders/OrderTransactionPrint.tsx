@@ -144,54 +144,54 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
           <div key={pageIndex} className="print-page">
             <PadPrinting />
 
-            <div className="mt-5 grid grid-cols-[1fr_auto] gap-x-10 gap-y-6 text-xs md:text-sm">
-              <div className="min-w-0 space-y-2">
+            <div className="mt-5 flex items-start justify-between gap-8 text-xs md:text-sm">
+              <div className="min-w-0 flex-1 space-y-2 text-left">
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">{partyLabel}:</span>
+                  <span className="w-24 shrink-0">{partyLabel}:</span>
                   <span className="font-semibold">{order?.order_for || '-'}</span>
                 </div>
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Address:</span>
+                  <span className="w-24 shrink-0">Address:</span>
                   <span className="font-semibold">{order?.address || '-'}</span>
                 </div>
                 { order?.mobile !=0  && (
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Mobile:</span>
+                  <span className="w-24 shrink-0">Mobile:</span>
                   <span className="font-semibold">{order?.mobile || '-'}</span>
                 </div>
                 )}
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Duration:</span>
+                  <span className="w-24 shrink-0">Duration:</span>
                   <span className="font-semibold">{order?.duration || '-'}</span>
                 </div>
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Delivery Location:</span>
+                  <span className="w-24 shrink-0">Delivery Location:</span>
                   <span className="font-semibold">{order?.delivery_location || '-'}</span>
                 </div>
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Order No.</span>
+                  <span className="w-24 shrink-0">Order No.</span>
                   <span className="font-semibold">{order?.order_number || '-'}</span>
                 </div>
               </div>
 
-              <div className="w-[290px] justify-self-end space-y-2 text-left">
+              <div className="ml-auto w-[220px] shrink-0 space-y-2 text-left">
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Product Name:</span>
+                  <span className="w-24 shrink-0">Product Name:</span>
                   <span className="font-semibold">{order?.product_name || '-'}</span>
                 </div>
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Order Amount:</span>
+                  <span className="w-24 shrink-0">Order Amount:</span>
                   <span className="font-semibold">
                     {thousandSeparator(computedOrderAmount, 0)}
                   </span>
                 </div>
                 
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Order Date</span>
+                  <span className="w-24 shrink-0">Order Date</span>
                   <span className="font-semibold">{formatPrintDate(order?.order_date)}</span>
                 </div>
                 <div className="flex flex-wrap">
-                  <span className="w-36 shrink-0">Delivery Date</span>
+                  <span className="w-24 shrink-0">Delivery Date</span>
                   <span className="font-semibold">{formatPrintDate(order?.last_delivery_date)}</span>
                 </div>
               </div>
