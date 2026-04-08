@@ -67,6 +67,7 @@ const GeneralBusinessSales = () => {
   const [salesType, setSalesType] = useState('1');
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
 
   const [permissions, setPermissions] = useState<any>([]);
 
@@ -113,10 +114,13 @@ const GeneralBusinessSales = () => {
   const customerAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashCustomer = Number(option?.value) === 17;
+    setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      receivedAmt: isCashCustomer ? formData.receivedAmt : '0',
     });
   };
 
@@ -234,6 +238,7 @@ const GeneralBusinessSales = () => {
       notes: salesMaster?.notes || '',
       products,
     }));
+    setIsReceivedAmtManuallyEdited(false);
   }, [sales?.data?.transaction, sales?.data?.mtmId]);
 
   const addProduct = () => {
@@ -298,6 +303,9 @@ const GeneralBusinessSales = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'receivedAmt' && Number(formData.account) !== 17) {
+      setIsReceivedAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -439,24 +447,6 @@ const GeneralBusinessSales = () => {
   };
 
   useEffect(() => {
-    if (formData.account == '17') {
-      setFormData((prevState) => ({
-        ...prevState,
-        receivedAmt:
-          totalAmount > 0
-            ? (totalAmount - prevState.discountAmt).toString()
-            : '0',
-      }));
-    } else {
-      setFormData((prevState) => ({
-        ...prevState,
-        receivedAmt: '',
-      }));
-    }
-  }, [formData.account]);
-
-
-  useEffect(() => {
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
       const price = parseFloat(product.price?.toString() || '0') || 0;
@@ -464,17 +454,32 @@ const GeneralBusinessSales = () => {
     }, 0);
 
     const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const isCashCustomer = Number(formData.account) === 17;
+    const cashReceivedAmt = Math.max(0, total - discount).toFixed(2);
 
-    let netTotal = 0;
-    if (total > 0) {
-      netTotal = total - discount;
+    if (isCashCustomer) {
+      if (formData.receivedAmt !== cashReceivedAmt) {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: cashReceivedAmt,
+        }));
+      }
+      if (isReceivedAmtManuallyEdited) {
+        setIsReceivedAmtManuallyEdited(false);
+      }
+    } else if (!isReceivedAmtManuallyEdited && formData.receivedAmt !== '0') {
+      setFormData((prev) => ({
+        ...prev,
+        receivedAmt: '0',
+      }));
     }
-
-    setFormData((prev) => ({
-      ...prev,
-      receivedAmt: netTotal.toFixed(2), // Keep as string
-    }));
-  }, [formData.products, formData.discountAmt]);
+  }, [
+    formData.account,
+    formData.products,
+    formData.discountAmt,
+    formData.receivedAmt,
+    isReceivedAmtManuallyEdited,
+  ]);
 
   const handleSalesType = (e: any) => {
     setSalesType(e.target.value);
@@ -867,10 +872,13 @@ const GeneralBusinessSales = () => {
         onClose={closeCustomerModal}
         initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
+          const isCashCustomer = Number(id) === 17;
+          setIsReceivedAmtManuallyEdited(false);
           setFormData((prev) => ({
             ...prev,
             account: id,
             accountName: name,
+            receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
           }));
         }}
       />

@@ -80,6 +80,7 @@ const TradingBusinessSales = () => {
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
   dayjs.extend(utc);
 
 
@@ -134,10 +135,13 @@ const TradingBusinessSales = () => {
   const customerAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashCustomer = Number(option?.value) === 17;
+    setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      receivedAmt: isCashCustomer ? formData.receivedAmt : '0',
     });
   };
 
@@ -256,6 +260,7 @@ const TradingBusinessSales = () => {
       };
 
       setFormData(updatedFormData);
+      setIsReceivedAmtManuallyEdited(false);
     }
   }, [sales.data.transaction]);
 
@@ -355,6 +360,9 @@ const TradingBusinessSales = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'receivedAmt' && Number(formData.account) !== 17) {
+      setIsReceivedAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -639,39 +647,33 @@ const TradingBusinessSales = () => {
       const price = parseFloat(product.price?.toString() || '0') || 0;
       return acc + qty * price;
     }, 0);
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const isCashCustomer = Number(formData.account) === 17;
+    const cashReceivedAmt = Math.max(0, total - discount).toFixed(0);
 
-    if (!formData.mtmId) {
-      if (Number(formData.account) === 17) {
+    if (isCashCustomer) {
+      if (formData.receivedAmt !== cashReceivedAmt) {
         setFormData((prev) => ({
           ...prev,
-          receivedAmt: Math.max(
-            0,
-            total - parseFloat(prev.discountAmt?.toString() || '0'),
-          ).toFixed(0),
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: '0',
+          receivedAmt: cashReceivedAmt,
         }));
       }
-    } else if (formData.mtmId) {
-      if (Number(formData.account) === 17) {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: Math.max(
-            0,
-            total - parseFloat(prev.discountAmt?.toString() || '0'),
-          ).toFixed(0),
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: sales.data.transaction?.sales_master?.netpayment?.toString(),
-        }));
+      if (isReceivedAmtManuallyEdited) {
+        setIsReceivedAmtManuallyEdited(false);
       }
+    } else if (!isReceivedAmtManuallyEdited && formData.receivedAmt !== '0') {
+      setFormData((prev) => ({
+        ...prev,
+        receivedAmt: '0',
+      }));
     }
-  }, [formData.account, formData.discountAmt, formData.products]);
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.products,
+    formData.receivedAmt,
+    isReceivedAmtManuallyEdited,
+  ]);
 
 
   const purchaseOrderNumberHandler = (option: any) => {
@@ -1213,10 +1215,13 @@ const TradingBusinessSales = () => {
         onClose={closeCustomerModal}
         initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
+          const isCashCustomer = Number(id) === 17;
+          setIsReceivedAmtManuallyEdited(false);
           setFormData((prev) => ({
             ...prev,
             account: id,
             accountName: name,
+            receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
           }));
         }}
       />
