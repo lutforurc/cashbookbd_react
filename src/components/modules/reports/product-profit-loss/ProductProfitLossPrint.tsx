@@ -1,10 +1,13 @@
 import React from "react";
+import dayjs from "dayjs";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 export type ProductProfitPrintRow = {
   sl?: number;
+  vr_no?: string | number | null;
+  vr_date?: string | null;
   product_name?: string;
   sold_qty?: number;
   unit_purchase_rate?: number | null;
@@ -13,6 +16,17 @@ export type ProductProfitPrintRow = {
   sale_total?: number | null;
   profit?: number | null;
   warning?: string;
+};
+
+const formatVoucherDate = (value: string | null | undefined) => {
+  if (!value) return "-";
+
+  const parsed = dayjs(value);
+  if (parsed.isValid()) {
+    return parsed.format("DD/MM/YYYY");
+  }
+
+  return value;
 };
 
 type Props = {
@@ -105,6 +119,12 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
                     Product Name
                   </th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
+                    VR No
+                  </th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
+                    VR Date
+                  </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                     Sold Qty
                   </th>
@@ -139,6 +159,12 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                         {row?.product_name || "-"}
                       </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                        {row?.vr_no || "-"}
+                      </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                        {formatVoucherDate(row?.vr_date)}
+                      </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                         {thousandSeparator( Number(row?.sold_qty), 0)}
                       </td>
@@ -164,7 +190,7 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={9} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
+                    <td colSpan={11} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
                       No data found
                     </td>
                   </tr>
@@ -175,7 +201,7 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                 <tfoot>
                   <tr>
                     <td
-                      colSpan={2}
+                      colSpan={4}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-2 font-bold"
                     >

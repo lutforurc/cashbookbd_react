@@ -19,6 +19,8 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 
 type ProductProfitRow = {
   sl?: number;
+  vr_no?: string | number | null;
+  vr_date?: string | null;
   product_id?: number;
   product_name: string;
   sold_qty: number;
@@ -46,6 +48,17 @@ const formatNumber = (value: number | null | undefined, decimal = 2) => {
 
 const formatMoney = (value: number | null | undefined) => {
   return formatNumber(value, 2);
+};
+
+const formatVoucherDate = (value: string | null | undefined) => {
+  if (!value) return "-";
+
+  const parsed = dayjs(value);
+  if (parsed.isValid()) {
+    return parsed.format("DD/MM/YYYY");
+  }
+
+  return value;
 };
 
 const getNetLabel = (amount: number) => {
@@ -242,6 +255,18 @@ const ProductProfitLoss = (user: any) => {
       ),
     },
     {
+      key: "vr_no",
+      header: "VR No",
+      render: (row: ProductProfitRow) => <div>{row?.vr_no || "-"}</div>,
+    },
+    {
+      key: "vr_date",
+      header: "VR Date",
+      render: (row: ProductProfitRow) => (
+        <div>{formatVoucherDate(row?.vr_date)}</div>
+      ),
+    },
+    {
       key: "sold_qty",
       header: "Sold Qty",
       headerClass: "text-right",
@@ -314,7 +339,7 @@ const ProductProfitLoss = (user: any) => {
         [
           {
             label: "Summary",
-            colSpan: 2,
+            colSpan: 4,
             className: "text-left",
           },
           {
