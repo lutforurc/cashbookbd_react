@@ -17,6 +17,8 @@ import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import { useReactToPrint } from 'react-to-print';
 import SalesLedgerPrint from './SalesLedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 
 const clampInt = (v: any, min: number, max: number, fallback: number) => {
   const n = parseInt(String(v ?? ''), 10);
@@ -49,6 +51,8 @@ const SalesLedger = (user: any) => {
 
   // ✅ Print
   const printRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: 'Sales Ledger',
@@ -163,10 +167,25 @@ const SalesLedger = (user: any) => {
       headerClass: 'text-left',
       cellClass: 'text-left',
       render: (row: any) => (
-        <>
+        <div
+          className="cursor-pointer hover:underline"
+          onClick={() =>
+            handleVoucherPrint({
+              ...row,
+              vr_no: row?.vr_no ?? row?.challan_no,
+              mtm_id:
+                row?.mtm_id ??
+                row?.mtmid ??
+                row?.mtmId ??
+                row?.smtm_id ??
+                row?.mid ??
+                row?.id,
+            })
+          }
+        >
           <div>{row.challan_no}</div>
           <div>{row.challan_date}</div>
-        </>
+        </div>
       ),
     },
     {
@@ -540,6 +559,11 @@ const SalesLedger = (user: any) => {
           fontSize={fontSize}
           startDate={startDate ? dayjs(startDate).format('YYYY-MM-DD') : ''}
           endDate={endDate ? dayjs(endDate).format('YYYY-MM-DD') : ''}
+        />
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
         />
       </div>
     </div>

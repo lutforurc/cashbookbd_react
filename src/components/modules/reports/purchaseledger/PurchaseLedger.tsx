@@ -19,6 +19,8 @@ import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import PurchaseLedgerPrint from './PurchaseLedgerPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -39,6 +41,8 @@ const PurchaseLedger = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [hideIcon, setHideIcon] = useState<boolean>(true);
   const printRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
 
@@ -143,7 +147,22 @@ const PurchaseLedger = (user: any) => {
       header: 'Chal. No. & Date',
       width: '120px',
       render: (row: any) => (
-        <div>
+        <div
+          className="cursor-pointer hover:underline"
+          onClick={() =>
+            handleVoucherPrint({
+              ...row,
+              vr_no: row?.vr_no ?? row?.challan_no,
+              mtm_id:
+                row?.mtm_id ??
+                row?.smtm_id ??
+                row?.mtmid ??
+                row?.mtmId ??
+                row?.mid ??
+                row?.id,
+            })
+          }
+        >
           <div>{row?.challan_no}</div>
           <div>{row?.challan_date}</div>
         </div>
@@ -490,6 +509,11 @@ const PurchaseLedger = (user: any) => {
           startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
           endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
           title="Purchase Ledger"
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+        />
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
           rowsPerPage={Number(perPage)}
           fontSize={Number(fontSize)}
         />
