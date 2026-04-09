@@ -180,6 +180,7 @@ const SalesLedger = (user: any) => {
         const remarks =
           row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]
             ?.remarks ?? '';
+        const detailText = notes || remarks;
 
         return (
           <div className="min-w-52 break-words align-center">
@@ -203,8 +204,7 @@ const SalesLedger = (user: any) => {
               <div className="text-sm mt-1 font-semibold">{coaName}</div>
             )}
 
-            {notes ? <div className="mt-1">{notes}</div> : null}
-            {remarks ? <div className="">{remarks}</div> : null}
+            {detailText ? <div className="mt-1">{detailText}</div> : null}
           </div>
         );
       },
