@@ -11,9 +11,12 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
+import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchCustomerSupplierStatement } from './ledgerWithProductSlice';
 import LedgerWithProductPrint from './LedgerWithProductPrint';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 
 const formatAmount = (value: any, precision = 0) => {
   const amount = Number(value || 0);
@@ -70,6 +73,8 @@ const LedgerWithProduct = (user: any) => {
   const [modalMessage, setModalMessage] = useState<React.ReactNode>('');
 
   const printRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   const openMessageModal = (title: string, message: React.ReactNode) => {
     setModalTitle(title);
@@ -180,6 +185,160 @@ const LedgerWithProduct = (user: any) => {
     documentTitle: 'Customer Supplier Statement',
     removeAfterPrint: true,
   });
+
+  const columns = [
+    {
+      key: 'sl_number',
+      header: 'Sl. No',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => <div>{row.sl_number || ''}</div>,
+    },
+    {
+      key: 'vr_date',
+      header: 'Vr Date',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => <div>{row.vr_date || ''}</div>,
+    },
+    {
+      key: 'vr_no',
+      header: 'Vr No',
+      render: (row: any) => {
+        const isOpening = String(row?.vr_no || '').toLowerCase() === 'opening';
+
+        return (
+          <div
+            className={isOpening ? '' : 'cursor-pointer hover:underline'}
+            onClick={() => {
+              if (isOpening) return;
+              handleVoucherPrint({
+                ...row,
+                mtm_id: row?.mtm_id ?? row?.mtmid ?? row?.mtmId ?? row?.mid ?? row?.id,
+              });
+            }}
+          >
+            {row.vr_no || ''}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'description',
+      header: 'Description',
+      render: (row: any) => (
+        <div>
+          <div className="whitespace-normal">{row.product_name || row.trx_type || '-'}</div>
+          {row.remarks ? (
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.remarks}</div>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      key: 'truck_no',
+      header: 'Truck No',
+      render: (row: any) => <div>{row.truck_no || ''}</div>,
+    },
+    {
+      key: 'quantity',
+      header: 'Qty',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => (
+        <div>
+          {Number(row.quantity || 0)
+            ? thousandSeparator(Number(row.quantity || 0), 2)
+            : '-'}
+        </div>
+      ),
+    },
+    {
+      key: 'rate',
+      header: 'Rate',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => (
+        <div>
+          {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
+        </div>
+      ),
+    },
+    {
+      key: 'total',
+      header: 'Total',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => (
+        <div>{Number(row.total || 0) ? formatAmount(row.total) : '-'}</div>
+      ),
+    },
+    {
+      key: 'received',
+      header: 'Received',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => (
+        <div>{Number(row.received || 0) ? formatAmount(row.received) : '-'}</div>
+      ),
+    },
+    {
+      key: 'payment',
+      header: 'Payment',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => (
+        <div>{Number(row.payment || 0) ? formatAmount(row.payment) : '-'}</div>
+      ),
+    },
+    {
+      key: 'balance',
+      header: 'Balance',
+      headerClass: 'text-right',
+      cellClass: 'text-right font-semibold',
+      render: (row: any) => <div>{formatAmount(row.balance)}</div>,
+    },
+  ];
+
+  const footerRows = [
+    [
+      {
+        label: 'Opening:',
+        colSpan: 2,
+        className: 'text-right text-slate-500 dark:text-slate-400',
+      },
+      {
+        label: formatAmount(summary?.opening_balance || 0),
+        className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
+      },
+      {
+        label: 'Received:',
+        colSpan: 2,
+        className: 'text-right text-slate-500 dark:text-slate-400',
+      },
+      {
+        label: formatAmount(summary?.total_received || 0),
+        className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
+      },
+      {
+        label: 'Payment:',
+        colSpan: 2,
+        className: 'text-right text-slate-500 dark:text-slate-400',
+      },
+      {
+        label: formatAmount(summary?.total_payment || 0),
+        className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
+      },
+      {
+        label: 'Closing:',
+        className: 'text-right text-slate-500 dark:text-slate-400',
+      },
+      {
+        label: formatAmount(summary?.closing_balance || 0),
+        className: 'text-right font-bold text-slate-900 dark:text-white',
+      },
+    ],
+  ];
 
   return (
     <>
@@ -295,105 +454,19 @@ const LedgerWithProduct = (user: any) => {
 
         {!statementState?.loading && hasLoaded ? (
           <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-default dark:border-slate-700 dark:bg-[#1f2733]">
-            <div className="overflow-x-auto">
-              <table
-                className="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
-                style={{ fontSize: `${fontSize}px` }}
-              >
-                <thead className="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[#3a475c] dark:text-slate-100">
-                  <tr>
-                    <th className="px-3 py-3 text-center">Sl. No</th>
-                    <th className="px-3 py-3 text-center">Vr Date</th>
-                    <th className="px-3 py-3 text-left">Vr No</th>
-                    <th className="px-3 py-3 text-left">Description</th>
-                    <th className="px-3 py-3 text-left">Truck No</th>
-                    <th className="px-3 py-3 text-right">Qty</th>
-                    <th className="px-3 py-3 text-right">Rate</th>
-                    <th className="px-3 py-3 text-right">Total</th>
-                    <th className="px-3 py-3 text-right">Received</th>
-                    <th className="px-3 py-3 text-right">Payment</th>
-                    <th className="px-3 py-3 text-right">Balance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.length ? (
-                    rows.map((row: any, index: number) => (
-                      <tr
-                        key={`${row.vr_no}-${index}`}
-                        className="border-t border-slate-200 bg-white transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-[#243040] dark:hover:bg-[#2b394b]"
-                      >
-                        <td className="px-3 py-3 text-center">{row.sl_number || ''}</td>
-                        <td className="px-3 py-3 text-center">
-                          {row.vr_date ? row.vr_date : ''}
-                        </td>
-                        <td className="px-3 py-3">{row.vr_no || ''}</td>
-                        <td className="px-3 py-3">
-                          <div className="whitespace-normal">{row.product_name || row.trx_type || '-'}</div>
-                          {row.remarks ? (
-                            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.remarks}</div>
-                          ) : null}
-                        </td>
-                        <td className="px-3 py-3">{row.truck_no || ''}</td>
-                        <td className="px-3 py-3 text-right">
-                          {Number(row.quantity || 0)
-                            ? thousandSeparator(Number(row.quantity || 0), 2)
-                            : '-'}
-                        </td>
-                        <td className="px-3 py-3 text-right">
-                          {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
-                        </td>
-                        <td className="px-3 py-3 text-right">
-                          {Number(row.total || 0) ? formatAmount(row.total) : '-'}
-                        </td>
-                        <td className="px-3 py-3 text-right">
-                          {Number(row.received || 0) ? formatAmount(row.received) : '-'}
-                        </td>
-                        <td className="px-3 py-3 text-right">
-                          {Number(row.payment || 0) ? formatAmount(row.payment) : '-'}
-                        </td>
-                        <td className="px-3 py-3 text-right font-semibold">
-                          {formatAmount(row.balance)}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={11} className="px-3 py-8 text-center text-slate-500 dark:text-slate-300">
-                        {hasTransactions ? 'No statement rows found' : 'No transactions found'}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-[#243040]">
-              <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm">
-                <div className="text-slate-600 dark:text-slate-300">
-                  <span className="text-slate-500 dark:text-slate-400">Opening:</span>{' '}
-                  <span className="font-semibold text-slate-800 dark:text-slate-100">
-                    {formatAmount(summary?.opening_balance || 0)}
-                  </span>
-                </div>
-                <div className="text-slate-600 dark:text-slate-300">
-                  <span className="text-slate-500 dark:text-slate-400">Received:</span>{' '}
-                  <span className="font-semibold text-slate-800 dark:text-slate-100">
-                    {formatAmount(summary?.total_received || 0)}
-                  </span>
-                </div>
-                <div className="text-slate-600 dark:text-slate-300">
-                  <span className="text-slate-500 dark:text-slate-400">Payment:</span>{' '}
-                  <span className="font-semibold text-slate-800 dark:text-slate-100">
-                    {formatAmount(summary?.total_payment || 0)}
-                  </span>
-                </div>
-                <div className="text-slate-600 dark:text-slate-300">
-                  <span className="text-slate-500 dark:text-slate-400">Closing:</span>{' '}
-                  <span className="font-bold text-slate-900 dark:text-white">
-                    {formatAmount(summary?.closing_balance || 0)}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <Table
+              columns={columns}
+              data={rows}
+              noDataMessage={hasTransactions ? 'No statement rows found' : 'No transactions found'}
+              tableClassName="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
+              theadClassName="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[#3a475c] dark:text-slate-100"
+              tbodyClassName="divide-y-0 bg-transparent dark:bg-transparent"
+              rowClassName="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-[#243040]"
+              getRowKey={(row: any, index: number) => `${row?.vr_no || 'row'}-${index}`}
+              tableStyle={{ fontSize: `${fontSize}px` }}
+              footerRows={footerRows}
+              className="[&_table]:shadow-none [&_tbody_tr:hover]:bg-slate-50 dark:[&_tbody_tr:hover]:bg-[#2b394b]"
+            />
           </div>
         ) : null}
       </div>
@@ -414,6 +487,11 @@ const LedgerWithProduct = (user: any) => {
             summary={summary}
           />
         </div>
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
+        />
       </div>
 
       <ConfirmModal

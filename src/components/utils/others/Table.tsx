@@ -26,29 +26,44 @@ interface TableProps {
   columns: Column[];
   data: any[];
   className?: string;
+  tableClassName?: string;
+  theadClassName?: string;
+  tbodyClassName?: string;
+  rowClassName?: string | ((row: any, index: number) => string);
+  getRowKey?: (row: any, index: number) => React.Key;
   noDataMessage?: string;
   headerRows?: TableHeaderCell[][];
   footerRows?: TableFooterCell[][];
+  tableStyle?: React.CSSProperties;
 }
 
 const Table: React.FC<TableProps> = ({
   columns,
   data,
   className,
+  tableClassName,
+  theadClassName,
+  tbodyClassName,
+  rowClassName,
+  getRowKey,
   noDataMessage = "",
   headerRows,
   footerRows,
+  tableStyle,
 }) => {
   return (
     <div className={`overflow-x-auto rounded-sm shadow-sm ${className || ""}`}>
-      <table className="min-w-full table-fixed text-left text-sm text-gray-700 dark:text-gray-300">
+      <table
+        className={`min-w-full table-fixed text-left text-sm text-gray-700 dark:text-gray-300 ${tableClassName || ""}`}
+        style={tableStyle}
+      >
         <colgroup>
           {columns.map((col) => (
             <col key={col.key} className={col.cellClass} />
           ))}
         </colgroup>
 
-        <thead className="bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+        <thead className={`bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300 ${theadClassName || ""}`}>
           {headerRows && headerRows.length > 0 ? (
             headerRows.map((row, rowIndex) => (
               <tr key={rowIndex}>
@@ -78,12 +93,16 @@ const Table: React.FC<TableProps> = ({
           )}
         </thead>
 
-        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+        <tbody className={`divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800 ${tbodyClassName || ""}`}>
           {Array.isArray(data) && data.length > 0 ? (
             data.map((row, rowIndex) => (
               <tr
-                key={rowIndex}
-                className="transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700"
+                key={getRowKey ? getRowKey(row, rowIndex) : rowIndex}
+                className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
+                  typeof rowClassName === 'function'
+                    ? rowClassName(row, rowIndex)
+                    : rowClassName || ''
+                }`}
               >
                 {columns.map((col) => (
                   <td
