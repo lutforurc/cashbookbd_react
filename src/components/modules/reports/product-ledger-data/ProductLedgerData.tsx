@@ -15,6 +15,8 @@ import Table from '../../../utils/others/Table';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ProductLedgerDataPrint from './ProductLedgerDataPrint';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 
 const aliasValue = (row: any, keys: string[], fallback: any = null) => {
   for (const key of keys) {
@@ -92,6 +94,8 @@ const ProductLedgerData = (user: any) => {
   const [error, setError] = useState('');
 
   const printRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
@@ -251,7 +255,17 @@ const ProductLedgerData = (user: any) => {
       key: 'invoice_no',
       header: 'Invoice No.',
       render: (row: any) => (
-        <div className={row?.rowType === 'opening' ? 'font-medium text-white' : ''}>
+        <div
+          className={`${row?.rowType === 'opening' ? 'font-medium text-white' : 'cursor-pointer hover:underline'}`}
+          onClick={() => {
+            if (row?.rowType === 'opening') return;
+            handleVoucherPrint({
+              ...row,
+              vr_no: aliasValue(row, ['vr_no', 'invoice_no', 'invoice', 'label'], ''),
+              mtm_id: row?.mtm_id ?? row?.mtmid ?? row?.mtmId ?? row?.mid ?? row?.id,
+            });
+          }}
+        >
           {aliasValue(row, ['invoice_no', 'invoice', 'vr_no', 'label'], '-')}
         </div>
       ),
@@ -477,6 +491,11 @@ const ProductLedgerData = (user: any) => {
           endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'}
           fontSize={fontSize}
           rowsPerPage={rowsPerPage}
+        />
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
         />
       </div>
     </>
