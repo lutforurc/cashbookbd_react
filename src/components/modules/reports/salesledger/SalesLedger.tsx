@@ -176,6 +176,7 @@ const SalesLedger = (user: any) => {
       render: (row: any) => {
         const coaName = getRelevantCoaName(row);
         const details = row?.sales_master?.details ?? [];
+        const notes = row?.sales_master?.notes ?? row?.notes ?? '';
         const remarks =
           row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]
             ?.remarks ?? '';
@@ -202,6 +203,7 @@ const SalesLedger = (user: any) => {
               <div className="text-sm mt-1 font-semibold">{coaName}</div>
             )}
 
+            {notes ? <div className="mt-1">{notes}</div> : null}
             {remarks ? <div className="">{remarks}</div> : null}
           </div>
         );

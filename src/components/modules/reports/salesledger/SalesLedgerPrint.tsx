@@ -258,6 +258,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                         const remarks =
                           row?.acc_transaction_master?.[0]
                             ?.acc_transaction_details?.[0]?.remarks ?? "";
+                        const notes = row?.sales_master?.notes ?? row?.notes ?? "";
 
                         return (
                           <tr
@@ -318,6 +319,9 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                   <div className="font-semibold">{coaName}</div>
                                 ) : null}
 
+                                {notes ? (
+                                  <div className="mt-1 text-xs">{notes}</div>
+                                ) : null}
                                 {remarks ? (
                                   <div className="mt-1 text-xs">{remarks}</div>
                                 ) : null}
