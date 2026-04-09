@@ -435,7 +435,7 @@ const HeadOfficeCashPayment = () => {
 
   return (
     <>
-      <HelmetTitle title="Cash Payment" />
+      <HelmetTitle title="Head Office Cash Payment" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">

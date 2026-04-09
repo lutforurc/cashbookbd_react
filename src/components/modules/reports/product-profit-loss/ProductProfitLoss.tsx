@@ -16,9 +16,12 @@ import { API_REPORT_PRODUCT_PROFIT_LOSS_URL } from "../../../services/apiRoutes"
 import Table from "../../../utils/others/Table";
 import ProductProfitLossPrint from "./ProductProfitLossPrint";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import { VoucherPrintRegistry } from "../../vouchers/VoucherPrintRegistry";
+import { useVoucherPrint } from "../../vouchers";
 
 type ProductProfitRow = {
   sl?: number;
+  mid?: number | null;
   vr_no?: string | number | null;
   vr_date?: string | null;
   product_id?: number;
@@ -152,6 +155,8 @@ const ProductProfitLoss = (user: any) => {
     [reportRows]
   );
   const printRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   const handleRunReport = async () => {
     if (!branchId) {
@@ -257,7 +262,21 @@ const ProductProfitLoss = (user: any) => {
     {
       key: "vr_no",
       header: "VR No",
-      render: (row: ProductProfitRow) => <div>{row?.vr_no || "-"}</div>,
+      render: (row: ProductProfitRow) => (
+        <div
+          className={row?.vr_no ? "cursor-pointer hover:underline" : undefined}
+          onClick={() => {
+            if (!row?.vr_no || !row?.mid) return;
+
+            handleVoucherPrint({
+              ...row,
+              mtm_id: row.mid,
+            });
+          }}
+        >
+          {row?.vr_no || "-"}
+        </div>
+      ),
     },
     {
       key: "vr_date",
@@ -512,6 +531,11 @@ const ProductProfitLoss = (user: any) => {
             startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : undefined}
             endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : undefined}
             title="Product Wise Profit Loss"
+            rowsPerPage={Number(rowsPerPage)}
+            fontSize={Number(fontSize)}
+          />
+          <VoucherPrintRegistry
+            ref={voucherRegistryRef}
             rowsPerPage={Number(rowsPerPage)}
             fontSize={Number(fontSize)}
           />
