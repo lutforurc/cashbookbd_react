@@ -31,15 +31,38 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
+const toNumber = (value: any) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const getLinkedRemainingQuantity = (row: any) => {
+  const totalOrder = row?.total_order;
+  const trxQuantity = row?.trx_quantity;
+
+  if (
+    totalOrder !== undefined &&
+    totalOrder !== null &&
+    totalOrder !== '' &&
+    trxQuantity !== undefined &&
+    trxQuantity !== null &&
+    trxQuantity !== ''
+  ) {
+    return toNumber(totalOrder) - toNumber(trxQuantity);
+  }
+
+  return toNumber(row?.remaining_quantity);
+};
+
 const buildSummary = (rows: any[]): OrderSummary =>
   (Array.isArray(rows) ? rows : []).reduce(
     (acc, row) => {
-      acc.totalOrder = Number(acc.totalOrder || 0) + Number(row?.total_order || 0);
+      acc.totalOrder = Number(acc.totalOrder || 0) + toNumber(row?.total_order);
       acc.baseOrderQuantity =
-        Number(acc.baseOrderQuantity || 0) + Number(row?.base_order_quantity || 0);
-      acc.linkedQuantity = Number(acc.linkedQuantity || 0) + Number(row?.linked_quantity || 0);
+        Number(acc.baseOrderQuantity || 0) + toNumber(row?.base_order_quantity);
+      acc.linkedQuantity = Number(acc.linkedQuantity || 0) + toNumber(row?.linked_quantity);
       acc.remainingQuantity =
-        Number(acc.remainingQuantity || 0) + Number(row?.remaining_quantity || 0);
+        Number(acc.remainingQuantity || 0) + getLinkedRemainingQuantity(row);
 
       return acc;
     },
@@ -157,7 +180,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                             Linked {thousandSeparator(Number(row?.linked_quantity || 0), 0)}
                           </span>
                           <span className="block">
-                            Remaining {thousandSeparator(Number(row?.remaining_quantity || 0), 0)}
+                            Remaining {thousandSeparator(getLinkedRemainingQuantity(row), 0)}
                           </span>
                         </td>
                       </tr>

@@ -30,6 +30,24 @@ const toNumber = (value: any) => {
 const getOrderRemainingQuantity = (row: any) =>
   toNumber(row?.total_order) - toNumber(row?.trx_quantity);
 
+const getLinkedRemainingQuantity = (row: any) => {
+  const totalOrder = row?.total_order;
+  const trxQuantity = row?.trx_quantity;
+
+  if (
+    totalOrder !== undefined &&
+    totalOrder !== null &&
+    totalOrder !== '' &&
+    trxQuantity !== undefined &&
+    trxQuantity !== null &&
+    trxQuantity !== ''
+  ) {
+    return getOrderRemainingQuantity(row);
+  }
+
+  return toNumber(row?.remaining_quantity);
+};
+
 const pickFirstNumber = (source: any, keys: string[]) => {
   for (const key of keys) {
     const value = source?.[key];
@@ -296,7 +314,7 @@ const Orders = () => {
           row?.base_order_quantity ?? row?.reference_order?.total_order,
         );
         acc.linkedQuantity += toNumber(row?.linked_quantity);
-        acc.remainingQuantity += toNumber(row?.remaining_quantity);
+        acc.remainingQuantity += getLinkedRemainingQuantity(row);
         return acc;
       },
       {
@@ -569,8 +587,10 @@ const Orders = () => {
               : '-'}
           </span>
           <span className="block">
-            {data.remaining_quantity != null
-              ? thousandSeparator(data.remaining_quantity, 0)
+            {(data.remaining_quantity != null ||
+              data.total_order != null ||
+              data.trx_quantity != null)
+              ? thousandSeparator(getLinkedRemainingQuantity(data), 0)
               : '-'}
           </span>
         </p>

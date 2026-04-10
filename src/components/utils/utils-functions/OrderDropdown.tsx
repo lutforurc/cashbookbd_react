@@ -14,9 +14,36 @@ interface OptionType {
     label_5?: string;
     label_6?: string;
     label_7?: string;
+    label_8?: string | number;
+    label_9?: string;
     order_type?: string;
     [key: string]: any;
 }
+
+const toNumber = (value: any) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+};
+
+const getRemainingQty = (option: OptionType) => {
+    const orderQty =
+        toNumber(option.order_qty) ??
+        toNumber(option.total_order) ??
+        toNumber(option.quantity) ??
+        toNumber(option.label_7);
+
+    const trxQty =
+        toNumber(option.trx_quantity) ??
+        toNumber(option.delivery_qty) ??
+        toNumber(option.linked_quantity) ??
+        toNumber(option.base_qty);
+
+    if (orderQty !== null && trxQty !== null) {
+        return orderQty - trxQty;
+    }
+
+    return toNumber(option.remaining_qty) ?? toNumber(option.remaining_quantity) ?? toNumber(option.label_8);
+};
 
 interface DropdownProps {
     id?: string;
@@ -91,6 +118,8 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         label_5: item.label_5,
                         label_6: item.label_6,
                         label_7: item.label_7,
+                        label_8: item.label_8,
+                        label_9: item.label_9,
                         order_type: item.order_type,
                         ...item,
                     }));
@@ -154,6 +183,14 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                                     )}
                                     {option.label_7 && (
                                         <div className="text-gray-600 dark:text-white text-sm">Order Qty: {option.label_7}</div>
+                                    )}
+                                    {getRemainingQty(option) !== null && (
+                                        <div className="text-gray-600 dark:text-white text-sm">
+                                            Remaining Qty: {getRemainingQty(option)}
+                                        </div>
+                                    )}
+                                    {option.label_9 && (
+                                        <div className="text-gray-600 dark:text-white text-sm">Note: {option.label_9}</div>
                                     )}
                                 </div>
                             )}
