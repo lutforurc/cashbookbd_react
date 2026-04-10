@@ -256,7 +256,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       className="leading-normal"
                                       style={{ fontSize: getProductFs(label, fs) }}
                                     >
-                                      {detail?.quantity ?? ""}
+                                      { thousandSeparator(detail?.quantity ?? 0, 2) }
                                     </div>
                                   );
                                 })
