@@ -168,21 +168,10 @@ const PurchaseLedger = (user: any) => {
         </div>
       ),
     },
-    {
-      key: 'vehicle_no',
-      header: 'Vehicle Number',
-      width: '120px',
-      render: (row: any) => {
-        return (
-          <div className="text-left">
-            <div>{row?.purchase_master?.vehicle_no}</div>
-          </div>
-        );
-      },
-    },
+    
     {
       key: 'product_name',
-      header: 'Description',
+      header: 'Product & Details',
       width: '100px',
       cellClass: 'align-center',
       render: (row: any) => {
@@ -194,11 +183,11 @@ const PurchaseLedger = (user: any) => {
               row.purchase_master.details.map((detail: any, i: number) => {
                 const categoryName = detail?.product?.category?.name ?? "";
                 const productName = detail?.product?.name ?? "";
-
                 return (
                   <div key={detail?.id ?? i} className="leading-normal">
                     {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
                     {productName}
+                    
                   </div>
                 );
               })}
@@ -207,6 +196,22 @@ const PurchaseLedger = (user: any) => {
                 {coaName}
               </div>
             )}
+            { row?.purchase_master?.notes && (
+              <div>{row?.purchase_master?.notes}</div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'vehicle_no',
+      header: 'Vehicle Number',
+      width: '120px',
+      render: (row: any) => {
+        return (
+          <div className="text-left">
+            <div>{row?.purchase_master?.vehicle_no}</div>
+            
           </div>
         );
       },

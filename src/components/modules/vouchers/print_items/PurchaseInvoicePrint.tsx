@@ -214,57 +214,72 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
             </table>
 
             {pageIndex === pages.length - 1 && (
-              <div className="mt-3 flex justify-end">
-                <table className="border-collapse">
-                  <tbody>
-                    <tr>
-                      <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
-                        Total Tk.
-                      </td>
-                      <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
-                        {thousandSeparator(totalAmount, 0)}
-                      </td>
-                    </tr>
+              <div className="mt-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    {purchaseMaster?.vehicle_no && (
+                      <div className="mt-2">
+                        <span
+                          className="inline-block border border-black px-2 py-1 font-semibold"
+                          style={{ fontSize: fs }}
+                        >
+                          Vehicle No: <span className="uppercase">{purchaseMaster?.vehicle_no}</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
-                    {discountAmount !== 0 && (
+                  <table className="border-collapse">
+                    <tbody>
                       <tr>
-                        <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
-                          Discount Tk.
+                        <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
+                          Total Tk.
                         </td>
-                        <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                          (-) {thousandSeparator(discountAmount, 0)}
+                        <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
+                          {thousandSeparator(totalAmount, 0)}
                         </td>
                       </tr>
-                    )}
 
-                    <tr>
-                      <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
-                        Net Tk.
-                      </td>
-                      <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
-                        {thousandSeparator(netAmount, 0)}
-                      </td>
-                    </tr>
+                      {discountAmount !== 0 && (
+                        <tr>
+                          <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                            Discount Tk.
+                          </td>
+                          <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                            (-) {thousandSeparator(discountAmount, 0)}
+                          </td>
+                        </tr>
+                      )}
 
-                    <tr>
-                      <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
-                        Paid Tk.
-                      </td>
-                      <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                        {thousandSeparator(paidAmount, 0)}
-                      </td>
-                    </tr>
+                      <tr>
+                        <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
+                          Net Tk.
+                        </td>
+                        <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
+                          {thousandSeparator(netAmount, 0)}
+                        </td>
+                      </tr>
 
-                    <tr>
-                      <td className="border-black px-1 py-1 text-right font-bold" style={{ fontSize: fs }}>
-                        Due Tk.
-                      </td>
-                      <td className="border-black px-1 py-1 text-right w-32 font-bold" style={{ fontSize: fs }}>
-                        {thousandSeparator(dueAmount, 0)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                      <tr>
+                        <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                          Paid Tk.
+                        </td>
+                        <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                          {thousandSeparator(paidAmount, 0)}
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td className="border-black px-1 py-1 text-right font-bold" style={{ fontSize: fs }}>
+                          Due Tk.
+                        </td>
+                        <td className="border-black px-1 py-1 text-right w-32 font-bold" style={{ fontSize: fs }}>
+                          {thousandSeparator(dueAmount, 0)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

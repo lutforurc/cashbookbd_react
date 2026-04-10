@@ -276,7 +276,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                         className="inline-block border border-black px-2 py-1 font-semibold"
                         style={{ fontSize: fs }}
                       >
-                        Vehicle No: {data?.sales_master?.vehicle_no}
+                        Vehicle No: <span className="uppercase">{data?.sales_master?.vehicle_no}</span>
                       </span>
                     </div>
                   )}
