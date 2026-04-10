@@ -178,9 +178,9 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                                     {option.label_5 && (
                                         <div className="text-gray-600 dark:text-white text-sm">Order Rate: {option.label_5}</div>
                                     )}
-                                    {/* {option.label_6 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Last Date: {option.label_6}</div>
-                                    )} */}
+                                    {option.label_6 && (
+                                        <div className="text-gray-600 dark:text-white text-sm">Delivery Location: {option.label_6}</div>
+                                    )}
                                     {option.label_7 && (
                                         <div className="text-gray-600 dark:text-white text-sm">Order Qty: {option.label_7}</div>
                                     )}
