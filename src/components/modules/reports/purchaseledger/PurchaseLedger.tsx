@@ -228,7 +228,7 @@ const PurchaseLedger = (user: any) => {
               (detail: any, index: number) => (
                 <div key={index}>
                   <span>
-                    {(detail?.quantity)}{' '}
+                    {( thousandSeparator(detail?.quantity, 2))}{' '}
                     {detail?.product?.unit?.name}
                   </span>
                 </div>

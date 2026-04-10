@@ -322,9 +322,9 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                 {notes ? (
                                   <div className="mt-1 text-xs">{notes}</div>
                                 ) : null}
-                                {remarks ? (
+                                {/* {remarks ? (
                                   <div className="mt-1 text-xs">{remarks}</div>
-                                ) : null}
+                                ) : null} */}
                               </div>
                             </td>
 
