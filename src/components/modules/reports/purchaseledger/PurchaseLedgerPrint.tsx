@@ -65,8 +65,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
 
     const getProductFs = (name: string, baseFs: number) => {
       const len = (name || "").trim().length;
-
-      // আপনার প্রয়োজন অনুযায়ী threshold adjust করতে পারবেন
+ 
       if (len > 35) return Math.max(baseFs - 4, 7);
       if (len > 28) return Math.max(baseFs - 3, 7);
       if (len > 20) return Math.max(baseFs - 2, 7);
@@ -234,6 +233,11 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                     {coaName}
                                   </div>
                                 ) : null}
+                                { row?.purchase_master?.notes ? (
+                                  <div className="mt-1 text-xs">
+                                    {row?.purchase_master?.notes}
+                                  </div>
+                                ) : null}
                               </div>
                             </td>
                             <td
@@ -276,7 +280,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                     >
                                       {thousandSeparator(
                                         (detail?.purchase_price || 0) ,
-                                        0
+                                        2
                                       )}
                                     </div>
                                   );
