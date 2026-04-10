@@ -173,14 +173,14 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                                         <div className="text-gray-600 dark:text-white text-sm">Product: {option.label_3}</div>
                                     )}
                                     {option.label_4 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Order Date: {formatDate(option.label_4)}</div>
+                                        <div className="text-gray-600 dark:text-white text-sm">Order Date: {option.label_4}</div>
                                     )}
                                     {option.label_5 && (
                                         <div className="text-gray-600 dark:text-white text-sm">Order Rate: {option.label_5}</div>
                                     )}
-                                    {option.label_6 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Last Date: {formatDate(option.label_6)}</div>
-                                    )}
+                                    {/* {option.label_6 && (
+                                        <div className="text-gray-600 dark:text-white text-sm">Last Date: {option.label_6}</div>
+                                    )} */}
                                     {option.label_7 && (
                                         <div className="text-gray-600 dark:text-white text-sm">Order Qty: {option.label_7}</div>
                                     )}
