@@ -44,6 +44,8 @@ import {
 } from '../../../utils/utils-functions/handleKeyDown';
 import QuickCustomerModal from './QuickCustomerModal';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import httpService from '../../../services/httpService';
+import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 
 interface Product {
   id: number;
@@ -57,6 +59,15 @@ interface Product {
   variance?: string;
   variance_type?: string;
 }
+
+type SalesSuggestionField = 'vehicle_no' | 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+    : [];
 
 const TradingBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -81,6 +92,8 @@ const TradingBusinessSales = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
   const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
+  const [vehicleSuggestions, setVehicleSuggestions] = useState<string[]>([]);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
   dayjs.extend(utc);
 
 
@@ -125,6 +138,45 @@ const TradingBusinessSales = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  useEffect(() => {
+    const fetchSuggestions = async (
+      field: SalesSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(API_TRADING_SALES_SUGGESTIONS_URL, {
+          params: {
+            field,
+            q: trimmedQuery,
+          },
+        });
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const vehicleTimer = window.setTimeout(() => {
+      void fetchSuggestions('vehicle_no', formData.vehicleNumber, setVehicleSuggestions);
+    }, 250);
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(vehicleTimer);
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.vehicleNumber, formData.notes]);
 
   useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
@@ -742,6 +794,8 @@ const TradingBusinessSales = () => {
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
                 className={'py-1.5'}
+                list="sales-vehicle-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -751,6 +805,11 @@ const TradingBusinessSales = () => {
                   }
                 }}
               />
+              <datalist id="sales-vehicle-suggestions">
+                {vehicleSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -862,6 +921,8 @@ const TradingBusinessSales = () => {
                 placeholder={'Notes'}
                 label={'Notes'}
                 className={'py-1'}
+                list="sales-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -883,6 +944,11 @@ const TradingBusinessSales = () => {
               //   }
               // }}
               />
+              <datalist id="sales-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">

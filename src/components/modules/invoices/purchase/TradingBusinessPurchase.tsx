@@ -46,6 +46,8 @@ import {
 } from '../../../utils/utils-functions/handleKeyDown';
 import utc from 'dayjs/plugin/utc';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 interface Product {
   id: number;
   product: number;
@@ -58,6 +60,15 @@ interface Product {
   variance?: string;
   variance_type?: string;
 }
+
+type PurchaseSuggestionField = 'vehicle_no' | 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+    : [];
 
 const TradingBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -81,6 +92,8 @@ const TradingBusinessPurchase = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [vehicleSuggestions, setVehicleSuggestions] = useState<string[]>([]);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   dayjs.extend(utc); 
       
@@ -125,6 +138,45 @@ const TradingBusinessPurchase = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  useEffect(() => {
+    const fetchSuggestions = async (
+      field: PurchaseSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(API_TRADING_PURCHASE_SUGGESTIONS_URL, {
+          params: {
+            field,
+            q: trimmedQuery,
+          },
+        });
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const vehicleTimer = window.setTimeout(() => {
+      void fetchSuggestions('vehicle_no', formData.vehicleNumber, setVehicleSuggestions);
+    }, 250);
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(vehicleTimer);
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.vehicleNumber, formData.notes]);
 
   useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
@@ -746,9 +798,16 @@ const TradingBusinessPurchase = () => {
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
                 className={'py-1'}
+                list="purchase-vehicle-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'paymentAmt')} // Pass the next field's ID
               />
+              <datalist id="purchase-vehicle-suggestions">
+                {vehicleSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -782,6 +841,8 @@ const TradingBusinessPurchase = () => {
                 placeholder={'Notes'}
                 label={'Notes'}
                 className={'py-1'}
+                list="purchase-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -796,6 +857,11 @@ const TradingBusinessPurchase = () => {
                   }
                 }}
               />
+              <datalist id="purchase-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
               <div className="mt-4 ">

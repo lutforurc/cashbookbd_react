@@ -14,6 +14,8 @@ interface InputElementProps {
   disabled?: boolean;
   inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
   pattern?: string;
+  list?: string;
+  autoComplete?: string;
 }
 
 const InputElement: React.FC<InputElementProps> = ({
@@ -30,6 +32,8 @@ const InputElement: React.FC<InputElementProps> = ({
   disabled = false,
   inputMode,
   pattern,
+  list,
+  autoComplete,
 }) => {
   return (
     <div className="text-left flex flex-col">
@@ -49,6 +53,8 @@ const InputElement: React.FC<InputElementProps> = ({
         disabled={disabled}
         inputMode={inputMode}
         pattern={pattern}
+        list={list}
+        autoComplete={autoComplete}
         className={`form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
           dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none 
           focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}

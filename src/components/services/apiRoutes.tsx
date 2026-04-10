@@ -349,6 +349,7 @@ export const API_CATEGORY_CHECK = `${API_BASE_URL}/category/category-check`;
 export const API_TRADING_PURCHASE_STORE_URL = `${API_BASE_URL}/trading/purchase/api-store`;
 export const API_TRADING_PURCHASE_EDIT_URL = `${API_BASE_URL}/trading/purchase/api-edit`;
 export const API_TRADING_PURCHASE_UPDATE_URL = `${API_BASE_URL}/trading/purchase/api-update`;
+export const API_TRADING_PURCHASE_SUGGESTIONS_URL = `${API_BASE_URL}/trading/purchase/suggestions`;
 
 // Construction Purchase Route
 export const API_CONSTRUCTION_PURCHASE_STORE_URL = `${API_BASE_URL}/construction/purchase/api-store`;
@@ -366,6 +367,7 @@ export const API_ELECTRONICS_PURCHASE_UPDATE_URL = `${API_BASE_URL}/electronics/
 export const API_TRADING_SALES_STORE_URL = `${API_BASE_URL}/trading/sales/api-store`;
 export const API_TRADING_SALES_EDIT_URL = `${API_BASE_URL}/trading/sales/api-edit`;
 export const API_TRADING_SALES_UPDATE_URL = `${API_BASE_URL}/trading/sales/api-update`;
+export const API_TRADING_SALES_SUGGESTIONS_URL = `${API_BASE_URL}/trading/sales/suggestions`;
 
 // Trading Sales Route
 export const API_ELECTRONICS_SALES_STORE_URL = `${API_BASE_URL}/electronics/sales/store`;
