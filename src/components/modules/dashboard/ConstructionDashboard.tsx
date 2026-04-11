@@ -52,6 +52,35 @@ const ConstructionDashboard = () => {
     (items): items is any[] => Array.isArray(items) && items.length > 0,
   );
 
+  const getReceiveDetailStatusKey = (item: any) =>
+    String(item?.mtm_id ?? item?.vr_no ?? item?.id ?? '');
+
+  const isRemittanceProcessed = (item: any) => {
+    const rawStatus =
+      item?.remittance ??
+      item?.is_remittance ??
+      item?.meta ??
+      item?.status ??
+      item?.is_received;
+
+    if (typeof rawStatus === 'boolean') return rawStatus;
+    if (typeof rawStatus === 'number') return rawStatus === 1;
+
+    if (typeof rawStatus === 'string') {
+      const normalized = rawStatus.trim().toLowerCase();
+
+      if (!normalized || normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'null') {
+        return false;
+      }
+
+      if (normalized === '1' || normalized === 'true' || normalized === 'yes') {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   const branchNameMap = useMemo(() => {
     const branchMap: Record<string, string> = {};
 
@@ -140,7 +169,8 @@ const ConstructionDashboard = () => {
   };
 
   const handleCheckCircleClick = (item: any) => {
-    setLoadingItems((prev) => ({ ...prev, [item.vr_no]: true })); // Set loading for clicked item
+    const itemKey = getReceiveDetailStatusKey(item);
+    setLoadingItems((prev) => ({ ...prev, [itemKey]: true }));
 
     const params = {
       mtm_id: item.mtm_id,
@@ -153,11 +183,11 @@ const ConstructionDashboard = () => {
       dispatchRemittance(params, function (message, success) {
         if (success) {
           toast.success(message);
-          setSuccessItems((prev) => ({ ...prev, [item.vr_no]: true })); // Mark item as success
+          setSuccessItems((prev) => ({ ...prev, [itemKey]: true }));
         } else {
           toast.error(message);
         }
-        setLoadingItems((prev) => ({ ...prev, [item.vr_no]: false })); // Stop loading after API call
+        setLoadingItems((prev) => ({ ...prev, [itemKey]: false }));
       }),
     );
   };
@@ -357,52 +387,59 @@ const ConstructionDashboard = () => {
 
                       {isExpanded && (
                         <div className="pb-1">
-                          {items.map((item: any, index: number) => (
-                            <div
-                              className="px-3 py-2 flex items-center border-t border-slate-100 dark:border-gray-600"
-                              key={`${branchKey}-${item.vr_no}-${index}`}
-                            >
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="text-xs min-[462px]:text-sm text-center w-6 shrink-0">
-                                  {index + 1}
+                          {items.map((item: any, index: number) => {
+                            const itemKey = getReceiveDetailStatusKey(item);
+                            const isProcessed =
+                              isRemittanceProcessed(item) || successItems[itemKey];
+                            const isLoading = Boolean(loadingItems[itemKey]);
+
+                            return (
+                              <div
+                                className="px-3 py-2 flex items-center border-t border-slate-100 dark:border-gray-600"
+                                key={`${branchKey}-${itemKey}-${index}`}
+                              >
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <div className="text-xs min-[462px]:text-sm text-center w-6 shrink-0">
+                                    {index + 1}
+                                  </div>
+                                  <div className="text-xs min-[462px]:text-sm flex-[1.35] min-w-0 font-medium truncate">
+                                    {item.vr_no}
+                                  </div>
+                                  <div className="text-xs min-[462px]:text-sm flex-1 min-w-0 font-medium">
+                                    {formatDate(item.vr_date)}
+                                  </div>
                                 </div>
-                                <div className="text-xs min-[462px]:text-sm flex-[1.35] min-w-0 font-medium truncate">
-                                  {item.vr_no}
+                                <div className="text-xs min-[462px]:text-sm w-26 min-[462px]:w-32 text-right shrink-0">
+                                  {thousandSeparator(item.debit, 0)}
                                 </div>
-                                <div className="text-xs min-[462px]:text-sm flex-1 min-w-0 font-medium">
-                                  {formatDate(item.vr_date)}
-                                </div>
-                              </div>
-                              <div className="text-xs min-[462px]:text-sm w-26 min-[462px]:w-32 text-right shrink-0">
-                                {thousandSeparator(item.debit, 0)}
-                              </div>
-                              <div className="text-xs min-[462px]:text-sm w-8 min-[462px]:w-10 ml-3 mr-2 text-right">
-                                {!item.remittance ? (
-                                  isHeadOfficeBranch ? (
-                                    <FaRightToBracket className="text-red-500 text-sm inline-block" />
+                                <div className="text-xs min-[462px]:text-sm w-8 min-[462px]:w-10 ml-3 mr-2 text-right">
+                                  {!isProcessed ? (
+                                    isHeadOfficeBranch ? (
+                                      <FaRightToBracket className="text-red-500 text-sm inline-block" />
+                                    ) : (
+                                      <div
+                                        onClick={() =>
+                                          !isLoading &&
+                                          handleCheckCircleClick(item)
+                                        }
+                                        className="inline-block cursor-pointer"
+                                      >
+                                        {isLoading ? (
+                                          <FaSpinner className="text-red-500 text-sm animate-spin" />
+                                        ) : successItems[itemKey] ? (
+                                          <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                                        ) : (
+                                          <FaRightToBracket className="text-red-500 text-sm" />
+                                        )}
+                                      </div>
+                                    )
                                   ) : (
-                                    <div
-                                      onClick={() =>
-                                        !loadingItems[item.vr_no] &&
-                                        handleCheckCircleClick(item)
-                                      }
-                                      className="inline-block cursor-pointer"
-                                    >
-                                      {loadingItems[item.vr_no] ? (
-                                        <FaSpinner className="text-red-500 text-sm animate-spin" />
-                                      ) : successItems[item.vr_no] ? (
-                                        <FaCheckCircle className="inline-block text-green-500 text-sm" />
-                                      ) : (
-                                        <FaRightToBracket className="text-red-500 text-sm" />
-                                      )}
-                                    </div>
-                                  )
-                                ) : (
-                                  <FaCheckCircle className="inline-block text-green-500 text-sm" />
-                                )}
+                                    <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
