@@ -61,7 +61,7 @@ const InputElement: React.FC<InputElementProps> = ({
           pattern={pattern}
           list={list}
           autoComplete={autoComplete}
-          className={`form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
+          className={`w-full form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
           dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none 
           focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}
           style={{

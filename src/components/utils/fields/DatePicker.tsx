@@ -16,13 +16,12 @@ interface DatePickerProps {
 
 const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const safeSelectedDate =
+    selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
 
   const handleDateChange = (date: Date | null) => {
-    // Update the startDate with the selected date
-    if (date) {
-      setSelectedDate(date); // Update the state with the selected date
-      setCurrentDate(date);
-    }
+    setSelectedDate(date);
+    setCurrentDate(date);
     setIsOpen(false);
   };
 
@@ -40,7 +39,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
       <DatePicker
         id={id}
         name={name || id}
-        selected={selectedDate} // Default selected date
+        selected={safeSelectedDate}
         onChange={handleDateChange} // Update state when a new date is selected
         dateFormat="dd/MM/yyyy" // Format for the date
         peekNextMonth

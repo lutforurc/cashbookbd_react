@@ -36,6 +36,15 @@ const AddOrder = (user: any) => {
     const [buttonLoading, setButtonLoading] = useState(false);
     const [referenceOrderFocusTrigger, setReferenceOrderFocusTrigger] = useState(0);
 
+    const toValidDate = (value: string | null | undefined) => {
+        if (!value || !String(value).trim()) {
+            return null;
+        }
+
+        const parsedDate = dayjs(value);
+        return parsedDate.isValid() ? parsedDate.toDate() : null;
+    };
+
     interface FormData {
         branch_id: string;
         order_for: string;
@@ -134,10 +143,8 @@ const AddOrder = (user: any) => {
             notes: locationOrder?.notes ?? prev.notes,
         }));
 
-        setOrderDate(locationOrder?.order_date ? dayjs(locationOrder.order_date).toDate() : null);
-        setLastDeliveryDate(
-            locationOrder?.last_delivery_date ? dayjs(locationOrder.last_delivery_date).toDate() : null,
-        );
+        setOrderDate(toValidDate(locationOrder?.order_date));
+        setLastDeliveryDate(toValidDate(locationOrder?.last_delivery_date));
     }, [initialBranchId, isEditMode, locationOrder]);
 
     const handleBranchChange = (e: any) => {
@@ -190,10 +197,8 @@ const AddOrder = (user: any) => {
             notes: editData?.notes ?? '',
         });
 
-        setOrderDate(editData?.order_date ? dayjs(editData.order_date).toDate() : null);
-        setLastDeliveryDate(
-            editData?.last_delivery_date ? dayjs(editData.last_delivery_date).toDate() : null,
-        );
+        setOrderDate(toValidDate(editData?.order_date));
+        setLastDeliveryDate(toValidDate(editData?.last_delivery_date));
     }, [isEditMode, ordersState?.editData]);
 
     const selectedOrderFor = useMemo(() => {
@@ -256,13 +261,13 @@ const AddOrder = (user: any) => {
     };
 
     const handleOrderDate = (e: any) => {
-        const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
+        const startD = e ? dayjs(e).format('YYYY-MM-DD') : '';
         const key = 'order_date'; // Set the desired key dynamically
         setFormData({ ...formData, [key]: startD });
     };
 
     const handleLastDeliveryDate = (e: any) => {
-        const startD = dayjs(e).format('YYYY-MM-DD'); // Adjust format as needed
+        const startD = e ? dayjs(e).format('YYYY-MM-DD') : '';
         const key = 'last_delivery_date'; // Set the desired key dynamically
         setFormData({ ...formData, [key]: startD });
     };
