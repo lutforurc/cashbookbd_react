@@ -455,6 +455,23 @@ const TradingBusinessPurchase = () => {
     }));
   };
 
+  const handleVehicleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    if (vehicleSuggestions.length > 0) {
+      e.preventDefault();
+      const [matchedVehicleNumber] = vehicleSuggestions;
+      setFormData((prevState) => ({
+        ...prevState,
+        vehicleNumber: matchedVehicleNumber,
+      }));
+    }
+
+    handleInputKeyDown(e, 'paymentAmt');
+  };
+
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const newValue = value ? parseFloat(value) : 0;
@@ -801,7 +818,7 @@ const TradingBusinessPurchase = () => {
                 list="purchase-vehicle-suggestions"
                 autoComplete="off"
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'paymentAmt')} // Pass the next field's ID
+                onKeyDown={handleVehicleNumberKeyDown}
               />
               <datalist id="purchase-vehicle-suggestions">
                 {vehicleSuggestions.map((item) => (

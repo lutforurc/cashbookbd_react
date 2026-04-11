@@ -421,6 +421,25 @@ const TradingBusinessSales = () => {
     }));
   };
 
+  const handleVehicleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    if (vehicleSuggestions.length > 0) {
+      e.preventDefault();
+      const [matchedVehicleNumber] = vehicleSuggestions;
+      setFormData((prevState) => ({
+        ...prevState,
+        vehicleNumber: matchedVehicleNumber,
+      }));
+    }
+
+    setTimeout(() => {
+      handleSelectKeyDown(e, '#purchaseOrderNumber');
+    }, 150);
+  };
+
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const newValue = value ? parseFloat(value) : 0;
@@ -797,13 +816,7 @@ const TradingBusinessSales = () => {
                 list="sales-vehicle-suggestions"
                 autoComplete="off"
                 onChange={handleOnChange}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setTimeout(() => {
-                      handleSelectKeyDown(e, '#purchaseOrderNumber');
-                    }, 150);
-                  }
-                }}
+                onKeyDown={handleVehicleNumberKeyDown}
               />
               <datalist id="sales-vehicle-suggestions">
                 {vehicleSuggestions.map((item) => (
