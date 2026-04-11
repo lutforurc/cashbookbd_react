@@ -99,14 +99,15 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
               label="Paid Before Deadline"
               value={formatAmount(summary.totalPaidBeforeDeadline)}
             />
-            <SummaryRow
-              label="Early Payment Discount"
-              value={formatAmount(summary.discount)}
-            />
+            
             <SummaryRow
               label="Remaining After Discount"
               value={formatAmount(summary.remainingAfterDiscount)}
               highlight
+            />
+            <SummaryRow
+              label="Early Payment Discount"
+              value={formatAmount(summary.discount)}
             />
 
             <div

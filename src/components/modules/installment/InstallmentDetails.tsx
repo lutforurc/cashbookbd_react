@@ -165,11 +165,10 @@ const InstallmentDetails = () => {
       0,
     );
 
-    const earlyPaymentAmount = Number(
-      invoiceRows.reduce((sum, row) => sum + Number(row?.paid_amount || 0), 0).toFixed(2),
-    );
-
     const discount = Number(candidate?.early_payment_discount || 0);
+    const earlyPaymentAmount = Number(
+      (invoiceTotalAmount - discount).toFixed(2),
+    );
     const totalPaidBeforeDeadline = invoiceRows.reduce((sum, row) => {
       if (Array.isArray(row?.payments) && row.payments.length > 0) {
         return (
