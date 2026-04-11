@@ -460,6 +460,8 @@ const TradingCashPayment = () => {
             <div className="">
               <label htmlFor="">Select Account</label>
               <DdlMultiline
+                id="account"
+                name='account'
                 onSelect={selectedLedgerOptionHandler}
                 className="h-9.5"
                 defaultValue={
@@ -538,6 +540,16 @@ const TradingCashPayment = () => {
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiPlus className="text-white text-lg ml-2 mr-2 h-5" />}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAdd();
+                      setTimeout(() => {
+                        const account = document.getElementById('account');
+                        account?.focus();
+                      }, 100);
+                    }
+                  }}
                 />
               )}
               {isUpdateButton ? (
