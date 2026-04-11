@@ -959,7 +959,7 @@ const ElectronicsBusinessSales = () => {
                 placeholder="Received Amount"
                 disabled={Number(formData.account) === 17}
                 label="Received Amount"
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
@@ -969,7 +969,7 @@ const ElectronicsBusinessSales = () => {
                 name="discountAmt"
                 placeholder="Discount Amount"
                 label="Discount Amount"
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
@@ -979,7 +979,7 @@ const ElectronicsBusinessSales = () => {
                 name="notes"
                 placeholder="Notes"
                 label="Notes"
-                className="py-1 "
+                className="py-1 w-full"
                 onChange={handleOnChange}
               />
             </div>
@@ -992,7 +992,7 @@ const ElectronicsBusinessSales = () => {
                 name="serviceCharge"
                 placeholder={serviceList(42, settings?.serviceList)}
                 label={serviceList(42, settings?.serviceList)}
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
@@ -1002,7 +1002,7 @@ const ElectronicsBusinessSales = () => {
                 name="tdsAmount"
                 placeholder={serviceList(41, settings?.serviceList)}
                 label={serviceList(41, settings?.serviceList)}
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
@@ -1012,7 +1012,7 @@ const ElectronicsBusinessSales = () => {
                 name="transportationAmt"
                 placeholder={serviceList(198, settings?.serviceList)}
                 label={serviceList(198, settings?.serviceList)}
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
@@ -1137,7 +1137,7 @@ const ElectronicsBusinessSales = () => {
                   placeholder="Enter Quantity"
                   label="Quantity"
                   type="number"
-                  className="py-1"
+                  className="py-1 w-full"
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'price')}
                 />
@@ -1150,7 +1150,7 @@ const ElectronicsBusinessSales = () => {
                   name="price"
                   placeholder="Enter Price"
                   label="Enter Price"
-                  className="py-1"
+                  className="py-1 w-full"
                   onChange={handleProductChange}
                 // onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
                 />
