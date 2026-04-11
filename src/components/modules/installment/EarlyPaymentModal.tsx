@@ -48,7 +48,7 @@ const SummaryRow = ({
   highlight?: boolean;
 }) => (
   <div
-    className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${
+    className={`flex items-center justify-between gap-3 rounded-sm border px-3 py-2 ${
       highlight
         ? 'border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-100'
         : 'border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200'
@@ -77,7 +77,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
 
         {summary ? (
           <div className="space-y-3">
-            <div className="rounded-md border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
+            <div className="rounded-sm border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
               <div className="text-sm">
                 <span className="font-medium">Invoice:</span> {summary.invoiceNo || '-'}
               </div>
@@ -111,7 +111,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
             />
 
             <div
-              className={`rounded-md border px-3 py-3 text-sm font-medium ${
+              className={`rounded-sm border px-3 py-3 text-sm font-medium ${
                 summary.canApply
                   ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-100'
                   : 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100'
@@ -121,7 +121,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="rounded-md border border-red-300 bg-red-50 px-3 py-3 text-sm text-red-700 dark:border-red-700 dark:bg-red-950/40 dark:text-red-100">
+          <div className="rounded-sm border border-red-300 bg-red-50 px-3 py-3 text-sm text-red-700 dark:border-red-700 dark:bg-red-950/40 dark:text-red-100">
             Early payment data is not available.
           </div>
         )}
