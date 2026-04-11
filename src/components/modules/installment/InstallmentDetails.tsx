@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   getInstallment,
@@ -16,6 +18,9 @@ import Table from '../../utils/others/Table';
 import PaymentDetailsModal from './PaymentDetailsModal';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { toast } from 'react-toastify'; 
+import EarlyPaymentModal from './EarlyPaymentModal';
+
+dayjs.extend(customParseFormat);
 
 type Installment = {
   sl_number: number;
@@ -25,10 +30,29 @@ type Installment = {
   due_date: string;
   amount: number;
   paid_amount: number;
+  paid_at?: string | null;
   due_amount: number;
   overdue: string;
   status: string;
   received_date: string;
+  early_payment_discount?: number;
+  early_payment_date?: string | null;
+  early_payment_applied?: number | boolean;
+  payments?: {
+    amount?: number | string;
+    paid_at?: string | null;
+    date?: string | null;
+  }[];
+};
+
+const parseInstallmentDate = (value?: string | null) => {
+  if (!value) return null;
+
+  const parsed = dayjs(value, ['YYYY-MM-DD', 'DD/MM/YYYY', 'YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY HH:mm:ss'], true);
+  if (parsed.isValid()) return parsed;
+
+  const fallback = dayjs(value);
+  return fallback.isValid() ? fallback : null;
 };
 
 const InstallmentDetails = () => {
@@ -116,6 +140,92 @@ const InstallmentDetails = () => {
     setTableData(installment?.customerInstallment?.data?.data);
   }, [installment]);
 
+  const earlyPaymentSummary = useMemo(() => {
+    if (!Array.isArray(tableData) || tableData.length === 0) return null;
+
+    const rows = tableData as Installment[];
+    const candidate = rows.find(
+      (row) =>
+        Number(row?.early_payment_discount || 0) > 0 &&
+        row?.early_payment_date &&
+        !Number(row?.early_payment_applied || 0),
+    );
+
+    if (!candidate?.early_payment_date) return null;
+
+    const deadline = parseInstallmentDate(candidate.early_payment_date);
+    if (!deadline) return null;
+
+    const invoiceRows = rows.filter(
+      (row) => String(row?.invoice_no || '') === String(candidate?.invoice_no || ''),
+    );
+
+    const invoiceTotalAmount = invoiceRows.reduce(
+      (sum, row) => sum + Number(row?.amount || 0),
+      0,
+    );
+
+    const earlyPaymentAmount = Number(
+      invoiceRows.reduce((sum, row) => sum + Number(row?.paid_amount || 0), 0).toFixed(2),
+    );
+
+    const discount = Number(candidate?.early_payment_discount || 0);
+    const totalPaidBeforeDeadline = invoiceRows.reduce((sum, row) => {
+      if (Array.isArray(row?.payments) && row.payments.length > 0) {
+        return (
+          sum +
+          row.payments.reduce((paymentSum, payment) => {
+            const paidAt = parseInstallmentDate(payment?.paid_at || payment?.date);
+            if (!paidAt) return paymentSum;
+            if (paidAt.isAfter(deadline, 'day')) return paymentSum;
+            return paymentSum + Number(payment?.amount || 0);
+          }, 0)
+        );
+      }
+
+      const receivedAt = parseInstallmentDate(row?.paid_at || row?.received_date);
+      if (receivedAt && !receivedAt.isAfter(deadline, 'day')) {
+        return sum + Number(row?.paid_amount || 0);
+      }
+
+      return sum;
+    }, 0);
+    const remainingAfterDiscount = Number(
+      (earlyPaymentAmount - totalPaidBeforeDeadline).toFixed(2),
+    );
+    const canApply = remainingAfterDiscount <= 0;
+
+    return {
+      invoiceNo: candidate?.invoice_no || '',
+      deadline: candidate.early_payment_date,
+      invoiceTotalAmount,
+      discount,
+      earlyPaymentAmount,
+      totalPaidBeforeDeadline,
+      remainingAfterDiscount,
+      canApply,
+      message: canApply
+        ? 'Early payment condition is satisfied.'
+        : `Need ${thousandSeparator(Math.max(remainingAfterDiscount, 0), 0)} more before early payment can be applied.`,
+    };
+  }, [tableData]);
+
+  const hasApplicableEarlyPayment = !!earlyPaymentSummary;
+
+  const handleEarlyPaymentToggle = (checked: boolean) => {
+    if (checked && !ledgerId) {
+      toast.info('Please select customer first');
+      return;
+    }
+
+    if (checked && !hasApplicableEarlyPayment) {
+      toast.info('Early payment is not applicable for this invoice.');
+      return;
+    }
+
+    setEarlyPayment(checked);
+  };
+
   const columns = [
     {
       key: 'sl_number',
@@ -142,7 +252,7 @@ const InstallmentDetails = () => {
       header: 'Installment No',
       render: (row: any) => (
         <>
-          {row.payments.length > 0 ? (
+          {Array.isArray(row?.payments) && row.payments.length > 0 ? (
             <ButtonLoading
               onClick={() => handleInstallments(row.payments)}
               label={row.installment_no ?? ""}
@@ -236,11 +346,13 @@ const InstallmentDetails = () => {
             checked={reportType}
             onChange={handleGroupToggle}
           />
-          <ToggleSwitch
-            label="Early Payment"
-            checked={earlyPayment}
-            onChange={setEarlyPayment}
-          />
+          {hasApplicableEarlyPayment ? (
+            <ToggleSwitch
+              label="Early Payment"
+              checked={earlyPayment}
+              onChange={handleEarlyPaymentToggle}
+            />
+          ) : null}
         </div>
       </div>
       {installment.loading ? <Loader /> : ''}
@@ -266,6 +378,14 @@ const InstallmentDetails = () => {
         onClose={() => setShowPaymentsModal(false)}
         installments={paymentInstallments}
       />
+      {hasApplicableEarlyPayment ? (
+        <EarlyPaymentModal
+          open={earlyPayment}
+          onClose={() => setEarlyPayment(false)}
+          summary={earlyPaymentSummary}
+          onApply={() => toast.info('Early payment apply API will be added next.')}
+        />
+      ) : null}
     </div>
   );
 };
