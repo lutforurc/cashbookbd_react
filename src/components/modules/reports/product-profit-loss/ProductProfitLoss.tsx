@@ -413,7 +413,7 @@ const ProductProfitLoss = (user: any) => {
                   branchDdl={dropdownData}
                   onChange={handleBranchChange}
                   value={branchId ? String(branchId) : undefined}
-                  className="h-10 border border-slate-600 bg-slate-800 text-white"
+                  className="h-10 pl-2 "
                 />
               </div>
 
@@ -423,7 +423,7 @@ const ProductProfitLoss = (user: any) => {
                   selectedDate={startDate}
                   setSelectedDate={setStartDate}
                   setCurrentDate={setStartDate}
-                  className="h-10 w-full border border-slate-600 bg-slate-800 text-white"
+                  className="h-10 w-full "
                 />
               </div>
 
@@ -433,7 +433,7 @@ const ProductProfitLoss = (user: any) => {
                   selectedDate={endDate}
                   setSelectedDate={setEndDate}
                   setCurrentDate={setEndDate}
-                  className="h-10 w-full border border-slate-600 bg-slate-800 text-white"
+                  className="h-10 w-full "
                 />
               </div>
             </div>
@@ -444,11 +444,11 @@ const ProductProfitLoss = (user: any) => {
                   <InputElement
                     id="rowsPerPage"
                     name="rowsPerPage"
-                    label="Rows"
+                    label=""
                     value={rowsPerPage.toString()}
                     onChange={handleRowsPerPageChange}
                     type="text"
-                    className="h-9 w-full border border-slate-600 bg-slate-800 text-white"
+                    className="h-10 w-full "
                   />
                 </div>
 
@@ -456,11 +456,11 @@ const ProductProfitLoss = (user: any) => {
                   <InputElement
                     id="fontSize"
                     name="fontSize"
-                    label="Font"
+                    label=""
                     value={fontSize.toString()}
                     onChange={handleFontSizeChange}
                     type="text"
-                    className="h-9 w-full border border-slate-600 bg-slate-800 text-white"
+                    className="h-10 w-full "
                   />
                 </div>
 
@@ -469,7 +469,7 @@ const ProductProfitLoss = (user: any) => {
                     label="Run"
                     onClick={handleRunReport}
                     buttonLoading={buttonLoading}
-                    className="h-9 w-full border border-slate-600 bg-slate-800 px-3 text-white"
+                    className="h-10 w-full border border-slate-600 bg-slate-800 px-3 text-white"
                   />
                 </div>
 
@@ -477,7 +477,7 @@ const ProductProfitLoss = (user: any) => {
                   <PrintButton
                     onClick={handlePrint}
                     label=""
-                    className="h-9 w-full border border-slate-600 bg-slate-800 px-0 text-white"
+                    className="h-10 w-full border border-slate-600 bg-slate-800 px-0 text-white"
                   />
                 </div>
               </div>
