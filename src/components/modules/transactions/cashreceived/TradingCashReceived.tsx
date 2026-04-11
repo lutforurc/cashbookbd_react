@@ -30,6 +30,15 @@ import {
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { useNavigate } from 'react-router-dom';
+import httpService from '../../../services/httpService';
+import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+    : [];
 
 interface ReceivedItem {
   id: string | number;
@@ -68,6 +77,7 @@ const TradingCashReceived = () => {
   const [search, setSearch] = useState('');
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
+  const [remarkSuggestions, setRemarkSuggestions] = useState<string[]>([]);
   const navigate = useNavigate();
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
@@ -132,6 +142,53 @@ const TradingCashReceived = () => {
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  useEffect(() => {
+    const fetchRemarkSuggestions = async () => {
+      const trimmedQuery = formData.remarks.trim();
+      if (!trimmedQuery) {
+        setRemarkSuggestions([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(API_CASH_RECEIVED_SUGGESTIONS_URL, {
+          params: {
+            field: 'remarks',
+            q: trimmedQuery,
+          },
+        });
+        setRemarkSuggestions(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setRemarkSuggestions([]);
+      }
+    };
+
+    const remarkTimer = window.setTimeout(() => {
+      void fetchRemarkSuggestions();
+    }, 250);
+
+    return () => {
+      window.clearTimeout(remarkTimer);
+    };
+  }, [formData.remarks]);
+
+  const handleRemarksKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    if (remarkSuggestions.length > 0) {
+      e.preventDefault();
+      const [matchedRemark] = remarkSuggestions;
+      setFormData((prevState) => ({
+        ...prevState,
+        remarks: matchedRemark,
+      }));
+    }
+
+    handleInputKeyDown(e, 'amount');
   };
 
   const handleHome = () => {
@@ -406,9 +463,16 @@ const TradingCashReceived = () => {
               placeholder={'Enter Remarks'}
               label={'Enter Remarks'}
               className={''}
+              list="cash-received-remark-suggestions"
+              autoComplete="off"
               onChange={handleOnChange}
-              onKeyDown={(e) => handleInputKeyDown(e, 'amount')} //
+              onKeyDown={handleRemarksKeyDown}
             />
+            <datalist id="cash-received-remark-suggestions">
+              {remarkSuggestions.map((item) => (
+                <option key={item} value={item} />
+              ))}
+            </datalist>
             <InputElement
               id="amount"
               name="amount"

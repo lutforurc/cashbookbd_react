@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\RoleDirectoryController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\OwnerRoleGroupController;
 use App\Http\Controllers\Api\CashPaymentController;
+use App\Http\Controllers\Api\CashReceivedSuggestionController;
 use App\Http\Controllers\Api\ProductLedgerDataController;
 use App\Http\Controllers\Api\SubscriptionController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,8 @@ Route::prefix('forgot-password')->group(function (): void {
     Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp']);
     Route::post('/reset', [PasswordResetController::class, 'reset']);
 });
+
+Route::get('/cash/remarks/suggestions', [CashReceivedSuggestionController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::prefix('role')->group(function (): void {
