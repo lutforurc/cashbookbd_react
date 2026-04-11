@@ -1219,6 +1219,7 @@ const ElectronicsBusinessSales = () => {
                     id="perPage"
                     name="perPage"
                     // label="Rows"
+                    title="Rows per page"
                     value={perPage.toString()}
                     onChange={handlePerPageChange}
                     type='text'
@@ -1230,6 +1231,7 @@ const ElectronicsBusinessSales = () => {
                     id="fontSize"
                     name="fontSize"
                     // label="Font"
+                    title="Font Size"
                     value={fontSize.toString()}
                     onChange={handleFontSizeChange}
                     type='text'
