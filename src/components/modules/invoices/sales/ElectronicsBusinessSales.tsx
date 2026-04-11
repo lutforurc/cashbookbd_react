@@ -814,7 +814,7 @@ const ElectronicsBusinessSales = () => {
                 </div>
               </div>
               <div>
-                <div className="mt-9 ml-0 flex">
+                <div className="mt-8 ml-0 flex">
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -862,7 +862,7 @@ const ElectronicsBusinessSales = () => {
                           name="amount"
                           placeholder="Installment Amount"
                           label="Installment Amount"
-                          className="py-1"
+                          className="py-1 w-full"
                           onChange={handleInstallmentDataChange}
                         />
                         <div className="w-full">
@@ -887,7 +887,7 @@ const ElectronicsBusinessSales = () => {
                           name="numberOfInstallments"
                           placeholder="Installments No."
                           label="Installments No."
-                          className="py-1"
+                          className="py-1 w-full"
                           onChange={handleInstallmentDataChange}
                         />
                         {/* isEarlyPayment, setIsEarlyPayment */}
@@ -914,7 +914,7 @@ const ElectronicsBusinessSales = () => {
                               name="earlyDiscount"
                               placeholder="Early Discount"
                               label="Early Discount"
-                              className="py-1"
+                              className="py-1 w-full"
                               onChange={handleInstallmentDataChange}
                             />
 
