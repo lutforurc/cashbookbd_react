@@ -43,6 +43,7 @@ const InstallmentDetails = () => {
   const [amount, setAmount] = useState('');
   const [remarks, setRemarks] = useState('');
   const [reportType, setReportType] = useState(false);
+  const [earlyPayment, setEarlyPayment] = useState(false);
   const [paymentInstallments, setPaymentInstallments] = useState([]);
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
 
@@ -229,11 +230,16 @@ const InstallmentDetails = () => {
             <DdlMultiline onSelect={handleCustomerSelect} acType={''} />
           </div>
         </div>
-        <div className="mt-8">
+        <div className="mt-2 flex flex-wrap items-center gap-4">
           <ToggleSwitch
             label="Show All"
             checked={reportType}
             onChange={handleGroupToggle}
+          />
+          <ToggleSwitch
+            label="Early Payment"
+            checked={earlyPayment}
+            onChange={setEarlyPayment}
           />
         </div>
       </div>
