@@ -15,6 +15,7 @@ type EarlyPaymentSummary = {
   totalPaidBeforeDeadline: number;
   remainingAfterDiscount: number;
   canApply: boolean;
+  alreadyApplied?: boolean;
   message: string;
 };
 
@@ -23,6 +24,7 @@ interface EarlyPaymentModalProps {
   onClose: () => void;
   summary: EarlyPaymentSummary | null;
   onApply?: () => void;
+  applyLoading?: boolean;
 }
 
 const formatAmount = (value: number) => {
@@ -64,6 +66,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
   onClose,
   summary,
   onApply,
+  applyLoading = false,
 }) => {
   if (!open) return null;
 
@@ -127,16 +130,19 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
         )}
 
         <div className="mt-5 flex justify-end gap-2">
-          {summary?.canApply ? (
+          {summary?.canApply && !summary?.alreadyApplied ? (
             <ButtonLoading
               onClick={onApply}
-              label="Apply Now"
+              label={applyLoading ? 'Applying...' : 'Apply Now'}
+              buttonLoading={applyLoading}
+              disabled={applyLoading}
               className="mt-0 pt-[0.45rem] pb-[0.45rem] w-full"
             />
           ) : null}
           <ButtonLoading
             onClick={onClose}
             label="Close"
+            disabled={applyLoading}
             className="mt-0 pt-[0.45rem] pb-[0.45rem] w-full"
           />
         </div>

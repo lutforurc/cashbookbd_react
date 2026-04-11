@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   getInstallment,
   getInstallmentDetails,
+  installmentEarlyPaymentApply,
   installmentReceived,
 } from './installmentSlice';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
@@ -68,6 +69,7 @@ const InstallmentDetails = () => {
   const [remarks, setRemarks] = useState('');
   const [reportType, setReportType] = useState(false);
   const [earlyPayment, setEarlyPayment] = useState(false);
+  const [earlyPaymentLoading, setEarlyPaymentLoading] = useState(false);
   const [paymentInstallments, setPaymentInstallments] = useState([]);
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
 
@@ -144,14 +146,15 @@ const InstallmentDetails = () => {
     if (!Array.isArray(tableData) || tableData.length === 0) return null;
 
     const rows = tableData as Installment[];
-    const candidate = rows.find(
-      (row) =>
-        Number(row?.early_payment_discount || 0) > 0 &&
-        row?.early_payment_date &&
-        !Number(row?.early_payment_applied || 0),
-    );
+    const candidate = rows[0];
 
-    if (!candidate?.early_payment_date) return null;
+    if (
+      !candidate ||
+      Number(candidate?.early_payment_discount || 0) <= 0 ||
+      !candidate?.early_payment_date
+    ) {
+      return null;
+    }
 
     const deadline = parseInstallmentDate(candidate.early_payment_date);
     if (!deadline) return null;
@@ -192,7 +195,8 @@ const InstallmentDetails = () => {
     const remainingAfterDiscount = Number(
       (earlyPaymentAmount - totalPaidBeforeDeadline).toFixed(2),
     );
-    const canApply = remainingAfterDiscount <= 0;
+    const alreadyApplied = Number(candidate?.early_payment_applied || 0) === 1;
+    const canApply = !alreadyApplied && remainingAfterDiscount <= 0;
 
     return {
       invoiceNo: candidate?.invoice_no || '',
@@ -203,10 +207,28 @@ const InstallmentDetails = () => {
       totalPaidBeforeDeadline,
       remainingAfterDiscount,
       canApply,
-      message: canApply
-        ? 'Early payment condition is satisfied.'
-        : `Need ${thousandSeparator(Math.max(remainingAfterDiscount, 0), 0)} more before early payment can be applied.`,
+      alreadyApplied,
+      message: alreadyApplied
+        ? 'Early payment already applied.'
+        : canApply
+          ? 'Early payment condition is satisfied.'
+          : `Need ${thousandSeparator(Math.max(remainingAfterDiscount, 0), 0)} more before early payment can be applied.`,
     };
+  }, [tableData]);
+
+  const earlyPaymentInstallmentId = useMemo(() => {
+    const rows = Array.isArray(tableData) ? (tableData as Installment[]) : [];
+    const row = rows[0];
+
+    if (
+      !row ||
+      Number(row?.early_payment_discount || 0) <= 0 ||
+      !row?.early_payment_date
+    ) {
+      return '';
+    }
+
+    return row?.installment_id ?? '';
   }, [tableData]);
 
   const hasApplicableEarlyPayment = !!earlyPaymentSummary;
@@ -223,6 +245,33 @@ const InstallmentDetails = () => {
     }
 
     setEarlyPayment(checked);
+  };
+
+  const handleApplyEarlyPayment = () => {
+    if (!ledgerId || !earlyPaymentSummary) return;
+
+    setEarlyPaymentLoading(true);
+
+    dispatch(
+      installmentEarlyPaymentApply({
+        installment_id: earlyPaymentInstallmentId,
+      }) as any,
+    )
+      .unwrap()
+      .then((response: any) => {
+        const message = response?.message || 'Early payment applied successfully!';
+        setEarlyPayment(false);
+        dispatch(getInstallmentDetails({ customerId: ledgerId, report: reportType }) as any);
+        setTimeout(() => {
+          toast.success(message);
+        }, 100);
+      })
+      .catch((error: any) => {
+        toast.error(error?.message || 'Failed to apply early payment');
+      })
+      .finally(() => {
+        setEarlyPaymentLoading(false);
+      });
   };
 
   const columns = [
@@ -382,7 +431,8 @@ const InstallmentDetails = () => {
           open={earlyPayment}
           onClose={() => setEarlyPayment(false)}
           summary={earlyPaymentSummary}
-          onApply={() => toast.info('Early payment apply API will be added next.')}
+          onApply={handleApplyEarlyPayment}
+          applyLoading={earlyPaymentLoading}
         />
       ) : null}
     </div>

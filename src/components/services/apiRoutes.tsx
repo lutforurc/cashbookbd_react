@@ -311,6 +311,7 @@ export const API_FILTER_INSTALLMENT_LIST_URL = `${API_BASE_URL}/accounts/install
 export const API_EMPLOYEES_INSTALLMENT_LIST_URL = `${API_BASE_URL}/accounts/installment/employees`;
 export const API_INSTALLMENT_DETAILS_BY_ID_URL = `${API_BASE_URL}/accounts/installment/details`;
 export const API_INSTALLMENT_RECEIVED_URL = `${API_BASE_URL}/accounts/installment/received`;
+export const API_INSTALLMENT_EARLY_PAYMENT_APPLY_URL = `${API_BASE_URL}/accounts/installment/early-payment/apply`;
 
 // Products Route
 export const API_PRODUCT_LIST_URL = `${API_BASE_URL}/product/product-list`;
