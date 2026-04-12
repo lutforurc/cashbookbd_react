@@ -368,7 +368,7 @@ const Orders = () => {
       [
         {
           label: `${summary.fromApi ? '' : ''} `,
-          colSpan: 2,
+          colSpan: 1,
           className: 'text-right',
         },
         {
@@ -540,30 +540,6 @@ const Orders = () => {
       ),
     },
     {
-      key: 'reference_order',
-      header: (
-        <p>
-          <span className="block">Reference Order</span>
-          <span className="block">Base Qty</span>
-        </p>
-      ),
-      render: (data: any) => (
-        <p>
-          <span className="block">
-            {data.reference_order?.order_number || data.ref_order_number || '-'}
-          </span>
-          <span className="block">
-            {data.base_order_quantity != null || data.reference_order?.total_order != null
-              ? thousandSeparator(
-                data.base_order_quantity ?? data.reference_order?.total_order ?? 0,
-                0,
-              )
-              : '-'}
-          </span>
-        </p>
-      ),
-    },
-    {
       key: 'linked_summary',
       header: (
         <p className="text-right">
@@ -587,11 +563,7 @@ const Orders = () => {
               : '-'}
           </span>
           <span className="block">
-            {(data.remaining_quantity != null ||
-              data.total_order != null ||
-              data.trx_quantity != null)
-              ? thousandSeparator(getLinkedRemainingQuantity(data), 0)
-              : '-'}
+            { Number(data.total_order) - Number(data.linked_quantity) }
           </span>
         </p>
       ),
