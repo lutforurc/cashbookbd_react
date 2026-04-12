@@ -19,12 +19,7 @@ import SalesLedgerPrint from './SalesLedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-
-const clampInt = (v: any, min: number, max: number, fallback: number) => {
-  const n = parseInt(String(v ?? ''), 10);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(max, Math.max(min, n));
-};
+import { FaRotateRight } from 'react-icons/fa6';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -202,7 +197,7 @@ const SalesLedger = (user: any) => {
         const detailText = notes || remarks;
 
         return (
-          <div className="min-w-52 break-words align-center">
+          <div className="min-w-52 break-words align-top">
             {/* ✅ Product list (safe + category like Purchase print) */}
             {Array.isArray(details) &&
               details.length > 0 &&
@@ -230,9 +225,9 @@ const SalesLedger = (user: any) => {
     },
     {
       key: 'vhicle',
-      header: 'Vhicle No.',
+      header: 'Vehicle Number',
       headerClass: 'text-left',
-      cellClass: 'text-left align-center',
+      cellClass: 'text-left align-top',
       width: '120px',
       render: (row: any) => <div>{row?.sales_master?.vehicle_no}</div>,
     },
@@ -240,7 +235,7 @@ const SalesLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       width: '120px',
       render: (row: any) => (
         <>
@@ -257,7 +252,7 @@ const SalesLedger = (user: any) => {
       header: 'Rate',
       width: '120px',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       render: (row: any) => (
         <>
           {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
@@ -270,10 +265,10 @@ const SalesLedger = (user: any) => {
     },
     {
       key: 'total',
-      header: 'total',
+      header: 'Total',
       width: '130px',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       render: (row: any) => (
         <>
           {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
@@ -363,7 +358,7 @@ const SalesLedger = (user: any) => {
       key: 'balance',
       header: 'Balance',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       width: '120px',
       render: (row: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
@@ -410,6 +405,14 @@ const SalesLedger = (user: any) => {
     setFontSize(safe);
   };
 
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    if (!Number.isFinite(v)) return;
+
+    const safe = Math.max(1, Math.min(100, v));
+    setRowsPerPage(safe);
+  };
+
   const ledgerCalc = useMemo(() => new SalesLedgerCalculator(tableData || []), [tableData]);
   const totalQuantity = ledgerCalc.getTotalQuantity();
   const totalPayment = ledgerCalc.getTotalPayment();
@@ -431,7 +434,7 @@ const SalesLedger = (user: any) => {
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm h-8"
+                className="w-full font-medium text-sm p-2"
                 branchDdl={dropdownData}
               />
             </div>
@@ -443,90 +446,94 @@ const SalesLedger = (user: any) => {
               acType={''}
               onSelect={selectedLedgerOptionHandler}
               value={selectedLedgerOption}
-              className='h-8'
+              className="h-9"
             />
           </div>
 
-          <div className="">
+          <div className="relative">
             <label htmlFor="">Select Product</label>
+            <div onClick={() => selectedProduct(null)}>
+              <FaRotateRight
+                size={20}
+                className="absolute dark:text-white cursor-pointer"
+              />
+            </div>
             <ProductDropdown
               onSelect={selectedProduct}
               value={selectedProductOption}
-              className='h-8'
+              className="appearance-none"
             />
           </div>
 
-          <div className="sm:grid md:flex gap-x-1 ">
-            <div className="w-full">
+          <div className="sm:grid md:flex gap-x-3 ">
+            <div className="w-full md:max-w-40">
               <label htmlFor="">Start Date</label>
               <InputDatePicker
                 setCurrentDate={handleStartDate}
-                className="w-full font-medium text-sm h-8"
+                className="w-full font-medium text-xs h-9.5"
                 selectedDate={startDate}
                 setSelectedDate={setStartDate}
               />
             </div>
 
-            <div className="w-full">
+            <div className="w-full md:max-w-40">
               <label htmlFor="">End Date</label>
               <InputDatePicker
                 setCurrentDate={handleEndDate}
-                className="font-medium text-sm w-full h-8"
+                className="font-medium text-xs w-full h-9.5"
                 selectedDate={endDate}
                 setSelectedDate={setEndDate}
               />
             </div>
 
             {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
-            <div className="mt-1 md:mt-6 w-full flex items-center gap-1">
-              <div className="flex gap-2">
-                <div className="">
-                  <InputElement
-                    id="perPage"
-                    name="perPage"
-                    label=""
-                    value={rowsPerPage}
-                    onChange={(e) => setRowsPerPage(clampInt(e.target.value, 1, 200, 12))}
-                    type='text'
-                    className="font-medium text-sm h-8 w-12"
-                  />
-                </div>
-
-                <div className="">
-                  <InputElement
-                    id="fontSize"
-                    name="fontSize"
-                    label=""
-                    value={fontSize.toString()}
-                    // onChange={(e) => setFontSize(clampInt(e.target.value, 6, 10, 12))}
-                    onChange={handleFontSizeChange}
-                    type='text'
-                    className="font-medium text-sm h-8 w-12"
-                  />
-                </div>
-              </div>
-
-              <ButtonLoading
-                onClick={handleActionButtonClick}
-                buttonLoading={buttonLoading}
-                label="Run"
-                icon=""
-                className="pt-[0.45rem] pb-[0.45rem] w-full"
+            <div className="grid grid-cols-5 md:flex items-end gap-x-3">
+              <InputElement
+                id="perPage"
+                name="perPage"
+                label="Rows"
+                value={rowsPerPage.toString()}
+                onChange={handleRowsPerPageChange}
+                type="text"
+                className="font-medium text-sm h-9 w-full md:w-12"
               />
+
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="font-medium text-sm h-9 w-full md:w-12"
+              />
+
+              <div className="mt-6 md:mt-6 w-full">
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Run"
+                  icon=""
+                  className="pt-[0.45rem] pb-[0.45rem] w-full h-9"
+                />
+              </div>
 
               <PrintButton
                 onClick={handlePrint}
-                className="pt-[0.45rem] pb-[0.45rem]"
+                label=""
+                className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
                 disabled={!Array.isArray(tableData) || tableData.length === 0}
               />
 
-              <ButtonLoading
-                onClick={handleResetFilters}
-                buttonLoading={false}
-                label="Reset"
-                icon=""
-                className="pt-[0.45rem] pb-[0.45rem] w-full h-8"
-              />
+              <div className="mt-6 md:mt-6 w-full">
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon=""
+                  className="pt-[0.45rem] pb-[0.45rem] w-full h-9"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -541,9 +548,9 @@ const SalesLedger = (user: any) => {
             <div className="flex justify-end space-x-8 p-2">
               <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
               <div>Total: {thousandSeparator(totalPayment, 0)}</div>
-              <div>Received: {thousandSeparator(grandTotal, 0)}</div>
               <div>Discount: {thousandSeparator(totalDiscount, 0)}</div>
-              <div>Due: {thousandSeparator(totalBalance, 0)}</div>
+              <div>Received: {thousandSeparator(grandTotal, 0)}</div>
+              <div>Balance: {thousandSeparator(totalBalance, 0)}</div>
             </div>
           </div>
         )}
