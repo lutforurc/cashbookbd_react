@@ -18,7 +18,7 @@ import OrderTransactionPrint from './OrderTransactionPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../utils/fields/InputElement';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
-import { API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
+import { API_ORDERS_LIST_URL, API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 import { toast } from 'react-toastify';
 
@@ -191,56 +191,48 @@ const Orders = () => {
   const orders = useSelector((state) => state.orders);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [totalPages, setTotalPages] = useState(0);
-  const [tableData, setTableData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
   const [printFontSize, setPrintFontSize] = useState(10);
   const [search, setSearchValue] = useState('');
+  const [searchFilter, setSearchFilter] = useState('');
   const [selectedLedger, setSelectedLedger] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [orderType, setOrderType] = useState('');
   const [selectedLinkedOrder, setSelectedLinkedOrder] = useState<any | null>(null);
+  const [printRows, setPrintRows] = useState<any[]>([]);
   const printRef = useRef<HTMLDivElement>(null);
   const transactionPrintRef = useRef<HTMLDivElement>(null);
   const [selectedPrintOrder, setSelectedPrintOrder] = useState<any | null>(null);
   const [printingOrderId, setPrintingOrderId] = useState<number | string | null>(null);
+
+  const ordersData = orders?.data ?? {};
+  const tableData = Array.isArray(ordersData?.data) ? ordersData.data : [];
+  const totalPages = Number(ordersData?.last_page ?? 0);
+  const totalRows = Number(ordersData?.total ?? 0);
 
   useEffect(() => {
     dispatch(
       getOrders({
         page,
         perPage,
-        search,
+        search: searchFilter,
         orderType,
         orderFor: selectedLedger?.value ?? '',
       }),
     );
-    setTotalPages(Math.ceil(orders?.data?.total / perPage));
-    setTableData(orders?.data?.data);
-  }, [page, perPage, orderType, selectedLedger?.value, orders?.data?.total]);
+  }, [dispatch, page, perPage, searchFilter, orderType, selectedLedger?.value]);
 
-  const handleSearchButton = (e: any) => {
+  const handleSearchButton = () => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(
-      getOrders({
-        page,
-        perPage,
-        search,
-        orderType,
-        orderFor: selectedLedger?.value ?? '',
-      }),
-    );
-    if (orders?.data?.total >= 0) {
-      setTotalPages(Math.ceil(orders?.data?.total / perPage));
-      setTableData(orders?.data?.data);
-    }
+    setSearchFilter(search);
   };
   const handleResetFilters = () => {
     setSearchValue('');
+    setSearchFilter('');
     setSelectedLedger(null);
     setOrderType('');
     setPage(1);
@@ -256,19 +248,14 @@ const Orders = () => {
       }),
     );
   };
-  const handleSelectChange = (page: any) => {
-    setPerPage(page.target.value);
+  const handleSelectChange = (event: any) => {
+    setPerPage(Number(event.target.value));
     setPage(1);
     setCurrentPage(1);
-    setTotalPages(Math.ceil(orders?.data?.total / perPage));
-    setTableData(orders?.data?.data);
   };
-  const handlePageChange = (page: any) => {
-    setPerPage(perPage);
-    setPage(page);
-    setCurrentPage(page);
-    setTotalPages(Math.ceil(orders?.data?.last_page));
-    setTableData(orders.data.data);
+  const handlePageChange = (nextPage: any) => {
+    setPage(nextPage);
+    setCurrentPage(nextPage);
   };
 
   const handleOrderChange = (e: any) => {
@@ -300,9 +287,10 @@ const Orders = () => {
   const closeLinkedOrdersModal = () => {
     setSelectedLinkedOrder(null);
   };
+
   useEffect(() => {
-    setTableData(orders?.data?.data);
-  }, [orders?.data]);
+    setCurrentPage(Number(ordersData?.current_page ?? page));
+  }, [ordersData?.current_page, page]);
 
   const derivedSummary = useMemo(() => {
     return (Array.isArray(tableData) ? tableData : []).reduce(
@@ -315,6 +303,12 @@ const Orders = () => {
         );
         acc.linkedQuantity += toNumber(row?.linked_quantity);
         acc.remainingQuantity += getLinkedRemainingQuantity(row);
+        if (toNumber(row?.order_type) === 1) {
+          acc.purchaseQuantity += toNumber(row?.total_order);
+        }
+        if (toNumber(row?.order_type) === 2) {
+          acc.salesQuantity += toNumber(row?.total_order);
+        }
         return acc;
       },
       {
@@ -324,6 +318,8 @@ const Orders = () => {
         baseOrderQuantity: 0,
         linkedQuantity: 0,
         remainingQuantity: 0,
+        purchaseQuantity: 0,
+        salesQuantity: 0,
       },
     );
   }, [tableData]);
@@ -359,6 +355,18 @@ const Orders = () => {
       remainingQuantity:
         pickFirstNumber(apiSummarySource, ['remaining_quantity', 'total_remaining_quantity']) ??
         derivedSummary.remainingQuantity,
+      purchaseQuantity:
+        pickFirstNumber(apiSummarySource, ['purchase_quantity', 'total_purchase_quantity']) ??
+        derivedSummary.purchaseQuantity,
+      salesQuantity:
+        pickFirstNumber(apiSummarySource, ['sales_quantity', 'total_sales_quantity']) ??
+        derivedSummary.salesQuantity,
+      purchaseSalesRemainingQuantity:
+        pickFirstNumber(apiSummarySource, ['purchase_sales_remaining_quantity']) ??
+        ((pickFirstNumber(apiSummarySource, ['purchase_quantity', 'total_purchase_quantity']) ??
+          derivedSummary.purchaseQuantity) -
+          (pickFirstNumber(apiSummarySource, ['sales_quantity', 'total_sales_quantity']) ??
+            derivedSummary.salesQuantity)),
       fromApi: Boolean(apiSummarySource),
     };
   }, [apiSummarySource, derivedSummary]);
@@ -367,37 +375,28 @@ const Orders = () => {
     () => [
       [
         {
-          label: `${summary.fromApi ? '' : ''} `,
+          label: '',
           colSpan: 1,
           className: 'text-right',
         },
         {
-          label: `Total Trx. Qty ${thousandSeparator(summary.totalTrxQuantity, 0)}`,
+          label: `Trx Qty: ${thousandSeparator(summary.totalTrxQuantity, 0)}`,
           className: 'text-right',
         },
         {
-          label: `Order Qty ${thousandSeparator(summary.totalOrder, 0)}`,
+          label: `Purchase Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
           className: 'text-right',
         },
         {
-          label: `Remaining Qty ${thousandSeparator(summary.orderRemainingQuantity, 0)}`,
-          className: 'text-right',
-        },
-        
-        {
-          label: (
-            <p className="text-right">
-              <span className="block">{`Linked Qty ${thousandSeparator(summary.linkedQuantity, 0)}`}</span>
-            </p>
-          ),
+          label: `Sales Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
           className: 'text-right',
         },
         {
-          label: (
-            <p className="text-right">
-              <span className="block">{`Link Remaining Qty ${thousandSeparator(summary.remainingQuantity, 0)}`}</span>
-            </p>
-          ),
+          label: `Remaining Qty: ${thousandSeparator(summary.purchaseSalesRemainingQuantity, 0)}`,
+          className: 'text-right',
+        },
+        {
+          label: '',
           className: 'text-right',
         },
         {
@@ -418,6 +417,7 @@ const Orders = () => {
     content: () => printRef.current,
     documentTitle: 'Orders List Print',
     removeAfterPrint: true,
+    onAfterPrint: () => setPrintRows([]),
   });
 
   const handleTransactionPrint = useReactToPrint({
@@ -459,6 +459,31 @@ const Orders = () => {
       toast.error('Order print data load করা যায়নি।');
     } finally {
       setPrintingOrderId(null);
+    }
+  };
+
+  const handleListPrint = async () => {
+    try {
+      setButtonLoading(true);
+
+      const response = await httpService.get(
+        `${API_ORDERS_LIST_URL}?page=1&per_page=${Math.max(totalRows, perPage, 1)}&search=${encodeURIComponent(searchFilter)}&order_type=${encodeURIComponent(orderType)}&order_for=${encodeURIComponent(selectedLedger?.value ?? '')}`,
+      );
+
+      const payload =
+        response?.data?.data?.data ??
+        response?.data?.data ??
+        [];
+
+      setPrintRows(Array.isArray(payload) ? payload : []);
+      window.setTimeout(() => {
+        handlePrint();
+      }, 0);
+    } catch (error) {
+      console.error(error);
+      toast.error('Orders print data load করা যায়নি।');
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -563,7 +588,7 @@ const Orders = () => {
               : '-'}
           </span>
           <span className="block">
-            { Number(data.total_order) - Number(data.linked_quantity) }
+            { thousandSeparator(Number(data.total_order) - Number(data.linked_quantity), 0) }
           </span>
         </p>
       ),
@@ -655,7 +680,7 @@ const Orders = () => {
             />
           </div>
           <PrintButton
-            onClick={handlePrint}
+            onClick={() => void handleListPrint()}
             label="Print"
             className="pt-[0.45rem] pb-[0.45rem] h-9 whitespace-nowrap"
           />
@@ -684,7 +709,7 @@ const Orders = () => {
       <div className="hidden">
         <OrdersPrint
           ref={printRef}
-          rows={tableData || []}
+          rows={printRows.length > 0 ? printRows : tableData}
           title="Orders List Print"
           searchText={search}
           orderTypeLabel={orderTypeLabel}
