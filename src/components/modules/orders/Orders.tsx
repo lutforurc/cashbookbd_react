@@ -361,6 +361,10 @@ const Orders = () => {
       salesQuantity:
         pickFirstNumber(apiSummarySource, ['sales_quantity', 'total_sales_quantity']) ??
         derivedSummary.salesQuantity,
+      purchaseTrxQuantity:
+        pickFirstNumber(apiSummarySource, ['purchase_trx_quantity', 'total_purchase_trx_quantity']) ?? 0,
+      salesTrxQuantity:
+        pickFirstNumber(apiSummarySource, ['sales_trx_quantity', 'total_sales_trx_quantity']) ?? 0,
       purchaseSalesRemainingQuantity:
         pickFirstNumber(apiSummarySource, ['purchase_sales_remaining_quantity']) ??
         ((pickFirstNumber(apiSummarySource, ['purchase_quantity', 'total_purchase_quantity']) ??
@@ -384,6 +388,14 @@ const Orders = () => {
           className: 'text-right',
         },
         {
+          label: `Purchase Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
+          className: 'text-right',
+        },
+        {
+          label: `Sales Trx Qty: ${thousandSeparator(summary.salesTrxQuantity, 0)}`,
+          className: 'text-right',
+        },
+        {
           label: `Purchase Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
           className: 'text-right',
         },
@@ -394,13 +406,6 @@ const Orders = () => {
         {
           label: `Remaining Qty: ${thousandSeparator(summary.purchaseSalesRemainingQuantity, 0)}`,
           className: 'text-right',
-        },
-        {
-          label: '',
-          className: 'text-right',
-        },
-        {
-          label: '',
         },
       ],
     ],
