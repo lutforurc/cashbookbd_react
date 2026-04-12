@@ -76,8 +76,13 @@ const OrderDropdown: React.FC<DropdownProps> = ({
     focusTrigger,
 }) => {
     const [isSelected, setIsSelected] = React.useState(false);
+    const [loadedOptions, setLoadedOptions] = React.useState<OptionType[]>([]);
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const dispatch = useDispatch();
     const selectRef = React.useRef<any>(null);
+    const isDarkMode =
+        typeof document !== 'undefined' &&
+        document.documentElement.classList.contains('dark');
 
     React.useEffect(() => {
         if (!focusTrigger || isDisabled) {
@@ -124,17 +129,44 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         order_type: item.order_type,
                         ...item,
                     }));
+                    setLoadedOptions(formattedOptions);
                     callback(formattedOptions);
                 } else {
+                    setLoadedOptions([]);
                     callback([]); // Clear options if data is invalid
                 }
             } catch (error) {
                 console.error('Error loading options:', error);
+                setLoadedOptions([]);
                 callback([]); // Clear options in case of an error
             }
         } else {
+            setLoadedOptions([]);
             callback([]); // Clear options if inputValue has less than 3 characters
         }
+    };
+
+    const handleKeyDownInternal = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter' && isMenuOpen && loadedOptions.length > 0) {
+            event.preventDefault();
+
+            const focusedOption = selectRef.current?.state?.focusedOption as OptionType | undefined;
+            const optionToSelect = focusedOption ?? loadedOptions[0];
+
+            if (optionToSelect) {
+                onSelect(optionToSelect);
+                setIsSelected(false);
+                setIsMenuOpen(false);
+                selectRef.current?.blur?.();
+
+                window.setTimeout(() => {
+                    onKeyDown?.(event);
+                }, 0);
+                return;
+            }
+        }
+
+        onKeyDown?.(event);
     };
 
 
@@ -149,9 +181,15 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                 classNamePrefix="cash-react-select"
                 loadOptions={loadOptions}
                 onChange={onSelect} // Handle change in selection
-                onMenuOpen={() => setIsSelected(true)}
-                onMenuClose={() => setIsSelected(false)}
-                onKeyDown={onKeyDown} // Pass it to the input
+                onMenuOpen={() => {
+                    setIsSelected(true);
+                    setIsMenuOpen(true);
+                }}
+                onMenuClose={() => {
+                    setIsSelected(false);
+                    setIsMenuOpen(false);
+                }}
+                onKeyDown={handleKeyDownInternal}
                 openMenuOnFocus
                 isDisabled={isDisabled}
                 isClearable={!isDisabled}
@@ -209,10 +247,18 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         height: heightPx,
                         minHeight: heightPx,
                     }),
-                    option: (base) => ({
+                    option: (base, state) => ({
                         ...base,
                         whiteSpace: 'normal',
                         borderColor: 'blue',
+                        backgroundColor: state.isSelected
+                            ? (isDarkMode ? '#1d4ed8' : '#2563eb')
+                            : state.isFocused
+                                ? (isDarkMode ? '#334155' : '#dbeafe')
+                                : (isDarkMode ? '#374151' : '#f3f4f6'),
+                        color: state.isSelected
+                            ? '#ffffff'
+                            : (isDarkMode ? '#f3f4f6' : '#0f172a'),
                     }),
                     menu: (base) => ({
                         ...base,

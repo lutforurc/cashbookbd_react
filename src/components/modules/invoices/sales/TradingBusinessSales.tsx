@@ -875,23 +875,15 @@ const TradingBusinessSales = () => {
                     id="salesOrderNumber"
                     name="salesOrderNumber"
                     onSelect={salesOrderNumberHandler}
-                    // defaultValue={
-                    //   formData.salesOrderNumber
-                    //     ? {
-                    //         value: formData.salesOrderNumber,
-                    //         label: formData.salesOrderText, //productData.accountName
-                    //       }
-                    //     : null
-                    // }
                     value={
                       formData.salesOrderNumber
                         ? {
                           value: formData.salesOrderNumber,
-                          label: formData.salesOrderText, //productData.accountName
+                          label: formData.salesOrderText,
                         }
                         : null
                     }
-                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')} // Pass the next field's ID
+                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
                   />
                 </div>
                 <ButtonLoading
