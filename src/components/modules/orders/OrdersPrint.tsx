@@ -15,6 +15,8 @@ type Props = {
   title?: string;
   searchText?: string;
   orderTypeLabel?: string;
+  startDate?: string;
+  endDate?: string;
   summary?: OrderSummary;
   rowsPerPage?: number;
   fontSize?: number;
@@ -81,6 +83,8 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
       title = 'Orders List Print',
       searchText,
       orderTypeLabel,
+      startDate,
+      endDate,
       summary,
       rowsPerPage = 12,
       fontSize = 12,
@@ -125,6 +129,12 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                   </div>
                   <div className="text-right">
                     <span className="font-semibold">Order Type:</span> {orderTypeLabel || 'All'}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Start Date:</span> {startDate || '-'}
+                  </div>
+                  <div className="text-right">
+                    <span className="font-semibold">End Date:</span> {endDate || '-'}
                   </div>
                 </div>
               </div>

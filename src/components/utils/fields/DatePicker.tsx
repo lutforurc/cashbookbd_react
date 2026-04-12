@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -15,21 +15,15 @@ interface DatePickerProps {
 }
 
 const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
 
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
     setCurrentDate(date);
-    setIsOpen(false);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      setIsOpen(false);
-    }
-
     onKeyDown?.(event);
   };
 
@@ -46,11 +40,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         placeholderText={placeholder ? placeholder : 'Enter Valid date'}
         wrapperClassName="w-full"
         dropdownMode="select"
-        onFocus={() => setIsOpen(true)}
-        onClickOutside={() => setIsOpen(false)}
-        onCalendarClose={() => setIsOpen(false)}
         onKeyDown={handleKeyDown}
-        open={isOpen}
         shouldCloseOnSelect
         className={`dark:placeholder-gray-500 rounded-xs border pl-3 text-black outline-none  dark:border-form-strokedark bg-white dark:bg-transparent dark:text-white focus:outline-none 
         focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}

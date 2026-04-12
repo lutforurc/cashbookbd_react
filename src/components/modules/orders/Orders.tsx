@@ -5,18 +5,20 @@ import { useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
+import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import SearchInput from '../../utils/fields/SearchInput';
 import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
-import { FiEdit2, FiEye, FiTrash2, FiX } from 'react-icons/fi';
+import { FiEdit2, FiEye, FiRefreshCw, FiTrash2, FiX } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
 import OrderTransactionPrint from './OrderTransactionPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../utils/fields/InputElement';
+import InputDatePicker from '../../utils/fields/DatePicker';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import { API_ORDERS_LIST_URL, API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
@@ -75,6 +77,18 @@ const pickFirstValue = (sources: any[], keys: string[]) => {
   }
 
   return undefined;
+};
+
+const formatDateValue = (date: Date | null) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 };
 
 const normalizeOrderPrintRow = (row: any, index: number, fallbackUnit?: string) => ({
@@ -198,6 +212,9 @@ const Orders = () => {
   const [printFontSize, setPrintFontSize] = useState(10);
   const [search, setSearchValue] = useState('');
   const [searchFilter, setSearchFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [selectedProductOption, setSelectedProductOption] = useState<any | null>(null);
   const [selectedLedger, setSelectedLedger] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [orderType, setOrderType] = useState('');
@@ -221,9 +238,12 @@ const Orders = () => {
         search: searchFilter,
         orderType,
         orderFor: selectedLedger?.value ?? '',
+        productId: selectedProductOption?.value ?? '',
+        startDate,
+        endDate,
       }),
     );
-  }, [dispatch, page, perPage, searchFilter, orderType, selectedLedger?.value]);
+  }, [dispatch, page, perPage, searchFilter, orderType, selectedLedger?.value, selectedProductOption?.value, startDate, endDate]);
 
   const handleSearchButton = () => {
     setCurrentPage(1);
@@ -233,6 +253,9 @@ const Orders = () => {
   const handleResetFilters = () => {
     setSearchValue('');
     setSearchFilter('');
+    setStartDate('');
+    setEndDate('');
+    setSelectedProductOption(null);
     setSelectedLedger(null);
     setOrderType('');
     setPage(1);
@@ -245,6 +268,9 @@ const Orders = () => {
         search: '',
         orderType: '',
         orderFor: '',
+        productId: '',
+        startDate: '',
+        endDate: '',
       }),
     );
   };
@@ -252,6 +278,14 @@ const Orders = () => {
     setPerPage(Number(event.target.value));
     setPage(1);
     setCurrentPage(1);
+  };
+  const handleStartDate = (date: Date | null) => {
+    const formattedDate = formatDateValue(date);
+    setStartDate(formattedDate);
+  };
+  const handleEndDate = (date: Date | null) => {
+    const formattedDate = formatDateValue(date);
+    setEndDate(formattedDate);
   };
   const handlePageChange = (nextPage: any) => {
     setPage(nextPage);
@@ -265,9 +299,21 @@ const Orders = () => {
     setSelectedLedger(
       option
         ? {
-            value: option.value,
-            label: option.label,
-          }
+          value: option.value,
+          label: option.label,
+        }
+        : null,
+    );
+    setCurrentPage(1);
+    setPage(1);
+  };
+  const selectedProduct = (option: any) => {
+    setSelectedProductOption(
+      option
+        ? {
+          value: option.value,
+          label: option.label,
+        }
         : null,
     );
     setCurrentPage(1);
@@ -472,7 +518,7 @@ const Orders = () => {
       setButtonLoading(true);
 
       const response = await httpService.get(
-        `${API_ORDERS_LIST_URL}?page=1&per_page=${Math.max(totalRows, perPage, 1)}&search=${encodeURIComponent(searchFilter)}&order_type=${encodeURIComponent(orderType)}&order_for=${encodeURIComponent(selectedLedger?.value ?? '')}`,
+        `${API_ORDERS_LIST_URL}?page=1&per_page=${Math.max(totalRows, perPage, 1)}&search=${encodeURIComponent(searchFilter)}&order_type=${encodeURIComponent(orderType)}&order_for=${encodeURIComponent(selectedLedger?.value ?? '')}&product_id=${encodeURIComponent(selectedProductOption?.value ?? '')}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`,
       );
 
       const payload =
@@ -514,8 +560,8 @@ const Orders = () => {
       render: (data: any) => (
         <p>
           <span className="block">{data.product_name}</span>
-          { data.trx_quantity == 0 ? "-" : (
-          <span className="block text-green-500 dark:text-yellow-300 font-semibold">{thousandSeparator(data.trx_quantity, 0)}</span>
+          {data.trx_quantity == 0 ? "-" : (
+            <span className="block text-green-500 dark:text-yellow-300 font-semibold">{thousandSeparator(data.trx_quantity, 0)}</span>
           )}
         </p>
       ),
@@ -593,7 +639,7 @@ const Orders = () => {
               : '-'}
           </span>
           <span className="block">
-            { thousandSeparator(Number(data.total_order) - Number(data.linked_quantity), 0) }
+            {thousandSeparator(Number(data.total_order) - Number(data.linked_quantity), 0)}
           </span>
         </p>
       ),
@@ -643,17 +689,47 @@ const Orders = () => {
               className='h-9'
             />
           </div>
+          <ProductDropdown
+            onSelect={selectedProduct}
+            className="appearance-none min-w-[220px] h-9"
+            value={selectedProductOption}
+          />
+          <div className="min-w-[160px]">
+            <InputDatePicker
+              id="order_start_date"
+              name="order_start_date"
+              setCurrentDate={handleStartDate}
+              placeholder="Order Start Date"
+              className="font-medium text-sm w-full h-9"
+              selectedDate={startDate ? new Date(startDate) : null}
+              setSelectedDate={(date) => setStartDate(formatDateValue(date))}
+            />
+          </div>
+          <div className="min-w-[160px]">
+            <InputDatePicker
+              id="order_end_date"
+              name="order_end_date"
+              setCurrentDate={handleEndDate}
+              placeholder="Order End Date"
+              className="font-medium text-sm w-full h-9"
+              selectedDate={endDate ? new Date(endDate) : null}
+              setSelectedDate={(date) => setEndDate(formatDateValue(date))}
+            />
+          </div>
+
           <div className="flex flex-nowrap items-end min-w-[320px]">
             <SearchInput
               search={search}
               setSearchValue={setSearchValue}
               className="text-nowrap h-9 min-w-[220px]"
+
             />
             <ButtonLoading
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
               className="whitespace-nowrap h-9 mr-2"
+              icon={<FiRefreshCw />}
             />
             <ButtonLoading
               onClick={handleResetFilters}
@@ -662,6 +738,7 @@ const Orders = () => {
               className="whitespace-nowrap h-9"
             />
           </div>
+
           <div>
             <InputElement
               id="printRowsPerPage"
@@ -716,8 +793,10 @@ const Orders = () => {
           ref={printRef}
           rows={printRows.length > 0 ? printRows : tableData}
           title="Orders List Print"
-          searchText={search}
+          searchText={searchFilter}
           orderTypeLabel={orderTypeLabel}
+          startDate={startDate}
+          endDate={endDate}
           summary={summary}
           rowsPerPage={Number(printRowsPerPage)}
           fontSize={Number(printFontSize)}

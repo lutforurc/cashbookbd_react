@@ -67,6 +67,9 @@ interface orderParam {
   search: string;
   orderType: string;
   orderFor?: string | number;
+  productId?: string | number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export const getOrders = ({
@@ -75,12 +78,15 @@ export const getOrders = ({
   search = '',
   orderType = '',
   orderFor = '',
+  productId = '',
+  startDate = '',
+  endDate = '',
 }: orderParam) =>
   (dispatch: any) => {
     dispatch({ type: ORDER_LIST_PENDING });
     httpService.get(
       API_ORDERS_LIST_URL +
-        `?page=${page}&per_page=${perPage}&search=${search}&order_type=${orderType}&order_for=${orderFor}`,
+        `?page=${page}&per_page=${perPage}&search=${search}&order_type=${orderType}&order_for=${orderFor}&product_id=${productId}&start_date=${startDate}&end_date=${endDate}`,
     )
       .then((res) => {
         let _data = res.data;
