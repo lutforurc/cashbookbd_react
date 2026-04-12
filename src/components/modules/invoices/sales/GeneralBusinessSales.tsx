@@ -35,6 +35,8 @@ import {
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { SalesType } from '../../../../common/dropdownData';
 import QuickCustomerModal from './QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 
 interface Product {
   id: number;
@@ -48,6 +50,18 @@ interface Product {
   variance?: string;
   variance_type?: string;
 }
+
+type SalesSuggestionField = 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter(
+        (item: string, index: number, arr: string[]) =>
+          item && arr.indexOf(item) === index,
+      )
+    : [];
 
 const GeneralBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -68,6 +82,7 @@ const GeneralBusinessSales = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
   const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   const [permissions, setPermissions] = useState<any>([]);
 
@@ -104,6 +119,43 @@ const GeneralBusinessSales = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  useEffect(() => {
+    const fetchSuggestions = async (
+      field: SalesSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(
+          API_TRADING_SALES_SUGGESTIONS_URL,
+          {
+            params: {
+              field,
+              q: trimmedQuery,
+            },
+          },
+        );
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.notes]);
 
   useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
@@ -574,6 +626,8 @@ const GeneralBusinessSales = () => {
                 placeholder={'Notes'}
                 label={'Notes'}
                 className={'py-1'}
+                list="sales-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -588,6 +642,11 @@ const GeneralBusinessSales = () => {
                   }
                 }}
               />
+              <datalist id="sales-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">

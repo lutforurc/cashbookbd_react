@@ -35,6 +35,8 @@ import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon.tsx';
 import { PurchaseType } from '../../../../common/dropdownData.tsx';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 
 interface Product {
   id: number;
@@ -46,6 +48,18 @@ interface Product {
   price: string;
   warehouse: string;
 }
+
+type PurchaseSuggestionField = 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter(
+        (item: string, index: number, arr: string[]) =>
+          item && arr.indexOf(item) === index,
+      )
+    : [];
 
 const ElectronicsBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -69,6 +83,7 @@ const ElectronicsBusinessPurchase = () => {
   const [purchaseType, setPurchaseType] = useState('2'); // Define state with type
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -120,6 +135,43 @@ const ElectronicsBusinessPurchase = () => {
     searchInvoice: '',
     products: [],
   });
+
+  useEffect(() => {
+    const fetchSuggestions = async (
+      field: PurchaseSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(
+          API_TRADING_PURCHASE_SUGGESTIONS_URL,
+          {
+            params: {
+              field,
+              q: trimmedQuery,
+            },
+          },
+        );
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.notes]);
 
   useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
@@ -585,10 +637,28 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
                 name="notes"
                 placeholder={'Notes'}
                 label={'Notes'}
-                className={'py-1.5 h-8.5'}
+                className={'py-1 h-8.5'}
+                list="purchase-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'product')} // Dynamically pass the next element's ID
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setTimeout(() => {
+                      const productInput = document.querySelector('#product');
+                      if (productInput instanceof HTMLElement) {
+                        productInput.focus();
+                      } else {
+                        console.warn('Product input not found');
+                      }
+                    }, 100);
+                  }
+                }}
               />
+              <datalist id="purchase-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement

@@ -33,6 +33,8 @@ import { getServiceList } from '../../settings/settingsSlice';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import QuickCustomerModal from './QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 
 interface Product {
   id: number;
@@ -63,6 +65,18 @@ interface editInstallmentData {
   amount: number;
   payments: [];
 }
+
+type SalesSuggestionField = 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter(
+        (item: string, index: number, arr: string[]) =>
+          item && arr.indexOf(item) === index,
+      )
+    : [];
 
 const ElectronicsBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -96,6 +110,7 @@ const ElectronicsBusinessSales = () => {
   const [fontSize, setFontSize] = useState<number>(12);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
   const [installmentData, setInstallmentData] = useState<InstallmentData>({
     amount: 0,
     startDate: null,
@@ -177,6 +192,43 @@ const ElectronicsBusinessSales = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  useEffect(() => {
+    const fetchSuggestions = async (
+      field: SalesSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(
+          API_TRADING_SALES_SUGGESTIONS_URL,
+          {
+            params: {
+              field,
+              q: trimmedQuery,
+            },
+          },
+        );
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.notes]);
 
   useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
@@ -980,8 +1032,26 @@ const ElectronicsBusinessSales = () => {
                 placeholder="Notes"
                 label="Notes"
                 className="py-1 w-full"
+                list="sales-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setTimeout(() => {
+                      const input = document.querySelector(
+                        '#products',
+                      ) as HTMLInputElement | null;
+                      if (input) input.focus();
+                      if (input) input.select();
+                    }, 150);
+                  }
+                }}
               />
+              <datalist id="sales-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">

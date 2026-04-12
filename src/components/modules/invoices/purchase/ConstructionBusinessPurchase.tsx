@@ -39,6 +39,8 @@ import { voucherTypes } from './../../../utils/fields/DataConstant';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown.tsx';
 import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 
 interface Product {
   id: number;
@@ -49,6 +51,18 @@ interface Product {
   price: string;
   warehouse: string;
 }
+
+type PurchaseSuggestionField = 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter(
+        (item: string, index: number, arr: string[]) =>
+          item && arr.indexOf(item) === index,
+      )
+    : [];
 
 const ConstructionBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -72,6 +86,7 @@ const ConstructionBusinessPurchase = () => {
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -110,6 +125,43 @@ const ConstructionBusinessPurchase = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  useEffect(() => {
+    const fetchSuggestions = async (
+      field: PurchaseSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(
+          API_TRADING_PURCHASE_SUGGESTIONS_URL,
+          {
+            params: {
+              field,
+              q: trimmedQuery,
+            },
+          },
+        );
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.notes]);
 
   useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
@@ -621,10 +673,28 @@ const ConstructionBusinessPurchase = () => {
                 name="notes"
                 placeholder={'Notes'}
                 label={'Notes'}
-                className={'py-1.5'}
+                className={'py-1'}
+                list="purchase-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setTimeout(() => {
+                      const productInput = document.querySelector('#product');
+                      if (productInput instanceof HTMLElement) {
+                        productInput.focus();
+                      } else {
+                        console.warn('Product input not found');
+                      }
+                    }, 100);
+                  }
+                }}
               />
+              <datalist id="purchase-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
