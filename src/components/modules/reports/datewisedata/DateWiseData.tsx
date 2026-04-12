@@ -92,6 +92,11 @@ const DateWiseData = (user: any) => {
     return [];
   };
 
+  const isSummaryRow = (row: any) => {
+    const label = String(row?.vr_date || "").trim().toLowerCase();
+    return label === "opening" || label === "range total";
+  };
+
   // -----------------------------------------------------
   // Prepare Cumulative Table Data
   // -----------------------------------------------------
@@ -107,12 +112,18 @@ const DateWiseData = (user: any) => {
     let credit = 0;
 
     const computed = rows.map((row: any, index: number) => {
-      debit += Number(row.debit);
-      credit += Number(row.credit);
+      if (!isSummaryRow(row)) {
+        debit += Number(row.debit) || 0;
+        credit += Number(row.credit) || 0;
+      }
+
+      if (isSummaryRow(row)) {
+        return row;
+      }
 
       return {
         ...row,
-        sl_number: index + 1,
+        sl_number: row.sl_number ?? index + 1,
         cumulative_debit: debit,
         cumulative_credit: credit,
         balance: debit - credit,
