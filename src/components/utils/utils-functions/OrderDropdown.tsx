@@ -2,6 +2,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import AsyncSelect from 'react-select/async';
+import { components, OptionProps } from 'react-select';
 import { getDdlOrders } from '../../modules/orders/ordersSlice';
 import {formatDate} from './formatDate';
 import thousandSeparator from './thousandSeparator';
@@ -44,6 +45,40 @@ const getRemainingQty = (option: OptionType) => {
     }
 
     return toNumber(option.remaining_qty) ?? toNumber(option.remaining_quantity) ?? toNumber(option.label_8);
+};
+
+const OrderOption = (props: OptionProps<OptionType, false>) => {
+    const isDarkMode =
+        typeof document !== 'undefined' &&
+        document.documentElement.classList.contains('dark');
+
+    const backgroundColor = props.isSelected
+        ? (isDarkMode ? '#1d4ed8' : '#2563eb')
+        : props.isFocused
+            ? (isDarkMode ? '#475569' : '#dbeafe')
+            : (isDarkMode ? '#374151' : '#f3f4f6');
+
+    const color = props.isSelected
+        ? '#ffffff'
+        : (isDarkMode ? '#f8fafc' : '#0f172a');
+
+    return (
+        <components.Option
+            {...props}
+            innerProps={{
+                ...props.innerProps,
+                style: {
+                    ...(props.innerProps.style || {}),
+                    backgroundColor,
+                    color,
+                    borderLeft: props.isFocused || props.isSelected ? '4px solid #60a5fa' : '4px solid transparent',
+                    boxShadow: props.isFocused ? `inset 0 0 0 1px ${isDarkMode ? '#93c5fd' : '#60a5fa'}` : 'none',
+                },
+            }}
+        >
+            {props.children}
+        </components.Option>
+    );
 };
 
 interface DropdownProps {
@@ -179,6 +214,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                 name={name}
                 className="cash-react-select-container w-full dark:bg-black focus:border-blue-500 "
                 classNamePrefix="cash-react-select"
+                components={{ Option: OrderOption }}
                 loadOptions={loadOptions}
                 onChange={onSelect} // Handle change in selection
                 onMenuOpen={() => {
@@ -199,37 +235,37 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                 }} // Show only primary label in selected input
                 formatOptionLabel={(option) => {
                     return (
-                        <div>
-                            <div className="text-sm text-gray-900  dark:text-white focus:border-blue-500">
+                        <div style={{ color: 'inherit' }}>
+                            <div className="text-sm font-medium" style={{ color: 'inherit' }}>
                                 {option.label}
                             </div>
                             {isSelected && (
                                 <div className='additional-info'>
                                     {option.label_2 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Name : {option.label_2}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Name : {option.label_2}</div>
                                     )}
                                     {option.label_3 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Product: {option.label_3}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Product: {option.label_3}</div>
                                     )}
                                     {option.label_4 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Order Date: {option.label_4}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Order Date: {option.label_4}</div>
                                     )}
                                     {option.label_5 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Order Rate: {option.label_5}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Order Rate: {option.label_5}</div>
                                     )}
                                     {/* {option.label_6 && (
                                         <div className="text-gray-600 dark:text-white text-sm">Last Date: {option.label_6}</div>
                                     )} */}
                                     {option.label_7 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Order Qty: { thousandSeparator( Number(option.label_7), 0) }</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Order Qty: { thousandSeparator( Number(option.label_7), 0) }</div>
                                     )}
                                     {getRemainingQty(option) !== null && (
-                                        <div className="text-gray-600 dark:text-white text-sm">
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>
                                             Remaining Qty: { thousandSeparator( Number( getRemainingQty(option)),0 ) }
                                         </div>
                                     )}
                                     {option.label_9 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Note: {option.label_9}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Note: {option.label_9}</div>
                                     )}
                                 </div>
                             )}
@@ -251,6 +287,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         ...base,
                         whiteSpace: 'normal',
                         borderColor: 'blue',
+                        paddingLeft: 12,
                         backgroundColor: state.isSelected
                             ? (isDarkMode ? '#1d4ed8' : '#2563eb')
                             : state.isFocused
