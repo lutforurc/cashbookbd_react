@@ -202,6 +202,7 @@ const GeneralBusinessSales = () => {
   const resetProducts = () => {
     setFormData(initialFormData); // Reset to the initial state
     setIsUpdateButton(false);
+    setIsReceivedAmtManuallyEdited(false);
     isUpdating && setIsUpdating(false);
   };
 
@@ -519,11 +520,6 @@ const GeneralBusinessSales = () => {
       if (isReceivedAmtManuallyEdited) {
         setIsReceivedAmtManuallyEdited(false);
       }
-    } else if (!isReceivedAmtManuallyEdited && formData.receivedAmt !== '0') {
-      setFormData((prev) => ({
-        ...prev,
-        receivedAmt: '0',
-      }));
     }
   }, [
     formData.account,

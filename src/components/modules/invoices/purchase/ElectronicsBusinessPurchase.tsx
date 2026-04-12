@@ -83,6 +83,7 @@ const ElectronicsBusinessPurchase = () => {
   const [purchaseType, setPurchaseType] = useState('2'); // Define state with type
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isPaymentAmtManuallyEdited, setIsPaymentAmtManuallyEdited] = useState(false);
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -182,10 +183,13 @@ const ElectronicsBusinessPurchase = () => {
   const supplierAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashSupplier = Number(option?.value) === 17;
+    setIsPaymentAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      paymentAmt: isCashSupplier ? formData.paymentAmt : '0',
     });
   };
 
@@ -323,6 +327,7 @@ const ElectronicsBusinessPurchase = () => {
       notes: trx.purchase_master?.notes || '',
       products: products,
     }));
+    setIsPaymentAmtManuallyEdited(false);
 
     toast.success('Invoice loaded successfully!');
   }, [purchase?.data?.transaction]);
@@ -384,16 +389,40 @@ const ElectronicsBusinessPurchase = () => {
   );
 
   useEffect(() => {
-    if (formData.account == '17') {
-      setFormData((prevState) => ({
-        ...prevState,
-        paymentAmt:
-          totalAmount > 0
-            ? (totalAmount - prevState.discountAmt).toString()
-            : '0',
-      }));
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const isCashSupplier = Number(formData.account) === 17;
+    const cashPaymentAmt = Math.max(0, totalAmount - discount).toFixed(2);
+    const existingNetPayment =
+      purchase?.data?.transaction?.purchase_master?.netpayment?.toString() || '0';
+
+    if (isCashSupplier) {
+      if (formData.paymentAmt !== cashPaymentAmt) {
+        setFormData((prevState) => ({
+          ...prevState,
+          paymentAmt: cashPaymentAmt,
+        }));
+      }
+      if (isPaymentAmtManuallyEdited) {
+        setIsPaymentAmtManuallyEdited(false);
+      }
+    } else if (!isPaymentAmtManuallyEdited) {
+      const nextPaymentAmt = formData.mtmId ? existingNetPayment : '0';
+      if (formData.paymentAmt !== nextPaymentAmt) {
+        setFormData((prevState) => ({
+          ...prevState,
+          paymentAmt: nextPaymentAmt,
+        }));
+      }
     }
-  }, [formData.account]);
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.mtmId,
+    formData.paymentAmt,
+    totalAmount,
+    isPaymentAmtManuallyEdited,
+    purchase?.data?.transaction,
+  ]);
 
   const handleDelete = (id: number) => {
     // Filter out the product with the matching id
@@ -422,6 +451,9 @@ const ElectronicsBusinessPurchase = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'paymentAmt' && Number(formData.account) !== 17) {
+      setIsPaymentAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -552,25 +584,6 @@ const ElectronicsBusinessPurchase = () => {
     setIsUpdating(true);
     setUpdateId(productIndex);
   };
-
-  useEffect(() => {
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty?.toString() || '0') || 0;
-      const price = parseFloat(product.price?.toString() || '0') || 0;
-      return acc + qty * price;
-    }, 0);
-
-    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-    let netTotal = 0;
-    if (total > 0) {
-      netTotal = total - discount;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      paymentAmt: netTotal.toFixed(2),
-    }));
-  }, [formData.products, formData.discountAmt]);
 
   useEffect(() => {
     if (productData.qty) {
@@ -1022,10 +1035,13 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
         defaultTypeId="2"
         initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
+          const isCashSupplier = Number(id) === 17;
+          setIsPaymentAmtManuallyEdited(false);
           setFormData((prev) => ({
             ...prev,
             account: id,
             accountName: name,
+            paymentAmt: isCashSupplier ? prev.paymentAmt : '0',
           }));
         }}
       />

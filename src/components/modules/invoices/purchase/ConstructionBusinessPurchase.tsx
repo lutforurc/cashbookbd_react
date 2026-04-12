@@ -86,6 +86,7 @@ const ConstructionBusinessPurchase = () => {
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isPaymentAmtManuallyEdited, setIsPaymentAmtManuallyEdited] = useState(false);
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -172,10 +173,13 @@ const ConstructionBusinessPurchase = () => {
   const supplierAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashSupplier = Number(option?.value) === 17;
+    setIsPaymentAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      paymentAmt: isCashSupplier ? formData.paymentAmt : '0',
     });
   };
 
@@ -302,6 +306,7 @@ const ConstructionBusinessPurchase = () => {
       };
 
       setFormData(updatedFormData);
+      setIsPaymentAmtManuallyEdited(false);
     }
   }, [purchase.data.transaction]);
 
@@ -415,6 +420,9 @@ const ConstructionBusinessPurchase = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'paymentAmt' && Number(formData.account) !== 17) {
+      setIsPaymentAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]:
@@ -504,6 +512,7 @@ const ConstructionBusinessPurchase = () => {
             vehicleNumber: '',
             products: [],
           }));
+          setIsPaymentAmtManuallyEdited(false);
         }, 1000);
       }),
     );
@@ -608,18 +617,42 @@ const ConstructionBusinessPurchase = () => {
 
     const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
 
-    let netTotal = 0;
-    if (total > 0) {
-      netTotal = Math.floor(total - discount);
+    const isCashSupplier = Number(formData.account) === 17;
+    const netTotal = total > 0 ? Math.floor(total - discount) : 0;
+    const existingNetPayment =
+      purchase.data.transaction?.purchase_master?.netpayment?.toString() || '0';
+
+    if (isCashSupplier) {
+      const cashPaymentAmt = Math.max(0, netTotal).toString();
+      if (formData.paymentAmt !== cashPaymentAmt) {
+        setFormData((prev) => ({
+          ...prev,
+          paymentAmt: cashPaymentAmt,
+        }));
+      }
+      if (isPaymentAmtManuallyEdited) {
+        setIsPaymentAmtManuallyEdited(false);
+      }
+    } else if (!isPaymentAmtManuallyEdited) {
+      const nextPaymentAmt = formData.mtmId ? existingNetPayment : '0';
+      if (formData.paymentAmt !== nextPaymentAmt) {
+        setFormData((prev) => ({
+          ...prev,
+          paymentAmt: nextPaymentAmt,
+        }));
+      }
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      paymentAmt: netTotal.toString(),
-    }));
-
-    setLineTotal(netTotal); // ✅ Total Tk. এখান থেকেই আসবে
-  }, [formData.products, formData.discountAmt]);
+    setLineTotal(netTotal);
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.mtmId,
+    formData.paymentAmt,
+    formData.products,
+    isPaymentAmtManuallyEdited,
+    purchase.data.transaction,
+  ]);
 
   useCtrlS(handlePurchaseInvoiceSave);
 
@@ -1111,10 +1144,13 @@ const ConstructionBusinessPurchase = () => {
         defaultTypeId="2"
         initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
+          const isCashSupplier = Number(id) === 17;
+          setIsPaymentAmtManuallyEdited(false);
           setFormData((prev) => ({
             ...prev,
             account: id,
             accountName: name,
+            paymentAmt: isCashSupplier ? prev.paymentAmt : '0',
           }));
         }}
       />

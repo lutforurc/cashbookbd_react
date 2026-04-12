@@ -92,6 +92,7 @@ const TradingBusinessPurchase = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [isPaymentAmtManuallyEdited, setIsPaymentAmtManuallyEdited] = useState(false);
   const [vehicleSuggestions, setVehicleSuggestions] = useState<string[]>([]);
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
@@ -187,10 +188,13 @@ const TradingBusinessPurchase = () => {
   const supplierAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashSupplier = Number(option?.value) === 17;
+    setIsPaymentAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      paymentAmt: isCashSupplier ? formData.paymentAmt : '0',
     });
   };
 
@@ -364,7 +368,8 @@ const TradingBusinessPurchase = () => {
           products: products || [],
         };
   
-        setFormData(updatedFormData); 
+        setFormData(updatedFormData);
+        setIsPaymentAmtManuallyEdited(false);
       }
     }, [purchase.data.transaction]);
 
@@ -449,6 +454,9 @@ const TradingBusinessPurchase = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'paymentAmt' && Number(formData.account) !== 17) {
+      setIsPaymentAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -554,6 +562,7 @@ const TradingBusinessPurchase = () => {
             products: [],
           }));
           setStartDate(null); // <-- UI DatePicker reset
+          setIsPaymentAmtManuallyEdited(false);
           setSaveButtonLoading(false);
         }, 1000);
       }),
@@ -666,42 +675,46 @@ const TradingBusinessPurchase = () => {
 
 
   
-    useEffect(() => {
-      const total = formData.products.reduce((acc, product) => {
-        const qty = parseFloat(product.qty?.toString() || '0') || 0;
-        const price = parseFloat(product.price?.toString() || '0') || 0;
-        return acc + qty * price;
-      }, 0);
-  
-      if (!formData.mtmId) {
-        if (Number(formData.account) === 17) {
-          setFormData((prev) => ({
-            ...prev,
-            paymentAmt: Math.max(0, total - parseFloat(prev.discountAmt?.toString() || '0')).toFixed(0),
-          }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            paymentAmt: '0',
-          }));
-        }
-      } else if (formData.mtmId) {
-        if (Number(formData.account) === 17) {
-          setFormData((prev) => ({
-            ...prev,
-            paymentAmt: Math.max(
-              0,
-              total - parseFloat(prev.discountAmt?.toString() || '0'),
-            ).toFixed(0),
-          }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            paymentAmt: purchase.data.transaction?.purchase_master?.netpayment?.toString(),
-          }));
-        }
+  useEffect(() => {
+    const total = formData.products.reduce((acc, product) => {
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
+    }, 0);
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const isCashSupplier = Number(formData.account) === 17;
+    const cashPaymentAmt = Math.max(0, total - discount).toFixed(0);
+    const existingNetPayment =
+      purchase.data.transaction?.purchase_master?.netpayment?.toString() || '0';
+
+    if (isCashSupplier) {
+      if (formData.paymentAmt !== cashPaymentAmt) {
+        setFormData((prev) => ({
+          ...prev,
+          paymentAmt: cashPaymentAmt,
+        }));
       }
-    }, [formData.account, formData.discountAmt, formData.products]);
+      if (isPaymentAmtManuallyEdited) {
+        setIsPaymentAmtManuallyEdited(false);
+      }
+    } else if (!isPaymentAmtManuallyEdited) {
+      const nextPaymentAmt = formData.mtmId ? existingNetPayment : '0';
+      if (formData.paymentAmt !== nextPaymentAmt) {
+        setFormData((prev) => ({
+          ...prev,
+          paymentAmt: nextPaymentAmt,
+        }));
+      }
+    }
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.mtmId,
+    formData.paymentAmt,
+    formData.products,
+    isPaymentAmtManuallyEdited,
+    purchase.data.transaction,
+  ]);
 
   return (
     <>
@@ -1209,10 +1222,13 @@ const TradingBusinessPurchase = () => {
         entityLabel="Supplier"
         defaultTypeId="2"
         onCustomerSaved={({ id, name }) => {
+          const isCashSupplier = Number(id) === 17;
+          setIsPaymentAmtManuallyEdited(false);
           setFormData((prev) => ({
             ...prev,
             account: id,
             accountName: name,
+            paymentAmt: isCashSupplier ? prev.paymentAmt : '0',
           }));
         }}
       />

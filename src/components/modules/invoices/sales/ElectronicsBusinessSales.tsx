@@ -276,6 +276,7 @@ const ElectronicsBusinessSales = () => {
     setIsUpdateButton(false);
     isUpdating && setIsUpdating(false);
     setIsInstallment(false); // Reset installment checkbox
+    setIsReceivedAmtManuallyEdited(false);
     setFormData(initialFormData);
     setInstallmentData({ amount: 0, startDate: null, numberOfInstallments: 0 }); // Reset installment data
   };
@@ -391,6 +392,7 @@ const ElectronicsBusinessSales = () => {
       };
       setFormData(updatedFormData);
       setEditedInstallments(updatedFormData.editInstallmentData);
+      setIsReceivedAmtManuallyEdited(false);
     }
   }, [sales.data.transaction]);
 
@@ -793,11 +795,6 @@ const ElectronicsBusinessSales = () => {
       if (isReceivedAmtManuallyEdited) {
         setIsReceivedAmtManuallyEdited(false);
       }
-    } else if (!isReceivedAmtManuallyEdited && formData.receivedAmt !== '0') {
-      setFormData((prev) => ({
-        ...prev,
-        receivedAmt: '0',
-      }));
     }
   }, [
     formData.account,
