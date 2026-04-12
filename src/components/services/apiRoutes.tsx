@@ -270,6 +270,7 @@ export const API_CASH_RECEIVED_SUGGESTIONS_URL = `${API_BASE_URL}/cash/remarks/s
 export const API_HEAD_OFFICE_CASH_RECEIVED_STORE_URL = `${API_BASE_URL}/accounts/received`;
 export const API_HEAD_OFFICE_CASH_RECEIVED_EDIT_URL = `${API_BASE_URL}/accounts/received/api-edit`;
 export const API_HEAD_OFFICE_CASH_RECEIVED_UPDATE_URL = `${API_BASE_URL}/accounts/received/api-update`;
+export const API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL = `${API_BASE_URL}/accounts/voucher/approved`;
 
 // Cash Payment url
 export const API_CASH_PAYMENT_STORE_URL = `${API_BASE_URL}/trading/cash/payment`;

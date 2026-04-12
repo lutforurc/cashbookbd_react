@@ -9,7 +9,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCashBook } from './cashBookSlice';
-import { FiBook, FiCheckCircle, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheckCircle, FiEdit, FiLogIn } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
@@ -20,6 +20,11 @@ import InputElement from '../../../utils/fields/InputElement';
 import CashBookPrint from './CashBookPrint';
 import { useVoucherPrint } from '../../vouchers';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import httpService from '../../../services/httpService';
+import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
+import { toast } from 'react-toastify';
+import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 
 
 const CashBook = (user: any) => {
@@ -37,15 +42,27 @@ const CashBook = (user: any) => {
   const [fontSize, setFontSize] = useState<number>(12);
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
   const printRef = useRef<HTMLDivElement>(null); 
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const userPermissions = useSelector((state: any) => state.settings?.data?.permissions || []);
+  const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
 
   interface OptionType {
     value: string;
     label: string;
     additionalDetails: string;
   }
+
+  const runCashBook = () => {
+    const startD = dayjs(startDate).format('YYYY-MM-DD');
+    const endD = dayjs(endDate).format('YYYY-MM-DD');
+
+    dispatch(getCashBook({ branchId, startDate: startD, endDate: endD }));
+  };
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -67,13 +84,8 @@ const CashBook = (user: any) => {
   const handleEndDate = (e: any) => {
     setEndDate(e);
   };
-  const handleActionButtonClick = (e: any) => {
-
-    const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
-    const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-
-    dispatch(getCashBook({ branchId, startDate: startD, endDate: endD }));
-    setTableData(cashBookData?.data);
+  const handleActionButtonClick = () => {
+    runCashBook();
   };
 
   useEffect(() => {
@@ -92,7 +104,44 @@ const CashBook = (user: any) => {
     }
   }, [branchDdlData?.protectedData?.data]);
 
-  const handleCheckBtnClick = () => { };
+  const handleApprovePrompt = (row: any) => {
+    setSelectedApprovalRow(row);
+    setShowApproveConfirm(true);
+  };
+
+  const handleApproveClick = async () => {
+    const voucherId = Number(selectedApprovalRow?.mtm_id ?? selectedApprovalRow?.mtmId ?? 0);
+
+    if (!voucherId) {
+      toast.error('Approval id not found.');
+      return;
+    }
+
+    try {
+      setApprovingId(voucherId);
+      const response = await httpService.get(`${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`);
+      const result = response?.data;
+
+      if (result === '1' || result?.success) {
+        toast.success('Voucher approved successfully.');
+        setShowApproveConfirm(false);
+        setSelectedApprovalRow(null);
+        runCashBook();
+        return;
+      }
+
+      if (result === '2') {
+        toast.error('Voucher not found.');
+        return;
+      }
+
+      toast.error(typeof result === 'string' ? result : 'Voucher approval failed.');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Voucher approval failed.');
+    } finally {
+      setApprovingId(null);
+    }
+  };
 
   const handlePrint = useReactToPrint({
     content: () => {
@@ -243,32 +292,39 @@ const CashBook = (user: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => {
-        const isNumber =
-          row?.sl_number &&
-          !isNaN(Number(row.sl_number)) &&
-          Number(row.sl_number) > 0;
+        const voucherId = Number(row?.mtm_id ?? row?.mtmId ?? 0);
+        const isApproved = Number(row?.is_approved ?? 0) === 1;
+        const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
         return (
           <>
             {row?.vr_no ? (
               <>
+                {canShowApproveAction ? (
+                  <button
+                    onClick={() => !isApproved && approvingId !== voucherId && handleApprovePrompt(row)}
+                    className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
+                    title={
+                      isApproved
+                        ? `Approved${row?.approved_by ? ` by ${row.approved_by}` : ''}`
+                        : 'Approve voucher'
+                    }
+                    disabled={isApproved || approvingId === voucherId}
+                  >
+                    {isApproved ? (
+                      <FiCheckCircle className="text-green-500 font-bold" />
+                    ) : (
+                      <FiLogIn className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`} />
+                    )}
+                  </button>
+                ) : null}
                 <button
-                  onClick={() => handleCheckBtnClick()}
-                  className="cursor-pointer"
-                >
-                  {row?.is_approved ? (
-                    <FiCheckCircle className="text-green-500 font-bold" />
-                  ) : (
-                    <FiTrash2 className="text-red-500" />
-                  )}
-                </button>
-                <button
-                  onClick={() => handleCheckBtnClick()}
+                  onClick={() => {}}
                   className="text-blue-500 ml-2"
                 >
                   <FiBook className="cursor-pointer" />
                 </button>
                 <button
-                  onClick={() => handleCheckBtnClick()}
+                  onClick={() => {}}
                   className="text-blue-500 ml-2"
                 >
                   <FiEdit className="cursor-pointer" />
@@ -369,6 +425,27 @@ const CashBook = (user: any) => {
       <div className="overflow-y-auto">
         {cashBookData.isLoading ? <Loader /> : ''}
         <Table columns={columns} data={tableData || []} />
+
+        <ConfirmModal
+          show={showApproveConfirm}
+          title="Confirm Voucher Approval"
+          message={
+            <div className="space-y-2">
+              <p>Are you sure you want to approve voucher</p>
+              <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
+            </div>
+          }
+          confirmLabel="Confirm"
+          cancelLabel="Cancel"
+          loading={approvingId === Number(selectedApprovalRow?.mtm_id ?? selectedApprovalRow?.mtmId ?? 0)}
+          onCancel={() => {
+            if (approvingId) return;
+            setShowApproveConfirm(false);
+            setSelectedApprovalRow(null);
+          }}
+          onConfirm={handleApproveClick}
+          className="bg-green-600 hover:bg-sky-600"
+        />
 
         {/* === Hidden Print Component === */}
         <div className="hidden">
