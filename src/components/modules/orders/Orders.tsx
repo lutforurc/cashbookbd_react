@@ -206,6 +206,7 @@ const Orders = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [resetButtonLoading, setResetButtonLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
@@ -222,6 +223,7 @@ const Orders = () => {
   const [printRows, setPrintRows] = useState<any[]>([]);
   const printRef = useRef<HTMLDivElement>(null);
   const transactionPrintRef = useRef<HTMLDivElement>(null);
+  const listPrintTimeoutRef = useRef<number | null>(null);
   const [selectedPrintOrder, setSelectedPrintOrder] = useState<any | null>(null);
   const [printingOrderId, setPrintingOrderId] = useState<number | string | null>(null);
 
@@ -245,12 +247,28 @@ const Orders = () => {
     );
   }, [dispatch, page, perPage, searchFilter, orderType, selectedLedger?.value, selectedProductOption?.value, startDate, endDate]);
 
+  useEffect(() => {
+    if (!orders?.isLoading) {
+      setResetButtonLoading(false);
+    }
+  }, [orders?.isLoading]);
+
   const handleSearchButton = () => {
     setCurrentPage(1);
     setPage(1);
     setSearchFilter(search);
   };
+  const clearPendingListPrint = () => {
+    if (listPrintTimeoutRef.current !== null) {
+      window.clearTimeout(listPrintTimeoutRef.current);
+      listPrintTimeoutRef.current = null;
+    }
+  };
   const handleResetFilters = () => {
+    setResetButtonLoading(true);
+    clearPendingListPrint();
+    setPrintRows([]);
+    setSelectedPrintOrder(null);
     setSearchValue('');
     setSearchFilter('');
     setStartDate('');
@@ -468,7 +486,10 @@ const Orders = () => {
     content: () => printRef.current,
     documentTitle: 'Orders List Print',
     removeAfterPrint: true,
-    onAfterPrint: () => setPrintRows([]),
+    onAfterPrint: () => {
+      clearPendingListPrint();
+      setPrintRows([]);
+    },
   });
 
   const handleTransactionPrint = useReactToPrint({
@@ -477,6 +498,7 @@ const Orders = () => {
       ? `Order-${selectedPrintOrder.order_number}`
       : 'Order Details Print',
     removeAfterPrint: true,
+    onAfterPrint: () => setSelectedPrintOrder(null),
   });
 
   useEffect(() => {
@@ -516,6 +538,7 @@ const Orders = () => {
   const handleListPrint = async () => {
     try {
       setButtonLoading(true);
+      clearPendingListPrint();
 
       const response = await httpService.get(
         `${API_ORDERS_LIST_URL}?page=1&per_page=${Math.max(totalRows, perPage, 1)}&search=${encodeURIComponent(searchFilter)}&order_type=${encodeURIComponent(orderType)}&order_for=${encodeURIComponent(selectedLedger?.value ?? '')}&product_id=${encodeURIComponent(selectedProductOption?.value ?? '')}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`,
@@ -527,7 +550,8 @@ const Orders = () => {
         [];
 
       setPrintRows(Array.isArray(payload) ? payload : []);
-      window.setTimeout(() => {
+      listPrintTimeoutRef.current = window.setTimeout(() => {
+        listPrintTimeoutRef.current = null;
         handlePrint();
       }, 0);
     } catch (error) {
@@ -537,6 +561,12 @@ const Orders = () => {
       setButtonLoading(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      clearPendingListPrint();
+    };
+  }, []);
 
   const columns = [
     {
@@ -722,18 +752,17 @@ const Orders = () => {
               search={search}
               setSearchValue={setSearchValue}
               className="text-nowrap h-9 min-w-[220px]"
-
             />
             <ButtonLoading
               onClick={handleSearchButton}
-              buttonLoading={buttonLoading}
+              buttonLoading={false}
               label="Search"
               className="whitespace-nowrap h-9 mr-2"
               icon={<FiRefreshCw />}
             />
             <ButtonLoading
               onClick={handleResetFilters}
-              buttonLoading={false}
+              buttonLoading={resetButtonLoading}
               label="Reset"
               className="whitespace-nowrap h-9"
             />
