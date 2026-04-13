@@ -386,14 +386,16 @@ const HeadOfficeCashReceived = () => {
     }));
   };
 
-  const searchTransaction = (searchValue = search) => {
-    if (searchValue === '') {
+  const searchTransaction = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (invoiceNo === '') {
       toast.error('Please enter a search value.');
       return;
     }
     try {
       dispatch(
-        editHeadOfficeCashReceived({ invoiceNo: searchValue }, (message: string) => {
+        editHeadOfficeCashReceived({ invoiceNo }, (message: string) => {
           if (message) {
             toast.error(message);
           }

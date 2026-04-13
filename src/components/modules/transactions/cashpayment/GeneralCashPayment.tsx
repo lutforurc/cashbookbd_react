@@ -281,15 +281,17 @@ const GeneralCashPayment = () => {
     setFormData(initialPaymentItem); // Reset form data
   };
 
-  const searchTransaction = (searchValue = search) => {
-    if (searchValue === '') {
+  const searchTransaction = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (invoiceNo === '') {
       toast.error('Please enter a search value.');
       return;
     }
     try {
       // Dispatch the search action
       dispatch(
-        editCashPayment({ invoiceNo: searchValue }, (message: string) => {
+        editCashPayment({ invoiceNo }, (message: string) => {
           if (message) {
             toast.error(message);
           }
