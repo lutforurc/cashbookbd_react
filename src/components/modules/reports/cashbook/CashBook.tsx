@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ButtonLoading,
   PrintButton,
@@ -25,10 +26,15 @@ import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/api
 import { toast } from 'react-toastify';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
+import {
+  buildVoucherAutoEditState,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
 
 
 const CashBook = (user: any) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const cashBookData = useSelector((state) => state.cashBook);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -141,6 +147,19 @@ const CashBook = (user: any) => {
     } finally {
       setApprovingId(null);
     }
+  };
+
+  const handleEditVoucher = (row: any) => {
+    const voucherNo = String(row?.vr_no || '').trim();
+    const editTarget = getVoucherEditTarget(voucherNo);
+    const editState = buildVoucherAutoEditState(voucherNo);
+
+    if (!voucherNo || !editTarget || !editState) {
+      toast.error('Edit route not found for this voucher.');
+      return;
+    }
+
+    navigate(editTarget.route, { state: editState });
   };
 
   const handlePrint = useReactToPrint({
@@ -324,7 +343,7 @@ const CashBook = (user: any) => {
                   <FiBook className="cursor-pointer" />
                 </button>
                 <button
-                  onClick={() => {}}
+                  onClick={() => handleEditVoucher(row)}
                   className="text-blue-500 ml-2"
                 >
                   <FiEdit className="cursor-pointer" />

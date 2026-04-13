@@ -35,6 +35,7 @@ import { useVoucherPrint } from '../../vouchers';
 import QuickCustomerModal from './QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 interface Product {
   id: number;
@@ -294,15 +295,15 @@ const ElectronicsBusinessSales = () => {
     setSalesType(e.target.value);
   };
 
-  const searchInvoice = () => {
-    if (!search) {
+  const searchInvoice = (searchValue = search) => {
+    if (!searchValue) {
       toast.info('Please enter an invoice number');
       return;
     }
 
     dispatch(
       electronicsSalesEdit(
-        { invoiceNo: search, salesType: salesType },
+        { invoiceNo: searchValue, salesType: salesType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -313,6 +314,11 @@ const ElectronicsBusinessSales = () => {
       ),
     );
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
 
   function findCoaCredit(items: any[], target = 41, fallback = 23) {

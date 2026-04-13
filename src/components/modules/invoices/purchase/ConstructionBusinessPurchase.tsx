@@ -41,6 +41,7 @@ import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 interface Product {
   id: number;
@@ -223,14 +224,14 @@ const ConstructionBusinessPurchase = () => {
     isUpdating && setIsUpdating(false);
   };
 
-  const searchInvoice = () => {
-    if (!search) {
+  const searchInvoice = (searchValue = search) => {
+    if (!searchValue) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
       constructionPurchaseEdit(
-        { invoiceNo: search, purchaseType: purchaseType },
+        { invoiceNo: searchValue, purchaseType: purchaseType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -241,9 +242,14 @@ const ConstructionBusinessPurchase = () => {
     if (purchase.isEdit === true) {
       setIsUpdateButton(true);
     }
-    setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
+    setFormData({ ...formData, searchInvoice: searchValue }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
   useEffect(() => {
     if (purchase.data.transaction) {

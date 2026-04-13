@@ -29,6 +29,7 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -383,14 +384,14 @@ const HeadOfficeCashPayment = () => {
     }));
   };
 
-  const searchTransaction = () => {
-    if (search === '') {
+  const searchTransaction = (searchValue = search) => {
+    if (searchValue === '') {
       toast.error('Please enter a search value.');
       return;
     }
     try {
       dispatch(
-        editHeadOfficeCashPayment({ invoiceNo: search }, (message: string) => {
+        editHeadOfficeCashPayment({ invoiceNo: searchValue }, (message: string) => {
           if (message) {
             toast.error(message);
           }
@@ -402,6 +403,11 @@ const HeadOfficeCashPayment = () => {
       console.error('Error searching invoice:', error);
     }
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchTransaction,
+  });
 
   useEffect(() => {
     if (Array.isArray(cashPayment.data)) {

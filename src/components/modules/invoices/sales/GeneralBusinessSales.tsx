@@ -37,6 +37,7 @@ import { SalesType } from '../../../../common/dropdownData';
 import QuickCustomerModal from './QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 interface Product {
   id: number;
@@ -206,13 +207,13 @@ const GeneralBusinessSales = () => {
     isUpdating && setIsUpdating(false);
   };
 
-  const searchInvoice = () => {
-    if (!search) {
+  const searchInvoice = (searchValue = search) => {
+    if (!searchValue) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
-      generalSalesEdit({ invoiceNo: search, salesType: salesType }, (message: string) => {
+      generalSalesEdit({ invoiceNo: searchValue, salesType: salesType }, (message: string) => {
         if (message) {
           toast.error(message);
         }
@@ -221,9 +222,14 @@ const GeneralBusinessSales = () => {
     if (sales.isEdit === true) {
       setIsUpdateButton(true);
     }
-    setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
+    setFormData({ ...formData, searchInvoice: searchValue }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
   const totalAmount = formData.products.reduce(
     (sum, row) => sum + Number(row.qty) * Number(row.price),

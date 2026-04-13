@@ -30,6 +30,7 @@ import { useNavigate } from 'react-router-dom';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import httpService from '../../../services/httpService';
 import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -299,15 +300,15 @@ const TradingCashPayment = () => {
     setFormData(initialPaymentItem); // Reset form data
   };
 
-  const searchTransaction = () => {
-    if (search === '') {
+  const searchTransaction = (searchValue = search) => {
+    if (searchValue === '') {
       toast.error('Please enter a search value.');
       return;
     }
     try {
       // Dispatch the search action
       dispatch(
-        editCashPayment({ invoiceNo: search }, (message: string) => {
+        editCashPayment({ invoiceNo: searchValue }, (message: string) => {
           if (message) {
             toast.error(message);
           }
@@ -322,6 +323,11 @@ const TradingCashPayment = () => {
       console.error('Error searching invoice:', error);
     }
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchTransaction,
+  });
 
   useEffect(() => {
     setFormData((prevState) => ({

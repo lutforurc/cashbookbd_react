@@ -48,6 +48,7 @@ import utc from 'dayjs/plugin/utc';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 interface Product {
   id: number;
   product: number;
@@ -253,14 +254,14 @@ const TradingBusinessPurchase = () => {
     setProductData({ ...productData, [variance_type]: e.target.value });
   };
 
-  const searchInvoice = () => {
-    if (!search) {
+  const searchInvoice = (searchValue = search) => {
+    if (!searchValue) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
       tradingPurchaseEdit(
-        { invoiceNo: search, purchaseType: purchaseType },
+        { invoiceNo: searchValue, purchaseType: purchaseType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -271,9 +272,14 @@ const TradingBusinessPurchase = () => {
     if (purchase.isEdit === true) {
       setIsUpdateButton(true);
     }
-    setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
+    setFormData({ ...formData, searchInvoice: searchValue }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
   // Process `purchase.data` when it updates
   // useEffect(() => {
