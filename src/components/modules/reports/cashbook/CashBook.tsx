@@ -25,6 +25,7 @@ import httpService from '../../../services/httpService';
 import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
 import { toast } from 'react-toastify';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import { hasPermission } from '../../../utils/permissionChecker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import {
   buildVoucherAutoEditState,
@@ -336,18 +337,26 @@ const CashBook = (user: any) => {
                     )}
                   </button>
                 ) : null}
-                <button
-                  onClick={() => {}}
-                  className="text-blue-500 ml-2"
-                >
-                  <FiBook className="cursor-pointer" />
-                </button>
-                <button
-                  onClick={() => handleEditVoucher(row)}
-                  className="text-blue-500 ml-2"
-                >
-                  <FiEdit className="cursor-pointer" />
-                </button>
+                {
+                hasPermission(userPermissions, 'sales.edit') || 
+                hasPermission(userPermissions, 'cash.received.edit') ||
+                hasPermission(userPermissions, 'cash.payment.edit') 
+                && (
+                  <>
+                    <button
+                      onClick={() => {}}
+                      className="text-blue-500 ml-2"
+                    >
+                      <FiBook className="cursor-pointer" />
+                    </button>
+                    <button
+                      onClick={() => handleEditVoucher(row)}
+                      className="text-blue-500 ml-2"
+                    >
+                      <FiEdit className="cursor-pointer" />
+                    </button>
+                  </>
+                )}
               </>
             ) : (
               ''

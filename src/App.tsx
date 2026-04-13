@@ -42,6 +42,7 @@ import Dayclose from './components/modules/dayclose/Dayclose';
 import Orders from './components/modules/orders/Orders';
 import AddOrder from './components/modules/orders/AddOrder';
 import AveragePrice from './components/modules/orders/AveragePrice';
+import OrderWithProduct from './components/modules/orders/OrderWithProduct';
 import MitchMatch from './components/modules/reports/mitchmatch/MitchMatch';
 import AddBranch from './components/modules/branch/AddBranch';
 import Roles from './components/modules/user-management/Roles';
@@ -163,8 +164,7 @@ const extractRoleNames = (value: any): string[] => {
     .filter(Boolean);
 };
 
-const PRIVILEGED_ROLE_NAMES = ['super administrator', 'administrator', 'dba'];
-const PRIVILEGED_ROLE_IDS = [1, 2];
+const PRIVILEGED_ROLE_NAMES = ['super administrator', 'dba'];
 const SUBSCRIPTION_EXEMPT_COMPANY_IDS = new Set([1]);
 
 
@@ -185,8 +185,7 @@ function App() {
   ];
   const currentCompanyId = Number(me?.company_id || 0);
   const isPrivilegedUser =
-    authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName)) ||
-    PRIVILEGED_ROLE_IDS.includes(Number(me?.role_id));
+    authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName));
   const bypassSubscriptionEnforcement = SUBSCRIPTION_EXEMPT_COMPANY_IDS.has(currentCompanyId);
 
   const userPermissions = isPrivilegedUser
@@ -431,6 +430,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.avg.price']} loading={permissionsLoading} />}>
               <Route path={routes.order_avg_price} element={<AveragePrice user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.view']} loading={permissionsLoading} />}>
+              <Route path={routes.order_with_transaction} element={<OrderWithProduct />} />
             </Route>
 
             {/* Utilities */}

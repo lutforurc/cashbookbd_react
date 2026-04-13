@@ -73,7 +73,7 @@ const normalizeSuggestionItems = (items: any) =>
 const TradingBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.trasingSales);
-  const settings = useSelector((s: any) => s.settings);
+  const userPermissions = useSelector((s: any) => s.settings?.data?.permissions || []);
   const dispatch = useDispatch();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
@@ -87,7 +87,6 @@ const TradingBusinessSales = () => {
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
-  const [permissions, setPermissions] = useState<any>([]);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -101,7 +100,6 @@ const TradingBusinessSales = () => {
   useEffect(() => {
     dispatch(userCurrentBranch());
     dispatch(getDdlWarehouse());
-    setPermissions(settings.data.permissions);
   }, []);
 
   interface FormData {
@@ -970,7 +968,7 @@ const TradingBusinessSales = () => {
                 Total Tk. {thousandSeparator(totalAmount, 0)}
               </p>
             </div>
-            {hasPermission(permissions, 'sales.edit') && (
+            {hasPermission(userPermissions, 'sales.edit') && (
               <>
                 <div className="mt-2">
                   <DropdownCommon

@@ -31,6 +31,7 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import httpService from '../../../services/httpService';
 import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { hasPermission } from '../../../utils/permissionChecker';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -66,6 +67,7 @@ const initialPaymentItem: PaymentItem = {
 const TradingCashPayment = () => {
   const dispatch = useDispatch();
   const cashPayment = useSelector((state: any) => state.cashPayment);
+  const settings = useSelector((state: any) => state.settings);
   const [formData, setFormData] = useState<PaymentItem>(initialPaymentItem);
 
   const [tableData, setTableData] = useState<PaymentItem[]>([]);
@@ -402,29 +404,33 @@ const TradingCashPayment = () => {
           <div className="grid grid-cols-1 gap-y-2">
             <div className="w-full">
               <div className="relative w-full flex items-center">
-                <div className="w-full">
-                  <label htmlFor="search">Search Payment</label>
-                  <InputOnly
-                    id="search"
-                    value={search}
-                    name="search"
-                    placeholder="Search Payment"
-                    label=""
-                    className="py-1 w-full" // Add padding-right to account for the button
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label htmlFor=""> </label>
+                {hasPermission(settings?.data?.permissions, 'cash.payment.edit') && (
+                  <>
+                    <div className="w-full">
+                      <label htmlFor="search">Search Payment</label>
+                      <InputOnly
+                        id="search"
+                        value={search}
+                        name="search"
+                        placeholder="Search Payment"
+                        label=""
+                        className="py-1 w-full"
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor=""> </label>
 
-                  <ButtonLoading
-                    onClick={searchTransaction}
-                    buttonLoading={buttonLoading}
-                    label=" "
-                    className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
-                    icon={<FiSearch className="text-white text-lg ml-2" />}
-                  />
-                </div>
+                      <ButtonLoading
+                        onClick={searchTransaction}
+                        buttonLoading={buttonLoading}
+                        label=" "
+                        className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
+                        icon={<FiSearch className="text-white text-lg ml-2" />}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 

@@ -23,8 +23,7 @@ import './Sidebar.css';
 import routes from '../services/appRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
 
-const PRIVILEGED_ROLE_NAMES = ['super administrator', 'administrator', 'dba'];
-const PRIVILEGED_ROLE_IDS = [1, 2];
+const PRIVILEGED_ROLE_NAMES = ['super administrator', 'dba'];
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -78,8 +77,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     ...extractRoleNames(authMe?.roles),
   ];
   const isPrivilegedUser =
-    authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName)) ||
-    PRIVILEGED_ROLE_IDS.includes(Number(authMe?.role_id));
+    authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName));
 
   useEffect(() => {
     if (isPrivilegedUser) {
@@ -1217,6 +1215,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           pathname.includes('/sms/templates/edit/') ||
                           pathname === '/admin/jumpdate' ||
                           pathname === '/orders/avg-price' ||
+                          pathname === routes.order_with_transaction ||
                           pathname.includes('/branch/branch-list')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -1286,6 +1285,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 }
                               >
                                 Orders
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'order.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.order_with_transaction}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Order With Transaction
                               </NavLink>
                             </li>
                           )}

@@ -174,6 +174,7 @@ const ROUTES = {
   order_add: '/orders/add-order',
   order_edit: '/orders/edit/:id',
   order_avg_price: '/orders/avg-price',
+  order_with_transaction: '/orders/with-transaction',
 
   // User Management Routes
   roles: '/user-management/roles',
