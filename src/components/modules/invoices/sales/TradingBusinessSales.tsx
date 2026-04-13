@@ -242,14 +242,16 @@ const TradingBusinessSales = () => {
 
 
 
-  const searchInvoice = (searchValue = search) => {
-    if (!searchValue) {
+  const searchInvoice = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (!invoiceNo) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
       tradingSalesEdit(
-        { invoiceNo: searchValue, salesType: salesType },
+        { invoiceNo, salesType: salesType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -260,7 +262,7 @@ const TradingBusinessSales = () => {
     if (sales.isEdit === true) {
       setIsUpdateButton(true);
     }
-    setFormData({ ...formData, searchInvoice: searchValue }); // Update the state with the search value
+    setFormData({ ...formData, searchInvoice: invoiceNo }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
 

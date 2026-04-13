@@ -247,14 +247,16 @@ const ElectronicsBusinessPurchase = () => {
   //   setIsInvoiceUpdate(true);
   // };
 
-  const searchInvoice = (searchValue = search) => {
-    if (!searchValue) {
+  const searchInvoice = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (!invoiceNo) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
       electronicsPurchaseEdit(
-        { invoiceNo: searchValue, purchaseType: purchaseType },
+        { invoiceNo, purchaseType: purchaseType },
         (message: string) => {
           if (message) {
             toast.info(message);
@@ -265,7 +267,7 @@ const ElectronicsBusinessPurchase = () => {
     if (purchase.isEdit === true) {
       setIsUpdateButton(true);
     }
-    setFormData({ ...formData, searchInvoice: searchValue }); // Update the state with the search value
+    setFormData({ ...formData, searchInvoice: invoiceNo }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
 

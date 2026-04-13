@@ -295,15 +295,17 @@ const ElectronicsBusinessSales = () => {
     setSalesType(e.target.value);
   };
 
-  const searchInvoice = (searchValue = search) => {
-    if (!searchValue) {
+  const searchInvoice = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (!invoiceNo) {
       toast.info('Please enter an invoice number');
       return;
     }
 
     dispatch(
       electronicsSalesEdit(
-        { invoiceNo: searchValue, salesType: salesType },
+        { invoiceNo, salesType: salesType },
         (message: string) => {
           if (message) {
             toast.error(message);
