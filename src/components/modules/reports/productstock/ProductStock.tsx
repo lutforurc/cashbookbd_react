@@ -16,6 +16,7 @@ import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { FiFilter } from 'react-icons/fi';
 import { fetchBrandDdl } from '../../product/brand/brandSlice'; 
 
 // ======================
@@ -120,11 +121,13 @@ const ProductStock = ( user : any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [search, setSearchValue] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const [branchId, setBranchId] = useState<number | string | ''>(authUser?.branch_id || '');
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
   const [brandId, setBrandId] = useState<string | null>(''); // null হতে পারবে
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -165,6 +168,7 @@ const ProductStock = ( user : any) => {
       const [day, month, year] = branchDdlData.protectedData.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
 
+      setDefaultTransactionDate(parsedDate);
       setStartDate(parsedDate);
       setEndDate(parsedDate);
 
@@ -210,6 +214,7 @@ const ProductStock = ( user : any) => {
     if (!startDate || !endDate) return;
 
     setButtonLoading(true);
+    setFilterOpen(false);
 
     const startD = dayjs(startDate).format('YYYY-MM-DD');
     const endD = dayjs(endDate).format('YYYY-MM-DD');
@@ -236,6 +241,17 @@ const ProductStock = ( user : any) => {
     );
 
     setTimeout(() => setButtonLoading(false), 800);
+  };
+
+  const handleResetFilters = () => {
+    setBranchId(authUser?.branch_id || '');
+    setBrandId('');
+    setCategoryId('');
+    setSearchValue('');
+    setPerPage(35);
+    setStartDate(defaultTransactionDate);
+    setEndDate(defaultTransactionDate);
+    setFilterOpen(false);
   };
 
   const columns = [
@@ -357,106 +373,139 @@ const ProductStock = ( user : any) => {
     <div className="">
       <HelmetTitle title="Product Stock" />
 
-      <div className="mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Branch */}
-          <div>
-            <label className="block mb-1 text-sm font-medium">Select Branch</label>
-            {branchDdlData.isLoading ? (
-              <Loader />
-            ) : (
-              <BranchDropdown
-                defaultValue={authUser?.branch_id}
-                onChange={handleBranchChange}
-                className="w-full text-sm p-2 border "
-                branchDdl={dropdownData}
-              />
+      <div className="mb-4 rounded-sm border border-slate-200 bg-slate-100 px-4 py-3 dark:border-strokedark dark:bg-boxdark">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setFilterOpen((prev) => !prev)}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                filterOpen
+                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                  : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+              }`}
+              title="Open filters"
+              aria-label="Open filters"
+            >
+              <FiFilter size={16} />
+            </button>
+
+            {filterOpen && (
+              <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
+                    <InputElement
+                      label=""
+                      value={perPage.toString()}
+                      onChange={handlePerPageChange}
+                      type="text"
+                      className="w-full text-sm h-10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch</label>
+                    {branchDdlData.isLoading ? (
+                      <Loader />
+                    ) : (
+                      <BranchDropdown
+                        defaultValue={authUser?.branch_id}
+                        value={String(branchId)}
+                        onChange={handleBranchChange}
+                        className="w-full text-sm p-2 border"
+                        branchDdl={dropdownData}
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
+                    <CategoryDropdown
+                      onChange={handleBrandChange}
+                      className="w-full text-sm h-8"
+                      categoryDdl={brandOptions}
+                      value={brandId}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
+                    {categoryData.isLoading ? (
+                      <Loader />
+                    ) : (
+                      <CategoryDropdown
+                        onChange={handleCategoryChange}
+                        className="w-full text-sm"
+                        categoryDdl={categoryOptions}
+                        placeholder="All Categories"
+                        value={categoryId}
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                    <InputDatePicker
+                      setCurrentDate={handleStartDate}
+                      className="w-full text-sm h-10"
+                      selectedDate={startDate}
+                      setSelectedDate={setStartDate}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                    <InputDatePicker
+                      setCurrentDate={handleEndDate}
+                      className="w-full text-sm h-10"
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Search</label>
+                    <SearchInput
+                      search={search}
+                      setSearchValue={setSearchValue}
+                      className="w-full text-sm h-10"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1">
+                    <ButtonLoading
+                      onClick={handleActionButtonClick}
+                      buttonLoading={buttonLoading}
+                      label="Apply"
+                      className="h-10 px-6"
+                    />
+                    <ButtonLoading
+                      onClick={handleResetFilters}
+                      buttonLoading={false}
+                      label="Reset"
+                      className="h-10 px-4"
+                    />
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Brand */}
-          <div>
-            <label className="block mb-1 text-sm font-medium">Select Brand</label>
-            <CategoryDropdown
-              onChange={handleBrandChange}
-              className="w-full text-sm h-8"
-              categoryDdl={brandOptions}
+          <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+            {branchId || brandId || categoryId || search || startDate || endDate
+              ? 'Use the filter'
+              : 'Use the filter'}
+          </div>
+
+          <div className="ml-auto flex items-end gap-2">
+            <InputElement
+              label="Font"
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type="text"
+              className="w-20 text-sm h-10"
             />
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="block mb-1 text-sm font-medium">Select Category</label>
-            {categoryData.isLoading ? (
-              <Loader />
-            ) : (
-              <CategoryDropdown
-                onChange={handleCategoryChange}
-                className="w-full text-sm"
-                categoryDdl={categoryOptions}
-                placeholder="All Categories"
-              />
-            )}
-          </div>
-
-          {/* Search */}
-          <div>
-            <label className="block mb-1 text-sm font-medium">Search by Product Name</label>
-            <SearchInput
-              search={search}
-              setSearchValue={setSearchValue}
-              className="w-full text-sm h-10"
-            />
-          </div>
-
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block mb-1 text-sm font-medium">Start Date</label>
-              <InputDatePicker
-                setCurrentDate={handleStartDate}
-                className="w-full text-sm h-10"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
-              />
-            </div>
-            <div>
-              <label className="block mb-1 text-sm font-medium">End Date</label>
-              <InputDatePicker
-                setCurrentDate={handleEndDate}
-                className="w-full text-sm h-10"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
-              />
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-end gap-3 flex-wrap">
-            <div className="flex gap-2">
-              <InputElement
-                label="Rows"
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type="text"
-                className="w-16 text-sm h-10"
-              />
-              <InputElement
-                label="Font"
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type="text"
-                className="w-16 text-sm h-10"
-              />
-            </div>
-
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
-              label="Run"
-              className="h-10 px-6"
-            />
-
             <PrintButton onClick={handlePrint} label="" className="h-10 px-6" />
           </div>
         </div>
