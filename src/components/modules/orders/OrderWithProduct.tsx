@@ -404,6 +404,18 @@ const OrderWithProduct = ({
 
   const unitName = payload?.product?.unit?.name || payload?.product?.unit?.full_name || '';
 
+  const paymentColumnLabel = useMemo(() => {
+    const voucherTypes = Array.from(
+      new Set(rows.map((row) => row.voucherType).filter(Boolean)),
+    );
+
+    if (voucherTypes.length === 1 && voucherTypes[0] === 'Sales') {
+      return 'RECEIVED';
+    }
+
+    return 'PAYMENT';
+  }, [rows]);
+
   const columns = useMemo(
     () => [
       {
@@ -493,13 +505,13 @@ const OrderWithProduct = ({
       },
       {
         key: 'payment',
-        header: 'PAYMENT',
+        header: paymentColumnLabel,
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
         render: (row: any) => <span>{thousandSeparator(row.payment, 0)}</span>,
       },
     ],
-    [handleVoucherPrint],
+    [handleVoucherPrint, paymentColumnLabel],
   );
 
   const footerRows = useMemo(

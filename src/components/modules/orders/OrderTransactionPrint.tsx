@@ -57,20 +57,6 @@ const getOrderTypeLabel = (value: string | number | undefined) => {
   return 'Order';
 };
 
-const formatPrintDate = (value?: string) => {
-  if (!value) return '-';
-
-  const parts = value.includes('-') ? value.split('-') : value.split('/');
-  if (parts.length !== 3) return value;
-
-  if (value.includes('-')) {
-    const [year, month, day] = parts;
-    return `${day}.${month}.${year}`;
-  }
-
-  const [day, month, year] = parts;
-  return `${day}.${month}.${year}`;
-};
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
   if (size <= 0) return [data];
@@ -212,7 +198,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Inv. No.</th>
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Inv. Date</th>
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Vehicle No.</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Weight</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Quantity</th>
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Rate</th>
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">Amount</th>
                   <th style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">{receivedOrPaymentText}</th>
@@ -278,7 +264,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                 {pageIndex === pages.length - 1 ? (
                   <tr className="bg-gray-100 font-semibold">
                     <td style={{ fontSize: fs }} colSpan={4} className="border border-black px-2 py-2 text-right">
-                      Total
+                      Grand Total
                     </td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                       {thousandSeparator(totals.weight, 0)} {order?.unit || ''}
@@ -318,4 +304,6 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 
 OrderTransactionPrint.displayName = 'OrderTransactionPrint';
 
-export default OrderTransactionPrint;
+const OrderWithProduct = OrderTransactionPrint;
+
+export default OrderWithProduct;
