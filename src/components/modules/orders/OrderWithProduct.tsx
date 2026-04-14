@@ -61,13 +61,35 @@ type SalesMaster = {
   details?: SalesDetail[];
 };
 
+type PurchaseDetail = {
+  id?: number;
+  product_id?: number;
+  quantity?: Primitive;
+  purchase_price?: Primitive;
+  weight_variance?: Primitive;
+  variance_type?: Primitive;
+};
+
+type PurchaseMaster = {
+  id?: number;
+  supplier_id?: number;
+  vehicle_no?: string | null;
+  order_no?: Primitive;
+  notes?: string | null;
+  total?: Primitive;
+  discount?: Primitive;
+  netpayment?: Primitive;
+  transact_date?: string;
+  details?: PurchaseDetail[];
+};
+
 type MainTransactionMaster = {
   id?: number;
   vr_no?: string;
   vr_date?: string;
   mtmId?: string;
   sales_master?: SalesMaster | null;
-  purchase_master?: any;
+  purchase_master?: PurchaseMaster | null;
 };
 
 type AccTransactionDetail = {
@@ -257,12 +279,32 @@ const OrderWithProduct = ({
     [payload],
   );
 
+  const uniqueTransactions = useMemo(() => {
+    const seen = new Set<string>();
+
+    return transactions.filter((trx, index) => {
+      const mtmId = trx?.main_transaction_master?.id;
+      const vrNo = trx?.main_transaction_master?.vr_no;
+      const key = String(mtmId ?? vrNo ?? trx?.id ?? index);
+
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+  }, [transactions]);
+
   const rows = useMemo(
     () =>
-      transactions.map((trx, index) => {
+      uniqueTransactions.map((trx, index) => {
         const salesMaster = trx?.main_transaction_master?.sales_master;
-        const details = Array.isArray(salesMaster?.details) ? salesMaster?.details : [];
-        const firstDetail = details[0];
+        const purchaseMaster = trx?.main_transaction_master?.purchase_master;
+        const salesDetails = Array.isArray(salesMaster?.details) ? salesMaster.details : [];
+        const purchaseDetails = Array.isArray(purchaseMaster?.details) ? purchaseMaster.details : [];
+        const firstSalesDetail = salesDetails[0];
+        const firstPurchaseDetail = purchaseDetails[0];
         const accDetails = Array.isArray(trx?.acc_transaction_details) ? trx.acc_transaction_details : [];
         const debitTotal = accDetails.reduce(
           (sum, item) => sum + toNumber(item?.debit),
@@ -285,17 +327,27 @@ const OrderWithProduct = ({
           coaNames[0] ||
           '-';
         const hasSales = Boolean(salesMaster);
-        const hasLineDetail = Boolean(firstDetail);
+        const hasPurchase = Boolean(purchaseMaster);
+        const activeDetail = firstSalesDetail || firstPurchaseDetail;
+        const hasLineDetail = Boolean(activeDetail);
         const transactionAmount =
-          toNumber(salesMaster?.total) || Math.max(debitTotal, creditTotal);
+          toNumber(salesMaster?.total) ||
+          toNumber(purchaseMaster?.total) ||
+          Math.max(debitTotal, creditTotal);
         const transactionPayment =
-          toNumber(salesMaster?.netpayment) || debitTotal;
+          toNumber(salesMaster?.netpayment) ||
+          toNumber(purchaseMaster?.netpayment) ||
+          Math.max(debitTotal, creditTotal);
         const transactionRate =
-          hasLineDetail ? toNumber(firstDetail?.sales_price) || toNumber(payload?.order_rate) : 0;
-        const transactionQty = toNumber(firstDetail?.quantity);
-        const notes = trx?.note || salesMaster?.notes || payload?.notes || '-';
+          hasLineDetail
+            ? toNumber(firstSalesDetail?.sales_price) ||
+              toNumber(firstPurchaseDetail?.purchase_price) ||
+              toNumber(payload?.order_rate)
+            : 0;
+        const transactionQty = toNumber(activeDetail?.quantity);
+        const notes = trx?.note || salesMaster?.notes || purchaseMaster?.notes || payload?.notes || '-';
         const detailLines = [
-          hasSales ? payload?.product?.name || '-' : primaryLedgerName,
+          hasSales || hasPurchase ? payload?.product?.name || '-' : primaryLedgerName,
           notes && notes !== '-' ? `Notes: ${notes}` : '',
         ].filter(Boolean);
 
@@ -305,18 +357,22 @@ const OrderWithProduct = ({
           vr_no: trx?.main_transaction_master?.vr_no || '-',
           sl: index + 1,
           challanNo: trx?.main_transaction_master?.vr_no || '-',
-          challanDate: trx?.main_transaction_master?.vr_date || salesMaster?.transact_date || '-',
+          challanDate:
+            trx?.main_transaction_master?.vr_date ||
+            salesMaster?.transact_date ||
+            purchaseMaster?.transact_date ||
+            '-',
           productName: payload?.product?.name || '-',
           detailLines,
           notes,
-          vehicleNo: salesMaster?.vehicle_no || '-',
+          vehicleNo: salesMaster?.vehicle_no || purchaseMaster?.vehicle_no || '-',
           quantity: hasLineDetail ? transactionQty : null,
           rate: hasLineDetail ? transactionRate : null,
           total: hasLineDetail ? transactionAmount : null,
-          discount: toNumber(salesMaster?.discount),
+          discount: toNumber(salesMaster?.discount) || toNumber(purchaseMaster?.discount),
           payment: transactionPayment,
           unitName: payload?.product?.unit?.name || payload?.product?.unit?.full_name || '',
-          voucherType: salesMaster ? 'Sales' : 'Transaction',
+          voucherType: hasSales ? 'Sales' : hasPurchase ? 'Purchase' : 'Transaction',
           hasLineDetail,
         };
       }),
@@ -327,7 +383,7 @@ const OrderWithProduct = ({
       payload?.product?.name,
       payload?.product?.unit?.full_name,
       payload?.product?.unit?.name,
-      transactions,
+      uniqueTransactions,
     ],
   );
 
