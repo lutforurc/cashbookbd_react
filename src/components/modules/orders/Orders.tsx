@@ -11,7 +11,7 @@ import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButt
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
-import { FiEdit2, FiEye, FiPrinter, FiRefreshCw, FiTrash2, FiX } from 'react-icons/fi';
+import { FiEdit2, FiEye, FiFilter, FiPrinter, FiRefreshCw, FiTrash2, FiX } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
@@ -221,6 +221,7 @@ const Orders = () => {
   const [orderType, setOrderType] = useState('');
   const [selectedLinkedOrder, setSelectedLinkedOrder] = useState<any | null>(null);
   const [printRows, setPrintRows] = useState<any[]>([]);
+  const [filterOpen, setFilterOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const transactionPrintRef = useRef<HTMLDivElement>(null);
   const listPrintTimeoutRef = useRef<number | null>(null);
@@ -257,6 +258,7 @@ const Orders = () => {
     setCurrentPage(1);
     setPage(1);
     setSearchFilter(search);
+    setFilterOpen(false);
   };
   const clearPendingListPrint = () => {
     if (listPrintTimeoutRef.current !== null) {
@@ -279,6 +281,7 @@ const Orders = () => {
     setPage(1);
     setCurrentPage(1);
     setPerPage(10);
+    setFilterOpen(false);
     dispatch(
       getOrders({
         page: 1,
@@ -793,67 +796,127 @@ const Orders = () => {
     <div>
       <HelmetTitle title={'Orders List'} />
       <div className="mb-2">
-        <div className="flex flex-wrap items-end gap-2">
-          <SelectOption
-            onChange={handleSelectChange}
-            className="h-9"
-          />
-          <OrderTypes onChange={handleOrderChange} className="h-9" />
-          <div className="min-w-[260px] shrink-0">
-            <DdlMultiline
-              onSelect={handleLedgerSelect}
-              acType={''}
-              value={selectedLedger}
-              className='h-9'
-            />
-          </div>
-          <ProductDropdown
-            onSelect={selectedProduct}
-            className="appearance-none min-w-[220px] h-9"
-            value={selectedProductOption}
-          />
-          <div className="min-w-[160px] shrink-0">
-            <InputDatePicker
-              id="order_start_date"
-              name="order_start_date"
-              setCurrentDate={handleStartDate}
-              placeholder="Order Start Date"
-              className="font-medium text-sm w-full h-9"
-              selectedDate={startDate ? new Date(startDate) : null}
-              setSelectedDate={(date) => setStartDate(formatDateValue(date))}
-            />
-          </div>
-          <div className="min-w-[160px] shrink-0">
-            <InputDatePicker
-              id="order_end_date"
-              name="order_end_date"
-              setCurrentDate={handleEndDate}
-              placeholder="Order End Date"
-              className="font-medium text-sm w-full h-9"
-              selectedDate={endDate ? new Date(endDate) : null}
-              setSelectedDate={(date) => setEndDate(formatDateValue(date))}
-            />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setFilterOpen((prev) => !prev)}
+              className={`inline-flex h-9 w-10 items-center justify-center rounded border text-sm transition ${
+                filterOpen
+                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                  : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+              }`}
+              title="Open filters"
+              aria-label="Open filters"
+            >
+              <FiFilter size={16} />
+            </button>
+
+            {filterOpen && (
+              <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Show Rows
+                    </label>
+                    <SelectOption onChange={handleSelectChange} className="h-9 w-full" />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Order Type
+                    </label>
+                    <OrderTypes onChange={handleOrderChange} className="h-9 w-full" />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Account
+                    </label>
+                    <DdlMultiline
+                      onSelect={handleLedgerSelect}
+                      acType={''}
+                      value={selectedLedger}
+                      className="h-9"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Product
+                    </label>
+                    <ProductDropdown
+                      onSelect={selectedProduct}
+                      className="appearance-none h-9"
+                      value={selectedProductOption}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Order Start Date
+                    </label>
+                    <InputDatePicker
+                      id="order_start_date"
+                      name="order_start_date"
+                      setCurrentDate={handleStartDate}
+                      placeholder="Order Start Date"
+                      className="font-medium text-sm w-full h-9"
+                      selectedDate={startDate ? new Date(startDate) : null}
+                      setSelectedDate={(date) => setStartDate(formatDateValue(date))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Order End Date
+                    </label>
+                    <InputDatePicker
+                      id="order_end_date"
+                      name="order_end_date"
+                      setCurrentDate={handleEndDate}
+                      placeholder="Order End Date"
+                      className="font-medium text-sm w-full h-9"
+                      selectedDate={endDate ? new Date(endDate) : null}
+                      setSelectedDate={(date) => setEndDate(formatDateValue(date))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Search
+                    </label>
+                    <SearchInput
+                      search={search}
+                      setSearchValue={setSearchValue}
+                      className="h-9 w-full"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1">
+                    <ButtonLoading
+                      onClick={handleSearchButton}
+                      buttonLoading={false}
+                      label="Apply"
+                      className="whitespace-nowrap h-9"
+                      icon={<FiRefreshCw />}
+                    />
+                    <ButtonLoading
+                      onClick={handleResetFilters}
+                      buttonLoading={resetButtonLoading}
+                      label="Reset"
+                      className="whitespace-nowrap h-9"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="flex min-w-[320px] shrink-0 flex-nowrap items-end">
-            <SearchInput
-              search={search}
-              setSearchValue={setSearchValue}
-              className="text-nowrap h-9 min-w-[220px]"
-            />
-            <ButtonLoading
-              onClick={handleSearchButton}
-              buttonLoading={false}
-              label="Search"
-              className="whitespace-nowrap h-9 mr-2"
-              icon={<FiRefreshCw />}
-            />
-            <ButtonLoading
-              onClick={handleResetFilters}
-              buttonLoading={resetButtonLoading}
-              label="Reset"
-              className="whitespace-nowrap h-9"
-            />
+          <div className="min-w-[180px] flex-1 text-sm text-slate-600 dark:text-slate-300">
+            {searchFilter || orderType || selectedLedger?.value || selectedProductOption?.value || startDate || endDate
+              ? 'Filters applied'
+              : 'Use the filter button to search orders'}
           </div>
 
           <div className="shrink-0">
