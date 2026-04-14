@@ -157,6 +157,28 @@ const toNumber = (value: Primitive) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const formatSignedAmount = (value: Primitive, decimal = 0) => {
+  const amount = toNumber(value);
+  if (amount === 0) {
+    return {
+      text: '-',
+      isNegative: false,
+    };
+  }
+
+  if (amount < 0) {
+    return {
+      text: `(-) ${thousandSeparator(Math.abs(amount), decimal)}`,
+      isNegative: true,
+    };
+  }
+
+  return {
+    text: thousandSeparator(amount, decimal),
+    isNegative: false,
+  };
+};
+
 
 
 const OrderWithProduct = ({
@@ -334,10 +356,21 @@ const OrderWithProduct = ({
           toNumber(salesMaster?.total) ||
           toNumber(purchaseMaster?.total) ||
           Math.max(debitTotal, creditTotal);
-        const transactionPayment =
-          toNumber(salesMaster?.netpayment) ||
-          toNumber(purchaseMaster?.netpayment) ||
-          Math.max(debitTotal, creditTotal);
+        const cashLedgerDebit = accDetails
+          .filter((item) => Number(item?.coa4_id) === 17)
+          .reduce((sum, item) => sum + toNumber(item?.debit), 0);
+        const cashLedgerCredit = accDetails
+          .filter((item) => Number(item?.coa4_id) === 17)
+          .reduce((sum, item) => sum + toNumber(item?.credit), 0);
+        const transactionPayment = hasLineDetail
+          ? cashLedgerDebit > 0
+            ? cashLedgerDebit
+            : cashLedgerCredit > 0
+              ? -cashLedgerCredit
+              : 0
+          : creditTotal > 0
+            ? -creditTotal
+            : debitTotal;
         const transactionRate =
           hasLineDetail
             ? toNumber(firstSalesDetail?.sales_price) ||
@@ -508,7 +541,10 @@ const OrderWithProduct = ({
         header: paymentColumnLabel,
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
-        render: (row: any) => <span>{thousandSeparator(row.payment, 0)}</span>,
+        render: (row: any) => {
+          const paymentDisplay = formatSignedAmount(row.payment, 0);
+          return <span className={paymentDisplay.isNegative ? 'font-bold' : ''}>{ paymentDisplay.text}</span>;
+        },
       },
     ],
     [handleVoucherPrint, paymentColumnLabel],
@@ -545,7 +581,10 @@ const OrderWithProduct = ({
                 className: 'text-right',
               },
               {
-                label: thousandSeparator(totals.payment, 0),
+                label: (() => {
+                  const paymentDisplay = formatSignedAmount(totals.payment, 0);
+                  return <span className={paymentDisplay.isNegative ? 'font-bold' : ''}>{paymentDisplay.text}</span>;
+                })(),
                 className: 'text-right',
               },
             ],

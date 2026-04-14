@@ -49,6 +49,28 @@ const toNumber = (value: Primitive) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const formatSignedAmount = (value: Primitive, decimal = 0) => {
+  const amount = toNumber(value);
+  if (amount === 0) {
+    return {
+      text: '0',
+      isNegative: false,
+    };
+  }
+
+  if (amount < 0) {
+    return {
+      text: `(-) ${thousandSeparator(Math.abs(amount), decimal)}`,
+      isNegative: true,
+    };
+  }
+
+  return {
+    text: thousandSeparator(amount, decimal),
+    isNegative: false,
+  };
+};
+
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
   if (size <= 0) return [data];
   const out: T[][] = [];
@@ -161,7 +183,10 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                         {thousandSeparator(toNumber(row.discount), 0)}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
-                        {thousandSeparator(toNumber(row.payment), 0)}
+                        {(() => {
+                          const paymentDisplay = formatSignedAmount(row.payment, 0);
+                          return <span className={paymentDisplay.isNegative ? 'font-bold' : ''}>{paymentDisplay.text}</span>;
+                        })()}
                       </td>
                     </tr>
                   ))
@@ -196,7 +221,10 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs, lineHeight: 1.2 }}
                       className="border border-black px-2 py-1 text-right font-semibold"
                     >
-                      {thousandSeparator(totals.payment, 0)}
+                      {(() => {
+                        const paymentDisplay = formatSignedAmount(totals.payment, 0);
+                        return <span className={paymentDisplay.isNegative ? 'font-bold' : ''}>{paymentDisplay.text}</span>;
+                      })()}
                     </td>
                   </tr>
                 ) : null}
