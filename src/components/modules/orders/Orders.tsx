@@ -913,10 +913,10 @@ const Orders = () => {
             )}
           </div>
 
-          <div className="min-w-[180px] flex-1 text-sm text-slate-600 dark:text-slate-300">
+          <div className="hidden min-w-[180px] flex-1 text-sm dark:text-white text-slate-900 md:block dark:text-slate-300f">
             {searchFilter || orderType || selectedLedger?.value || selectedProductOption?.value || startDate || endDate
               ? 'Filters applied'
-              : 'Use the filter button to search orders'}
+              : 'Use the filter'}
           </div>
 
           <div className="shrink-0">
@@ -947,8 +947,8 @@ const Orders = () => {
             className="h-9 shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
           />
           <div className="ml-auto shrink-0">
-            <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto">
-              New orders
+            <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
+              New Orders
             </Link>
           </div>
         </div>
