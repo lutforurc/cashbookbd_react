@@ -11,7 +11,7 @@ import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButt
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
-import { FiEdit2, FiEye, FiRefreshCw, FiTrash2, FiX } from 'react-icons/fi';
+import { FiEdit2, FiEye, FiPrinter, FiRefreshCw, FiTrash2, FiX } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
@@ -441,29 +441,91 @@ const Orders = () => {
 
   const summaryItems = useMemo(() => {
     const items = [
-      `Trx Qty: ${thousandSeparator(summary.totalTrxQuantity, 0)}`,
+      {
+        key: 'trx-qty',
+        label: 'Total Trx Qty',
+        value: thousandSeparator(summary.totalTrxQuantity, 0),
+      },
     ];
 
     if (orderType === '1') {
       items.push(
-        `PO Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
-        `PO Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
-        `PO Remaining Qty: ${thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0)}`,
+        {
+          key: 'po-trx-qty',
+          label: 'PO Trx Qty',
+          value: thousandSeparator(summary.purchaseTrxQuantity, 0),
+        },
+        {
+          key: 'po-qty',
+          label: 'PO Qty',
+          value: thousandSeparator(summary.purchaseQuantity, 0),
+        },
+        {
+          key: 'po-bal-qty',
+          label: 'PO Bal. Qty',
+          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0),
+          highlight: true,
+        },
       );
     } else if (orderType === '2') {
       items.push(
-        `DO Trx Qty: ${thousandSeparator(summary.salesTrxQuantity, 0)}`,
-        `DO Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
-        `DO Remaining Qty: ${thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0)}`,
+        {
+          key: 'do-trx-qty',
+          label: 'DO Trx Qty',
+          value: thousandSeparator(summary.salesTrxQuantity, 0),
+        },
+        {
+          key: 'do-qty',
+          label: 'DO Qty',
+          value: thousandSeparator(summary.salesQuantity, 0),
+        },
+        {
+          key: 'do-bal-qty',
+          label: 'DO Bal. Qty',
+          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0),
+          highlight: true,
+        },
       );
     } else {
       items.push(
-        `PO Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
-        `DO Trx Qty: ${thousandSeparator(summary.salesTrxQuantity, 0)}`,
-        `PO Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
-        `DO Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
-        `PO Remaining Qty: ${thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0)}`,
-        `DO Remaining Qty: ${thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0)}`,
+        {
+          key: 'po-trx-qty',
+          label: 'PO Trx Qty',
+          value: thousandSeparator(summary.purchaseTrxQuantity, 0),
+        },
+        {
+          key: 'do-trx-qty',
+          label: 'DO Trx Qty',
+          value: thousandSeparator(summary.salesTrxQuantity, 0),
+        },
+        {
+          key: 'po-bal-qty',
+          label: 'PO Trx. Bal. Qty',
+          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0),
+          highlight: true,
+        },
+        {
+          key: 'do-bal-qty',
+          label: 'DO Trx. Bal. Qty',
+          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0),
+          highlight: true,
+        },
+        {
+          key: 'po-qty',
+          label: 'PO Qty',
+          value: thousandSeparator(summary.purchaseQuantity, 0),
+        },
+        {
+          key: 'do-qty',
+          label: 'DO Qty',
+          value: thousandSeparator(summary.salesQuantity, 0),
+        },
+        {
+          key: 'po-do-bal-qty',
+          label: 'Order Bal. Qty',
+          value: thousandSeparator(summary.purchaseQuantity - summary.salesQuantity, 0),
+          highlight: true,
+        },
       );
     }
 
@@ -475,11 +537,21 @@ const Orders = () => {
       [
         {
           label: (
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               {summaryItems.map((item) => (
-                <span key={item} className="whitespace-nowrap">
-                  {item}
-                </span>
+                <div
+                  key={item.key}
+                  className={`min-w-[140px] rounded border px-3 py-2 text-left shadow-sm ${
+                    item.highlight
+                      ? 'border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-400/70 dark:bg-amber-400/10 dark:text-amber-200'
+                      : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                  }`}
+                >
+                  <div className="text-[11px] font-semibold uppercase tracking-wide opacity-80">
+                    {item.label}
+                  </div>
+                  <div className="text-base font-bold leading-tight">{item.value}</div>
+                </div>
               ))}
             </div>
           ),
@@ -702,7 +774,8 @@ const Orders = () => {
             title="Open print page"
             disabled={printingOrderId === data?.id}
           >
-            <FiEye className="cursor-pointer" />
+            <FiPrinter className="cursor-pointer" />
+            {/* 🖨️ */}
           </button>
           <button onClick={() => navigate(`/orders/edit/${data.id}`, { state: { order: data } })} className="text-blue-500  ml-2">
             <FiEdit2 className="cursor-pointer" />
