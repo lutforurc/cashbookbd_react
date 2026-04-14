@@ -394,7 +394,7 @@ const ProductStockNormal = ({ user }: any) => {
     <div className="">
       <HelmetTitle title={'Product Stock'} />
 
-      <div className="mb-4 rounded-sm border border-slate-200 bg-slate-100 px-4 py-3 dark:border-strokedark dark:bg-boxdark">
+      <div className=" bg-slate-100 px-4 py-3 dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative shrink-0">
             <button
