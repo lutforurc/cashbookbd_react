@@ -439,18 +439,51 @@ const Orders = () => {
     };
   }, [apiSummarySource, derivedSummary]);
 
-  const footerRows = useMemo(
-    () => [
-      [
+  const footerRows = useMemo(() => {
+    const cells: Array<{ label: string; colSpan?: number; className: string }> = [
+      {
+        label: '',
+        colSpan: 1,
+        className: 'text-right',
+      },
+      {
+        label: `Trx Qty: ${thousandSeparator(summary.totalTrxQuantity, 0)}`,
+        className: 'text-right',
+      },
+    ];
+
+    if (orderType === '1') {
+      cells.push(
         {
-          label: '',
-          colSpan: 1,
+          label: `Purchase Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
           className: 'text-right',
         },
         {
-          label: `Trx Qty: ${thousandSeparator(summary.totalTrxQuantity, 0)}`,
+          label: `PO Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
           className: 'text-right',
         },
+        {
+          label: `Remaining Qty: ${thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0)}`,
+          className: 'text-right',
+        },
+      );
+    } else if (orderType === '2') {
+      cells.push(
+        {
+          label: `Sales Trx Qty: ${thousandSeparator(summary.salesTrxQuantity, 0)}`,
+          className: 'text-right',
+        },
+        {
+          label: `DO Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
+          className: 'text-right',
+        },
+        {
+          label: `Remaining Qty: ${thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0)}`,
+          className: 'text-right',
+        },
+      );
+    } else {
+      cells.push(
         {
           label: `Purchase Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
           className: 'text-right',
@@ -460,21 +493,22 @@ const Orders = () => {
           className: 'text-right',
         },
         {
-          label: `Purchase Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
+          label: `PO Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
           className: 'text-right',
         },
         {
-          label: `Sales Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
+          label: `DO Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
           className: 'text-right',
         },
         {
-          label: `Remaining Qty: ${thousandSeparator(summary.purchaseSalesRemainingQuantity, 0)}`,
+          label: `Remaining Qty: ${thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0)}`,
           className: 'text-right',
         },
-      ],
-    ],
-    [summary],
-  );
+      );
+    }
+
+    return [cells];
+  }, [orderType, summary]);
 
   const orderTypeLabel = useMemo(() => {
     if (orderType === '1') return 'Purchase Order';
