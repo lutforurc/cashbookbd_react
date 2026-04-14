@@ -439,76 +439,57 @@ const Orders = () => {
     };
   }, [apiSummarySource, derivedSummary]);
 
-  const footerRows = useMemo(() => {
-    const cells: Array<{ label: string; colSpan?: number; className: string }> = [
-      {
-        label: '',
-        colSpan: 1,
-        className: 'text-right',
-      },
-      {
-        label: `Trx Qty: ${thousandSeparator(summary.totalTrxQuantity, 0)}`,
-        className: 'text-right',
-      },
+  const summaryItems = useMemo(() => {
+    const items = [
+      `Trx Qty: ${thousandSeparator(summary.totalTrxQuantity, 0)}`,
     ];
 
     if (orderType === '1') {
-      cells.push(
-        {
-          label: `Purchase Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
-          className: 'text-right',
-        },
-        {
-          label: `PO Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
-          className: 'text-right',
-        },
-        {
-          label: `Remaining Qty: ${thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0)}`,
-          className: 'text-right',
-        },
+      items.push(
+        `PO Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
+        `PO Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
+        `PO Remaining Qty: ${thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0)}`,
       );
     } else if (orderType === '2') {
-      cells.push(
-        {
-          label: `Sales Trx Qty: ${thousandSeparator(summary.salesTrxQuantity, 0)}`,
-          className: 'text-right',
-        },
-        {
-          label: `DO Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
-          className: 'text-right',
-        },
-        {
-          label: `Remaining Qty: ${thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0)}`,
-          className: 'text-right',
-        },
+      items.push(
+        `DO Trx Qty: ${thousandSeparator(summary.salesTrxQuantity, 0)}`,
+        `DO Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
+        `DO Remaining Qty: ${thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0)}`,
       );
     } else {
-      cells.push(
-        {
-          label: `Purchase Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
-          className: 'text-right',
-        },
-        {
-          label: `Sales Trx Qty: ${thousandSeparator(summary.salesTrxQuantity, 0)}`,
-          className: 'text-right',
-        },
-        {
-          label: `PO Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
-          className: 'text-right',
-        },
-        {
-          label: `DO Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
-          className: 'text-right',
-        },
-        {
-          label: `Remaining Qty: ${thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0)}`,
-          className: 'text-right',
-        },
+      items.push(
+        `PO Trx Qty: ${thousandSeparator(summary.purchaseTrxQuantity, 0)}`,
+        `DO Trx Qty: ${thousandSeparator(summary.salesTrxQuantity, 0)}`,
+        `PO Qty: ${thousandSeparator(summary.purchaseQuantity, 0)}`,
+        `DO Qty: ${thousandSeparator(summary.salesQuantity, 0)}`,
+        `PO Remaining Qty: ${thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0)}`,
+        `DO Remaining Qty: ${thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0)}`,
       );
     }
 
-    return [cells];
+    return items;
   }, [orderType, summary]);
+
+  const footerRows = useMemo(
+    () => [
+      [
+        {
+          label: (
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center">
+              {summaryItems.map((item) => (
+                <span key={item} className="whitespace-nowrap">
+                  {item}
+                </span>
+              ))}
+            </div>
+          ),
+          colSpan: 7,
+          className: 'text-center',
+        },
+      ],
+    ],
+    [summaryItems],
+  );
 
   const orderTypeLabel = useMemo(() => {
     if (orderType === '1') return 'Purchase Order';
@@ -738,14 +719,14 @@ const Orders = () => {
   return (
     <div>
       <HelmetTitle title={'Orders List'} />
-      <div className="flex flex-col gap-2 mb-1 xl:flex-row xl:items-end xl:justify-between">
+      <div className="mb-2">
         <div className="flex flex-wrap items-end gap-2">
           <SelectOption
             onChange={handleSelectChange}
             className="h-9"
           />
           <OrderTypes onChange={handleOrderChange} className="h-9" />
-          <div className="min-w-[260px]">
+          <div className="min-w-[260px] shrink-0">
             <DdlMultiline
               onSelect={handleLedgerSelect}
               acType={''}
@@ -758,7 +739,7 @@ const Orders = () => {
             className="appearance-none min-w-[220px] h-9"
             value={selectedProductOption}
           />
-          <div className="min-w-[160px]">
+          <div className="min-w-[160px] shrink-0">
             <InputDatePicker
               id="order_start_date"
               name="order_start_date"
@@ -769,7 +750,7 @@ const Orders = () => {
               setSelectedDate={(date) => setStartDate(formatDateValue(date))}
             />
           </div>
-          <div className="min-w-[160px]">
+          <div className="min-w-[160px] shrink-0">
             <InputDatePicker
               id="order_end_date"
               name="order_end_date"
@@ -781,7 +762,7 @@ const Orders = () => {
             />
           </div>
 
-          <div className="flex flex-nowrap items-end min-w-[320px]">
+          <div className="flex min-w-[320px] shrink-0 flex-nowrap items-end">
             <SearchInput
               search={search}
               setSearchValue={setSearchValue}
@@ -802,7 +783,7 @@ const Orders = () => {
             />
           </div>
 
-          <div>
+          <div className="shrink-0">
             <InputElement
               id="printRowsPerPage"
               name="printRowsPerPage"
@@ -810,10 +791,10 @@ const Orders = () => {
               value={String(printRowsPerPage)}
               onChange={handlePrintRowsChange}
               type="text"
-              className="h-9 w-14"
+              className="h-9 !w-20 px-1 text-center"
             />
           </div>
-          <div>
+          <div className="shrink-0">
             <InputElement
               id="printFontSize"
               name="printFontSize"
@@ -821,18 +802,20 @@ const Orders = () => {
               value={String(printFontSize)}
               onChange={handlePrintFontSizeChange}
               type="text"
-              className="h-9 w-14"
+              className="h-9 !w-20 px-1 text-center"
             />
           </div>
           <PrintButton
             onClick={() => void handleListPrint()}
             label="Print"
-            className="pt-[0.45rem] pb-[0.45rem] h-9 whitespace-nowrap"
+            className="h-9 shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
           />
+          <div className="ml-auto shrink-0">
+            <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto">
+              New orders
+            </Link>
+          </div>
         </div>
-        <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto">
-          New orders
-        </Link>
       </div>
 
       <div className="relative overflow-x-auto">
