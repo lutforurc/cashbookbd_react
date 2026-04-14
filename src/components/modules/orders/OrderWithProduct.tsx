@@ -16,6 +16,8 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import Table from '../../utils/others/Table';
 import { formatDate } from '../../utils/utils-functions/formatDate';
 import OrderWithProductPrint from './OrderWithProductPrint';
+import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../vouchers';
 
 type Primitive = string | number | null | undefined;
 
@@ -145,6 +147,8 @@ const OrderWithProduct = ({
   const auth = useSelector((state: any) => state.auth);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const printRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   const [payload, setPayload] = useState<OrderPayload | null>(initialPayload);
   const [transactionDate, setTransactionDate] = useState('');
@@ -297,6 +301,8 @@ const OrderWithProduct = ({
 
         return {
           id: trx?.id ?? index,
+          mtm_id: trx?.id ?? trx?.main_transaction_master?.id ?? index,
+          vr_no: trx?.main_transaction_master?.vr_no || '-',
           sl: index + 1,
           challanNo: trx?.main_transaction_master?.vr_no || '-',
           challanDate: trx?.main_transaction_master?.vr_date || salesMaster?.transact_date || '-',
@@ -355,7 +361,20 @@ const OrderWithProduct = ({
         header: 'CHAL. NO. & DATE',
         cellClass: 'w-52',
         render: (row: any) => (
-          <div>
+          <div
+            className="cursor-pointer hover:underline"
+            onClick={() =>
+              handleVoucherPrint({
+                ...row,
+                vr_no: row?.vr_no ?? row?.challanNo,
+                mtm_id:
+                  row?.mtm_id ??
+                  row?.mtmId ??
+                  row?.mid ??
+                  row?.id,
+              })
+            }
+          >
             <div>{row.challanNo}</div>
             <div>{formatDate(row.challanDate)}</div>
           </div>
@@ -424,7 +443,7 @@ const OrderWithProduct = ({
         render: (row: any) => <span>{thousandSeparator(row.payment, 0)}</span>,
       },
     ],
-    [],
+    [handleVoucherPrint],
   );
 
   const footerRows = useMemo(
@@ -642,6 +661,11 @@ const OrderWithProduct = ({
             rows={rows}
             rowsPerPage={perPage}
             fontSize={fontSize}
+          />
+          <VoucherPrintRegistry
+            ref={voucherRegistryRef}
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
           />
         </div>
       </div>
