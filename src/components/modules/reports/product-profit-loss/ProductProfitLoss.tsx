@@ -414,7 +414,7 @@ const ProductProfitLoss = (user: any) => {
 
       <div className="space-y-3">
         <div className="pl-0 pr-1 py-3">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col xl:flex-row xl:items-end"}`}>
             <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1"}>
               {useFilterMenuEnabled && (
                 <button
@@ -441,12 +441,12 @@ const ProductProfitLoss = (user: any) => {
                   }
                 >
                   <div
-                    className={
-                      useFilterMenuEnabled
-                        ? "space-y-3"
-                        : "grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1.5fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]"
-                    }
-                  >
+                  className={
+                    useFilterMenuEnabled
+                      ? "space-y-3"
+                      : "grid grid-cols-3 items-end gap-3"
+                  }
+                >
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                         Select Branch
@@ -487,7 +487,7 @@ const ProductProfitLoss = (user: any) => {
                       className={`flex gap-2 pt-1 ${
                         useFilterMenuEnabled
                           ? "justify-end"
-                          : "justify-start self-end"
+                          : "hidden"
                       } ${useFilterMenuEnabled ? "" : "md:col-span-2 xl:col-span-1"}`}
                     >
                       <ButtonLoading
@@ -518,34 +518,82 @@ const ProductProfitLoss = (user: any) => {
               Use the filter
             </div>
 
-            <div className="ml-auto flex items-end gap-2">
-              <InputElement
-                id="rowsPerPage"
-                name="rowsPerPage"
-                label=""
-                value={rowsPerPage.toString()}
-                onChange={handleRowsPerPageChange}
-                type="text"
-                className="h-10 !w-20 text-center"
-              />
+            {useFilterMenuEnabled ? (
+              <div className="ml-auto flex items-end gap-2">
+                <InputElement
+                  id="rowsPerPage"
+                  name="rowsPerPage"
+                  label=""
+                  value={rowsPerPage.toString()}
+                  onChange={handleRowsPerPageChange}
+                  type="text"
+                  className="h-10 !w-20 text-center"
+                />
 
-              <InputElement
-                id="fontSize"
-                name="fontSize"
-                label=""
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type="text"
-                className="h-10 !w-20 text-center"
-              />
+                <InputElement
+                  id="fontSize"
+                  name="fontSize"
+                  label=""
+                  value={fontSize.toString()}
+                  onChange={handleFontSizeChange}
+                  type="text"
+                  className="h-10 !w-20 text-center"
+                />
 
-              <PrintButton
-                onClick={handlePrint}
-                label="Print"
-                className="h-10 px-6"
-                disabled={tableData.length === 0}
-              />
-            </div>
+                <PrintButton
+                  onClick={handlePrint}
+                  label="Print"
+                  className="h-10 px-6"
+                  disabled={tableData.length === 0}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
+                <div className="flex flex-nowrap items-end gap-2">
+                  <ButtonLoading
+                    label="Apply"
+                    onClick={handleRunReport}
+                    buttonLoading={buttonLoading}
+                    className="h-10 px-6"
+                  />
+                  <ButtonLoading
+                    label="Reset"
+                    onClick={handleResetFilters}
+                    buttonLoading={false}
+                    className="h-10 px-4"
+                  />
+                </div>
+
+                <div className="flex flex-nowrap items-end gap-2">
+                  <InputElement
+                    id="rowsPerPage"
+                    name="rowsPerPage"
+                    label=""
+                    value={rowsPerPage.toString()}
+                    onChange={handleRowsPerPageChange}
+                    type="text"
+                    className="h-10 !w-20 text-center"
+                  />
+
+                  <InputElement
+                    id="fontSize"
+                    name="fontSize"
+                    label=""
+                    value={fontSize.toString()}
+                    onChange={handleFontSizeChange}
+                    type="text"
+                    className="h-10 !w-20 text-center"
+                  />
+
+                  <PrintButton
+                    onClick={handlePrint}
+                    label="Print"
+                    className="h-10 px-6"
+                    disabled={tableData.length === 0}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {error ? (

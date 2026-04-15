@@ -362,7 +362,7 @@ const ProfitLoss = (user: any) => {
       <HelmetTitle title={"Profit Loss"} />
 
       <div className="pl-0 pr-1 py-3 ">
-        <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col"}`}>
+        <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col xl:flex-row xl:items-end"}`}>
           <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1"}>
             {useFilterMenuEnabled && (
               <button
@@ -392,7 +392,7 @@ const ProfitLoss = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? "space-y-3"
-                      : "grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1.5fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]"
+                      : "grid grid-cols-3 items-end gap-3"
                   }
                 >
                   <div>
@@ -501,8 +501,8 @@ const ProfitLoss = (user: any) => {
               />
             </div>
           ) : (
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div className="flex flex-wrap items-end gap-2">
+            <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
+              <div className="flex flex-nowrap items-end gap-2">
                 <ButtonLoading
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
@@ -519,7 +519,7 @@ const ProfitLoss = (user: any) => {
                 />
               </div>
 
-              <div className="flex flex-wrap items-end gap-2">
+              <div className="flex flex-nowrap items-end gap-2">
                 <InputElement
                   id="perPage"
                   name="perPage"

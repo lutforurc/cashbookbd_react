@@ -133,7 +133,7 @@ const LabourLedger = (user: any) => {
     <div className="">
       <HelmetTitle title={'Labour Ledger'} />
       <div className="py-3">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
           <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
             {useFilterMenuEnabled && (
               <button
@@ -163,7 +163,7 @@ const LabourLedger = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(200px,1.1fr)_minmax(220px,1.3fr)_minmax(220px,1.3fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
+                      : 'grid grid-cols-3 items-end gap-3'
                   }
                 >
                   <div>
@@ -201,35 +201,39 @@ const LabourLedger = (user: any) => {
                     />
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                      Start Date
-                    </label>
-                    <InputDatePicker
-                      setCurrentDate={handleStartDate}
-                      className="font-medium text-sm w-full h-10"
-                      selectedDate={startDate}
-                      setSelectedDate={setStartDate}
-                    />
-                  </div>
+                  {useFilterMenuEnabled && (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Start Date
+                      </label>
+                      <InputDatePicker
+                        setCurrentDate={handleStartDate}
+                        className="font-medium text-sm w-full h-10"
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
+                      />
+                    </div>
+                  )}
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                      End Date
-                    </label>
-                    <InputDatePicker
-                      setCurrentDate={handleEndDate}
-                      className="w-full font-medium text-sm h-10"
-                      selectedDate={endDate}
-                      setSelectedDate={setEndDate}
-                    />
-                  </div>
+                  {useFilterMenuEnabled && (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        End Date
+                      </label>
+                      <InputDatePicker
+                        setCurrentDate={handleEndDate}
+                        className="w-full font-medium text-sm h-10"
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
+                      />
+                    </div>
+                  )}
 
                   <div
                     className={`flex gap-2 pt-1 ${
                       useFilterMenuEnabled
                         ? 'justify-end'
-                        : 'justify-start self-end'
+                        : 'hidden'
                     } ${useFilterMenuEnabled ? '' : 'md:col-span-2 xl:col-span-1'}`}
                   >
                     <ButtonLoading
@@ -250,24 +254,73 @@ const LabourLedger = (user: any) => {
             )}
           </div>
 
-          <div
-            className={`${
-              useFilterMenuEnabled
-                ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300'
-                : 'hidden'
-            }`}
-          >
-            Use the filter
-          </div>
+            <div
+              className={`${
+                useFilterMenuEnabled
+                  ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300'
+                  : 'hidden'
+              }`}
+            >
+              Use the filter
+            </div>
 
-          <div className="ml-auto flex items-end gap-2">
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
-              label="Run"
-              className="h-10 px-6"
-            />
-          </div>
+          {useFilterMenuEnabled ? (
+            <div className="ml-auto flex items-end gap-2">
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={buttonLoading}
+                label="Run"
+                className="h-10 px-6"
+              />
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-nowrap items-end gap-3 overflow-x-auto xl:ml-auto">
+                <div className="min-w-[220px]">
+                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Start Date
+                  </label>
+                  <InputDatePicker
+                    setCurrentDate={handleStartDate}
+                    className="w-full xl:!w-30 font-medium text-sm h-10"
+                    selectedDate={startDate}
+                    setSelectedDate={setStartDate}
+                  />
+                </div>
+                <div className="min-w-[220px]">
+                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                    End Date
+                  </label>
+                  <InputDatePicker
+                    setCurrentDate={handleEndDate}
+                    className="w-full xl:!w-30 font-medium text-sm h-10"
+                    selectedDate={endDate}
+                    setSelectedDate={setEndDate}
+                  />
+                </div>
+                <div className="flex flex-nowrap items-end gap-2">
+                  <ButtonLoading
+                    onClick={handleActionButtonClick}
+                    buttonLoading={buttonLoading}
+                    label="Run"
+                    className="h-10 px-6"
+                  />
+                  <ButtonLoading
+                    onClick={handleActionButtonClick}
+                    buttonLoading={buttonLoading}
+                    label="Apply"
+                    className="h-10 px-6"
+                  />
+                  <ButtonLoading
+                    onClick={handleResetFields}
+                    buttonLoading={false}
+                    label="Reset"
+                    className="h-10 px-4"
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
