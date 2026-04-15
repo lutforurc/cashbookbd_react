@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
+import { FiFilter } from "react-icons/fi";
 
 import {
   ButtonLoading,
@@ -79,6 +80,7 @@ const ProfitLoss = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [selectedExpenseDetail, setSelectedExpenseDetail] =
     useState<SelectedExpenseDetail | null>(null);
 
@@ -156,6 +158,8 @@ const ProfitLoss = (user: any) => {
     if (action?.meta?.requestStatus !== "fulfilled") {
       alert(action?.payload || "Profit & loss load failed");
     }
+
+    setFilterOpen(false);
   };
 
   // nested data normalize (আপনার sample অনুযায়ী)
@@ -337,6 +341,10 @@ const ProfitLoss = (user: any) => {
     setFontSize(Number.isFinite(value) ? value : 12);
   };
 
+  const handleResetFilters = () => {
+    setFilterOpen(false);
+  };
+
   const handleExpenseRowClick = (row: NetRow) => {
     setSelectedExpenseDetail({
       name: row.name || "Expense Details",
@@ -350,91 +358,120 @@ const ProfitLoss = (user: any) => {
     <div>
       <HelmetTitle title={"Profit Loss"} />
 
-        {/* ===== Filters ===== */}
-        <div className="mb-1">
-          <div className="flex w-full flex-col gap-3 p-2 text-black dark:text-white xl:flex-row xl:items-end">
-            <div className="min-w-0 xl:flex-[1.6]">
-              <label>Select Branch</label>
-              <div className="w-full">
-                {branchDdlData?.isLoading ? <Loader /> : null}
-                <BranchDropdown
-                defaultValue={user?.user?.branch_id}
-                onChange={handleBranchChange}
-                className="w-full max-w-full font-medium text-sm p-1.5 h-8"
-                branchDdl={dropdownData}
-                />
-              </div>
-            </div>
+      <div className="pl-3 pr-1 py-3 dark:border-strokedark dark:bg-boxdark">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setFilterOpen((prev) => !prev)}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                filterOpen
+                  ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
+                  : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
+              }`}
+              title="Open filters"
+              aria-label="Open filters"
+            >
+              <FiFilter size={16} />
+            </button>
 
-            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[9.5rem_9.5rem_auto] lg:items-end xl:w-auto xl:shrink-0">
-              <div className="w-full min-w-0">
-                <label>Start Date</label>
-                <InputDatePicker
-                  setCurrentDate={(d: any) => setStartDate(d)}
-                  className="font-medium text-sm w-full h-8"
-                  selectedDate={startDate}
-                  setSelectedDate={setStartDate}
-                />
-              </div>
+            {filterOpen && (
+              <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                    {branchDdlData?.isLoading ? <Loader /> : null}
+                    <BranchDropdown
+                      defaultValue={user?.user?.branch_id}
+                      value={branchId == null ? "" : String(branchId)}
+                      onChange={handleBranchChange}
+                      className="w-full max-w-full font-medium text-sm p-2"
+                      branchDdl={dropdownData}
+                    />
+                  </div>
 
-              <div className="w-full min-w-0">
-                <label>End Date</label>
-                <InputDatePicker
-                  setCurrentDate={(d: any) => setEndDate(d)}
-                  className="font-medium text-sm w-full h-8"
-                  selectedDate={endDate}
-                  setSelectedDate={setEndDate}
-                />
-              </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                    <InputDatePicker
+                      setCurrentDate={(d: any) => setStartDate(d)}
+                      className="font-medium text-sm w-full h-10"
+                      selectedDate={startDate}
+                      setSelectedDate={setStartDate}
+                    />
+                  </div>
 
-              <div className="flex w-full flex-wrap items-end gap-2 lg:w-auto lg:flex-nowrap">
-                <div className="w-[4.25rem] shrink-0">
-                  <InputElement
-                    id="perPage"
-                    name="perPage"
-                    label="Rows"
-                    value={perPage.toString()}
-                    onChange={handlePerPageChange}
-                    type="text"
-                    className="font-medium text-sm h-8 w-full"
-                  />
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                    <InputDatePicker
+                      setCurrentDate={(d: any) => setEndDate(d)}
+                      className="font-medium text-sm w-full h-10"
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1">
+                    <ButtonLoading
+                      onClick={handleActionButtonClick}
+                      buttonLoading={buttonLoading}
+                      label="Apply"
+                      icon=""
+                      className="h-10 px-6"
+                    />
+                    <ButtonLoading
+                      onClick={handleResetFilters}
+                      buttonLoading={false}
+                      label="Reset"
+                      icon=""
+                      className="h-10 px-4"
+                    />
+                  </div>
                 </div>
-
-                <div className="w-[4.25rem] shrink-0">
-                  <InputElement
-                    id="fontSize"
-                    name="fontSize"
-                    label="Font"
-                    value={fontSize.toString()}
-                    onChange={handleFontSizeChange}
-                    type="text"
-                    className="font-medium text-sm h-8 w-full"
-                  />
-                </div>
-
-                <ButtonLoading
-                  onClick={handleActionButtonClick}
-                  // buttonLoading={buttonLoading}
-                  label="Run"
-                  icon=""
-                  className="h-8 min-w-[4.75rem] shrink-0 pt-[0.45rem] pb-[0.45rem] sm:mt-6"
-                />
-
-                <PrintButton
-                  onClick={handlePrint}
-                  label=""
-                  className="h-8 shrink-0 pt-[0.45rem] pb-[0.45rem] sm:mt-6"
-                />
-
-                <PrintButton
-                  onClick={handleItemPrintButtonClick}
-                  label=""
-                  className="h-8.5 shrink-0 pt-[0.45rem] pb-[0.45rem] sm:mt-6"
-                />
               </div>
-            </div>
+            )}
+          </div>
+
+          <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+            Use the filter
+          </div>
+
+          <div className="ml-auto flex flex-wrap items-end gap-2">
+            <InputElement
+              id="perPage"
+              name="perPage"
+              label=""
+              value={perPage.toString()}
+              onChange={handlePerPageChange}
+              type="text"
+              className="font-medium text-sm h-10 !w-20 text-center"
+            />
+
+            <InputElement
+              id="fontSize"
+              name="fontSize"
+              label=""
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type="text"
+              className="font-medium text-sm h-10 !w-20 text-center"
+            />
+
+            <PrintButton
+              onClick={handlePrint}
+              label="Print"
+              className="h-10 px-6"
+              disabled={!hasReportData}
+            />
+
+            <PrintButton
+              onClick={handleItemPrintButtonClick}
+              label="Item Print"
+              className="h-10 px-6"
+              disabled={!hasReportData || itemPrintLoading}
+            />
           </div>
         </div>
+      </div>
       {/* ===== Report ===== */}
       {hasReportData ? (
         <ProfitLossReport
