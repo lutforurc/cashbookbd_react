@@ -291,7 +291,7 @@ const DueList = (user: any) => {
           ref={printRef}
           rows={tableData || []}
           endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
-          title="Due List Print"
+          title="Due List"
           rowsPerPage={Number(perPage)}
           fontSize={Number(fontSize)}
           />
