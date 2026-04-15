@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
-import { FiRefreshCcw } from 'react-icons/fi';
+import { FiFilter, FiRefreshCcw, FiX } from 'react-icons/fi';
 import Loader from '../../../common/Loader';
 import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
@@ -175,6 +175,7 @@ const OrderWithProduct = ({
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   const [payload, setPayload] = useState<OrderPayload | null>(initialPayload);
@@ -187,6 +188,7 @@ const OrderWithProduct = ({
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
@@ -209,6 +211,24 @@ const OrderWithProduct = ({
   useEffect(() => {
     setRequestedOrderId(orderId ?? null);
   }, [orderId]);
+
+  useEffect(() => {
+    if (!isFilterMenuOpen) {
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!filterMenuRef.current?.contains(event.target as Node)) {
+        setIsFilterMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFilterMenuOpen]);
 
   const resolvedOrderRequest = useMemo(() => {
     const selectedRawValue = selectedOrder?.id ?? selectedOrder?.value ?? requestedOrderId;
@@ -597,6 +617,29 @@ const OrderWithProduct = ({
     setRequestedOrderId(selectedOrder.value);
   };
 
+  const handleApplyFilters = () => {
+    handleRun();
+    setIsFilterMenuOpen(false);
+  };
+
+  const handleResetFilters = () => {
+    const defaultBranchId = auth?.me?.branch_id ?? '';
+
+    setBranchId(defaultBranchId);
+    setPerPage(12);
+    setFontSize(12);
+    setError('');
+
+    if (showSelector) {
+      setSelectedOrder(null);
+      setRequestedOrderId(null);
+      setPayload(initialPayload);
+      setTransactionDate('');
+    }
+
+    setIsFilterMenuOpen(false);
+  };
+
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: payload?.order_number ? `Order-${payload.order_number}` : 'Order With Transaction',
@@ -609,120 +652,175 @@ const OrderWithProduct = ({
     <>
       <HelmetTitle title={title} />
       <div className={className}>
-        <div className="grid grid-cols-1 gap-2 xl:grid-cols-[1.2fr_1.2fr_120px_120px_auto_auto]">
-          <div>
-            <label htmlFor="branch_id" className="mb-1 block text-white">
-              Select Branch
-            </label>
-            {branchDdlData?.isLoading ? <Loader /> : null}
-            <BranchDropdown
-              id="branch_id"
-              onChange={(e: any) => setBranchId(e?.target?.value ?? '')}
-              className="w-full font-medium text-sm h-9"
-              branchDdl={dropdownData}
-              defaultValue={String(branchId || '')}
-              value={String(branchId || '')}
-            />
-          </div>
+        <div className="px-0 py-3">
+        
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="relative" ref={filterMenuRef}>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                    isFilterMenuOpen
+                      ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                      : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2'
+                  }`}
+                  aria-label="Toggle filter menu"
+                >
+                  <FiFilter className="text-lg" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+                  className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-bodydark dark:hover:text-white"
+                >
+                  Use the filter
+                </button>
+              </div>
 
-          <div>
-            <label htmlFor="order_with_transaction" className="mb-1 block text-white">
-              Select Order
-            </label>
-            {showSelector ? (
-              <OrderDropdown
-                id="order_with_transaction"
-                onSelect={(option) =>
-                  setSelectedOrder(
-                      option
-                        ? {
-                            value: option.value,
-                            label: option.label,
-                            id: option.id ?? option.value,
-                            order_number: option.order_number ?? option.label,
+              {isFilterMenuOpen ? (
+                <div className="absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-stroke bg-white p-4 shadow-2xl dark:border-form-strokedark dark:bg-boxdark">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-800 dark:text-white">Filter Menu</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterMenuOpen(false)}
+                      className="rounded-sm p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-boxdark-2 dark:hover:text-bodydark1"
+                      aria-label="Close filter menu"
+                    >
+                      <FiX />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label htmlFor="branch_id" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                        Select Branch
+                      </label>
+                      {branchDdlData?.isLoading ? <Loader /> : null}
+                      <BranchDropdown
+                        id="branch_id"
+                        onChange={(e: any) => setBranchId(e?.target?.value ?? '')}
+                        className="h-10 w-full border-stroke bg-white font-medium text-sm dark:border-form-strokedark dark:bg-boxdark-2"
+                        branchDdl={dropdownData}
+                        defaultValue={String(branchId || '')}
+                        value={String(branchId || '')}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="order_with_transaction" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                        Select Order
+                      </label>
+                      {showSelector ? (
+                        <OrderDropdown
+                          id="order_with_transaction"
+                          heightPx="40px"
+                          onSelect={(option) =>
+                            setSelectedOrder(
+                              option
+                                ? {
+                                    value: option.value,
+                                    label: option.label,
+                                    id: option.id ?? option.value,
+                                    order_number: option.order_number ?? option.label,
+                                  }
+                                : null,
+                            )
                           }
-                        : null,
-                    )
-                }
-                value={
-                  selectedOrder
-                    ? {
-                        value: selectedOrder.value,
-                        label: selectedOrder.label,
-                      }
-                    : null
-                }
-                defaultValue={
-                  selectedOrder
-                    ? {
-                        value: selectedOrder.value,
-                        label: selectedOrder.label,
-                      }
-                    : null
-                }
-              />
-            ) : (
-              <InputElement
-                id="order_with_transaction_text"
-                name="order_with_transaction_text"
-                value={payload?.order_number || ''}
-                onChange={() => {}}
-                placeholder="Select Order"
+                          value={
+                            selectedOrder
+                              ? {
+                                  value: selectedOrder.value,
+                                  label: selectedOrder.label,
+                                }
+                              : null
+                          }
+                          defaultValue={
+                            selectedOrder
+                              ? {
+                                  value: selectedOrder.value,
+                                  label: selectedOrder.label,
+                                }
+                              : null
+                          }
+                        />
+                      ) : (
+                        <InputElement
+                          id="order_with_transaction_text"
+                          name="order_with_transaction_text"
+                          value={payload?.order_number || ''}
+                          onChange={() => {}}
+                          placeholder="Select Order"
+                          label=""
+                          className="h-10 border-stroke bg-white dark:border-form-strokedark dark:bg-boxdark-2"
+                          disabled
+                        />
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-2">
+                      <ButtonLoading
+                        onClick={handleApplyFilters}
+                        buttonLoading={buttonLoading}
+                        label="Apply"
+                        className="h-10 min-w-[92px] bg-meta-4 px-4 hover:bg-graydark focus:bg-graydark"
+                        icon={<FiRefreshCcw className="text-white text-base ml-0 mr-0" />}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleResetFilters}
+                        className="inline-flex h-10 min-w-[92px] items-center justify-center bg-meta-4 px-4 text-sm font-medium text-white transition hover:bg-graydark focus:bg-graydark focus:outline-none"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="ml-auto flex items-end gap-2">
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div className="w-28">
+                  <label htmlFor="rows" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                    Rows
+                  </label>
+                  <InputElement
+                    id="rows"
+                    name="rows"
+                    type="number"
+                    value={String(perPage)}
+                    onChange={(e) => setPerPage(Number(e.target.value) || 12)}
+                    placeholder="Rows"
+                    label=""
+                    className="h-10 !w-full border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
+                  />
+                </div>
+
+                <div className="w-28">
+                  <label htmlFor="font_size" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                    Font
+                  </label>
+                  <InputElement
+                    id="font_size"
+                    name="font_size"
+                    type="number"
+                    value={String(fontSize)}
+                    onChange={(e) => setFontSize(Number(e.target.value) || 12)}
+                    placeholder="Font"
+                    label=""
+                    className="h-10 !w-full border-stroke bg-white text-center dark:border-form-strokedark dark:bg-boxdark"
+                  />
+                </div>
+              </div>
+              <PrintButton
+                onClick={handlePrint}
+                className="h-10 min-w-[52px] justify-center bg-meta-4 px-0 hover:bg-graydark focus:bg-graydark"
                 label=""
-                className=""
-                disabled
               />
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="rows" className="mb-1 block text-white">
-              Rows
-            </label>
-            <InputElement
-              id="rows"
-              name="rows"
-              type="number"
-              value={String(perPage)}
-              onChange={(e) => setPerPage(Number(e.target.value) || 12)}
-              placeholder="Rows"
-              label=""
-              className=""
-            />
-          </div>
-
-          <div>
-            <label htmlFor="font_size" className="mb-1 block text-white">
-              Font
-            </label>
-            <InputElement
-              id="font_size"
-              name="font_size"
-              type="number"
-              value={String(fontSize)}
-              onChange={(e) => setFontSize(Number(e.target.value) || 12)}
-              placeholder="Font"
-              label=""
-              className=""
-            />
-          </div>
-
-          <div className="flex items-end">
-            <ButtonLoading
-              onClick={handleRun}
-              buttonLoading={buttonLoading}
-              label="Run"
-              className="h-9 min-w-20"
-              icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
-            />
-          </div>
-
-          <div className="flex items-end">
-            <PrintButton
-              onClick={handlePrint}
-              className="h-9 min-w-18 justify-center"
-              label=""
-            />
+            </div>
           </div>
         </div>
 

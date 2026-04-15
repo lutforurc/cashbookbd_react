@@ -461,24 +461,37 @@ const CashBook = (user: any) => {
           </div>
 
           <div className="ml-auto flex items-end gap-2">
-            <InputElement
-              id="perPage"
-              name="perPage"
-              label=""
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type='text'
-              className="font-medium text-sm h-10 !w-20 text-center"
-            />
-            <InputElement
-              id="fontSize"
-              name="fontSize"
-              label=""
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type='text'
-              className="font-medium text-sm h-10 !w-20 text-center"
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="w-28">
+                <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                  Rows
+                </label>
+                <InputElement
+                  id="perPage"
+                  name="perPage"
+                  label=""
+                  value={perPage.toString()}
+                  onChange={handlePerPageChange}
+                  type='text'
+                  className="font-medium text-sm h-10 !w-full text-center"
+                />
+              </div>
+
+              <div className="w-28">
+                <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                  Font
+                </label>
+                <InputElement
+                  id="fontSize"
+                  name="fontSize"
+                  label=""
+                  value={fontSize.toString()}
+                  onChange={handleFontSizeChange}
+                  type='text'
+                  className="font-medium text-sm h-10 !w-full text-center"
+                />
+              </div>
+            </div>
             <PrintButton
               onClick={handlePrint}
               label="Print"
