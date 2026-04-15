@@ -173,10 +173,12 @@ const OrderWithProduct = ({
   const dispatch = useDispatch();
   const auth = useSelector((state: any) => state.auth);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const settings = useSelector((state: any) => state.settings);
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
 
   const [payload, setPayload] = useState<OrderPayload | null>(initialPayload);
   const [transactionDate, setTransactionDate] = useState('');
@@ -654,45 +656,64 @@ const OrderWithProduct = ({
       <div className={className}>
         <div className="px-0 py-3">
         
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="relative" ref={filterMenuRef}>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                    isFilterMenuOpen
-                      ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                      : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2'
-                  }`}
-                  aria-label="Toggle filter menu"
-                >
-                  <FiFilter className="text-lg" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-                  className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-bodydark dark:hover:text-white"
-                >
-                  Use the filter
-                </button>
-              </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <div
+              className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}
+              ref={filterMenuRef}
+            >
+              {useFilterMenuEnabled && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                      isFilterMenuOpen
+                        ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                        : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-boxdark dark:text-blue-300 dark:hover:bg-boxdark-2'
+                    }`}
+                    aria-label="Toggle filter menu"
+                  >
+                    <FiFilter className="text-lg" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+                    className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-bodydark dark:hover:text-white"
+                  >
+                    Use the filter
+                  </button>
+                </div>
+              )}
 
-              {isFilterMenuOpen ? (
-                <div className="absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-stroke bg-white p-4 shadow-2xl dark:border-form-strokedark dark:bg-boxdark">
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800 dark:text-white">Filter Menu</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterMenuOpen(false)}
-                      className="rounded-sm p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-boxdark-2 dark:hover:text-bodydark1"
-                      aria-label="Close filter menu"
-                    >
-                      <FiX />
-                    </button>
-                  </div>
+              {(useFilterMenuEnabled ? isFilterMenuOpen : true) ? (
+                <div
+                  className={
+                    useFilterMenuEnabled
+                      ? 'absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-stroke bg-white p-4 shadow-2xl dark:border-form-strokedark dark:bg-boxdark'
+                      : 'w-full'
+                  }
+                >
+                  {useFilterMenuEnabled && (
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-white">Filter Menu</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsFilterMenuOpen(false)}
+                        className="rounded-sm p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-boxdark-2 dark:hover:text-bodydark1"
+                        aria-label="Close filter menu"
+                      >
+                        <FiX />
+                      </button>
+                    </div>
+                  )}
 
-                  <div className="space-y-3">
+                  <div
+                    className={
+                      useFilterMenuEnabled
+                        ? 'space-y-3'
+                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1.2fr)_minmax(280px,1.8fr)_auto]'
+                    }
+                  >
                     <div>
                       <label htmlFor="branch_id" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                         Select Branch
@@ -759,7 +780,13 @@ const OrderWithProduct = ({
                       )}
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 pt-2">
+                    <div
+                      className={`flex items-center gap-2 pt-2 ${
+                        useFilterMenuEnabled
+                          ? 'justify-end'
+                          : 'justify-start self-end md:col-span-2 xl:col-span-1'
+                      }`}
+                    >
                       <ButtonLoading
                         onClick={handleApplyFilters}
                         buttonLoading={buttonLoading}

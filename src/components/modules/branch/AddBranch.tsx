@@ -65,6 +65,7 @@ interface branchItem {
   show_instalment_list: boolean;
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
+  use_filter_parameter: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -151,6 +152,7 @@ const AddBranch = () => {
     show_instalment_list: false,
     show_spelling_of_money: false,
     need_demo_tutorial: false,
+    use_filter_parameter: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -159,6 +161,8 @@ const AddBranch = () => {
   const dispatch = useDispatch();
 
   const { id } = useParams();
+
+  console.log('Branch Edit Data:', settings?.data?.branch?.use_filter_parameter);
 
   useEffect(() => {
     if (id) {
@@ -201,31 +205,20 @@ const AddBranch = () => {
         manufactur_control: b.manufactur_control == 1 || b.manufactur_control === '1',
         warranty_controll: b.warranty_controll == 1 || b.warranty_controll === '1',
         have_warehouse: b.have_warehouse == 1 || b.have_warehouse === '1',
-        share_product_with_other_branch:
-          b.share_product_with_other_branch == 1 ||
-          b.share_product_with_other_branch === '1',
-        share_customer_with_other_branch:
-          b.share_customer_with_other_branch == 1 ||
-          b.share_customer_with_other_branch === '1',
+        share_product_with_other_branch: b.share_product_with_other_branch == 1 || b.share_product_with_other_branch === '1',
+        share_customer_with_other_branch: b.share_customer_with_other_branch == 1 || b.share_customer_with_other_branch === '1',
         have_customer_sl: b.have_customer_sl == 1 || b.have_customer_sl === '1',
         stock_report_type: b.stock_report_type == 1 || b.stock_report_type === '1',
         use_bangla: b.use_bangla == 1 || b.use_bangla === '1',
-        show_instalment_list:
-          b.show_instalment_list == 1 || b.show_instalment_list === '1',
-        show_spelling_of_money:
-          b.show_spelling_of_money == 1 || b.show_spelling_of_money === '1',
+        show_instalment_list: b.show_instalment_list == 1 || b.show_instalment_list === '1',
+        show_spelling_of_money: b.show_spelling_of_money == 1 || b.show_spelling_of_money === '1',
+        use_filter_parameter: b.use_filter_parameter == 1 || b.use_filter_parameter === '1',
         sms_service: b.sms_service == 1 || b.sms_service === '1',
         received_sms: b.received_sms == 1 || b.received_sms === '1',
         purchase_sms: b.purchase_sms == 1 || b.purchase_sms === '1',
         sales_sms: b.sales_sms == 1 || b.sales_sms === '1',
         payment_sms: b.payment_sms == 1 || b.payment_sms === '1',
-        pad_header_image:
-          b.pad_header_image ||
-          b.pad_heading_image ||
-          b.letterhead_image ||
-          b.pad_image ||
-          b.header_image ||
-          '',
+        pad_header_image: b.pad_header_image || b.pad_heading_image || b.letterhead_image || b.pad_image || b.header_image || '',
       }));
 
       setPadHeaderFile(null);
@@ -704,6 +697,14 @@ const AddBranch = () => {
                       checked={formData.need_demo_tutorial}
                       onChange={handleOnChange}
                       label="Need Demo Tutorial?"
+                      className="mb-4"
+                    />
+                    <Checkbox
+                      id="use_filter_parameter"
+                      name="use_filter_parameter"
+                      checked={formData.use_filter_parameter}
+                      onChange={handleOnChange}
+                      label="Use Filter Parameter?"
                       className="mb-4"
                     />
                   </div>

@@ -100,7 +100,9 @@ const ProductStockNormal = ({ user }: any) => {
   const categoryData = useSelector((state: any) => state.category);
   const stock = useSelector((state: any) => state.stock);
   const brand = useSelector((state: any) => state.brand);
+  const settings = useSelector((state: any) => state.settings);
   const authUser = user?.user ?? user;
+  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
@@ -395,37 +397,53 @@ const ProductStockNormal = ({ user }: any) => {
       <HelmetTitle title={'Product Stock'} />
 
       <div className="px-0 py-3 ">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setFilterOpen((prev) => !prev)}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                filterOpen
-                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                  : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-              }`}
-              title="Open filters"
-              aria-label="Open filters"
-            >
-              <FiFilter size={16} />
-            </button>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
+            {useFilterMenuEnabled && (
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
+            )}
 
-            {filterOpen && (
-              <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
-                <div className="space-y-3">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
-                    <InputElement
-                      id="perPage"
-                      name="perPage"
-                      label=""
-                      value={perPage.toString()}
-                      onChange={handlePerPageChange}
-                      type="text"
-                      className="w-full text-sm h-10"
-                    />
-                  </div>
+            {(useFilterMenuEnabled ? filterOpen : true) && (
+              <div
+                className={
+                  useFilterMenuEnabled
+                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    : 'w-full'
+                }
+              >
+                <div
+                  className={
+                    useFilterMenuEnabled
+                      ? 'space-y-3'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
+                  }
+                >
+                  {useFilterMenuEnabled && (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
+                      <InputElement
+                        id="perPage"
+                        name="perPage"
+                        label=""
+                        value={perPage.toString()}
+                        onChange={handlePerPageChange}
+                        type="text"
+                        className="w-full text-sm h-10"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch</label>
@@ -491,7 +509,13 @@ const ProductStockNormal = ({ user }: any) => {
                     />
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-1">
+                  <div
+                    className={`flex gap-2 pt-1 ${
+                      useFilterMenuEnabled
+                        ? 'justify-end'
+                        : 'justify-start self-end md:col-span-2 xl:col-span-1'
+                    }`}
+                  >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
                       buttonLoading={buttonLoading}
@@ -512,7 +536,7 @@ const ProductStockNormal = ({ user }: any) => {
             )}
           </div>
 
-          <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+          <div className={`${useFilterMenuEnabled ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300' : 'hidden'}`}>
             Use the filter
           </div>
 

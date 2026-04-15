@@ -27,6 +27,7 @@ import { toast } from 'react-toastify';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import { hasPermission } from '../../../utils/permissionChecker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
+import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import {
   buildVoucherAutoEditState,
   getVoucherEditTarget,
@@ -56,7 +57,9 @@ const CashBook = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null); 
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
-  const userPermissions = useSelector((state: any) => state.settings?.data?.permissions || []);
+  const settings = useSelector((state: any) => state.settings);
+  const userPermissions = settings?.data?.permissions || [];
+  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
 
   interface OptionType {
@@ -384,121 +387,163 @@ const CashBook = (user: any) => {
             <p className="font-bold">{selectedOption.label}</p>
           </div>
         )}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setFilterOpen((prev) => !prev)}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                filterOpen
-                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                  : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-              }`}
-              title="Open filters"
-              aria-label="Open filters"
-            >
-              <FiFilter size={16} />
-            </button>
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
+          <FilterMenuShell
+            enabled={useFilterMenuEnabled}
+            isOpen={filterOpen}
+            onToggle={() => setFilterOpen((prev) => !prev)}
+            menuWidthClassName="w-[min(92vw,320px)]"
+            inlineClassName="grid grid-cols-3 items-end gap-3"
+          >
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+              {branchDdlData.isLoading == true ? <Loader /> : ''}
+              <BranchDropdown
+                defaultValue={user?.user?.branch_id}
+                value={branchId == null ? '' : String(branchId)}
+                onChange={handleBranchChange}
+                className="w-full font-medium text-sm p-2"
+                branchDdl={dropdownData}
+              />
+            </div>
 
-            {filterOpen && (
-              <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
-                <div className="space-y-3">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
-                    {branchDdlData.isLoading == true ? <Loader /> : ''}
-                    <BranchDropdown
-                      defaultValue={user?.user?.branch_id}
-                      value={branchId == null ? '' : String(branchId)}
-                      onChange={handleBranchChange}
-                      className="w-full font-medium text-sm p-2"
-                      branchDdl={dropdownData}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+              <InputDatePicker
+                setCurrentDate={handleStartDate}
+                className="font-medium text-sm w-full h-10"
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+              <InputDatePicker
+                setCurrentDate={handleEndDate}
+                className="font-medium text-sm w-full h-10"
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
+              />
+            </div>
+
+            <div className={`flex gap-2 pt-1 ${useFilterMenuEnabled ? 'justify-end md:col-span-2 xl:col-span-4' : 'hidden'}`}>
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={buttonLoading}
+                label="Apply"
+                icon=""
+                className="h-10 px-6"
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset"
+                icon=""
+                className="h-10 px-4"
+              />
+            </div>
+          </FilterMenuShell>
+
+          {useFilterMenuEnabled ? (
+            <div className="ml-auto flex items-end gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="w-28">
+                  <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                    Rows
+                  </label>
+                  <InputElement
+                    id="perPage"
+                    name="perPage"
+                    label=""
+                    value={perPage.toString()}
+                    onChange={handlePerPageChange}
+                    type='text'
+                    className="font-medium text-sm h-10 !w-full text-center"
+                  />
+                </div>
+
+                <div className="w-28">
+                  <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                    Font
+                  </label>
+                  <InputElement
+                    id="fontSize"
+                    name="fontSize"
+                    label=""
+                    value={fontSize.toString()}
+                    onChange={handleFontSizeChange}
+                    type='text'
+                    className="font-medium text-sm h-10 !w-full text-center"
+                  />
+                </div>
+              </div>
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="h-10 px-6"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
+              <div className="flex flex-nowrap items-end gap-2">
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Apply"
+                  icon=""
+                  className="h-10 px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon=""
+                  className="h-10 px-4"
+                />
+              </div>
+              <div className="flex flex-nowrap items-end justify-start gap-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="w-28">
+                    <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                      Rows
+                    </label>
+                    <InputElement
+                      id="perPage"
+                      name="perPage"
+                      label=""
+                      value={perPage.toString()}
+                      onChange={handlePerPageChange}
+                      type='text'
+                      className="font-medium text-sm h-10 !w-full text-center"
                     />
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
-                    <InputDatePicker
-                      setCurrentDate={handleStartDate}
-                      className="font-medium text-sm w-full h-10"
-                      selectedDate={startDate}
-                      setSelectedDate={setStartDate}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
-                    <InputDatePicker
-                      setCurrentDate={handleEndDate}
-                      className="font-medium text-sm w-full h-10"
-                      selectedDate={endDate}
-                      setSelectedDate={setEndDate}
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-2 pt-1">
-                    <ButtonLoading
-                      onClick={handleActionButtonClick}
-                      buttonLoading={buttonLoading}
-                      label="Apply"
-                      icon=""
-                      className="h-10 px-6"
-                    />
-                    <ButtonLoading
-                      onClick={handleResetFilters}
-                      buttonLoading={false}
-                      label="Reset"
-                      icon=""
-                      className="h-10 px-4"
+                  <div className="w-28">
+                    <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                      Font
+                    </label>
+                    <InputElement
+                      id="fontSize"
+                      name="fontSize"
+                      label=""
+                      value={fontSize.toString()}
+                      onChange={handleFontSizeChange}
+                      type='text'
+                      className="font-medium text-sm h-10 !w-full text-center"
                     />
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-
-          <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
-            Use the filter
-          </div>
-
-          <div className="ml-auto flex items-end gap-2">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="w-28">
-                <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
-                  Rows
-                </label>
-                <InputElement
-                  id="perPage"
-                  name="perPage"
-                  label=""
-                  value={perPage.toString()}
-                  onChange={handlePerPageChange}
-                  type='text'
-                  className="font-medium text-sm h-10 !w-full text-center"
-                />
-              </div>
-
-              <div className="w-28">
-                <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
-                  Font
-                </label>
-                <InputElement
-                  id="fontSize"
-                  name="fontSize"
-                  label=""
-                  value={fontSize.toString()}
-                  onChange={handleFontSizeChange}
-                  type='text'
-                  className="font-medium text-sm h-10 !w-full text-center"
+                <PrintButton
+                  onClick={handlePrint}
+                  label="Print"
+                  className="h-10 px-6"
+                  disabled={!Array.isArray(tableData) || tableData.length === 0}
                 />
               </div>
             </div>
-            <PrintButton
-              onClick={handlePrint}
-              label="Print"
-              className="h-10 px-6"
-              disabled={!Array.isArray(tableData) || tableData.length === 0}
-            />
-          </div>
+          )}
         </div>
       </div>
       <div className="overflow-y-auto">

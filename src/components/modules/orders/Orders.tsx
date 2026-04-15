@@ -203,8 +203,10 @@ const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
 
 const Orders = () => {
   const orders = useSelector((state) => state.orders);
+  const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
   const [buttonLoading, setButtonLoading] = useState(false);
   const [resetButtonLoading, setResetButtonLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -796,31 +798,47 @@ const Orders = () => {
     <div>
       <HelmetTitle title={'Orders List'} />
       <div className="mb-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setFilterOpen((prev) => !prev)}
-              className={`inline-flex h-9 w-10 items-center justify-center rounded border text-sm transition ${
-                filterOpen
-                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                  : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
-              }`}
-              title="Open filters"
-              aria-label="Open filters"
-            >
-              <FiFilter size={16} />
-            </button>
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-end gap-2' : 'flex flex-col'}`}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
+            {useFilterMenuEnabled && (
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-9 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                    : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
+            )}
 
-            {filterOpen && (
-              <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
-                <div className="space-y-3">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                      Show Rows
-                    </label>
-                    <SelectOption onChange={handleSelectChange} className="h-9 w-full" />
-                  </div>
+            {(useFilterMenuEnabled ? filterOpen : true) && (
+              <div
+                className={
+                  useFilterMenuEnabled
+                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    : 'w-full'
+                }
+              >
+                <div
+                  className={
+                    useFilterMenuEnabled
+                      ? 'space-y-3'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-6'
+                  }
+                >
+                  {useFilterMenuEnabled && (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Show Rows
+                      </label>
+                      <SelectOption onChange={handleSelectChange} className="h-9 w-full" />
+                    </div>
+                  )}
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -893,7 +911,11 @@ const Orders = () => {
                     />
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-1">
+                  <div
+                    className={`flex gap-2 pt-1 ${
+                      useFilterMenuEnabled ? 'justify-end' : 'hidden'
+                    }`}
+                  >
                     <ButtonLoading
                       onClick={handleSearchButton}
                       buttonLoading={false}
@@ -913,44 +935,108 @@ const Orders = () => {
             )}
           </div>
 
-          <div className="hidden min-w-[180px] flex-1 text-sm dark:text-white text-slate-900 md:block dark:text-slate-300f">
+          <div className={`${useFilterMenuEnabled ? 'hidden min-w-[180px] flex-1 text-sm dark:text-white text-slate-900 md:block dark:text-slate-300f' : 'hidden'}`}>
             {searchFilter || orderType || selectedLedger?.value || selectedProductOption?.value || startDate || endDate
               ? 'Filters applied'
               : 'Use the filter'}
           </div>
 
-          <div className="shrink-0">
-            <InputElement
-              id="printRowsPerPage"
-              name="printRowsPerPage"
-              label=""
-              value={String(printRowsPerPage)}
-              onChange={handlePrintRowsChange}
-              type="text"
-              className="h-9 !w-20 px-1 text-center"
-            />
+          <div className={useFilterMenuEnabled ? 'hidden' : 'flex flex-wrap items-end justify-between gap-3'}>
+            <div className="flex flex-wrap items-end gap-2">
+              <ButtonLoading
+                onClick={handleSearchButton}
+                buttonLoading={false}
+                label="Apply"
+                className="whitespace-nowrap h-9"
+                icon={<FiRefreshCw />}
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={resetButtonLoading}
+                label="Reset"
+                className="whitespace-nowrap h-9"
+              />
+            </div>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="shrink-0">
+                <SelectOption onChange={handleSelectChange} value={String(perPage)} className="h-9 !w-24" />
+              </div>
+              <div className="shrink-0">
+                <InputElement
+                  id="printRowsPerPage"
+                  name="printRowsPerPage"
+                  label=""
+                  value={String(printRowsPerPage)}
+                  onChange={handlePrintRowsChange}
+                  type="text"
+                  className="h-9 !w-20 px-1 text-center"
+                />
+              </div>
+              <div className="shrink-0">
+                <InputElement
+                  id="printFontSize"
+                  name="printFontSize"
+                  label=""
+                  value={String(printFontSize)}
+                  onChange={handlePrintFontSizeChange}
+                  type="text"
+                  className="h-9 !w-20 px-1 text-center"
+                />
+              </div>
+              <PrintButton
+                onClick={() => void handleListPrint()}
+                label="Print"
+                className="h-9 shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
+              />
+              <div className="shrink-0">
+                <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
+                  New Orders
+                </Link>
+              </div>
+            </div>
           </div>
-          <div className="shrink-0">
-            <InputElement
-              id="printFontSize"
-              name="printFontSize"
-              label=""
-              value={String(printFontSize)}
-              onChange={handlePrintFontSizeChange}
-              type="text"
-              className="h-9 !w-20 px-1 text-center"
-            />
-          </div>
-          <PrintButton
-            onClick={() => void handleListPrint()}
-            label="Print"
-            className="h-9 shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
-          />
-          <div className="ml-auto shrink-0">
-            <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
-              New Orders
-            </Link>
-          </div>
+
+          {useFilterMenuEnabled && (
+            <>
+              <div className="flex shrink-0 items-end gap-2">
+                <div className="shrink-0">
+                  <SelectOption onChange={handleSelectChange} value={String(perPage)} className="h-9 !w-24" />
+                </div>
+                <div className="shrink-0">
+                  <InputElement
+                    id="printRowsPerPage"
+                    name="printRowsPerPage"
+                    label=""
+                    value={String(printRowsPerPage)}
+                    onChange={handlePrintRowsChange}
+                    type="text"
+                    className="h-9 !w-20 px-1 text-center"
+                  />
+                </div>
+                <div className="shrink-0">
+                  <InputElement
+                    id="printFontSize"
+                    name="printFontSize"
+                    label=""
+                    value={String(printFontSize)}
+                    onChange={handlePrintFontSizeChange}
+                    type="text"
+                    className="h-9 !w-20 px-1 text-center"
+                  />
+                </div>
+                <PrintButton
+                  onClick={() => void handleListPrint()}
+                  label="Print"
+                  className="h-9 shrink-0 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
+                />
+              </div>
+              <div className="ml-auto shrink-0">
+                <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
+                  New Orders
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
