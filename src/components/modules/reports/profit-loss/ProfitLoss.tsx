@@ -358,7 +358,7 @@ const ProfitLoss = (user: any) => {
     <div>
       <HelmetTitle title={"Profit Loss"} />
 
-      <div className="pl-3 pr-1 py-3 dark:border-strokedark dark:bg-boxdark">
+      <div className="pl-3 pr-1 py-3 ">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative shrink-0">
             <button

@@ -229,9 +229,8 @@ const BalanceSheet = (user: any) => {
   return (
     <>
       <HelmetTitle title="Balance Sheet" />
-
       <div className="mx-auto space-y-6 ">
-        <div className="bg-slate-100 pl-0 dark:bg-boxdark">
+        <div className="pl-0">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative shrink-0">
               <button

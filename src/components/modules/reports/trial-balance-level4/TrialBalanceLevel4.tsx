@@ -368,9 +368,8 @@ const TrialBalanceLevel4 = (user: any) => {
   return (
     <>
       <HelmetTitle title="Trial Balance Level 4" />
-
       <div className="mx-auto space-y-6">
-        <div className="bg-slate-100 px-1 dark:bg-boxdark">
+        <div className="px-1">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative shrink-0">
               <button

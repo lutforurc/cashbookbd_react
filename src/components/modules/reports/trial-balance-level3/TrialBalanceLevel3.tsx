@@ -440,7 +440,7 @@ const TrialBalanceLevel3 = (user: any) => {
     <>
       <HelmetTitle title="Trial Balance Level 3" />
       <div className="mx-auto space-y-6">
-        <div className="bg-slate-100 px-1 dark:bg-boxdark">
+        <div className="px-1 ">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative shrink-0">
               <button

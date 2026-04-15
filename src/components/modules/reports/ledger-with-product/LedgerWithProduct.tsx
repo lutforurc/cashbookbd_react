@@ -17,6 +17,7 @@ import { fetchCustomerSupplierStatement } from './ledgerWithProductSlice';
 import LedgerWithProductPrint from './LedgerWithProductPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
+import { FiFilter } from 'react-icons/fi';
 
 const formatAmount = (value: any, precision = 0) => {
   const amount = Number(value || 0);
@@ -68,6 +69,7 @@ const LedgerWithProduct = (user: any) => {
   const [partyLabel, setPartyLabel] = useState<string>('');
   const [rowsPerPage, setRowsPerPage] = useState<number>(16);
   const [fontSize, setFontSize] = useState<number>(10);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('Notice');
   const [modalMessage, setModalMessage] = useState<React.ReactNode>('');
@@ -177,7 +179,14 @@ const LedgerWithProduct = (user: any) => {
 
     if (action?.meta?.requestStatus !== 'fulfilled') {
       openMessageModal('Report Load Failed', action?.payload || 'Statement load failed');
+      return;
     }
+
+    setFilterOpen(false);
+  };
+
+  const handleResetFilters = () => {
+    setFilterOpen(false);
   };
 
   const handlePrint = useReactToPrint({
@@ -343,94 +352,115 @@ const LedgerWithProduct = (user: any) => {
   return (
     <>
       <HelmetTitle title="Ledger with Product" />
-
       <div className="mx-auto space-y-4 ">
-        <div className="  ">
-          <div className="">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[1.15fr_1.15fr_1.15fr_1.15fr_52px_52px_70px_56px] xl:items-end xl:gap-3">
-              <div className="xl:min-w-0">
-                <div>
-                  {' '}
-                  <label htmlFor="">Select Branch</label>
+        <div className="py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
+
+              {filterOpen && (
+                <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                      <BranchDropdown
+                        branchDdl={dropdownData}
+                        onChange={(e: any) => setBranchId(Number(e.target.value) || null)}
+                        value={branchId ? String(branchId) : ''}
+                        defaultValue={branchId ? String(branchId) : ''}
+                        className="w-full font-medium text-sm h-10 pl-1"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Ledger</label>
+                      <DdlMultiline
+                        onSelect={(option: any) => {
+                          setPartyId(option?.value ? Number(option.value) : null);
+                          setPartyLabel(option?.label || '');
+                        }}
+                        className="h-10"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                      <InputDatePicker
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
+                        setCurrentDate={setStartDate}
+                        className="font-medium text-sm w-full h-10"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                      <InputDatePicker
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
+                        setCurrentDate={setEndDate}
+                        className="font-medium text-sm w-full h-10"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      <ButtonLoading
+                        label="Apply"
+                        onClick={handleRun}
+                        buttonLoading={statementState?.loading}
+                        className="h-10 px-6"
+                      />
+                      <ButtonLoading
+                        label="Reset"
+                        onClick={handleResetFilters}
+                        buttonLoading={false}
+                        className="h-10 px-4"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <BranchDropdown
-                  branchDdl={dropdownData}
-                  onChange={(e: any) => setBranchId(Number(e.target.value) || null)}
-                  defaultValue={branchId ? String(branchId) : ''}
-                  className="w-full font-medium text-sm h-8.5 pl-1"
-                />
-              </div>
+              )}
+            </div>
 
-              <div className="xl:min-w-0">
-                <label htmlFor="">Select Ledger</label>
-                <DdlMultiline
-                  onSelect={(option: any) => {
-                    setPartyId(option?.value ? Number(option.value) : null);
-                    setPartyLabel(option?.label || '');
-                  }}
-                  className='h-8.5'
-                />
-              </div>
+            <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+              Use the filter
+            </div>
 
-              <div className="xl:min-w-0">
-                <InputDatePicker
-                  label="Start Date"
-                  selectedDate={startDate}
-                  setSelectedDate={setStartDate}
-                  setCurrentDate={setStartDate}
-                  className="font-medium text-sm w-full h-8.5"
-                />
-              </div>
-
-              <div className="xl:min-w-0">
-                <InputDatePicker
-                  label="End Date"
-                  selectedDate={endDate}
-                  setSelectedDate={setEndDate}
-                  setCurrentDate={setEndDate}
-                  className="font-medium text-sm w-full h-8.5"
-                />
-              </div>
-
-              <div className="xl:min-w-0">
-                <InputElement
-                  type="number"
-                  id="cs-statement-rows"
-                  label="Rows"
-                  value={rowsPerPage}
-                  onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 16)}
-                  className="font-medium text-sm w-full h-8.5"
-                />
-              </div>
-
-              <div className="xl:min-w-0">
-                <InputElement
-                  type="number"
-                  id="cs-statement-font"
-                  label="Font"
-                  value={fontSize}
-                  onChange={(e: any) => setFontSize(Number(e.target.value) || 10)}
-                  className="font-medium text-sm w-full h-8.5"
-                />
-              </div>
-
-              <div className="xl:min-w-0">
-                <ButtonLoading
-                  label="Run"
-                  onClick={handleRun}
-                  buttonLoading={statementState?.loading}
-                  className="mt-6 h-8.5 w-full border-0 bg-slate-600 px-4 text-white hover:bg-slate-500 xl:mt-0"
-                />
-              </div>
-
-              <div className="xl:min-w-0">
-                <PrintButton
-                  label=""
-                  onClick={handlePrint}
-                  className="mt-6 h-8.5 w-full border-0 bg-slate-600 px-3 text-white hover:bg-slate-500 xl:mt-0"
-                  disabled={!rows.length}
-                />
-              </div>
+            <div className="ml-auto flex items-end gap-2">
+              <InputElement
+                type="number"
+                id="cs-statement-rows"
+                label=""
+                value={rowsPerPage}
+                onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 16)}
+                className="font-medium text-sm h-10 !w-20 text-center"
+              />
+              <InputElement
+                type="number"
+                id="cs-statement-font"
+                label=""
+                value={fontSize}
+                onChange={(e: any) => setFontSize(Number(e.target.value) || 10)}
+                className="font-medium text-sm h-10 !w-20 text-center"
+              />
+              <PrintButton
+                label="Print"
+                onClick={handlePrint}
+                className="h-10 px-6"
+                disabled={!rows.length}
+              />
             </div>
           </div>
         </div>
