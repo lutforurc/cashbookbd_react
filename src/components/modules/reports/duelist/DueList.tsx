@@ -101,7 +101,7 @@ const DueList = (user: any) => {
       render: (row: any) => (
         <>
           <p>{row.coa4_name}</p>
-          <p className="text-sm text-gray-500">{row.mobile}</p>
+          <p className="text-sm text-gray-500">{(row.mobile?.length ?? 0) > 10 && <div className="text-xs">{row.mobile}</div>}</p>
           <p className="text-sm text-gray-500">{row.manual_address}</p>
         </>
       ),

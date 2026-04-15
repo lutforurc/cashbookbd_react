@@ -77,7 +77,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                       {/* Member Info */}
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                         <div className="font-semibold">{row.coa4_name}</div>
-                        <div className="text-xs">{row.mobile}</div>
+                        {(row.mobile?.length ?? 0) > 10 && <div className="text-xs">{row.mobile}</div>}
                         <div className="text-xs">{row.manual_address}</div>
                         <div className="text-xs">{row.ledger_page}</div>
                       </td>
