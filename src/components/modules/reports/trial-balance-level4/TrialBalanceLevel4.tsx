@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
+import { FiFilter } from "react-icons/fi";
 
 import {
   ButtonLoading,
@@ -143,6 +144,7 @@ const TrialBalanceLevel4 = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState<number>(20);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -259,7 +261,10 @@ const TrialBalanceLevel4 = (user: any) => {
 
     if (action?.meta?.requestStatus !== "fulfilled") {
       alert(action?.payload || "Trial balance level 4 load failed");
+      return;
     }
+
+    setFilterOpen(false);
   };
 
   const handlePrint = useReactToPrint({
@@ -267,6 +272,10 @@ const TrialBalanceLevel4 = (user: any) => {
     documentTitle: "Trial Balance Level 4",
     removeAfterPrint: true,
   });
+
+  const handleResetFilters = () => {
+    setFilterOpen(false);
+  };
 
   const columns = [
     {
@@ -360,81 +369,109 @@ const TrialBalanceLevel4 = (user: any) => {
     <>
       <HelmetTitle title="Trial Balance Level 4" />
 
-      <div className="mx-auto space-y-6 px-4 py-4 md:px-6 2xl:px-8">
-        <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-          <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                  Trial Balance Level 4
-                </h2>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Opening, movement, and closing debit-credit balances by COA level 4.
-                </p>
-              </div>
+      <div className="mx-auto space-y-6">
+        <div className="bg-slate-100 px-1 dark:bg-boxdark">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
+                    : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
 
-              <div className="flex flex-wrap gap-2">
-                <ButtonLoading
-                  label="Load Report"
-                  onClick={handleActionButtonClick}
-                  buttonLoading={buttonLoading}
-                  className="h-10 rounded-sm px-5"
-                />
-                <PrintButton
-                  label="Print"
-                  onClick={handlePrint}
-                  className="h-10 rounded-sm px-5"
-                />
-              </div>
-            </div>
-          </div>
+              {filterOpen && (
+                <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Select Branch
+                      </label>
+                      <BranchDropdown
+                        branchDdl={dropdownData}
+                        onChange={handleBranchChange}
+                        defaultValue={branchId ? String(branchId) : ""}
+                        value={branchId ? String(branchId) : ""}
+                        className="h-10 rounded-sm px-3"
+                      />
+                    </div>
 
-          <div className="grid grid-cols-1 gap-4 px-5 py-5 md:grid-cols-2 xl:grid-cols-5">
-            <div className="xl:col-span-2">
-              <label className="mb-1 block text-sm text-slate-700 dark:text-slate-200">
-                Branch
-              </label>
-              <BranchDropdown
-                branchDdl={dropdownData}
-                onChange={handleBranchChange}
-                defaultValue={branchId ? String(branchId) : ""}
-                className="h-10 rounded-sm px-3"
-              />
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Start Date
+                      </label>
+                      <InputDatePicker
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
+                        setCurrentDate={setStartDate}
+                        className="h-10 w-full rounded-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        End Date
+                      </label>
+                      <InputDatePicker
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
+                        setCurrentDate={setEndDate}
+                        className="h-10 w-full rounded-sm"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      <ButtonLoading
+                        label="Apply"
+                        onClick={handleActionButtonClick}
+                        buttonLoading={buttonLoading}
+                        className="h-10 px-6"
+                      />
+                      <ButtonLoading
+                        label="Reset"
+                        onClick={handleResetFilters}
+                        buttonLoading={false}
+                        className="h-10 px-4"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div>
-              <InputDatePicker
-                label="Start Date"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
-                setCurrentDate={setStartDate}
-                className="h-10 w-full rounded-sm"
-              />
+
+            <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+              Use the filter
             </div>
-            <div>
-              <InputDatePicker
-                label="End Date"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
-                setCurrentDate={setEndDate}
-                className="h-10 w-full rounded-sm"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+
+            <div className="ml-auto flex items-end gap-2">
               <InputElement
                 type="number"
                 id="tbl4-rows-per-page"
-                label="Rows/Page"
+                label=""
                 value={rowsPerPage}
                 onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 20)}
-                className="h-10"
+                className="h-10 !w-20 text-center"
               />
               <InputElement
                 type="number"
                 id="tbl4-font-size"
-                label="Font Size"
+                label=""
                 value={fontSize}
                 onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                className="h-10"
+                className="h-10 !w-20 text-center"
+              />
+              <PrintButton
+                label="Print"
+                onClick={handlePrint}
+                className="h-10 px-6"
+                disabled={!hasReportData}
               />
             </div>
           </div>
@@ -533,18 +570,21 @@ const SummaryCard = ({
 }) => {
   const toneMap: Record<string, string> = {
     emerald:
-      "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-100",
-    blue: "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-100",
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
+    blue:
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
     amber:
-      "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100",
+      "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100",
     slate:
-      "border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-500/20 dark:bg-slate-500/10 dark:text-slate-100",
+      "border-slate-200 bg-white text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-white",
   };
 
   return (
-    <div className={`rounded-sm border p-5 shadow-default ${toneMap[tone]}`}>
-      <p className="text-sm font-medium">{title}</p>
-      <p className="mt-2 text-2xl font-bold">{ thousandSeparator (value, 0)}</p>
+    <div className={`rounded border px-4 py-4 shadow-sm ${toneMap[tone]}`}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+        {title}
+      </p>
+      <p className="mt-3 text-2xl font-semibold">{thousandSeparator(value, 0)}</p>
     </div>
   );
 };
