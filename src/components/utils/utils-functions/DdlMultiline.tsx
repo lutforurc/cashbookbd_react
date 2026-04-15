@@ -62,11 +62,18 @@ const DdlMultiline: React.FC<DropdownProps> = ({
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
   const [inputValue, setInputValue] = React.useState('');
+  const [internalSelectedOption, setInternalSelectedOption] = React.useState<OptionType | null>(
+    value ?? defaultValue ?? null,
+  );
   const dispatch = useDispatch();
 
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
   const controlHeight = getControlHeightFromClassName(className);
+
+  React.useEffect(() => {
+    setInternalSelectedOption(value ?? defaultValue ?? null);
+  }, [value, defaultValue]);
 
   // Load Options (Asynchronous)
   const loadOptions = async (
@@ -159,6 +166,10 @@ const DdlMultiline: React.FC<DropdownProps> = ({
       backgroundColor: darkMode ? '#3b3e47' : '#fff',
       borderColor: darkMode ? '#808290' : '#000',
     }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999,
+    }),
     placeholder: (base) => ({
       ...base,
       color: darkMode ? '#9CA3AF' : '#c2c2c2',
@@ -233,6 +244,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
             onActionSelect?.(inputValue.trim());
             return;
           }
+          setInternalSelectedOption(selected || null);
           onSelect?.(selected);
         }}
         onInputChange={(nextValue, meta) => {
@@ -291,7 +303,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         placeholder={placeholder || 'Select an account'}
         styles={customStyles}
         defaultValue={defaultValue}
-        value={value}
+        value={value ?? internalSelectedOption}
         menuPortalTarget={document.body} // Fix Dropdown Render Issue
       />
     </div>

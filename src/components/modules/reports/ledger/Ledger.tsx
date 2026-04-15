@@ -35,6 +35,7 @@ const Ledger = (user: any) => {
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
+  const [selectedLedgerOption, setSelectedLedgerOption] = useState<{ value: any; label: any } | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
@@ -92,6 +93,8 @@ const Ledger = (user: any) => {
   };
 
   const handleResetFilters = () => {
+    setLedgerAccount(null);
+    setSelectedLedgerOption(null);
     setFilterOpen(false);
   };
 
@@ -116,7 +119,17 @@ const Ledger = (user: any) => {
   }, [branchDdlData?.protectedData]);
 
   const selectedLedgerOptionHandler = (option: any) => {
+    if (!option) {
+      setLedgerAccount(null);
+      setSelectedLedgerOption(null);
+      return;
+    }
+
     setLedgerAccount(option.value);
+    setSelectedLedgerOption({
+      value: option.value,
+      label: option.label,
+    });
   };
 
 
@@ -314,7 +327,12 @@ const Ledger = (user: any) => {
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Ledger</label>
-                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className="h-10" />
+                    <DdlMultiline
+                      onSelect={selectedLedgerOptionHandler}
+                      value={selectedLedgerOption}
+                      acType={''}
+                      className="h-10"
+                    />
                   </div>
 
                   <div>
