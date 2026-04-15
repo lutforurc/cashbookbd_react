@@ -331,7 +331,7 @@ const TrialBalanceLevel3 = (user: any) => {
     setButtonLoading(false);
 
     if (action?.meta?.requestStatus !== "fulfilled") {
-      alert(action?.payload || "Trial balance level 3 load failed");
+      alert(action?.payload || "Trial Balance Group load failed");
       return;
     }
 
@@ -340,7 +340,7 @@ const TrialBalanceLevel3 = (user: any) => {
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: "Trial Balance Level 3",
+    documentTitle: "Trial Balance Group",
     removeAfterPrint: true,
   });
 
@@ -438,7 +438,7 @@ const TrialBalanceLevel3 = (user: any) => {
 
   return (
     <>
-      <HelmetTitle title="Trial Balance Level 3" />
+      <HelmetTitle title="Trial Balance Group" />
       <div className="mx-auto space-y-6">
         <div className="px-1 ">
           <div className="flex flex-wrap items-center gap-3">

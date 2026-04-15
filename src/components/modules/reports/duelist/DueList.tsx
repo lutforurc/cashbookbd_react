@@ -6,7 +6,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDueList } from './dueListSlice';
-import { FiBook, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit, FiFilter, FiTrash2 } from 'react-icons/fi';
 import dayjs from 'dayjs';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import Table from '../../../utils/others/Table';
@@ -33,6 +33,7 @@ const DueList = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [filterOpen, setFilterOpen] = useState(false);
 
 
     interface OptionType {
@@ -63,6 +64,11 @@ const DueList = (user: any) => {
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
     dispatch(getDueList({ branchId, endDate: endD }));
     setTableData(dueList?.data?.data?.data);
+    setFilterOpen(false);
+  };
+
+  const handleResetFilters = () => {
+    setFilterOpen(false);
   };
 
 
@@ -175,74 +181,104 @@ const DueList = (user: any) => {
   return (
     <div className="">
       <HelmetTitle title={'Due List'} />
-      <div className="grid grid-cols-1 mb-1">
+      <div className="py-3">
         {selectedOption && (
           <div className="mt-4">
             <p>Selected:</p>
             <p className="font-bold">{selectedOption.label}</p>
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-x-2">
-          <div>
-            <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
-            </div>
-            <div>
-              {branchDdlData.isLoading == true ? <Loader /> : ''}
-              <BranchDropdown
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5 "
-                branchDdl={dropdownData}
-              />
-            </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setFilterOpen((prev) => !prev)}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                filterOpen
+                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                  : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+              }`}
+              title="Open filters"
+              aria-label="Open filters"
+            >
+              <FiFilter size={16} />
+            </button>
+
+            {filterOpen && (
+              <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                    {branchDdlData.isLoading == true ? <Loader /> : ''}
+                    <BranchDropdown
+                      onChange={handleBranchChange}
+                      value={branchId == null ? '' : String(branchId)}
+                      className="w-full font-medium text-sm p-1.5"
+                      branchDdl={dropdownData}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                    <InputDatePicker
+                      setCurrentDate={handleEndDate}
+                      className="w-full font-medium text-sm h-10"
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1">
+                    <ButtonLoading
+                      onClick={handleActionButtonClick}
+                      buttonLoading={buttonLoading}
+                      icon=""
+                      label="Apply"
+                      className="h-10 px-6"
+                    />
+                    <ButtonLoading
+                      onClick={handleResetFilters}
+                      buttonLoading={false}
+                      icon=""
+                      label="Reset"
+                      className="h-10 px-4"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          <div>
-            <label htmlFor="">End Date</label>
-            <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="w-full font-medium text-sm h-8"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
+
+          <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+            Use the filter
+          </div>
+
+          <div className="ml-auto flex items-end gap-2">
+            <InputElement
+              id="perPage"
+              name="perPage"
+              label=""
+              value={perPage.toString()}
+              onChange={handlePerPageChange}
+              type='text'
+              className="font-medium text-sm h-10 !w-20 text-center"
             />
-          </div>
-          <div className="flex w-full">
-            <div className="mr-2">
-              <InputElement
-                id="perPage"
-                name="perPage"
-                label="Rows"
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type='text'
-                className="font-medium text-sm h-9 w-12"
-              />
-            </div>
-            <div className="mr-2">
-              <InputElement
-                id="fontSize"
-                name="fontSize"
-                label="Font"
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type='text'
-                className="font-medium text-sm h-9 w-12"
-              />
-            </div>
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
-              icon=""
-              label="Run"
-              className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
+            <InputElement
+              id="fontSize"
+              name="fontSize"
+              label=""
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type='text'
+              className="font-medium text-sm h-10 !w-20 text-center"
             />
             <PrintButton
               onClick={handlePrint}
-              label=""
-              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
+              label="Print"
+              className="h-10 px-6"
+              disabled={!Array.isArray(tableData) || tableData.length === 0}
             />
           </div>
-
         </div>
       </div>
       <div className='overflow-y-auto overflow-x-auto'>

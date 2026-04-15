@@ -53,7 +53,7 @@ const TrialBalanceLevel3Print = ({
 
         <div className="mb-4 text-center" style={{ fontSize: `${fs}px` }}>
           <h1 className="mt-1 font-bold" style={{ fontSize: `${fs + 10}px` }}>
-            Trial Balance Level 3
+            Trial Balance Group
           </h1>
           <p>
             Period: {startDate} to {endDate}

@@ -211,7 +211,7 @@ const CatWiseInOut = (user: any) => {
     <div>
       <HelmetTitle title={"Category Wise In & Out"} />
 
-      <div className="mb-4 rounded-sm border border-slate-200 bg-slate-100 px-4 py-3 dark:border-strokedark dark:bg-boxdark">
+      <div className=" px-0 py-3 ">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative shrink-0">
             <button
@@ -318,7 +318,7 @@ const CatWiseInOut = (user: any) => {
               name="perPage"
               value={perPage.toString()}
               onChange={(e) => setPerPage(Number(e.target.value))}
-              className="h-10 w-20 text-sm"
+              className="h-10 !w-20 text-sm"
             />
             <InputElement
               id="fontSize"
@@ -326,7 +326,7 @@ const CatWiseInOut = (user: any) => {
               label={"Font"}
               value={fontSize.toString()}
               onChange={(e) => setFontSize(Number(e.target.value))}
-              className="h-10 w-20 text-sm"
+              className="h-10 !w-20 text-sm"
             />
             <PrintButton
               onClick={handlePrint}

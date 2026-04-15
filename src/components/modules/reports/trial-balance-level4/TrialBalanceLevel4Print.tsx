@@ -94,7 +94,7 @@ const TrialBalanceLevel4Print = React.forwardRef<
                 className="mt-3 text-center font-bold"
                 style={{ fontSize: `${fs + 10}px` }}
               >
-                Trial Balance Level 4
+                Trial Balance Details
               </h1>
               <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
                 <div>

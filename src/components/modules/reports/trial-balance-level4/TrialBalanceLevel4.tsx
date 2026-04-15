@@ -260,7 +260,7 @@ const TrialBalanceLevel4 = (user: any) => {
     setButtonLoading(false);
 
     if (action?.meta?.requestStatus !== "fulfilled") {
-      alert(action?.payload || "Trial balance level 4 load failed");
+      alert(action?.payload || "Trial Balance Details load failed");
       return;
     }
 
@@ -269,7 +269,7 @@ const TrialBalanceLevel4 = (user: any) => {
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: "Trial Balance Level 4",
+    documentTitle: "Trial Balance Details",
     removeAfterPrint: true,
   });
 
@@ -367,7 +367,7 @@ const TrialBalanceLevel4 = (user: any) => {
 
   return (
     <>
-      <HelmetTitle title="Trial Balance Level 4" />
+      <HelmetTitle title="Trial Balance Details" />
       <div className="mx-auto space-y-6">
         <div className="px-1">
           <div className="flex flex-wrap items-center gap-3">

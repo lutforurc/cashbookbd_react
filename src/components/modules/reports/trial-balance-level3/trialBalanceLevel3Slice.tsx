@@ -54,7 +54,7 @@ export const fetchTrialBalanceLevel3 = createAsyncThunk<
     }
 
     return thunkAPI.rejectWithValue(
-      res.data?.message || "Failed to load trial balance level 3",
+      res.data?.message || "Failed to load Trial Balance Group",
     );
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
@@ -95,12 +95,12 @@ const trialBalanceLevel3Slice = createSlice({
       .addCase(fetchTrialBalanceLevel3.fulfilled, (state, action) => {
         state.loading = false;
         state.data = action.payload;
-        state.message = "Trial balance level 3 loaded";
+        state.message = "Trial Balance Group loaded";
         state.progress = 100;
       })
       .addCase(fetchTrialBalanceLevel3.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Failed to load trial balance level 3";
+        state.error = action.payload || "Failed to load Trial Balance Group";
         state.progress = 0;
       });
   },
