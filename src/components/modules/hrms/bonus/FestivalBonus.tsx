@@ -332,7 +332,6 @@ const FestivalBonus = ({ user }: any) => {
 
             <div className="ml-auto flex items-end gap-2">
               <div className="w-28">
-                
                 <InputElement
                   id="print_font_size_inline"
                   value={String(fontSize)}
