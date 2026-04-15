@@ -157,29 +157,12 @@ const toNumber = (value: Primitive) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const formatSignedAmount = (value: Primitive, decimal = 0) => {
+const formatBalanceAmount = (value: Primitive, decimal = 0) => {
   const amount = toNumber(value);
-  if (amount === 0) {
-    return {
-      text: '-',
-      isNegative: false,
-    };
-  }
-
-  if (amount < 0) {
-    return {
-      text: `(-) ${thousandSeparator(Math.abs(amount), decimal)}`,
-      isNegative: true,
-    };
-  }
-
-  return {
-    text: thousandSeparator(amount, decimal),
-    isNegative: false,
-  };
+  return amount < 0
+    ? `(-) ${thousandSeparator(Math.abs(amount), decimal)}`
+    : thousandSeparator(amount, decimal);
 };
-
-
 
 const OrderWithProduct = ({
   orderId,
@@ -541,9 +524,17 @@ const OrderWithProduct = ({
         header: paymentColumnLabel,
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
+        render: (row: any) => <span>{thousandSeparator(Math.abs(toNumber(row.payment)), 0)}</span>,
+      },
+      {
+        key: 'balance',
+        header: 'BALANCE',
+        headerClass: 'text-right',
+        cellClass: 'text-right w-28',
         render: (row: any) => {
-          const paymentDisplay = formatSignedAmount(row.payment, 0);
-          return <span className={paymentDisplay.isNegative ? 'font-bold' : ''}>{ paymentDisplay.text}</span>;
+          const balance =
+            toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
+          return <span>{formatBalanceAmount(balance, 0)}</span>;
         },
       },
     ],
@@ -581,10 +572,14 @@ const OrderWithProduct = ({
                 className: 'text-right',
               },
               {
-                label: (() => {
-                  const paymentDisplay = formatSignedAmount(totals.payment, 0);
-                  return <span className={paymentDisplay.isNegative ? 'font-bold' : ''}>{paymentDisplay.text}</span>;
-                })(),
+                label: thousandSeparator(Math.abs(totals.payment), 0),
+                className: 'text-right',
+              },
+              {
+                label: formatBalanceAmount(
+                  totals.total - totals.discount - Math.abs(totals.payment),
+                  0,
+                ),
                 className: 'text-right',
               },
             ],
@@ -751,10 +746,10 @@ const OrderWithProduct = ({
             footerRows={footerRows}
             getRowKey={(row: any) => row.id}
             className=""
-            tableClassName="min-w-[1180px] text-sm text-gray-100 dark:text-gray-100"
-            theadClassName="bg-slate-700 text-white dark:bg-slate-700 dark:text-white"
-            tbodyClassName="divide-y divide-slate-700 bg-slate-800 dark:divide-slate-700 dark:bg-slate-800"
-            rowClassName="hover:bg-slate-700 dark:hover:bg-slate-700"
+            // tableClassName="min-w-[1180px] text-sm text-gray-100 dark:text-gray-100"
+            // theadClassName="bg-slate-700 text-white dark:bg-slate-700 dark:text-white"
+            // tbodyClassName="divide-y divide-slate-700 bg-slate-800 dark:divide-slate-700 dark:bg-slate-800"
+            // rowClassName="hover:bg-slate-700 dark:hover:bg-slate-700"
           />
         </div>
 
