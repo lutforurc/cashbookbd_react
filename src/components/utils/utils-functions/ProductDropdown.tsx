@@ -24,6 +24,22 @@ interface DropdownProps {
   className?: string; 
 }
 
+const getControlHeightFromClassName = (className?: string) => {
+  if (!className) return undefined;
+
+  const arbitraryHeightMatch = className.match(/\bh-\[([^\]]+)\]/);
+  if (arbitraryHeightMatch) {
+    return arbitraryHeightMatch[1];
+  }
+
+  const tailwindHeightMatch = className.match(/\bh-(\d+(?:\.\d+)?)\b/);
+  if (tailwindHeightMatch) {
+    return `${Number(tailwindHeightMatch[1]) * 0.25}rem`;
+  }
+
+  return undefined;
+};
+
 const ProductDropdown: React.FC<DropdownProps> = ({
   id,
   name,
@@ -35,9 +51,17 @@ const ProductDropdown: React.FC<DropdownProps> = ({
 }) => {
   const selectRef = useRef(null); 
   const [isSelected, setIsSelected] = React.useState(false);
+  const [internalSelectedOption, setInternalSelectedOption] = React.useState<OptionType | null>(
+    value ?? defaultValue ?? null,
+  );
   const dispatch = useDispatch();
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
+  const controlHeight = getControlHeightFromClassName(className);
+
+  React.useEffect(() => {
+    setInternalSelectedOption(value ?? defaultValue ?? null);
+  }, [value, defaultValue]);
 
   const loadOptions = async (inputValue: string, callback: (options: OptionType[]) => void) => {
     if (inputValue.length >= 3) {
@@ -68,7 +92,8 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   const customStyles: StylesConfig = {
     control: (provided, state) => ({
       ...provided,
-      minHeight: 'unset',
+      minHeight: controlHeight || '2.1rem',
+      height: controlHeight,
       borderRadius: '0.0rem',
       borderColor: state.isFocused ? 'rgb(59 130 246)' : darkMode ? '#363843' : '#d2d6dc',
       backgroundColor: darkMode ? '#1f212a' : '#fcfcfc',
@@ -107,17 +132,23 @@ const ProductDropdown: React.FC<DropdownProps> = ({
       backgroundColor: darkMode ? '#3b3e47' : '#fff',
       borderColor: darkMode ? '#808290' : '#000',
     }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999,
+    }),
     placeholder: (base) => ({
       ...base,
       color: darkMode ? '#9CA3AF' : '#c2c2c2',
       marginTop: 0,
       marginBottom: 0,
+      lineHeight: controlHeight,
     }),
     singleValue: (base) => ({
       ...base,
       color: darkMode ? '#fff' : '#000',
       marginTop: 0,
       marginBottom: 0,
+      lineHeight: controlHeight,
     }),
     input: (base) => ({
       ...base,
@@ -126,26 +157,40 @@ const ProductDropdown: React.FC<DropdownProps> = ({
       marginBottom: 0,
       paddingTop: 0,
       paddingBottom: 0,
+      height: controlHeight,
     }),
     valueContainer: (base) => ({
       ...base,
       paddingTop: 0,
       paddingBottom: 0,
+      height: controlHeight,
+      minHeight: controlHeight,
     }),
     indicatorsContainer: (base) => ({
       ...base,
       paddingTop: 0,
       paddingBottom: 0,
+      height: controlHeight,
+      minHeight: controlHeight,
+      alignItems: 'center',
     }),
     dropdownIndicator: (base) => ({
       ...base,
-      paddingTop: 4,
-      paddingBottom: 4,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: 0,
+      paddingBottom: 0,
+      height: controlHeight,
     }),
     clearIndicator: (base) => ({
       ...base,
-      paddingTop: 4,
-      paddingBottom: 4,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: 0,
+      paddingBottom: 0,
+      height: controlHeight,
     }),
   };
 
@@ -154,13 +199,16 @@ const ProductDropdown: React.FC<DropdownProps> = ({
       <AsyncSelect<OptionType>
         inputId={id}
         name={name}
-        className="cash-react-select-container w-full dark:bg-black focus:border-blue-500"
+        className={`cash-react-select-container w-full dark:bg-black focus:border-blue-500 ${className || ''}`}
         classNamePrefix="cash-react-select"
         classNames={{
           control: () => className || '',
         }}
         loadOptions={loadOptions}
-        onChange={onSelect}
+        onChange={(selected) => {
+          setInternalSelectedOption(selected || null);
+          onSelect(selected || null);
+        }}
         onMenuOpen={() => setIsSelected(true)}
         onMenuClose={() => setIsSelected(false)}
         onKeyDown={onKeyDown}
@@ -200,7 +248,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
         placeholder="Select product"
         styles={customStyles}
         defaultValue={defaultValue}
-        value={value}
+        value={value ?? internalSelectedOption}
         menuPortalTarget={document.body}
         ref={selectRef} // রেফ যোগ করুন
         // components={{ DropdownIndicator: () => null }}
