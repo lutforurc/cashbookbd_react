@@ -662,7 +662,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'ledger.view') && (
+                          {hasPermission(permissions, 'product.in.out') && (
                             <li>
                               <NavLink
                                 to={routes.product_ledger_data}

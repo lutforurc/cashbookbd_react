@@ -17,6 +17,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import ProductLedgerDataPrint from './ProductLedgerDataPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
+import { FiFilter } from 'react-icons/fi';
 
 const aliasValue = (row: any, keys: string[], fallback: any = null) => {
   for (const key of keys) {
@@ -92,6 +93,7 @@ const ProductLedgerData = (user: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [error, setError] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
@@ -205,6 +207,7 @@ const ProductLedgerData = (user: any) => {
         payload?.data ??
         payload;
       setTableData(extractRows(rawData));
+      setFilterOpen(false);
     } catch (err: any) {
       setTableData([]);
       setError(err?.response?.data?.message || err?.message || 'Product ledger load failed');
@@ -218,6 +221,10 @@ const ProductLedgerData = (user: any) => {
     documentTitle: 'Product In Out',
     removeAfterPrint: true,
   });
+
+  const handleResetFilters = () => {
+    setFilterOpen(false);
+  };
 
   const tableRows = useMemo(() => {
     const openingData = {
@@ -372,92 +379,121 @@ const ProductLedgerData = (user: any) => {
       <HelmetTitle title="Product In Out" />
 
       <div className="">
-        <div className="flex justify-between mb-1">
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 w-full gap-2">
-            <div>
-              <div>
-                <label htmlFor="">Select Branch</label>
-              </div>
-              <div className="w-full">
-                {branchDdlData?.isLoading ? <Loader /> : ''}
-                <BranchDropdown
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                    setBranchId(e.target.value ? Number(e.target.value) : null)
-                  }
-                  branchDdl={dropdownData}
-                  value={branchId ? String(branchId) : undefined}
-                  className="w-60 font-medium text-sm p-1.5"
-                />
-              </div>
+        <div className="py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
+
+              {filterOpen && (
+                <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                      {branchDdlData?.isLoading ? <Loader /> : ''}
+                      <BranchDropdown
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                          setBranchId(e.target.value ? Number(e.target.value) : null)
+                        }
+                        branchDdl={dropdownData}
+                        value={branchId ? String(branchId) : undefined}
+                        className="w-full font-medium text-sm p-1.5"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Item / Product</label>
+                      <ProductDropdown
+                        onSelect={selectedProduct}
+                        className="appearance-none h-10"
+                        value={selectedLedgerOption}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                      <InputDatePicker
+                        label=""
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
+                        setCurrentDate={setStartDate}
+                        className="font-medium text-sm w-full h-10"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                      <InputDatePicker
+                        label=""
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
+                        setCurrentDate={setEndDate}
+                        className="font-medium text-sm w-full h-10"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      <ButtonLoading
+                        onClick={runReport}
+                        buttonLoading={buttonLoading}
+                        label="Apply"
+                        icon=""
+                        className="h-10 px-6"
+                      />
+                      <ButtonLoading
+                        onClick={handleResetFilters}
+                        buttonLoading={false}
+                        label="Reset"
+                        icon=""
+                        className="h-10 px-4"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="w-full">
-              <label htmlFor="">Select Item / Product</label>
-              <ProductDropdown
-                onSelect={selectedProduct}
-                className="appearance-none h-8"
-                value={selectedLedgerOption}
-              />
+            <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+              Use the filter
             </div>
 
-            <div className="w-full">
-              <label htmlFor="">Start Date</label>
-              <InputDatePicker
+            <div className="ml-auto flex items-end gap-2">
+              <InputElement
+                id="rowsPerPage"
+                name="rowsPerPage"
                 label=""
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
-                setCurrentDate={setStartDate}
-                className="font-medium text-sm w-full h-8"
+                value={rowsPerPage.toString()}
+                onChange={(e) => setRowsPerPage(Number(e.target.value) || 12)}
+                type="text"
+                className="font-medium text-sm h-10 !w-20 text-center"
               />
-            </div>
 
-            <div className="w-full flex">
-              <div className="w-full mr-2">
-                <label htmlFor="">End Date</label>
-                <InputDatePicker
-                  label=""
-                  selectedDate={endDate}
-                  setSelectedDate={setEndDate}
-                  setCurrentDate={setEndDate}
-                  className="font-medium text-sm w-full h-8"
-                />
-              </div>
-
-              <div className="mr-2">
-                <InputElement
-                  id="rowsPerPage"
-                  name="rowsPerPage"
-                  label="Rows"
-                  value={rowsPerPage.toString()}
-                  onChange={(e) => setRowsPerPage(Number(e.target.value) || 12)}
-                  type="text"
-                  className="font-medium text-sm h-8 w-12"
-                />
-              </div>
-
-              <div className="mr-2">
-                <InputElement
-                  id="fontSize"
-                  name="fontSize"
-                  label="Font"
-                  value={fontSize.toString()}
-                  onChange={(e) => setFontSize(Number(e.target.value) || 12)}
-                  type="text"
-                  className="font-medium text-sm h-8 w-12"
-                />
-              </div>
-
-              <ButtonLoading
-                onClick={runReport}
-                buttonLoading={buttonLoading}
-                label="Run"
-                icon=""
-                className="mt-6 pt-[0.45rem] pb-[0.45rem] h-8"
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label=""
+                value={fontSize.toString()}
+                onChange={(e) => setFontSize(Number(e.target.value) || 12)}
+                type="text"
+                className="font-medium text-sm h-10 !w-20 text-center"
               />
+
               <PrintButton
                 onClick={handlePrint}
-                label=""
-                className="ml-2 mt-6 pt-[0.45rem] pb-[0.45rem] h-8"
+                label="Print"
+                className="h-10 px-6"
+                disabled={!Array.isArray(tableRows) || tableRows.length === 0}
               />
             </div>
           </div>
