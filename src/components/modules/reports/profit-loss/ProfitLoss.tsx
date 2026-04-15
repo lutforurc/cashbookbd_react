@@ -358,7 +358,7 @@ const ProfitLoss = (user: any) => {
     <div>
       <HelmetTitle title={"Profit Loss"} />
 
-      <div className="pl-3 pr-1 py-3 ">
+      <div className="pl-0 pr-1 py-3 ">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative shrink-0">
             <button
@@ -481,7 +481,7 @@ const ProfitLoss = (user: any) => {
           onNetExpenseClick={handleExpenseRowClick}
         />
       ) : (
-        <div className="rounded border border-dashed border-gray-300 bg-white p-6 ml-2 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+        <div className="rounded border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
           {profitLossState?.loading
             ? "Profit/Loss report loading..."
             : "Press Run to view the report. Once the data is loaded, the Profit/Loss Report will be displayed here."}

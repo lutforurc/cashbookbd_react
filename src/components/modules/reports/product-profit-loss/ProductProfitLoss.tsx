@@ -410,7 +410,7 @@ const ProductProfitLoss = (user: any) => {
       <HelmetTitle title="Product Profit Loss" />
 
       <div className="space-y-3">
-        <div className="">
+        <div className="pl-0 pr-1 py-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative shrink-0">
               <button

@@ -440,7 +440,7 @@ const TrialBalanceLevel3 = (user: any) => {
     <>
       <HelmetTitle title="Trial Balance Group" />
       <div className="mx-auto space-y-6">
-        <div className="px-1 ">
+        <div className="pl-0 pr-1 py-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative shrink-0">
               <button
@@ -548,7 +548,7 @@ const TrialBalanceLevel3 = (user: any) => {
         </div>
 
         {trialBalanceState?.loading && (
-          <div className="rounded-sm border border-stroke bg-white p-8 shadow-default dark:border-strokedark dark:bg-boxdark">
+          <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <Loader />
           </div>
         )}
