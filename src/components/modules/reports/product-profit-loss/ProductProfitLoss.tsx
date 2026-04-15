@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
+import { FiFilter } from "react-icons/fi";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
@@ -84,6 +85,7 @@ const ProductProfitLoss = (user: any) => {
   const [reportRows, setReportRows] = useState<ProductProfitRow[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [summary, setSummary] = useState({
     totalQty: 0,
     totalPurchase: 0,
@@ -209,6 +211,7 @@ const ProductProfitLoss = (user: any) => {
         startDate: dayjs(startDate).format("DD/MM/YYYY"),
         endDate: dayjs(endDate).format("DD/MM/YYYY"),
       });
+      setFilterOpen(false);
     } catch (err: any) {
       setReportRows([]);
       setSummary({
@@ -226,6 +229,10 @@ const ProductProfitLoss = (user: any) => {
     } finally {
       setButtonLoading(false);
     }
+  };
+
+  const handleResetFilters = () => {
+    setFilterOpen(false);
   };
 
   const handlePrint = useReactToPrint({
@@ -402,85 +409,114 @@ const ProductProfitLoss = (user: any) => {
     <>
       <HelmetTitle title="Product Profit Loss" />
 
-      <div className="space-y-3 text-white">
-        
-        <div>
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-            <div className="flex flex-1 flex-wrap items-end gap-3">
-              <div className="min-w-[180px] flex-1">
-                <label className="mb-1 block text-sm text-slate-200">Select Branch</label>
-                <BranchDropdown
-                  branchDdl={dropdownData}
-                  onChange={handleBranchChange}
-                  value={branchId ? String(branchId) : undefined}
-                  className="h-10 pl-2 "
-                />
-              </div>
+      <div className="space-y-3">
+        <div className="bg-slate-100 dark:bg-boxdark">
+         
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
+                    : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
 
-              <div className="min-w-[180px] flex-1">
-                <InputDatePicker
-                  label="Start Date"
-                  selectedDate={startDate}
-                  setSelectedDate={setStartDate}
-                  setCurrentDate={setStartDate}
-                  className="h-10 w-full "
-                />
-              </div>
+              {filterOpen && (
+                <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Select Branch
+                      </label>
+                      <BranchDropdown
+                        branchDdl={dropdownData}
+                        onChange={handleBranchChange}
+                        value={branchId ? String(branchId) : undefined}
+                        className="h-10 w-full pl-2"
+                      />
+                    </div>
 
-              <div className="min-w-[180px] flex-1">
-                <InputDatePicker
-                  label="End Date"
-                  selectedDate={endDate}
-                  setSelectedDate={setEndDate}
-                  setCurrentDate={setEndDate}
-                  className="h-10 w-full "
-                />
-              </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Start Date
+                      </label>
+                      <InputDatePicker
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
+                        setCurrentDate={setStartDate}
+                        className="h-10 w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        End Date
+                      </label>
+                      <InputDatePicker
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
+                        setCurrentDate={setEndDate}
+                        className="h-10 w-full"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      <ButtonLoading
+                        label="Apply"
+                        onClick={handleRunReport}
+                        buttonLoading={buttonLoading}
+                        className="h-10 px-6"
+                      />
+                      <ButtonLoading
+                        label="Reset"
+                        onClick={handleResetFilters}
+                        buttonLoading={false}
+                        className="h-10 px-4"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="w-full xl:w-auto">
-              <div className="flex flex-wrap items-end gap-2 xl:flex-nowrap">
-                <div className="min-w-[62px] max-w-[62px] flex-1">
-                  <InputElement
-                    id="rowsPerPage"
-                    name="rowsPerPage"
-                    label=""
-                    value={rowsPerPage.toString()}
-                    onChange={handleRowsPerPageChange}
-                    type="text"
-                    className="h-10 w-full "
-                  />
-                </div>
+            <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+              Use the filter
+            </div>
 
-                <div className="min-w-[62px] max-w-[62px] flex-1">
-                  <InputElement
-                    id="fontSize"
-                    name="fontSize"
-                    label=""
-                    value={fontSize.toString()}
-                    onChange={handleFontSizeChange}
-                    type="text"
-                    className="h-10 w-full "
-                  />
-                </div>
+            <div className="ml-auto flex items-end gap-2">
+              <InputElement
+                id="rowsPerPage"
+                name="rowsPerPage"
+                label=""
+                value={rowsPerPage.toString()}
+                onChange={handleRowsPerPageChange}
+                type="text"
+                className="h-10 !w-20 text-center"
+              />
 
-                <div className="min-w-[76px] max-w-[76px] flex-1">
-                  <ButtonLoading
-                    label="Run"
-                    onClick={handleRunReport}
-                    buttonLoading={buttonLoading}
-                    className="h-10 w-full border border-slate-600 bg-slate-800 px-3 text-white"
-                  />
-                </div>
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label=""
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="h-10 !w-20 text-center"
+              />
 
-                <div className="min-w-[58px] max-w-[58px] flex-1">
-                  <PrintButton
-                    onClick={handlePrint}
-                    label=""
-                    className="h-10 w-full border border-slate-600 bg-slate-800 px-0 text-white"
-                  />
-                </div>
-              </div>
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="h-10 px-6"
+                disabled={tableData.length === 0}
+              />
             </div>
           </div>
 
@@ -492,25 +528,50 @@ const ProductProfitLoss = (user: any) => {
         </div>
 
         <div className="mt-2">
-          <div className="border-b border-slate-700 py-3">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Qty: {thousandSeparator(summary.totalQty, 0)}
-                </span>
-                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Purchase: {thousandSeparator(summary.totalPurchase, 0)}
-                </span>
-                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Sales: {thousandSeparator(summary.totalSales, 0)}
-                </span>
-                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Profit: {thousandSeparator(Math.abs(summary.totalProfit), 0)}
-                </span>
-                <span className="border border-slate-600 bg-slate-800 px-3 py-1 font-medium text-white">
-                  Warning: {thousandSeparator(summary.warningCount, 0)}
-                </span>
-              </div>
+          <div className="grid grid-cols-2 gap-3 border-b border-slate-200 pb-3 sm:grid-cols-3 xl:grid-cols-5 dark:border-strokedark">
+            <div className="rounded border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-strokedark dark:bg-boxdark">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                Qty.
+              </p>
+              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                {thousandSeparator(summary.totalQty, 0)}
+              </p>
+            </div>
+
+            <div className="rounded border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-strokedark dark:bg-boxdark">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                Purchase
+              </p>
+              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                {thousandSeparator(summary.totalPurchase, 0)}
+              </p>
+            </div>
+
+            <div className="rounded border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-strokedark dark:bg-boxdark">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                Sales
+              </p>
+              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                {thousandSeparator(summary.totalSales, 0)}
+              </p>
+            </div>
+
+            <div className="rounded border border-amber-300 bg-amber-50 px-3 py-3 shadow-sm dark:border-amber-500/40 dark:bg-amber-500/10">
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
+                {getNetLabel(summary.totalProfit)}
+              </p>
+              <p className="mt-2 text-lg font-semibold text-amber-900 dark:text-amber-100">
+                {thousandSeparator(Math.abs(summary.totalProfit), 0)}
+              </p>
+            </div>
+
+            <div className="rounded border border-amber-300 bg-white px-3 py-3 shadow-sm dark:border-amber-500/40 dark:bg-boxdark">
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
+                Warning
+              </p>
+              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                {thousandSeparator(summary.warningCount, 0)}
+              </p>
             </div>
           </div>
 
