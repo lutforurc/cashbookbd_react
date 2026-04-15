@@ -70,7 +70,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                   pageRows.map((row, idx) => (
                     <tr key={idx} className="align-top avoid-break">
                       {/* Sl Number */}
-                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center align-middle">
                         {row.sl_number}
                       </td>
 
