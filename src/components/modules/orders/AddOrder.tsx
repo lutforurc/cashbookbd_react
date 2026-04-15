@@ -18,6 +18,8 @@ import { toast } from 'react-toastify'
 import OrderDropdown from '../../utils/utils-functions/OrderDropdown'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import useCtrlS from '../../utils/hooks/useCtrlS'
+import DropdownCommon from '../../utils/utils-functions/DropdownCommon'
+import { ORDER_STATUS } from '../../constant/constant/variables'
 // import Link from '../../../utils/others/Link';
 
 const AddOrder = (user: any) => {
@@ -51,6 +53,7 @@ const AddOrder = (user: any) => {
         order_for_text: string;
         product_id: string;
         product_name: string;
+        status: string;
         order_number: string;
         ref_order_id: string;
         ref_order_text: string;
@@ -81,6 +84,7 @@ const AddOrder = (user: any) => {
         order_rate: '',
         total_order: '',
         order_type: '',
+        status: '',
         notes: '',
     });
 
@@ -140,6 +144,7 @@ const AddOrder = (user: any) => {
             order_rate: locationOrder?.order_rate?.toString?.() ?? prev.order_rate,
             total_order: locationOrder?.total_order?.toString?.() ?? prev.total_order,
             order_type: locationOrder?.order_type?.toString?.() ?? prev.order_type,
+            status: locationOrder?.status?.toString?.() ?? prev.status,
             notes: locationOrder?.notes ?? prev.notes,
         }));
 
@@ -194,8 +199,10 @@ const AddOrder = (user: any) => {
             order_rate: editData?.order_rate?.toString?.() ?? '',
             total_order: editData?.total_order?.toString?.() ?? '',
             order_type: editData?.order_type?.toString?.() ?? '',
+            status: editData?.status?.toString?.() ?? '',
             notes: editData?.notes ?? '',
         });
+
 
         setOrderDate(toValidDate(editData?.order_date));
         setLastDeliveryDate(toValidDate(editData?.last_delivery_date));
@@ -289,6 +296,7 @@ const AddOrder = (user: any) => {
             total_order: '',
             order_type: '',
             notes: '',
+            status: '',
         });
         setOrderDate(null);
         setLastDeliveryDate(null);
@@ -352,6 +360,7 @@ const AddOrder = (user: any) => {
             order_rate: formData.order_rate,
             total_order: formData.total_order,
             order_type: formData.order_type,
+            status: formData.status,
             notes: formData.notes,
         };
 
@@ -371,6 +380,14 @@ const AddOrder = (user: any) => {
         }));
     };
 
+      const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value,
+        }));
+
+      };
 
     useCtrlS(handleSave); 
     return (
@@ -624,13 +641,18 @@ const AddOrder = (user: any) => {
                             }}
                     />
                 </div>
-                {/* <div className='flex items-end'>
-                    <p className='text-sm text-gray-600 dark:text-gray-300'>
-                        {formData.order_type === '1' && 'Purchase orders can reference sales orders.'}
-                        {formData.order_type === '2' && 'Sales orders can reference purchase orders.'}
-                        {formData.order_type !== '1' && formData.order_type !== '2' && 'Select order type first if you want to link this order to another order.'}
-                    </p>
-                </div> */}
+                <div>
+                    <DropdownCommon
+                      id="status"
+                      name={'status'}
+                      label="Order Status"
+                      onChange={handleOnSelectChange}
+                      className="h-[2.1rem] bg-transparent"
+                      value={formData?.status?.toString() ?? ''}
+                      data={ORDER_STATUS}
+                    />
+                        
+                    </div>
             </div>
             <div className="grid grid-cols-3 gap-x-1 gap-y-1 w-2/4 md:w-2/5 mx-auto">
                 <ButtonLoading

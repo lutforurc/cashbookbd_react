@@ -23,6 +23,8 @@ import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import { API_ORDERS_LIST_URL, API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 import { toast } from 'react-toastify';
+import { ORDER_STATUS } from '../../constant/constant/variables';
+import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -221,6 +223,7 @@ const Orders = () => {
   const [selectedLedger, setSelectedLedger] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [orderType, setOrderType] = useState('');
+  const [orderStatus, setOrderStatus] = useState(1);
   const [selectedLinkedOrder, setSelectedLinkedOrder] = useState<any | null>(null);
   const [printRows, setPrintRows] = useState<any[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -244,11 +247,12 @@ const Orders = () => {
         orderType,
         orderFor: selectedLedger?.value ?? '',
         productId: selectedProductOption?.value ?? '',
+        status: orderStatus,
         startDate,
         endDate,
       }),
     );
-  }, [dispatch, page, perPage, searchFilter, orderType, selectedLedger?.value, selectedProductOption?.value, startDate, endDate]);
+  }, [dispatch, page, perPage, searchFilter, orderType, selectedLedger?.value, selectedProductOption?.value, startDate, endDate, orderStatus]);
 
   useEffect(() => {
     if (!orders?.isLoading) {
@@ -280,6 +284,7 @@ const Orders = () => {
     setSelectedProductOption(null);
     setSelectedLedger(null);
     setOrderType('');
+    setOrderStatus(1);
     setPage(1);
     setCurrentPage(1);
     setPerPage(10);
@@ -294,6 +299,7 @@ const Orders = () => {
         productId: '',
         startDate: '',
         endDate: '',
+        status: 1,
       }),
     );
   };
@@ -317,6 +323,9 @@ const Orders = () => {
 
   const handleOrderChange = (e: any) => {
     setOrderType(e.target.value);
+  };
+  const handleOrderStatus = (e: any) => {
+    setOrderStatus(e.target.value);
   };
   const handleLedgerSelect = (option: any) => {
     setSelectedLedger(
@@ -846,6 +855,21 @@ const Orders = () => {
                     </label>
                     <OrderTypes onChange={handleOrderChange} className="h-9 w-full" />
                   </div>
+                  <div>
+                    {/* <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Order Status
+                    </label> */}
+                    {/* <OrderTypes onChange={handleOrderChange} className="h-9 w-full" /> */}
+                    <DropdownCommon
+                      id="status"
+                      name={'status'}
+                      label="Order Status"
+                      onChange={handleOrderStatus}
+                      className="h-[2.1rem] bg-transparent"
+                      // value={formData?.status?.toString() ?? ''}
+                      data={ORDER_STATUS}
+                    />
+                  </div>
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -937,8 +961,7 @@ const Orders = () => {
 
           <div className={`${useFilterMenuEnabled ? 'hidden min-w-[180px] flex-1 text-sm dark:text-white text-slate-900 md:block dark:text-slate-300f' : 'hidden'}`}>
             {searchFilter || orderType || selectedLedger?.value || selectedProductOption?.value || startDate || endDate
-              ? 'Filters applied'
-              : 'Use the filter'}
+              ? 'Filters applied' : 'Use the filter'}
           </div>
 
           <div className={useFilterMenuEnabled ? 'hidden' : 'flex flex-wrap items-end justify-between gap-3'}>

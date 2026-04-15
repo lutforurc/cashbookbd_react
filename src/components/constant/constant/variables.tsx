@@ -21,3 +21,8 @@ export const UNIT_SALE_PAYMENT_MODES = [
   { id: 'MOBILE_BANKING', name: 'Mobile Banking' },
   { id: 'OTHERS', name: 'Others' },
 ];
+
+export const ORDER_STATUS = [ 
+  { id: 1, name: 'Active' },
+  { id: 2, name: 'Inactive' }, 
+];
