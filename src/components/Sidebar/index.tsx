@@ -555,7 +555,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'cashbook.view') && (
+
+                          
+                          {hasPermission(permissions, 'profit.loss') && (
                             <li>
                               <NavLink
                                 to={routes.profit_loss} //"/reports/profit-loss"
@@ -569,7 +571,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </li>
                           )}
 
-                          {/* INSERT INTO `permissions` (`id`, `name`, `group_name`, `guard_name`, `created_at`, `updated_at`) VALUES (NULL, 'productwise.profit', 'Report', 'web', '2022-03-16 13:40:01', '2022-03-16 13:40:01'); */}
                           {hasPermission(permissions, 'productwise.profit') && (
                             <li>
                               <NavLink
@@ -583,7 +584,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'cashbook.view') && (
+
+                          {hasPermission(permissions, 'balancesheet.view') && (
                             <li>
                               <NavLink
                                 to={routes.balance_sheet}
@@ -596,7 +598,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'cashbook.view') && (
+
+                          {hasPermission(permissions, 'trial.balance.l3') && (
                             <li>
                               <NavLink
                                 to={routes.trial_balance_level3}
@@ -609,7 +612,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'cashbook.view') && (
+                          {hasPermission(permissions, 'trial.balance.l4') && (
                             <li>
                               <NavLink
                                 to={routes.trial_balance_level4}
