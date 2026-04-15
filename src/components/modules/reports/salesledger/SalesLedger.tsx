@@ -20,6 +20,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import { FaRotateRight } from 'react-icons/fa6';
+import { FiFilter } from 'react-icons/fi';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -39,6 +40,7 @@ const SalesLedger = (user: any) => {
   const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   // ✅ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
@@ -93,6 +95,7 @@ const SalesLedger = (user: any) => {
         endDate: endD,
       }),
     );
+    setFilterOpen(false);
   };
 
   useEffect(() => {
@@ -145,6 +148,7 @@ const SalesLedger = (user: any) => {
     setProductId(null);
     setSelectedLedgerOption(null);
     setSelectedProductOption(null);
+    setFilterOpen(false);
   };
 
   const columns = [
@@ -286,7 +290,7 @@ const SalesLedger = (user: any) => {
       key: 'discount',
       header: 'Discount',
       headerClass: 'text-right',
-      cellClass: 'text-right',
+      cellClass: 'text-right v-middle',
       width: '120px',
       render: (row: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
@@ -322,7 +326,7 @@ const SalesLedger = (user: any) => {
       key: 'received',
       header: 'Received',
       headerClass: 'text-right',
-      cellClass: 'text-right',
+      cellClass: 'text-right v-middle',
       width: '120px',
       render: (row: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
@@ -358,7 +362,7 @@ const SalesLedger = (user: any) => {
       key: 'balance',
       header: 'Balance',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right v-middle',
       width: '120px',
       render: (row: any) => {
         const masters = Array.isArray(row?.acc_transaction_master)
@@ -424,117 +428,136 @@ const SalesLedger = (user: any) => {
     <div className="">
       <HelmetTitle title={'Sales Ledger'} />
 
-      <div className="">
-        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-4 gap-y-2 mb-2">
-          <div className="">
-            <div>
-              <label htmlFor="">Select Branch</label>
-            </div>
-            <div>
-              {branchDdlData.isLoading == true ? <Loader /> : ''}
-              <BranchDropdown
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-2"
-                branchDdl={dropdownData}
-              />
-            </div>
-          </div>
+      <div className="px-4 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setFilterOpen((prev) => !prev)}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                filterOpen
+                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                  : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+              }`}
+              title="Open filters"
+              aria-label="Open filters"
+            >
+              <FiFilter size={16} />
+            </button>
 
-          <div className="">
-            <label htmlFor="">Select Account</label>
-            <DdlMultiline
-              acType={''}
-              onSelect={selectedLedgerOptionHandler}
-              value={selectedLedgerOption}
-              className="h-9"
-            />
-          </div>
+            {filterOpen && (
+              <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                    {branchDdlData.isLoading == true ? <Loader /> : ''}
+                    <BranchDropdown
+                      onChange={handleBranchChange}
+                      value={branchId == null ? '' : String(branchId)}
+                      className="w-full font-medium text-sm p-2"
+                      branchDdl={dropdownData}
+                    />
+                  </div>
 
-          <div className="relative">
-            <label htmlFor="">Select Product</label>
-            <div onClick={() => selectedProduct(null)}>
-              <FaRotateRight
-                size={20}
-                className="absolute dark:text-white cursor-pointer"
-              />
-            </div>
-            <ProductDropdown
-              onSelect={selectedProduct}
-              value={selectedProductOption}
-              className="appearance-none"
-            />
-          </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Account</label>
+                    <DdlMultiline
+                      acType={''}
+                      onSelect={selectedLedgerOptionHandler}
+                      value={selectedLedgerOption}
+                      className="h-10"
+                    />
+                  </div>
 
-          <div className="sm:grid md:flex gap-x-3 ">
-            <div className="w-full md:max-w-40">
-              <label htmlFor="">Start Date</label>
-              <InputDatePicker
-                setCurrentDate={handleStartDate}
-                className="w-full font-medium text-xs h-9.5"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
-              />
-            </div>
+                  <div className="relative">
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
+                    <div
+                      onClick={() => selectedProduct(null)}
+                      className="absolute right-2 top-9 z-10 cursor-pointer"
+                      title="Clear selected product"
+                    >
+                      <FaRotateRight size={16} className="dark:text-white" />
+                    </div>
+                    <ProductDropdown
+                      onSelect={selectedProduct}
+                      value={selectedProductOption}
+                      className="appearance-none"
+                    />
+                  </div>
 
-            <div className="w-full md:max-w-40">
-              <label htmlFor="">End Date</label>
-              <InputDatePicker
-                setCurrentDate={handleEndDate}
-                className="font-medium text-xs w-full h-9.5"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
-              />
-            </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                    <InputDatePicker
+                      setCurrentDate={handleStartDate}
+                      className="w-full font-medium text-sm h-10"
+                      selectedDate={startDate}
+                      setSelectedDate={setStartDate}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                    <InputDatePicker
+                      setCurrentDate={handleEndDate}
+                      className="w-full font-medium text-sm h-10"
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
+                    />
+                  </div>
 
             {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
-            <div className="grid grid-cols-5 md:flex items-end gap-x-3">
-              <InputElement
-                id="perPage"
-                name="perPage"
-                label="Rows"
-                value={rowsPerPage.toString()}
-                onChange={handleRowsPerPageChange}
-                type="text"
-                className="font-medium text-sm h-9 w-full md:w-12"
-              />
-
-              <InputElement
-                id="fontSize"
-                name="fontSize"
-                label="Font"
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type="text"
-                className="font-medium text-sm h-9 w-full md:w-12"
-              />
-
-              <div className="mt-6 md:mt-6 w-full">
-                <ButtonLoading
-                  onClick={handleActionButtonClick}
-                  buttonLoading={buttonLoading}
-                  label="Run"
-                  icon=""
-                  className="pt-[0.45rem] pb-[0.45rem] w-full h-9"
-                />
+                  <div className="flex justify-end gap-2 pt-1">
+                    <ButtonLoading
+                      onClick={handleActionButtonClick}
+                      buttonLoading={buttonLoading}
+                      label="Apply"
+                      icon=""
+                      className="h-10 px-6"
+                    />
+                    <ButtonLoading
+                      onClick={handleResetFilters}
+                      buttonLoading={false}
+                      label="Reset"
+                      icon=""
+                      className="h-10 px-4"
+                    />
+                  </div>
+                </div>
               </div>
+            )}
+          </div>
 
-              <PrintButton
-                onClick={handlePrint}
-                label=""
-                className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
-                disabled={!Array.isArray(tableData) || tableData.length === 0}
-              />
+          <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+            Use the filter
+          </div>
 
-              <div className="mt-6 md:mt-6 w-full">
-                <ButtonLoading
-                  onClick={handleResetFilters}
-                  buttonLoading={false}
-                  label="Reset"
-                  icon=""
-                  className="pt-[0.45rem] pb-[0.45rem] w-full h-9"
-                />
-              </div>
-            </div>
+          <div className="ml-auto flex items-end gap-2">
+            <InputElement
+              id="perPage"
+              name="perPage"
+              label=""
+              value={rowsPerPage.toString()}
+              onChange={handleRowsPerPageChange}
+              type="text"
+              className="font-medium text-sm h-10 !w-20 text-center"
+            />
+
+            <InputElement
+              id="fontSize"
+              name="fontSize"
+              label=""
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type="text"
+              className="font-medium text-sm h-10 !w-20 text-center"
+            />
+
+            <PrintButton
+              onClick={handlePrint}
+              label="Print"
+              className="h-10 px-6"
+              disabled={!Array.isArray(tableData) || tableData.length === 0}
+            />
           </div>
         </div>
       </div>

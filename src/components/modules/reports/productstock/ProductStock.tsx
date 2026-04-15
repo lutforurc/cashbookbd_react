@@ -373,7 +373,7 @@ const ProductStock = ( user : any) => {
     <div className="">
       <HelmetTitle title="Product Stock" />
 
-      <div className=" rounded-sm border border-slate-200 bg-slate-100 px-4 py-3 dark:border-strokedark dark:bg-boxdark">
+      <div className="py-1">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative shrink-0">
             <button
@@ -500,11 +500,18 @@ const ProductStock = ( user : any) => {
 
           <div className="ml-auto flex items-end gap-2">
             <InputElement
+              label="Rows"
+              value={perPage.toString()}
+              onChange={handlePerPageChange}
+              type="text"
+              className="!w-20 text-sm h-10 text-center"
+            />
+            <InputElement
               label="Font"
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type="text"
-              className="w-20 text-sm h-10"
+              className="!w-20 text-sm h-10 text-center"
             />
             <PrintButton onClick={handlePrint} label="" className="h-10 px-6" />
           </div>
