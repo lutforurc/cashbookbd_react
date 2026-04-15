@@ -214,7 +214,7 @@ const DateWiseData = (user: any) => {
     <div>
       <HelmetTitle title={"Datewise Total"} />
 
-      <div className="py-3">
+      <div className="px-0 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative shrink-0">
             <button

@@ -387,7 +387,7 @@ const PurchaseLedger = (user: any) => {
   return (
     <div className="">
       <HelmetTitle title={'Purchase Ledger'} />
-      <div className="px-0 py-3 ">
+      <div className="px-0 py-6 ">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative shrink-0">
             <button
