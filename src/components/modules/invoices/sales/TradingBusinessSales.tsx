@@ -70,6 +70,28 @@ const normalizeSuggestionItems = (items: any) =>
       .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
     : [];
 
+const getCashReceivedDebit = (transaction: any): string => {
+  const masters = Array.isArray(transaction?.acc_transaction_master)
+    ? transaction.acc_transaction_master
+    : [];
+
+  const totalDebit = masters.reduce((sum: number, master: any) => {
+    const details = Array.isArray(master?.acc_transaction_details)
+      ? master.acc_transaction_details
+      : [];
+
+    return (
+      sum +
+      details.reduce((detailSum: number, detail: any) => {
+        if (Number(detail?.coa4_id) !== 17) return detailSum;
+        return detailSum + (parseFloat(detail?.debit) || 0);
+      }, 0)
+    );
+  }, 0);
+
+  return String(totalDebit);
+};
+
 const TradingBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.trasingSales);
@@ -309,8 +331,7 @@ const TradingBusinessSales = () => {
         account:
           sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
         accountName,
-        receivedAmt:
-          sales.data.transaction.sales_master.netpayment.toString() || '',
+        receivedAmt: getCashReceivedDebit(sales.data.transaction),
         discountAmt:
           parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
@@ -695,8 +716,7 @@ const TradingBusinessSales = () => {
         salesOrderText: sales.data.transaction.sales_master?.sales_order?.order_number,
         purchaseOrderNumber: sales.data.transaction.sales_master?.purchase_order?.id.toString() || '',
         purchaseOrderText: sales.data.transaction.sales_master?.purchase_order?.order_number,
-        receivedAmt:
-          sales.data.transaction.sales_master?.netpayment?.toString() || '',
+        receivedAmt: getCashReceivedDebit(sales.data.transaction),
         discountAmt:
           parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
@@ -719,6 +739,10 @@ const TradingBusinessSales = () => {
 
 
   useEffect(() => {
+    if (isUpdateButton || sales.data.transaction) {
+      return;
+    }
+
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
       const price = parseFloat(product.price?.toString() || '0') || 0;
@@ -750,6 +774,8 @@ const TradingBusinessSales = () => {
     formData.products,
     formData.receivedAmt,
     isReceivedAmtManuallyEdited,
+    isUpdateButton,
+    sales.data.transaction,
   ]);
 
 

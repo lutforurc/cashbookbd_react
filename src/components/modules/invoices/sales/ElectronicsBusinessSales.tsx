@@ -79,6 +79,28 @@ const normalizeSuggestionItems = (items: any) =>
       )
     : [];
 
+const getCashReceivedDebit = (transaction: any): string => {
+  const masters = Array.isArray(transaction?.acc_transaction_master)
+    ? transaction.acc_transaction_master
+    : [];
+
+  const totalDebit = masters.reduce((sum: number, master: any) => {
+    const details = Array.isArray(master?.acc_transaction_details)
+      ? master.acc_transaction_details
+      : [];
+
+    return (
+      sum +
+      details.reduce((detailSum: number, detail: any) => {
+        if (Number(detail?.coa4_id) !== 17) return detailSum;
+        return detailSum + (parseFloat(detail?.debit) || 0);
+      }, 0)
+    );
+  }, 0);
+
+  return String(totalDebit);
+};
+
 const ElectronicsBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.electronicsSales);
@@ -377,7 +399,7 @@ const ElectronicsBusinessSales = () => {
         mtmId: sales.data.mtmId,
         account: sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
         accountName,
-        receivedAmt: sales.data.transaction.sales_master.netpayment.toString() || '',
+        receivedAmt: getCashReceivedDebit(sales.data.transaction),
         discountAmt: parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
         tdsAmount: findCoaCredit(details, 41),
@@ -779,6 +801,10 @@ const ElectronicsBusinessSales = () => {
   };
 
   useEffect(() => {
+    if (isUpdateButton || sales.data.transaction) {
+      return;
+    }
+
     const serviceCharge = Number(formData?.serviceCharge) || 0;
     const tdsAmount = Number(formData?.tdsAmount) || 0;
     const transportationAmt = Number(formData?.transportationAmt) || 0;
@@ -813,6 +839,8 @@ const ElectronicsBusinessSales = () => {
     formData.products,
     formData.receivedAmt,
     isReceivedAmtManuallyEdited,
+    isUpdateButton,
+    sales.data.transaction,
   ]);
 
 
