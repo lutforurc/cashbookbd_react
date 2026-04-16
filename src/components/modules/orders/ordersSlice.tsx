@@ -16,7 +16,13 @@ import {
   ORDER_UPDATE_SUCCESS,
 } from '../../constant/constant/constant';
 import httpService from '../../services/httpService';
-import { API_ORDERS_AVERAGE_URL, API_ORDERS_DDL_URL, API_ORDERS_LIST_URL, API_ORDERS_STORE_URL } from '../../services/apiRoutes';
+import {
+  API_ORDERS_AVERAGE_URL,
+  API_ORDERS_DDL_URL,
+  API_ORDERS_EDIT_URL,
+  API_ORDERS_LIST_URL,
+  API_ORDERS_STORE_URL,
+} from '../../services/apiRoutes';
 import { getToken } from '../../../features/authReducer';
 
 
@@ -186,7 +192,7 @@ export const storeOrder = (data: formData, callback?: (response: any) => void) =
 
 export const editOrder = (id: string | number, callback?: (response: any) => void) => (dispatch: any) => {
   dispatch({ type: ORDER_EDIT_PENDING });
-  httpService.get(`${API_ORDERS_LIST_URL}?id=${id}`)
+  httpService.get(`${API_ORDERS_EDIT_URL}${id}`)
     .then((res) => {
       const _data = res.data;
       if (_data.success) {
