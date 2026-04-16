@@ -95,6 +95,16 @@ const getCashAmount = (row: any, key: 'debit' | 'credit') => {
   }, 0);
 };
 
+const getPurchaseQty = (row: any) => {
+  if (isOpeningRow(row)) return 0;
+  return getVoucherType(row?.vr_no) === '4' ? Number(row?.quantity || 0) : 0;
+};
+
+const getSalesQty = (row: any) => {
+  if (isOpeningRow(row)) return 0;
+  return getVoucherType(row?.vr_no) === '3' ? Number(row?.quantity || 0) : 0;
+};
+
 const LedgerWithProduct = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
@@ -109,8 +119,8 @@ const LedgerWithProduct = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [partyId, setPartyId] = useState<number | null>(null);
   const [partyLabel, setPartyLabel] = useState<string>('');
-  const [rowsPerPage, setRowsPerPage] = useState<number>(16);
-  const [fontSize, setFontSize] = useState<number>(10);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(11);
+  const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('Notice');
@@ -191,6 +201,14 @@ const LedgerWithProduct = (user: any) => {
       ...rawSummary,
       qty: rows.reduce(
         (sum: number, row: any) => sum + Number(row?.quantity || 0),
+        0,
+      ),
+      purchase_qty: rows.reduce(
+        (sum: number, row: any) => sum + getPurchaseQty(row),
+        0,
+      ),
+      sales_qty: rows.reduce(
+        (sum: number, row: any) => sum + getSalesQty(row),
         0,
       ),
       total_amount: rows.reduce(
@@ -309,6 +327,8 @@ const LedgerWithProduct = (user: any) => {
     {
       key: 'description',
       header: 'Description',
+      headerClass: 'w-[13%]',
+      cellClass: 'w-[13%]',
       render: (row: any) => (
         <div>
           <div className="whitespace-normal">{row.product_name || row.trx_type || '-'}</div>
@@ -321,26 +341,33 @@ const LedgerWithProduct = (user: any) => {
     {
       key: 'truck_no',
       header: 'Truck No',
+      headerClass: 'w-[9%]',
+      cellClass: 'w-[9%]',
       render: (row: any) => <div>{row.truck_no || ''}</div>,
     },
     {
-      key: 'quantity',
-      header: 'Qty',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: 'purchase_qty',
+      header: 'Pur. Qty.',
+      headerClass: 'w-[10.5%] text-right',
+      cellClass: 'w-[10.5%] text-right',
       render: (row: any) => (
-        <div>
-          {Number(row.quantity || 0)
-            ? thousandSeparator(Number(row.quantity || 0), 2)
-            : '-'}
-        </div>
+        <div>{getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row), 2) : '-'}</div>
+      ),
+    },
+    {
+      key: 'sales_qty',
+      header: 'Sal. Qty.',
+      headerClass: 'w-[10.5%] text-right',
+      cellClass: 'w-[10.5%] text-right',
+      render: (row: any) => (
+        <div>{getSalesQty(row) ? thousandSeparator(getSalesQty(row), 2) : '-'}</div>
       ),
     },
     {
       key: 'rate',
       header: 'Rate',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      headerClass: 'w-[7%] text-right',
+      cellClass: 'w-[7%] text-right',
       render: (row: any) => (
         <div>
           {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
@@ -350,8 +377,8 @@ const LedgerWithProduct = (user: any) => {
     {
       key: 'total',
       header: 'Total',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      headerClass: 'w-[7.5%] text-right',
+      cellClass: 'w-[7.5%] text-right',
       render: (row: any) => (
         <div>{Number(row.total || 0) ? formatAmount(row.total) : '-'}</div>
       ),
@@ -390,47 +417,96 @@ const LedgerWithProduct = (user: any) => {
   const footerRows = [
     [
       {
-        label: 'Opening:',
+        label: (
+          <div className="text-right">
+            <span className="text-slate-500 dark:text-slate-400">Opening:</span>{' '}
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
+              {Number(summary?.opening_balance || 0)
+                ? formatAmount(summary?.opening_balance || 0)
+                : '-'}
+            </span>
+          </div>
+        ),
+        colSpan: 5,
+        className: 'text-right',
+      },
+      {
+        label: (
+          <div className="text-right">
+            <span className="text-slate-500 dark:text-slate-400">Pur. Qty:</span>{' '}
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
+              {thousandSeparator(Number(summary?.purchase_qty || 0), 2)}
+            </span>
+          </div>
+        ),
+        className: 'text-right',
+      },
+      {
+        label: (
+          <div className="text-right">
+            <span className="text-slate-500 dark:text-slate-400">Sal. Qty:</span>{' '}
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
+              {thousandSeparator(Number(summary?.sales_qty || 0), 2)}
+            </span>
+          </div>
+        ),
+        className: 'text-right',
+      },
+      {
+        label: (
+          <div className="text-right">
+            <span className="text-slate-500 dark:text-slate-400">Received:</span>{' '}
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
+              {formatAmount(footerReceivedValue)}
+            </span>
+          </div>
+        ),
+        className: 'text-right',
+      },
+      {
+        label: (
+          <div className="text-right">
+            <span className="text-slate-500 dark:text-slate-400">Pur. Qty:</span>{' '}
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
+              {thousandSeparator(Number(summary?.purchase_qty || 0), 2)}
+            </span>
+          </div>
+        ),
+        className: 'text-right',
+      },
+      {
+        label: (
+          <div className="text-right">
+            <span className="text-slate-500 dark:text-slate-400">Sal. Qty:</span>{' '}
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
+              {thousandSeparator(Number(summary?.sales_qty || 0), 2)}
+            </span>
+          </div>
+        ),
+        className: 'text-right',
+      },
+      {
+        label: (
+          <div className="text-right">
+            <span className="text-slate-500 dark:text-slate-400">Payment:</span>{' '}
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
+              {formatAmount(footerPaymentValue)}
+            </span>
+          </div>
+        ),
+        className: 'text-right',
+      },
+      {
+        label: (
+          <div className="text-right">
+            <span className="text-slate-500 dark:text-slate-400">Closing:</span>{' '}
+            <span className="font-bold text-slate-900 dark:text-white">
+              {formatAmount(footerClosingValue)}
+            </span>
+          </div>
+        ),
         colSpan: 2,
-        className: 'text-right text-slate-500 dark:text-slate-400',
-      },
-      {
-        label: Number(summary?.opening_balance || 0)
-          ? formatAmount(summary?.opening_balance || 0)
-          : '-',
-        className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
-      },
-      {
-        label: 'Received:',
-        className: 'text-right text-slate-500 dark:text-slate-400',
-      },
-      {
-        label: formatAmount(footerReceivedValue),
-        className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
-      },
-      {
-        label: 'Qty:',
-        className: 'text-right text-slate-500 dark:text-slate-400',
-      },
-      {
-        label: thousandSeparator(Number(summary?.qty || 0), 2),
-        className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
-      },
-      {
-        label: 'Payment:',
-        className: 'text-right text-slate-500 dark:text-slate-400',
-      },
-      {
-        label: formatAmount(footerPaymentValue),
-        className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
-      },
-      {
-        label: 'Closing:',
-        className: 'text-right text-slate-500 dark:text-slate-400',
-      },
-      {
-        label: formatAmount(footerClosingValue),
-        className: 'text-right font-bold text-slate-900 dark:text-white',
+        className: 'text-right',
       },
     ],
   ];

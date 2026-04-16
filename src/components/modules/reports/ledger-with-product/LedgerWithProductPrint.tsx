@@ -54,6 +54,16 @@ const getDisplayedPaymentValue = (row: any) => {
     : paymentValue;
 };
 
+const getPurchaseQty = (row: any) => {
+  if (isOpeningRow(row)) return 0;
+  return getVoucherType(row?.vr_no) === '4' ? Number(row?.quantity || 0) : 0;
+};
+
+const getSalesQty = (row: any) => {
+  if (isOpeningRow(row)) return 0;
+  return getVoucherType(row?.vr_no) === '3' ? Number(row?.quantity || 0) : 0;
+};
+
 type Props = {
   rows: any[];
   branchName?: string;
@@ -68,6 +78,8 @@ type Props = {
   summary?: {
     opening_balance?: number;
     qty?: number;
+    purchase_qty?: number;
+    sales_qty?: number;
     total_received?: number;
     total_payment?: number;
     closing_balance?: number;
@@ -102,7 +114,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 	    const fs = Number.isFinite(fontSize) ? fontSize : 9;
 	    const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
 	    const vrNoWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
-	    const truckWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
+	    const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -164,14 +176,15 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   >
                     Vr No
                   </th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">Description</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-36 text-left">Description</th>
                   <th
                     style={{ fontSize: fs }}
                     className={`border border-gray-900 px-2 py-2 text-center ${truckWidthClass}`}
                   >
                     Truck
                   </th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-14 text-center">Qty</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Pur. Qty.</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Sal. Qty.</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Rate</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Total</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Received</th>
@@ -193,7 +206,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     </td>
                     <td
                       style={{ fontSize: fs, lineHeight: 0.95 }}
-                      className="border border-gray-900 px-2 py-[2px] align-middle"
+                      className="border border-gray-900 px-2 py-[2px] align-middle w-36"
                     >
                       <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }}>
                         {row.product_name || row.trx_type || ''}
@@ -204,7 +217,10 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       {row.truck_no || ''}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {Number(row.quantity || 0) ? thousandSeparator(Number(row.quantity || 0), 2) : '-'}
+                      {getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row), 2) : '-'}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {getSalesQty(row) ? thousandSeparator(getSalesQty(row), 2) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
@@ -238,7 +254,8 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="mt-3 flex justify-end gap-6 text-xs font-bold">
                 <div>Opening: {Number(summary.opening_balance || 0) ? formatAmount(summary.opening_balance) : '-'}</div>
                 <div>Received: {formatAmount(summary.total_received)}</div>
-                <div>Qty: {thousandSeparator(Number(summary.qty), 2)}</div>
+                <div>Pur. Qty: {thousandSeparator(Number(summary.purchase_qty), 2)}</div>
+                <div>Sal. Qty: {thousandSeparator(Number(summary.sales_qty), 2)}</div>
                 <div>Payment: {formatAmount(summary.total_payment)}</div>
                 <div>Closing: {formatAmount(summary.closing_balance)}</div>
               </div>
