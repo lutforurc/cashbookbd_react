@@ -80,5 +80,5 @@ export const MENU_PERMISSIONS = {
   ],
   analytics: ['product.stock.view', 'product.in.out', 'group.report'],
   subscription_history: ['subscription.view', 'subscription.history'],
-  customer_dashboard: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'],
+  // customer_dashboard: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'],
 };

@@ -29,7 +29,7 @@
 .topbar-menu nav > div > ul > li > div {
   position: absolute;
   left: 0;
-  top: calc(100% + 0.35rem);
+  top: calc(100% + 0.7rem);
   z-index: 9999;
   min-width: 280px;
   max-width: 340px;
