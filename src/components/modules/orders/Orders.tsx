@@ -25,6 +25,7 @@ import httpService from '../../services/httpService';
 import { toast } from 'react-toastify';
 import { ORDER_STATUS } from '../../constant/constant/variables';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import { render } from 'react-dom';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -679,6 +680,13 @@ const Orders = () => {
     {
       key: 'order_for',
       header: 'Order for',
+      render: (data: any) => (
+        <>
+        <span className='block'>{data.order_for}</span>
+        { data.delivery_location && <span className='block'>{data.delivery_location}</span> }
+        { data.notes && <span className='block'>{data.notes}</span> }
+        </>
+      ),
     },
     {
       key: 'product_name',
