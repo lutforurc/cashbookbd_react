@@ -143,7 +143,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                   <span className="w-24 shrink-0">Address:</span>
                   <span className="">{order?.address || '-'}</span>
                 </div>
-                { order?.mobile !=0  && (
+                { order?.mobile && order?.mobile.length >= 5 && (
                 <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Mobile:</span>
                   <span className="">{order?.mobile || '-'}</span>

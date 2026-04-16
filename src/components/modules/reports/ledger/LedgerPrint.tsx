@@ -58,6 +58,15 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
     const rowsArr: LedgerRow[] = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
+    const partyInfo = coal4?.cust_party_infos || {};
+    const ledgerCode = partyInfo?.idfr_code ?? coal4?.idfr_code;
+    const ledgerAddress =
+      coal4?.address ||
+      partyInfo?.address ||
+      coal4?.manual_address ||
+      partyInfo?.manual_address ||
+      '';
+    const ledgerMobile = partyInfo?.mobile || coal4?.mobile || '';
 
     // Grand totals (for all rows)
     const grandDebit = sum(rowsArr.map((r) => Number(r.debit || 0)));
@@ -103,16 +112,16 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                   {/* বাম পাশ */}
                   <div>
                     <span className="block font-semibold">
-                      <span>{coal4?.name} {coal4?.cust_party_infos?.idfr_code && <span className=''>({coal4?.cust_party_infos?.idfr_code})</span>}</span>
+                      <span>Name: {coal4?.name} {ledgerCode && <span className=''>Ledger Name: ({ledgerCode})</span>}</span>
                     </span>
-                    {coal4?.cust_party_infos?.address || coal4?.cust_party_infos?.manual_address && (
+                    {ledgerAddress && (
                       <span className='block'>
-                        {coal4?.cust_party_infos?.address ?? coal4?.cust_party_infos?.manual_address}
+                        Address: {ledgerAddress}
                       </span>
                     )}
-                    {coal4?.cust_party_infos?.mobile && (
+                    {ledgerMobile && ledgerMobile.length >= 5 && (
                       <span className='block'>
-                        {coal4?.cust_party_infos?.mobile}
+                        Mobile: {ledgerMobile}
                       </span>
                     )}
                   </div>
