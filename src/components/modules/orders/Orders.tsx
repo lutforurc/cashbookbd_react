@@ -932,7 +932,7 @@ const Orders = () => {
                     />
                   </div>
 
-                  <div>
+                  <div className={useFilterMenuEnabled ? '' : 'xl:hidden'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                       Search
                     </label>
@@ -974,6 +974,16 @@ const Orders = () => {
 
           <div className={useFilterMenuEnabled ? 'hidden' : 'flex flex-wrap items-end justify-between gap-3'}>
             <div className="flex flex-wrap items-end gap-2">
+              <div className="hidden xl:block xl:min-w-[300px]">
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Search
+                </label>
+                <SearchInput
+                  search={search}
+                  setSearchValue={setSearchValue}
+                  className="h-9 w-full"
+                />
+              </div>
               <ButtonLoading
                 onClick={handleSearchButton}
                 buttonLoading={false}

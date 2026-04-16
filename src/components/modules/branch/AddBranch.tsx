@@ -11,7 +11,6 @@ import {
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FiArrowLeft, FiArrowRight, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
-import Checkbox from '../../utils/fields/Checkbox';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../common/Loader';
@@ -19,6 +18,7 @@ import Link from '../../utils/others/Link';
 import { getBranchSettings } from '../settings/settingsSlice';
 import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
+import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 
 const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
   API_REMOTE_URL,
@@ -269,6 +269,23 @@ const AddBranch = () => {
       [name]: value,
     }));
   };
+
+  const handleToggleFieldChange = (name: keyof branchItem, checked: boolean) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: checked,
+    }));
+  };
+
+  const renderToggle = (name: keyof branchItem, label: string, className = 'mb-4') => (
+    <div className={className}>
+      <ToggleSwitch
+        label={label}
+        checked={Boolean(formData[name])}
+        onChange={(checked) => handleToggleFieldChange(name, checked)}
+      />
+    </div>
+  );
 
   const handlePadImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -585,184 +602,37 @@ const AddBranch = () => {
               {currentStep === 2 && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <Checkbox
-                      id="report_zero_bal"
-                      name="report_zero_bal"
-                      checked={formData.report_zero_bal}
-                      onChange={handleOnChange}
-                      label="Stock With Zero?"
-                      className="mb-4 mt-3 md:mt-7"
-                    />
-                    <Checkbox
-                      id="manufactur_control"
-                      name="manufactur_control"
-                      checked={formData.manufactur_control}
-                      onChange={handleOnChange}
-                      label="Control Manufacture?"
-                      className="mb-4 md:mt-7"
-                    />
-                    <Checkbox
-                      id="warranty_controll"
-                      name="warranty_controll"
-                      checked={formData.warranty_controll}
-                      onChange={handleOnChange}
-                      label="Warranty Control?"
-                      className="mb-4 md:mt-7"
-                    />
+                    {renderToggle('report_zero_bal', 'Stock With Zero?', 'mb-4 mt-3 md:mt-7')}
+                    {renderToggle('manufactur_control', 'Control Manufacture?', 'mb-4 md:mt-7')}
+                    {renderToggle('warranty_controll', 'Warranty Control?', 'mb-4 md:mt-7')}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <Checkbox
-                      id="have_warehouse"
-                      name="have_warehouse"
-                      checked={formData.have_warehouse}
-                      onChange={handleOnChange}
-                      label="Multiple Warehouse?"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="share_product_with_other_branch"
-                      name="share_product_with_other_branch"
-                      checked={formData.share_product_with_other_branch}
-                      onChange={handleOnChange}
-                      label="Product Share?"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="share_customer_with_other_branch"
-                      name="share_customer_with_other_branch"
-                      checked={formData.share_customer_with_other_branch}
-                      onChange={handleOnChange}
-                      label="Customer Share?"
-                      className="mb-4"
-                    />
+                    {renderToggle('have_warehouse', 'Multiple Warehouse?')}
+                    {renderToggle('share_product_with_other_branch', 'Product Share?')}
+                    {renderToggle('share_customer_with_other_branch', 'Customer Share?')}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <Checkbox
-                      id="have_customer_sl"
-                      name="have_customer_sl"
-                      checked={formData.have_customer_sl}
-                      onChange={handleOnChange}
-                      label="Use Customer Serial?"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="use_bangla"
-                      name="use_bangla"
-                      checked={formData.use_bangla}
-                      onChange={handleOnChange}
-                      label="Use Bangla?"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="is_opening"
-                      name="is_opening"
-                      checked={formData.is_opening}
-                      onChange={handleOnChange}
-                      label="Opening ongoing?"
-                      className="mb-4"
-                    />
+                    {renderToggle('have_customer_sl', 'Use Customer Serial?')}
+                    {renderToggle('use_bangla', 'Use Bangla?')}
+                    {renderToggle('is_opening', 'Opening ongoing?')}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <Checkbox
-                      id="have_is_guaranter"
-                      name="have_is_guaranter"
-                      checked={formData.have_is_guaranter}
-                      onChange={handleOnChange}
-                      label="Use Guarantor?"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="stock_report_type"
-                      name="stock_report_type"
-                      checked={formData.stock_report_type}
-                      onChange={handleOnChange}
-                      label="Stock: Brand->Category->Item"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="show_instalment_list"
-                      name="show_instalment_list"
-                      checked={formData.show_instalment_list}
-                      onChange={handleOnChange}
-                      label="Show Instalment List in Invoice"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="show_spelling_of_money"
-                      name="show_spelling_of_money"
-                      checked={formData.show_spelling_of_money}
-                      onChange={handleOnChange}
-                      label="Show spelling of money in invoice?"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="need_demo_tutorial"
-                      name="need_demo_tutorial"
-                      checked={formData.need_demo_tutorial}
-                      onChange={handleOnChange}
-                      label="Need Demo Tutorial?"
-                      className="mb-4"
-                    />
-                    <Checkbox
-                      id="use_filter_parameter"
-                      name="use_filter_parameter"
-                      checked={formData.use_filter_parameter}
-                      onChange={handleOnChange}
-                      label="Use Filter Parameter?"
-                      className="mb-4"
-                    />
+                    {renderToggle('have_is_guaranter', 'Use Guarantor?')}
+                    {renderToggle('stock_report_type', 'Stock: Brand->Category->Item')}
+                    {renderToggle('show_instalment_list', 'Show Instalment List in Invoice')}
+                    {renderToggle('show_spelling_of_money', 'Show spelling of money in invoice?')}
+                    {renderToggle('need_demo_tutorial', 'Need Demo Tutorial?')}
+                    {renderToggle('use_filter_parameter', 'Use Filter Parameter?')}
                   </div>
 
                   {settings?.data?.user?.id === 1 && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                      <Checkbox
-                        id="sms_service"
-                        name="sms_service"
-                        checked={formData.sms_service}
-                        onChange={handleOnChange}
-                        label="SMS Service"
-                        className="mb-4"
-                      />
-                      <Checkbox
-                        id="received_sms"
-                        name="received_sms"
-                        checked={formData.received_sms}
-                        onChange={handleOnChange}
-                        label="Received SMS"
-                        className="mb-4"
-                      />
-                      <Checkbox
-                        id="sales_sms"
-                        name="sales_sms"
-                        checked={formData.sales_sms}
-                        onChange={handleOnChange}
-                        label="Sales SMS"
-                        className="mb-4"
-                      />
-                      <Checkbox
-                        id="purchase_sms"
-                        name="purchase_sms"
-                        checked={formData.purchase_sms}
-                        onChange={handleOnChange}
-                        label="Purchase SMS"
-                        className="mb-4"
-                      />
-                      <Checkbox
-                        id="payment_sms"
-                        name="payment_sms"
-                        checked={formData.payment_sms}
-                        onChange={handleOnChange}
-                        label="Payment SMS"
-                        className="mb-4"
-                      />
-                      <Checkbox
-                        id="sidebar_menu"
-                        name="sidebar_menu"
-                        checked={formData.sidebar_menu}
-                        onChange={handleOnChange}
-                        label="Sidebar Menu"
-                        className="mb-4"
-                      />
+                      {renderToggle('sms_service', 'SMS Service')}
+                      {renderToggle('received_sms', 'Received SMS')}
+                      {renderToggle('sales_sms', 'Sales SMS')}
+                      {renderToggle('purchase_sms', 'Purchase SMS')}
+                      {renderToggle('payment_sms', 'Payment SMS')}
+                      {renderToggle('sidebar_menu', 'Sidebar Menu')}
                     </div>
                   )}
                 </>
