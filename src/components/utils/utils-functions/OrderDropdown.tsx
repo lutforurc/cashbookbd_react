@@ -90,6 +90,7 @@ interface DropdownProps {
     value: { value: any, label: any } | null
     onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void; // Optional onKeyDown prop
     orderType?: string;
+    order_type?: string;
     excludeId?: string | number;
     refDirection?: 'reference' | 'linked';
     isDisabled?: boolean;
@@ -105,6 +106,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
     name,
     onKeyDown,
     orderType,
+    order_type,
     excludeId,
     refDirection,
     isDisabled,
@@ -115,6 +117,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const dispatch = useDispatch();
     const selectRef = React.useRef<any>(null);
+    const resolvedOrderType = orderType ?? order_type;
     const isDarkMode =
         typeof document !== 'undefined' &&
         document.documentElement.classList.contains('dark');
@@ -135,7 +138,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                 // Dispatch the action and wait for the fetched data
                 const response: any = await dispatch(
                     getDdlOrders(inputValue, {
-                        orderType,
+                        orderType: resolvedOrderType,
                         excludeId,
                         refDirection,
                     }),
@@ -146,8 +149,8 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                         (item: any) => item?.order_type !== undefined && item?.order_type !== null,
                     );
 
-                    const filteredPayload = orderType && hasOrderTypeInPayload
-                        ? response.payload.filter((item: any) => String(item.order_type) === String(orderType))
+                    const filteredPayload = resolvedOrderType && hasOrderTypeInPayload
+                        ? response.payload.filter((item: any) => String(item.order_type) === String(resolvedOrderType))
                         : response.payload;
 
                     const formattedOptions: OptionType[] = filteredPayload.map((item: any) => ({

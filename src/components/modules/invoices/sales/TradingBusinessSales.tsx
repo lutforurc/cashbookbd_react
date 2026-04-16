@@ -855,6 +855,7 @@ const TradingBusinessSales = () => {
                         }
                         : null
                     }
+                    orderType="1"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         setTimeout(() => {
@@ -889,6 +890,7 @@ const TradingBusinessSales = () => {
                         }
                         : null
                     }
+                    orderType="2"
                     onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
                   />
                 </div>

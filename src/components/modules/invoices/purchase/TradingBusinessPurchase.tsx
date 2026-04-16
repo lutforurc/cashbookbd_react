@@ -790,6 +790,7 @@ const TradingBusinessPurchase = () => {
                           }
                         : null
                     }
+                    orderType="1"
                     onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Pass the next field's ID
                   />
                 </div>
