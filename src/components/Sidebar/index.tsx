@@ -18,10 +18,11 @@ import {
 } from 'react-icons/fi';
 import { FaBluetooth, FaGear, FaRegStar } from 'react-icons/fa6';
 import { hasPermission } from '../utils/permissionChecker';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
+import { logout } from '../../features/authReducer';
 
 const PRIVILEGED_ROLE_NAMES = ['super administrator', 'dba'];
 
@@ -35,6 +36,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const location = useLocation();
   const { pathname } = location;
   const isTopbar = mode === 'topbar';
+  const dispatch = useDispatch<any>();
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
   const authMe = useSelector((s: any) => s.auth?.me);
@@ -179,7 +181,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
       <div className={isTopbar ? 'no-scrollbar overflow-visible' : 'no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear'}>
         <nav className={isTopbar ? 'overflow-visible px-2 py-2 md:px-4' : 'py-2 px-4 lg:mt-1 lg:px-6'}>
-          <div>
+          <div className={isTopbar ? 'flex items-center gap-3' : ''}>
             <ul className={isTopbar ? 'flex items-stretch gap-1.5 whitespace-nowrap pb-1' : 'flex flex-col gap-1.5'}>
               {/* Dashboard */}
               <SidebarLinkGroup
@@ -2164,6 +2166,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 </li>
               )}
             </ul>
+            {isTopbar ? (
+              <button
+                type="button"
+                onClick={() => dispatch(logout())}
+                className="mb-1 shrink-0 rounded-sm px-4 py-2 font-medium text-meta-1 transition hover:bg-gray-100 dark:hover:bg-meta-4"
+              >
+                Logout
+              </button>
+            ) : null}
           </div>
         </nav>
       </div>
