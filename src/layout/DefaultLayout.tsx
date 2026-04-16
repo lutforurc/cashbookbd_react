@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../components/Header/index';
 import Sidebar from '../components/Sidebar/index';
+import TopbarMenu from '../components/TopbarMenu';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import ROUTES from '../components/services/appRoutes';
@@ -18,6 +19,8 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
   const location = useLocation();
   const dispatch = useDispatch<any>();
   const subscription = useSelector((state: any) => state.subscription);
+  const settings = useSelector((state: any) => state.settings);
+  const useSidebarMenu = String(settings?.data?.branch?.sidebar_menu ?? '') === '1';
 
   useEffect(() => {
     if (!isLoggedIn || isLoading || !user) return;
@@ -31,14 +34,22 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className="flex h-screen overflow-hidden">
         {/* <!-- ===== Sidebar Start ===== --> */}
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        {useSidebarMenu ? (
+          <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        ) : null}
         {/* <!-- ===== Sidebar End ===== --> */}
 
         {/* <!-- ===== Content Area Start ===== --> */}
         <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
           {/* <!-- ===== Header Start ===== --> */}
-          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+          <Header
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            showSidebarToggle={useSidebarMenu}
+          />
           {/* <!-- ===== Header End ===== --> */}
+
+          {!useSidebarMenu ? <TopbarMenu /> : null}
 
           {/* <!-- ===== Main Content Start ===== --> */}
           <main>
