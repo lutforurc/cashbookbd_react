@@ -684,7 +684,7 @@ const Orders = () => {
         <>
         <span className='block'>{data.order_for}</span>
         { data.delivery_location && <span className='block'>{data.delivery_location}</span> }
-        { data.notes && <span className='block'>{data.notes}</span> }
+        { data.notes && <span className='block text-green-500 dark:text-yellow-300 font-semibold'>{data.notes}</span> }
         </>
       ),
     },

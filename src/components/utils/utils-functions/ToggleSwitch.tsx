@@ -19,10 +19,10 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 
   return (
     <label
-      className={`inline-flex max-w-full flex-wrap items-center gap-1 select-none ${disabled ? 'cursor-not-allowed pointer-events-none opacity-80' : 'cursor-pointer'}`}
+      className={`inline-flex max-w-full flex-nowrap items-center gap-2 select-none ${disabled ? 'cursor-not-allowed pointer-events-none opacity-80' : 'cursor-pointer'}`}
       aria-disabled={disabled}
     >
-      <div className="relative">
+      <div className="relative shrink-0">
         <input
           type="checkbox"
           checked={checked}
@@ -36,7 +36,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         <div className={trackClass}></div>
         <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transform peer-checked:translate-x-5 transition-transform"></div>
       </div>
-      <span className="break-words text-sm text-gray-700 dark:text-gray-300">{label}</span>
+      <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
     </label>
   );
 };

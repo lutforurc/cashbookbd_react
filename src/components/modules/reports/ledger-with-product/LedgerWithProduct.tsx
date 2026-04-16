@@ -454,10 +454,10 @@ const LedgerWithProduct = (user: any) => {
       },
       {
         label: (
-          <div className="text-right">
+          <div className="text-right w-35">
             <span className="text-slate-500 dark:text-slate-400">Received:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {formatAmount(footerReceivedValue)}
+             {formatAmount(footerReceivedValue)}
             </span>
           </div>
         ),
@@ -465,29 +465,7 @@ const LedgerWithProduct = (user: any) => {
       },
       {
         label: (
-          <div className="text-right">
-            <span className="text-slate-500 dark:text-slate-400">Pur. Qty:</span>{' '}
-            <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {thousandSeparator(Number(summary?.purchase_qty || 0), 2)}
-            </span>
-          </div>
-        ),
-        className: 'text-right',
-      },
-      {
-        label: (
-          <div className="text-right">
-            <span className="text-slate-500 dark:text-slate-400">Sal. Qty:</span>{' '}
-            <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {thousandSeparator(Number(summary?.sales_qty || 0), 2)}
-            </span>
-          </div>
-        ),
-        className: 'text-right',
-      },
-      {
-        label: (
-          <div className="text-right">
+          <div className="text-right w-35">
             <span className="text-slate-500 dark:text-slate-400">Payment:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
               {formatAmount(footerPaymentValue)}
