@@ -3,6 +3,57 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
+const formatAmount = (value: any, precision = 0) => {
+  const amount = Number(value || 0);
+  const formatted = thousandSeparator(Math.abs(amount), precision);
+  return amount < 0 ? `(${formatted})` : formatted;
+};
+
+const getVoucherType = (vrNo: any) => {
+  const prefix = String(vrNo || '').split('-')[0]?.trim();
+  const parsed = Number.parseInt(prefix, 10);
+  return Number.isNaN(parsed) ? prefix : String(parsed);
+};
+
+const isOpeningRow = (row: any) =>
+  String(row?.vr_no || '').toLowerCase() === 'opening' ||
+  /opening balance/i.test(String(row?.remarks || ''));
+
+const getDisplayedReceivedValue = (row: any) => {
+  if (Number.isFinite(Number(row?.displayed_received))) {
+    return Number(row.displayed_received);
+  }
+
+  if (isOpeningRow(row)) return 0;
+
+  const receivedValue = Number(row?.received || 0);
+  const totalValue = Number(row?.total || 0);
+  const voucherType = getVoucherType(row?.vr_no);
+
+  return voucherType === '4' && receivedValue <= 0 && totalValue > 0
+    ? totalValue
+    : receivedValue;
+};
+
+const getDisplayedPaymentValue = (row: any) => {
+  if (Number.isFinite(Number(row?.displayed_payment))) {
+    return Number(row.displayed_payment);
+  }
+
+  const balanceValue = Math.abs(Number(row?.balance || 0));
+  const paymentValue = Number(row?.payment || 0);
+  const totalValue = Number(row?.total || 0);
+  const voucherType = getVoucherType(row?.vr_no);
+
+  if (isOpeningRow(row) && balanceValue > 0) {
+    return balanceValue;
+  }
+
+  return voucherType === '3' && paymentValue <= 0 && totalValue > 0
+    ? totalValue
+    : paymentValue;
+};
+
 type Props = {
   rows: any[];
   branchName?: string;
@@ -159,52 +210,25 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {Number(row.total || 0) ? thousandSeparator(Number(row.total || 0), 0) : '-'}
+                      {Number(row.total || 0) ? formatAmount(row.total) : '-'}
                     </td>
-	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-	                      {(() => {
-	                        const isOpening =
-	                          String(row?.vr_no || '').toLowerCase() === 'opening' ||
-	                          /opening balance/i.test(String(row?.remarks || ''));
-	                        const receivedValue = Number(row.received || 0);
-	                        const totalValue = Number(row.total || 0);
-	                        const voucherType = String(row?.vr_no || '').split('-')[0]?.trim();
-	                        const displayValue =
-	                          isOpening
-	                            ? 0
-	                            : (
-	                          voucherType === '4' && receivedValue <= 0 && totalValue > 0
-	                            ? totalValue
-	                            : receivedValue
-	                          );
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {(() => {
+                        const displayValue = getDisplayedReceivedValue(row);
 
-	                        return displayValue ? thousandSeparator(displayValue, 0) : '-';
-	                      })()}
-	                    </td>
-	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-	                      {(() => {
-	                        const isOpening =
-	                          String(row?.vr_no || '').toLowerCase() === 'opening' ||
-	                          /opening balance/i.test(String(row?.remarks || ''));
-	                        const balanceValue = Math.abs(Number(row.balance || 0));
-	                        const paymentValue = Number(row.payment || 0);
-	                        const totalValue = Number(row.total || 0);
-	                        const voucherType = String(row?.vr_no || '').split('-')[0]?.trim();
-	                        const displayValue =
-	                          isOpening && balanceValue > 0
-	                            ? balanceValue
-	                            : (
-	                          voucherType === '3' && paymentValue <= 0 && totalValue > 0
-	                            ? totalValue
-	                            : paymentValue
-	                          );
+                        return displayValue ? formatAmount(displayValue) : '-';
+                      })()}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {(() => {
+                        const displayValue = getDisplayedPaymentValue(row);
 
-	                        return displayValue ? thousandSeparator(displayValue, 0) : '-';
-	                      })()}
-	                    </td>
-	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-	                      {thousandSeparator(Number(row.balance || 0), 0)}
-	                    </td>
+                        return displayValue ? formatAmount(displayValue) : '-';
+                      })()}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {formatAmount(row.running_balance ?? row.balance)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -212,11 +236,11 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
             {pageIndex === pages.length - 1 ? (
               <div className="mt-3 flex justify-end gap-6 text-xs font-bold">
-                <div>Opening: {thousandSeparator(Number(summary.opening_balance), 0)}</div>
-                <div>Received: {thousandSeparator(Number(summary.total_received), 0)}</div>
+                <div>Opening: {Number(summary.opening_balance || 0) ? formatAmount(summary.opening_balance) : '-'}</div>
+                <div>Received: {formatAmount(summary.total_received)}</div>
                 <div>Qty: {thousandSeparator(Number(summary.qty), 2)}</div>
-                <div>Payment: {thousandSeparator(Number(summary.total_payment), 0)}</div>
-                <div>Closing: {thousandSeparator(Number(summary.closing_balance), 0)}</div>
+                <div>Payment: {formatAmount(summary.total_payment)}</div>
+                <div>Closing: {formatAmount(summary.closing_balance)}</div>
               </div>
             ) : null}
 

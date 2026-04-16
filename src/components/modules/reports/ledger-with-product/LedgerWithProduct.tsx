@@ -31,6 +31,45 @@ const getVoucherType = (vrNo: any) => {
   return Number.isNaN(parsed) ? prefix : String(parsed);
 };
 
+const isOpeningRow = (row: any) =>
+  String(row?.vr_no || '').toLowerCase() === 'opening' ||
+  /opening balance/i.test(String(row?.remarks || ''));
+
+const getDisplayedReceivedValue = (row: any) => {
+  if (Number.isFinite(Number(row?.displayed_received))) {
+    return Number(row.displayed_received);
+  }
+
+  if (isOpeningRow(row)) return 0;
+
+  const receivedValue = Number(row?.received || 0);
+  const totalValue = Number(row?.total || 0);
+  const voucherType = getVoucherType(row?.vr_no);
+
+  return voucherType === '4' && receivedValue <= 0 && totalValue > 0
+    ? totalValue
+    : receivedValue;
+};
+
+const getDisplayedPaymentValue = (row: any) => {
+  if (Number.isFinite(Number(row?.displayed_payment))) {
+    return Number(row.displayed_payment);
+  }
+
+  const balanceValue = Math.abs(Number(row?.balance || 0));
+  const paymentValue = Number(row?.payment || 0);
+  const totalValue = Number(row?.total || 0);
+  const voucherType = getVoucherType(row?.vr_no);
+
+  if (isOpeningRow(row) && balanceValue > 0) {
+    return balanceValue;
+  }
+
+  return voucherType === '3' && paymentValue <= 0 && totalValue > 0
+    ? totalValue
+    : paymentValue;
+};
+
 const getCashAmount = (row: any, key: 'debit' | 'credit') => {
   const masters = Array.isArray(row?.acc_transaction_master)
     ? row.acc_transaction_master
@@ -114,8 +153,10 @@ const LedgerWithProduct = (user: any) => {
   const party = reportData?.party || {};
 
   const rows = useMemo(
-    () =>
-      rawRows.map((row: any) => {
+    () => {
+      let runningBalance = 0;
+
+      return rawRows.map((row: any) => {
         const voucherType = getVoucherType(row?.vr_no);
         const total = Number(row?.total || 0);
         const rawReceived = Number(row?.received || 0);
@@ -125,12 +166,23 @@ const LedgerWithProduct = (user: any) => {
         const received = cashReceived > 0 ? cashReceived : rawReceived;
         const payment = cashPayment > 0 ? cashPayment : rawPayment;
 
-        return {
+        const normalizedRow = {
           ...row,
           received: voucherType === '4' && received === total ? 0 : received,
           payment: voucherType === '3' && payment === total ? 0 : payment,
         };
-      }),
+        const displayedReceived = getDisplayedReceivedValue(normalizedRow);
+        const displayedPayment = getDisplayedPaymentValue(normalizedRow);
+        runningBalance += displayedReceived - displayedPayment;
+
+        return {
+          ...normalizedRow,
+          displayed_received: displayedReceived,
+          displayed_payment: displayedPayment,
+          running_balance: runningBalance,
+        };
+      });
+    },
     [rawRows],
   );
 
@@ -156,36 +208,17 @@ const LedgerWithProduct = (user: any) => {
     }),
     [rawSummary, rows],
   );
-  const partyTypeId = Number(party?.party_type_id ?? party?.type_id ?? 0);
-  const partyTypeName = String(party?.party_type_name ?? party?.type_name ?? '');
-  const isPurchaseLedger =
-    partyTypeId === 2 ||
-    partyTypeId === 3 ||
-    /supplier/i.test(partyTypeName);
-  const footerReceivedValue = isPurchaseLedger
-    ? Number(summary?.total_amount || 0)
-    : Number(summary?.total_received || 0);
-  const footerPaymentValue = isPurchaseLedger
-    ? rows.reduce((sum: number, row: any) => {
-      const isOpeningRow =
-        String(row?.vr_no || '').toLowerCase() === 'opening' ||
-        /opening balance/i.test(String(row?.remarks || ''));
-      const openingBalanceValue = Math.abs(Number(row?.balance || 0));
-      const paymentValue = Number(row?.payment || 0);
-
-      return sum + (isOpeningRow ? openingBalanceValue : paymentValue);
-    }, 0)
-    : rows.reduce((sum: number, row: any) => {
-      const paymentValue = Number(row?.payment || 0);
-      const totalValue = Number(row?.total || 0);
-      const voucherType = getVoucherType(row?.vr_no);
-
-      return sum + (
-        voucherType === '3' && paymentValue <= 0 && totalValue > 0
-          ? totalValue
-          : paymentValue
-      );
-    }, 0);
+  const footerReceivedValue = rows.reduce(
+    (sum: number, row: any) => sum + getDisplayedReceivedValue(row),
+    0,
+  );
+  const footerPaymentValue = rows.reduce(
+    (sum: number, row: any) => sum + getDisplayedPaymentValue(row),
+    0,
+  );
+  const footerClosingValue = rows.length
+    ? Number(rows[rows.length - 1]?.running_balance || 0)
+    : Number(summary?.closing_balance || 0);
 
   const hasLoaded = !!statementState?.data;
   const hasTransactions = rows.length > 1;
@@ -329,19 +362,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const isOpening = String(row?.vr_no || '').toLowerCase() === 'opening' || /opening balance/i.test(String(row?.remarks || ''));
-        const balanceValue = Number(row.balance || 0);
-        const receivedValue = Number(row.received || 0);
-        const totalValue = Number(row.total || 0);
-        const voucherType = getVoucherType(row?.vr_no);
-        const displayValue =
-          isOpening
-            ? 0
-            : (
-          voucherType === '4' && receivedValue <= 0 && totalValue > 0
-            ? totalValue
-            : receivedValue
-          );
+        const displayValue = getDisplayedReceivedValue(row);
 
         return <div>{displayValue ? formatAmount(displayValue) : '-'}</div>;
       },
@@ -352,19 +373,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const isOpening = String(row?.vr_no || '').toLowerCase() === 'opening' || /opening balance/i.test(String(row?.remarks || ''));
-        const balanceValue = Math.abs(Number(row.balance || 0));
-        const paymentValue = Number(row.payment || 0);
-        const totalValue = Number(row.total || 0);
-        const voucherType = getVoucherType(row?.vr_no);
-        const displayValue =
-          isOpening && balanceValue > 0
-            ? balanceValue
-            : (
-          voucherType === '3' && paymentValue <= 0 && totalValue > 0
-            ? totalValue
-            : paymentValue
-          );
+        const displayValue = getDisplayedPaymentValue(row);
 
         return <div>{displayValue ? formatAmount(displayValue) : '-'}</div>;
       },
@@ -374,7 +383,7 @@ const LedgerWithProduct = (user: any) => {
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold',
-      render: (row: any) => <div>{formatAmount(row.balance)}</div>,
+      render: (row: any) => <div>{formatAmount(row.running_balance ?? row.balance)}</div>,
     },
   ];
 
@@ -386,7 +395,9 @@ const LedgerWithProduct = (user: any) => {
         className: 'text-right text-slate-500 dark:text-slate-400',
       },
       {
-        label: formatAmount(summary?.opening_balance || 0),
+        label: Number(summary?.opening_balance || 0)
+          ? formatAmount(summary?.opening_balance || 0)
+          : '-',
         className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
       },
       {
@@ -418,7 +429,7 @@ const LedgerWithProduct = (user: any) => {
         className: 'text-right text-slate-500 dark:text-slate-400',
       },
       {
-        label: formatAmount(summary?.closing_balance || 0),
+        label: formatAmount(footerClosingValue),
         className: 'text-right font-bold text-slate-900 dark:text-white',
       },
     ],
@@ -659,6 +670,7 @@ const LedgerWithProduct = (user: any) => {
               ...summary,
               total_received: footerReceivedValue,
               total_payment: footerPaymentValue,
+              closing_balance: footerClosingValue,
             }}
           />
         </div>
