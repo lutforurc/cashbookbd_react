@@ -42,11 +42,13 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
         {/* <!-- ===== Content Area Start ===== --> */}
         <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
           {/* <!-- ===== Header Start ===== --> */}
-          <Header
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}
-            showSidebarToggle={useSidebarMenu}
-          />
+          {useSidebarMenu ? (
+            <Header
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+              showSidebarToggle={useSidebarMenu}
+            />
+          ) : null}
           {/* <!-- ===== Header End ===== --> */}
 
           {!useSidebarMenu ? <TopbarMenu /> : null}

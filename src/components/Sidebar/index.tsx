@@ -146,7 +146,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       ref={sidebar}
       className={
         isTopbar
-          ? 'topbar-menu relative isolate z-[9998] w-full border-b border-stroke bg-white dark:border-strokedark dark:bg-boxdark'
+          ? 'topbar-menu sticky top-0 isolate z-[9998] w-full border-b border-stroke bg-white dark:border-strokedark dark:bg-boxdark'
           : `absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden duration-300 ease-linear bg-white dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
       }
     >
