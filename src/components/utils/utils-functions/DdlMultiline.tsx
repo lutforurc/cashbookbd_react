@@ -281,13 +281,14 @@ const DdlMultiline: React.FC<DropdownProps> = ({
                     {option.label_5 &&
                       option.label_5.trim() !== '' &&
                       option.label_5.trim() !== '0' && (
-                        <>C/O: {option.label_5.trim()}</>
+                        // <>C/O: {option.label_5.trim()}</>
+                        <>{option.label_5.trim()}</>
                       )}
                   </div>
                 )}
-                {option.label_2 && (
+                {option.label_2 && option.label_2.trim().length > 5 && (
                   <div className="text-gray-600 dark:text-white text-sm">
-                    {option.label_2}
+                    {option.label_2.trim()}
                   </div>
                 )}
                 {option.label_3 && (
