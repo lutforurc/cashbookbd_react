@@ -19,7 +19,6 @@ import SalesLedgerPrint from './SalesLedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FaRotateRight } from 'react-icons/fa6';
 import { FiFilter } from 'react-icons/fi';
 
 const SalesLedger = (user: any) => {
@@ -429,8 +428,8 @@ const SalesLedger = (user: any) => {
     <div className="">
       <HelmetTitle title={'Sales Ledger'} />
       <div className="px-0 py-6">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
+        <div className="flex flex-wrap items-start gap-3 min-[1750px]:flex-nowrap min-[1750px]:items-end">
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-0 flex-[1_1_820px]'}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -459,7 +458,7 @@ const SalesLedger = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-3 min-[1750px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
                   }
                 >
                   <div>
@@ -468,7 +467,7 @@ const SalesLedger = (user: any) => {
                     <BranchDropdown
                       onChange={handleBranchChange}
                       value={branchId == null ? '' : String(branchId)}
-                      className="w-full font-medium text-sm p-2"
+                      className="w-full font-medium text-sm p-2 h-10"
                       branchDdl={dropdownData}
                     />
                   </div>
@@ -490,16 +489,16 @@ const SalesLedger = (user: any) => {
                       className="absolute right-2 top-9 z-10 cursor-pointer"
                       title="Clear selected product"
                     >
-                      <FaRotateRight size={16} className="dark:text-white" />
+                      {/* <FaRotateRight size={16} className="dark:text-white" /> */}
                     </div>
                     <ProductDropdown
                       onSelect={selectedProduct}
                       value={selectedProductOption}
-                      className="appearance-none"
+                      className="appearance-none h-10"
                     />
                   </div>
 
-                  <div>
+                  <div className="block xl:hidden min-[1750px]:block">
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
                       setCurrentDate={handleStartDate}
@@ -509,7 +508,7 @@ const SalesLedger = (user: any) => {
                     />
                   </div>
 
-                  <div>
+                  <div className="block xl:hidden min-[1750px]:block">
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
                       setCurrentDate={handleEndDate}
@@ -524,7 +523,7 @@ const SalesLedger = (user: any) => {
                     className={`flex gap-2 pt-1 ${
                       useFilterMenuEnabled
                         ? 'justify-end'
-                        : 'justify-start self-end md:col-span-2 xl:col-span-1'
+                        : 'justify-start self-end md:col-span-2 xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
                     }`}
                   >
                     <ButtonLoading
@@ -542,6 +541,76 @@ const SalesLedger = (user: any) => {
                       className="h-10 px-4"
                     />
                   </div>
+
+                  {!useFilterMenuEnabled && (
+                    <div className="hidden items-end gap-3 xl:col-span-3 xl:flex min-[1750px]:hidden">
+                      <div className="min-w-0 flex-[1.15]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleStartDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={startDate}
+                          setSelectedDate={setStartDate}
+                        />
+                      </div>
+
+                      <div className="min-w-0 flex-[1.15]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
+                        />
+                      </div>
+
+                      <div className="flex items-end gap-2 pt-6">
+                        <ButtonLoading
+                          onClick={handleActionButtonClick}
+                          buttonLoading={buttonLoading}
+                          label="Apply"
+                          icon=""
+                          className="h-10 px-6"
+                        />
+                        <ButtonLoading
+                          onClick={handleResetFilters}
+                          buttonLoading={false}
+                          label="Reset"
+                          icon=""
+                          className="h-10 px-4"
+                        />
+                      </div>
+
+                      <div className="ml-auto flex items-end gap-2 pt-6">
+                        <InputElement
+                          id="perPageInline"
+                          name="perPageInline"
+                          label=""
+                          value={rowsPerPage.toString()}
+                          onChange={handleRowsPerPageChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 text-center"
+                        />
+
+                        <InputElement
+                          id="fontSizeInline"
+                          name="fontSizeInline"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 text-center"
+                        />
+
+                        <PrintButton
+                          onClick={handlePrint}
+                          label="Print"
+                          className="h-10 px-6"
+                          disabled={!Array.isArray(tableData) || tableData.length === 0}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -551,7 +620,7 @@ const SalesLedger = (user: any) => {
             Use the filter
           </div>
 
-          <div className="ml-auto flex items-end gap-2">
+          <div className="ml-auto flex w-full flex-wrap items-end justify-end gap-2 xl:hidden min-[1750px]:flex min-[1750px]:w-auto min-[1750px]:flex-nowrap">
             <InputElement
               id="perPage"
               name="perPage"

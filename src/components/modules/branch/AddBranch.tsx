@@ -66,6 +66,7 @@ interface branchItem {
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
   use_filter_parameter: boolean;
+  sidebar_menu: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -153,6 +154,7 @@ const AddBranch = () => {
     show_spelling_of_money: false,
     need_demo_tutorial: false,
     use_filter_parameter: false,
+    sidebar_menu: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -161,8 +163,7 @@ const AddBranch = () => {
   const dispatch = useDispatch();
 
   const { id } = useParams();
-
-  console.log('Branch Edit Data:', settings?.data?.branch?.use_filter_parameter);
+ 
 
   useEffect(() => {
     if (id) {
@@ -213,6 +214,7 @@ const AddBranch = () => {
         show_instalment_list: b.show_instalment_list == 1 || b.show_instalment_list === '1',
         show_spelling_of_money: b.show_spelling_of_money == 1 || b.show_spelling_of_money === '1',
         use_filter_parameter: b.use_filter_parameter == 1 || b.use_filter_parameter === '1',
+        sidebar_menu: b.sidebar_menu == 1 || b.sidebar_menu === '1',
         sms_service: b.sms_service == 1 || b.sms_service === '1',
         received_sms: b.received_sms == 1 || b.received_sms === '1',
         purchase_sms: b.purchase_sms == 1 || b.purchase_sms === '1',
@@ -749,6 +751,14 @@ const AddBranch = () => {
                         checked={formData.payment_sms}
                         onChange={handleOnChange}
                         label="Payment SMS"
+                        className="mb-4"
+                      />
+                      <Checkbox
+                        id="sidebar_menu"
+                        name="sidebar_menu"
+                        checked={formData.sidebar_menu}
+                        onChange={handleOnChange}
+                        label="Sidebar Menu"
                         className="mb-4"
                       />
                     </div>
