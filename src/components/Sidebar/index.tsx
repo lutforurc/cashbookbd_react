@@ -23,6 +23,7 @@ import './Sidebar.css';
 import routes from '../services/appRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
 import { logout } from '../../features/authReducer';
+import DarkModeSwitcher from '../Header/DarkModeSwitcher';
 
 const PRIVILEGED_ROLE_NAMES = ['super administrator', 'dba'];
 
@@ -2167,13 +2168,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               )}
             </ul>
             {isTopbar ? (
-              <button
-                type="button"
-                onClick={() => dispatch(logout())}
-                className="mb-1 shrink-0 rounded-sm px-4 py-2 font-medium text-meta-1 transition hover:bg-gray-100 dark:hover:bg-meta-4"
-              >
-                Logout
-              </button>
+              <div className="mb-1 flex shrink-0 items-center gap-3">
+                <ul className="flex items-center">
+                  <DarkModeSwitcher />
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => dispatch(logout())}
+                  className="rounded-sm px-4 py-2 font-medium text-meta-1 transition hover:bg-gray-100 dark:hover:bg-meta-4"
+                >
+                  Logout
+                </button>
+              </div>
             ) : null}
           </div>
         </nav>
