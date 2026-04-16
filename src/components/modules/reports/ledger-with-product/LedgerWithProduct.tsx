@@ -137,6 +137,14 @@ const LedgerWithProduct = (user: any) => {
   const summary = useMemo(
     () => ({
       ...rawSummary,
+      qty: rows.reduce(
+        (sum: number, row: any) => sum + Number(row?.quantity || 0),
+        0,
+      ),
+      total_amount: rows.reduce(
+        (sum: number, row: any) => sum + Number(row?.total || 0),
+        0,
+      ),
       total_received: rows.reduce(
         (sum: number, row: any) => sum + Number(row?.received || 0),
         0,
@@ -148,6 +156,36 @@ const LedgerWithProduct = (user: any) => {
     }),
     [rawSummary, rows],
   );
+  const partyTypeId = Number(party?.party_type_id ?? party?.type_id ?? 0);
+  const partyTypeName = String(party?.party_type_name ?? party?.type_name ?? '');
+  const isPurchaseLedger =
+    partyTypeId === 2 ||
+    partyTypeId === 3 ||
+    /supplier/i.test(partyTypeName);
+  const footerReceivedValue = isPurchaseLedger
+    ? Number(summary?.total_amount || 0)
+    : Number(summary?.total_received || 0);
+  const footerPaymentValue = isPurchaseLedger
+    ? rows.reduce((sum: number, row: any) => {
+      const isOpeningRow =
+        String(row?.vr_no || '').toLowerCase() === 'opening' ||
+        /opening balance/i.test(String(row?.remarks || ''));
+      const openingBalanceValue = Math.abs(Number(row?.balance || 0));
+      const paymentValue = Number(row?.payment || 0);
+
+      return sum + (isOpeningRow ? openingBalanceValue : paymentValue);
+    }, 0)
+    : rows.reduce((sum: number, row: any) => {
+      const paymentValue = Number(row?.payment || 0);
+      const totalValue = Number(row?.total || 0);
+      const voucherType = getVoucherType(row?.vr_no);
+
+      return sum + (
+        voucherType === '3' && paymentValue <= 0 && totalValue > 0
+          ? totalValue
+          : paymentValue
+      );
+    }, 0);
 
   const hasLoaded = !!statementState?.data;
   const hasTransactions = rows.length > 1;
@@ -290,18 +328,46 @@ const LedgerWithProduct = (user: any) => {
       header: 'Received',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => (
-        <div>{Number(row.received || 0) ? formatAmount(row.received) : '-'}</div>
-      ),
+      render: (row: any) => {
+        const isOpening = String(row?.vr_no || '').toLowerCase() === 'opening' || /opening balance/i.test(String(row?.remarks || ''));
+        const balanceValue = Number(row.balance || 0);
+        const receivedValue = Number(row.received || 0);
+        const totalValue = Number(row.total || 0);
+        const voucherType = getVoucherType(row?.vr_no);
+        const displayValue =
+          isOpening
+            ? 0
+            : (
+          voucherType === '4' && receivedValue <= 0 && totalValue > 0
+            ? totalValue
+            : receivedValue
+          );
+
+        return <div>{displayValue ? formatAmount(displayValue) : '-'}</div>;
+      },
     },
     {
       key: 'payment',
       header: 'Payment',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => (
-        <div>{Number(row.payment || 0) ? formatAmount(row.payment) : '-'}</div>
-      ),
+      render: (row: any) => {
+        const isOpening = String(row?.vr_no || '').toLowerCase() === 'opening' || /opening balance/i.test(String(row?.remarks || ''));
+        const balanceValue = Math.abs(Number(row.balance || 0));
+        const paymentValue = Number(row.payment || 0);
+        const totalValue = Number(row.total || 0);
+        const voucherType = getVoucherType(row?.vr_no);
+        const displayValue =
+          isOpening && balanceValue > 0
+            ? balanceValue
+            : (
+          voucherType === '3' && paymentValue <= 0 && totalValue > 0
+            ? totalValue
+            : paymentValue
+          );
+
+        return <div>{displayValue ? formatAmount(displayValue) : '-'}</div>;
+      },
     },
     {
       key: 'balance',
@@ -325,20 +391,26 @@ const LedgerWithProduct = (user: any) => {
       },
       {
         label: 'Received:',
-        colSpan: 2,
         className: 'text-right text-slate-500 dark:text-slate-400',
       },
       {
-        label: formatAmount(summary?.total_received || 0),
+        label: formatAmount(footerReceivedValue),
+        className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
+      },
+      {
+        label: 'Qty:',
+        className: 'text-right text-slate-500 dark:text-slate-400',
+      },
+      {
+        label: thousandSeparator(Number(summary?.qty || 0), 2),
         className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
       },
       {
         label: 'Payment:',
-        colSpan: 2,
         className: 'text-right text-slate-500 dark:text-slate-400',
       },
       {
-        label: formatAmount(summary?.total_payment || 0),
+        label: formatAmount(footerPaymentValue),
         className: 'text-left font-semibold text-slate-800 dark:text-slate-100',
       },
       {
@@ -363,11 +435,10 @@ const LedgerWithProduct = (user: any) => {
                 <button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                    filterOpen
+                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
                       ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
                       : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-                  }`}
+                    }`}
                   title="Open filters"
                   aria-label="Open filters"
                 >
@@ -433,11 +504,10 @@ const LedgerWithProduct = (user: any) => {
                     </div>
 
                     <div
-                      className={`flex gap-2 pt-1 ${
-                        useFilterMenuEnabled
+                      className={`flex gap-2 pt-1 ${useFilterMenuEnabled
                           ? 'justify-end'
                           : 'hidden'
-                      } ${useFilterMenuEnabled ? '' : 'md:col-span-2 xl:col-span-1'}`}
+                        } ${useFilterMenuEnabled ? '' : 'md:col-span-2 xl:col-span-1'}`}
                     >
                       <ButtonLoading
                         label="Apply"
@@ -458,11 +528,10 @@ const LedgerWithProduct = (user: any) => {
             </div>
 
             <div
-              className={`${
-                useFilterMenuEnabled
+              className={`${useFilterMenuEnabled
                   ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300'
                   : 'hidden'
-              }`}
+                }`}
             >
               Use the filter
             </div>
@@ -560,10 +629,10 @@ const LedgerWithProduct = (user: any) => {
               columns={columns}
               data={rows}
               noDataMessage={hasTransactions ? 'No statement rows found' : 'No transactions found'}
-              tableClassName="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
-              theadClassName="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[#3a475c] dark:text-slate-100"
-              tbodyClassName="divide-y-0 bg-transparent dark:bg-transparent"
-              rowClassName="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-[#243040]"
+              // tableClassName="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
+              // theadClassName="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[#3a475c] dark:text-slate-100"
+              // tbodyClassName="divide-y-0 bg-transparent dark:bg-transparent"
+              // rowClassName="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-[#243040]"
               getRowKey={(row: any, index: number) => `${row?.vr_no || 'row'}-${index}`}
               tableStyle={{ fontSize: `${fontSize}px` }}
               footerRows={footerRows}
@@ -586,7 +655,11 @@ const LedgerWithProduct = (user: any) => {
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'}
             rowsPerPage={rowsPerPage}
             fontSize={fontSize}
-            summary={summary}
+            summary={{
+              ...summary,
+              total_received: footerReceivedValue,
+              total_payment: footerPaymentValue,
+            }}
           />
         </div>
         <VoucherPrintRegistry

@@ -16,6 +16,7 @@ type Props = {
   fontSize?: number;
   summary?: {
     opening_balance?: number;
+    qty?: number;
     total_received?: number;
     total_payment?: number;
     closing_balance?: number;
@@ -40,17 +41,17 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       address = '-',
       startDate = '-',
       endDate = '-',
-      rowsPerPage = 16,
-      fontSize = 9,
-      summary = {},
-    },
-    ref,
-  ) => {
-    const pages = chunkRows(rows, rowsPerPage);
-    const fs = Number.isFinite(fontSize) ? fontSize : 9;
-    const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
-    const vrNoWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
-    const truckWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
+	      rowsPerPage = 16,
+	      fontSize = 9,
+	      summary = {},
+	    },
+	    ref,
+	  ) => {
+	    const pages = chunkRows(rows, rowsPerPage);
+	    const fs = Number.isFinite(fontSize) ? fontSize : 9;
+	    const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
+	    const vrNoWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
+	    const truckWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -152,7 +153,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       {row.truck_no || ''}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {Number(row.quantity || 0) ? thousandSeparator(Number(row.quantity || 0), 0) : '-'}
+                      {Number(row.quantity || 0) ? thousandSeparator(Number(row.quantity || 0), 2) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
@@ -160,15 +161,50 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {Number(row.total || 0) ? thousandSeparator(Number(row.total || 0), 0) : '-'}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {Number(row.received || 0) ? thousandSeparator(Number(row.received || 0), 0) : '-'}
-                    </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {Number(row.payment || 0) ? thousandSeparator(Number(row.payment || 0), 0) : '-'}
-                    </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {thousandSeparator(Number(row.balance || 0), 0)}
-                    </td>
+	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+	                      {(() => {
+	                        const isOpening =
+	                          String(row?.vr_no || '').toLowerCase() === 'opening' ||
+	                          /opening balance/i.test(String(row?.remarks || ''));
+	                        const receivedValue = Number(row.received || 0);
+	                        const totalValue = Number(row.total || 0);
+	                        const voucherType = String(row?.vr_no || '').split('-')[0]?.trim();
+	                        const displayValue =
+	                          isOpening
+	                            ? 0
+	                            : (
+	                          voucherType === '4' && receivedValue <= 0 && totalValue > 0
+	                            ? totalValue
+	                            : receivedValue
+	                          );
+
+	                        return displayValue ? thousandSeparator(displayValue, 0) : '-';
+	                      })()}
+	                    </td>
+	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+	                      {(() => {
+	                        const isOpening =
+	                          String(row?.vr_no || '').toLowerCase() === 'opening' ||
+	                          /opening balance/i.test(String(row?.remarks || ''));
+	                        const balanceValue = Math.abs(Number(row.balance || 0));
+	                        const paymentValue = Number(row.payment || 0);
+	                        const totalValue = Number(row.total || 0);
+	                        const voucherType = String(row?.vr_no || '').split('-')[0]?.trim();
+	                        const displayValue =
+	                          isOpening && balanceValue > 0
+	                            ? balanceValue
+	                            : (
+	                          voucherType === '3' && paymentValue <= 0 && totalValue > 0
+	                            ? totalValue
+	                            : paymentValue
+	                          );
+
+	                        return displayValue ? thousandSeparator(displayValue, 0) : '-';
+	                      })()}
+	                    </td>
+	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+	                      {thousandSeparator(Number(row.balance || 0), 0)}
+	                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -178,6 +214,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="mt-3 flex justify-end gap-6 text-xs font-bold">
                 <div>Opening: {thousandSeparator(Number(summary.opening_balance), 0)}</div>
                 <div>Received: {thousandSeparator(Number(summary.total_received), 0)}</div>
+                <div>Qty: {thousandSeparator(Number(summary.qty), 2)}</div>
                 <div>Payment: {thousandSeparator(Number(summary.total_payment), 0)}</div>
                 <div>Closing: {thousandSeparator(Number(summary.closing_balance), 0)}</div>
               </div>
