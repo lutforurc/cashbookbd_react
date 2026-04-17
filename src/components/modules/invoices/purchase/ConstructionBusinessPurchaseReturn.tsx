@@ -23,7 +23,7 @@ import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import {
   API_TRADING_PURCHASE_SUGGESTIONS_URL,
-  WEB_PURCHASE_RETURN_STORE_URL,
+  API_PURCHASE_RETURN_STORE_URL,
 } from '../../../services/apiRoutes';
 
 interface Product {
@@ -303,10 +303,13 @@ const ConstructionBusinessPurchaseReturn = () => {
 
     setButtonLoading(true);
     try {
-      const response = await httpService.post(WEB_PURCHASE_RETURN_STORE_URL, payload);
-      const voucherNo = response?.data?.vr_no || response?.data?.challan || 'Saved successfully';
-      toast.success(`Purchase return saved. ${voucherNo}`);
-      resetForm();
+      const response = await httpService.post(API_PURCHASE_RETURN_STORE_URL, payload);
+      if (response?.data?.success) {
+        toast.success(response?.data?.message || 'Purchase return saved successfully.');
+        resetForm();
+      } else {
+        toast.error(response?.data?.message || 'Failed to save purchase return');
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message || 'Failed to save purchase return');
     } finally {

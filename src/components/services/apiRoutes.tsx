@@ -109,8 +109,8 @@ export const API_REMOTE_URL = resolveApiRemoteUrl();
 
 export const API_CSRF_COOKIES = `${API_REMOTE_URL}/sanctum/csrf-cookie`;
 export const API_BASE_URL = `${API_REMOTE_URL}/api`;
-export const WEB_PURCHASE_RETURN_STORE_URL = `${API_REMOTE_URL}/inventory/purchase-return`;
-export const WEB_SALES_RETURN_STORE_URL = `${API_REMOTE_URL}/inventory/sales-return`;
+export const API_PURCHASE_RETURN_STORE_URL = `${API_BASE_URL}/purchase-return/api-store`;
+export const API_SALES_RETURN_STORE_URL = `${API_BASE_URL}/sales-return/api-store`;
 // export const API_BASE_URL = API_REMOTE_URL + '/api';
 export const API_LOGIN_URL = `${API_BASE_URL}/login`;
 export const API_FORGOT_PASSWORD_REQUEST_OTP_URL = `${API_BASE_URL}/forgot-password/request-otp`;

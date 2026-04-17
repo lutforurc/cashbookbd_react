@@ -23,7 +23,7 @@ import QuickCustomerModal from './QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import {
   API_TRADING_SALES_SUGGESTIONS_URL,
-  WEB_SALES_RETURN_STORE_URL,
+  API_SALES_RETURN_STORE_URL,
 } from '../../../services/apiRoutes';
 
 interface Product {
@@ -286,10 +286,13 @@ const GeneralBusinessSalesReturn = () => {
 
     setButtonLoading(true);
     try {
-      const response = await httpService.post(WEB_SALES_RETURN_STORE_URL, payload);
-      const voucherNo = response?.data?.vr_no || response?.data?.challan || 'Saved successfully';
-      toast.success(`Sales return saved. ${voucherNo}`);
-      resetForm();
+      const response = await httpService.post(API_SALES_RETURN_STORE_URL, payload);
+      if (response?.data?.success) {
+        toast.success(response?.data?.message || 'Sales return saved successfully.');
+        resetForm();
+      } else {
+        toast.error(response?.data?.message || 'Failed to save sales return');
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message || 'Failed to save sales return');
     } finally {
