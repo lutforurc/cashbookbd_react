@@ -519,10 +519,17 @@ const Orders = () => {
           value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0),
           highlight: true,
         },
+       
         {
           key: 'do-bal-qty',
           label: 'DO Trx. Bal. Qty',
           value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0),
+          highlight: true,
+        },
+        {
+          key: 'trx-bal-qty',
+          label: 'Trx. Bal. Qty',
+          value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity)), 0),
           highlight: true,
         },
         {
