@@ -50,7 +50,9 @@ import AddRole from './components/modules/user-management/AddRole';
 import JumpDate from './components/modules/dayclose/JumpDate';
 import VoucherApproval from './components/modules/voucher_approval/VoucherApproval';
 import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex';
+import ConstructionBusinessPurchaseReturn from './components/modules/invoices/purchase/ConstructionBusinessPurchaseReturn';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
+import GeneralBusinessSalesReturn from './components/modules/invoices/sales/GeneralBusinessSalesReturn';
 import CashReceivedIndex from './components/modules/transactions/cashreceived/CashReceivedIndex';
 import CashPaymentIndex from './components/modules/transactions/cashpayment/CashPaymentIndex';
 import ChangeVoucherType from './components/modules/change_voucher_type/ChangeVoucherType';
@@ -494,8 +496,14 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
             </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_purchase_return} element={<ConstructionBusinessPurchaseReturn />} />
+            </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales} element={<SalesIndex />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_sales_return} element={<GeneralBusinessSalesReturn />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.invoice.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_labour} element={<ConstructionLabourInvoice />} />

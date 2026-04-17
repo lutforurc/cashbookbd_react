@@ -153,8 +153,10 @@ const ROUTES = {
   // Invoices
   // Purchase
   inv_purchase: '/invoice/purchase',
+  inv_purchase_return: '/invoice/purchase-return',
   // Sales
   inv_sales: '/invoice/sales',
+  inv_sales_return: '/invoice/sales-return',
 
   // Installment Routes
   installment_list: '/admin/installment-details',

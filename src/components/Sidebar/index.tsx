@@ -396,7 +396,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       <NavLink
                         to="#"
                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/invoice/purchase' ||
+                          pathname === '/invoice/purchase-return' ||
                           pathname === '/invoice/sales' ||
+                          pathname === '/invoice/sales-return' ||
                           pathname === '/invoice/labour-invoice' ||
                           pathname === routes.branch_transfer ||
                           pathname === routes.branch_received ||
@@ -431,6 +433,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {hasPermission(permissions, 'purchase.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.inv_purchase_return}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Purchase Return
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'sales.create') && (
                             <li>
                               <NavLink
@@ -441,6 +456,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Sales
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'sales.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.inv_sales_return}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Sales Return
                               </NavLink>
                             </li>
                           )}
