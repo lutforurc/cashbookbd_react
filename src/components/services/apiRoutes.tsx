@@ -412,6 +412,7 @@ export const API_DDL_AREA_LIST_URL = `${API_BASE_URL}/area/ddl-list`;
 // /admin/voucher/upload/{id}
 
 export const API_IMAGE_UPLOAD_URL = `${API_BASE_URL}/admin/voucher/upload/`;
+export const API_DELETE_VOUCHER_IMAGE_URL = `${API_BASE_URL}/admin/voucher/image/delete/`;
 export const API_BULK_IMAGE_UPLOAD_URL = `${API_BASE_URL}/admin/bulk-image/upload`;
 
 // User management Routes

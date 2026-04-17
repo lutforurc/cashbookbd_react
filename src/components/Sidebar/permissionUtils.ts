@@ -23,3 +23,12 @@ export const hasAllPermissions = (
   if (names.includes('*')) return true;
   return requiredAll.every((r) => names.includes(r));
 };
+
+export const hasPermission = (
+  permissions: Permission[] | undefined | null,
+  requiredPermission: string
+): boolean => {
+  const names = normalizePermissions(permissions);
+  if (names.includes('*')) return true;
+  return names.includes(requiredPermission);
+};

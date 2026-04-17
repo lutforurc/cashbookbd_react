@@ -527,8 +527,8 @@ const Orders = () => {
           highlight: true,
         },
         {
-          key: 'trx-bal-qty',
-          label: 'Trx. Bal. Qty',
+          key: 'trx-def-qty',
+          label: 'Trx. Def. Qty',
           value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity)), 0),
           highlight: true,
         },

@@ -42,6 +42,7 @@ export const MENU_PERMISSIONS = {
     'remove.approval',
     'change.vourcher.type',
     'voucher.photo.upload',
+    'voucher.photo.delete',
     'bulk.photo.upload',
   ],
   voucher_settings: [
