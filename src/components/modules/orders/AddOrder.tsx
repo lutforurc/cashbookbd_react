@@ -102,19 +102,14 @@ const AddOrder = (user: any) => {
     }, [initialBranchId]);
 
     useEffect(() => {
-        const hasRouteOrder =
-            locationOrder?.id != null &&
-            id != null &&
-            String(locationOrder.id) === String(id);
-
-        if (id && !hasRouteOrder) {
+        if (id) {
             dispatch(editOrder(id, function (response) {
                 if (response?.message) {
                     toast.info(response.message);
                 }
             }));
         }
-    }, [dispatch, id, locationOrder?.id]);
+    }, [dispatch, id]);
 
     useEffect(() => {
         if (!isEditMode || !locationOrder?.id) {
