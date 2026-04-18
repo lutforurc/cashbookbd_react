@@ -402,7 +402,7 @@ const ProfitLoss = (user: any) => {
                       defaultValue={user?.user?.branch_id}
                       value={branchId == null ? "" : String(branchId)}
                       onChange={handleBranchChange}
-                      className="w-full max-w-full font-medium text-sm p-2"
+                      className="w-full max-w-full font-medium text-sm p-2 h-10"
                       branchDdl={dropdownData}
                     />
                   </div>

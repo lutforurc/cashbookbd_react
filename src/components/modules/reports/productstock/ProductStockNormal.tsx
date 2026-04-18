@@ -459,7 +459,7 @@ const ProductStockNormal = ({ user }: any) => {
                     <BranchDropdown
                       onChange={handleBranchChange}
                       value={branchId == null ? '' : String(branchId)}
-                      className="w-full font-medium text-sm pl-1.5 pt-2 pb-2"
+                      className="w-full font-medium text-sm pl-1.5 pt-2 pb-2 h-9.5"
                       branchDdl={dropdownData}
                     />
                   </div>

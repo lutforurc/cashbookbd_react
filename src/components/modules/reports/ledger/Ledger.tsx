@@ -328,7 +328,7 @@ const Ledger = (user: any) => {
                 defaultValue={user?.user?.branch_id}
                 value={branchId == null ? '' : String(branchId)}
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-2"
+                className="w-full font-medium text-sm p-2 h-10"
                 branchDdl={branchOptions}
               />
             </div>
@@ -339,7 +339,7 @@ const Ledger = (user: any) => {
                 onSelect={selectedLedgerOptionHandler}
                 value={selectedLedgerOption}
                 acType={''}
-                className="h-9.5"
+                className="h-10"
               />
             </div>
 

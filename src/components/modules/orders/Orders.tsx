@@ -11,7 +11,7 @@ import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButt
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
-import { FiEdit2, FiEye, FiFilter, FiPrinter, FiRefreshCw, FiTrash2, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiEdit2, FiEye, FiFilter, FiPrinter, FiRefreshCw, FiTrash2, FiX } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
@@ -960,13 +960,14 @@ const Orders = () => {
                       buttonLoading={false}
                       label="Apply"
                       className="whitespace-nowrap h-9"
-                      icon={<FiRefreshCw />}
+                       icon={<FiCheckSquare />}
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={resetButtonLoading}
                       label="Reset"
                       className="whitespace-nowrap h-9"
+                      icon={<FiRefreshCw />}
                     />
                   </div>
                 </div>
@@ -996,14 +997,17 @@ const Orders = () => {
                 buttonLoading={false}
                 label="Apply"
                 className="whitespace-nowrap h-9"
-                icon={<FiRefreshCw />}
-              />
+                 icon={<FiCheckSquare />}
+                 />
+              
               <ButtonLoading
                 onClick={handleResetFilters}
                 buttonLoading={resetButtonLoading}
                 label="Reset"
                 className="whitespace-nowrap h-9"
+                icon={<FiRefreshCw />}
               />
+
             </div>
             <div className="flex flex-wrap items-end gap-2">
               <div className="shrink-0">

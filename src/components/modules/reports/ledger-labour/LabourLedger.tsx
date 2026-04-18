@@ -180,7 +180,7 @@ const LabourLedger = (user: any) => {
                     <BranchDropdown
                       onChange={handleBranchChange}
                       value={branchId == null ? '' : String(branchId)}
-                      className="w-full font-medium text-sm p-2"
+                      className="w-full font-medium text-sm p-2 h-10"
                       branchDdl={dropdownData}
                     />
                   </div>

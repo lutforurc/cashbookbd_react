@@ -258,7 +258,7 @@ const DateWiseData = (user: any) => {
                       onChange={(e) => setBranchId(e.target.value)}
                       value={branchId == null ? "" : String(branchId)}
                       branchDdl={dropdownData}
-                      className="w-full p-2 text-sm"
+                      className="w-full p-2 text-sm h-10"
                     />
                   </div>
 
