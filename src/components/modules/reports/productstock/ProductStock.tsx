@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -370,6 +370,14 @@ const ProductStock = ( user : any) => {
 
   const brandOptions = [{ id: '', name: 'All Brand' }, ...(brand?.brandDdl?.data || [])];
   const categoryOptions = [{ id: '', name: 'All Categories' }, ...(ddlCategory || [])];
+  const selectedBrandName = useMemo(() => {
+    const found = brandOptions.find((item: any) => String(item.id) === String(brandId ?? ''));
+    return found?.name || '';
+  }, [brandId, brandOptions]);
+  const selectedCategoryName = useMemo(() => {
+    const found = categoryOptions.find((item: any) => String(item.id) === String(categoryId ?? ''));
+    return found?.name || '';
+  }, [categoryId, categoryOptions]);
 
   return (
     <div className="">
@@ -525,6 +533,16 @@ const ProductStock = ( user : any) => {
           </div>
 
           <div className="ml-auto flex items-end gap-2">
+            {useFilterMenuEnabled && selectedBrandName ? (
+              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <span className="truncate" title={selectedBrandName}>{selectedBrandName}</span>
+              </div>
+            ) : null}
+            {useFilterMenuEnabled && selectedCategoryName ? (
+              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <span className="truncate" title={selectedCategoryName}>{selectedCategoryName}</span>
+              </div>
+            ) : null}
             <InputElement
               label="Rows"
               value={perPage.toString()}

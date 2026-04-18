@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -207,6 +207,14 @@ const CatWiseInOut = (user: any) => {
     { id: '', name: 'Select Type' },
     ...(Array.isArray(orderType) ? orderType : []),
   ];
+  const selectedCategoryName = useMemo(() => {
+    const found = optionsWithAll.find((item: any) => String(item.id) === String(categoryId ?? ''));
+    return found?.name || '';
+  }, [categoryId, optionsWithAll]);
+  const selectedReportTypeName = useMemo(() => {
+    const found = reportTypeWithAll.find((item: any) => String(item.id) === String(reportType ?? ''));
+    return found?.name || '';
+  }, [reportType, reportTypeWithAll]);
 
   // orderType
 
@@ -392,6 +400,16 @@ const CatWiseInOut = (user: any) => {
           </div>
 
           <div className={`flex flex-wrap items-end gap-2 ${useFilterMenuEnabled ? "ml-auto" : "w-full justify-start md:hidden 2xl:ml-auto 2xl:flex 2xl:w-auto 2xl:flex-nowrap 2xl:justify-end"}`}>
+            {useFilterMenuEnabled && selectedCategoryName ? (
+              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <span className="truncate" title={selectedCategoryName}>{selectedCategoryName}</span>
+              </div>
+            ) : null}
+            {useFilterMenuEnabled && reportType ? (
+              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <span className="truncate" title={selectedReportTypeName}>{selectedReportTypeName}</span>
+              </div>
+            ) : null}
             {!useFilterMenuEnabled && (
               <>
                 <ButtonLoading

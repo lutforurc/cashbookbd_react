@@ -674,7 +674,17 @@ const SalesLedger = (user: any) => {
             Use the filter
           </div>
 
-          <div className="ml-auto flex w-full flex-wrap items-end justify-end gap-2 md:hidden xl:hidden min-[1750px]:flex min-[1750px]:w-auto min-[1750px]:flex-nowrap">
+          <div className={`ml-auto flex w-full flex-wrap items-end justify-end gap-2 ${useFilterMenuEnabled ? 'md:ml-auto md:w-auto' : 'md:hidden xl:hidden min-[1750px]:flex min-[1750px]:w-auto min-[1750px]:flex-nowrap'}`}>
+            {useFilterMenuEnabled && selectedLedgerOption?.label ? (
+              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <span className="truncate" title={selectedLedgerOption.label}>{selectedLedgerOption.label}</span>
+              </div>
+            ) : null}
+            {useFilterMenuEnabled && selectedProductOption?.label ? (
+              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <span className="truncate" title={selectedProductOption.label}>{selectedProductOption.label}</span>
+              </div>
+            ) : null}
             {!useFilterMenuEnabled && (
               <>
                 <ButtonLoading

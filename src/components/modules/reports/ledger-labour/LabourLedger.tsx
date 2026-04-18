@@ -38,6 +38,7 @@ const LabourLedger = (user: any) => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
+  const [selectedLedgerLabel, setSelectedLedgerLabel] = useState('');
   const [labourId, setLabourId] = useState<number | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -117,11 +118,16 @@ const LabourLedger = (user: any) => {
   };
 
   const handleResetFields = () => {
+    setLedgerAccount(null);
+    setSelectedLedgerLabel('');
+    setSelectedLabourOption(null);
+    setLabourId(null);
     setFilterOpen(false);
   };
 
   const selectedLedgerOptionHandler = (option: any) => {
-    setLedgerAccount(option.value);
+    setLedgerAccount(option?.value ? Number(option.value) : null);
+    setSelectedLedgerLabel(option?.label || '');
   };
 
   const selectedLabourOptionHandler = (option: any) => {
@@ -269,6 +275,16 @@ const LabourLedger = (user: any) => {
 
           {useFilterMenuEnabled ? (
             <div className="ml-auto flex items-end gap-2">
+              {selectedLedgerLabel ? (
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <span className="truncate" title={selectedLedgerLabel}>{selectedLedgerLabel}</span>
+                </div>
+              ) : null}
+              {selectedLabourOption?.label ? (
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <span className="truncate" title={selectedLabourOption.label}>{selectedLabourOption.label}</span>
+                </div>
+              ) : null}
               <ButtonLoading
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}

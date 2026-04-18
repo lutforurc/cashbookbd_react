@@ -184,6 +184,8 @@ const ProductLedgerData = (user: any) => {
     });
   };
 
+  const selectedProductName = selectedLedgerOption?.label?.trim() || '';
+
   const runReport = async () => {
     if (!branchId || !ledgerId || !startDate || !endDate) {
       setError('Please select branch, item / product and date range.');
@@ -499,6 +501,11 @@ const ProductLedgerData = (user: any) => {
 
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
+                {selectedProductName ? (
+                  <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                    <span className="truncate" title={selectedProductName}>{selectedProductName}</span>
+                  </div>
+                ) : null}
                 <InputElement
                   id="rowsPerPage"
                   name="rowsPerPage"

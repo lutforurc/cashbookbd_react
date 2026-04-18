@@ -483,7 +483,7 @@ const LedgerWithProduct = (user: any) => {
             </span>
           </div>
         ),
-        colSpan: 2,
+        colSpan: 3,
         className: 'text-right',
       },
     ],
@@ -605,6 +605,11 @@ const LedgerWithProduct = (user: any) => {
 
             {useFilterMenuEnabled ? (
               <div className="ml-auto flex items-end gap-2">
+                {partyLabel ? (
+                  <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                    <span className="truncate" title={partyLabel}>{partyLabel}</span>
+                  </div>
+                ) : null}
                 <InputElement
                   type="number"
                   id="cs-statement-rows"
