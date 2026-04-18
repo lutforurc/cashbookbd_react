@@ -690,6 +690,7 @@ const PurchaseLedger = (user: any) => {
               <div>Total: {thousandSeparator(totalPayment, 0)}</div>
               <div>Discount: {thousandSeparator(discountTotal, 0)}</div>
               <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
+              <div>Balance: {thousandSeparator( (totalPayment - grandTotal - discountTotal), 0)}</div>
             </div>
           </div>
         )}
