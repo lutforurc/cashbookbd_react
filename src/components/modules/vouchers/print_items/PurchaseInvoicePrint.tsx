@@ -2,6 +2,7 @@ import React from 'react';
 import dayjs from 'dayjs';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 
 type Props = {
   data: any;
@@ -223,7 +224,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                           className="inline-block border border-black px-2 py-1 font-semibold"
                           style={{ fontSize: fs }}
                         >
-                          Vehicle No: <span className="uppercase">{purchaseMaster?.vehicle_no}</span>
+                          Vehicle No: <span className="uppercase">{ formatTransportationNumber(purchaseMaster?.vehicle_no)}</span>
                         </span>
                       </div>
                     )}

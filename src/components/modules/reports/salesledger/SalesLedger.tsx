@@ -682,14 +682,14 @@ const SalesLedger = (user: any) => {
                   buttonLoading={buttonLoading}
                   label="Apply"
                   icon=""
-                  className="h-10 px-6"
+                  className="h-10 px-6 min-[1750px]:hidden"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
                   icon=""
-                  className="h-10 px-4"
+                  className="h-10 px-4 min-[1750px]:hidden"
                 />
               </>
             )}

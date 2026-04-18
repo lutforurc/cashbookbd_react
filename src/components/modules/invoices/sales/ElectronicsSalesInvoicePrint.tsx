@@ -4,6 +4,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 import { chartDateTime } from '../../../utils/utils-functions/formatDate';
+import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 
 type Props = {
   data: any; // sales.data
@@ -276,7 +277,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                         className="inline-block border border-black px-2 py-1 font-semibold"
                         style={{ fontSize: fs }}
                       >
-                        Vehicle No: <span className="uppercase">{data?.sales_master?.vehicle_no}</span>
+                        Vehicle No: <span className="uppercase">{ formatTransportationNumber(data?.sales_master?.vehicle_no)}</span>
                       </span>
                     </div>
                   )}

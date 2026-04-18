@@ -32,3 +32,19 @@ export const firstLetterCapitalize = (text: any) => {
     .map(w => (w ? w[0].toUpperCase() + w.slice(1) : ""))
     .join(" ");
 };
+export const UpperCase = (text: any) => {
+  const s = String(text ?? "").trim();
+  if (!s) return "";
+  return s.toUpperCase();
+};
+
+export const formatTransportationNumber = (text: any) => {
+  const s = String(text ?? "").trim();
+  if (!s) return "";
+
+  const [prefix, ...restParts] = s.split("-");
+  if (!prefix) return s;
+  if (restParts.length === 0) return prefix.toUpperCase();
+
+  return `${prefix.toUpperCase()} ${restParts.join("-")}`;
+};

@@ -2,6 +2,7 @@ import React from 'react';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
 
 type OrderRow = {
   id?: number | string;
@@ -227,7 +228,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                           {row.date || '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-center">
-                          {row.vehicle_no || '-'}
+                          { formatTransportationNumber (row.vehicle_no) || '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                           {thousandSeparator(weight, 0)} {row.unit || order?.unit || ''}
