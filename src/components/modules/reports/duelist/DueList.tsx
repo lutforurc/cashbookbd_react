@@ -6,7 +6,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDueList } from './dueListSlice';
-import { FiBook, FiEdit, FiFilter, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheckSquare, FiEdit, FiFilter, FiRotateCcw, FiTrash2 } from 'react-icons/fi';
 import dayjs from 'dayjs';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import Table from '../../../utils/others/Table';
@@ -255,14 +255,14 @@ const DueList = (user: any) => {
                     <ButtonLoading
                       onClick={handleActionButtonClick}
                       buttonLoading={buttonLoading}
-                      icon=""
+                      icon={<FiCheckSquare />}
                       label="Apply"
                       className="h-10 px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
-                      icon=""
+                      icon={<FiRotateCcw />}
                       label="Reset"
                       className="h-10 px-4"
                     />
@@ -288,14 +288,14 @@ const DueList = (user: any) => {
                 <ButtonLoading
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
-                  icon=""
+                  icon={<FiCheckSquare />}
                   label="Apply"
                   className="h-10 px-6"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
-                  icon=""
+                  icon={<FiRotateCcw />}
                   label="Reset"
                   className="h-10 px-4"
                 />

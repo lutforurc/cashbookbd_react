@@ -16,7 +16,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import InputElement from "../../../utils/fields/InputElement";
 import { useReactToPrint } from "react-to-print";
 import dayjs from "dayjs";
-import { FiFilter } from "react-icons/fi";
+import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import DateWisePrint from "./DateWisePrint";
 
@@ -293,14 +293,14 @@ const DateWiseData = (user: any) => {
                       onClick={handleRun}
                       buttonLoading={buttonLoading}
                       label="Apply"
-                      icon=""
+                      icon={<FiCheckSquare />}
                       className="h-10 px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
-                      icon=""
+                      icon={<FiRotateCcw />}
                       className="h-10 px-4"
                     />
                   </div>
@@ -320,10 +320,11 @@ const DateWiseData = (user: any) => {
           </div>
 
           <div className="ml-auto flex items-end gap-2">
+
             <InputElement
               id="perPage"
               name="perPage"
-              label=""
+              label="Per Page"
               value={perPage.toString()}
               onChange={(e) => setPerPage(Number(e.target.value))}
               type="text"
@@ -332,7 +333,7 @@ const DateWiseData = (user: any) => {
             <InputElement
               id="fontSize"
               name="fontSize"
-              label=""
+              label="Font Size"
               value={fontSize.toString()}
               onChange={(e) => setFontSize(Number(e.target.value))}
               type="text"

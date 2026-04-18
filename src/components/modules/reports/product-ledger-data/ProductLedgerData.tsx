@@ -17,7 +17,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import ProductLedgerDataPrint from './ProductLedgerDataPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiFilter } from 'react-icons/fi';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 
 const aliasValue = (row: any, keys: string[], fallback: any = null) => {
   for (const key of keys) {
@@ -471,14 +471,14 @@ const ProductLedgerData = (user: any) => {
                         onClick={runReport}
                         buttonLoading={buttonLoading}
                         label="Apply"
-                        icon=""
+                        icon={<FiCheckSquare />}
                         className="h-10 px-6"
                       />
                       <ButtonLoading
                         onClick={handleResetFilters}
                         buttonLoading={false}
                         label="Reset"
-                        icon=""
+                        icon={<FiRotateCcw />}
                         className="h-10 px-4"
                       />
                     </div>
@@ -533,14 +533,14 @@ const ProductLedgerData = (user: any) => {
                     onClick={runReport}
                     buttonLoading={buttonLoading}
                     label="Apply"
-                    icon=""
+                    icon={<FiCheckSquare />}
                     className="h-10 px-6"
                   />
                   <ButtonLoading
                     onClick={handleResetFilters}
                     buttonLoading={false}
                     label="Reset"
-                    icon=""
+                    icon={<FiRotateCcw />}
                     className="h-10 px-4"
                   />
                 </div>

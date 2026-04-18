@@ -20,7 +20,7 @@ import { orderType } from "../../../utils/fields/DataConstant";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
-import { FiFilter } from "react-icons/fi";
+import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import CatWiseInOutPrint from "./CatWiseInOutPrint";
 import { useReactToPrint } from "react-to-print";
@@ -314,14 +314,14 @@ const CatWiseInOut = (user: any) => {
                       onClick={handleRun}
                       buttonLoading={buttonLoading}
                       label="Apply"
-                      icon=""
+                      icon={<FiCheckSquare />}
                       className="h-10 px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
-                      icon=""
+                      icon={<FiRotateCcw />}
                       className="h-10 px-4"
                     />
                   </div>

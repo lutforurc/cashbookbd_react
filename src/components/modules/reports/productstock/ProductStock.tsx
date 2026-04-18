@@ -16,7 +16,7 @@ import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import { FiFilter } from 'react-icons/fi';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { fetchBrandDdl } from '../../product/brand/brandSlice'; 
 
 // ======================
@@ -502,12 +502,14 @@ const ProductStock = ( user : any) => {
                       onClick={handleActionButtonClick}
                       buttonLoading={buttonLoading}
                       label="Apply"
+                      icon={<FiCheckSquare />}
                       className="h-10 px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
+                      icon={<FiRotateCcw />}
                       className="h-10 px-4"
                     />
                   </div>

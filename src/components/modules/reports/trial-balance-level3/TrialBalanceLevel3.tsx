@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
-import { FiFilter } from "react-icons/fi";
+import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import {
   ButtonLoading,
@@ -526,13 +526,16 @@ const TrialBalanceLevel3 = (user: any) => {
                         onClick={handleActionButtonClick}
                         buttonLoading={buttonLoading}
                         className="h-10 px-6"
+                        icon={<FiCheckSquare />}
                       />
                       <ButtonLoading
                         label="Reset"
                         onClick={handleResetFilters}
                         buttonLoading={false}
                         className="h-10 px-4"
+                        icon={<FiRotateCcw />}
                       />
+
                     </div>
                   </div>
                 </div>
@@ -582,12 +585,15 @@ const TrialBalanceLevel3 = (user: any) => {
                     onClick={handleActionButtonClick}
                     buttonLoading={buttonLoading}
                     className="h-10 px-6"
+                    icon={<FiCheckSquare />}
                   />
+
                   <ButtonLoading
                     label="Reset"
                     onClick={handleResetFilters}
                     buttonLoading={false}
                     className="h-10 px-4"
+                    icon={<FiRotateCcw />}
                   />
                 </div>
                 <div className="flex flex-nowrap items-end gap-2">

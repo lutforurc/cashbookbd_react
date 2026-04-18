@@ -17,7 +17,7 @@ import { fetchCustomerSupplierStatement } from './ledgerWithProductSlice';
 import LedgerWithProductPrint from './LedgerWithProductPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiFilter } from 'react-icons/fi';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 
 const formatAmount = (value: any, precision = 0) => {
   const amount = Number(value || 0);
@@ -577,6 +577,7 @@ const LedgerWithProduct = (user: any) => {
                       <ButtonLoading
                         label="Apply"
                         onClick={handleRun}
+                        icon={<FiCheckSquare />}
                         buttonLoading={statementState?.loading}
                         className="h-10 px-6"
                       />
@@ -585,6 +586,7 @@ const LedgerWithProduct = (user: any) => {
                         onClick={handleResetFilters}
                         buttonLoading={false}
                         className="h-10 px-4"
+                        icon={<FiRotateCcw />}
                       />
                     </div>
                   </div>
@@ -634,12 +636,15 @@ const LedgerWithProduct = (user: any) => {
                     onClick={handleRun}
                     buttonLoading={statementState?.loading}
                     className="h-10 px-6"
+                    icon={<FiCheckSquare />}
                   />
+
                   <ButtonLoading
                     label="Reset"
                     onClick={handleResetFilters}
                     buttonLoading={false}
                     className="h-10 px-4"
+                    icon={<FiRotateCcw />}
                   />
                 </div>
                 <div className="flex flex-nowrap items-end gap-2">

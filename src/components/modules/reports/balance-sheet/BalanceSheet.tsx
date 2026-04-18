@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
-import { FiFilter } from "react-icons/fi";
+import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import {
   ButtonLoading,
@@ -14,6 +14,7 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import InputElement from "../../../utils/fields/InputElement";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import FilterMenuShell from "../../../utils/components/FilterMenuShell";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
@@ -58,6 +59,7 @@ const BalanceSheet = (user: any) => {
 
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
   const balanceSheetState: any = useSelector((state: any) => state.balanceSheet);
+  const settings: any = useSelector((state: any) => state.settings);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -71,6 +73,8 @@ const BalanceSheet = (user: any) => {
     title: string;
     group: ReportGroup;
   } | null>(null);
+  const useFilterMenuEnabled =
+    String(settings?.data?.branch?.use_filter_parameter ?? "") === "1";
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -231,109 +235,143 @@ const BalanceSheet = (user: any) => {
       <HelmetTitle title="Balance Sheet" />
       <div className="mx-auto space-y-6 ">
         <div className="pl-0 pr-1 py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                  filterOpen
-                    ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
-                    : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
-                }`}
-                title="Open filters"
-                aria-label="Open filters"
-              >
-                <FiFilter size={16} />
-              </button>
+          <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col xl:flex-row xl:items-end"}`}>
+            <FilterMenuShell
+              enabled={useFilterMenuEnabled}
+              isOpen={filterOpen}
+              onToggle={() => setFilterOpen((prev) => !prev)}
+              menuWidthClassName="w-[min(92vw,340px)]"
+              inlineClassName="grid grid-cols-3 items-end gap-3"
+            >
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Select Branch
+                </label>
+                <BranchDropdown
+                  branchDdl={dropdownData}
+                  onChange={handleBranchChange}
+                  defaultValue={branchId ? String(branchId) : ""}
+                  value={branchId ? String(branchId) : ""}
+                  className="h-10 rounded-sm px-3"
+                />
+              </div>
 
-              {filterOpen && (
-                <div className="absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        Select Branch
-                      </label>
-                      <BranchDropdown
-                        branchDdl={dropdownData}
-                        onChange={handleBranchChange}
-                        defaultValue={branchId ? String(branchId) : ""}
-                        value={branchId ? String(branchId) : ""}
-                        className="h-10 rounded-sm px-3"
-                      />
-                    </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Start Date
+                </label>
+                <InputDatePicker
+                  selectedDate={startDate}
+                  setSelectedDate={setStartDate}
+                  setCurrentDate={setStartDate}
+                  className="h-10 w-full rounded-sm"
+                />
+              </div>
 
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        Start Date
-                      </label>
-                      <InputDatePicker
-                        selectedDate={startDate}
-                        setSelectedDate={setStartDate}
-                        setCurrentDate={setStartDate}
-                        className="h-10 w-full rounded-sm"
-                      />
-                    </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  End Date
+                </label>
+                <InputDatePicker
+                  selectedDate={endDate}
+                  setSelectedDate={setEndDate}
+                  setCurrentDate={setEndDate}
+                  className="h-10 w-full rounded-sm"
+                />
+              </div>
 
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        End Date
-                      </label>
-                      <InputDatePicker
-                        selectedDate={endDate}
-                        setSelectedDate={setEndDate}
-                        setCurrentDate={setEndDate}
-                        className="h-10 w-full rounded-sm"
-                      />
-                    </div>
+              <div className={`flex gap-2 pt-1 ${useFilterMenuEnabled ? "justify-end md:col-span-2 xl:col-span-4" : "hidden"}`}>
+                <ButtonLoading
+                  label="Apply"
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  className="h-10 px-6"
+                  icon={<FiCheckSquare />}
+                />
+                <ButtonLoading
+                  label="Reset"
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  className="h-10 px-4"
+                  icon={<FiRotateCcw />}
+                />
+              </div>
+            </FilterMenuShell>
 
-                    <div className="flex justify-end gap-2 pt-1">
-                      <ButtonLoading
-                        label="Apply"
-                        onClick={handleActionButtonClick}
-                        buttonLoading={buttonLoading}
-                        className="h-10 px-6"
-                      />
-                      <ButtonLoading
-                        label="Reset"
-                        onClick={handleResetFilters}
-                        buttonLoading={false}
-                        className="h-10 px-4"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+            <div className={`${useFilterMenuEnabled ? "hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300" : "hidden"}`}>
               Use the filter
             </div>
 
-            <div className="ml-auto flex items-end gap-2">
-              <InputElement
-                type="number"
-                id="bs-per-page"
-                label=""
-                value={perPage}
-                onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
-                className="h-10 !w-20 text-center"
-              />
-              <InputElement
-                type="number"
-                id="bs-font-size"
-                label=""
-                value={fontSize}
-                onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                className="h-10 !w-20 text-center"
-              />
-              <PrintButton
-                label="Print"
-                onClick={handlePrint}
-                className="h-10 px-6"
-                disabled={!hasReportData}
-              />
-            </div>
+            {useFilterMenuEnabled ? (
+              <div className="ml-auto flex items-end gap-2">
+                <InputElement
+                  type="number"
+                  id="bs-per-page"
+                  label=""
+                  value={perPage}
+                  onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
+                  className="h-10 !w-20 text-center"
+                />
+                <InputElement
+                  type="number"
+                  id="bs-font-size"
+                  label=""
+                  value={fontSize}
+                  onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
+                  className="h-10 !w-20 text-center"
+                />
+                <PrintButton
+                  label="Print"
+                  onClick={handlePrint}
+                  className="h-10 px-6"
+                  disabled={!hasReportData}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
+                <div className="flex flex-nowrap items-end gap-2">
+                  <ButtonLoading
+                    label="Apply"
+                    onClick={handleActionButtonClick}
+                    buttonLoading={buttonLoading}
+                    className="h-10 px-6"
+                    icon={<FiCheckSquare />}
+                  />
+                  <ButtonLoading
+                    label="Reset"
+                    onClick={handleResetFilters}
+                    buttonLoading={false}
+                    className="h-10 px-4"
+                    icon={<FiRotateCcw />}
+                  />
+
+                </div>
+                <div className="flex flex-nowrap items-end justify-start gap-2">
+                  <InputElement
+                    type="number"
+                    id="bs-per-page"
+                    label="Rows"
+                    value={perPage}
+                    onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
+                    className="h-10 !w-28 text-center"
+                  />
+                  <InputElement
+                    type="number"
+                    id="bs-font-size"
+                    label="Font"
+                    value={fontSize}
+                    onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
+                    className="h-10 !w-28 text-center"
+                  />
+                  <PrintButton
+                    label="Print"
+                    onClick={handlePrint}
+                    className="h-10 px-6"
+                    disabled={!hasReportData}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

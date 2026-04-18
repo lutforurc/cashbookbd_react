@@ -12,7 +12,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { getLabourItems, getLabourLedger } from './labourLedgerSlice';
 import LabourDropdown from '../../../utils/utils-functions/LabourDropdown';
 import { formatDate } from '../../../utils/utils-functions/formatDate';
-import { FiFilter } from 'react-icons/fi';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 
 const LabourLedger = (user: any) => {
   type Entry = {
@@ -240,6 +240,7 @@ const LabourLedger = (user: any) => {
                       onClick={handleActionButtonClick}
                       buttonLoading={buttonLoading}
                       label="Apply"
+                      icon={<FiCheckSquare />}
                       className="h-10 px-6"
                     />
                     <ButtonLoading
@@ -247,7 +248,9 @@ const LabourLedger = (user: any) => {
                       buttonLoading={false}
                       label="Reset"
                       className="h-10 px-4"
+                      icon={<FiRotateCcw />}
                     />
+
                   </div>
                 </div>
               </div>
@@ -270,6 +273,7 @@ const LabourLedger = (user: any) => {
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
                 label="Run"
+                icon={<FiCheckSquare />}
                 className="h-10 px-6"
               />
             </div>
@@ -303,6 +307,7 @@ const LabourLedger = (user: any) => {
                     onClick={handleActionButtonClick}
                     buttonLoading={buttonLoading}
                     label="Run"
+                    icon={<FiCheckSquare />}
                     className="h-10 px-6"
                   />
                   <ButtonLoading
@@ -310,12 +315,14 @@ const LabourLedger = (user: any) => {
                     buttonLoading={buttonLoading}
                     label="Apply"
                     className="h-10 px-6"
+                    icon={<FiCheckSquare />}
                   />
                   <ButtonLoading
                     onClick={handleResetFields}
                     buttonLoading={false}
                     label="Reset"
                     className="h-10 px-4"
+                    icon={<FiRotateCcw />}
                   />
                 </div>
               </div>
