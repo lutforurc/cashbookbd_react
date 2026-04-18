@@ -215,8 +215,8 @@ const CatWiseInOut = (user: any) => {
       <HelmetTitle title={"Category Wise In & Out"} />
 
       <div className=" px-0 py-3 ">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1"}>
+        <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col 2xl:flex-row 2xl:items-end"}`}>
+          <div className={useFilterMenuEnabled ? "relative shrink-0" : "w-full 2xl:min-w-[320px] 2xl:flex-1"}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -245,7 +245,7 @@ const CatWiseInOut = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? "space-y-3"
-                      : "grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(200px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]"
+                      : "grid grid-cols-1 items-end gap-3 md:grid-cols-2 2xl:grid-cols-5"
                   }
                 >
                   <div>
@@ -293,7 +293,7 @@ const CatWiseInOut = (user: any) => {
                     />
                   </div>
 
-                  <div>
+                  <div className="block md:hidden 2xl:block">
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
                       selectedDate={endDate}
@@ -303,12 +303,63 @@ const CatWiseInOut = (user: any) => {
                     />
                   </div>
 
+                  {!useFilterMenuEnabled && (
+                    <div className="hidden items-end gap-3 md:col-span-2 md:flex 2xl:hidden">
+                      <div className="min-w-0 flex-[1.1]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                        <InputDatePicker
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
+                          setCurrentDate={setEndDate}
+                          className="w-full h-10 text-sm"
+                        />
+                      </div>
+
+                      <div className="ml-auto flex min-w-max flex-nowrap items-end gap-2 pt-6">
+                        <ButtonLoading
+                          onClick={handleRun}
+                          buttonLoading={buttonLoading}
+                          label="Apply"
+                          icon={<FiCheckSquare />}
+                          className="h-10 px-6"
+                        />
+                        <ButtonLoading
+                          onClick={handleResetFilters}
+                          buttonLoading={false}
+                          label="Reset"
+                          icon={<FiRotateCcw />}
+                          className="h-10 px-4"
+                        />
+                        <InputElement
+                          id="perPageInline"
+                          label="Rows"
+                          name="perPageInline"
+                          value={perPage.toString()}
+                          onChange={(e) => setPerPage(Number(e.target.value))}
+                          className="h-10 !w-16 md:!w-18 text-sm"
+                        />
+                        <InputElement
+                          id="fontSizeInline"
+                          name="fontSizeInline"
+                          label="Font"
+                          value={fontSize.toString()}
+                          onChange={(e) => setFontSize(Number(e.target.value))}
+                          className="h-10 !w-16 md:!w-18 text-sm"
+                        />
+                        <PrintButton
+                          onClick={handlePrint}
+                          className="h-10 px-4"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div
                     className={`flex gap-2 pt-1 ${
                       useFilterMenuEnabled
                         ? "justify-end"
-                        : "justify-start self-end"
-                    } ${useFilterMenuEnabled ? "" : "md:col-span-2 xl:col-span-1"}`}
+                        : "hidden 2xl:hidden"
+                    }`}
                   >
                     <ButtonLoading
                       onClick={handleRun}
@@ -340,22 +391,40 @@ const CatWiseInOut = (user: any) => {
             Use the filter
           </div>
 
-          <div className="ml-auto flex items-end gap-2">
+          <div className={`flex flex-wrap items-end gap-2 ${useFilterMenuEnabled ? "ml-auto" : "w-full justify-start md:hidden 2xl:ml-auto 2xl:flex 2xl:w-auto 2xl:flex-nowrap 2xl:justify-end"}`}>
+            {!useFilterMenuEnabled && (
+              <>
+                <ButtonLoading
+                  onClick={handleRun}
+                  buttonLoading={buttonLoading}
+                  label="Apply"
+                  icon={<FiCheckSquare />}
+                  className="h-10 px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon={<FiRotateCcw />}
+                  className="h-10 px-4"
+                />
+              </>
+            )}
             <InputElement
               id="perPage"
-              label={"Rows"}
+              label={useFilterMenuEnabled ? "Rows" : "Rows"}
               name="perPage"
               value={perPage.toString()}
               onChange={(e) => setPerPage(Number(e.target.value))}
-              className="h-10 !w-20 text-sm"
+              className="h-10 !w-16 md:!w-18 text-sm"
             />
             <InputElement
               id="fontSize"
               name="fontSize"
-              label={"Font"}
+              label={useFilterMenuEnabled ? "Font" : "Font"}
               value={fontSize.toString()}
               onChange={(e) => setFontSize(Number(e.target.value))}
-              className="h-10 !w-20 text-sm"
+              className="h-10 !w-16 md:!w-18 text-sm"
             />
             <PrintButton
               onClick={handlePrint}
