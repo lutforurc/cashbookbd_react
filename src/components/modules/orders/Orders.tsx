@@ -1042,7 +1042,7 @@ const Orders = () => {
               />
               <div className="shrink-0">
                 <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
-                  New Orders
+                  New Order
                 </Link>
               </div>
             </div>
@@ -1084,7 +1084,7 @@ const Orders = () => {
               </div>
               <div className="ml-auto shrink-0">
                 <Link to="/orders/add-order" className="text-nowrap self-start xl:self-auto h-9">
-                  New Orders
+                  New Order
                 </Link>
               </div>
             </>

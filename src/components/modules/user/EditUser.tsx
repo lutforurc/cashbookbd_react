@@ -14,6 +14,7 @@ import { toast } from 'react-toastify';
 import { getSettings } from '../settings/settingsSlice';
 import { authCheck } from '../../../features/authReducer';
 import MultiSelectDropdown from '../../utils/utils-functions/MultiSelectDropdown';
+import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi';
 
 type MultiOption = {
     value: string | number;
@@ -271,12 +272,14 @@ const EditUser = (user: any) => {
                         onClick={handleUserUpdate}
                         buttonLoading={showUser.isLoading}
                         label="Update"
+                        icon={<FiCheckSquare />}
                         className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
                     />
                     <ButtonLoading
                         onClick={handleBack}
                         buttonLoading={showUser.isLoading}
                         label="Back"
+                        icon={<FiArrowLeft />}
                         className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
                     />
                 </div>

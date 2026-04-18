@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
-import { FiFilter, FiRefreshCcw, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiFilter, FiRefreshCcw, FiX } from 'react-icons/fi';
 import Loader from '../../../common/Loader';
 import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
@@ -792,14 +792,14 @@ const OrderWithProduct = ({
                         buttonLoading={buttonLoading}
                         label="Apply"
                         className="h-10 min-w-[92px] bg-meta-4 px-4 hover:bg-graydark focus:bg-graydark"
-                        icon={<FiRefreshCcw className="text-white text-base ml-0 mr-0" />}
+                        icon={<FiCheckSquare className="text-white text-base ml-0 mr-0" />}
                       />
                       <button
                         type="button"
                         onClick={handleResetFilters}
                         className="inline-flex h-10 min-w-[92px] items-center justify-center bg-meta-4 px-4 text-sm font-medium text-white transition hover:bg-graydark focus:bg-graydark focus:outline-none"
                       >
-                        Reset
+                          Reset
                       </button>
                     </div>
                   </div>

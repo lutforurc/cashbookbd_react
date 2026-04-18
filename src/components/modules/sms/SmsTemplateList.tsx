@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiEdit2, FiEye, FiPlus } from 'react-icons/fi';
+import { FiCheckSquare, FiEdit2, FiEye, FiPlus } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -212,6 +212,7 @@ const SmsTemplateList = () => {
               onClick={handleSearch}
               label="Search"
               className="h-9 whitespace-nowrap"
+              icon={<FiCheckSquare />}
             />
           </div>
         </div>

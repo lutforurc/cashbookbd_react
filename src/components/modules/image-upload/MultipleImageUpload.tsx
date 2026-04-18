@@ -22,6 +22,7 @@ import {
   API_VOUCHER_IMAGE_FOR_UPLOAD_URL,
 } from '../../services/apiRoutes';
 import { hasPermission } from '../../Sidebar/permissionUtils';
+import { FiCheckSquare } from 'react-icons/fi';
 
 type FileMap = { [voucherId: number]: File[] };
 type PreviewMap = { [voucherId: number]: string[] };
@@ -545,7 +546,7 @@ console.log(
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
-              icon=""
+              icon={<FiCheckSquare />}
               className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
             />
           </div>

@@ -4,7 +4,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUser } from './userSlice';
 import Loader from '../../../common/Loader';
-import { FiBook, FiEdit, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheck, FiCheckSquare, FiEdit, FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 import Pagination from '../../utils/utils-functions/Pagination';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
@@ -219,7 +219,7 @@ const UserList = () => {
               buttonLoading={buttonLoading}
               label="Search"
               className="whitespace-nowrap"
-              icon=""
+              icon={<FiCheckSquare />}
             />
           </div>
         </div>
@@ -229,7 +229,7 @@ const UserList = () => {
             buttonLoading={false}
             label={userLimitReached ? `User Limit Full (${currentUsers}/${maxUsers})` : "Add User"}
             className="whitespace-nowrap ml-2"
-            icon=""
+            icon={<FiPlus />}
           />
         )}
       </div>

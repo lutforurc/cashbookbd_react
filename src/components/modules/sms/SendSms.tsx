@@ -11,6 +11,7 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import SearchInput from '../../utils/fields/SearchInput';
 import Pagination from '../../utils/utils-functions/Pagination';
+import { FiCheckSquare } from 'react-icons/fi';
 
 const SendSms = (user: any) => {
   const dispatch = useDispatch();
@@ -118,7 +119,7 @@ const SendSms = (user: any) => {
                   onClick={handleSearchButton}
                   label="Search"
                   className="whitespace-nowrap h-9"
-                  icon=""
+                  icon={<FiCheckSquare />}
                 />
               </div>
             </div>

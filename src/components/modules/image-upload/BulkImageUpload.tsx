@@ -9,7 +9,7 @@ import { Attachment, ImageVoucherType } from '../../utils/fields/DataConstant';
 import { toast } from 'react-toastify';
 import { bulkUploadImages } from './imageUploadSlice';
 import dayjs from 'dayjs';
-import { FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiX } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 
@@ -268,7 +268,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
             onClick={handleUploadBulkImage}
             buttonLoading={buttonLoading}
             label="Update"
-            icon=""
+            icon={<FiCheckSquare />}
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
           />
         </div>
