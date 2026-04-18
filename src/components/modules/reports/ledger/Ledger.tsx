@@ -313,13 +313,13 @@ const Ledger = (user: any) => {
     <div className="">
       <HelmetTitle title={'Ledger'} />
       <div className="py-3">
-        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col 2xl:flex-row 2xl:items-end'}`}>
           <FilterMenuShell
             enabled={useFilterMenuEnabled}
             isOpen={filterOpen}
             onToggle={() => setFilterOpen((prev) => !prev)}
             menuWidthClassName="w-[min(92vw,340px)]"
-            inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-5"
+            inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-4"
           >
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
@@ -339,7 +339,7 @@ const Ledger = (user: any) => {
                 onSelect={selectedLedgerOptionHandler}
                 value={selectedLedgerOption}
                 acType={''}
-                className="h-10"
+                className="h-9.5"
               />
             </div>
 
@@ -414,7 +414,7 @@ const Ledger = (user: any) => {
               />
             </div>
           ) : (
-            <div className="flex flex-wrap items-end justify-between gap-3 xl:ml-auto xl:flex-nowrap">
+            <div className="flex flex-wrap items-end justify-between gap-3 2xl:ml-auto 2xl:flex-nowrap">
               <div className="flex flex-wrap items-end gap-2">
                 <ButtonLoading
                   onClick={handleActionButtonClick}
@@ -431,7 +431,7 @@ const Ledger = (user: any) => {
                   className="h-10 px-4"
                 />
               </div>
-              <div className="flex flex-wrap items-end gap-2 xl:flex-nowrap">
+              <div className="flex flex-wrap items-end gap-2 2xl:flex-nowrap">
                 <InputElement
                   id="perPage"
                   name="perPage"

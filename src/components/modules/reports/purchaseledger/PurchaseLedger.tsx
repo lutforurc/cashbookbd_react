@@ -450,7 +450,7 @@ const PurchaseLedger = (user: any) => {
                       className="absolute right-2 top-9 z-10 cursor-pointer"
                       title="Clear selected product"
                     >
-                      <FaRotateRight size={16} className="dark:text-white" />
+                      {/* <FaRotateRight size={16} className="dark:text-white" /> */}
                     </div>
                     <ProductDropdown
                       onSelect={selectedProduct}

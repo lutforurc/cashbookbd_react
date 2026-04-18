@@ -191,8 +191,8 @@ const DueList = (user: any) => {
             <p className="font-bold">{selectedOption.label}</p>
           </div>
         )}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center' : 'flex flex-col 2xl:flex-row 2xl:items-end'}`}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'w-full 2xl:min-w-[320px] 2xl:flex-1'}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -221,7 +221,7 @@ const DueList = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1.4fr)_minmax(180px,1fr)_auto]'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2'
                   }
                 >
                   <div>
@@ -230,7 +230,7 @@ const DueList = (user: any) => {
                     <BranchDropdown
                       onChange={handleBranchChange}
                       value={branchId == null ? '' : String(branchId)}
-                      className="w-full font-medium text-sm p-1.5"
+                      className="w-full font-medium text-sm p-1.5 h-10"
                       branchDdl={dropdownData}
                     />
                   </div>
@@ -249,8 +249,8 @@ const DueList = (user: any) => {
                     className={`flex gap-2 pt-1 ${
                       useFilterMenuEnabled
                         ? 'justify-end'
-                        : 'justify-start self-end'
-                    } ${useFilterMenuEnabled ? '' : 'md:col-span-2 xl:col-span-1'}`}
+                        : 'hidden'
+                    }`}
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
@@ -282,11 +282,29 @@ const DueList = (user: any) => {
             Use the filter
           </div>
 
-          <div className="ml-auto flex items-end gap-2">
+          <div className={`flex flex-wrap items-end gap-2 ${useFilterMenuEnabled ? 'ml-auto' : 'w-full justify-start 2xl:ml-auto 2xl:w-auto 2xl:justify-end'}`}>
+            {!useFilterMenuEnabled && (
+              <>
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  icon=""
+                  label="Apply"
+                  className="h-10 px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  icon=""
+                  label="Reset"
+                  className="h-10 px-4"
+                />
+              </>
+            )}
             <InputElement
               id="perPage"
               name="perPage"
-              label=""
+              label="Per page"
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type='text'
@@ -295,7 +313,7 @@ const DueList = (user: any) => {
             <InputElement
               id="fontSize"
               name="fontSize"
-              label=""
+              label="Font Size"
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type='text'

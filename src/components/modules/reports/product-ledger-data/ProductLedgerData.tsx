@@ -425,7 +425,7 @@ const ProductLedgerData = (user: any) => {
                         }
                         branchDdl={dropdownData}
                         value={branchId ? String(branchId) : undefined}
-                        className="w-full font-medium text-sm p-1.5"
+                        className="w-full font-medium text-sm h-10 p-2"
                       />
                     </div>
 
