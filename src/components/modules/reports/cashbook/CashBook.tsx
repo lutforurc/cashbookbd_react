@@ -10,7 +10,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCashBook } from './cashBookSlice';
-import { FiBook, FiCheckCircle, FiEdit, FiFilter, FiLogIn } from 'react-icons/fi';
+import { FiBook, FiCheckCircle, FiCheckSquare, FiEdit, FiFilter, FiLogIn, FiRotateCcw } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
@@ -402,7 +402,7 @@ const CashBook = (user: any) => {
                 defaultValue={user?.user?.branch_id}
                 value={branchId == null ? '' : String(branchId)}
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-2"
+                className="w-full font-medium text-sm p-2 h-10"
                 branchDdl={dropdownData}
               />
             </div>
@@ -432,14 +432,14 @@ const CashBook = (user: any) => {
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
                 label="Apply"
-                icon=""
+                icon={<FiCheckSquare />}
                 className="h-10 px-6"
               />
               <ButtonLoading
                 onClick={handleResetFilters}
                 buttonLoading={false}
                 label="Reset"
-                icon=""
+                icon={<FiRotateCcw />}
                 className="h-10 px-4"
               />
             </div>
@@ -492,14 +492,14 @@ const CashBook = (user: any) => {
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
                   label="Apply"
-                  icon=""
+                  icon={<FiCheckSquare />}
                   className="h-10 px-6"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
-                  icon=""
+                  icon={<FiRotateCcw />}
                   className="h-10 px-4"
                 />
               </div>

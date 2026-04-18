@@ -50,8 +50,8 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
           </>
         ) : (
           <>
-            <span className={hasLabel ? 'block md:hidden' : 'block'}>{resolvedIcon}</span>
-            {hasLabel ? <span className="hidden md:block">{safeLabel}</span> : null}
+            <span className={hasLabel ? 'mr-2 inline-flex items-center' : 'inline-flex items-center'}>{resolvedIcon}</span>
+            {hasLabel ? <span>{safeLabel}</span> : null}
           </>
         )}
       </span>

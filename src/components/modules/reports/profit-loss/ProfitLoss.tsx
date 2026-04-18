@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
-import { FiFilter } from "react-icons/fi";
+import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import {
   ButtonLoading,
@@ -438,14 +438,14 @@ const ProfitLoss = (user: any) => {
                       onClick={handleActionButtonClick}
                       buttonLoading={buttonLoading}
                       label="Apply"
-                      icon=""
+                      icon={<FiCheckSquare />}
                       className="h-10 px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
-                      icon=""
+                      icon={<FiRotateCcw />}
                       className="h-10 px-4"
                     />
                   </div>
@@ -507,14 +507,14 @@ const ProfitLoss = (user: any) => {
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
                   label="Apply"
-                  icon=""
+                  icon={<FiCheckSquare />}
                   className="h-10 px-6"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
-                  icon=""
+                  icon={<FiRotateCcw />}
                   className="h-10 px-4"
                 />
               </div>

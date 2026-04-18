@@ -19,7 +19,7 @@ import SalesLedgerPrint from './SalesLedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiFilter } from 'react-icons/fi';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -534,14 +534,14 @@ const SalesLedger = (user: any) => {
                           onClick={handleActionButtonClick}
                           buttonLoading={buttonLoading}
                           label="Apply"
-                          icon=""
+                           icon={<FiCheckSquare />}
                           className="h-10 px-6"
                         />
                         <ButtonLoading
                           onClick={handleResetFilters}
                           buttonLoading={false}
-                          label="Reset"
-                          icon=""
+                          label="Reset" 
+                          icon={<FiRotateCcw />} 
                           className="h-10 px-4"
                         />
                         <InputElement
@@ -584,14 +584,14 @@ const SalesLedger = (user: any) => {
                       onClick={handleActionButtonClick}
                       buttonLoading={buttonLoading}
                       label="Apply"
-                      icon=""
+                      icon={<FiCheckSquare />}
                       className="h-10 px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
-                      icon=""
+                      icon={<FiRotateCcw />}
                       className="h-10 px-4"
                     />
                   </div>
@@ -623,14 +623,14 @@ const SalesLedger = (user: any) => {
                           onClick={handleActionButtonClick}
                           buttonLoading={buttonLoading}
                           label="Apply"
-                          icon=""
+                          icon={<FiCheckSquare />}
                           className="h-10 px-6"
                         />
                         <ButtonLoading
                           onClick={handleResetFilters}
                           buttonLoading={false}
                           label="Reset"
-                          icon=""
+                          icon={<FiRotateCcw />}
                           className="h-10 px-4"
                         />
                       </div>
@@ -681,14 +681,14 @@ const SalesLedger = (user: any) => {
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
                   label="Apply"
-                  icon=""
+                  icon={<FiCheckSquare />}
                   className="h-10 px-6 min-[1750px]:hidden"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
-                  icon=""
+                  icon={<FiRotateCcw />} 
                   className="h-10 px-4 min-[1750px]:hidden"
                 />
               </>

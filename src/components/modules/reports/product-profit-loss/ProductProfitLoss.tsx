@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
-import { FiFilter } from "react-icons/fi";
+import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
@@ -495,11 +495,13 @@ const ProductProfitLoss = (user: any) => {
                         onClick={handleRunReport}
                         buttonLoading={buttonLoading}
                         className="h-10 px-6"
+                        icon={<FiCheckSquare />}
                       />
                       <ButtonLoading
                         label="Reset"
                         onClick={handleResetFilters}
                         buttonLoading={false}
+                        icon={<FiRotateCcw />}
                         className="h-10 px-4"
                       />
                     </div>
@@ -554,12 +556,14 @@ const ProductProfitLoss = (user: any) => {
                     label="Apply"
                     onClick={handleRunReport}
                     buttonLoading={buttonLoading}
+                    icon={<FiCheckSquare />}
                     className="h-10 px-6"
                   />
                   <ButtonLoading
                     label="Reset"
                     onClick={handleResetFilters}
-                    buttonLoading={false}
+                    buttonLoading={false} 
+                    icon={<FiRotateCcw />}
                     className="h-10 px-4"
                   />
                 </div>

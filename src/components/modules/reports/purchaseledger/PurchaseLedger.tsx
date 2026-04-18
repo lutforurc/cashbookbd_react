@@ -13,7 +13,6 @@ import { getPurchaseLedger } from './purchaseLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ImagePopup from '../../../utils/others/ImagePopup';
-import { FaRotateRight } from 'react-icons/fa6';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import PurchaseLedgerPrint from './PurchaseLedgerPrint';
@@ -21,7 +20,7 @@ import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiFilter } from 'react-icons/fi';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -495,8 +494,8 @@ const PurchaseLedger = (user: any) => {
                         <ButtonLoading
                           onClick={handleActionButtonClick}
                           buttonLoading={buttonLoading}
-                          label="Apply"
-                          icon=""
+                          label="Apply" 
+                          icon={<FiCheckSquare />}
                           className="h-10 px-6"
                         />
                         <ButtonLoading
@@ -545,14 +544,14 @@ const PurchaseLedger = (user: any) => {
                       onClick={handleActionButtonClick}
                       buttonLoading={buttonLoading}
                       label="Apply"
-                      icon=""
+                       icon={<FiCheckSquare />}
                       className="h-10 px-6"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
-                      icon=""
+                      icon={<FiRotateCcw />}
                       className="h-10 px-4"
                     />
                   </div>
@@ -584,14 +583,14 @@ const PurchaseLedger = (user: any) => {
                           onClick={handleActionButtonClick}
                           buttonLoading={buttonLoading}
                           label="Apply"
-                          icon=""
+                          icon={<FiCheckSquare />}
                           className="h-10 px-6"
                         />
                         <ButtonLoading
                           onClick={handleResetFilters}
                           buttonLoading={false}
                           label="Reset"
-                          icon=""
+                           icon={<FiRotateCcw />} 
                           className="h-10 px-4"
                         />
                       </div>
@@ -640,14 +639,14 @@ const PurchaseLedger = (user: any) => {
                   onClick={handleActionButtonClick}
                   buttonLoading={buttonLoading}
                   label="Apply"
-                  icon=""
+                  icon={<FiCheckSquare />}
                   className="h-10 px-6 min-[1750px]:hidden"
                 />
                 <ButtonLoading
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
-                  icon=""
+                  icon={<FiRotateCcw />}
                   className="h-10 px-4 min-[1750px]:hidden"
                 />
               </>
