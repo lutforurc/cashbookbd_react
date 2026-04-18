@@ -47,6 +47,7 @@ const Ledger = (user: any) => {
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const selectedLedgerName = selectedLedgerOption?.label?.trim() || '';
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -220,6 +221,22 @@ const Ledger = (user: any) => {
       },
     },
     {
+      key: 'running_balance',
+      header: 'Balance',
+      width: '140px',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        return (
+          <span>
+            {row.running_balance === '' || row.running_balance === undefined
+              ? '-'
+              : thousandSeparator(Number(row.running_balance), 0)}
+          </span>
+        );
+      },
+    },
+    {
       key: 'voucher_image',
       header: 'Voucher',
       render: (row: any) => {
@@ -366,6 +383,11 @@ const Ledger = (user: any) => {
 
           {useFilterMenuEnabled ? (
             <div className="ml-auto flex items-end gap-2">
+              {selectedLedgerName ? (
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <span className="truncate" title={selectedLedgerName}>{selectedLedgerName}</span>
+                </div>
+              ) : null}
               <InputElement
                 id="perPage"
                 name="perPage"

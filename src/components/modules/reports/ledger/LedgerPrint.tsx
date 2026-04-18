@@ -28,6 +28,12 @@ export type Props = {
   showBranchName?: boolean;
 };
 
+type LedgerRowWithBalance = LedgerRow & {
+  runningBalance?: number;
+};
+
+const SUMMARY_ROW_NAMES = new Set(['Range Total', 'Total', 'Balance']);
+
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
   if (!Array.isArray(data)) return [[]];
   if (size <= 0) return [data];
@@ -56,7 +62,25 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
     // Safety: normalize rows
 
     const rowsArr: LedgerRow[] = Array.isArray(rows) ? rows : [];
-    const pages = chunkRows(rowsArr, rowsPerPage);
+    let previousAmount = 0;
+    const rowsWithBalance: LedgerRowWithBalance[] = rowsArr.map((row) => {
+      if (SUMMARY_ROW_NAMES.has(String(row.name || ''))) {
+        return {
+          ...row,
+          runningBalance: undefined,
+        };
+      }
+
+      const debit = Number(row.debit || 0);
+      const credit = Number(row.credit || 0);
+      previousAmount = previousAmount + debit - credit;
+
+      return {
+        ...row,
+        runningBalance: previousAmount,
+      };
+    });
+    const pages = chunkRows(rowsWithBalance, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 9;
     const partyInfo = coal4?.cust_party_infos || {};
     const ledgerCode = partyInfo?.idfr_code ?? coal4?.idfr_code;
@@ -100,6 +124,8 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
           // page totals
           const pageDebit = sum(pageRows.map((r) => Number(r.debit || 0)));
           const pageCredit = sum(pageRows.map((r) => Number(r.credit || 0)));
+          const lastBalanceRow = [...pageRows].reverse().find((row) => row.runningBalance !== undefined);
+          const pageClosingBalance = lastBalanceRow?.runningBalance ?? 0;
 
           return (
             <div key={pIdx} className="print-page">
@@ -168,6 +194,12 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                       >
                         Credit
                       </th>
+                      <th
+                        style={{ fontSize: fs }}
+                        className="border border-gray-900 px-2 py-2 w-28 text-right"
+                      >
+                        Balance
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -229,12 +261,20 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                           >
                             {thousandSeparator(Number(row?.credit || 0), 0)}
                           </td>
+                          <td
+                            style={{ fontSize: fs }}
+                            className="border border-gray-900 px-2 py-1 text-right align-middle"
+                          >
+                            {row?.runningBalance === undefined
+                              ? ''
+                              : thousandSeparator(Number(row.runningBalance), 0)}
+                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
                         <td
-                          colSpan={5}
+                          colSpan={6}
                           className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                         >
                           No data found
@@ -264,6 +304,12 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                         >
                           {thousandSeparator(pageCredit, 0)}
                         </td>
+                        <td
+                          style={{ fontSize: fs }}
+                          className="border border-gray-900 px-2 py-1 text-right"
+                        >
+                          {thousandSeparator(pageClosingBalance, 0)}
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -271,8 +317,13 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
               </div>
 
               {/* Footer */}
-              <div style={{ fontSize: fs }} className="mt-2 text-right text-xs">
-                Page {pIdx + 1} of {pages.length}
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <div style={{ fontSize: fs }} className="font-semibold">
+                  {pIdx !== pages.length - 1 ? `Balance: ${thousandSeparator(pageClosingBalance, 0)}` : ''}
+                </div>
+                <div style={{ fontSize: fs }} className="text-right">
+                  Page {pIdx + 1} of {pages.length}
+                </div>
               </div>
 
               {pIdx !== pages.length - 1 && <div className="page-break" />}

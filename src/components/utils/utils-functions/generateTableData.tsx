@@ -12,6 +12,7 @@ export interface TableRow {
   debit: number;
   credit: number;
   voucher_image: string | null;
+  running_balance?: number | '';
 }
 
 export const generateTableData = (data: any): TableRow[] => {
@@ -39,6 +40,7 @@ export const generateTableData = (data: any): TableRow[] => {
     debit: Math.max(totalDebit - totalCredit, 0),
     credit: Math.max(totalCredit - totalDebit, 0),
     voucher_image: '',
+    running_balance: Math.max(totalDebit - totalCredit, 0) - Math.max(totalCredit - totalDebit, 0),
   };
 
   // Flatten details safely
@@ -55,6 +57,12 @@ export const generateTableData = (data: any): TableRow[] => {
   credit: parseFloat(trx.credit || 0),
   voucher_image: trx.voucher_image || null,
 }));
+
+  let previousAmount = Number(openingRow.running_balance || 0);
+  detailsRows.forEach((row) => {
+    previousAmount = previousAmount + Number(row.debit || 0) - Number(row.credit || 0);
+    row.running_balance = previousAmount;
+  });
 
   // Assign sequential sl_number
   detailsRows.forEach((row, idx) => (row.sl_number = idx + 1));
@@ -79,6 +87,7 @@ export const generateTableData = (data: any): TableRow[] => {
     debit: Math.max(rangeDebit, 0),
     credit: Math.max(rangeCredit, 0),
     voucher_image: '',
+    running_balance: '',
   };
 
   // Total & Balance
@@ -96,6 +105,7 @@ export const generateTableData = (data: any): TableRow[] => {
     debit: totalDebitSum,
     credit: totalCreditSum,
     voucher_image: '',
+    running_balance: '',
   };
 
   const balanceRow: TableRow = {
@@ -108,6 +118,7 @@ export const generateTableData = (data: any): TableRow[] => {
     debit: Math.max(totalDebitSum - totalCreditSum, 0),
     credit: Math.max(totalCreditSum - totalDebitSum, 0),
     voucher_image: '',
+    running_balance: '',
   };
 
   return [...allRows, rangeRow, totalRow, balanceRow];
