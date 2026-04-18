@@ -110,7 +110,20 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
               </div>
             </div>
 
-            <table className="w-full border-collapse">
+            <table className="w-full table-fixed border-collapse">
+              <colgroup>
+                <col style={{ width: "6%" }} />
+                <col style={{ width: "16%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "11%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "9%" }} />
+                <col style={{ width: "8%" }} />
+              </colgroup>
               <thead className="bg-gray-100">
                 <tr>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-center">
@@ -159,7 +172,7 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                         {row?.product_name || "-"}
                       </td>
-                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                      <td style={{ fontSize: (fs - 1) }} className="border border-gray-900 px-2 py-1">
                         {row?.vr_no || "-"}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
@@ -197,64 +210,32 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                 )}
               </tbody>
 
-              {pageIndex === pages.length - 1 ? (
-                <tfoot>
-                  <tr>
-                    <td
-                      colSpan={4}
-                      style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-2 font-bold"
-                    >
-                      Summary
-                    </td>
-                    <td
-                      style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-2 text-right font-bold"
-                    >
-                      {thousandSeparator(summary.totalQty, 0)}
-                    </td>
-                    <td
-                      style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-2 text-right font-bold"
-                    >
-                      -
-                    </td>
-                    <td
-                      style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-2 text-right font-bold"
-                    >
-                      {thousandSeparator(summary.totalPurchase, 0)}
-                    </td>
-                    <td
-                      style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-2 text-right font-bold"
-                    >
-                      -
-                    </td>
-                    <td
-                      style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-2 text-right font-bold"
-                    >
-                      {thousandSeparator(summary.totalSales, 0)}
-                    </td>
-                    <td
-                      style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-2 text-right font-bold"
-                    >
-                      {profitLabel} {thousandSeparator(Math.abs(summary.totalProfit), 0)}
-                    </td>
-                    <td
-                      style={{ fontSize: fs }}
-                      className="border border-gray-900 px-2 py-2 font-bold"
-                    >
-                      {summary.warningCount > 0
-                        ? `${summary.warningCount} warning`
-                        : "-"}
-                    </td>
-                  </tr>
-                </tfoot>
-              ) : null}
             </table>
+
+            {pageIndex === pages.length - 1 ? (
+              <div className="mt-3 border border-gray-900 px-3 py-3">
+                <div className="flex flex-nowrap items-center justify-between gap-4 overflow-hidden text-sm">
+                  <div style={{ fontSize: fs }} className="font-bold whitespace-nowrap">
+                    Summary
+                  </div>
+                  <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
+                    Sold Qty: {thousandSeparator(summary.totalQty, 0)}
+                  </div>
+                  <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
+                    Purchase Total: {thousandSeparator(summary.totalPurchase, 0)}
+                  </div>
+                  <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
+                    Sale Total: {thousandSeparator(summary.totalSales, 0)}
+                  </div>
+                  <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
+                    { profitLabel == "+" ? "Profit" : "Loss"  } {profitLabel} {thousandSeparator(Math.abs(summary.totalProfit), 0)}
+                  </div>
+                  <div style={{ fontSize: fs }} className="font-bold text-right whitespace-nowrap">
+                    {summary.warningCount > 0 ? `${summary.warningCount} warning` : "-"}
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div style={{ fontSize: fs }} className="mt-3 text-right text-xs">
               Page {pageIndex + 1} of {pages.length}

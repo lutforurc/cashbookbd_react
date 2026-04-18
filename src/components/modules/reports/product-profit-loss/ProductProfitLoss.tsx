@@ -342,7 +342,7 @@ const ProductProfitLoss = (user: any) => {
     },
     {
       key: "profit",
-      header: "Profit / Loss",
+      header: "Effect",
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
