@@ -508,7 +508,7 @@ const SalesLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className="block xl:hidden min-[1750px]:block">
+                  <div className="block md:hidden xl:hidden min-[1750px]:block">
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
                       setCurrentDate={handleEndDate}
@@ -517,13 +517,67 @@ const SalesLedger = (user: any) => {
                       setSelectedDate={setEndDate}
                     />
                   </div>
+                  {!useFilterMenuEnabled && (
+                    <div className="hidden items-end gap-3 md:col-span-2 md:flex xl:hidden">
+                      <div className="min-w-0 flex-[1.1]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
+                        />
+                      </div>
+
+                      <div className="ml-auto flex min-w-max flex-nowrap items-end gap-2 pt-6">
+                        <ButtonLoading
+                          onClick={handleActionButtonClick}
+                          buttonLoading={buttonLoading}
+                          label="Apply"
+                          icon=""
+                          className="h-10 px-6"
+                        />
+                        <ButtonLoading
+                          onClick={handleResetFilters}
+                          buttonLoading={false}
+                          label="Reset"
+                          icon=""
+                          className="h-10 px-4"
+                        />
+                        <InputElement
+                          id="perPageInlineMd"
+                          name="perPageInlineMd"
+                          label=""
+                          value={rowsPerPage.toString()}
+                          onChange={handleRowsPerPageChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 text-center"
+                        />
+                        <InputElement
+                          id="fontSizeInlineMd"
+                          name="fontSizeInlineMd"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 text-center"
+                        />
+                        <PrintButton
+                          onClick={handlePrint}
+                          label="Print"
+                          className="h-10 px-6"
+                          disabled={!Array.isArray(tableData) || tableData.length === 0}
+                        />
+                      </div>
+                    </div>
+                  )}
 
             {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
                   <div
                     className={`flex gap-2 pt-1 ${
                       useFilterMenuEnabled
                         ? 'justify-end'
-                        : 'justify-start self-end md:col-span-2 xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
+                        : 'hidden xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
                     }`}
                   >
                     <ButtonLoading
@@ -620,7 +674,25 @@ const SalesLedger = (user: any) => {
             Use the filter
           </div>
 
-          <div className="ml-auto flex w-full flex-wrap items-end justify-end gap-2 xl:hidden min-[1750px]:flex min-[1750px]:w-auto min-[1750px]:flex-nowrap">
+          <div className="ml-auto flex w-full flex-wrap items-end justify-end gap-2 md:hidden xl:hidden min-[1750px]:flex min-[1750px]:w-auto min-[1750px]:flex-nowrap">
+            {!useFilterMenuEnabled && (
+              <>
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Apply"
+                  icon=""
+                  className="h-10 px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon=""
+                  className="h-10 px-4"
+                />
+              </>
+            )}
             <InputElement
               id="perPage"
               name="perPage"
@@ -643,7 +715,7 @@ const SalesLedger = (user: any) => {
 
             <PrintButton
               onClick={handlePrint}
-              label="Print"
+              label=""
               className="h-10 px-6"
               disabled={!Array.isArray(tableData) || tableData.length === 0}
             />

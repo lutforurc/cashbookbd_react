@@ -389,8 +389,8 @@ const PurchaseLedger = (user: any) => {
     <div className="">
       <HelmetTitle title={'Purchase Ledger'} />
       <div className="px-0 py-6 ">
-        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-end' : 'flex flex-col 2xl:flex-row 2xl:items-end'}`}>
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'w-full 2xl:min-w-0 2xl:flex-1'}>
+        <div className="flex flex-wrap items-start gap-3 min-[1750px]:flex-nowrap min-[1750px]:items-end">
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-0 flex-[1_1_820px]'}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -419,7 +419,7 @@ const PurchaseLedger = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 2xl:grid-cols-5'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-3 min-[1750px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
                   }
                 >
                   <div>
@@ -459,7 +459,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div>
+                  <div className="block xl:hidden min-[1750px]:block">
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
                       setCurrentDate={handleStartDate}
@@ -469,7 +469,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div>
+                  <div className="block md:hidden xl:hidden min-[1750px]:block">
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
                       setCurrentDate={handleEndDate}
@@ -479,11 +479,66 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
+                  {!useFilterMenuEnabled && (
+                    <div className="hidden items-end gap-3 md:col-span-2 md:flex xl:hidden">
+                      <div className="min-w-0 flex-[1.1]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
+                        />
+                      </div>
+
+                      <div className="ml-auto flex min-w-max flex-nowrap items-end gap-2 pt-6">
+                        <ButtonLoading
+                          onClick={handleActionButtonClick}
+                          buttonLoading={buttonLoading}
+                          label="Apply"
+                          icon=""
+                          className="h-10 px-6"
+                        />
+                        <ButtonLoading
+                          onClick={handleResetFilters}
+                          buttonLoading={false}
+                          label="Reset"
+                          icon=""
+                          className="h-10 px-4"
+                        />
+                        <InputElement
+                          id="perPageInline"
+                          name="perPageInline"
+                          label=""
+                          value={perPage.toString()}
+                          onChange={handlePerPageChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <InputElement
+                          id="fontSizeInline"
+                          name="fontSizeInline"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <PrintButton
+                          onClick={handlePrint}
+                          label="Print"
+                          className="h-10 px-6"
+                          disabled={!Array.isArray(tableData) || tableData.length === 0}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div
                     className={`flex gap-2 pt-1 ${
                       useFilterMenuEnabled
                         ? 'justify-end'
-                        : 'hidden'
+                        : 'hidden xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
                     }`}
                   >
                     <ButtonLoading
@@ -501,6 +556,74 @@ const PurchaseLedger = (user: any) => {
                       className="h-10 px-4"
                     />
                   </div>
+
+                  {!useFilterMenuEnabled && (
+                    <div className="hidden items-end gap-3 xl:col-span-3 xl:flex min-[1750px]:hidden">
+                      <div className="min-w-0 flex-[1.15]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleStartDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={startDate}
+                          setSelectedDate={setStartDate}
+                        />
+                      </div>
+
+                      <div className="min-w-0 flex-[1.15]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
+                        />
+                      </div>
+
+                      <div className="flex items-end gap-2 pt-6">
+                        <ButtonLoading
+                          onClick={handleActionButtonClick}
+                          buttonLoading={buttonLoading}
+                          label="Apply"
+                          icon=""
+                          className="h-10 px-6"
+                        />
+                        <ButtonLoading
+                          onClick={handleResetFilters}
+                          buttonLoading={false}
+                          label="Reset"
+                          icon=""
+                          className="h-10 px-4"
+                        />
+                      </div>
+
+                      <div className="ml-auto flex items-end gap-2 pt-6">
+                        <InputElement
+                          id="perPageInlineLg"
+                          name="perPageInlineLg"
+                          label=""
+                          value={perPage.toString()}
+                          onChange={handlePerPageChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <InputElement
+                          id="fontSizeInlineLg"
+                          name="fontSizeInlineLg"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <PrintButton
+                          onClick={handlePrint}
+                          label="Print"
+                          className="h-10 px-6"
+                          disabled={!Array.isArray(tableData) || tableData.length === 0}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -510,7 +633,7 @@ const PurchaseLedger = (user: any) => {
             Use the filter
           </div>
 
-          <div className={`flex w-full flex-wrap items-end gap-2 ${useFilterMenuEnabled ? 'justify-end md:ml-auto md:w-auto' : 'justify-start 2xl:ml-auto 2xl:w-auto 2xl:flex-nowrap 2xl:justify-end'}`}>
+          <div className={`ml-auto flex w-full flex-wrap items-end justify-end gap-2 ${useFilterMenuEnabled ? 'md:ml-auto md:w-auto' : 'md:hidden xl:hidden min-[1750px]:flex min-[1750px]:w-auto min-[1750px]:flex-nowrap'}`}>
             {!useFilterMenuEnabled && (
               <>
                 <ButtonLoading
