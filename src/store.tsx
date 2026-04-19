@@ -53,13 +53,9 @@ import realEstateArea from './components/modules/real-estate/area/projectAreaSli
 import voucherSettings from './components/modules/vr_settings/voucherSettingsSlice';
 import historySlice from './components/modules/history/historySlice';
 import salarySlice from './components/modules/hrms/salary/salarySlice';
-<<<<<<< HEAD
-import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice';
-import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
-=======
 import festivalBonusSlice from './components/modules/hrms/bonus/bonusSlice';
-import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice'; 
-import flatSlice from './components/modules/real-estate/building-flat/flatSlice'; 
+import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice';
+import flatSlice from './components/modules/real-estate/building-flat/flatSlice';
 import realEstateProjects from './components/modules/real-estate/project/projectSlice';
 import buildingsSlice from './components/modules/real-estate/buildings/buildingsSlice';
 import unitSlice from './components/modules/real-estate/units/unitSlice';
@@ -79,7 +75,6 @@ import smsSlice from './components/modules/sms/smsSlice';
 import journalSlice from './components/modules/transactions/journal/journalSlice';
 import subscriptionSlice from './components/modules/subscription/subscriptionSlice';
 
->>>>>>> Lutfor-Rahman
 
 const store = configureStore({
   reducer: {
@@ -144,9 +139,9 @@ const store = configureStore({
     history: historySlice,
     salary: salarySlice,
     festivalBonus: festivalBonusSlice,
-    employeeLoan: employeeLoanSlice, 
-    realEstateProjects: realEstateProjects, 
-    flats: flatSlice, 
+    employeeLoan: employeeLoanSlice,
+    realEstateProjects: realEstateProjects,
+    flats: flatSlice,
     buildings: buildingsSlice,
     buildingUnits: unitSlice,
     brand: brandSlice,

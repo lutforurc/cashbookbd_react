@@ -34,13 +34,10 @@ import { electronicsPurchaseEdit, electronicsPurchaseStore, electronicsPurchaseU
 import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon.tsx';
 import { PurchaseType } from '../../../../common/dropdownData.tsx';
-<<<<<<< HEAD
-=======
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
->>>>>>> Lutfor-Rahman
 
 interface Product {
   id: number;
@@ -85,13 +82,10 @@ const ElectronicsBusinessPurchase = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [purchaseType, setPurchaseType] = useState('2'); // Define state with type
-<<<<<<< HEAD
-=======
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
   const [isPaymentAmtManuallyEdited, setIsPaymentAmtManuallyEdited] = useState(false);
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
->>>>>>> Lutfor-Rahman
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -253,25 +247,16 @@ const ElectronicsBusinessPurchase = () => {
   //   setIsInvoiceUpdate(true);
   // };
 
-<<<<<<< HEAD
-  const searchInvoice = () => {
-    if (!search) {
-=======
   const searchInvoice = (searchValue?: string) => {
     const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
 
     if (!invoiceNo) {
->>>>>>> Lutfor-Rahman
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
       electronicsPurchaseEdit(
-<<<<<<< HEAD
-        { invoiceNo: search, purchaseType: purchaseType },
-=======
         { invoiceNo, purchaseType: purchaseType },
->>>>>>> Lutfor-Rahman
         (message: string) => {
           if (message) {
             toast.info(message);
@@ -282,11 +267,7 @@ const ElectronicsBusinessPurchase = () => {
     if (purchase.isEdit === true) {
       setIsUpdateButton(true);
     }
-<<<<<<< HEAD
-    setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
-=======
     setFormData({ ...formData, searchInvoice: invoiceNo }); // Update the state with the search value
->>>>>>> Lutfor-Rahman
     setIsInvoiceUpdate(true);
   };
 
@@ -298,14 +279,10 @@ const ElectronicsBusinessPurchase = () => {
   // Process `purchase.data` when it updates
   useEffect(() => {
     const trx = purchase?.data?.transaction;
-<<<<<<< HEAD
-    if (!trx) return;
-=======
-    if (!trx){
+    if (!trx) {
       setFormData(initialFormData);
       return;
-    } 
->>>>>>> Lutfor-Rahman
+    }
 
     // 1) products mapping (Electronics fields)
     const products = (trx.purchase_master?.details || []).map((detail: any) => ({
@@ -358,10 +335,7 @@ const ElectronicsBusinessPurchase = () => {
       notes: trx.purchase_master?.notes || '',
       products: products,
     }));
-<<<<<<< HEAD
-=======
     setIsPaymentAmtManuallyEdited(false);
->>>>>>> Lutfor-Rahman
 
     toast.success('Invoice loaded successfully!');
   }, [purchase?.data?.transaction]);
@@ -423,21 +397,6 @@ const ElectronicsBusinessPurchase = () => {
   );
 
   useEffect(() => {
-<<<<<<< HEAD
-    if (formData.account == '17') {
-      setFormData((prevState) => ({
-        ...prevState,
-        paymentAmt:
-          totalAmount > 0
-            ? (totalAmount - prevState.discountAmt).toString()
-            : '0',
-      }));
-    } else {
-      setFormData((prevState) => ({
-        ...prevState,
-        paymentAmt: '',
-      }));
-=======
     const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
     const isCashSupplier = Number(formData.account) === 17;
     const cashPaymentAmt = Math.max(0, totalAmount - discount).toFixed(2);
@@ -462,7 +421,6 @@ const ElectronicsBusinessPurchase = () => {
           paymentAmt: nextPaymentAmt,
         }));
       }
->>>>>>> Lutfor-Rahman
     }
   }, [
     formData.account,
@@ -635,28 +593,6 @@ const ElectronicsBusinessPurchase = () => {
     setUpdateId(productIndex);
   };
 
-<<<<<<< HEAD
-  useEffect(() => {
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty?.toString() || '0') || 0;
-      const price = parseFloat(product.price?.toString() || '0') || 0;
-      return acc + qty * price;
-    }, 0);
-
-    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
-    let netTotal = 0;
-    if (total > 0) {
-      netTotal = total - discount;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      paymentAmt: netTotal.toFixed(2),
-    }));
-  }, [formData.products, formData.discountAmt]);
-
-=======
->>>>>>> Lutfor-Rahman
   useEffect(() => {
     if (productData.qty) {
       const qty = parseFloat(productData.qty) || 0;
@@ -664,11 +600,6 @@ const ElectronicsBusinessPurchase = () => {
       setLineTotal(qty * price);
     }
   }, [productData.qty]);
-<<<<<<< HEAD
-=======
-  
-const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center justify-center";
->>>>>>> Lutfor-Rahman
 
   const handlePurchaseType = (e: any) => {
     setPurchaseType(e.target.value);
@@ -690,32 +621,6 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
                 <label className="text-black dark:text-white" htmlFor="">
                   Select Supplier
                 </label>
-<<<<<<< HEAD
-                <DdlMultiline
-                  onSelect={supplierAccountHandler}
-                  placeholder="Select Supplier"
-                  defaultValue={
-                    formData.account
-                      ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
-                      }
-                      : null
-                  }
-                  value={
-                    formData.account
-                      ? {
-                        value: formData.account,
-                        label: formData.accountName, //productData.accountName
-                      }
-                      : null
-                  }
-                  onKeyDown={(e) =>
-                    handleInputKeyDown(e, 'purchaseOrderNumber')
-                  } // Pass the next field's ID
-                  acType={'3'}
-                />
-=======
                 <div className="min-w-0">
                   <DdlMultiline
                     onSelect={supplierAccountHandler}
@@ -744,7 +649,6 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
                     acType={'3'}
                   />
                 </div>
->>>>>>> Lutfor-Rahman
               </div>
               <InputElement
                 id="notes"
@@ -840,15 +744,9 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
                   Total Tk. {thousandSeparator(totalAmount, 0)}
                 </p>
               </div>
-<<<<<<< HEAD
-              {hasPermission(permissions, 'sales.edit') && (
-                <>
-                  <div className="mt-2">
-=======
               {hasPermission(permissions, 'purchase.edit') && (
                 <>
                   <div className="relative ">
->>>>>>> Lutfor-Rahman
                     <DropdownCommon
                       id="saleType"
                       name="saleType"
@@ -859,11 +757,7 @@ const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center jus
                     />
                   </div>
                   <>
-<<<<<<< HEAD
-                    <div className="relative mt-2">
-=======
                     <div className="relative">
->>>>>>> Lutfor-Rahman
                       <div className="w-full ">
                         <InputOnly
                           id="search"
