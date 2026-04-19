@@ -66,6 +66,8 @@ const EditUser = (user: any) => {
         lang: '',
         branch_id: '',
         role_id: '',
+        sidebar_menu: false,
+        use_filter_parameter: false,
     });
 
     const roleOptions: MultiOption[] = (roles?.roles?.data?.data || []).map((item: any) => ({
@@ -83,6 +85,14 @@ const EditUser = (user: any) => {
                 role_id: String(showUser.editData.role_id || ''),
                 lang: showUser.editData.lang || '',
                 branch_id: String(showUser.editData.branch_id || ''),
+                sidebar_menu:
+                    showUser.editData.sidebar_menu == 1 ||
+                    showUser.editData.sidebar_menu === '1' ||
+                    showUser.editData.sidebar_menu === true,
+                use_filter_parameter:
+                    showUser.editData.use_filter_parameter == 1 ||
+                    showUser.editData.use_filter_parameter === '1' ||
+                    showUser.editData.use_filter_parameter === true,
             }));
         }
     }, [showUser.editData]);
@@ -144,6 +154,13 @@ const EditUser = (user: any) => {
         }
     };
 
+    const handleToggleFieldChange = (name: keyof typeof formData, checked: boolean) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: checked,
+        }));
+    };
+
     const handleUserUpdate = (e: any) => {
         e.preventDefault();
         if (selectedRoles.length === 0) {
@@ -166,11 +183,8 @@ const EditUser = (user: any) => {
         if (!showUser?.updateData) return;
         toast.success(showUser.updateData);
         (async () => {
-            await dispatch(authCheck() as any);        // ✅ update complete হওয়ার পরে
-            // await dispatch(getSettings() as any);
-            // একটাই রাখুন: reload বা back
-            window.location.reload();
-            // window.history.back();
+            await dispatch(authCheck() as any);  
+            // window.location.reload(); 
         })();
     }, [showUser?.updateData]);
 
@@ -269,26 +283,44 @@ const EditUser = (user: any) => {
                     onChange={handleOnChange}
                 />
 
-                
-        {/* <FormToggleField
-                      label="Sidebar Menu"
-                      checked={Boolean(true)}
-                      // onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
-                    /> */}
-                <div className='flex gap-2'>
+                <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+                    <div className="mb-4">
+                        <h3 className="text-base font-semibold text-gray-800 dark:text-white">
+                            User Features
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            User-specific feature access controls can be managed here.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <FormToggleField
+                            label="Sidebar Menu"
+                            checked={Boolean(formData.sidebar_menu)}
+                            onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
+                        />
+                        <FormToggleField
+                            label="Use Filter Parameter"
+                            checked={Boolean(formData.use_filter_parameter)}
+                            onChange={(checked) => handleToggleFieldChange('use_filter_parameter', checked)}
+                        />
+                     
+                    </div>
+                </div>
+                <div className='flex gap-2 md:col-span-2'>
                     <ButtonLoading
                         onClick={handleUserUpdate}
                         buttonLoading={showUser.isLoading}
                         label="Update"
                         icon={<FiCheckSquare />}
-                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
+                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-10"
                     />
                     <ButtonLoading
                         onClick={handleBack}
                         buttonLoading={showUser.isLoading}
                         label="Back"
                         icon={<FiArrowLeft />}
-                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2"
+                        className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-10"
                     />
                 </div>
 

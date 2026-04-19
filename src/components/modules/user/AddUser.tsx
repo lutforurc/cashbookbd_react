@@ -31,6 +31,8 @@ const initialFormData = {
   lang: '',
   branch_id: '',
   role_id: '',
+  sidebar_menu: false,
+  use_filter_parameter: false,
 };
 
 const CREATE_USER_PERMISSIONS = [
@@ -112,6 +114,16 @@ const AddUser = () => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+  };
+
+  const handleToggleFieldChange = (
+    name: keyof typeof initialFormData,
+    checked: boolean,
+  ) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: checked,
     }));
   };
 
@@ -256,25 +268,45 @@ const AddUser = () => {
           onChange={handleOnChange}
         />
 
-        {/* <FormToggleField
-                      label="Sidebar Menu"
-                      checked={Boolean(true)}
-                      // onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
-                    /> */}
+        <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-white">
+              User Features
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              User-specific feature access controls can be managed here.
+            </p>
+          </div>
 
-        <div className="flex gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <FormToggleField
+              label="Sidebar Menu"
+              checked={Boolean(formData.sidebar_menu)}
+              onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
+            />
+            <FormToggleField
+              label="Use Filter Parameter"
+              checked={Boolean(formData.use_filter_parameter)}
+              onChange={(checked) =>
+                handleToggleFieldChange('use_filter_parameter', checked)
+              }
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-2 md:col-span-2">
           <ButtonLoading
             onClick={handleUserSave}
             buttonLoading={users.isLoading}
             label="Save"
-            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-9"
+            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-10"
             icon={<FiCheckSquare />}
           />
           <ButtonLoading
             onClick={handleBack}
             buttonLoading={users.isLoading}
             label="Back"
-            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-9"
+            className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-10"
             icon={<FiArrowLeft />}
           /> 
         </div>
