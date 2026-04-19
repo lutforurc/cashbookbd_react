@@ -624,7 +624,9 @@ const AddBranch = () => {
                     {renderToggle('need_demo_tutorial', 'Need Demo Tutorial?')}
                     {renderToggle('use_filter_parameter', 'Use Filter Parameter?')}
                   </div>
-
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    {renderToggle('sidebar_menu', 'Sidebar Menu')}
+                  </div>
                   {settings?.data?.user?.id === 1 && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       {renderToggle('sms_service', 'SMS Service')}
@@ -632,9 +634,9 @@ const AddBranch = () => {
                       {renderToggle('sales_sms', 'Sales SMS')}
                       {renderToggle('purchase_sms', 'Purchase SMS')}
                       {renderToggle('payment_sms', 'Payment SMS')}
-                      {renderToggle('sidebar_menu', 'Sidebar Menu')}
                     </div>
                   )}
+                  
                 </>
               )}
             </div>
