@@ -65,8 +65,6 @@ interface branchItem {
   show_instalment_list: boolean;
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
-  use_filter_parameter: boolean;
-  sidebar_menu: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -153,8 +151,6 @@ const AddBranch = () => {
     show_instalment_list: false,
     show_spelling_of_money: false,
     need_demo_tutorial: false,
-    use_filter_parameter: false,
-    sidebar_menu: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -215,8 +211,6 @@ const AddBranch = () => {
         use_bangla: b.use_bangla == 1 || b.use_bangla === '1',
         show_instalment_list: b.show_instalment_list == 1 || b.show_instalment_list === '1',
         show_spelling_of_money: b.show_spelling_of_money == 1 || b.show_spelling_of_money === '1',
-        use_filter_parameter: b.use_filter_parameter == 1 || b.use_filter_parameter === '1',
-        sidebar_menu: b.sidebar_menu == 1 || b.sidebar_menu === '1',
         sms_service: b.sms_service == 1 || b.sms_service === '1',
         received_sms: b.received_sms == 1 || b.received_sms === '1',
         purchase_sms: b.purchase_sms == 1 || b.purchase_sms === '1',
@@ -680,20 +674,6 @@ const AddBranch = () => {
                       onChange={(checked) =>
                         handleToggleFieldChange('need_demo_tutorial', checked)
                       }
-                    />
-                    <FormToggleField
-                      label="Use Filter Parameter?"
-                      checked={Boolean(formData.use_filter_parameter)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('use_filter_parameter', checked)
-                      }
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
-                      label="Sidebar Menu"
-                      checked={Boolean(formData.sidebar_menu)}
-                      onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
                     />
                   </div>
                   {settings?.data?.user?.id === 1 && (
