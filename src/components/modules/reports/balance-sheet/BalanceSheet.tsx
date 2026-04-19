@@ -19,6 +19,7 @@ import FilterMenuShell from "../../../utils/components/FilterMenuShell";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
+import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 
 type ReportItem = {
   coa4_id?: number | null;
@@ -73,8 +74,7 @@ const BalanceSheet = (user: any) => {
     title: string;
     group: ReportGroup;
   } | null>(null);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? "") === "1";
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const printRef = useRef<HTMLDivElement>(null);
 

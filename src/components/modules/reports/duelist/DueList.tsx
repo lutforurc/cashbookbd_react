@@ -15,6 +15,7 @@ import CashBookPrint from '../cashbook/CashBookPrint';
 import DueListPrint from './DueListPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { useReactToPrint } from 'react-to-print';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 
 const DueList = (user: any) => {
@@ -23,8 +24,7 @@ const DueList = (user: any) => {
   const branchList = useSelector((state) => state.branchList);
   const dueList = useSelector((state) => state.dueList);
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);

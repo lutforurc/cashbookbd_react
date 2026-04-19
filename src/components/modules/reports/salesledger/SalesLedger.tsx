@@ -20,6 +20,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -40,7 +41,7 @@ const SalesLedger = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
-  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   // ✅ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);

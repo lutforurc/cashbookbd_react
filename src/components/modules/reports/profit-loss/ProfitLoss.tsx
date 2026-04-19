@@ -23,6 +23,7 @@ import ItemDetailsPrint from "./ItemDetailsPrint";
 import ProfitLossReport from "./ProfitLossReport";
 import { API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL } from "../../../services/apiRoutes";
 import httpService from "../../../services/httpService";
+import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 
 type TradingRow = {
   coal3_id?: number | string;
@@ -84,8 +85,7 @@ const ProfitLoss = (user: any) => {
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
   const profitLossState: any = useSelector((state: any) => state.profitLoss);
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? "") === "1";
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);

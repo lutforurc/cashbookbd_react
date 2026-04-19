@@ -26,6 +26,7 @@ import { toast } from 'react-toastify';
 import { ORDER_STATUS } from '../../constant/constant/variables';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { render } from 'react-dom';
+import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -209,7 +210,7 @@ const Orders = () => {
   const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [resetButtonLoading, setResetButtonLoading] = useState(false);
   const [page, setPage] = useState(1);

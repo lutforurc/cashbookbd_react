@@ -32,6 +32,7 @@ import {
   buildVoucherAutoEditState,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 
 const CashBook = (user: any) => {
@@ -59,7 +60,7 @@ const CashBook = (user: any) => {
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const settings = useSelector((state: any) => state.settings);
   const userPermissions = settings?.data?.permissions || [];
-  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
 
   interface OptionType {

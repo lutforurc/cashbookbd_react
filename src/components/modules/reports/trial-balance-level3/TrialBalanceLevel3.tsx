@@ -19,6 +19,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchTrialBalanceLevel3 } from "./trialBalanceLevel3Slice";
 import TrialBalanceLevel3Print from "./TrialBalanceLevel3Print";
+import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 
 type TrialBalanceRow = {
   key: string;
@@ -137,8 +138,7 @@ const TrialBalanceLevel3 = (user: any) => {
     (state: any) => state.trialBalanceLevel3,
   );
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? "") === "1";
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);

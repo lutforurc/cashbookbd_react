@@ -13,6 +13,7 @@ import { getLabourItems, getLabourLedger } from './labourLedgerSlice';
 import LabourDropdown from '../../../utils/utils-functions/LabourDropdown';
 import { formatDate } from '../../../utils/utils-functions/formatDate';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 const LabourLedger = (user: any) => {
   type Entry = {
@@ -30,8 +31,7 @@ const LabourLedger = (user: any) => {
   const ledgerData = useSelector((state) => state.labourLedger);
   const labourItems = useSelector((state) => state.labourLedger.labourItems);
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);

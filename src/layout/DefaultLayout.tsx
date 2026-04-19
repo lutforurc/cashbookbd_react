@@ -7,6 +7,7 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import ROUTES from '../components/services/appRoutes';
 import { fetchCurrentSubscription } from '../components/modules/subscription/subscriptionSlice';
 import SubscriptionStatusBanner from '../components/modules/subscription/SubscriptionStatusBanner';
+import { isUserFeatureEnabled } from '../components/utils/userFeatureSettings';
 
 interface DefaultLayoutProps {
   isLoggedIn: boolean;
@@ -20,7 +21,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
   const dispatch = useDispatch<any>();
   const subscription = useSelector((state: any) => state.subscription);
   const settings = useSelector((state: any) => state.settings);
-  const useSidebarMenu = String(settings?.data?.branch?.sidebar_menu ?? '') === '1';
+  const useSidebarMenu = isUserFeatureEnabled(settings, 'sidebar_menu');
 
   useEffect(() => {
     if (!isLoggedIn || isLoading || !user) return;

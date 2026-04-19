@@ -184,7 +184,7 @@ const EditUser = (user: any) => {
         toast.success(showUser.updateData);
         (async () => {
             await dispatch(authCheck() as any);  
-            // window.location.reload(); 
+            window.location.reload(); 
         })();
     }, [showUser?.updateData]);
 

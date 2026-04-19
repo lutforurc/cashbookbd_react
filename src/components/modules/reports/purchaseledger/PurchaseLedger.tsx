@@ -21,6 +21,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -46,7 +47,7 @@ const PurchaseLedger = (user: any) => {
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
-  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
 
   useEffect(() => {

@@ -18,6 +18,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { fetchBrandDdl } from '../../product/brand/brandSlice'; 
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 // ======================
 // Brand -> Category wise helper
@@ -116,7 +117,7 @@ const ProductStock = ( user : any) => {
   const brand = useSelector((state: any) => state.brand);
   const settings = useSelector((state: any) => state.settings);
   const authUser = user?.user ?? user;
-  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);

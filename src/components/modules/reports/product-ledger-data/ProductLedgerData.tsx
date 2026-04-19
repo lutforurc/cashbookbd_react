@@ -18,6 +18,7 @@ import ProductLedgerDataPrint from './ProductLedgerDataPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 const aliasValue = (row: any, keys: string[], fallback: any = null) => {
   for (const key of keys) {
@@ -82,8 +83,7 @@ const ProductLedgerData = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);

@@ -18,6 +18,7 @@ import { formatDate } from '../../utils/utils-functions/formatDate';
 import OrderWithProductPrint from './OrderWithProductPrint';
 import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../vouchers';
+import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
 
 type Primitive = string | number | null | undefined;
 
@@ -178,7 +179,7 @@ const OrderWithProduct = ({
   const voucherRegistryRef = useRef<any>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
-  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [payload, setPayload] = useState<OrderPayload | null>(initialPayload);
   const [transactionDate, setTransactionDate] = useState('');

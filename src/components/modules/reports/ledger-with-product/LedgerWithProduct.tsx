@@ -18,6 +18,7 @@ import LedgerWithProductPrint from './LedgerWithProductPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 const formatAmount = (value: any, precision = 0) => {
   const amount = Number(value || 0);
@@ -110,8 +111,7 @@ const LedgerWithProduct = (user: any) => {
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
   const statementState: any = useSelector((state: any) => state.customerSupplierStatement);
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);

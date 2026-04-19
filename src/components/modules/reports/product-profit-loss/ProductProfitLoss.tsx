@@ -19,6 +19,7 @@ import ProductProfitLossPrint from "./ProductProfitLossPrint";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { VoucherPrintRegistry } from "../../vouchers/VoucherPrintRegistry";
 import { useVoucherPrint } from "../../vouchers";
+import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 
 type ProductProfitRow = {
   sl?: number;
@@ -76,8 +77,7 @@ const ProductProfitLoss = (user: any) => {
 
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? "") === "1";
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);

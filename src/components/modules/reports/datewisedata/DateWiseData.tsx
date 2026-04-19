@@ -19,14 +19,14 @@ import dayjs from "dayjs";
 import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import DateWisePrint from "./DateWisePrint";
+import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 
 const DateWiseData = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const dateWiseTotal = useSelector((state) => state.dateWiseTotal);
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? "") === "1";
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);

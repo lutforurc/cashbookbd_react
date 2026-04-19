@@ -23,6 +23,7 @@ import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
@@ -46,7 +47,7 @@ const Ledger = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
-  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const selectedLedgerName = selectedLedgerOption?.label?.trim() || '';
 
   useEffect(() => {

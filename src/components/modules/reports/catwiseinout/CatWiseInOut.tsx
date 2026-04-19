@@ -24,6 +24,7 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import CatWiseInOutPrint from "./CatWiseInOutPrint";
 import { useReactToPrint } from "react-to-print";
+import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 
 const CatWiseInOut = (user: any) => {
   const dispatch = useDispatch();
@@ -32,8 +33,7 @@ const CatWiseInOut = (user: any) => {
   const categoryData = useSelector((state) => state.category);
   const inOutData = useSelector((state) => state.catWiseInOut);
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled =
-    String(settings?.data?.branch?.use_filter_parameter ?? "") === "1";
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [categoryList, setCategoryList] = useState<any[]>([]);
