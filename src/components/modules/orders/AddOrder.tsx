@@ -84,7 +84,7 @@ const AddOrder = (user: any) => {
         order_rate: '',
         total_order: '',
         order_type: '',
-        status: '',
+        status: '1',
         notes: '',
     });
 
@@ -199,7 +199,7 @@ const AddOrder = (user: any) => {
             order_rate: editData?.order_rate?.toString?.() ?? '',
             total_order: editData?.total_order?.toString?.() ?? '',
             order_type: editData?.order_type?.toString?.() ?? '',
-            status: editData?.status?.toString?.() ?? '',
+            status: editData?.status?.toString?.() ?? '1',
             notes: editData?.notes ?? '',
         });
 
@@ -296,7 +296,7 @@ const AddOrder = (user: any) => {
             total_order: '',
             order_type: '',
             notes: '',
-            status: '',
+            status: '1',
         });
         setOrderDate(null);
         setLastDeliveryDate(null);
@@ -360,7 +360,7 @@ const AddOrder = (user: any) => {
             order_rate: formData.order_rate,
             total_order: formData.total_order,
             order_type: formData.order_type,
-            status: formData.status,
+            status: formData.status || '1',
             notes: formData.notes,
         };
 
