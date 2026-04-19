@@ -237,15 +237,12 @@ const ProfitLoss = (user: any) => {
     const tradingTotalDebit = grossProfit > 0 ? debitBase + grossProfit : debitBase;
     const tradingTotalCredit = grossLoss > 0 ? creditBase + grossLoss : creditBase;
 
-    const expenseRows = netprofit.filter((r) => toNum(r.debit) > 0 && toNum(r.credit) <= 0);
+    const expenseRows = netprofit.filter((r) => toNum(r.debit) > 0);
     const incomeRows = netprofit.filter((r) => toNum(r.credit) > 0);
 
     const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
 
-    const totalIncome = incomeRows.reduce((s, r) => {
-      const net = toNum(r.credit) - toNum(r.debit);
-      return s + (net > 0 ? net : 0);
-    }, 0);
+    const totalIncome = incomeRows.reduce((s, r) => s + toNum(r.credit), 0);
 
     const debitPLBase = grossLoss + totalExpense;
     const creditPLBase = grossProfit + totalIncome;

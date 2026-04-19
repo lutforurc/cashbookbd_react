@@ -266,14 +266,9 @@ const ProfitLossReport = ({
               {report.net.incomes.map((r, idx) => (
                 <tr key={`inc-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
                   <td className="p-2 pl-6">{r.name}</td>
-                  <td className="p-2 text-right">
-                    {(() => {
-                      const net = toNum(r.credit) - toNum(r.debit);
-                      return net > 0 ? fmtZero(net) : fmtZero(0);
-                    })()}
-                  </td>
                   <td className="p-2 text-right"></td>
                   <td className="p-2 text-right"></td>
+                  <td className="p-2 text-right">{fmtZero(toNum(r.credit))}</td>
                 </tr>
               ))}
 
