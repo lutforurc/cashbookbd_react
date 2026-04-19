@@ -18,7 +18,7 @@ import Link from '../../utils/others/Link';
 import { getBranchSettings } from '../settings/settingsSlice';
 import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
-import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
+import FormToggleField from '../../utils/utils-functions/FormToggleField';
 
 const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
   API_REMOTE_URL,
@@ -276,16 +276,6 @@ const AddBranch = () => {
       [name]: checked,
     }));
   };
-
-  const renderToggle = (name: keyof branchItem, label: string, className = 'mb-4') => (
-    <div className={className}>
-      <ToggleSwitch
-        label={label}
-        checked={Boolean(formData[name])}
-        onChange={(checked) => handleToggleFieldChange(name, checked)}
-      />
-    </div>
-  );
 
   const handlePadImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -602,38 +592,137 @@ const AddBranch = () => {
               {currentStep === 2 && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    {renderToggle('report_zero_bal', 'Stock With Zero?', 'mb-4 mt-3 md:mt-7')}
-                    {renderToggle('manufactur_control', 'Control Manufacture?', 'mb-4 md:mt-7')}
-                    {renderToggle('warranty_controll', 'Warranty Control?', 'mb-4 md:mt-7')}
+                    <FormToggleField
+                      label="Stock With Zero?"
+                      checked={Boolean(formData.report_zero_bal)}
+                      onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
+                      className="mb-4 mt-3 md:mt-7"
+                    />
+                    <FormToggleField
+                      label="Control Manufacture?"
+                      checked={Boolean(formData.manufactur_control)}
+                      onChange={(checked) => handleToggleFieldChange('manufactur_control', checked)}
+                      className="mb-4 md:mt-7"
+                    />
+                    <FormToggleField
+                      label="Warranty Control?"
+                      checked={Boolean(formData.warranty_controll)}
+                      onChange={(checked) => handleToggleFieldChange('warranty_controll', checked)}
+                      className="mb-4 md:mt-7"
+                    />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    {renderToggle('have_warehouse', 'Multiple Warehouse?')}
-                    {renderToggle('share_product_with_other_branch', 'Product Share?')}
-                    {renderToggle('share_customer_with_other_branch', 'Customer Share?')}
+                    <FormToggleField
+                      label="Multiple Warehouse?"
+                      checked={Boolean(formData.have_warehouse)}
+                      onChange={(checked) => handleToggleFieldChange('have_warehouse', checked)}
+                    />
+                    <FormToggleField
+                      label="Product Share?"
+                      checked={Boolean(formData.share_product_with_other_branch)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('share_product_with_other_branch', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Customer Share?"
+                      checked={Boolean(formData.share_customer_with_other_branch)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('share_customer_with_other_branch', checked)
+                      }
+                    />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    {renderToggle('have_customer_sl', 'Use Customer Serial?')}
-                    {renderToggle('use_bangla', 'Use Bangla?')}
-                    {renderToggle('is_opening', 'Opening ongoing?')}
+                    <FormToggleField
+                      label="Use Customer Serial?"
+                      checked={Boolean(formData.have_customer_sl)}
+                      onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
+                    />
+                    <FormToggleField
+                      label="Use Bangla?"
+                      checked={Boolean(formData.use_bangla)}
+                      onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
+                    />
+                    <FormToggleField
+                      label="Opening ongoing?"
+                      checked={Boolean(formData.is_opening)}
+                      onChange={(checked) => handleToggleFieldChange('is_opening', checked)}
+                    />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    {renderToggle('have_is_guaranter', 'Use Guarantor?')}
-                    {renderToggle('stock_report_type', 'Stock: Brand->Category->Item')}
-                    {renderToggle('show_instalment_list', 'Show Instalment List in Invoice')}
-                    {renderToggle('show_spelling_of_money', 'Show spelling of money in invoice?')}
-                    {renderToggle('need_demo_tutorial', 'Need Demo Tutorial?')}
-                    {renderToggle('use_filter_parameter', 'Use Filter Parameter?')}
+                    <FormToggleField
+                      label="Use Guarantor?"
+                      checked={Boolean(formData.have_is_guaranter)}
+                      onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
+                    />
+                    <FormToggleField
+                      label="Stock: Brand->Category->Item"
+                      checked={Boolean(formData.stock_report_type)}
+                      onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
+                    />
+                    <FormToggleField
+                      label="Show Instalment List in Invoice"
+                      checked={Boolean(formData.show_instalment_list)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_instalment_list', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Show spelling of money in invoice?"
+                      checked={Boolean(formData.show_spelling_of_money)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_spelling_of_money', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Need Demo Tutorial?"
+                      checked={Boolean(formData.need_demo_tutorial)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('need_demo_tutorial', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Use Filter Parameter?"
+                      checked={Boolean(formData.use_filter_parameter)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('use_filter_parameter', checked)
+                      }
+                    />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    {renderToggle('sidebar_menu', 'Sidebar Menu')}
+                    <FormToggleField
+                      label="Sidebar Menu"
+                      checked={Boolean(formData.sidebar_menu)}
+                      onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
+                    />
                   </div>
                   {settings?.data?.user?.id === 1 && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                      {renderToggle('sms_service', 'SMS Service')}
-                      {renderToggle('received_sms', 'Received SMS')}
-                      {renderToggle('sales_sms', 'Sales SMS')}
-                      {renderToggle('purchase_sms', 'Purchase SMS')}
-                      {renderToggle('payment_sms', 'Payment SMS')}
+                      <FormToggleField
+                        label="SMS Service"
+                        checked={Boolean(formData.sms_service)}
+                        onChange={(checked) => handleToggleFieldChange('sms_service', checked)}
+                      />
+                      <FormToggleField
+                        label="Received SMS"
+                        checked={Boolean(formData.received_sms)}
+                        onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
+                      />
+                      <FormToggleField
+                        label="Sales SMS"
+                        checked={Boolean(formData.sales_sms)}
+                        onChange={(checked) => handleToggleFieldChange('sales_sms', checked)}
+                      />
+                      <FormToggleField
+                        label="Purchase SMS"
+                        checked={Boolean(formData.purchase_sms)}
+                        onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
+                      />
+                      <FormToggleField
+                        label="Payment SMS"
+                        checked={Boolean(formData.payment_sms)}
+                        onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
+                      />
                     </div>
                   )}
                   

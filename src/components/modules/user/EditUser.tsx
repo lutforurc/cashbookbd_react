@@ -15,6 +15,7 @@ import { getSettings } from '../settings/settingsSlice';
 import { authCheck } from '../../../features/authReducer';
 import MultiSelectDropdown from '../../utils/utils-functions/MultiSelectDropdown';
 import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi';
+import FormToggleField from '../../utils/utils-functions/FormToggleField';
 
 type MultiOption = {
     value: string | number;
@@ -267,6 +268,13 @@ const EditUser = (user: any) => {
                     className={''}
                     onChange={handleOnChange}
                 />
+
+                
+        {/* <FormToggleField
+                      label="Sidebar Menu"
+                      checked={Boolean(true)}
+                      // onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
+                    /> */}
                 <div className='flex gap-2'>
                     <ButtonLoading
                         onClick={handleUserUpdate}

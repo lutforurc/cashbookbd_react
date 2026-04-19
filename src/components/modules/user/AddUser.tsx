@@ -13,6 +13,8 @@ import MultiSelectDropdown from '../../utils/utils-functions/MultiSelectDropdown
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { storeUser } from './userSlice';
 import { hasPermission } from '../../utils/permissionChecker';
+import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi';
+import FormToggleField from '../../utils/utils-functions/FormToggleField';
 
 type MultiOption = {
   value: string | number;
@@ -254,18 +256,26 @@ const AddUser = () => {
           onChange={handleOnChange}
         />
 
+        {/* <FormToggleField
+                      label="Sidebar Menu"
+                      checked={Boolean(true)}
+                      // onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
+                    /> */}
+
         <div className="flex gap-2">
           <ButtonLoading
             onClick={handleUserSave}
             buttonLoading={users.isLoading}
             label="Save"
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-9"
+            icon={<FiCheckSquare />}
           />
           <ButtonLoading
             onClick={handleBack}
             buttonLoading={users.isLoading}
             label="Back"
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-1/2 h-9"
+            icon={<FiArrowLeft />}
           /> 
         </div>
       </div>
