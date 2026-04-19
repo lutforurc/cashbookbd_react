@@ -29,6 +29,17 @@ import {
 } from './cashReceivedSlice';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import { useNavigate } from 'react-router-dom';
+import httpService from '../../../services/httpService';
+import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+    : [];
 
 interface ReceivedItem {
   id: string | number;
@@ -67,7 +78,8 @@ const TradingCashReceived = () => {
   const [search, setSearch] = useState('');
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
-
+  const [remarkSuggestions, setRemarkSuggestions] = useState<string[]>([]);
+  const navigate = useNavigate();
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
     0,
@@ -132,6 +144,58 @@ const TradingCashReceived = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+  useEffect(() => {
+    const fetchRemarkSuggestions = async () => {
+      const trimmedQuery = formData.remarks.trim();
+      if (!trimmedQuery) {
+        setRemarkSuggestions([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(API_CASH_RECEIVED_SUGGESTIONS_URL, {
+          params: {
+            field: 'remarks',
+            q: trimmedQuery,
+          },
+        });
+        setRemarkSuggestions(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setRemarkSuggestions([]);
+      }
+    };
+
+    const remarkTimer = window.setTimeout(() => {
+      void fetchRemarkSuggestions();
+    }, 250);
+
+    return () => {
+      window.clearTimeout(remarkTimer);
+    };
+  }, [formData.remarks]);
+
+  const handleRemarksKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    if (remarkSuggestions.length > 0) {
+      e.preventDefault();
+      const [matchedRemark] = remarkSuggestions;
+      setFormData((prevState) => ({
+        ...prevState,
+        remarks: matchedRemark,
+      }));
+    }
+
+    handleInputKeyDown(e, 'amount');
+  };
+
+  const handleHome = () => {
+    navigate('/dashboard');
+  }
+
 
   const handleAdd = () => {
     // const validationMessages = validateForm(formData, validationMessage);
@@ -238,15 +302,17 @@ const TradingCashReceived = () => {
     setFormData(initialReceivedItem); // Reset form data
   };
 
-  const searchTransaction = () => {
-    if (search === '') {
+  const searchTransaction = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (invoiceNo === '') {
       toast.error('Please enter a search value.');
       return;
     }
     try {
       // Dispatch the search action
       dispatch(
-        editCashReceived({ invoiceNo: search }, (message: string) => {
+        editCashReceived({ invoiceNo }, (message: string) => {
           if (message) {
             toast.error(message);
           }
@@ -258,6 +324,11 @@ const TradingCashReceived = () => {
       console.error('Error searching invoice:', error);
     }
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchTransaction,
+  });
 
   useEffect(() => {
     setFormData((prevState) => ({
@@ -301,7 +372,7 @@ const TradingCashReceived = () => {
   useCtrlS(handleCashReceivedSave);
   return (
     <>
-      <HelmetTitle title="Trading Cash Received" />
+      <HelmetTitle title="Cash Received" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
@@ -311,31 +382,31 @@ const TradingCashReceived = () => {
                   settings.data.permissions,
                   'cash.received.edit',
                 ) && (
-                  <>
-                    <div className="w-full">
-                      <label htmlFor="search">Search Received</label>
-                      <InputOnly
-                        id="search"
-                        value={search}
-                        name="search"
-                        placeholder="Search Received"
-                        label=""
-                        className="py-1 w-full" // Add padding-right to account for the button
-                        onChange={(e) => setSearch(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor=""> </label>
-                      <ButtonLoading
-                        onClick={searchTransaction}
-                        buttonLoading={buttonLoading}
-                        label=" "
-                        className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
-                        icon={<FiSearch className="text-white text-lg ml-2" />}
-                      />
-                    </div>
-                  </>
-                )}
+                    <>
+                      <div className="w-full">
+                        <label htmlFor="search">Search Received</label>
+                        <InputOnly
+                          id="search"
+                          value={search}
+                          name="search"
+                          placeholder="Search Received"
+                          label=""
+                          className="py-1 w-full" // Add padding-right to account for the button
+                          onChange={(e) => setSearch(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor=""> </label>
+                        <ButtonLoading
+                          onClick={searchTransaction}
+                          buttonLoading={buttonLoading}
+                          label=" "
+                          className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
+                          icon={<FiSearch className="text-white text-lg ml-2" />}
+                        />
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
             <div className="relative">
@@ -346,17 +417,17 @@ const TradingCashReceived = () => {
                   defaultValue={
                     formData.purchaseOrderNumber
                       ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText, //productData.accountName
-                        }
+                        value: formData.purchaseOrderNumber,
+                        label: formData.purchaseOrderText, //productData.accountName
+                      }
                       : null
                   }
                   value={
                     formData.purchaseOrderNumber
                       ? {
-                          value: formData.purchaseOrderNumber,
-                          label: formData.purchaseOrderText, //productData.accountName
-                        }
+                        value: formData.purchaseOrderNumber,
+                        label: formData.purchaseOrderText, //productData.accountName
+                      }
                       : null
                   }
                 />
@@ -375,6 +446,7 @@ const TradingCashReceived = () => {
               <DdlMultiline
                 id="account"
                 name="account"
+                className="h-9.5"
                 onSelect={selectedLedgerOptionHandler}
                 value={
                   formData.account
@@ -399,9 +471,16 @@ const TradingCashReceived = () => {
               placeholder={'Enter Remarks'}
               label={'Enter Remarks'}
               className={''}
+              list="cash-received-remark-suggestions"
+              autoComplete="off"
               onChange={handleOnChange}
-              onKeyDown={(e) => handleInputKeyDown(e, 'amount')} //
+              onKeyDown={handleRemarksKeyDown}
             />
+            <datalist id="cash-received-remark-suggestions">
+              {remarkSuggestions.map((item) => (
+                <option key={item} value={item} />
+              ))}
+            </datalist>
             <InputElement
               id="amount"
               name="amount"
@@ -461,10 +540,16 @@ const TradingCashReceived = () => {
                   icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
                 />
               )}
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                // disabled={saveButtonLoading}
+                onClick={handleHome}
+                // buttonLoading={saveButtonLoading}
+                label={`Home`}
+                className="whitespace-nowrap text-center mr-0 p-2"
+                icon={
+                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                }
+              />
             </div>
           </div>
         </div>

@@ -48,7 +48,7 @@ export interface EmployeeListParams {
   per_page?: number;
   branch_id?: number; 
   search?: string;
-  level_id?: number | string;
+  level_ids?: Array<number | string>;
   designation_id?: number | string;
 }
 
@@ -184,7 +184,7 @@ export const fetchEmployees = createAsyncThunk<EmployeeListResponse, EmployeeLis
         page: params.page ?? 1,
         per_page: params.per_page ?? 10,
         branch_id: params.branch_id ?? "",
-        level_id: params.level_id ?? "",
+        level_ids: params.level_ids ?? [],
         designation_id: params.designation_id ?? ""
       },
     });

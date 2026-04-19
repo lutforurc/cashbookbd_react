@@ -23,6 +23,7 @@ import { editBankReceived, saveBankReceived, updateBankReceived } from './bankRe
 import { toast } from 'react-toastify';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import Loader from '../../../../common/Loader';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 interface TransactionList {
   id: string | number;
@@ -76,6 +77,7 @@ const BankReceived = () => {
     null,
   );
   const [isUpdateButton, setIsUpdateButton] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(getCoal3ByCoal4(2));
@@ -331,7 +333,6 @@ const BankReceived = () => {
         transactions,
       };
       const response = await dispatch(saveBankReceived(payload)).unwrap();
-      // console.log('Save Response:', response);
 
       // server sample:
       const voucherText = response?.data?.data?.[0];
@@ -340,8 +341,8 @@ const BankReceived = () => {
         // Use a stable toastId so it can't render twice for the same save
         toast.success(voucherText, { toastId: `bank-received-success-${voucherText}` });
       }
-      
-    
+
+
       // ✅ Clear table
       setTableData([]);
 
@@ -368,7 +369,7 @@ const BankReceived = () => {
     });
   };
 
-  
+
   useEffect(() => {
     if (bankReceived?.error) {
       toast.error(bankReceived.error);
@@ -409,7 +410,6 @@ const BankReceived = () => {
         })),
       };
 
-      console.log('📝 Update Payload:', payload);
 
       // ✅ API call or redux dispatch
       const response = await dispatch(updateBankReceived(payload)).unwrap();
@@ -439,7 +439,9 @@ const BankReceived = () => {
       setUpdatingLoading(false);
     }
   };
-
+  const handleHome = () => {
+    navigate('/dashboard');
+  }
   // useCtrlS(handleSave);
   useCtrlS(() => {
     if (isUpdateButton) return handleBankReceivedUpdate();
@@ -578,7 +580,7 @@ const BankReceived = () => {
                 <ButtonLoading
                   onClick={editReceivedVoucher}
                   label="Update"
-                  className="whitespace-nowrap text-center mr-0"
+                  className="whitespace-nowrap text-center mr-0 p-2"
                   icon={<FiEdit2 className="text-white text-lg ml-2 mr-2" />}
                 />
               ) : (
@@ -598,9 +600,9 @@ const BankReceived = () => {
                   }}
                   buttonLoading={buttonLoading}
                   label={buttonLoading ? 'Loading...' : 'Add New'}
-                  className="whitespace-nowrap text-center mr-0"
+                  className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
-                    <FiPlus className="text-white text-lg ml-2 mr-2 hidden xl:block" />
+                    <FiPlus className="text-white text-lg ml-2 mr-2 " />
                   }
                 />
               )}
@@ -610,9 +612,9 @@ const BankReceived = () => {
                   onClick={handleBankReceivedUpdate}
                   buttonLoading={updatingLoading}
                   label={updatingLoading ? 'Updating...' : 'Update'}
-                  className="whitespace-nowrap text-center mr-0"
+                  className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
-                    <FiEdit2 className="text-white text-lg ml-2  mr-2 hidden xl:block" />
+                    <FiEdit2 className="text-white text-lg ml-2  mr-2 " />
                   }
                 />
               ) : (
@@ -621,19 +623,28 @@ const BankReceived = () => {
                   onClick={handleSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
-                  className="whitespace-nowrap text-center mr-0"
+                  className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
-                    <FiSave className="text-white text-lg ml-2  mr-2 hidden xl:block" />
+                    <FiSave className="text-white text-lg ml-2  mr-2 " />
                   }
                 />
               )}
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2 hidden xl:block" />
-                <span className="">{'Home'}</span>
-              </Link>
+
+              <ButtonLoading
+                disabled={saveButtonLoading}
+                onClick={handleHome}
+                buttonLoading={saveButtonLoading}
+                label={`Home`}
+                className="whitespace-nowrap text-center mr-0 p-2"
+                icon={
+                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                }
+              />
             </div>
           </div>
         </div>
+
+
         <div className="mt-6 col-span-2 overflow-x-auto ">
           {/* {cashReceived.isLoading ? <Loader /> : null} */}
           <table

@@ -34,14 +34,19 @@ import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import dayjs from 'dayjs';
 import InputOnly from '../../../utils/fields/InputOnly';
-import { hasPermission } from '../../../utils/permissionChecker'; 
+import { hasPermission } from '../../../utils/permissionChecker';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
-import { SalesType } from '../../../../common/dropdownData';  
+import { SalesType } from '../../../../common/dropdownData';
 import utc from 'dayjs/plugin/utc';
 import {
   handleInputKeyDown,
   handleSelectKeyDown,
-} from '../../../utils/utils-functions/handleKeyDown'; 
+} from '../../../utils/utils-functions/handleKeyDown';
+import QuickCustomerModal from './QuickCustomerModal';
+import useCtrlS from '../../../utils/hooks/useCtrlS';
+import httpService from '../../../services/httpService';
+import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 interface Product {
   id: number;
@@ -53,13 +58,44 @@ interface Product {
   bag?: string;
   warehouse: string;
   variance?: string;
-  variance_type?: string; 
+  variance_type?: string;
 }
+
+type SalesSuggestionField = 'vehicle_no' | 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+    : [];
+
+const getCashReceivedDebit = (transaction: any): string => {
+  const masters = Array.isArray(transaction?.acc_transaction_master)
+    ? transaction.acc_transaction_master
+    : [];
+
+  const totalDebit = masters.reduce((sum: number, master: any) => {
+    const details = Array.isArray(master?.acc_transaction_details)
+      ? master.acc_transaction_details
+      : [];
+
+    return (
+      sum +
+      details.reduce((detailSum: number, detail: any) => {
+        if (Number(detail?.coa4_id) !== 17) return detailSum;
+        return detailSum + (parseFloat(detail?.debit) || 0);
+      }, 0)
+    );
+  }, 0);
+
+  return String(totalDebit);
+};
 
 const TradingBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.trasingSales);
-  const settings = useSelector((s: any) => s.settings);
+  const userPermissions = useSelector((s: any) => s.settings?.data?.permissions || []);
   const dispatch = useDispatch();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
@@ -73,16 +109,19 @@ const TradingBusinessSales = () => {
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
-  const [permissions, setPermissions] = useState<any>([]);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
-    dayjs.extend(utc); 
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
+  const [vehicleSuggestions, setVehicleSuggestions] = useState<string[]>([]);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
+  dayjs.extend(utc);
 
 
   useEffect(() => {
     dispatch(userCurrentBranch());
     dispatch(getDdlWarehouse());
-    setPermissions(settings.data.permissions);
   }, []);
 
   interface FormData {
@@ -122,6 +161,45 @@ const TradingBusinessSales = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
   useEffect(() => {
+    const fetchSuggestions = async (
+      field: SalesSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(API_TRADING_SALES_SUGGESTIONS_URL, {
+          params: {
+            field,
+            q: trimmedQuery,
+          },
+        });
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const vehicleTimer = window.setTimeout(() => {
+      void fetchSuggestions('vehicle_no', formData.vehicleNumber, setVehicleSuggestions);
+    }, 250);
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(vehicleTimer);
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.vehicleNumber, formData.notes]);
+
+  useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
       setWarehouseDdlData(warehouse?.data);
     }
@@ -130,14 +208,26 @@ const TradingBusinessSales = () => {
   const customerAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashCustomer = Number(option?.value) === 17;
+    setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      receivedAmt: isCashCustomer ? formData.receivedAmt : '0',
     });
   };
 
-    const productSelectHandler = (option: any) => {
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
+  };
+
+  const productSelectHandler = (option: any) => {
     const key = 'product'; // Set the desired key dynamically
     const accountName = 'product_name'; // Set the desired key dynamically
     const unit = 'unit'; // Set the desired key dynamically
@@ -160,7 +250,7 @@ const TradingBusinessSales = () => {
     // Update the lineTotal state with the new value
     setLineTotal(Number(newLineTotal.toFixed(0))); // Keep it as a string for display
   };
-    const resetProducts = () => {
+  const resetProducts = () => {
     setFormData(initialFormData); // Reset to the initial state
     setIsUpdateButton(false);
     isUpdating && setIsUpdating(false);
@@ -170,16 +260,18 @@ const TradingBusinessSales = () => {
     setSalesType(e.target.value);
   };
 
-  
 
-  const searchInvoice = () => {
-    if (!search) {
+
+  const searchInvoice = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (!invoiceNo) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
       tradingSalesEdit(
-        { invoiceNo: search, salesType: salesType },
+        { invoiceNo, salesType: salesType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -190,23 +282,28 @@ const TradingBusinessSales = () => {
     if (sales.isEdit === true) {
       setIsUpdateButton(true);
     }
-    setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
+    setFormData({ ...formData, searchInvoice: invoiceNo }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
   // Process `purchase.data` when it updates
   useEffect(() => {
     if (sales.data.transaction) {
       const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
-          id: detail.id,
-          product: detail.product.id,
-          product_name: detail.product.name,
-          serial_no: detail.serial_no,
-          unit: detail.product.unit.name,
-          qty: detail.quantity,
-          price: detail.sales_price,
-          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-        }),
+        id: detail.id,
+        product: detail.product.id,
+        product_name: detail.product.name,
+        serial_no: detail.serial_no,
+        unit: detail.product.unit.name,
+        qty: detail.quantity,
+        price: detail.sales_price,
+        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+      }),
       );
 
       // Find accountName
@@ -234,15 +331,15 @@ const TradingBusinessSales = () => {
         account:
           sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
         accountName,
-        receivedAmt:
-          sales.data.transaction.sales_master.netpayment.toString() || '',
+        receivedAmt: getCashReceivedDebit(sales.data.transaction),
         discountAmt:
           parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
         products: products || [],
       };
 
-      setFormData(updatedFormData); 
+      setFormData(updatedFormData);
+      setIsReceivedAmtManuallyEdited(false);
     }
   }, [sales.data.transaction]);
 
@@ -342,10 +439,32 @@ const TradingBusinessSales = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'receivedAmt' && Number(formData.account) !== 17) {
+      setIsReceivedAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
+  };
+
+  const handleVehicleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    if (vehicleSuggestions.length > 0) {
+      e.preventDefault();
+      const [matchedVehicleNumber] = vehicleSuggestions;
+      setFormData((prevState) => ({
+        ...prevState,
+        vehicleNumber: matchedVehicleNumber,
+      }));
+    }
+
+    setTimeout(() => {
+      handleSelectKeyDown(e, '#purchaseOrderNumber');
+    }, 150);
   };
 
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -412,20 +531,20 @@ const TradingBusinessSales = () => {
         tradingSalesStore(formData, function (message) {
           if (message) {
             toast.success(message);
-                    setTimeout(() => {
-                      setSaveButtonLoading(false);
-                      setFormData((prevFormData) => ({
-                        ...prevFormData,
-                        receivedAmt: '',
-                        discountAmt: 0,
-                        vehicleNumber: '',
-                        notes: '',
-                        invoice_no: '',
-                        invoice_date: '',   
-                        products: [],
-                      }));
-                      setSaveButtonLoading(false);
-                    }, 1000);
+            setTimeout(() => {
+              setSaveButtonLoading(false);
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                receivedAmt: '',
+                discountAmt: 0,
+                vehicleNumber: '',
+                notes: '',
+                invoice_no: '',
+                invoice_date: '',
+                products: [],
+              }));
+              setSaveButtonLoading(false);
+            }, 1000);
           } else {
             toast.info(message);
           }
@@ -499,7 +618,6 @@ const TradingBusinessSales = () => {
 
   const editProductItem = (productId: number) => {
     // Find the product by its unique id
-    console.log(formData.products);
     const productIndex = formData.products.findIndex(
       (item) => item.id === productId,
     );
@@ -598,8 +716,7 @@ const TradingBusinessSales = () => {
         salesOrderText: sales.data.transaction.sales_master?.sales_order?.order_number,
         purchaseOrderNumber: sales.data.transaction.sales_master?.purchase_order?.id.toString() || '',
         purchaseOrderText: sales.data.transaction.sales_master?.purchase_order?.order_number,
-        receivedAmt:
-          sales.data.transaction.sales_master?.netpayment?.toString() || '',
+        receivedAmt: getCashReceivedDebit(sales.data.transaction),
         discountAmt:
           parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
@@ -622,48 +739,47 @@ const TradingBusinessSales = () => {
 
 
   useEffect(() => {
+    if (isUpdateButton || sales.data.transaction) {
+      return;
+    }
+
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
       const price = parseFloat(product.price?.toString() || '0') || 0;
       return acc + qty * price;
     }, 0);
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const isCashCustomer = Number(formData.account) === 17;
+    const cashReceivedAmt = Math.max(0, total - discount).toFixed(0);
 
-    if (!formData.mtmId) {
-      if (Number(formData.account) === 17) {
+    if (isCashCustomer) {
+      if (formData.receivedAmt !== cashReceivedAmt) {
         setFormData((prev) => ({
           ...prev,
-          receivedAmt: Math.max(
-            0,
-            total - parseFloat(prev.discountAmt?.toString() || '0'),
-          ).toFixed(0),
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: '0',
+          receivedAmt: cashReceivedAmt,
         }));
       }
-    } else if (formData.mtmId) {
-      if (Number(formData.account) === 17) {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: Math.max(
-            0,
-            total - parseFloat(prev.discountAmt?.toString() || '0'),
-          ).toFixed(0),
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: sales.data.transaction?.sales_master?.netpayment?.toString(),
-        }));
+      if (isReceivedAmtManuallyEdited) {
+        setIsReceivedAmtManuallyEdited(false);
       }
+    } else if (!isReceivedAmtManuallyEdited && formData.receivedAmt !== '0') {
+      setFormData((prev) => ({
+        ...prev,
+        receivedAmt: '0',
+      }));
     }
-  }, [formData.account, formData.discountAmt, formData.products]);
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.products,
+    formData.receivedAmt,
+    isReceivedAmtManuallyEdited,
+    isUpdateButton,
+    sales.data.transaction,
+  ]);
 
 
   const purchaseOrderNumberHandler = (option: any) => {
-    console.log(option.value);
     const purchaseOrderNumber = 'purchaseOrderNumber'; // Key for sales order number
     const purchaseOrderText = 'purchaseOrderText'; // Key for sales order text
 
@@ -678,6 +794,10 @@ const TradingBusinessSales = () => {
     const variance_type = 'variance_type'; // Set the desired key dynamically
     setProductData({ ...productData, [variance_type]: e.target.value });
   };
+
+
+  useCtrlS(handleInvoiceSave);
+
   return (
     <>
       <HelmetTitle title="Sales Invoice" />
@@ -688,32 +808,35 @@ const TradingBusinessSales = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label htmlFor="">Select Customer</label>
-                <DdlMultiline
-                  onSelect={customerAccountHandler}
-                  // defaultValue={formData.account ? {
-                  //     value: formData.account, label: formData.accountName, //productData.accountName
-                  // } : null}
-                  value={
-                    formData.account
-                      ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
+                <div className="flex items-start gap-1">
+                  <div className="min-w-0 flex-1">
+                    <DdlMultiline
+                      className='h-9.5'
+                      onSelect={customerAccountHandler}
+                      actionOptionLabel="+ Add New Customer"
+                      onActionSelect={openCustomerModal}
+                      value={
+                        formData.account
+                          ? {
+                            value: formData.account,
+                            label: formData.accountName,
+                          }
+                          : null
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setTimeout(() => {
+                            const input = document.querySelector(
+                              '#vehicleNumber',
+                            ) as HTMLInputElement | null;
+                            if (input) input.focus();
+                          }, 150);
                         }
-                      : null
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      // Delay to allow react-select to complete selection
-                      setTimeout(() => {
-                        const input = document.querySelector(
-                          '#vehicleNumber',
-                        ) as HTMLInputElement | null;
-                        if (input) input.focus();
-                      }, 150);
-                    }
-                  }}
-                  acType={'3'}
-                />
+                      }}
+                      acType={'3'}
+                    />
+                  </div>
+                </div>
               </div>
               <InputElement
                 id="vehicleNumber"
@@ -722,15 +845,16 @@ const TradingBusinessSales = () => {
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
                 className={'py-1.5'}
+                list="sales-vehicle-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setTimeout(() => {
-                      handleSelectKeyDown(e, '#purchaseOrderNumber');
-                    }, 150);
-                  }
-                }}
+                onKeyDown={handleVehicleNumberKeyDown}
               />
+              <datalist id="sales-vehicle-suggestions">
+                {vehicleSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -752,11 +876,12 @@ const TradingBusinessSales = () => {
                     value={
                       formData.purchaseOrderNumber
                         ? {
-                            value: formData.purchaseOrderNumber,
-                            label: formData.purchaseOrderText, //productData.accountName
-                          }
+                          value: formData.purchaseOrderNumber,
+                          label: formData.purchaseOrderText, //productData.accountName
+                        }
                         : null
                     }
+                    orderType="1"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         setTimeout(() => {
@@ -764,7 +889,7 @@ const TradingBusinessSales = () => {
                         }, 150);
                       }
                     }}
-                    // onKeyDown={(e) => handleInputKeyDown(e, 'salesOrderNumber')} // Pass the next field's ID
+                  // onKeyDown={(e) => handleInputKeyDown(e, 'salesOrderNumber')} // Pass the next field's ID
                   />
                 </div>
 
@@ -783,23 +908,16 @@ const TradingBusinessSales = () => {
                     id="salesOrderNumber"
                     name="salesOrderNumber"
                     onSelect={salesOrderNumberHandler}
-                    // defaultValue={
-                    //   formData.salesOrderNumber
-                    //     ? {
-                    //         value: formData.salesOrderNumber,
-                    //         label: formData.salesOrderText, //productData.accountName
-                    //       }
-                    //     : null
-                    // }
                     value={
                       formData.salesOrderNumber
                         ? {
-                            value: formData.salesOrderNumber,
-                            label: formData.salesOrderText, //productData.accountName
-                          }
+                          value: formData.salesOrderNumber,
+                          label: formData.salesOrderText,
+                        }
                         : null
                     }
-                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')} // Pass the next field's ID
+                    orderType="2"
+                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
                   />
                 </div>
                 <ButtonLoading
@@ -842,6 +960,8 @@ const TradingBusinessSales = () => {
                 placeholder={'Notes'}
                 label={'Notes'}
                 className={'py-1'}
+                list="sales-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -855,14 +975,19 @@ const TradingBusinessSales = () => {
                     }, 150);
                   }
                 }}
-                // onKeyDown={(e) => {
-                //   if (e.key === 'Enter') {
-                //     setTimeout(() => {
-                //       handleSelectKeyDown(e, '#products');
-                //     }, 150);
-                //   }
-                // }}
+              // onKeyDown={(e) => {
+              //   if (e.key === 'Enter') {
+              //     setTimeout(() => {
+              //       handleSelectKeyDown(e, '#products');
+              //     }, 150);
+              //   }
+              // }}
               />
+              <datalist id="sales-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
@@ -871,7 +996,7 @@ const TradingBusinessSales = () => {
                 Total Tk. {thousandSeparator(totalAmount, 0)}
               </p>
             </div>
-            {hasPermission(permissions, 'sales.edit') && (
+            {hasPermission(userPermissions, 'sales.edit') && (
               <>
                 <div className="mt-2">
                   <DropdownCommon
@@ -924,6 +1049,7 @@ const TradingBusinessSales = () => {
                 <ProductDropdown
                   id="products"
                   name="products"
+                  className='h-9'
                   onSelect={productSelectHandler}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -948,9 +1074,9 @@ const TradingBusinessSales = () => {
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                 />
@@ -1077,7 +1203,7 @@ const TradingBusinessSales = () => {
                   onClick={handleInvoiceSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
-                  
+
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
@@ -1189,6 +1315,21 @@ const TradingBusinessSales = () => {
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        initialName={customerDraftName}
+        onCustomerSaved={({ id, name }) => {
+          const isCashCustomer = Number(id) === 17;
+          setIsReceivedAmtManuallyEdited(false);
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+            receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
+          }));
+        }}
+      />
     </>
   );
 };

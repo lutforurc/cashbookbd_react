@@ -52,15 +52,33 @@ class SalesLedgerCalculator {
   // Total Balance (Due)
   getTotalBalance(): number {
     return this.tableData.reduce((sum, row) => {
-      const transaction = row?.acc_transaction_master?.find(
-        (tm: any) => tm?.acc_transaction_details?.[0]?.coa4_id === 17,
+      // ✅ Paid (coa4_id = 17)
+      const paidTrx = row?.acc_transaction_master?.find((tm: any) =>
+        tm?.acc_transaction_details?.some((d: any) => d?.coa4_id === 17),
       );
 
-      const debitValue = transaction?.acc_transaction_details?.[0]?.debit
-        ? parseFloat(transaction.acc_transaction_details[0].debit)
-        : 0;
+      const paidDebit =
+        paidTrx?.acc_transaction_details?.find((d: any) => d?.coa4_id === 17)
+          ?.debit ?? 0;
 
-      const balance = (row?.sales_master?.total || 0) - debitValue;
+      const paidValue = paidDebit ? Number(paidDebit) : 0;
+
+      // ✅ Discount (coa4_id = 23)
+      const discountTrx = row?.acc_transaction_master?.find((tm: any) =>
+        tm?.acc_transaction_details?.some((d: any) => d?.coa4_id === 23),
+      );
+
+      const discountDebit =
+        discountTrx?.acc_transaction_details?.find(
+          (d: any) => d?.coa4_id === 23,
+        )?.debit ?? 0;
+
+      const discountValue = discountDebit ? Number(discountDebit) : 0;
+
+      // ✅ Balance = (Total - Discount) - Paid
+      const total = Number(row?.sales_master?.total ?? 0);
+      const balance = total - discountValue - paidValue;
+
       return sum + balance;
     }, 0);
   }

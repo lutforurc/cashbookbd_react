@@ -16,6 +16,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import InputElement from "../../../utils/fields/InputElement";
 import { useReactToPrint } from "react-to-print";
 import dayjs from "dayjs";
+import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
 import DateWisePrint from "./DateWisePrint";
 
@@ -23,6 +24,9 @@ const DateWiseData = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const dateWiseTotal = useSelector((state) => state.dateWiseTotal);
+  const settings = useSelector((state: any) => state.settings);
+  const useFilterMenuEnabled =
+    String(settings?.data?.branch?.use_filter_parameter ?? "") === "1";
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -35,6 +39,7 @@ const DateWiseData = (user: any) => {
 
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -75,6 +80,11 @@ const DateWiseData = (user: any) => {
     const endD = dayjs(endDate).format("YYYY-MM-DD");
 
     dispatch(getDateWiseTotal({ branchId, startDate: startD, endDate: endD }));
+    setFilterOpen(false);
+  };
+
+  const handleResetFilters = () => {
+    setFilterOpen(false);
   };
 
   // -----------------------------------------------------
@@ -92,6 +102,11 @@ const DateWiseData = (user: any) => {
     return [];
   };
 
+  const isSummaryRow = (row: any) => {
+    const label = String(row?.vr_date || "").trim().toLowerCase();
+    return label === "opening" || label === "range total";
+  };
+
   // -----------------------------------------------------
   // Prepare Cumulative Table Data
   // -----------------------------------------------------
@@ -107,12 +122,18 @@ const DateWiseData = (user: any) => {
     let credit = 0;
 
     const computed = rows.map((row: any, index: number) => {
-      debit += Number(row.debit);
-      credit += Number(row.credit);
+      if (!isSummaryRow(row)) {
+        debit += Number(row.debit) || 0;
+        credit += Number(row.credit) || 0;
+      }
+
+      if (isSummaryRow(row)) {
+        return row;
+      }
 
       return {
         ...row,
-        sl_number: index + 1,
+        sl_number: row.sl_number ?? index + 1,
         cumulative_debit: debit,
         cumulative_credit: credit,
         balance: debit - credit,
@@ -196,91 +217,137 @@ const DateWiseData = (user: any) => {
     <div>
       <HelmetTitle title={"Datewise Total"} />
 
-      {/* FILTER SECTION */}
-      {/* FULL RESPONSIVE SINGLE ROW BAR */}
-<div className="
-  w-full 
-  flex flex-wrap md:flex-nowrap 
-  items-end gap-2 mb-3
-">
+      <div className="px-0 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1"}>
+            {useFilterMenuEnabled && (
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
+                    : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
+            )}
 
-  {/* Branch */}
-  <div className="flex-1 min-w-[140px]">
-    <label>Select Branch</label>
-    <BranchDropdown
-      onChange={(e) => setBranchId(e.target.value)}
-      branchDdl={dropdownData}
-      className="w-full p-1.5 text-sm"
-    />
-  </div>
+            {(useFilterMenuEnabled ? filterOpen : true) && (
+              <div
+                className={
+                  useFilterMenuEnabled
+                    ? "absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
+                    : "w-full"
+                }
+              >
+                <div
+                  className={
+                    useFilterMenuEnabled
+                      ? "space-y-3"
+                      : "grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1.4fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]"
+                  }
+                >
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                    {branchDdlData.isLoading ? <Loader /> : ""}
+                    <BranchDropdown
+                      onChange={(e) => setBranchId(e.target.value)}
+                      value={branchId == null ? "" : String(branchId)}
+                      branchDdl={dropdownData}
+                      className="w-full p-2 text-sm h-10"
+                    />
+                  </div>
 
-  {/* Start Date */}
-  <div className="flex-1 min-w-[120px]">
-    <label>Start Date</label>
-    <InputDatePicker
-      selectedDate={startDate}
-      setSelectedDate={setStartDate}
-      setCurrentDate={setStartDate}
-      className="w-full h-8 text-sm"
-    />
-  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                    <InputDatePicker
+                      selectedDate={startDate}
+                      setSelectedDate={setStartDate}
+                      setCurrentDate={setStartDate}
+                      className="w-full h-10 text-sm"
+                    />
+                  </div>
 
-  {/* End Date */}
-  <div className="flex-1 min-w-[120px]">
-    <label>End Date</label>
-    <InputDatePicker
-      selectedDate={endDate}
-      setSelectedDate={setEndDate}
-      setCurrentDate={setEndDate}
-      className="w-full h-8 text-sm"
-    />
-  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                    <InputDatePicker
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
+                      setCurrentDate={setEndDate}
+                      className="w-full h-10 text-sm"
+                    />
+                  </div>
 
-  {/* ROWS (small) */}
-  <div className="min-w-[70px]">
-    <InputElement
-      id="perPage"
-      label="Rows"
-      value={perPage.toString()}
-      onChange={(e) => setPerPage(Number(e.target.value))}
-      className="w-full h-8 text-sm"
-    />
-  </div>
+                  <div
+                    className={`flex gap-2 pt-1 ${
+                      useFilterMenuEnabled
+                        ? "justify-end"
+                        : "justify-start self-end"
+                    } ${useFilterMenuEnabled ? "" : "md:col-span-2 xl:col-span-1"}`}
+                  >
+                    <ButtonLoading
+                      onClick={handleRun}
+                      buttonLoading={buttonLoading}
+                      label="Apply"
+                      icon={<FiCheckSquare />}
+                      className="h-10 px-6"
+                    />
+                    <ButtonLoading
+                      onClick={handleResetFilters}
+                      buttonLoading={false}
+                      label="Reset"
+                      icon={<FiRotateCcw />}
+                      className="h-10 px-4"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
-  {/* FONT (small) */}
-  <div className="min-w-[70px]">
-    <InputElement
-      id="fontSize"
-      label="Font"
-      value={fontSize.toString()}
-      onChange={(e) => setFontSize(Number(e.target.value))}
-      className="w-full h-8 text-sm"
-    />
-  </div>
+          <div
+            className={`${
+              useFilterMenuEnabled
+                ? "hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300"
+                : "hidden"
+            }`}
+          >
+            Use the filter
+          </div>
 
-  {/* RUN */}
-  <div className="min-w-[90px]">
-    <ButtonLoading
-      onClick={handleRun}
-      buttonLoading={buttonLoading}
-      label="Run"
-      className="w-full h-8 whitespace-nowrap"
-    />
-  </div>
+          <div className="ml-auto flex items-end gap-2">
 
-  {/* PRINT */}
-  <div className="min-w-[90px]">
-    <PrintButton
-      onClick={handlePrint}
-      className="w-full h-8 whitespace-nowrap"
-    />
-  </div>
-
-</div>
-
-
-      {/* ROWS + FONT + RUN + PRINT */}
-
+            <InputElement
+              id="perPage"
+              name="perPage"
+              label="Per Page"
+              value={perPage.toString()}
+              onChange={(e) => setPerPage(Number(e.target.value))}
+              type="text"
+              className="!w-20 text-sm h-10 text-center"
+            />
+            <InputElement
+              id="fontSize"
+              name="fontSize"
+              label="Font Size"
+              value={fontSize.toString()}
+              onChange={(e) => setFontSize(Number(e.target.value))}
+              type="text"
+              className="!w-20 text-sm h-10 text-center"
+            />
+            <PrintButton
+              onClick={handlePrint}
+              label="Print"
+              className="h-10 px-6"
+              disabled={!Array.isArray(tableData) || tableData.length === 0}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* TABLE */}
       <div className="overflow-auto">

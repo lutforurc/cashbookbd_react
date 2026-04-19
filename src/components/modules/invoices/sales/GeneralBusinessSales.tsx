@@ -32,6 +32,12 @@ import {
   generalSalesStore,
   generalSalesUpdate,
 } from './generalSalesSlice';
+import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import { SalesType } from '../../../../common/dropdownData';
+import QuickCustomerModal from './QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 interface Product {
   id: number;
@@ -45,6 +51,18 @@ interface Product {
   variance?: string;
   variance_type?: string;
 }
+
+type SalesSuggestionField = 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter(
+        (item: string, index: number, arr: string[]) =>
+          item && arr.indexOf(item) === index,
+      )
+    : [];
 
 const GeneralBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -61,6 +79,11 @@ const GeneralBusinessSales = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
   const [isUpdateButton, setIsUpdateButton] = useState(false);
+  const [salesType, setSalesType] = useState('1');
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   const [permissions, setPermissions] = useState<any>([]);
 
@@ -99,6 +122,43 @@ const GeneralBusinessSales = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
   useEffect(() => {
+    const fetchSuggestions = async (
+      field: SalesSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(
+          API_TRADING_SALES_SUGGESTIONS_URL,
+          {
+            params: {
+              field,
+              q: trimmedQuery,
+            },
+          },
+        );
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.notes]);
+
+  useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
       setWarehouseDdlData(warehouse?.data);
     }
@@ -107,11 +167,23 @@ const GeneralBusinessSales = () => {
   const customerAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashCustomer = Number(option?.value) === 17;
+    setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      receivedAmt: isCashCustomer ? formData.receivedAmt : '0',
     });
+  };
+
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
   };
 
   const productSelectHandler = (option: any) => {
@@ -131,16 +203,19 @@ const GeneralBusinessSales = () => {
   const resetProducts = () => {
     setFormData(initialFormData); // Reset to the initial state
     setIsUpdateButton(false);
+    setIsReceivedAmtManuallyEdited(false);
     isUpdating && setIsUpdating(false);
   };
 
-  const searchInvoice = () => {
-    if (!search) {
+  const searchInvoice = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (!invoiceNo) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
-      generalSalesEdit({ invoiceNo: search }, (message: string) => {
+      generalSalesEdit({ invoiceNo, salesType: salesType }, (message: string) => {
         if (message) {
           toast.error(message);
         }
@@ -149,57 +224,83 @@ const GeneralBusinessSales = () => {
     if (sales.isEdit === true) {
       setIsUpdateButton(true);
     }
-    setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
+    setFormData({ ...formData, searchInvoice: invoiceNo }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
   const totalAmount = formData.products.reduce(
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
   );
 
-  // Process `purchase.data` when it updates
+
+
+  console.log('====================================');
+  console.log("sales", sales);
+  console.log('====================================');
+
+
   useEffect(() => {
-    if (sales?.data?.invoice_date) {
-      const parsedDate = new Date(sales.data.invoice_date);
-      if (!isNaN(parsedDate.getTime())) {
-        setStartDate(parsedDate);
-      } else {
-        console.warn(
-          'Invalid date format in invoice_date:',
-          sales.data.invoice_date,
-        );
-        setStartDate(null);
-      }
+    if (!sales?.data?.transaction) {
+      setStartDate(null);
+      return;
+    }
+
+    const transaction = sales.data.transaction;
+    const salesMaster = transaction.sales_master;
+
+    if (salesMaster?.transact_date) {
+      const parsedDate = new Date(salesMaster.transact_date);
+      setStartDate(!isNaN(parsedDate.getTime()) ? parsedDate : null);
     } else {
       setStartDate(null);
     }
-    if (sales?.data?.products) {
-      const products: Product[] = sales.data.products.map((product: any) => ({
-        id: product.id,
-        product: product.product,
-        product_name: product.product_name, // Replace with actual logic if available
-        unit: product.unit, // Replace with actual logic if available
-        qty: product.quantity,
-        price: product.price,
-        bag: product.bag,
-        warehouse: product.warehouse ? product.warehouse.toString() : '',
-      }));
 
-      if (products && products.length > 0) {
-        setFormData({
-          ...sales.data,
-          products,
-        });
-      } else {
-        setFormData({
-          ...sales.data,
-          products: [],
-        });
-        toast.success('Something went wrong!');
+    const products: Product[] =
+      salesMaster?.details?.map((detail: any) => ({
+        id: detail.id,
+        product: detail.product?.id || detail.product_id || 0,
+        product_name: detail.product?.name || '',
+        unit: detail.product?.unit?.name || '',
+        qty: Number(detail.quantity) || 0,
+        price: Number(detail.sales_price) || 0,
+        bag: detail.bag || '',
+        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+        variance: detail.weight_variance || '',
+        variance_type: detail.variance_type || '',
+      })) || [];
+
+    let accountName = '-';
+    if (transaction?.acc_transaction_master?.length > 0) {
+      for (const trxMaster of transaction.acc_transaction_master) {
+        for (const detail of trxMaster.acc_transaction_details || []) {
+          if (detail.coa_l4?.id === salesMaster?.customer_id) {
+            accountName = detail.coa_l4.name;
+            break;
+          }
+        }
+        if (accountName !== '-') break;
       }
     }
-  }, [sales?.data]);
+
+    setFormData((prevState) => ({
+      ...prevState,
+      mtmId: sales.data.mtmId || '',
+      account: salesMaster?.customer_id?.toString() || '',
+      accountName,
+      receivedAmt: salesMaster?.netpayment?.toString() || '',
+      discountAmt: parseFloat(salesMaster?.discount || '0') || 0,
+      vehicleNumber: salesMaster?.vehicle_no || '',
+      notes: salesMaster?.notes || '',
+      products,
+    }));
+    setIsReceivedAmtManuallyEdited(false);
+  }, [sales?.data?.transaction, sales?.data?.mtmId]);
 
   const addProduct = () => {
     if (!validateProductData(productData)) return;
@@ -263,6 +364,9 @@ const GeneralBusinessSales = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'receivedAmt' && Number(formData.account) !== 17) {
+      setIsReceivedAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -319,7 +423,6 @@ const GeneralBusinessSales = () => {
         }),
       );
     } catch (error) {
-      console.log(error);
       toast.error('Failed to save invoice!');
     }
   };
@@ -364,7 +467,6 @@ const GeneralBusinessSales = () => {
 
   const editProductItem = (productId: number) => {
     // Find the product by its unique id
-    console.log(formData.products);
     const productIndex = formData.products.findIndex(
       (item) => item.id === productId,
     );
@@ -406,24 +508,6 @@ const GeneralBusinessSales = () => {
   };
 
   useEffect(() => {
-        if (formData.account == '17') {
-          setFormData((prevState) => ({
-            ...prevState,
-            receivedAmt: 
-              totalAmount > 0
-                ? (totalAmount - prevState.discountAmt).toString()
-                : '0',
-          }));
-        } else {
-          setFormData((prevState) => ({
-            ...prevState,
-            receivedAmt: '',
-          }));
-        }
-      }, [formData.account]);
-
-
-  useEffect(() => {
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
       const price = parseFloat(product.price?.toString() || '0') || 0;
@@ -431,17 +515,31 @@ const GeneralBusinessSales = () => {
     }, 0);
 
     const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const isCashCustomer = Number(formData.account) === 17;
+    const cashReceivedAmt = Math.max(0, total - discount).toFixed(2);
 
-    let netTotal = 0;
-    if (total > 0) {
-      netTotal = total - discount;
+    if (isCashCustomer) {
+      if (formData.receivedAmt !== cashReceivedAmt) {
+        setFormData((prev) => ({
+          ...prev,
+          receivedAmt: cashReceivedAmt,
+        }));
+      }
+      if (isReceivedAmtManuallyEdited) {
+        setIsReceivedAmtManuallyEdited(false);
+      }
     }
+  }, [
+    formData.account,
+    formData.products,
+    formData.discountAmt,
+    formData.receivedAmt,
+    isReceivedAmtManuallyEdited,
+  ]);
 
-    setFormData((prev) => ({
-      ...prev,
-      receivedAmt: netTotal.toFixed(2), // Keep as string
-    }));
-  }, [formData.products, formData.discountAmt]);
+  const handleSalesType = (e: any) => {
+    setSalesType(e.target.value);
+  };
 
   return (
     <>
@@ -453,38 +551,43 @@ const GeneralBusinessSales = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label htmlFor="">Select Customer</label>
-                <DdlMultiline
-                  onSelect={customerAccountHandler}
-                  defaultValue={
-                    formData.account
-                      ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
+                <div className="flex items-start gap-1">
+                  <div className="min-w-0 flex-1">
+                    <DdlMultiline
+                      onSelect={customerAccountHandler}
+                      actionOptionLabel="+ Add New Customer"
+                      onActionSelect={openCustomerModal}
+                      defaultValue={
+                        formData.account
+                          ? {
+                            value: formData.account,
+                            label: formData.accountName,
+                          }
+                          : null
+                      }
+                      value={
+                        formData.account
+                          ? {
+                            value: formData.account,
+                            label: formData.accountName,
+                          }
+                          : null
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setTimeout(() => {
+                            const input = document.querySelector(
+                              '#vehicleNumber',
+                            ) as HTMLInputElement | null;
+                            if (input) input.focus();
+                            if (input) input.select();
+                          }, 150);
                         }
-                      : null
-                  }
-                  value={
-                    formData.account
-                      ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
-                        }
-                      : null
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      // Delay to allow react-select to complete selection
-                      setTimeout(() => {
-                        const input = document.querySelector(
-                          '#vehicleNumber',
-                        ) as HTMLInputElement | null;
-                        if (input) input.focus();
-                        if (input) input.select();
-                      }, 150);
-                    }
-                  }}
-                  acType={'3'}
-                />
+                      }}
+                      acType={'3'}
+                    />
+                  </div>
+                </div>
               </div>
               <InputElement
                 id="vehicleNumber"
@@ -492,9 +595,9 @@ const GeneralBusinessSales = () => {
                 name="vehicleNumber"
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
-                className={'py-1.5 -mt-1'}
+                className={'py-1.5 '}
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')} // Pass the next field's ID
+                onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
               />
             </div>
 
@@ -527,6 +630,8 @@ const GeneralBusinessSales = () => {
                 placeholder={'Notes'}
                 label={'Notes'}
                 className={'py-1'}
+                list="sales-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -541,10 +646,15 @@ const GeneralBusinessSales = () => {
                   }
                 }}
               />
+              <datalist id="sales-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
-            <div className="grid grid-cols-2 md:gap-x-1 mt-2 ">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+            <div className="grid grid-cols-2 md:gap-x-1 mt-3 ">
               <p className="text-sm font-bold dark:text-white">Total Tk.</p>
               <span className="text-sm font-bold dark:text-white">
                 {' '}
@@ -552,31 +662,43 @@ const GeneralBusinessSales = () => {
               </span>
             </div>
             {hasPermission(permissions, 'sales.edit') && (
-              <div className="relative">
-                <div className="w-full ">
-                  <InputOnly
-                    id="search"
-                    value={search}
-                    name="search"
-                    placeholder={'Search Invoice'}
-                    label={''}
-                    className={'py-1 w-full'}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => handleInputKeyDown(e, 'searchInvoice')}
+              <>
+                <div className="mt-2">
+                  <DropdownCommon
+                    id="saleType"
+                    name="saleType"
+                    onChange={handleSalesType}
+                    defaultValue={productData?.variance_type || ''}
+                    data={SalesType}
+                    className="w-full h-8.5"
                   />
                 </div>
-                <ButtonLoading
-                  id="searchInvoice"
-                  name="searchInvoice"
-                  onClick={searchInvoice}
-                  buttonLoading={buttonLoading}
-                  label=""
-                  className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute right-0 top-0 background-red-500 !pr-2 !pl-2"
-                  icon={
-                    <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
-                  }
-                />
-              </div>
+                <div className="relative mt-2">
+                  <div className="w-full ">
+                    <InputOnly
+                      id="search"
+                      value={search}
+                      name="search"
+                      placeholder={'Search Invoice'}
+                      label={''}
+                      className={'py-1 w-full'}
+                      onChange={(e) => setSearch(e.target.value)}
+                      onKeyDown={(e) => handleInputKeyDown(e, 'searchInvoice')}
+                    />
+                  </div>
+                  <ButtonLoading
+                    id="searchInvoice"
+                    name="searchInvoice"
+                    onClick={searchInvoice}
+                    buttonLoading={buttonLoading}
+                    label=""
+                    className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute right-0 top-0 background-red-500 !pr-2 !pl-2"
+                    icon={
+                      <FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />
+                    }
+                  />
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -592,17 +714,17 @@ const GeneralBusinessSales = () => {
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   onKeyDown={(e) => {
@@ -664,7 +786,7 @@ const GeneralBusinessSales = () => {
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
-                  className="whitespace-nowrap text-center mr-0 py-1.5"
+                  className="whitespace-nowrap text-center mr-0 py-1.5 h-8"
                   icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
                 />
               ) : (
@@ -673,7 +795,7 @@ const GeneralBusinessSales = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
-                  className="whitespace-nowrap text-center mr-0"
+                  className="whitespace-nowrap text-center mr-0 h-8"
                   icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -694,7 +816,7 @@ const GeneralBusinessSales = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
+                  icon={<FiEdit className="text-white text-lg ml-2 mr-2  h-8" />}
                 />
               ) : (
                 <ButtonLoading
@@ -712,10 +834,10 @@ const GeneralBusinessSales = () => {
                 label="Reset"
                 className="whitespace-nowrap text-center mr-0"
                 icon={
-                  <FiRefreshCcw className="text-white text-lg ml-2  mr-2" />
+                  <FiRefreshCcw className="text-white text-lg ml-2  mr-2  h-8" />
                 }
               />
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
+              <Link to="/dashboard" className="text-nowrap justify-center mr-0  h-8">
                 <FiHome className="text-white text-lg ml-2  mr-2" />
                 <span className="hidden md:block">{'Home'}</span>
               </Link>
@@ -808,6 +930,21 @@ const GeneralBusinessSales = () => {
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        initialName={customerDraftName}
+        onCustomerSaved={({ id, name }) => {
+          const isCashCustomer = Number(id) === 17;
+          setIsReceivedAmtManuallyEdited(false);
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+            receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
+          }));
+        }}
+      />
     </>
   );
 };

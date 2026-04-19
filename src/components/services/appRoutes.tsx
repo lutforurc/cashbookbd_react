@@ -1,6 +1,17 @@
 const ROUTES = {
   login: '/login',
+  forgot_password: '/forgot-password',
+  public_register: '/register',
+  public_register_otp: '/register/otp',
   logout: '/logout',
+  subscription_pricing: '/subscription/pricing',
+  my_subscription: '/subscription/my-plan',
+  subscription_payment_submit: '/subscription/payment-submit',
+  subscription_billing_history: '/subscription/billing-history',
+  subscription_admin: '/subscription/admin',
+  subscription_plan_list: '/subscription/admin/plans',
+  subscription_plan_entry: '/subscription/admin/plans/entry',
+  subscription_plan_edit: '/subscription/admin/plans/edit/:id',
 
   // Customer Login
   customerLogin: '/customer/login',
@@ -33,6 +44,10 @@ const ROUTES = {
   bank_payment: '/accounts/bank/payment',
 
   employee_loan: '/accounts/employee-loan', 
+  employee_loan_ledger: '/accounts/employee-loan/ledger', 
+  employee_loan_balance: '/accounts/employee-loan/balance',
+  branch_transfer: '/inventory/branch-transfer',
+  branch_received: '/inventory/branch-received',
 
   journal: '/accounts/journal',
 
@@ -51,6 +66,10 @@ const ROUTES = {
   branch_store: '/branch/branch-store',
   branch_all_ddl_list: '/branch/ddl/all-branch',
   branch_ddl_protected_list: '/branch/ddl/protected-branch',
+  sms_send: '/sms/send',
+  sms_template_list: '/sms/templates',
+  sms_template_create: '/sms/templates/create',
+  sms_template_edit: '/sms/templates/edit/:id',
 
   // Nav Switcher
   nav_vertical: '/nav-vertical',
@@ -76,6 +95,13 @@ const ROUTES = {
 
   report_ledger: '/reports/ledger',
   report_cashbook: '/reports/cashbook',
+  profit_loss: '/reports/profit-loss',
+  product_profit_loss: '/reports/product-profit-loss',
+  product_ledger_data: '/reports/product-ledger-data',
+  balance_sheet: '/reports/balance-sheet',
+  trial_balance_level3: '/reports/trialbalance-level3',
+  trial_balance_level4: '/reports/trialbalance-level4',
+  customer_supplier_statement: '/reports/ledger-with-product',
   report_due_list: '/reports/due-list',
   report_date_wise_total: '/reports/date-wise-total-data',
   report_product_stock: '/reports/product/stock',
@@ -94,6 +120,16 @@ const ROUTES = {
   product_create: '/product/add-product',
   product_edit: '/product/edit/:id',
   product_store: '/product/store',
+
+
+  // Brand Route
+  brand_list: '/brand/brand-list',
+  brand_create: '/brand/brand-create',
+
+  // Product Unit Route
+  product_unit_list: '/product-unit/unit-list',
+  product_unit_create: '/product-unit/unit-create',
+  product_unit_edit: '/product-unit/unit-edit/:id',
 
   // Category Route
   category_list: '/category/category-list',
@@ -117,13 +153,20 @@ const ROUTES = {
   // Invoices
   // Purchase
   inv_purchase: '/invoice/purchase',
+  inv_purchase_return: '/invoice/purchase-return',
   // Sales
   inv_sales: '/invoice/sales',
+  inv_sales_return: '/invoice/sales-return',
 
   // Installment Routes
   installment_list: '/admin/installment-details',
   due_installment_list: '/reports/due-installments',
   employee_wise_installment: '/reports/employee-installment',
+
+
+  unit_payment_list: '/admin/unit-payment-list', 
+  unit_payment_edit: '/admin/unit-payment/edit/:id', 
+  unit_payment_entry: '/admin/unit-payment/entry',
 
   // Invoice Routes
   inv_labour: '/invoice/labour-invoice',
@@ -131,7 +174,9 @@ const ROUTES = {
   // Orders Route
   order_list: '/order/order-list',
   order_add: '/orders/add-order',
+  order_edit: '/orders/edit/:id',
   order_avg_price: '/orders/avg-price',
+  order_with_transaction: '/orders/with-transaction',
 
   // User Management Routes
   roles: '/user-management/roles',
@@ -143,6 +188,7 @@ const ROUTES = {
   // Customer and Supplier Routes
   supplier_customer_list: '/customer-supplier/list',
   supplier_customer_add: '/customer-supplier/create',
+  supplier_customer_edit: '/customer-supplier/edit/:id', 
 
   customer_dashboard: '/customer-dashboard',
 
@@ -163,16 +209,38 @@ const ROUTES = {
   // Real Estate Area
   real_estate_area_list: '/real-estate/area-list',
   real_estate_area_add: '/real-estate/add-area',
-  
+  real_estate_project_activities: '/real-estate/project-activities', 
+  real_estate_project_list: '/real-estate/project-list', 
+  real_estate_buildings: '/real-estate/buildings', 
+  real_estate_buildings_list: '/real-estate/building/list', 
+  real_estate_flat_layout: '/real-estate/flat-layout', 
+  real_estate_add_building_floor: '/real-estate/building/floor', 
+  real_estate_floor_list: '/real-estate/building/floor/list', 
+  real_estate_add_floor_unit: '/real-estate/add-unit',
+  real_estate_add_floor_unit_edit: "/real-estate/add-floor-unit/:id",
+  real_estate_floor_unit_list: '/real-estate/unit/list',  
+  real_estate_unit_types_create: '/real-estate/unit-types/create',
+  real_estate_unit_types_list: '/real-estate/unit-types/list',  
+  real_estate_unit_sales: '/real-estate/unit-sales',  
   
   // HRM
   hrms_employee_list: '/hrms/employees',
   hrms_employee_add: '/hrms/employee/add', 
   hrms_employee_edit: '/hrms/employee/edit/:id', 
-  
+  hrms_designation_level_list: '/hrms/designation-levels',
+  hrms_designation_level_create: '/hrms/designation-levels/create',
+  hrms_designation_level_edit: '/hrms/designation-levels/edit/:id',
+  hrms_designation_level_edit_base: '/hrms/designation-levels/edit',
+  hrms_designation_list: '/hrms/designations',
+  hrms_designation_create: '/hrms/designations/create',
+  hrms_designation_edit: '/hrms/designations/edit/:id',
+  hrms_designation_edit_base: '/hrms/designations/edit',
   
   hrms_salary_sheet_list: '/hrms/salary-sheet',
   hrms_salary_generate: '/hrms/salary/salary-generate',
+  hrms_salary_sheet_update: '/hrms/salary-sheet/update',
+  hrms_festival_bonus_generate: '/hrms/festival-bonus/generate',
+  hrms_festival_bonus_list: '/hrms/festival-bonus',
 
   item_chart: '/item/item-chart',
 
@@ -180,3 +248,5 @@ const ROUTES = {
 };
 
 export default ROUTES;
+
+

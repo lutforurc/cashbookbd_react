@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import { toast } from 'react-toastify';
-import Link from '../../../utils/others/Link';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { useDispatch, useSelector } from 'react-redux';
 import { userCurrentBranch } from '../../branch/branchSlice';
@@ -14,7 +13,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import Loader from '../../../../common/Loader';
-import {FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2, } from 'react-icons/fi';
+import { FiEdit, FiEdit2, FiHome, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiShare, FiTrash2 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
@@ -30,7 +29,13 @@ import {
   electronicsSalesStore,
   electronicsSalesUpdate,
 } from './electronicsSalesSlice';
-import { getServiceList } from '../../settings/settingsSlice';
+import { getServiceList } from '../../settings/settingsSlice'; 
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
+import QuickCustomerModal from './QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 
 interface Product {
   id: number;
@@ -62,6 +67,40 @@ interface editInstallmentData {
   payments: [];
 }
 
+type SalesSuggestionField = 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter(
+        (item: string, index: number, arr: string[]) =>
+          item && arr.indexOf(item) === index,
+      )
+    : [];
+
+const getCashReceivedDebit = (transaction: any): string => {
+  const masters = Array.isArray(transaction?.acc_transaction_master)
+    ? transaction.acc_transaction_master
+    : [];
+
+  const totalDebit = masters.reduce((sum: number, master: any) => {
+    const details = Array.isArray(master?.acc_transaction_details)
+      ? master.acc_transaction_details
+      : [];
+
+    return (
+      sum +
+      details.reduce((detailSum: number, detail: any) => {
+        if (Number(detail?.coa4_id) !== 17) return detailSum;
+        return detailSum + (parseFloat(detail?.debit) || 0);
+      }, 0)
+    );
+  }, 0);
+
+  return String(totalDebit);
+};
+
 const ElectronicsBusinessSales = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const sales = useSelector((s: any) => s.electronicsSales);
@@ -86,6 +125,15 @@ const ElectronicsBusinessSales = () => {
   const [showInstallmentPopup, setShowInstallmentPopup] = useState(false);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [editedInstallments, setEditedInstallments] = useState<editInstallmentData[]>([]);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
   const [installmentData, setInstallmentData] = useState<InstallmentData>({
     amount: 0,
     startDate: null,
@@ -106,11 +154,6 @@ const ElectronicsBusinessSales = () => {
   }, []);
 
 
-  console.log('====================================');
-  console.log("settings", settings?.serviceList);
-  console.log('====================================');
-
-
   useEffect(() => {
     if (productData.qty) {
       const qty = parseFloat(productData.qty) || 0;
@@ -118,6 +161,26 @@ const ElectronicsBusinessSales = () => {
       setLineTotal(qty * price);
     }
   }, [productData.qty]);
+
+
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setPerPage(value);
+    } else {
+      setPerPage(10); // Reset if input is invalid
+    }
+  };
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+
+    if (!isNaN(value)) {
+      setFontSize(value);
+    } else {
+      setFontSize(10); // Reset if input is invalid
+    }
+  };
 
   interface FormData {
     mtmId: string;
@@ -154,6 +217,43 @@ const ElectronicsBusinessSales = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
   useEffect(() => {
+    const fetchSuggestions = async (
+      field: SalesSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(
+          API_TRADING_SALES_SUGGESTIONS_URL,
+          {
+            params: {
+              field,
+              q: trimmedQuery,
+            },
+          },
+        );
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.notes]);
+
+  useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
       setWarehouseDdlData(warehouse?.data);
     }
@@ -162,10 +262,13 @@ const ElectronicsBusinessSales = () => {
   const customerAccountHandler = (option: any) => {
     const key = 'account';
     const accountName = 'accountName';
+    const isCashCustomer = Number(option?.value) === 17;
+    setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      receivedAmt: isCashCustomer ? formData.receivedAmt : '0',
     });
   };
 
@@ -196,23 +299,35 @@ const ElectronicsBusinessSales = () => {
     setIsUpdateButton(false);
     isUpdating && setIsUpdating(false);
     setIsInstallment(false); // Reset installment checkbox
+    setIsReceivedAmtManuallyEdited(false);
     setFormData(initialFormData);
     setInstallmentData({ amount: 0, startDate: null, numberOfInstallments: 0 }); // Reset installment data
+  };
+
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
   };
 
   const handleSalesType = (e: any) => {
     setSalesType(e.target.value);
   };
 
-  const searchInvoice = () => {
-    if (!search) {
+  const searchInvoice = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (!invoiceNo) {
       toast.info('Please enter an invoice number');
       return;
     }
 
     dispatch(
       electronicsSalesEdit(
-        { invoiceNo: search, salesType: salesType },
+        { invoiceNo, salesType: salesType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -224,32 +339,37 @@ const ElectronicsBusinessSales = () => {
     );
   };
 
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
- function findCoaCredit(items: any[], target = 41, fallback = 23) {
+
+  function findCoaCredit(items: any[], target = 41, fallback = 23) {
     const found =
-        items.find(item => item.coa4_id === target) ||
-        items.find(item => item.coa4_id === fallback);
+      items.find(item => item.coa4_id === target) ||
+      items.find(item => item.coa4_id === fallback);
 
     // যদি না পায় → null
     if (!found) return null;
 
     // "65" কে number 65 এ convert করে রিটার্ন
     return Number(found.credit);
-}
+  }
 
 
   useEffect(() => {
     if (sales.data.transaction) {
       const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
-          id: detail.id,
-          product: detail.product.id,
-          product_name: detail.product.name,
-          serial_no: detail.serial_no,
-          unit: detail.product.unit.name,
-          qty: detail.quantity,
-          price: detail.sales_price,
-          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-        }),
+        id: detail.id,
+        product: detail.product.id,
+        product_name: detail.product.name,
+        serial_no: detail.serial_no,
+        unit: detail.product.unit.name,
+        qty: detail.quantity,
+        price: detail.sales_price,
+        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+      }),
       );
 
       // Find accountName
@@ -270,7 +390,7 @@ const ElectronicsBusinessSales = () => {
         }
       }
 
-      const details =sales?.data?.transaction?.acc_transaction_master?.[0]?.acc_transaction_details || [];
+      const details = sales?.data?.transaction?.acc_transaction_master?.[0]?.acc_transaction_details || [];
 
 
       // Update formData using previous state to maintain integrity
@@ -279,7 +399,7 @@ const ElectronicsBusinessSales = () => {
         mtmId: sales.data.mtmId,
         account: sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
         accountName,
-        receivedAmt: sales.data.transaction.sales_master.netpayment.toString() || '',
+        receivedAmt: getCashReceivedDebit(sales.data.transaction),
         discountAmt: parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
         tdsAmount: findCoaCredit(details, 41),
@@ -300,17 +420,12 @@ const ElectronicsBusinessSales = () => {
           }),
         ),
       };
-      console.log('====================================');
-      console.log("Search", sales);
-      console.log('====================================');
       setFormData(updatedFormData);
       setEditedInstallments(updatedFormData.editInstallmentData);
+      setIsReceivedAmtManuallyEdited(false);
     }
   }, [sales.data.transaction]);
 
-  // useEffect(() => {
-  //   console.log('Updated formData:', formData);
-  // }, [formData]);
 
 
   const totalAmount = formData.products.reduce(
@@ -374,6 +489,9 @@ const ElectronicsBusinessSales = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'receivedAmt' && Number(formData.account) !== 17) {
+      setIsReceivedAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -418,6 +536,8 @@ const ElectronicsBusinessSales = () => {
     }));
   }, [sales.isUpdated]);
 
+
+
   const handleInvoiceSave = async () => {
     setSaveButtonLoading(true);
     const validationMessages = validateForm(formData, invoiceMessage);
@@ -447,18 +567,18 @@ const ElectronicsBusinessSales = () => {
 
     const formattedInstallmentData = isInstallment
       ? {
-          ...installmentData,
-          startDate: installmentData.startDate
-            ? dayjs(installmentData.startDate)
-                .tz('Asia/Dhaka')
-                .format('YYYY-MM-DD')
-            : null,
-          earlyPaymentDate: installmentData.earlyPaymentDate
-            ? dayjs(installmentData.earlyPaymentDate)
-                .tz('Asia/Dhaka')
-                .format('YYYY-MM-DD')
-            : null,
-        }
+        ...installmentData,
+        startDate: installmentData.startDate
+          ? dayjs(installmentData.startDate)
+            .tz('Asia/Dhaka')
+            .format('YYYY-MM-DD')
+          : null,
+        earlyPaymentDate: installmentData.earlyPaymentDate
+          ? dayjs(installmentData.earlyPaymentDate)
+            .tz('Asia/Dhaka')
+            .format('YYYY-MM-DD')
+          : null,
+      }
       : null;
 
     const payload = {
@@ -525,10 +645,7 @@ const ElectronicsBusinessSales = () => {
       setUpdateButtonLoading(false);
       setIsUpdateButton(false);
     }, 2000);
-    // }catch( error ){
-    //   console.log(error);
-    //   toast.error('Failed to Update invoice!');
-    // }
+ 
 
     setIsUpdating(false);
   };
@@ -592,9 +709,7 @@ const ElectronicsBusinessSales = () => {
       setShowInstallmentPopup(true);
       setInstallmentData((prev) => ({
         ...prev,
-        // startDate: new Date(),
       }));
-      // console.log(installmentData);
     } else {
       setShowInstallmentPopup(false);
       setIsEarlyPayment(false); // Reset early payment state
@@ -634,10 +749,10 @@ const ElectronicsBusinessSales = () => {
       );
       const newEarlyPaymentDate = isEarlyPayment
         ? new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate() + 90,
-          )
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate() + 90,
+        )
         : null;
 
       setStartDate(selectedDate);
@@ -659,10 +774,11 @@ const ElectronicsBusinessSales = () => {
     }
   };
 
+
+
   const handleEarlyPaymentDateChange = (date: Date | null) => {
     const selectedDate = dayjs(date).tz('Asia/Dhaka').startOf('day');
     setEarlyPaymentDate(selectedDate.toDate());
-    console.log('Early Payment Date:', selectedDate.toDate());
     setInstallmentData((prev) => ({
       ...prev,
       earlyPaymentDate: selectedDate.toDate(),
@@ -681,58 +797,74 @@ const ElectronicsBusinessSales = () => {
       const barcodes = value.trim().split(/\s+/).filter(Boolean);
       updatedProduct.qty = barcodes.length;
     }
-
     setProductData(updatedProduct);
   };
 
-  console.log("Service Charge", formData )
   useEffect(() => {
-    const serviceCharge = Number(formData?.serviceCharge) || 0; 
+    if (isUpdateButton || sales.data.transaction) {
+      return;
+    }
+
+    const serviceCharge = Number(formData?.serviceCharge) || 0;
     const tdsAmount = Number(formData?.tdsAmount) || 0;
-    const transportationAmt = Number(formData?.transportationAmt) || 0; 
+    const transportationAmt = Number(formData?.transportationAmt) || 0;
+    const discountAmt = Number(formData?.discountAmt) || 0;
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
       const price = parseFloat(product.price?.toString() || '0') || 0;
       return acc + qty * price;
     }, 0);
-
-    if (!formData.mtmId) {
-      if (Number(formData.account) === 17) {
+    const isCashCustomer = Number(formData.account) === 17;
+    const cashReceivedAmt = Math.max(
+      0,
+      total + serviceCharge + tdsAmount + transportationAmt - discountAmt,
+    ).toFixed(0);
+    if (isCashCustomer) {
+      if (formData.receivedAmt !== cashReceivedAmt) {
         setFormData((prev) => ({
           ...prev,
-          receivedAmt: Math.max(
-            0,
-            total - parseFloat(prev.discountAmt?.toString() || '0') + serviceCharge + tdsAmount + transportationAmt,
-          ).toFixed(0),
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: '0',
+          receivedAmt: cashReceivedAmt,
         }));
       }
-    } else if (formData.mtmId) {
-      if (Number(formData.account) === 17) {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: Math.max(
-            0,
-            total - parseFloat(prev.discountAmt?.toString() || '0'),
-          ).toFixed(0),
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          receivedAmt: sales.data.transaction.sales_master.netpayment.toString(),
-        }));
+      if (isReceivedAmtManuallyEdited) {
+        setIsReceivedAmtManuallyEdited(false);
       }
     }
-  }, [formData.account, formData.discountAmt, formData.products, formData.serviceCharge, formData.tdsAmount, formData.transportationAmt]);
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.serviceCharge,
+    formData.tdsAmount,
+    formData.transportationAmt,
+    formData.products,
+    formData.receivedAmt,
+    isReceivedAmtManuallyEdited,
+    isUpdateButton,
+    sales.data.transaction,
+  ]);
 
 
-const serviceList = (id: number, list: any[]) => {
-  return list.find((item) => item.id === id)?.name || "";
-};
+  const serviceList = (id: number, list: any[]) => {
+    return list.find((item) => item.id === id)?.name || "";
+  };
+
+
+  // const handlePrint = useReactToPrint({
+  //   content: () => {
+  //     if (!printRef.current) {
+  //       toast.info('Invoice data not ready');
+  //       return null;
+  //     }
+  //     return printRef.current;
+  //   },
+
+  //   documentTitle: `Invoice-${sales?.data?.vr_no ?? ''}`,
+  // });
+
+
+
+
+
 
   return (
     <>
@@ -744,24 +876,30 @@ const serviceList = (id: number, list: any[]) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label htmlFor="">Select Customer</label>
-                <DdlMultiline
-                  onSelect={customerAccountHandler}
-                  placeholder="Select Customer"
-                  defaultValue={
-                    formData.account
-                      ? { value: formData.account, label: formData.accountName }
-                      : null
-                  }
-                  value={
-                    formData.account
-                      ? { value: formData.account, label: formData.accountName }
-                      : null
-                  }
-                  acType={'3'}
-                />
+                <div className="mt-1 flex items-start gap-1">
+                  <div className="min-w-0 flex-1">
+                    <DdlMultiline
+                      onSelect={customerAccountHandler}
+                      placeholder="Select Customer"
+                      actionOptionLabel="+ Add New Customer"
+                      onActionSelect={openCustomerModal}
+                      defaultValue={
+                        formData.account
+                          ? { value: formData.account, label: formData.accountName }
+                          : null
+                      }
+                      value={
+                        formData.account
+                          ? { value: formData.account, label: formData.accountName }
+                          : null
+                      }
+                      acType={'3'}
+                    />
+                  </div>
+                </div>
               </div>
               <div>
-                <div className="mt-8 ml-5">
+                <div className="mt-8 ml-0 flex">
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -809,7 +947,7 @@ const serviceList = (id: number, list: any[]) => {
                           name="amount"
                           placeholder="Installment Amount"
                           label="Installment Amount"
-                          className="py-1"
+                          className="py-1 w-full"
                           onChange={handleInstallmentDataChange}
                         />
                         <div className="w-full">
@@ -834,7 +972,7 @@ const serviceList = (id: number, list: any[]) => {
                           name="numberOfInstallments"
                           placeholder="Installments No."
                           label="Installments No."
-                          className="py-1"
+                          className="py-1 w-full"
                           onChange={handleInstallmentDataChange}
                         />
                         {/* isEarlyPayment, setIsEarlyPayment */}
@@ -861,7 +999,7 @@ const serviceList = (id: number, list: any[]) => {
                               name="earlyDiscount"
                               placeholder="Early Discount"
                               label="Early Discount"
-                              className="py-1"
+                              className="py-1 w-full"
                               onChange={handleInstallmentDataChange}
                             />
 
@@ -901,78 +1039,97 @@ const serviceList = (id: number, list: any[]) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="receivedAmt"
-                value={formData.receivedAmt}
+                value={formData.receivedAmt ?? ""}
                 name="receivedAmt"
                 placeholder="Received Amount"
                 disabled={Number(formData.account) === 17}
                 label="Received Amount"
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
               <InputElement
                 id="discountAmt"
-                value={formData.discountAmt.toString()}
+                value={formData.discountAmt ?? ""}
                 name="discountAmt"
                 placeholder="Discount Amount"
                 label="Discount Amount"
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
               <InputElement
                 id="notes"
-                value={formData.notes}
+                value={formData.notes ?? ""}
                 name="notes"
                 placeholder="Notes"
                 label="Notes"
-                className="py-1 "
+                className="py-1 w-full"
+                list="sales-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setTimeout(() => {
+                      const input = document.querySelector(
+                        '#products',
+                      ) as HTMLInputElement | null;
+                      if (input) input.focus();
+                      if (input) input.select();
+                    }, 150);
+                  }
+                }}
               />
+              <datalist id="sales-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="serviceCharge"
-                value={(formData.serviceCharge || 0).toString()}
+                value={formData.serviceCharge ?? ""}
+                
                 name="serviceCharge"
                 placeholder={serviceList(42, settings?.serviceList)}
                 label={serviceList(42, settings?.serviceList)}
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
               <InputElement
                 id="tdsAmount"
-                value={(formData.tdsAmount || 0).toString()}
+                value={formData.tdsAmount ?? ""}
                 name="tdsAmount"
                 placeholder={serviceList(41, settings?.serviceList)}
                 label={serviceList(41, settings?.serviceList)}
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
               <InputElement
                 id="transportationAmt"
-                value={(formData.transportationAmt || 0).toString()}
+                value={formData.transportationAmt ?? ""}
                 name="transportationAmt"
                 placeholder={serviceList(198, settings?.serviceList)}
                 label={serviceList(198, settings?.serviceList)}
-                className="py-1 text-right"
+                className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
-              
+
             </div>
           </div>
           {/* Installment Popup */}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
             <div className="mt-4">
-                <p className="text-sm font-bold dark:text-white">
-                  Total Tk. {thousandSeparator(  (totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) -  Number(formData?.discountAmt)  ), 0)}  {Number(formData?.receivedAmt) > 0 ? `(${ (totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) -  Number(formData?.discountAmt)  ) - Number(formData?.receivedAmt)})` : ""}
-                </p>
-              </div>
+              <p className="text-sm font-bold dark:text-white">
+                Total Tk. {thousandSeparator((totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)), 0)}  {Number(formData?.receivedAmt) > 0 ? `(${(totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)) - Number(formData?.receivedAmt)})` : ""}
+              </p>
+            </div>
             {hasPermission(permissions, 'sales.edit') && (
               <>
                 <div className="mt-2">
@@ -1025,19 +1182,20 @@ const serviceList = (id: number, list: any[]) => {
                   defaultValue={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
                   value={
                     productData.product_name && productData.product
                       ? {
-                          label: productData.product_name,
-                          value: productData.product,
-                        }
+                        label: productData.product_name,
+                        value: productData.product,
+                      }
                       : null
                   }
+                  className='h-9'
                 />
               </div>
               <div>
@@ -1045,7 +1203,7 @@ const serviceList = (id: number, list: any[]) => {
                 {warehouse.isLoading === true ? <Loader /> : ''}
                 <WarehouseDropdown
                   onChange={handleWarehouseChange}
-                  className="w-60 font-medium text-sm p-2"
+                  className="w-60 font-medium text-sm p-2 h-9"
                   warehouseDdl={warehouseDdlData}
                   defaultValue={productData?.warehouse || ''}
                 />
@@ -1082,7 +1240,7 @@ const serviceList = (id: number, list: any[]) => {
                   placeholder="Enter Quantity"
                   label="Quantity"
                   type="number"
-                  className="py-1"
+                  className="py-1 w-full"
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'price')}
                 />
@@ -1095,14 +1253,14 @@ const serviceList = (id: number, list: any[]) => {
                   name="price"
                   placeholder="Enter Price"
                   label="Enter Price"
-                  className="py-1"
+                  className="py-1 w-full"
                   onChange={handleProductChange}
-                  // onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
+                // onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
                 />
                 <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-x-1 gap-y-1">
+            <div className="flex gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProduct}
@@ -1158,11 +1316,45 @@ const serviceList = (id: number, list: any[]) => {
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
               />
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2 mr-2" />
-                <span className="hidden md:block">Home</span>
-              </Link>
+              <div className="flex w-full">
+                <div className="mr-2">
+                  <InputElement
+                    id="perPage"
+                    name="perPage"
+                    // label="Rows"
+                    title="Rows per page"
+                    value={perPage.toString()}
+                    onChange={handlePerPageChange}
+                    type='text'
+                    className="font-medium text-sm h-9 w-12"
+                  />
+                </div>
+                <div className="mr-2">
+                  <InputElement
+                    id="fontSize"
+                    name="fontSize"
+                    // label="Font"
+                    title="Font Size"
+                    value={fontSize.toString()}
+                    onChange={handleFontSizeChange}
+                    type='text'
+                    className="font-medium text-sm h-9 w-12"
+                  />
+                </div>
+
+                <PrintButton
+                  onClick={() =>
+                    handleVoucherPrint({
+                      ...sales.data,
+                      mtm_id: sales.data.id,
+                    })
+                  }
+                  label=""
+                  className="pt-[0.45rem] pb-[0.45rem] h-9"
+                />
+              </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -1245,12 +1437,12 @@ const serviceList = (id: number, list: any[]) => {
                   const nextInstallmentNo =
                     editedInstallments.length > 0
                       ? editedInstallments[editedInstallments.length - 1]
-                          .installment_no + 1
+                        .installment_no + 1
                       : 1;
                   const lastDueDate =
                     editedInstallments.length > 0
                       ? editedInstallments[editedInstallments.length - 1]
-                          .due_date
+                        .due_date
                       : new Date();
                   const nextDueDate = lastDueDate
                     ? dayjs(lastDueDate).add(1, 'month').toDate()
@@ -1368,6 +1560,28 @@ const serviceList = (id: number, list: any[]) => {
             })}
         </div>
       )}
+      <div className="hidden">
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+        />
+      </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        initialName={customerDraftName}
+        onCustomerSaved={({ id, name }) => {
+          const isCashCustomer = Number(id) === 17;
+          setIsReceivedAmtManuallyEdited(false);
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+            receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
+          }));
+        }}
+      />
     </>
   );
 };

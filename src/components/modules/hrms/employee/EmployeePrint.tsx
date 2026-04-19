@@ -50,9 +50,7 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
   ) => {
     const pages = chunkRows(rows || [], rowsPerPage);
     const fs = fontSize;
-    console.log('====================================');
-    console.log("tableData", rows);
-    console.log('====================================');
+
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
         <PrintStyles />

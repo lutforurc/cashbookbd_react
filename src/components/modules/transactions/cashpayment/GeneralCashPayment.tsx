@@ -27,7 +27,17 @@ import {
 import InputOnly from '../../../utils/fields/InputOnly';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
-import { validateForm } from '../../../utils/utils-functions/validationUtils';
+import { useNavigate } from 'react-router-dom';
+import httpService from '../../../services/httpService';
+import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+    : [];
 
 interface PaymentItem {
   id: string | number;
@@ -47,7 +57,7 @@ const initialPaymentItem: PaymentItem = {
   account: '',
   accountName: '',
   remarks: '',
-  amount: 0,
+  amount: '',
   currentProduct: undefined, // Use undefined instead of null
 };
 
@@ -63,7 +73,8 @@ const GeneralCashPayment = () => {
   const [search, setSearch] = useState(''); // State to store the search value
   const [isUpdateButton, setIsUpdateButton] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
-
+  const [remarkSuggestions, setRemarkSuggestions] = useState<string[]>([]);
+  const navigate = useNavigate();
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
     0,
@@ -79,7 +90,7 @@ const GeneralCashPayment = () => {
     });
   };
 
-  
+
   const handleCashPaymentSave = async () => {
     setSaveButtonLoading(true);
     if (tableData.length === 0) {
@@ -134,6 +145,53 @@ const GeneralCashPayment = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    const fetchRemarkSuggestions = async () => {
+      const trimmedQuery = formData.remarks.trim();
+      if (!trimmedQuery) {
+        setRemarkSuggestions([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(API_CASH_RECEIVED_SUGGESTIONS_URL, {
+          params: {
+            field: 'remarks',
+            q: trimmedQuery,
+          },
+        });
+        setRemarkSuggestions(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setRemarkSuggestions([]);
+      }
+    };
+
+    const remarkTimer = window.setTimeout(() => {
+      void fetchRemarkSuggestions();
+    }, 250);
+
+    return () => {
+      window.clearTimeout(remarkTimer);
+    };
+  }, [formData.remarks]);
+
+  const handleRemarksKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    if (remarkSuggestions.length > 0) {
+      e.preventDefault();
+      const [matchedRemark] = remarkSuggestions;
+      setFormData((prevState) => ({
+        ...prevState,
+        remarks: matchedRemark,
+      }));
+    }
+
+    handleInputKeyDown(e, 'amount');
+  };
+
   const handleAdd = () => {
     // const validationMessages = validateForm(formData, validationMessage);
     // if (validationMessages) {
@@ -175,7 +233,7 @@ const GeneralCashPayment = () => {
     }
 
     const product = tableData[productIndex];
- 
+
 
     // Safely update formData
     setFormData((prevState) => ({
@@ -223,15 +281,17 @@ const GeneralCashPayment = () => {
     setFormData(initialPaymentItem); // Reset form data
   };
 
-  const searchTransaction = () => {
-    if (search === '') {
+  const searchTransaction = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (invoiceNo === '') {
       toast.error('Please enter a search value.');
       return;
     }
     try {
       // Dispatch the search action
       dispatch(
-        editCashPayment({ invoiceNo: search }, (message: string) => {
+        editCashPayment({ invoiceNo }, (message: string) => {
           if (message) {
             toast.error(message);
           }
@@ -247,6 +307,11 @@ const GeneralCashPayment = () => {
     }
   };
 
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchTransaction,
+  });
+
   useEffect(() => {
     setFormData((prevState) => ({
       ...prevState, // Retain previous state properties
@@ -261,40 +326,40 @@ const GeneralCashPayment = () => {
     }
   }, [cashPayment.isEdit]);
 
-const handleInvoiceUpdate = async () => {
+  const handleInvoiceUpdate = async () => {
 
-//   console.log("formData.account =>", formData.account);
-// console.log("tableData =>", tableData);
 
-//   if (!formData.account || tableData.length === 0) {
-//     toast.error("Please add at least one transaction before updating!");
-//     return;
-//   }
+    //   if (!formData.account || tableData.length === 0) {
+    //     toast.error("Please add at least one transaction before updating!");
+    //     return;
+    //   }
 
-  try {
-    setButtonLoading(true);
+    try {
+      setButtonLoading(true);
 
-    // Dispatch update action
-    await dispatch(
-      updateCashPayment(tableData, (message: string) => {
-        if (message) toast.info(message);
-      }),
-    );
+      // Dispatch update action
+      await dispatch(
+        updateCashPayment(tableData, (message: string) => {
+          if (message) toast.info(message);
+        }),
+      );
 
-    toast.success("Invoice updated successfully!");
+      toast.success("Invoice updated successfully!");
 
-    // Reset UI state
-    setIsUpdateButton(false);
-    setIsUpdating(false);
-  } catch (error) {
-    console.error("Error updating invoice:", error);
-    toast.error("Failed to update invoice.");
-  } finally {
-    setButtonLoading(false);
+      // Reset UI state
+      setIsUpdateButton(false);
+      setIsUpdating(false);
+    } catch (error) {
+      console.error("Error updating invoice:", error);
+      toast.error("Failed to update invoice.");
+    } finally {
+      setButtonLoading(false);
+    }
+  };
+
+  const handleHome = () => {
+    navigate('/dashboard');
   }
-};
-
-
   useEffect(() => {
     if (cashPayment.isEdit) {
       setIsUpdateButton(true);
@@ -369,6 +434,7 @@ const handleInvoiceUpdate = async () => {
                   }
                 }}
                 acType={''}
+                className="h-9.5"
               />
             </div>
 
@@ -379,9 +445,16 @@ const handleInvoiceUpdate = async () => {
               placeholder={'Enter Remarks'}
               label={'Enter Remarks'}
               className={''}
+              list="general-cash-payment-remark-suggestions"
+              autoComplete="off"
               onChange={handleOnChange}
-              onKeyDown={(e) => handleInputKeyDown(e, 'amount')}
+              onKeyDown={handleRemarksKeyDown}
             />
+            <datalist id="general-cash-payment-remark-suggestions">
+              {remarkSuggestions.map((item) => (
+                <option key={item} value={item} />
+              ))}
+            </datalist>
             <InputElement
               id="amount"
               value={String(formData.amount)}
@@ -443,10 +516,16 @@ const handleInvoiceUpdate = async () => {
                   icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
                 />
               )}
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                disabled={saveButtonLoading}
+                onClick={handleHome}
+                buttonLoading={saveButtonLoading}
+                label={`Home`}
+                className="whitespace-nowrap text-center mr-0 p-2"
+                icon={
+                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                }
+              />
             </div>
           </div>
         </div>

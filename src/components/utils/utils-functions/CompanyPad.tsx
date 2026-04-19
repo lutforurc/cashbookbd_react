@@ -4,32 +4,36 @@ import { chartDateTime } from './formatDate';
 
 const CompanyPad = () => {
   const settings = useSelector((state: any) => state.settings.data);
-  console.log(settings?.company?.name);
+
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-center">
+      <div className="mb-0">
+        <h1 className="text-2xl font-bold text-center uppercase">
           {settings?.company?.name}
         </h1>
         <div className="text-center">
           <div>
-            <span className="-mt-2"> {settings?.company?.address}</span>
+            <span className="-mt-1"> {settings?.company?.address}</span>
           </div>
           <div>
-            <span className=""> {settings?.company?.phone}</span>
+            <span className="-mb-1"> {settings?.company?.phone}</span>
           </div>
+          { settings?.company?.notes && (
+            <div>
+              <span className="!-mt-3 text-xs"> {settings?.company?.notes}</span>
+            </div>
+          )}
         </div>
       </div>
-      <div className="border-t-2 border-gray-900 -mt-4"></div>
+      <div className="border-t-2 border-gray-900"></div>
       <div className='flex justify-between'>
-        <h3 className="">Branch: <span className='font-bold'>{settings?.branch?.name}</span></h3>
+        <h3 className="text-xs"> Branch: <span className='font-bold text-xs'>{settings?.branch?.name}</span></h3>
         <div >
           <span className="text-xs">Printed At:</span>{' '}
           <span className="text-xs">{chartDateTime(new Date().toISOString())}</span>
-          
         </div>
       </div>
-      <div className="">Address: <span className='font-bold'>{settings?.branch?.address}</span></div>
+      <div className="-mt-1 text-xs">Address: <span className='font-bold text-xs'>{settings?.branch?.address}</span></div>
     </div>
   );
 };

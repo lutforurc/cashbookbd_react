@@ -25,9 +25,7 @@ const ItemChart = (user) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [ledgerId, setLedgerAccount] = useState(null);
 
-  /* ===============================
-   ✅ INITIAL LOAD
-  ================================= */
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
 
@@ -78,8 +76,6 @@ const ItemChart = (user) => {
     setLedgerAccount(option.value);
   };
 
-
-
   /* ===============================
    ✅ UI
   ================================= */
@@ -98,7 +94,7 @@ const ItemChart = (user) => {
               <BranchDropdown
                 defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
+                className="w-full font-medium text-sm h-9.5"
                 branchDdl={dropdownData}
               />
             </div>

@@ -14,12 +14,15 @@ import { Navigate, useParams } from 'react-router-dom';
 import { warrantyType } from '../../utils/fields/DataConstant';
 import { FiSave } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { fetchBrandDdl } from './brand/brandSlice';
+import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 
 interface productItem {
   id: string | number;
   product_id: string;
   name: string;
   description: string;
+  manufacture_id: string | number;
   category_id: string | number;
   product_type: string | number;
   purchase_price: string | number;
@@ -34,6 +37,13 @@ const AddProduct = () => {
   const [search, setSearch] = useState('');
   const category = useSelector((state) => state.category);
   const product = useSelector((state) => state.product);
+  const brand = useSelector((state) => state.brand);
+  const settings = useSelector((state) => state.settings);
+  const categoryData = useSelector((state) => state.category);
+  const warrantyTypeOptions = warrantyType.map(item => ({
+    ...item,
+    id: String(item.id),
+  }));
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // const [themeMode, setThemeMode] = useState(string | null);
@@ -42,6 +52,7 @@ const AddProduct = () => {
     product_id: '',
     name: '',
     description: '',
+    manufacture_id: '',
     category_id: '',
     product_type: '',
     purchase_price: '',
@@ -51,9 +62,12 @@ const AddProduct = () => {
     order_level: '',
     warranty_type: '0', // Default to 'Not Applicable'
   };
-
   const [formData, setFormData] = useState<productItem>(initialProduct);
   const { id } = useParams();
+  const [ddlCategory, setDdlCategory] = useState<any[]>([]);
+  const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  const productTypeOptions = category?.ddlData?.data?.product_type || [];
+  const unitOptions = category?.ddlData?.data?.unit || [];
 
   useEffect(() => {
     if (product?.editData) {
@@ -65,17 +79,27 @@ const AddProduct = () => {
 
       setFormData({
         ...edit,
-        warranty_type: warrantyTypeKey || '0',
+        category_id: edit?.category_id != null ? String(edit.category_id) : '',
+        product_type: edit?.product_type != null ? String(edit.product_type) : '',
+        unit_id: edit?.unit_id != null ? String(edit.unit_id) : '',
+        manufacture_id: edit?.manufacture_id != null ? String(edit.manufacture_id) : '',
+        warranty_type: String(warrantyTypeKey || edit?.warranty_type || '0'),
         warranty_days: edit?.warranty_days?.day || '',
       });
     }
   }, [product?.editData]);
 
-  console.log('id', id);
+
+  console.log('====================================');
+  console.log("product", product);
+  console.log('====================================');
 
   useEffect(() => {
-    dispatch(editProduct(id));
-  }, [id]);
+    if (id) {
+      dispatch(editProduct(id));
+    }
+  }, [id, dispatch]);
+
 
   const handleBranchUpdate = () => {
     try {
@@ -90,10 +114,9 @@ const AddProduct = () => {
     }
   };
 
-  console.log('product', product?.editData);
-
   useEffect(() => {
     dispatch(getCategoryDdl({ search }));
+    dispatch(fetchBrandDdl());
   }, []);
 
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -115,37 +138,40 @@ const AddProduct = () => {
   };
 
 
-  const handleButtonClick = (e) => {
+  const handleButtonClick = async (e: any) => {
     e.preventDefault();
-    if (!(formData.category_id || '').trim()) {
-      toast.error('Please enter category.');
+
+    if (!formData.category_id) {
+      toast.info('Please select category.');
       return;
     } else if (!(formData.product_type || '').trim()) {
-      toast.error('Please enter product type.');
+      toast.info('Please enter product type.');
       return;
     } else if (!(formData.name || '').trim()) {
-      toast.error('Please enter valid name.');
+      toast.info('Please enter valid name.');
       return;
     } else if (!(formData.description || '').trim()) {
-      toast.error('Please enter description.');
+      toast.info('Please enter description.');
       return;
     } else if (!(formData.unit_id || '').trim()) {
-      toast.error('Please select unit.');
+      toast.info('Please select unit.');
       return;
-    } else {
-      dispatch(
-        storeProduct(formData, (d) => {
-          if (d.success) {
-            toast.success(d.message);
-            setTimeout(() => {
-              Navigate('/branch/branch-list');
-            }, 300);
-          } else {
-            toast.error(d.message);
-          }
-        }),
-      );
     }
+
+    // ✅ async/await
+    const result = await dispatch(
+      storeProduct(formData, (d: any) => {
+        if (d?.success) {
+          toast.success(d?.message);
+          setTimeout(() => {
+            navigate('/product/product-list');
+          }, 300);
+        } else {
+          toast.error(d?.message || 'Failed');
+        }
+      }),
+    );
+ 
   };
 
   const handleProductCreate = (e) => {
@@ -159,7 +185,7 @@ const AddProduct = () => {
       setFormData({
         ...formData,
         warranty_type: value,
-        warranty_days: '', // নতুন type হলে দিন আবার দিতে হবে
+        warranty_days: '',
       });
       return;
     }
@@ -179,6 +205,16 @@ const AddProduct = () => {
     }
   };
 
+  const handleCategoryChange = (selectedOption: any) => {
+    const selectedId = selectedOption?.value ?? '';
+
+    setCategoryId(selectedId);
+
+    setFormData((prev) => ({
+      ...prev,
+      category_id: selectedId,
+    }));
+  };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (formData.warranty_type === '1' || formData.warranty_type === '2') {
       // numeric only: allow digits, backspace, delete, arrows etc.
@@ -195,14 +231,93 @@ const AddProduct = () => {
     }
   };
 
-  console.log('formData?.warranty_days?', formData?.warranty_days?.['1']);
+  const brandOptions = [
+    { id: '', name: 'Not applicable' },
+    ...(brand?.brandDdl?.data || []),
+  ];
+
+  const optionsWithAll = [
+    { id: '', name: 'All Product' },
+    ...(Array.isArray(ddlCategory) ? ddlCategory : []),
+  ];
+
+  useEffect(() => {
+    if (Array.isArray(categoryData?.ddlData?.data?.category)) {
+      setDdlCategory(categoryData?.ddlData?.data?.category || []);
+      setCategoryId(categoryData.ddlData[0]?.id ?? null);
+    }
+  }, [categoryData]);
+
+  useEffect(() => {
+    setFormData((prev) => {
+      const next = { ...prev };
+      let changed = false;
+
+      if (
+        Array.isArray(productTypeOptions) &&
+        productTypeOptions.length > 0 &&
+        !productTypeOptions.some((item: any) => String(item.id) === String(prev.product_type ?? ''))
+      ) {
+        next.product_type = String(productTypeOptions[0].id);
+        changed = true;
+      }
+
+      if (
+        Array.isArray(unitOptions) &&
+        unitOptions.length > 0 &&
+        !unitOptions.some((item: any) => String(item.id) === String(prev.unit_id ?? ''))
+      ) {
+        next.unit_id = String(unitOptions[0].id);
+        changed = true;
+      }
+
+      return changed ? next : prev;
+    });
+  }, [productTypeOptions, unitOptions]);
+
+  const handleBrandChange = (selectedOption: any) => {
+  const selectedId = selectedOption?.value ?? '';
+
+  setFormData((prev) => ({
+    ...prev,
+    manufacture_id: selectedId,
+  }));
+};
+
+console.log('====================================');
+console.log("category control", settings?.data?.branch?.warranty_controll);
+console.log('====================================');
+
 
   return (
     <div>
       <HelmetTitle title={formData?.id ? 'Edit Product' : 'Add New Product'} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {category.isLoading == true ? <Loader /> : ''}
-        <DropdownCommon
+
+        <div>
+          <label htmlFor="" className='text-sm'>Select Brand</label>
+          <CategoryDropdown
+            onChange={handleBrandChange}
+            className="w-full text-sm !h-7"
+            categoryDdl={brandOptions}
+            value={formData.manufacture_id}
+          />
+        </div>
+        {categoryData.isLoading ? (
+          <Loader />
+        ) : (
+          <div>
+            <label htmlFor="" className='text-sm'>Select Category</label>
+            <CategoryDropdown
+              onChange={handleCategoryChange}
+              className="w-full text-sm !h-7"
+              categoryDdl={optionsWithAll}
+              value={formData.category_id}
+            />
+          </div>
+        )}
+        {/* <DropdownCommon
           id="category_id"
           name={'category_id'}
           label="Select Category"
@@ -210,17 +325,7 @@ const AddProduct = () => {
           className="h-[2.20rem]"
           data={category?.ddlData?.data?.category}
           defaultValue={formData?.category_id?.toString() ?? ''}
-        />
-        <DropdownCommon
-          id="product_type"
-          label="Select Product Type"
-          onChange={handleOnChange}
-          name={'product_type'}
-          className="h-[2.20rem]"
-          data={category?.ddlData?.data?.product_type}
-          defaultValue={formData?.product_type?.toString() ?? ''}
-        />
-
+        /> */}
         <InputElement
           id="name"
           value={formData.name}
@@ -261,16 +366,16 @@ const AddProduct = () => {
           onChange={handleOnChange}
         />
 
-        {category?.data?.branch?.warranty_controll ? (
+        {settings?.data?.branch?.warranty_controll ? (
           <>
             <DropdownCommon
               id="warranty_type"
               label="Select Waranty/Guaranty Type"
               onChange={handleOnChange}
               name="warranty_type"
-              className="h-[2.20rem] mt-1"
-              data={warrantyType}
-              defaultValue={formData.warranty_type.toString() || '0'}
+              className="h-[2.20rem]"
+              data={warrantyTypeOptions}
+              value={formData?.warranty_type?.toString() || '0'}
             />
             <InputElement
               id="warranty_days"
@@ -296,15 +401,31 @@ const AddProduct = () => {
         ) : (
           ''
         )}
-        <DropdownCommon
-          id="unit_id"
-          label="Select Unit"
-          onChange={handleOnChange}
-          name={'unit_id'}
-          className="h-[2.20rem]"
-          data={category?.ddlData?.data?.unit}
-          defaultValue={formData?.unit_id?.toString() ?? ''}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <div className="w-full">
+            <DropdownCommon
+              id="product_type"
+              label="Select Product Type"
+              onChange={handleOnChange}
+              name="product_type"
+              className="h-[2.20rem] w-full"
+              data={category?.ddlData?.data?.product_type}
+              value={formData?.product_type?.toString() ?? ''}
+            />
+          </div>
+
+          <div className="w-full">
+            <DropdownCommon
+              id="unit_id"
+              label="Select Unit"
+              onChange={handleOnChange}
+              name="unit_id"
+              className="h-[2.20rem] w-full"
+              data={category?.ddlData?.data?.unit}
+              value={formData?.unit_id?.toString() ?? ''}
+            />
+          </div>
+        </div>
         <InputElement
           id="order_level"
           // value={formData.order_level.toString()}
@@ -317,7 +438,7 @@ const AddProduct = () => {
         />
       </div>
       <div className="flex mt-4 justify-center items-center">
-        {product?.editData ? (
+        {id ? (
           <ButtonLoading
             onClick={handleBranchUpdate}
             buttonLoading={buttonLoading}
@@ -329,8 +450,8 @@ const AddProduct = () => {
             onClick={handleButtonClick}
             buttonLoading={buttonLoading}
             label="Save"
-            className="whitespace-nowrap text-center mr-0 p-2"
-            icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
+            className="whitespace-nowrap mr-2 py-1.5"
+            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
           />
         )}
         <Link to="/product/product-list" className="text-nowrap py-1.5">

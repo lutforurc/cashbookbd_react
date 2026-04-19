@@ -11,6 +11,9 @@ import {
   PRODUCT_STORE_ERROR,
   PRODUCT_STORE_PENDING,
   PRODUCT_STORE_SUCCESS,
+  PRODUCT_UPDATE_BY_RATE_ERROR,
+  PRODUCT_UPDATE_BY_RATE_PENDING,
+  PRODUCT_UPDATE_BY_RATE_SUCCESS,
   PRODUCT_UPDATE_ERROR,
   PRODUCT_UPDATE_PENDING,
   PRODUCT_UPDATE_SUCCESS,
@@ -21,6 +24,7 @@ import {
   API_PRODUCT_EDIT_URL,
   API_PRODUCT_LIST_URL,
   API_PRODUCT_STORE_URL,
+  API_PRODUCT_UPDATE_BY_RATE_URL,
   API_PRODUCT_UPDATE_URL,
 } from '../../services/apiRoutes';
 import { getToken } from '../../../features/authReducer';
@@ -28,6 +32,8 @@ import { getToken } from '../../../features/authReducer';
 interface productParam {
   page: number;
   perPage: number;
+  categoryId: number | string | null;
+  brandId: number | string | null;
   search: string;
 }
 interface productStoreData {
@@ -41,115 +47,169 @@ interface productStoreData {
   order_level: string;
 }
 export const getProduct =
-  ({ page, perPage, search = '' }: productParam) =>
-  (dispatch: any) => {
-    dispatch({ type: PRODUCT_LIST_PENDING });
+  ({ page, perPage, categoryId, brandId, search = '' }: productParam) =>
+    (dispatch: any) => {
+      dispatch({ type: PRODUCT_LIST_PENDING });
 
-    httpService
-      .get(
-        API_PRODUCT_LIST_URL +
-          `?page=${page}&per_page=${perPage}&search=${search}`,
-      )
-      .then((res) => {
-        let _data = res.data;
-        if (_data.success) {
-          dispatch({
-            type: PRODUCT_LIST_SUCCESS,
-            payload: _data.data.data,
-          });
-        } else {
+      httpService
+        .get(
+          API_PRODUCT_LIST_URL +
+          `?page=${page}&per_page=${perPage}&category_id=${categoryId}&brand_id=${brandId}&search=${search}`,
+        )
+        .then((res) => {
+          let _data = res.data;
+          if (_data.success) {
+            dispatch({
+              type: PRODUCT_LIST_SUCCESS,
+              payload: _data.data.data,
+            });
+          } else {
+            dispatch({
+              type: PRODUCT_LIST_ERROR,
+              payload: _data.error.message,
+            });
+          }
+        })
+        .catch((err) => {
           dispatch({
             type: PRODUCT_LIST_ERROR,
-            payload: _data.error.message,
+            payload: 'Something went wrongs!',
           });
-        }
-      })
-      .catch((err) => {
-        dispatch({
-          type: PRODUCT_LIST_ERROR,
-          payload: 'Something went wrongs!',
         });
-      });
-  };
+    };
+
+export const updateProductQtyRate = (
+  data: {
+    product_id: number;
+    branch_id: number;
+    qty: number;
+    rate: number;
+    serial_no: string;
+  }
+) => async (dispatch: any) => {
+
+  dispatch({ type: PRODUCT_UPDATE_BY_RATE_PENDING });
+
+  try {
+    const res = await httpService.post(API_PRODUCT_UPDATE_BY_RATE_URL, data);
+
+    dispatch({
+      type: PRODUCT_UPDATE_BY_RATE_SUCCESS,
+      payload: res.data.data,
+    });
+
+    return res.data;
+  } catch (error) {
+    dispatch({
+      type: PRODUCT_UPDATE_BY_RATE_ERROR,
+    });
+
+    throw error; // component catch করবে
+  }
+};
+
 
 export const getDdlProduct =
   (search = '') =>
-  async (dispatch: any) => {
-    try {
-      const token = getToken();
-      const response = await fetch(API_PRODUCT_DDL_LIST_URL + `?q=${search}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      dispatch({ type: 'SET_PRODUCT_DDL_DATA', payload: data });
-      return { payload: data.data.data }; // Ensure this is returned
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      throw error;
-    }
-  };
+    async (dispatch: any) => {
+      try {
+        const token = getToken();
+        const response = await fetch(API_PRODUCT_DDL_LIST_URL + `?q=${search}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        dispatch({ type: 'SET_PRODUCT_DDL_DATA', payload: data });
+        return { payload: data.data.data }; // Ensure this is returned
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        throw error;
+      }
+    };
 
-export const storeProduct = (data: productStoreData, callback: any) => (dispatch: any) => {
-    dispatch({ type: PRODUCT_STORE_PENDING });
-    httpService.post(API_PRODUCT_STORE_URL, data)
-      .then((res) => {
-        let _data = res.data;
-        if (_data.success) {
+export const storeProduct =
+  (data: productStoreData, callback?: (d: any) => void) =>
+    async (dispatch: any) => {
+      dispatch({ type: PRODUCT_STORE_PENDING });
+
+      try {
+        const res = await httpService.post(API_PRODUCT_STORE_URL, data);
+        const _data = res.data;
+
+        if (_data?.success) {
           dispatch({
             type: PRODUCT_STORE_SUCCESS,
-            payload: _data.data.data,
+            payload: _data?.data?.data,
           });
         } else {
           dispatch({
             type: PRODUCT_STORE_ERROR,
-            payload: _data.error.message,
+            payload: _data?.error?.message || _data?.message || 'Store failed',
           });
         }
-        if ('function' === typeof callback) {
+
+        if (typeof callback === 'function') {
           callback(_data);
         }
-      })
-      .catch((er) => {
+
+        return _data; // চাইলে component থেকে await করা যাবে
+      } catch (err: any) {
         dispatch({
           type: PRODUCT_STORE_ERROR,
-          payload: 'Something went wrong.',
+          payload:
+            err?.response?.data?.message ||
+            err?.message ||
+            'Something went wrong.',
         });
-      });
-  };
 
- 
+        const fallback = {
+          success: false,
+          message:
+            err?.response?.data?.message ||
+            err?.message ||
+            'Something went wrong.',
+        };
 
-  export const updateProduct = (data: any, callback: any) => (dispatch: any) => {
-    dispatch({ type: PRODUCT_UPDATE_PENDING });
-    httpService.post(API_PRODUCT_UPDATE_URL, data)
-      .then((res) => {
-        let _data = res.data;
-        if (_data.success) {
-          dispatch({
-            type: PRODUCT_UPDATE_SUCCESS,
-            payload: _data.data.data,
-          });
-        } else {
-          dispatch({
-            type: PRODUCT_UPDATE_ERROR,
-            payload: _data.error.message,
-          });
+        if (typeof callback === 'function') {
+          callback(fallback);
         }
-        if ('function' === typeof callback) {
-          callback(_data);
-        }
-      })
-      .catch((er) => {
+
+        return fallback;
+      }
+    };
+
+
+
+export const updateProduct = (data: any, callback: any) => (dispatch: any) => {
+  dispatch({ type: PRODUCT_UPDATE_PENDING });
+  httpService.post(API_PRODUCT_UPDATE_URL, data)
+    .then((res) => {
+      let _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: PRODUCT_UPDATE_SUCCESS,
+          payload: _data.data.data,
+        });
+      } else {
         dispatch({
           type: PRODUCT_UPDATE_ERROR,
-          payload: 'Something went wrong.',
+          payload: _data.error.message,
         });
+      }
+      if ('function' === typeof callback) {
+        callback(_data);
+      }
+    })
+    .catch((er) => {
+      dispatch({
+        type: PRODUCT_UPDATE_ERROR,
+        payload: 'Something went wrong.',
       });
-  };
+    });
+};
 
 export const editProduct = (id: number) => (dispatch: any) => {
   dispatch({ type: PRODUCT_EDIT_PENDING });
@@ -180,7 +240,8 @@ export const editProduct = (id: number) => (dispatch: any) => {
 const initialState = {
   errors: null,
   data: {},
-  editData: {},
+  dataByRate: {},
+  editData: null,
   updateData: {},
   isLoading: false,
   isUpdate: false,
@@ -192,11 +253,12 @@ const productReducer = (state = initialState, action: any) => {
     case PRODUCT_UPDATE_PENDING:
     case PRODUCT_EDIT_PENDING:
     case PRODUCT_UPDATE_PENDING:
+    case PRODUCT_UPDATE_BY_RATE_PENDING:
       return {
         ...state,
         isLoading: true,
         isUpdate: false,
-        editData: {},
+        editData: null,
       };
     case PRODUCT_STORE_PENDING:
       return {
@@ -222,7 +284,7 @@ const productReducer = (state = initialState, action: any) => {
 
     case PRODUCT_LIST_PENDING:
     case PRODUCT_LIST_DDL_PENDING:
-    case PRODUCT_EDIT_PENDING: 
+    case PRODUCT_EDIT_PENDING:
       return {
         ...state,
         isLoading: true,
@@ -252,12 +314,19 @@ const productReducer = (state = initialState, action: any) => {
       };
     case PRODUCT_LIST_SUCCESS:
     case PRODUCT_LIST_DDL_SUCCESS:
+
       return {
         ...state,
         isLoading: false,
         data: action.payload,
       };
 
+    case PRODUCT_UPDATE_BY_RATE_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        dataByRate: action.payload,
+      };
     case PRODUCT_UPDATE_ERROR:
       return {
         ...state,
@@ -278,13 +347,14 @@ const productReducer = (state = initialState, action: any) => {
     case PRODUCT_LIST_DDL_ERROR:
     case PRODUCT_EDIT_ERROR:
     case PRODUCT_EDIT_ERROR:
-      case PRODUCT_UPDATE_ERROR:
+    case PRODUCT_UPDATE_ERROR:
+    case PRODUCT_UPDATE_BY_RATE_ERROR:
       return {
         ...state,
         isLoading: false,
         errors: action.payload,
         updateData: {},
-        editData: {},
+        editData: null,
 
       };
     default:

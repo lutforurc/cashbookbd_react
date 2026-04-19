@@ -48,8 +48,7 @@ const CustomerDashboard: React.FC = () => {
   const [payment, setPayments] = useState<any[]>([]); // Make it an array from the start
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
 
-  useEffect(() => {
-    console.log(customer);
+  useEffect(() => { 
   }, [customer]);
   // Demo data
   const [profile, setProfile] = useState<CustomerProfile>({
@@ -59,7 +58,6 @@ const CustomerDashboard: React.FC = () => {
     address: '',
   });
 
-  console.log(customer);
 
   const [walletBalance] = useState<number>(10000.0);
   const [earlyDiscountEligible] = useState<boolean>(true);
@@ -74,7 +72,6 @@ const CustomerDashboard: React.FC = () => {
 
   useEffect(() => {
     const currentCustomer = customer?.me.data?.user;
-    // console.log(currentCustomer);
     setInstallments(customer?.me.data?.installments?.original?.data?.data);
 
     if (currentCustomer?.id) {
@@ -108,7 +105,6 @@ const CustomerDashboard: React.FC = () => {
     }
 
   }, [customer]);
-  console.log('Payment detailsdddd', paymentHistory);
  
 
   // Apply 'dark' class to <html> or <body> when isDark is true
@@ -130,11 +126,7 @@ const allPayments = paymentList.map((pay: any) => ({
   status: pay.installment?.status,
   invoice_no: pay.installment?.invoice_no ?? null,       // future-proof
 }));
-
-console.log("All Payments: ", allPayments);
-
-
-  // console.log( customer?.me.data?.installments?.original?.data?.data )
+ 
   const columns = [
     {
       key: 'sl_number',

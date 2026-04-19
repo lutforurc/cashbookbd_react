@@ -47,7 +47,7 @@ const Dayclose = () => {
             setNextDate(addDayInDate(settings.data.trx_dt, 1));
         }
 
-        dispatch(getSettings());
+        // dispatch(getSettings());
         
     }, [settings.data.trx_dt, dayclose?.data?.trx_date]);
 
@@ -84,7 +84,9 @@ const Dayclose = () => {
         }));
         setTimeout(() => {
             setSaveButtonLoading(false);
-        }, 1000);
+        }, 500);
+        
+        dispatch(getSettings());
     }
  
     const buttonLoading = true;

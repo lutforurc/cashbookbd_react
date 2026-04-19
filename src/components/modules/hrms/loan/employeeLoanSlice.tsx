@@ -2,7 +2,9 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import httpService from '../../../services/httpService';
 import {
   API_EMPLOYEE_DDL_SEARCH_URL,
+  API_EMPLOYEE_LOAN_BALANCE_URL,
   API_EMPLOYEE_LOAN_DISBURSEMENT_URL,
+  API_EMPLOYEE_LOAN_LEDGER_URL,
 } from '../../../services/apiRoutes';
 
 // ===== Types =====
@@ -32,17 +34,60 @@ export type LoanDisbursementResponse = {
   [key: string]: any;
 };
 
+// ✅ Loan Ledger Types
+export type LoanLedgerPayload = {
+  ledger_id: number | string;
+  startdate: string; // "DD/MM/YYYY" (Laravel: d/m/Y)
+  enddate: string; // "DD/MM/YYYY"
+};
+
+export type LoanLedgerRow = {
+  id: number | string;
+  remarks: string;
+  vr_no: string | null;
+  vr_date: string | null;
+  received_amt: number;
+  payment_amt: number;
+  balance?: number; // opening row has this
+};
+
+export type LoanLedgerData = {
+  opening: LoanLedgerRow;
+  details: LoanLedgerRow[];
+};
+
+export type LoanBalanceRow = {
+  id?: number | string;
+  employee_name?: string;
+  designation?: string;
+  total_senction?: number | string;
+  total_payment?: number | string;
+  installment?: number | string;
+  balance?: number | string;
+  [key: string]: any;
+};
+
 type Coal4State = {
   // existing (DDL)
   ddl: Coal4Item[];
   loading: boolean;
   error: string | null;
 
-  // new (Loan Disbursement)
+  // Loan Disbursement
   disbursementSubmitting: boolean;
   disbursementSuccess: boolean;
   disbursementData: LoanDisbursementResponse | null;
   disbursementError: string | null;
+
+  // ✅ Loan Ledger
+  ledgerLoading: boolean;
+  ledgerData: LoanLedgerData | null;
+  ledgerError: string | null;
+
+  // Loan Balance List
+  loanBalanceLoading: boolean;
+  loanBalanceData: LoanBalanceRow[] | null;
+  loanBalanceError: string | null;
 };
 
 const initialState: Coal4State = {
@@ -54,6 +99,14 @@ const initialState: Coal4State = {
   disbursementSuccess: false,
   disbursementData: null,
   disbursementError: null,
+
+  ledgerLoading: false,
+  ledgerData: null,
+  ledgerError: null,
+
+  loanBalanceLoading: false,
+  loanBalanceData: null,
+  loanBalanceError: null,
 };
 
 // ===== Thunk: Employee DDL Search (আগেরটাই) =====
@@ -78,7 +131,9 @@ export const employeeLoan = createAsyncThunk<
         label:
           x?.label ??
           (x?.l3_name || x?.l2_name
-            ? `${x?.name} (${x?.l3_name ?? ''}${x?.l2_name ? ' / ' + x?.l2_name : ''})`
+            ? `${x?.name} (${x?.l3_name ?? ''}${
+                x?.l2_name ? ' / ' + x?.l2_name : ''
+              })`
             : x?.name),
         ...x,
       };
@@ -95,13 +150,12 @@ export const employeeLoan = createAsyncThunk<
 });
 
 // ===== Thunk: Loan Disbursement (নতুন) =====
-export const employeeLoanDisbursement = createAsyncThunk<
-  LoanDisbursementResponse,
-  LoanDisbursementPayload,
-  { rejectValue: string }
->('employeeLoan/employeeLoanDisbursement', async (payload, thunkAPI) => {
+export const employeeLoanDisbursement = createAsyncThunk<LoanDisbursementResponse,LoanDisbursementPayload,{ rejectValue: string }>('employeeLoan/employeeLoanDisbursement', async (payload, thunkAPI) => {
   try {
-    const response = await httpService.post(API_EMPLOYEE_LOAN_DISBURSEMENT_URL, payload);
+    const response = await httpService.post(
+      API_EMPLOYEE_LOAN_DISBURSEMENT_URL,
+      payload
+    );
 
     const raw = response.data;
     const data = raw?.data?.data ?? raw?.data ?? raw ?? null;
@@ -116,19 +170,57 @@ export const employeeLoanDisbursement = createAsyncThunk<
   }
 });
 
+// ✅ Thunk: Loan Ledger (নতুন)
+export const employeeLoanLedger = createAsyncThunk<LoanLedgerData,LoanLedgerPayload,{ rejectValue: string }>('employeeLoan/employeeLoanLedger', async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_EMPLOYEE_LOAN_LEDGER_URL, payload);
+
+    const raw = response.data;
+    const data = raw?.data?.data ?? raw?.data ?? raw ?? null;
+
+    return (data ?? {}) as LoanLedgerData;
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || error?.message || 'Failed to fetch loan ledger';
+    return thunkAPI.rejectWithValue(message);
+  }
+});
+
+export const employeeLoanBalance = createAsyncThunk<
+  LoanBalanceRow[],
+  { branchId?: number | string | null; searchName?: string } | void,
+  { rejectValue: string }
+>('employeeLoan/employeeLoanBalance',
+  async (payload, thunkAPI) => {
+    try {
+      const branchId = payload && typeof payload === 'object' ? payload.branchId : null;
+      const searchName = payload && typeof payload === 'object' ? payload.searchName : '';
+      const response = await httpService.get(API_EMPLOYEE_LOAN_BALANCE_URL, {
+        params: {
+          ...(branchId ? { branch_id: branchId } : {}),
+          ...(searchName ? { searchName } : {}),
+        },
+      });
+      const raw = response.data;
+      const data = raw?.data?.data ?? raw?.data ?? raw ?? [];
+      return Array.isArray(data) ? data : [];
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || 'Failed to fetch loan balance';
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // ===== Slice =====
-const employeeLoanSlice = createSlice({
-  name: 'employeeLoan',
-  initialState,
-  reducers: {
-    // existing
+const employeeLoanSlice = createSlice({name: 'employeeLoan',initialState,reducers: { 
     clearCoal4Ddl(state) {
       state.ddl = [];
       state.error = null;
       state.loading = false;
     },
 
-    // new
+    // Loan Disbursement
     resetLoanDisbursement(state) {
       state.disbursementSubmitting = false;
       state.disbursementSuccess = false;
@@ -138,10 +230,23 @@ const employeeLoanSlice = createSlice({
     clearLoanDisbursementError(state) {
       state.disbursementError = null;
     },
+
+    // ✅ Loan Ledger
+    resetLoanLedger(state) {
+      state.ledgerLoading = false;
+      state.ledgerData = null;
+      state.ledgerError = null;
+    },
+    clearLoanLedgerError(state) {
+      state.ledgerError = null;
+    },
+    clearLoanBalanceError(state) {
+      state.loanBalanceError = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      // ===== employeeLoan (আপনার দেয়া অংশ 그대로) =====
+      // ===== employeeLoan (DDL) =====
       .addCase(employeeLoan.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -156,12 +261,11 @@ const employeeLoanSlice = createSlice({
         state.error = (action.payload as string) || 'Failed to fetch data';
       })
 
-      // ===== LoanDisbursement (নতুন যোগ) =====
+      // ===== LoanDisbursement =====
       .addCase(employeeLoanDisbursement.pending, (state) => {
         state.disbursementSubmitting = true;
         state.disbursementSuccess = false;
         state.disbursementError = null;
-        // চাইলে আগের ডাটা রেখে দিতে পারেন; আমি ক্লিন রাখলাম:
         state.disbursementData = null;
       })
       .addCase(
@@ -178,6 +282,37 @@ const employeeLoanSlice = createSlice({
         state.disbursementData = null;
         state.disbursementError =
           (action.payload as string) || 'Failed to create loan disbursement';
+      })
+
+      // ✅ ===== Loan Ledger =====
+      .addCase(employeeLoanLedger.pending, (state) => {
+        state.ledgerLoading = true;
+        state.ledgerError = null;
+        state.ledgerData = null;
+      })
+      .addCase(employeeLoanLedger.fulfilled, (state, action: PayloadAction<LoanLedgerData>) => {
+        state.ledgerLoading = false;
+        state.ledgerData = action.payload;
+      })
+      .addCase(employeeLoanLedger.rejected, (state, action) => {
+        state.ledgerLoading = false;
+        state.ledgerData = null;
+        state.ledgerError = (action.payload as string) || 'Failed to fetch loan ledger';
+      })
+
+      // ===== Loan Balance =====
+      .addCase(employeeLoanBalance.pending, (state) => {
+        state.loanBalanceLoading = true;
+        state.loanBalanceError = null;
+      })
+      .addCase(employeeLoanBalance.fulfilled, (state, action: PayloadAction<LoanBalanceRow[]>) => {
+        state.loanBalanceLoading = false;
+        state.loanBalanceData = action.payload;
+      })
+      .addCase(employeeLoanBalance.rejected, (state, action) => {
+        state.loanBalanceLoading = false;
+        state.loanBalanceData = [];
+        state.loanBalanceError = (action.payload as string) || 'Failed to fetch loan balance';
       });
   },
 });
@@ -186,6 +321,9 @@ export const {
   clearCoal4Ddl,
   resetLoanDisbursement,
   clearLoanDisbursementError,
+  resetLoanLedger,
+  clearLoanLedgerError,
+  clearLoanBalanceError,
 } = employeeLoanSlice.actions;
 
 export default employeeLoanSlice.reducer;

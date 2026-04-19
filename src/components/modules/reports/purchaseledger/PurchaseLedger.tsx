@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import React, { useEffect, useRef, useState } from 'react';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -13,13 +13,21 @@ import { getPurchaseLedger } from './purchaseLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ImagePopup from '../../../utils/others/ImagePopup';
-import { FaRotateRight } from 'react-icons/fa6';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
+import { getRelevantCoaName } from '../utils/ledgerNameResolver';
+import PurchaseLedgerPrint from './PurchaseLedgerPrint';
+import { useReactToPrint } from 'react-to-print';
+import InputElement from '../../../utils/fields/InputElement';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.purchaseLedger);
+  const settings = useSelector((state: any) => state.settings);
+  const stockReportType = settings?.data?.branch?.stock_report_type;
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
@@ -27,9 +35,19 @@ const PurchaseLedger = (user: any) => {
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
   const [productId, setProductId] = useState<number | null>(null);
+  const [selectedLedgerOption, setSelectedLedgerOption] = useState<any>(null);
+  const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [hideIcon, setHideIcon] = useState<boolean>(true);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const [perPage, setPerPage] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(12);
+  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -37,8 +55,8 @@ const PurchaseLedger = (user: any) => {
   }, []);
 
   useEffect(() => {
-    if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
-      setTableData(ledgerData?.data);
+    if (!ledgerData.isLoading) {
+      setTableData(Array.isArray(ledgerData?.data) ? ledgerData.data : []);
     }
   }, [ledgerData]);
 
@@ -66,6 +84,7 @@ const PurchaseLedger = (user: any) => {
         endDate: endD,
       }),
     );
+    setFilterOpen(false);
   };
 
   useEffect(() => {
@@ -84,15 +103,40 @@ const PurchaseLedger = (user: any) => {
   }, [branchDdlData?.protectedData]);
 
   const selectedLedgerOptionHandler = (option: any) => {
+    if (!option) {
+      setLedgerAccount(null);
+      setSelectedLedgerOption(null);
+      return;
+    }
+
     setLedgerAccount(option.value);
+    setSelectedLedgerOption({
+      value: option.value,
+      label: option.label,
+    });
   };
   const selectedProduct = (option: any) => {
     if (option === null) {
       setProductId(null); // Reset value
+      setSelectedProductOption(null);
     } else {
       setProductId(option.value); // Normal select
+      setSelectedProductOption({
+        value: option.value,
+        label: option.label,
+      });
     }
   };
+
+  const handleResetFilters = () => {
+    setLedgerAccount(null);
+    setProductId(null);
+    setSelectedLedgerOption(null);
+    setSelectedProductOption(null);
+    setFilterOpen(false);
+  };
+
+
 
   const columns = [
     {
@@ -107,11 +151,61 @@ const PurchaseLedger = (user: any) => {
       header: 'Chal. No. & Date',
       width: '120px',
       render: (row: any) => (
-        <div>
+        <div
+          className="cursor-pointer hover:underline"
+          onClick={() =>
+            handleVoucherPrint({
+              ...row,
+              vr_no: row?.vr_no ?? row?.challan_no,
+              mtm_id:
+                row?.mtm_id ??
+                row?.smtm_id ??
+                row?.mtmid ??
+                row?.mtmId ??
+                row?.mid ??
+                row?.id,
+            })
+          }
+        >
           <div>{row?.challan_no}</div>
           <div>{row?.challan_date}</div>
         </div>
       ),
+    },
+    
+    {
+      key: 'product_name',
+      header: 'Product & Details',
+      width: '100px',
+      cellClass: 'align-center',
+      render: (row: any) => {
+        const coaName = getRelevantCoaName(row);
+        return (
+          <div className="min-w-52 break-words align-top">
+            {Array.isArray(row?.purchase_master?.details) &&
+              row.purchase_master.details.length > 0 &&
+              row.purchase_master.details.map((detail: any, i: number) => {
+                const categoryName = detail?.product?.category?.name ?? "";
+                const productName = detail?.product?.name ?? "";
+                return (
+                  <div key={detail?.id ?? i} className="leading-normal">
+                    {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
+                    {productName}
+                    
+                  </div>
+                );
+              })}
+            {coaName && (
+              <div className="text-sm mt-1 font-semibold">
+                {coaName}
+              </div>
+            )}
+            { row?.purchase_master?.notes && (
+              <div>{row?.purchase_master?.notes}</div>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'vehicle_no',
@@ -121,26 +215,7 @@ const PurchaseLedger = (user: any) => {
         return (
           <div className="text-left">
             <div>{row?.purchase_master?.vehicle_no}</div>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'product_name',
-      header: 'Description',
-      width: '100px',
-      cellClass: 'align-center',
-      render: (row: any) => {
-        return (
-          <div className="min-w-52 break-words align-top">
-            {row?.purchase_master?.details?.map(
-              (detail: any, index: number) => (
-                <div key={index}>
-                  <div>{detail?.product?.name}</div>
-                </div>
-              ),
-            )}
-            <div className="">{row?.purchase_master?.notes}</div>
+            
           </div>
         );
       },
@@ -149,7 +224,7 @@ const PurchaseLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       render: (row: any) => {
         return (
           <div>
@@ -157,7 +232,7 @@ const PurchaseLedger = (user: any) => {
               (detail: any, index: number) => (
                 <div key={index}>
                   <span>
-                    {thousandSeparator(detail?.quantity, 0)}{' '}
+                    {( thousandSeparator(detail?.quantity, 2))}{' '}
                     {detail?.product?.unit?.name}
                   </span>
                 </div>
@@ -172,7 +247,7 @@ const PurchaseLedger = (user: any) => {
       key: 'rate',
       header: 'Rate',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       render: (row: any) => (
         <div>
           {row?.purchase_master?.details?.map((detail: any, index: number) => (
@@ -184,12 +259,12 @@ const PurchaseLedger = (user: any) => {
       ),
       width: '100px',
     },
-   
+
     {
       key: 'total',
       header: 'Total',
       headerClass: 'text-right',
-      cellClass: 'text-right align-center',
+      cellClass: 'text-right align-top',
       render: (row: any) => (
         <div>
           {row?.purchase_master?.details?.map((detail: any, index: number) => (
@@ -254,9 +329,6 @@ const PurchaseLedger = (user: any) => {
       },
       width: '120px',
     },
-
-
-    
     {
       key: 'voucher_image',
       header: 'Voucher',
@@ -264,7 +336,6 @@ const PurchaseLedger = (user: any) => {
       headerClass: 'text-center',
       cellClass: 'flex justify-center',
       render: (row: any) => {
-        console.log(row);
         return (
           <ImagePopup
             title={row?.remarks || ''}
@@ -276,78 +347,344 @@ const PurchaseLedger = (user: any) => {
     },
   ];
 
-const purchaseCalc = new PurchaseLedgerCalculator(tableData || []);
-const totalQuantity = purchaseCalc.getTotalQuantity();
-const totalPayment = purchaseCalc.getTotalPayment();
-const grandTotal = purchaseCalc.getGrandTotal();
-const discountTotal = purchaseCalc.getDiscountTotal();
+  const handlePrint = useReactToPrint({
+    content: () => {
+      if (!printRef.current) {
+        // alert("Nothing to print: Ref not ready");
+        return null;
+      }
+      return printRef.current;
+    },
+    documentTitle: 'Purchase Ledger',
+    // onAfterPrint: () => alert('Printed successfully!'),
+    removeAfterPrint: true,
+  });
+
+  const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    if (!Number.isFinite(v)) return;
+
+    // optional: min/max guard
+    const safe = Math.max(1, Math.min(100, v));
+    setPerPage(safe);
+  };
+
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    if (!Number.isFinite(v)) return;
+
+    // optional: min/max guard
+    const safe = Math.max(1, Math.min(100, v));
+    setFontSize(safe);
+  };
+
+  const purchaseCalc = new PurchaseLedgerCalculator(tableData || []);
+  const totalQuantity = purchaseCalc.getTotalQuantity();
+  const totalPayment = purchaseCalc.getTotalPayment();
+  const grandTotal = purchaseCalc.getGrandTotal();
+  const discountTotal = purchaseCalc.getDiscountTotal();
 
   return (
     <div className="">
       <HelmetTitle title={'Purchase Ledger'} />
-      <div className="">
-        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-4 gap-y-2 mb-2">
-          <div className="">
-            <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
-            </div>
-            <div>
-              {branchDdlData.isLoading == true ? <Loader /> : ''}
-              <BranchDropdown
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
-                branchDdl={dropdownData}
-              />
-            </div>
+      <div className="px-0 py-6 ">
+        <div className="flex flex-wrap items-start gap-3 min-[1750px]:flex-nowrap min-[1750px]:items-end">
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-0 flex-[1_1_820px]'}>
+            {useFilterMenuEnabled && (
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
+            )}
+
+            {(useFilterMenuEnabled ? filterOpen : true) && (
+              <div
+                className={
+                  useFilterMenuEnabled
+                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,360px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    : 'w-full'
+                }
+              >
+                <div
+                  className={
+                    useFilterMenuEnabled
+                      ? 'space-y-3'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-3 min-[1750px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
+                  }
+                >
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                    {branchDdlData.isLoading == true ? <Loader /> : ''}
+                    <BranchDropdown
+                      onChange={handleBranchChange}
+                      value={branchId == null ? '' : String(branchId)}
+                      className="w-full font-medium text-sm p-2 h-10"
+                      branchDdl={dropdownData}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Account</label>
+                    <DdlMultiline
+                      acType={''}
+                      onSelect={selectedLedgerOptionHandler}
+                      value={selectedLedgerOption}
+                      className="h-10"
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
+                    <div
+                      onClick={() => selectedProduct(null)}
+                      className="absolute right-2 top-9 z-10 cursor-pointer"
+                      title="Clear selected product"
+                    >
+                      {/* <FaRotateRight size={16} className="dark:text-white" /> */}
+                    </div>
+                    <ProductDropdown
+                      onSelect={selectedProduct}
+                      className="appearance-none h-9.5"
+                      value={selectedProductOption}
+                    />
+                  </div>
+
+                  <div className="block xl:hidden min-[1750px]:block">
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                    <InputDatePicker
+                      setCurrentDate={handleStartDate}
+                      className="w-full font-medium text-sm h-10"
+                      selectedDate={startDate}
+                      setSelectedDate={setStartDate}
+                    />
+                  </div>
+
+                  <div className="block md:hidden xl:hidden min-[1750px]:block">
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                    <InputDatePicker
+                      setCurrentDate={handleEndDate}
+                      className="w-full font-medium text-sm h-10"
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
+                    />
+                  </div>
+
+                  {!useFilterMenuEnabled && (
+                    <div className="hidden items-end gap-3 md:col-span-2 md:flex xl:hidden">
+                      <div className="min-w-0 flex-[1.1]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
+                        />
+                      </div>
+
+                      <div className="ml-auto flex min-w-max flex-nowrap items-end gap-2 pt-6">
+                        <ButtonLoading
+                          onClick={handleActionButtonClick}
+                          buttonLoading={buttonLoading}
+                          label="Apply" 
+                          icon={<FiCheckSquare />}
+                          className="h-10 px-6"
+                        />
+                        <ButtonLoading
+                          onClick={handleResetFilters}
+                          buttonLoading={false}
+                          label="Reset"
+                          icon=""
+                          className="h-10 px-4"
+                        />
+                        <InputElement
+                          id="perPageInline"
+                          name="perPageInline"
+                          label=""
+                          value={perPage.toString()}
+                          onChange={handlePerPageChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <InputElement
+                          id="fontSizeInline"
+                          name="fontSizeInline"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <PrintButton
+                          onClick={handlePrint}
+                          label="Print"
+                          className="h-10 px-6"
+                          disabled={!Array.isArray(tableData) || tableData.length === 0}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    className={`flex gap-2 pt-1 ${
+                      useFilterMenuEnabled
+                        ? 'justify-end'
+                        : 'hidden xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
+                    }`}
+                  >
+                    <ButtonLoading
+                      onClick={handleActionButtonClick}
+                      buttonLoading={buttonLoading}
+                      label="Apply"
+                       icon={<FiCheckSquare />}
+                      className="h-10 px-6"
+                    />
+                    <ButtonLoading
+                      onClick={handleResetFilters}
+                      buttonLoading={false}
+                      label="Reset"
+                      icon={<FiRotateCcw />}
+                      className="h-10 px-4"
+                    />
+                  </div>
+
+                  {!useFilterMenuEnabled && (
+                    <div className="hidden items-end gap-3 xl:col-span-3 xl:flex min-[1750px]:hidden">
+                      <div className="min-w-0 flex-[1.15]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleStartDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={startDate}
+                          setSelectedDate={setStartDate}
+                        />
+                      </div>
+
+                      <div className="min-w-0 flex-[1.15]">
+                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                        <InputDatePicker
+                          setCurrentDate={handleEndDate}
+                          className="w-full font-medium text-sm h-10"
+                          selectedDate={endDate}
+                          setSelectedDate={setEndDate}
+                        />
+                      </div>
+
+                      <div className="flex items-end gap-2 pt-6">
+                        <ButtonLoading
+                          onClick={handleActionButtonClick}
+                          buttonLoading={buttonLoading}
+                          label="Apply"
+                          icon={<FiCheckSquare />}
+                          className="h-10 px-6"
+                        />
+                        <ButtonLoading
+                          onClick={handleResetFilters}
+                          buttonLoading={false}
+                          label="Reset"
+                           icon={<FiRotateCcw />} 
+                          className="h-10 px-4"
+                        />
+                      </div>
+
+                      <div className="ml-auto flex items-end gap-2 pt-6">
+                        <InputElement
+                          id="perPageInlineLg"
+                          name="perPageInlineLg"
+                          label=""
+                          value={perPage.toString()}
+                          onChange={handlePerPageChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <InputElement
+                          id="fontSizeInlineLg"
+                          name="fontSizeInlineLg"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <PrintButton
+                          onClick={handlePrint}
+                          label="Print"
+                          className="h-10 px-6"
+                          disabled={!Array.isArray(tableData) || tableData.length === 0}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-          <div className="">
-            <label htmlFor="">Select Account</label>
-            <DdlMultiline acType={''} onSelect={selectedLedgerOptionHandler} />
+
+          <div className={`${useFilterMenuEnabled ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300' : 'hidden'}`}>
+            Use the filter
           </div>
-          <div className="relative">
-            <label htmlFor="">Select Product</label>
-            <div
-              className={`w-[37.6px] h-[37.5px] border-t-[0.5px] border-r-[0.5px] border-b-[0.5px] border-l-[0.5px] absolute top-6 right-0 dark:text-white text-black flex items-center justify-center text-xs z-99 cursor-pointer bg-[#fff] dark:bg-[#24303F]`}
-              onClick={() => selectedProduct(null)}
-            >
-              <FaRotateRight
-                size={20}
-                className="absolute dark:text-white  cursor-pointer"
-              />
-            </div>
-            <ProductDropdown
-              onSelect={selectedProduct}
-              className="appearance-none"
+
+          <div className={`ml-auto flex w-full flex-wrap items-end justify-end gap-2 ${useFilterMenuEnabled ? 'md:ml-auto md:w-auto' : 'md:hidden xl:hidden min-[1750px]:flex min-[1750px]:w-auto min-[1750px]:flex-nowrap'}`}>
+            {useFilterMenuEnabled && selectedLedgerOption?.label ? (
+              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <span className="truncate" title={selectedLedgerOption.label}>{selectedLedgerOption.label}</span>
+              </div>
+            ) : null}
+            {useFilterMenuEnabled && selectedProductOption?.label ? (
+              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                <span className="truncate" title={selectedProductOption.label}>{selectedProductOption.label}</span>
+              </div>
+            ) : null}
+            {!useFilterMenuEnabled && (
+              <>
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Apply"
+                  icon={<FiCheckSquare />}
+                  className="h-10 px-6 min-[1750px]:hidden"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon={<FiRotateCcw />}
+                  className="h-10 px-4 min-[1750px]:hidden"
+                />
+              </>
+            )}
+            <InputElement
+              id="perPage"
+              name="perPage"
+              label=""
+              value={perPage.toString()}
+              onChange={handlePerPageChange}
+              type="text"
+              className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
             />
-          </div>
-          <div className="sm:grid md:flex gap-x-3 ">
-            <div className="w-full">
-              <label htmlFor="">Start Date</label>
-              <InputDatePicker
-                setCurrentDate={handleStartDate}
-                className="w-full font-medium text-sm h-9"
-                selectedDate={startDate}
-                setSelectedDate={setStartDate}
-              />
-            </div>
-            <div className="w-full">
-              <label htmlFor="">End Date</label>
-              <InputDatePicker
-                setCurrentDate={handleEndDate}
-                className="font-medium text-sm w-full h-9"
-                selectedDate={endDate}
-                setSelectedDate={setEndDate}
-              />
-            </div>
-            <div className="mt-1 md:mt-6 w-full">
-              <ButtonLoading
-                onClick={handleActionButtonClick}
-                buttonLoading={buttonLoading}
-                label="Run"
-                className="pt-[0.45rem] pb-[0.45rem] w-full"
-              />
-            </div>
+            <InputElement
+              id="fontSize"
+              name="fontSize"
+              label=""
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type="text"
+              className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+            />
+            <PrintButton
+              onClick={handlePrint}
+              label="Print"
+              className="h-10 px-6"
+              disabled={!Array.isArray(tableData) || tableData.length === 0}
+            />
           </div>
         </div>
       </div>
@@ -362,9 +699,27 @@ const discountTotal = purchaseCalc.getDiscountTotal();
               <div>Total: {thousandSeparator(totalPayment, 0)}</div>
               <div>Discount: {thousandSeparator(discountTotal, 0)}</div>
               <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
+              <div>Balance: {thousandSeparator( (totalPayment - grandTotal - discountTotal), 0)}</div>
             </div>
           </div>
         )}
+      </div>
+      <div className="hidden">
+        <PurchaseLedgerPrint
+          ref={printRef}
+          rows={tableData || []}
+          startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
+          endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
+          title="Purchase Ledger"
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+        />
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+        />
+
       </div>
     </div>
   );

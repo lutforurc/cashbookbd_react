@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { employeeSalaryPaymentFull, fetchSalarySheet } from "../employee/employeeSlice";
 import { toast } from "react-toastify";
@@ -8,45 +8,49 @@ import InputElement from "../../../utils/fields/InputElement";
 import { useReactToPrint } from "react-to-print";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
-import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
+import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import Loader from "../../../../common/Loader";
 import Table from "../../../utils/others/Table";
-import EmployeePrint from "../employee/EmployeePrint";
 import YearDropdown from "../../../utils/components/YearDropdown";
 import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import SalarySheetPrint from "./SalarySheetPrint";
-import { salarySheetPrint, salaryView } from "./salarySlice";
-
+import SalaryPaymentSelectionModal from "./SalaryPaymentSelectionModal";
+import { salarySheetPrint } from "./salarySlice";
+import routes from "../../../services/appRoutes";
 
 const SalarySheet = ({ user }: any) => {
-  const employees = useSelector((state) => state.employees);
-  const salary = useSelector((state) => state.salary);
-  const branchDdlData = useSelector((state) => state.branchDdl);
+  const employees = useSelector((state: any) => state.employees);
+  const salary = useSelector((state: any) => state.salary);
+  const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
-  const dispatch = useDispatch();
+
+  const dispatch: any = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [perPage, setPerPage] = useState<number>(10);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any[]>([]);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
-  const printRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState<number>(12);
-  const navigate = useNavigate();
   const [yearId, setYearId] = useState<string>("");
   const [shouldPrint, setShouldPrint] = useState(false);
 
+  const printRef = useRef<HTMLDivElement>(null);
+
+  // ✅ Confirm Modal state
+  const [loading, setLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedSheetRow, setSelectedSheetRow] = useState<any>(null);
+  const restoredYearId = location.state?.yearId ? String(location.state.yearId) : "";
 
   useEffect(() => {
-    
     setMeta(salary?.salarySheet?.meta || []);
     setTableData(salary?.salarySheet?.data);
-    console.log('====================================');
-    console.log("meta", meta);
-    console.log('====================================');
   }, [salary]);
-
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -54,22 +58,23 @@ const SalarySheet = ({ user }: any) => {
   }, []);
 
   useEffect(() => {
-    if (yearId === "") {
-      return;
+    if (restoredYearId) {
+      setYearId(restoredYearId);
+      navigate(location.pathname, { replace: true, state: {} });
     }
+  }, [location.pathname, navigate, restoredYearId]);
+
+  useEffect(() => {
+    if (yearId === "") return;
     dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
   }, [branchId]);
 
-
-
   useEffect(() => {
-    if (branchDdlData?.protectedData?.data) if (branchDdlData?.protectedData?.data) {
+    if (branchDdlData?.protectedData?.data) {
       const baseData = branchDdlData.protectedData.data;
+
       if (settings?.data?.branch?.branch_types_id === 1) {
-        setDropdownData([
-          { id: "", name: 'All Projects' },
-          ...baseData,
-        ]);
+        setDropdownData([{ id: "", name: "All Projects" }, ...baseData]);
       } else {
         setDropdownData(baseData);
       }
@@ -86,30 +91,61 @@ const SalarySheet = ({ user }: any) => {
   };
 
   useEffect(() => {
-  if (shouldPrint && printRef.current && tableData?.length > 0) {
-    handlePrintAction();
-    setShouldPrint(false); // reset
-  }
-}, [shouldPrint, tableData]);
-
+    if (shouldPrint && printRef.current && tableData?.length > 0) {
+      handlePrintAction();
+      setShouldPrint(false);
+    }
+  }, [shouldPrint, tableData]);
 
   const branchColumn = {
-    key: 'branch_name',
-    header: 'Branch Name',
-    render: (row: any) => row.main_trx?.branch?.name ?? '',
+    key: "branch_name",
+    header: "Branch Name",
+    render: (row: any) => row.main_trx?.branch?.name ?? "",
+  };
+
+  const openPaymentModal = async (row: any) => {
+    if (!yearId) {
+      toast.info("Please select year");
+      return;
+    }
+
+    try {
+      await dispatch(salarySheetPrint(row)).unwrap();
+      setSelectedSheetRow(row);
+      setShowPaymentModal(true);
+    } catch (error: any) {
+      console.error("Salary details load error:", error);
+      toast.error(typeof error === "string" ? error : error?.message || "Salary details load failed");
+    }
+  };
+
+  const handleActionChange = async (row: any, action: string) => {
+    if (action === "payment") {
+      await openPaymentModal(row);
+      return;
+    }
+
+    if (action === "update") {
+      navigate(routes.hrms_salary_sheet_update, {
+        state: {
+          row,
+          yearId,
+        },
+      });
+    }
   };
 
   const columns = [
     {
-      key: 'serial_no',
-      header: 'Sl. No.',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
+      key: "serial_no",
+      header: "Sl. No.",
+      headerClass: "text-center",
+      cellClass: "text-center",
     },
     ...(!branchId ? [branchColumn] : []),
     {
-      key: 'payment_month',
-      header: 'Payment Month',
+      key: "payment_month",
+      header: "Payment Month",
       render: (row: any) => (
         <span
           className="text-blue-600 cursor-pointer"
@@ -120,112 +156,89 @@ const SalarySheet = ({ user }: any) => {
         </span>
       ),
     },
-
     {
-      key: 'total_employee',
-      header: 'Employees',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "total_employee",
+      header: "Employees",
+      headerClass: "text-right",
+      cellClass: "text-right",
     },
     {
-      key: 'gross_salary',
-      header: 'Gross Salary',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "gross_salary",
+      header: "Gross Salary",
+      headerClass: "text-right",
+      cellClass: "text-right",
       render: (row: any) => thousandSeparator(row.gross_salary, 0),
     },
     {
-      key: 'net_salary',
-      header: 'Net Salary',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "net_salary",
+      header: "Net Salary",
+      headerClass: "text-right",
+      cellClass: "text-right",
       render: (row: any) => thousandSeparator(row.net_salary, 0),
     },
     {
-      key: 'total_deduction',
-      header: 'Loan Ded.',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "total_deduction",
+      header: "Loan Ded.",
+      headerClass: "text-right",
+      cellClass: "text-right",
       render: (row: any) => thousandSeparator(row.total_deduction, 0),
     },
     {
-      key: 'payment_amount',
-      header: 'Payment Amount',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "payment_amount",
+      header: "Payment Amount",
+      headerClass: "text-right",
+      cellClass: "text-right",
       render: (row: any) => thousandSeparator(row.payment_amount, 0),
     },
     {
-      key: 'due',
-      header: 'Due',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: any) => thousandSeparator(Number(row.net_salary) - Number(row.payment_amount), 0),
+      key: "due",
+      header: "Due",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      render: (row: any) =>
+        thousandSeparator(Number(row.net_salary) - Number(row.payment_amount), 0),
     },
-
     {
-      key: 'action',
-      header: 'Action',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
+      key: "action",
+      header: "Action",
+      headerClass: "text-right",
+      cellClass: "text-right",
       render: (row: any) => {
-        const dueAmount = Number(row.net_salary || 0) - Number(row.payment_amount || 0);
+      const dueAmount = Number(row.net_salary || 0) - Number(row.payment_amount || 0);
+
         return (
           <>
             {dueAmount === 0 ? (
               <span className="text-green-600">Paid</span>
             ) : (
-              <button
-                onClick={() => salaryPaymentDetails(row)}
-                className="text-blue-600 hover:underline"
+              <select
+                defaultValue=""
+                onChange={(e) => {
+                  const value = e.target.value;
+                  e.target.value = "";
+                  void handleActionChange(row, value);
+                }}
+                className="min-w-28 border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               >
-                Details
-              </button>
+                <option value="">Select</option>
+                <option value="update">Update</option>
+                <option value="payment">Payment</option>
+              </select>
             )}
           </>
         );
       },
-    }
+    },
   ];
-
-
-  const salaryPaymentDetails = async (row: any) => {
-    try {
-      const response = await dispatch(
-        employeeSalaryPaymentFull({ data: row }) // ✅ FIX
-      ).unwrap();
-
-      dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
-      console.log(response);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-
-
-  const handleBranchChange = (e: any) => {
-    setBranchId(e.target.value);
-  };
-
-
 
   const handlePerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    if (!isNaN(value)) {
-      setPerPage(value);
-    } else {
-      setPerPage(10); // Reset if input is invalid
-    }
+    setPerPage(!isNaN(value) ? value : 10);
   };
+
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-
-    if (!isNaN(value)) {
-      setFontSize(value);
-    } else {
-      setFontSize(10); // Reset if input is invalid
-    }
+    setFontSize(!isNaN(value) ? value : 10);
   };
 
   const handlePrintAction = useReactToPrint({
@@ -234,46 +247,67 @@ const SalarySheet = ({ user }: any) => {
     removeAfterPrint: true,
   });
 
- const handlePrint = async (row: any) => {
-  try {
-    await dispatch(salarySheetPrint(row)).unwrap();
-
-    // 👉 শুধু flag set করবেন
-    setShouldPrint(true);
-
-  } catch (error: any) {
-    console.error("Print error:", error);
-    toast.error(
-      typeof error === "string"
-        ? error
-        : error?.message || "Salary generation failed"
-    );
-  }
-};
-
-
-
   const handleOnYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setYearId(value.toString());
+    setYearId(e.target.value.toString());
   };
 
+  const handlePrint = async (row: any) => {
+    try {
+      await dispatch(salarySheetPrint(row)).unwrap();
+      setShouldPrint(true);
+    } catch (error: any) {
+      console.error("Print error:", error);
+      toast.error(typeof error === "string" ? error : error?.message || "Salary generation failed");
+    }
+  };
+
+  const handleSelectedSalaryPayment = async (paymentRows: Array<{ id: number; pay_amount: number }>) => {
+    if (!selectedSheetRow) return;
+
+    if (paymentRows.length === 0) {
+      toast.info("Please select at least one employee");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await dispatch(
+        employeeSalaryPaymentFull({
+          data: {
+            ...selectedSheetRow,
+            salary_payment_ids: paymentRows.map((item) => item.id),
+            payment_rows: paymentRows,
+          },
+        })
+      ).unwrap();
+
+      toast.success(response?.message || "Salary payment completed successfully");
+      await dispatch(fetchSalarySheet({ branch_id: branchId, year_id: yearId })).unwrap();
+      await dispatch(salarySheetPrint(selectedSheetRow)).unwrap();
+    } catch (error: any) {
+      toast.error(error?.message || "Salary payment failed");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
-      <HelmetTitle title={'Salary Sheet'} />
-      <div className="flex overflow-x-auto justify-between mb-1">
-        <div className='flex'>
-          <div className='mr-2'>
+      <HelmetTitle title={"Salary Sheet"} />
+
+      <div className="flex overflow-x-auto justify-between mb-2">
+        <div className="flex">
+          <div className="mr-2">
             <div className="w-full">
-             
               <BranchDropdown
                 defaultValue={branchId?.toString()}
                 onChange={(e: any) => {
                   const value = e.target.value;
                   setBranchId(value === "" ? "" : Number(value));
                 }}
-                className="w-60 font-medium text-sm p-2 mr-2 "
+                className="min-w-60 font-medium text-sm p-2 mr-2 "
                 branchDdl={dropdownData}
               />
             </div>
@@ -283,36 +317,31 @@ const SalarySheet = ({ user }: any) => {
             <YearDropdown
               id="year_id"
               name="year_id"
+              value={yearId}
               className="h-[2.3rem] bg-transparent min-w-35"
               onChange={handleOnYearChange}
             />
           </div>
-          <div className="flex">
 
-            {/* <SearchInput
-              search={search}
-              setSearchValue={setSearchValue}
-              className="text-nowrap"
-            /> */}
+          <div className="flex">
             <ButtonLoading
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
+              icon=""
               className="whitespace-nowrap"
             />
           </div>
         </div>
 
-
-        <div className='flex'>
+        <div className="flex">
           <div className="mr-2">
             <InputElement
               id="perPage"
               name="perPage"
-              // label="Rows"
               value={perPage.toString()}
               onChange={handlePerPageChange}
-              type='text'
+              type="text"
               className="font-medium text-sm h-9 w-12"
             />
           </div>
@@ -320,27 +349,19 @@ const SalarySheet = ({ user }: any) => {
             <InputElement
               id="fontSize"
               name="fontSize"
-              // label="Font"
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
-              type='text'
+              type="text"
               className="font-medium text-sm h-9 w-12"
             />
           </div>
-          {/* <PrintButton
-            onClick={handlePrint}
-            label="Print"
-            className="ml-2 mr-2"
-          /> */}
         </div>
       </div>
 
       <div className="relative overflow-x-auto">
-        {employees.loading == true ? <Loader /> : ''}
+        {employees.loading === true ? <Loader /> : ""}
 
         <Table columns={columns} data={employees?.salary || []} className="" />
-
-
 
         {/* === Hidden Print Component === */}
         <div className="hidden">
@@ -350,9 +371,24 @@ const SalarySheet = ({ user }: any) => {
             meta={meta}
             rowsPerPage={perPage}
             fontSize={fontSize}
-            branchName={dropdownData?.find(b => b.id == branchId)?.name}
+            branchName={dropdownData?.find((b: any) => b.id == branchId)?.name}
+            vr_no={salary?.salarySheet?.vr_no}
+            vr_date={salary?.salarySheet?.vr_date}
           />
         </div>
+
+        <SalaryPaymentSelectionModal
+          open={showPaymentModal}
+          loading={loading}
+          rows={tableData}
+          paymentMonth={selectedSheetRow?.payment_month}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setSelectedSheetRow(null);
+          }}
+          onPrint={() => setShouldPrint(true)}
+          onSubmit={handleSelectedSalaryPayment}
+        />
       </div>
     </div>
   );

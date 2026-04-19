@@ -11,8 +11,8 @@ import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getLabourItems, getLabourLedger } from './labourLedgerSlice';
 import LabourDropdown from '../../../utils/utils-functions/LabourDropdown';
-import {formatDate} from '../../../utils/utils-functions/formatDate';
-import { FiRotateCcw, FiSave } from 'react-icons/fi';
+import { formatDate } from '../../../utils/utils-functions/formatDate';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 
 const LabourLedger = (user: any) => {
   type Entry = {
@@ -24,21 +24,26 @@ const LabourLedger = (user: any) => {
     rate: number;
     total: number;
   };
+
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.labourLedger);
-  const labourItems = useSelector((state) => state.labourLedger.labourItems); // Adjust this path as needed
+  const labourItems = useSelector((state) => state.labourLedger.labourItems);
+  const settings = useSelector((state: any) => state.settings);
+  const useFilterMenuEnabled =
+    String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
-
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
+  const [selectedLedgerLabel, setSelectedLedgerLabel] = useState('');
   const [labourId, setLabourId] = useState<number | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [selectedLabourOption, setSelectedLabourOption] = useState<any>(null); // ✅ New state for selected Labour
+  const [selectedLabourOption, setSelectedLabourOption] = useState<any>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -47,10 +52,7 @@ const LabourLedger = (user: any) => {
   }, []);
 
   useEffect(() => {
-    //  if (!ledgerData.isLoading && Array.isArray(ledgerData?.data)) {
     setTableData(ledgerData?.labourExpenses?.data?.data || []);
-    // }
-    console.log('tableData', tableData);
   }, [ledgerData]);
 
   useEffect(() => {
@@ -59,23 +61,24 @@ const LabourLedger = (user: any) => {
       branchDdlData?.protectedData?.transactionDate
     ) {
       const originalData = branchDdlData?.protectedData?.data || [];
-
       const finalData =
         originalData.length > 1
           ? [{ id: '', name: 'Select All' }, ...originalData]
           : originalData;
+
       setDropdownData(finalData);
+
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
-      const startDate = new Date(Number(year), Number(month) - 1, Number('01'));
-      const endDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(startDate);
-      setEndDate(endDate);
+      const parsedStartDate = new Date(Number(year), Number(month) - 1, Number('01'));
+      const parsedEndDate = new Date(Number(year), Number(month) - 1, Number(day));
+
+      setStartDate(parsedStartDate);
+      setEndDate(parsedEndDate);
       setBranchId(user.user.branch_id);
     }
   }, [branchDdlData?.protectedData]);
 
-  // ✅ Auto select first labour option from labourItems
   useEffect(() => {
     if (labourItems && labourItems.length > 0) {
       const first = labourItems[0];
@@ -110,108 +113,251 @@ const LabourLedger = (user: any) => {
         endDate: endD,
       }),
     );
+
+    setFilterOpen(false);
   };
 
   const handleResetFields = () => {
     setLedgerAccount(null);
+    setSelectedLedgerLabel('');
+    setSelectedLabourOption(null);
     setLabourId(null);
-    setStartDate(null);
-    setEndDate(null);
-    setSelectedLabourOption(null); // Reset selected labour option
+    setFilterOpen(false);
   };
 
   const selectedLedgerOptionHandler = (option: any) => {
-    setLedgerAccount(option.value);
+    setLedgerAccount(option?.value ? Number(option.value) : null);
+    setSelectedLedgerLabel(option?.label || '');
   };
 
   const selectedLabourOptionHandler = (option: any) => {
     setLabourId(option.value);
-    setSelectedLabourOption(option); // ✅ store entire selected object
+    setSelectedLabourOption(option);
   };
 
   return (
     <div className="">
       <HelmetTitle title={'Labour Ledger'} />
-      <div className="mb-2">
-        <div className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-6 md:gap-x-4">
-          <div className="">
-            <div>
-              <label htmlFor="">Select Branch</label>
+      <div className="py-3">
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
+            {useFilterMenuEnabled && (
+              <button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                  filterOpen
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+                }`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </button>
+            )}
+
+            {(useFilterMenuEnabled ? filterOpen : true) && (
+              <div
+                className={
+                  useFilterMenuEnabled
+                    ? 'absolute left-0 top-full z-[1000] mt-2 w-[min(92vw,340px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800'
+                    : 'w-full'
+                }
+              >
+                <div
+                  className={
+                    useFilterMenuEnabled
+                      ? 'space-y-3'
+                      : 'grid grid-cols-3 items-end gap-3'
+                  }
+                >
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Select Branch
+                    </label>
+                    {branchDdlData.isLoading === true ? <Loader /> : ''}
+                    <BranchDropdown
+                      onChange={handleBranchChange}
+                      value={branchId == null ? '' : String(branchId)}
+                      className="w-full font-medium text-sm p-2 h-10"
+                      branchDdl={dropdownData}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Select Account
+                    </label>
+                    <DdlMultiline
+                      onSelect={selectedLedgerOptionHandler}
+                      className="w-full font-medium text-sm h-10"
+                      acType={''}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Select Labour
+                    </label>
+                    <LabourDropdown
+                      value={selectedLabourOption}
+                      onSelect={selectedLabourOptionHandler}
+                      className="w-full font-medium text-sm h-10"
+                    />
+                  </div>
+
+                  {useFilterMenuEnabled && (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Start Date
+                      </label>
+                      <InputDatePicker
+                        setCurrentDate={handleStartDate}
+                        className="font-medium text-sm w-full h-10"
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
+                      />
+                    </div>
+                  )}
+
+                  {useFilterMenuEnabled && (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        End Date
+                      </label>
+                      <InputDatePicker
+                        setCurrentDate={handleEndDate}
+                        className="w-full font-medium text-sm h-10"
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
+                      />
+                    </div>
+                  )}
+
+                  <div
+                    className={`flex gap-2 pt-1 ${
+                      useFilterMenuEnabled
+                        ? 'justify-end'
+                        : 'hidden'
+                    } ${useFilterMenuEnabled ? '' : 'md:col-span-2 xl:col-span-1'}`}
+                  >
+                    <ButtonLoading
+                      onClick={handleActionButtonClick}
+                      buttonLoading={buttonLoading}
+                      label="Apply"
+                      icon={<FiCheckSquare />}
+                      className="h-10 px-6"
+                    />
+                    <ButtonLoading
+                      onClick={handleResetFields}
+                      buttonLoading={false}
+                      label="Reset"
+                      className="h-10 px-4"
+                      icon={<FiRotateCcw />}
+                    />
+
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+            <div
+              className={`${
+                useFilterMenuEnabled
+                  ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300'
+                  : 'hidden'
+              }`}
+            >
+              Use the filter
             </div>
-            <div>
-              {branchDdlData.isLoading === true ? <Loader /> : ''}
-              <BranchDropdown
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-2"
-                branchDdl={dropdownData}
+
+          {useFilterMenuEnabled ? (
+            <div className="ml-auto flex items-end gap-2">
+              {selectedLedgerLabel ? (
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <span className="truncate" title={selectedLedgerLabel}>{selectedLedgerLabel}</span>
+                </div>
+              ) : null}
+              {selectedLabourOption?.label ? (
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <span className="truncate" title={selectedLabourOption.label}>{selectedLabourOption.label}</span>
+                </div>
+              ) : null}
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={buttonLoading}
+                label="Run"
+                icon={<FiCheckSquare />}
+                className="h-10 px-6"
               />
             </div>
-          </div>
-
-          <div className="">
-            <label htmlFor="">Select Account</label>
-            <DdlMultiline
-              onSelect={selectedLedgerOptionHandler}
-              className="w-full font-medium text-sm"
-              acType={''}
-            />
-          </div>
-
-          <div className="">
-            <label htmlFor="">Select Labour</label>
-            <LabourDropdown
-              value={selectedLabourOption} // ✅ pass selected option
-              onSelect={selectedLabourOptionHandler}
-            />
-          </div>
-
-          <div className="w-full">
-            <label htmlFor="">Start Date</label>
-            <InputDatePicker
-              setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full p-2"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="">End Date</label>
-            <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="w-full font-medium text-sm p-2"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-            />
-          </div>
-          <div className="mt-2 md:mt-6 flex flex-wrap w-full">
-            <button
-              onClick={handleResetFields}
-              className="w-1/6 flex justify-center h-9 items-center pt-1 pb-1 bg-blue-600 text-white hover:bg-blue-700"
-            >
-              <FiRotateCcw className="text-white w-6 h-6 ml-2 mr-2" />
-            </button>
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
-              label="Run"
-              className="w-5/6 pt-1 pb-1 px-4 h-9"
-            />
-          </div>
+          ) : (
+            <>
+              <div className="flex flex-nowrap items-end gap-3 overflow-x-auto xl:ml-auto">
+                <div className="min-w-[220px]">
+                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Start Date
+                  </label>
+                  <InputDatePicker
+                    setCurrentDate={handleStartDate}
+                    className="w-full xl:!w-30 font-medium text-sm h-10"
+                    selectedDate={startDate}
+                    setSelectedDate={setStartDate}
+                  />
+                </div>
+                <div className="min-w-[220px]">
+                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                    End Date
+                  </label>
+                  <InputDatePicker
+                    setCurrentDate={handleEndDate}
+                    className="w-full xl:!w-30 font-medium text-sm h-10"
+                    selectedDate={endDate}
+                    setSelectedDate={setEndDate}
+                  />
+                </div>
+                <div className="flex flex-nowrap items-end gap-2">
+                  <ButtonLoading
+                    onClick={handleActionButtonClick}
+                    buttonLoading={buttonLoading}
+                    label="Run"
+                    icon={<FiCheckSquare />}
+                    className="h-10 px-6"
+                  />
+                  <ButtonLoading
+                    onClick={handleActionButtonClick}
+                    buttonLoading={buttonLoading}
+                    label="Apply"
+                    className="h-10 px-6"
+                    icon={<FiCheckSquare />}
+                  />
+                  <ButtonLoading
+                    onClick={handleResetFields}
+                    buttonLoading={false}
+                    label="Reset"
+                    className="h-10 px-4"
+                    icon={<FiRotateCcw />}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
+
       <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
         {Object.keys(tableData).length > 0 ? (
           Object.entries(tableData).map(([branchName, groupData]) => {
-            // ✅ Branch Grand Total Calculation
             const branchTotal = Object.values(groupData)
               .flat()
               .reduce((sum, item: Entry) => sum + (item.total || 0), 0);
 
             return (
               <div key={branchName}>
-                <h2 className="text-lg font-bold mt-6 text-indigo-600 dark:text-indigo-400 ml-2">
+                <h2 className="ml-2 mt-6 text-lg font-bold text-indigo-600 dark:text-indigo-400">
                   {branchName}
                 </h2>
 
@@ -224,70 +370,59 @@ const LabourLedger = (user: any) => {
 
                   return (
                     <div key={groupName} className="ml-2 mt-4">
-                      <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      <h3 className="mb-2 text-md font-semibold text-gray-700 dark:text-gray-300">
                         {groupName}
                       </h3>
-                      {/* Responsive Table Wrapper */}
-                      <div className="overflow-x-auto rounded-md shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div className="overflow-x-auto rounded-md border border-gray-200 shadow-sm dark:border-gray-700">
                         <div className="min-w-[640px]">
-                          {/* Header */}
-                          <div className="flex bg-gray-100 dark:bg-gray-700 text-xs sm:text-sm uppercase text-gray-600 dark:text-gray-300 font-semibold">
-                            <div className="px-3 py-3 w-1/6 text-center">VR No</div>
-                            <div className="px-3 py-3 w-1/6">VR No</div>
-                            <div className="px-3 py-3 w-1/6">Date</div>
-                            <div className="px-3 py-3 w-1/6">Description</div>
-                            <div className="px-3 py-3 w-1/6 text-right">
-                              Qty
-                            </div>
-                            <div className="px-3 py-3 w-1/6 text-right">
-                              Rate
-                            </div>
-                            <div className="px-3 py-3 w-1/6 text-right">
-                              Total
-                            </div>
+                          <div className="flex bg-gray-100 text-xs font-semibold uppercase text-gray-600 dark:bg-gray-700 dark:text-gray-300 sm:text-sm">
+                            <div className="w-1/6 px-3 py-3 text-center">SL</div>
+                            <div className="w-1/6 px-3 py-3">VR No</div>
+                            <div className="w-1/6 px-3 py-3">Date</div>
+                            <div className="w-1/6 px-3 py-3">Description</div>
+                            <div className="w-1/6 px-3 py-3 text-right">Qty</div>
+                            <div className="w-1/6 px-3 py-3 text-right">Rate</div>
+                            <div className="w-1/6 px-3 py-3 text-right">Total</div>
                           </div>
-                          {/* Body */}
-                          <div className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+
+                          <div className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                             {entries.map((item, idx) => (
                               <div
                                 key={idx}
-                                className="flex flex-wrap sm:flex-nowrap hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors text-sm text-gray-700 dark:text-gray-300"
+                                className="flex flex-wrap text-sm text-gray-700 transition-colors hover:bg-indigo-50 dark:text-gray-300 dark:hover:bg-gray-700 sm:flex-nowrap"
                               >
-                                <div className="px-3 py-2 w-full sm:w-1/6 whitespace-nowrap flex items-center justify-center">
+                                <div className="flex w-full items-center justify-center whitespace-nowrap px-3 py-2 sm:w-1/6">
                                   {idx + 1}
                                 </div>
-                                <div className="px-3 py-2 w-full sm:w-1/6 whitespace-nowrap flex items-center">
+                                <div className="flex w-full items-center whitespace-nowrap px-3 py-2 sm:w-1/6">
                                   {item.vr_no}
                                 </div>
-                                <div className="px-3 py-2 w-full sm:w-1/6 whitespace-nowrap flex items-center">
+                                <div className="flex w-full items-center whitespace-nowrap px-3 py-2 sm:w-1/6">
                                   {formatDate(item.vr_date)}
                                 </div>
-                                <div className="px-3 py-2 w-full sm:w-1/6 whitespace-nowrap flex flex-col">
-                                  <span className="text-gray-500 dark:text-gray-400 text-xs block font-bold">
+                                <div className="flex w-full flex-col whitespace-nowrap px-3 py-2 sm:w-1/6">
+                                  <span className="block text-xs font-bold text-gray-500 dark:text-gray-400">
                                     {item.coa4_name}
                                   </span>
-                                  <span className="text-gray-500 dark:text-gray-400 text-xs whitespace-normal break-words">
+                                  <span className="break-words whitespace-normal text-xs text-gray-500 dark:text-gray-400">
                                     {item.note}
                                   </span>
                                 </div>
-                                <div className="px-3 py-2 w-full sm:w-1/6 whitespace-nowrap flex items-center justify-end">
+                                <div className="flex w-full items-center justify-end whitespace-nowrap px-3 py-2 sm:w-1/6">
                                   {thousandSeparator(item.qty, 2)}
                                 </div>
-                                <div className="px-3 py-2 w-full sm:w-1/6 whitespace-nowrap flex items-center justify-end">
+                                <div className="flex w-full items-center justify-end whitespace-nowrap px-3 py-2 sm:w-1/6">
                                   {thousandSeparator(item.rate, 2)}
                                 </div>
-                                <div className="px-3 py-2 w-full sm:w-1/6 whitespace-nowrap flex items-center justify-end">
+                                <div className="flex w-full items-center justify-end whitespace-nowrap px-3 py-2 sm:w-1/6">
                                   {thousandSeparator(item.total, 0)}
                                 </div>
                               </div>
                             ))}
 
-                            {/* Group Total Row */}
-                            <div className="flex bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 font-semibold text-sm">
-                              <div className="px-3 py-2 w-4/5 text-right">
-                                Total:
-                              </div>
-                              <div className="px-3 py-2 w-1/5 text-right">
+                            <div className="flex border-t border-gray-200 bg-gray-50 text-sm font-semibold dark:border-gray-700 dark:bg-gray-900">
+                              <div className="w-4/5 px-3 py-2 text-right">Total:</div>
+                              <div className="w-1/5 px-3 py-2 text-right">
                                 {thousandSeparator(groupTotal, 0)}
                               </div>
                             </div>
@@ -298,12 +433,11 @@ const LabourLedger = (user: any) => {
                   );
                 })}
 
-                {/* ✅ Branch Grand Total */}
-                <div className="ml-2 flex bg-indigo-100 dark:bg-gray-900 border-t border-indigo-300 dark:border-gray-700 font-bold text-sm mt-2 rounded-md">
-                  <div className="px-3 py-2 w-4/5 text-right text-indigo-700 dark:text-indigo-400">
+                <div className="ml-2 mt-2 flex rounded-md border-t border-indigo-300 bg-indigo-100 text-sm font-bold dark:border-gray-700 dark:bg-gray-900">
+                  <div className="w-4/5 px-3 py-2 text-right text-indigo-700 dark:text-indigo-400">
                     Grand Total for {branchName}:
                   </div>
-                  <div className="px-3 py-2 w-1/5 text-right text-indigo-700 dark:text-indigo-400">
+                  <div className="w-1/5 px-3 py-2 text-right text-indigo-700 dark:text-indigo-400">
                     {thousandSeparator(Number(branchTotal), 0)}
                   </div>
                 </div>
@@ -311,9 +445,9 @@ const LabourLedger = (user: any) => {
             );
           })
         ) : !ledgerData.isLoading ? (
-          <div className="overflow-x-auto rounded-md shadow-sm border border-gray-200 dark:border-gray-700 mt-4 ">
+          <div className="mt-4 overflow-x-auto rounded-md border border-gray-200 shadow-sm dark:border-gray-700">
             <div className="min-w-[640px] bg-white dark:bg-gray-800">
-              <div className="flex justify-center items-center h-20 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex h-20 items-center justify-center text-sm text-gray-500 dark:text-gray-400">
                 No data found
               </div>
             </div>

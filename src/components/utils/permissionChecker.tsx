@@ -12,5 +12,5 @@ export const hasPermission = (permissions: Permission[] = [], permissionToCheck:
   if (!Array.isArray(permissions)) { 
     return false;
   }
-  return permissions.some((permission) => permission.name === permissionToCheck);
+  return permissions.some((permission) => permission.name === permissionToCheck || permission.name === '*');
 };

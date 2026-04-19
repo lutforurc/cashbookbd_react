@@ -46,6 +46,7 @@ export const moneySpellFormat = [
 export const printPadHeading = [
   { id: 1, name: 'Branch Pad Heading' },
   { id: 2, name: 'Company Pad Heading' },
+  { id: 3, name: 'Custom Image Pad' },
 ];
 
 export const printerSettings = [
@@ -70,6 +71,7 @@ export const businessTypes = [
   { id: 6, name: 'Commission Agent' },
   { id: 7, name: 'Construction' },
   { id: 8, name: 'Trading Business' },
+  { id: 9, name: 'Real Estate' },
 ];
 
 export const officeTypes = [

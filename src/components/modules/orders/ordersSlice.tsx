@@ -16,36 +16,39 @@ import {
   ORDER_UPDATE_SUCCESS,
 } from '../../constant/constant/constant';
 import httpService from '../../services/httpService';
-import { API_ORDERS_AVERAGE_URL, API_ORDERS_DDL_URL, API_ORDERS_LIST_URL, API_ORDERS_STORE_URL } from '../../services/apiRoutes';
+import {
+  API_ORDERS_AVERAGE_URL,
+  API_ORDERS_DDL_URL,
+  API_ORDERS_EDIT_URL,
+  API_ORDERS_LIST_URL,
+  API_ORDERS_STORE_URL,
+} from '../../services/apiRoutes';
 import { getToken } from '../../../features/authReducer';
 
 
 
 
 
-interface orderParam {
-  page: number;
-  perPage: number;
-  search: string;
+interface OrderSearchFilters {
+  orderType?: string;
+  excludeId?: string | number;
+  refDirection?: 'reference' | 'linked';
 }
-
-interface orderStoreData {
-  product_name: string;
-  product_description: string;
-  category_id: string;
-  product_type: string;
-  purchase_price: string;
-  sales_price: string;
-  unit_id: string;
-  order_level: string;
-}
-
 
 // Live searching for Order
-export const getDdlOrders = (search = '') => async (dispatch: any) => {
+export const getDdlOrders =
+  (search = '', filters: OrderSearchFilters = {}) =>
+  async (dispatch: any) => {
   try {
     const token = getToken();
-    const response = await fetch(API_ORDERS_DDL_URL + `?q=${search}`,
+    const params = new URLSearchParams();
+    params.set('q', search);
+
+    if (filters.orderType) {
+      params.set('order_type', filters.orderType);
+    }
+
+    const response = await fetch(`${API_ORDERS_DDL_URL}?${params.toString()}`,
       {
         method: 'GET',
         headers: {
@@ -69,18 +72,53 @@ interface orderParam {
   perPage: number;
   search: string;
   orderType: string;
+  orderFor?: string | number;
+  productId?: string | number;
+  startDate?: string;
+  endDate?: string;
+  status?: number;
 }
 
-export const getOrders = ({ page, perPage, search = '', orderType = '' }: orderParam) =>
+export const getOrders = ({
+  page,
+  perPage,
+  search = '',
+  orderType = '',
+  orderFor = '',
+  productId = '',
+  startDate = '',
+  endDate = '',
+  status = 1,
+}: orderParam) =>
   (dispatch: any) => {
     dispatch({ type: ORDER_LIST_PENDING });
-    httpService.get(API_ORDERS_LIST_URL + `?page=${page}&per_page=${perPage}&search=${search}&order_type=${orderType}`)
+    httpService.get(
+      API_ORDERS_LIST_URL +
+        `?page=${page}&per_page=${perPage}&search=${search}&order_type=${orderType}&order_for=${orderFor}&product_id=${productId}&start_date=${startDate}&end_date=${endDate}&status=${status}`,
+    )
       .then((res) => {
         let _data = res.data;
         if (_data.success) {
+          const payloadRoot = _data.data ?? {};
+          const listPayload = payloadRoot.data ?? payloadRoot;
+          const normalizedPayload =
+            listPayload && typeof listPayload === 'object'
+              ? {
+                ...listPayload,
+                summary:
+                  payloadRoot.summary ??
+                  payloadRoot.totals ??
+                  payloadRoot.meta?.summary ??
+                  payloadRoot.meta?.totals ??
+                  listPayload.summary ??
+                  listPayload.totals ??
+                  null,
+              }
+              : listPayload;
+
           dispatch({
             type: ORDER_LIST_SUCCESS,
-            payload: _data.data.data,
+            payload: normalizedPayload,
           });
         } else {
           dispatch({
@@ -103,15 +141,17 @@ interface formData {
   order_for: string;
   product_id: string;
   order_number: string;
+  ref_order_id?: string;
   delivery_location: string;
   order_date: number;
   last_delivery_date: string;
   order_rate: string;
   total_order: string;
   order_type: string;
-  note: string;
+  status: string;
+  notes: string;
 }
-export const storeOrder = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+export const storeOrder = (data: formData, callback?: (response: any) => void) => (dispatch: any) => {
   dispatch({ type: ORDER_STORE_PENDING });
   httpService.post(API_ORDERS_STORE_URL, data)
     .then((res) => {
@@ -122,7 +162,7 @@ export const storeOrder = (data: formData, callback?: (message: string) => void)
           payload: _data.data.data,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data);
         }
       } else {
         dispatch({
@@ -130,18 +170,88 @@ export const storeOrder = (data: formData, callback?: (message: string) => void)
           payload: _data.error.message,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data);
         }
       }
     })
     .catch((err) => {
+      const fallbackMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error?.message ||
+        err?.message ||
+        'Something went wrong.';
       dispatch({
         type: ORDER_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: fallbackMessage,
       });
       if ('function' == typeof callback) {
-        callback(err.message);
+        callback({ success: false, message: fallbackMessage });
       }
+    });
+};
+
+export const editOrder = (id: string | number, callback?: (response: any) => void) => (dispatch: any) => {
+  dispatch({ type: ORDER_EDIT_PENDING });
+  httpService.get(`${API_ORDERS_EDIT_URL}${id}`)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: ORDER_EDIT_SUCCESS,
+          payload: _data.data.data,
+        });
+      } else {
+        dispatch({
+          type: ORDER_EDIT_ERROR,
+          payload: _data.error.message,
+        });
+        callback?.(_data);
+      }
+    })
+    .catch((err) => {
+      const fallbackMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error?.message ||
+        err?.message ||
+        'Something went wrong.';
+      dispatch({
+        type: ORDER_EDIT_ERROR,
+        payload: fallbackMessage,
+      });
+      callback?.({ success: false, message: fallbackMessage });
+    });
+};
+
+export const updateOrder = (data: any, callback?: (response: any) => void) => (dispatch: any) => {
+  dispatch({ type: ORDER_UPDATE_PENDING });
+  httpService.post(API_ORDERS_STORE_URL, data)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: ORDER_UPDATE_SUCCESS,
+          payload: _data.data.data,
+        });
+        callback?.(_data);
+      } else {
+        dispatch({
+          type: ORDER_UPDATE_ERROR,
+          payload: _data.error.message,
+        });
+        callback?.(_data);
+      }
+    })
+    .catch((err) => {
+      const fallbackMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error?.message ||
+        err?.message ||
+        'Something went wrong.';
+      dispatch({
+        type: ORDER_UPDATE_ERROR,
+        payload: fallbackMessage,
+      });
+      callback?.({ success: false, message: fallbackMessage });
     });
 };
 

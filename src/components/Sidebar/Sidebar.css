@@ -11,3 +11,86 @@
 .submenu.closed {
   max-height: 0;
 }
+
+.topbar-menu nav > div > ul > li {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.topbar-menu nav > div > ul > li > a {
+  border-left-width: 0 !important;
+  white-space: nowrap;
+}
+
+.topbar-menu nav > div > ul > li > a svg {
+  display: none;
+}
+
+.topbar-menu nav > div > ul > li > div {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.7rem);
+  z-index: 9999;
+  min-width: 280px;
+  max-width: 340px;
+  overflow: hidden;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  background: white;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+}
+
+.topbar-menu nav > div > ul > li > div[class*='max-h-0'] {
+  display: none;
+}
+
+.topbar-menu nav > div > ul > li > div[class*='max-h-180'] {
+  display: block;
+  overflow: hidden !important;
+  max-height: none !important;
+}
+
+.topbar-menu nav > div > ul > li > div > ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0 !important;
+  padding: 0.5rem !important;
+  background: white;
+}
+
+.topbar-menu nav > div > ul > li > div > ul > li {
+  display: block;
+  width: 100%;
+  background: white;
+}
+
+.topbar-menu nav > div > ul > li > div > ul > li > a {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  border-radius: 0.375rem;
+  padding: 0.625rem 0.875rem !important;
+  background: white;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.topbar-menu nav > div > ul > li > div > ul > li > a:hover {
+  background: rgb(241 245 249);
+}
+
+.dark .topbar-menu nav > div > ul > li > div > ul > li > a:hover {
+  background: rgb(51 65 85);
+}
+
+.dark .topbar-menu nav > div > ul > li > div {
+  border-color: rgb(51 65 85);
+  background: rgb(30 41 59);
+}
+
+.dark .topbar-menu nav > div > ul > li > div > ul,
+.dark .topbar-menu nav > div > ul > li > div > ul > li,
+.dark .topbar-menu nav > div > ul > li > div > ul > li > a {
+  background: rgb(30 41 59);
+}

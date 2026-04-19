@@ -43,16 +43,43 @@ import areaSlice from './components/modules/area/areaSlice';
 import changeVoucherDateSlice from './components/modules/change_date/changeVoucherDateSlice';
 import customerAuthReducer from './features/customerAuthReducer';
 import employeeSlice from './components/modules/hrms/employee/employeeSlice';
+import designationLevelSlice from './components/modules/hrms/designation-level/designationLevelSlice';
+import hrmDesignationSlice from './components/modules/hrms/designation/hrmDesignationSlice';
 import electronicsSalesSlice from './components/modules/invoices/sales/electronicsSalesSlice';
 import labourLedgerSlice from './components/modules/reports/ledger-labour/labourLedgerSlice';
 import requisitionSlice from './components/modules/Requisition/requisitionSlice';
 import bankReceivedReducer from './components/modules/transactions/bankreceived/bankReceivedSlice';
-import realEstateArea from './components/modules/real-estate/area/areaSlice';
+import realEstateArea from './components/modules/real-estate/area/projectAreaSlice';
 import voucherSettings from './components/modules/vr_settings/voucherSettingsSlice';
 import historySlice from './components/modules/history/historySlice';
 import salarySlice from './components/modules/hrms/salary/salarySlice';
+<<<<<<< HEAD
 import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice';
 import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
+=======
+import festivalBonusSlice from './components/modules/hrms/bonus/bonusSlice';
+import employeeLoanSlice from './components/modules/hrms/loan/employeeLoanSlice'; 
+import flatSlice from './components/modules/real-estate/building-flat/flatSlice'; 
+import realEstateProjects from './components/modules/real-estate/project/projectSlice';
+import buildingsSlice from './components/modules/real-estate/buildings/buildingsSlice';
+import unitSlice from './components/modules/real-estate/units/unitSlice';
+import brandSlice from './components/modules/product/brand/brandSlice';
+import productUnitSlice from './components/modules/product/unit/unitSlice';
+import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice';
+import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
+import profitLossSlice from './components/modules/reports/profit-loss/profitLossSlice';
+import balanceSheetSlice from './components/modules/reports/balance-sheet/balanceSheetSlice';
+import trialBalanceLevel3Slice from './components/modules/reports/trial-balance-level3/trialBalanceLevel3Slice';
+import trialBalanceLevel4Slice from './components/modules/reports/trial-balance-level4/trialBalanceLevel4Slice';
+import ledgerWithProductSlice from './components/modules/reports/ledger-with-product/ledgerWithProductSlice';
+import unitSalePaymentsSlice from './components/modules/real-estate/checks/unitSalePaymentsSlice';
+import branchTransferSlice from './components/modules/warehouse-transfer/warehouseTransferSlice';
+import branchReceivedSlice from './components/modules/warehouse-received/warehouseReceivedSlice';
+import smsSlice from './components/modules/sms/smsSlice';
+import journalSlice from './components/modules/transactions/journal/journalSlice';
+import subscriptionSlice from './components/modules/subscription/subscriptionSlice';
+
+>>>>>>> Lutfor-Rahman
 
 const store = configureStore({
   reducer: {
@@ -67,6 +94,11 @@ const store = configureStore({
     dateWiseTotal: dateWiseTotalReducer,
     branchDdl: branchDdlReducer,
     cashBook: cashBookReducer,
+    profitLoss: profitLossSlice,
+    balanceSheet: balanceSheetSlice,
+    trialBalanceLevel3: trialBalanceLevel3Slice,
+    trialBalanceLevel4: trialBalanceLevel4Slice,
+    customerSupplierStatement: ledgerWithProductSlice,
     ledger: ledgerReducer,
     labourLedger: labourLedgerSlice,
     coal1: coal1Reducer,
@@ -104,13 +136,30 @@ const store = configureStore({
     installment: installmentSlice,
     changeDate: changeVoucherDateSlice,
     employees: employeeSlice,
+    designationLevel: designationLevelSlice,
+    hrmDesignation: hrmDesignationSlice,
     requisition: requisitionSlice,
     realEstateArea: realEstateArea,
     voucherSettings: voucherSettings,
     history: historySlice,
     salary: salarySlice,
-    employeeLoan: employeeLoanSlice,
+    festivalBonus: festivalBonusSlice,
+    employeeLoan: employeeLoanSlice, 
+    realEstateProjects: realEstateProjects, 
+    flats: flatSlice, 
+    buildings: buildingsSlice,
+    buildingUnits: unitSlice,
+    brand: brandSlice,
+    productUnit: productUnitSlice,
+    unitSale: unitSaleSlice,
+    unitPayments: unitSalePaymentsSlice,
+    branchTransfer: branchTransferSlice,
+    branchReceived: branchReceivedSlice,
+    sms: smsSlice,
+    journal: journalSlice,
+    subscription: subscriptionSlice,
   },
 });
 
 export default store;
+

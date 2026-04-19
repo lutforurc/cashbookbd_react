@@ -6,11 +6,11 @@ interface Props {
   id?: string;
   label?: string;
   className?: string;
+  value?: string;
   defaultValue?: string;
   onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
-/* ===== Helper ===== */
 const getLast12MonthsData = () => {
   const months: { id: string; name: string }[] = [];
   const now = new Date();
@@ -22,7 +22,7 @@ const getLast12MonthsData = () => {
     const year = date.getFullYear();
 
     months.push({
-      id: `${month}-${year}`, // MM-YYYY
+      id: `${month}-${year}`,
       name: date
         .toLocaleString("en-US", {
           month: "long",
@@ -35,22 +35,19 @@ const getLast12MonthsData = () => {
   return months;
 };
 
-/* ===== Component ===== */
-
 const MonthDropdown: React.FC<Props> = ({
   id,
   name,
   label,
   className,
-  defaultValue = "", // ✅ empty by default
+  value,
+  defaultValue = "",
   onChange,
 }) => {
-  const monthData = useMemo(() => {
-    return [
-      { id: "", name: "Select Month" }, // ✅ empty option
-      ...getLast12MonthsData(),
-    ];
-  }, []);
+  const monthData = useMemo(
+    () => [{ id: "", name: "Select Month" }, ...getLast12MonthsData()],
+    []
+  );
 
   return (
     <DropdownCommon
@@ -58,6 +55,7 @@ const MonthDropdown: React.FC<Props> = ({
       name={name}
       label={label}
       className={className}
+      value={value}
       data={monthData}
       defaultValue={defaultValue}
       onChange={onChange}
@@ -66,5 +64,3 @@ const MonthDropdown: React.FC<Props> = ({
 };
 
 export default MonthDropdown;
-
-

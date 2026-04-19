@@ -134,6 +134,7 @@ const VoucherDelete = () => {
         loading={saveButtonLoading}
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleDeleteConfirmed}
+        className="bg-red-600 hover:bg-red-700"
       />
     </>
   );

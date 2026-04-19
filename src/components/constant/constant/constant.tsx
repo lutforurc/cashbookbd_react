@@ -175,6 +175,11 @@ export const SALES_ELECTRONICS_EDIT_PENDING = 'ELECTRONICS/SALES/edit/pending';
 export const SALES_ELECTRONICS_EDIT_SUCCESS = 'ELECTRONICS/SALES/edit/success';
 export const SALES_ELECTRONICS_EDIT_ERROR = 'ELECTRONICS/SALES/edit/error';
 
+// Electronics Sales Invoice Print
+export const SALES_ELECTRONICS_INVOICE_PRINT_PENDING = 'ELECTRONICS/SALES/invoice/print/pending';
+export const SALES_ELECTRONICS_INVOICE_PRINT_SUCCESS = 'ELECTRONICS/SALES/invoice/print/success';
+export const SALES_ELECTRONICS_INVOICE_PRINT_ERROR = 'ELECTRONICS/SALES/invoice/print/error';
+
 // Electronics Sales Update
 export const SALES_ELECTRONICS_UPDATE_PENDING = 'ELECTRONICS/SALES/update/pending';
 export const SALES_ELECTRONICS_UPDATE_SUCCESS = 'ELECTRONICS/SALES/update/success';
@@ -238,6 +243,13 @@ export const PRODUCT_EDIT_ERROR = 'PRODUCT/edit/success';
 export const PRODUCT_UPDATE_PENDING = 'PRODUCT/update/pending';
 export const PRODUCT_UPDATE_SUCCESS = 'PRODUCT/update/success';
 export const PRODUCT_UPDATE_ERROR = 'PRODUCT/update/error';
+
+
+export const PRODUCT_UPDATE_BY_RATE_PENDING = 'PRODUCT/update-by-rate/pending';
+export const PRODUCT_UPDATE_BY_RATE_SUCCESS = 'PRODUCT/update-by-rate/success';
+export const PRODUCT_UPDATE_BY_RATE_ERROR = 'PRODUCT/update-by-rate/error';
+
+
 
 export const PRODUCT_STORE_PENDING = 'PRODUCT/store/pending';
 export const PRODUCT_STORE_SUCCESS = 'PRODUCT/store/success';

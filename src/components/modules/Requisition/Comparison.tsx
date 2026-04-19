@@ -176,11 +176,7 @@ const Requisition = (user: any) => {
       width: '100px',
     },
   ];
-
-  console.log('====================================');
-  console.log('requisition.comparisonData', requisition.comparisonData);
-  console.log('====================================');
-
+ 
   return (
     <div className="">
       <HelmetTitle title={'Requisition Analysis'} />
@@ -221,6 +217,7 @@ const Requisition = (user: any) => {
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
+              icon=""
               className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
             />
           </div>

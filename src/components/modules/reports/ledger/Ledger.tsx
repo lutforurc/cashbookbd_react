@@ -19,31 +19,41 @@ import { useReactToPrint } from 'react-to-print';
 import LedgerPrint from './LedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.ledger);
   const coal4 = useSelector((state) => state.coal4);
-    const settings = useSelector((state: any) => state.settings);
+  const settings = useSelector((state: any) => state.settings);
+  const sales = useSelector((s: any) => s.electronicsSales);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
   const [branchId, setBranchId] = useState<number | null>(null);
   const [ledgerId, setLedgerAccount] = useState<number | null>(null);
+  const [selectedLedgerOption, setSelectedLedgerOption] = useState<{ value: any; label: any } | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const selectedLedgerName = selectedLedgerOption?.label?.trim() || '';
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
   }, []);
-
 
 
 
@@ -55,6 +65,8 @@ const Ledger = (user: any) => {
       setTableData([]); // safety fallback
     }
   }, [ledgerData]);
+
+
 
   const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -80,7 +92,15 @@ const Ledger = (user: any) => {
       getLedger({ branchId, ledgerId, startDate: startD, endDate: endD }),
     );
     dispatch(getCoal4ById(Number(ledgerId)));
+    setFilterOpen(false);
   };
+
+  const handleResetFilters = () => {
+    setLedgerAccount(null);
+    setSelectedLedgerOption(null);
+    setFilterOpen(false);
+  };
+
 
 
 
@@ -102,8 +122,20 @@ const Ledger = (user: any) => {
   }, [branchDdlData?.protectedData]);
 
   const selectedLedgerOptionHandler = (option: any) => {
+    if (!option) {
+      setLedgerAccount(null);
+      setSelectedLedgerOption(null);
+      return;
+    }
+
     setLedgerAccount(option.value);
+    setSelectedLedgerOption({
+      value: option.value,
+      label: option.label,
+    });
   };
+
+
 
   const columns = [
     {
@@ -125,8 +157,20 @@ const Ledger = (user: any) => {
     {
       key: 'vr_no',
       header: 'Vr No',
-      render: (row: any) => <div className="">{row.vr_no}</div>,
       width: '100px',
+      render: (row: any) => (
+        <div
+          className="cursor-pointer hover:underline"
+          onClick={() =>
+            handleVoucherPrint({
+              ...row,
+              mtm_id: row.mid,
+            })
+          }
+        >
+          {row.vr_no}
+        </div>
+      ),
     },
     {
       key: 'name',
@@ -173,6 +217,22 @@ const Ledger = (user: any) => {
       render: (row: any) => {
         return (
           <span>{row.credit > 0 ? thousandSeparator(Number(row.credit), 0) : '-'}</span>
+        );
+      },
+    },
+    {
+      key: 'running_balance',
+      header: 'Balance',
+      width: '140px',
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => {
+        return (
+          <span>
+            {row.running_balance === '' || row.running_balance === undefined
+              ? '-'
+              : thousandSeparator(Number(row.running_balance), 0)}
+          </span>
         );
       },
     },
@@ -252,84 +312,153 @@ const Ledger = (user: any) => {
   return (
     <div className="">
       <HelmetTitle title={'Ledger'} />
-      <div className="mb-2">
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
-          <div className="">
+      <div className="py-3">
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col 2xl:flex-row 2xl:items-end'}`}>
+          <FilterMenuShell
+            enabled={useFilterMenuEnabled}
+            isOpen={filterOpen}
+            onToggle={() => setFilterOpen((prev) => !prev)}
+            menuWidthClassName="w-[min(92vw,340px)]"
+            inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-4"
+          >
             <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
-            </div>
-            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
-              defaultValue={user?.user?.branch_id}
+                defaultValue={user?.user?.branch_id}
+                value={branchId == null ? '' : String(branchId)}
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-2"
+                className="w-full font-medium text-sm p-2 h-10"
                 branchDdl={branchOptions}
               />
             </div>
-          </div>
 
-          <div className="">
-            <label htmlFor="">Select Account</label>
-            <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} />
-          </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Ledger</label>
+              <DdlMultiline
+                onSelect={selectedLedgerOptionHandler}
+                value={selectedLedgerOption}
+                acType={''}
+                className="h-10"
+              />
+            </div>
 
-          <div className="w-full">
-            <label htmlFor="">Start Date</label>
-            <InputDatePicker
-              setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
-            />
-          </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+              <InputDatePicker
+                setCurrentDate={handleStartDate}
+                className="font-medium text-sm w-full h-10"
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
+              />
+            </div>
 
-          <div>
-            <label htmlFor="">End Date</label>
-            <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="w-full font-medium text-sm h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-            />
-          </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+              <InputDatePicker
+                setCurrentDate={handleEndDate}
+                className="font-medium text-sm w-full h-10"
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
+              />
+            </div>
 
-          <div className="mt-2 md:mt-0 flex">
-            <div className="mr-2">
+            <div className={`flex gap-2 pt-1 ${useFilterMenuEnabled ? 'justify-end md:col-span-2 xl:col-span-4' : 'hidden'}`}>
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={buttonLoading}
+                label="Apply" 
+                className="h-10 px-6"
+                icon={<FiCheckSquare />}
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset" 
+                icon={<FiRotateCcw />}
+                className="h-10 px-4"
+              />
+            </div>
+          </FilterMenuShell>
+
+          {useFilterMenuEnabled ? (
+            <div className="ml-auto flex items-end gap-2">
+              {selectedLedgerName ? (
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <span className="truncate" title={selectedLedgerName}>{selectedLedgerName}</span>
+                </div>
+              ) : null}
               <InputElement
                 id="perPage"
                 name="perPage"
-                label="Rows"
+                label=""
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
                 type='text'
-                className="font-medium text-sm h-9 w-12"
+                className="font-medium text-sm h-10 !w-20 text-center"
               />
-            </div>
-            <div className="mr-2">
               <InputElement
                 id="fontSize"
                 name="fontSize"
-                label="Font"
+                label=""
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type='text'
-                className="font-medium text-sm h-9 w-12"
+                className="font-medium text-sm h-10 !w-20 text-center"
+              />
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="h-10 px-6"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
               />
             </div>
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
-              label="Run"
-              className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
-            />
-            <PrintButton
-              onClick={handlePrint}
-              label="Print"
-              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
-            />
-          </div>
+          ) : (
+            <div className="flex flex-wrap items-end justify-between gap-3 2xl:ml-auto 2xl:flex-nowrap">
+              <div className="flex flex-wrap items-end gap-2">
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Apply"
+                  icon={<FiCheckSquare />}
+                  className="h-10 px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon={<FiRotateCcw />}
+                  className="h-10 px-4"
+                />
+              </div>
+              <div className="flex flex-wrap items-end gap-2 2xl:flex-nowrap">
+                <InputElement
+                  id="perPage"
+                  name="perPage"
+                  label=""
+                  value={perPage.toString()}
+                  onChange={handlePerPageChange}
+                  type='text'
+                  className="font-medium text-sm h-10 !w-20 text-center"
+                />
+                <InputElement
+                  id="fontSize"
+                  name="fontSize"
+                  label=""
+                  value={fontSize.toString()}
+                  onChange={handleFontSizeChange}
+                  type='text'
+                  className="font-medium text-sm h-10 !w-20 text-center"
+                />
+                <PrintButton
+                  onClick={handlePrint}
+                  label="Print"
+                  className="h-10 px-6"
+                  disabled={!Array.isArray(tableData) || tableData.length === 0}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div className="overflow-y-auto">
@@ -340,7 +469,7 @@ const Ledger = (user: any) => {
         <div className="hidden">
           <LedgerPrint
             ref={printRef}
-            rows={tableData || []} // আপনার data
+            rows={tableData || []}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Ledger"
@@ -350,6 +479,14 @@ const Ledger = (user: any) => {
             showBranchName={branchId === null}
           />
         </div>
+      </div>
+
+      <div className="hidden">
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+        />
       </div>
     </div>
   );

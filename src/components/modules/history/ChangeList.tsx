@@ -15,8 +15,7 @@ const ChangeList = ({ user }: any) => {
   const historyState = useSelector((state) => state.history);
   const branchDdlData = useSelector((state) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
-  const dispatch = useDispatch();
-  const [searchValue, setSearchValue] = useState('');
+  const dispatch = useDispatch(); 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);

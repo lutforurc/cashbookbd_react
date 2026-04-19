@@ -1,0 +1,305 @@
+import React from 'react';
+import dayjs from 'dayjs';
+import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
+
+type Props = {
+  data: any;
+  rowsPerPage?: number;
+  fontSize?: number;
+};
+
+const chunkRows = <T,>(data: T[], size: number): T[][] => {
+  if (!Array.isArray(data) || size <= 0) return [[]];
+  const out: T[][] = [];
+  for (let i = 0; i < data.length; i += size) {
+    out.push(data.slice(i, i + size));
+  }
+  return out;
+};
+
+const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
+  ({ data, rowsPerPage = 10, fontSize = 10 }, ref) => {
+    const purchaseMaster = data?.purchase_master;
+    const details = purchaseMaster?.details || [];
+
+    if (!purchaseMaster || !details.length) {
+      return <div ref={ref}>No purchase invoice data found</div>;
+    }
+
+    const fs = fontSize;
+    const pages = chunkRows(details, rowsPerPage);
+    const transactions = data?.acc_transaction_master || [];
+    const trxDetails = transactions.flatMap((t: any) => t?.acc_transaction_details || []);
+    const supplierFallback =
+      trxDetails.find(
+        (d: any) =>
+          Number(d?.coa4_id) === Number(purchaseMaster?.supplier_id) &&
+          d?.coa_l4?.cust_party_infos,
+      )?.coa_l4?.cust_party_infos || {};
+    const supplierName = purchaseMaster?.name || supplierFallback?.name || '-';
+    const supplierMobile = purchaseMaster?.mobile || supplierFallback?.mobile || '';
+    const supplierAddress =
+      purchaseMaster?.address ||
+      supplierFallback?.address ||
+      supplierFallback?.manual_address ||
+      '';
+
+    const totalAmount = Number(purchaseMaster?.total ?? 0);
+    const discountFromLedger = trxDetails
+      .filter((row: any) => Number(row?.coa4_id) === 40)
+      .reduce((sum: number, row: any) => sum + Number(row?.credit ?? 0), 0);
+    const discountAmount = discountFromLedger || Number(purchaseMaster?.discount ?? 0);
+    const netAmount = totalAmount - discountAmount;
+    const paidAmount = trxDetails
+      .filter((row: any) => Number(row?.coa4_id) === 17)
+      .reduce((sum: number, row: any) => sum + Number(row?.credit ?? 0), 0);
+    const dueAmount = Math.max(netAmount - paidAmount, 0);
+
+    return (
+      <div ref={ref} className="print-root text-gray-900">
+        <style>{`
+          @media print {
+            @page {
+              size: A4 portrait;
+              margin: 5mm 4mm 8mm 8mm;
+            }
+
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+
+            .print-root { padding: 0 !important; }
+
+            .print-page {
+              padding: 5mm 8mm !important;
+              min-height: calc(297mm - 5mm - 4mm - 8mm - 8mm);
+              display: flex;
+              flex-direction: column;
+            }
+
+            .page-break { page-break-after: always; }
+            .avoid-break { break-inside: avoid; }
+          }
+        `}</style>
+
+        {pages.map((pageRows, pageIndex) => (
+          <div key={pageIndex} className="print-page">
+            <PadPrinting />
+
+            <div className="mt-3 mb-3">
+              <h1
+                className="text-center font-bold leading-tight"
+                style={{ fontSize: fs + 4 }}
+              >
+                PURCHASE INVOICE
+              </h1>
+
+              <div
+                className="grid grid-cols-3 gap-2 text-xs mt-2"
+                style={{ lineHeight: 1.25 }}
+              >
+                <div className="space-y-1 col-span-2">
+                  <div style={{ fontSize: fs }}>
+                    <span className="font-semibold">Name:</span>{' '}
+                    {supplierName}
+                  </div>
+
+                  {supplierMobile && (
+                    <div style={{ fontSize: fs }}>
+                      Mobile: {String(supplierMobile).replace(/^(\d{5})(\d+)/, '$1-$2')}
+                    </div>
+                  )}
+
+                  {supplierAddress && (
+                    <div style={{ fontSize: fs }}>
+                      Address: {supplierAddress}
+                    </div>
+                  )}
+
+                  {purchaseMaster?.notes && (
+                    <div style={{ fontSize: fs }}>
+                      <span className="font-semibold">Notes:</span> {purchaseMaster.notes}
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-right space-y-1 col-span-1">
+                  <div style={{ fontSize: fs }}>
+                    <span className="font-semibold">Voucher No:</span>{' '}
+                    {data?.vr_no}
+                  </div>
+
+                  <div style={{ fontSize: fs }}>
+                    <span className="font-semibold">Date:</span>{' '}
+                    {dayjs(
+                      purchaseMaster?.invoice_date ||
+                      purchaseMaster?.transact_date ||
+                      data?.vr_date,
+                    ).format('DD/MM/YYYY')}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <table className="w-full border-collapse table-fixed">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border border-black px-2 py-1 w-10 text-center" style={{ fontSize: fs }}>
+                    #
+                  </th>
+                  <th className="border border-black px-2 py-1 text-left" style={{ fontSize: fs }}>
+                    Product
+                  </th>
+                  <th className="border border-black px-2 py-1 w-20 text-center" style={{ fontSize: fs }}>
+                    Qty
+                  </th>
+                  <th className="border border-black px-2 py-1 w-24 text-right" style={{ fontSize: fs }}>
+                    Rate
+                  </th>
+                  <th className="border border-black px-2 py-1 w-28 text-right" style={{ fontSize: fs }}>
+                    Amount
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {pageRows.map((row: any, idx: number) => {
+                  const qty = Number(row?.quantity ?? 0);
+                  const rate = Number(row?.purchase_price ?? 0);
+                  const total = qty * rate;
+
+                  return (
+                    <tr key={row?.id ?? idx} className="avoid-break">
+                      <td className="border border-black px-1 text-center" style={{ fontSize: fs }}>
+                        {pageIndex * rowsPerPage + idx + 1}
+                      </td>
+
+                      <td
+                        className="border border-black px-1"
+                        style={{ fontSize: fs, lineHeight: 1.25 }}
+                      >
+                        <div className="text-black" style={{ fontSize: fs - 1, lineHeight: 1.5 }}>
+                          {row?.product?.category?.name && <span>{row.product.category.name}</span>}
+                          {row?.product?.category?.name && <br />}
+
+                          <span>
+                            {row?.product?.brand?.name && <>{row.product.brand.name} </>}
+                            {row?.product?.name || '-'}
+                          </span>
+
+                          {row?.serial_no && (
+                            <>
+                              <br />
+                              <span>SN: {row.serial_no}</span>
+                            </>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="border border-black px-1 text-center" style={{ fontSize: fs }}>
+                        {qty}
+                      </td>
+
+                      <td className="border border-black px-1 text-right" style={{ fontSize: fs }}>
+                        {thousandSeparator(rate, 0)}
+                      </td>
+
+                      <td className="border border-black px-1 text-right" style={{ fontSize: fs }}>
+                        {thousandSeparator(total, 0)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {pageIndex === pages.length - 1 && (
+              <div className="mt-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    {purchaseMaster?.vehicle_no && (
+                      <div className="mt-2">
+                        <span
+                          className="inline-block border border-black px-2 py-1 font-semibold"
+                          style={{ fontSize: fs }}
+                        >
+                          Vehicle No: <span className="uppercase">{ formatTransportationNumber(purchaseMaster?.vehicle_no)}</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <table className="border-collapse">
+                    <tbody>
+                      <tr>
+                        <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
+                          Total Tk.
+                        </td>
+                        <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
+                          {thousandSeparator(totalAmount, 0)}
+                        </td>
+                      </tr>
+
+                      {discountAmount !== 0 && (
+                        <tr>
+                          <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                            Discount Tk.
+                          </td>
+                          <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                            (-) {thousandSeparator(discountAmount, 0)}
+                          </td>
+                        </tr>
+                      )}
+
+                      <tr>
+                        <td className="border-y border-black px-1 py-1 text-right font-semibold" style={{ fontSize: fs }}>
+                          Net Tk.
+                        </td>
+                        <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
+                          {thousandSeparator(netAmount, 0)}
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                          Paid Tk.
+                        </td>
+                        <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                          {thousandSeparator(paidAmount, 0)}
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td className="border-black px-1 py-1 text-right font-bold" style={{ fontSize: fs }}>
+                          Due Tk.
+                        </td>
+                        <td className="border-black px-1 py-1 text-right w-32 font-bold" style={{ fontSize: fs }}>
+                          {thousandSeparator(dueAmount, 0)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-auto text-xs text-right" style={{ lineHeight: 1.2 }}>
+              Page {pageIndex + 1} of {pages.length}
+            </div>
+
+            {pageIndex !== pages.length - 1 && <div className="page-break" />}
+          </div>
+        ))}
+
+        {/* <div className="mt-2 text-xs text-gray-700">
+          * This invoice is system generated.
+        </div> */}
+      </div>
+    );
+  },
+);
+
+PurchaseInvoicePrint.displayName = 'PurchaseInvoicePrint';
+
+export default PurchaseInvoicePrint;

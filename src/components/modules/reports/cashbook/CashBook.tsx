@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ButtonLoading,
   PrintButton,
@@ -9,20 +10,33 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCashBook } from './cashBookSlice';
-import { FiBook, FiCheckCircle, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheckCircle, FiCheckSquare, FiEdit, FiFilter, FiLogIn, FiRotateCcw } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
 import ImagePopup from '../../../utils/others/ImagePopup';
 import thousandSeparator from './../../../utils/utils-functions/thousandSeparator';
-import DueInstallmentsPrint from '../../installment/DueInstallmentsPrint';
-import CashBooPrint from './CashBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import CashBookPrint from './CashBookPrint';
+import { useVoucherPrint } from '../../vouchers';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import httpService from '../../../services/httpService';
+import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
+import { toast } from 'react-toastify';
+import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import { hasPermission } from '../../../utils/permissionChecker';
+import ConfirmModal from '../../../utils/components/ConfirmModalProps';
+import FilterMenuShell from '../../../utils/components/FilterMenuShell';
+import {
+  buildVoucherAutoEditState,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
+
 
 const CashBook = (user: any) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const cashBookData = useSelector((state) => state.cashBook);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -34,15 +48,33 @@ const CashBook = (user: any) => {
   const [isSelected, setIsSelected] = useState<number | string>('');
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
   const [branchPad, setBranchPad] = useState<string | null>(null);
-  const printRef = useRef<HTMLDivElement>(null);
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
+  const printRef = useRef<HTMLDivElement>(null); 
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const settings = useSelector((state: any) => state.settings);
+  const userPermissions = settings?.data?.permissions || [];
+  const useFilterMenuEnabled = String(settings?.data?.branch?.use_filter_parameter ?? '') === '1';
+  const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
 
   interface OptionType {
     value: string;
     label: string;
     additionalDetails: string;
   }
+
+  const runCashBook = () => {
+    const startD = dayjs(startDate).format('YYYY-MM-DD');
+    const endD = dayjs(endDate).format('YYYY-MM-DD');
+
+    dispatch(getCashBook({ branchId, startDate: startD, endDate: endD }));
+    setFilterOpen(false);
+  };
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -64,14 +96,12 @@ const CashBook = (user: any) => {
   const handleEndDate = (e: any) => {
     setEndDate(e);
   };
-  const handleActionButtonClick = (e: any) => {
-    console.log(user.user.branch_id);
+  const handleActionButtonClick = () => {
+    runCashBook();
+  };
 
-    const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
-    const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
-
-    dispatch(getCashBook({ branchId, startDate: startD, endDate: endD }));
-    setTableData(cashBookData?.data);
+  const handleResetFilters = () => {
+    setFilterOpen(false);
   };
 
   useEffect(() => {
@@ -90,8 +120,58 @@ const CashBook = (user: any) => {
     }
   }, [branchDdlData?.protectedData?.data]);
 
-  const handleCheckBtnClick = () => {};
-  
+  const handleApprovePrompt = (row: any) => {
+    setSelectedApprovalRow(row);
+    setShowApproveConfirm(true);
+  };
+
+  const handleApproveClick = async () => {
+    const voucherId = Number(selectedApprovalRow?.mtm_id ?? selectedApprovalRow?.mtmId ?? 0);
+
+    if (!voucherId) {
+      toast.error('Approval id not found.');
+      return;
+    }
+
+    try {
+      setApprovingId(voucherId);
+      const response = await httpService.get(`${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`);
+      const result = response?.data;
+
+      if (result === '1' || result?.success) {
+        toast.success('Voucher approved successfully.');
+        setShowApproveConfirm(false);
+        setSelectedApprovalRow(null);
+        runCashBook();
+        return;
+      }
+
+      if (result === '2') {
+        toast.error('Voucher not found.');
+        return;
+      }
+
+      toast.error(typeof result === 'string' ? result : 'Voucher approval failed.');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Voucher approval failed.');
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleEditVoucher = (row: any) => {
+    const voucherNo = String(row?.vr_no || '').trim();
+    const editTarget = getVoucherEditTarget(voucherNo);
+    const editState = buildVoucherAutoEditState(voucherNo);
+
+    if (!voucherNo || !editTarget || !editState) {
+      toast.error('Edit route not found for this voucher.');
+      return;
+    }
+
+    navigate(editTarget.route, { state: editState });
+  };
+
   const handlePrint = useReactToPrint({
     content: () => {
       if (!printRef.current) {
@@ -147,6 +227,19 @@ const CashBook = (user: any) => {
       width: '80px',
       headerClass: 'text-center',
       cellClass: 'text-center !px-2',
+      render: (row: any) => (
+        <div
+          className="cursor-pointer hover:underline"
+          onClick={() =>
+            handleVoucherPrint({
+              ...row,
+              mtm_id: row?.mtm_id ?? row?.mtmId ?? row?.mid ?? row?.id,
+            })
+          }
+        >
+          {row.vr_no}
+        </div>
+      ),
     },
     {
       key: 'nam',
@@ -154,11 +247,17 @@ const CashBook = (user: any) => {
       render: (row: any) => (
         <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
           <div className="truncate">
-            <a href="http://localhost:5173/reports/ledger" target="_blank">
-              <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
-              {row.somity ? (
-                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
-              ) : (
+	            <a href="http://localhost:5173/reports/ledger" target="_blank">
+	              <span dangerouslySetInnerHTML={{ __html: row.nam }}></span>
+	              {row?.pay_branch_name ? (
+	                <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.pay_branch_name}</p>
+	              ) : (
+	                ''
+	              )}
+                {/* text-sky-500 */}
+	              {row.somity ? (
+	                <span className="text-sm"> ({row?.somity?.idfr_code})</span>
+	              ) : (
                 ''
               )}
               {row.somity && (
@@ -222,36 +321,51 @@ const CashBook = (user: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => {
-        const isNumber =
-          row?.sl_number &&
-          !isNaN(Number(row.sl_number)) &&
-          Number(row.sl_number) > 0;
+        const voucherId = Number(row?.mtm_id ?? row?.mtmId ?? 0);
+        const isApproved = Number(row?.is_approved ?? 0) === 1;
+        const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
         return (
           <>
             {row?.vr_no ? (
               <>
-                <button
-                  onClick={() => handleCheckBtnClick()}
-                  className="cursor-pointer"
-                >
-                  {row?.is_approved ? (
-                    <FiCheckCircle className="text-green-500 font-bold" />
-                  ) : (
-                    <FiTrash2 className="text-red-500" />
-                  )}
-                </button>
-                <button
-                  onClick={() => handleCheckBtnClick()}
-                  className="text-blue-500 ml-2"
-                >
-                  <FiBook className="cursor-pointer" />
-                </button>
-                <button
-                  onClick={() => handleCheckBtnClick()}
-                  className="text-blue-500 ml-2"
-                >
-                  <FiEdit className="cursor-pointer" />
-                </button>
+                {canShowApproveAction ? (
+                  <button
+                    onClick={() => !isApproved && approvingId !== voucherId && handleApprovePrompt(row)}
+                    className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
+                    title={
+                      isApproved
+                        ? `Approved${row?.approved_by ? ` by ${row.approved_by}` : ''}`
+                        : 'Approve voucher'
+                    }
+                    disabled={isApproved || approvingId === voucherId}
+                  >
+                    {isApproved ? (
+                      <FiCheckCircle className="text-green-500 font-bold" />
+                    ) : (
+                      <FiLogIn className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`} />
+                    )}
+                  </button>
+                ) : null}
+                {
+                hasPermission(userPermissions, 'sales.edit') || 
+                hasPermission(userPermissions, 'cash.received.edit') ||
+                hasPermission(userPermissions, 'cash.payment.edit') 
+                && (
+                  <>
+                    <button
+                      onClick={() => {}}
+                      className="text-blue-500 ml-2"
+                    >
+                      <FiBook className="cursor-pointer" />
+                    </button>
+                    <button
+                      onClick={() => handleEditVoucher(row)}
+                      className="text-blue-500 ml-2"
+                    >
+                      <FiEdit className="cursor-pointer" />
+                    </button>
+                  </>
+                )}
               </>
             ) : (
               ''
@@ -262,99 +376,215 @@ const CashBook = (user: any) => {
     },
   ];
 
+
   return (
     <div className="">
       <HelmetTitle title={'Cash Book'} />
-      <div className="flex justify-between mb-1">
+      <div className="py-3">
         {selectedOption && (
           <div className="mt-4">
             <p>Selected:</p>
             <p className="font-bold">{selectedOption.label}</p>
           </div>
         )}
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 w-full  gap-2">
-          <div>
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
+          <FilterMenuShell
+            enabled={useFilterMenuEnabled}
+            isOpen={filterOpen}
+            onToggle={() => setFilterOpen((prev) => !prev)}
+            menuWidthClassName="w-[min(92vw,320px)]"
+            inlineClassName="grid grid-cols-3 items-end gap-3"
+          >
             <div>
-              {' '}
-              <label htmlFor="">Select Branch</label>
-            </div>
-            <div className="w-full">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
               {branchDdlData.isLoading == true ? <Loader /> : ''}
               <BranchDropdown
                 defaultValue={user?.user?.branch_id}
+                value={branchId == null ? '' : String(branchId)}
                 onChange={handleBranchChange}
-                className="w-60 font-medium text-sm p-1.5 "
+                className="w-full font-medium text-sm p-2 h-10"
                 branchDdl={dropdownData}
               />
             </div>
-          </div>
-          <div className="w-full">
-            <label htmlFor="">Start Date</label>
-            <InputDatePicker
-              setCurrentDate={handleStartDate}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
-            />
-          </div>
-          <div className="w-full">
-            <label htmlFor="">End Date</label>
-            <InputDatePicker
-              setCurrentDate={handleEndDate}
-              className="font-medium text-sm w-full h-9"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-            />
-          </div>
-          <div className="flex w-full">
-            <div className="mr-2"> 
-              <InputElement
-                id="perPage"
-                name="perPage"
-                label="Rows"
-                value={perPage.toString()}
-                onChange={handlePerPageChange}
-                type='text'
-                className="font-medium text-sm h-9 w-12"
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+              <InputDatePicker
+                setCurrentDate={handleStartDate}
+                className="font-medium text-sm w-full h-10"
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
               />
             </div>
-            <div className="mr-2"> 
-              <InputElement
-                id="fontSize"
-                name="fontSize"
-                label="Font"
-                value={fontSize.toString()}
-                onChange={handleFontSizeChange}
-                type='text'
-                className="font-medium text-sm h-9 w-12"
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+              <InputDatePicker
+                setCurrentDate={handleEndDate}
+                className="font-medium text-sm w-full h-10"
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
               />
             </div>
-            <ButtonLoading
-              onClick={handleActionButtonClick}
-              buttonLoading={buttonLoading}
-              label="Run"
-              className="mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
-            />
-            <PrintButton 
-              onClick={handlePrint}
-              label=""
-              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
-            />
-          </div>
+
+            <div className={`flex gap-2 pt-1 ${useFilterMenuEnabled ? 'justify-end md:col-span-2 xl:col-span-4' : 'hidden'}`}>
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={buttonLoading}
+                label="Apply"
+                icon={<FiCheckSquare />}
+                className="h-10 px-6"
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset"
+                icon={<FiRotateCcw />}
+                className="h-10 px-4"
+              />
+            </div>
+          </FilterMenuShell>
+
+          {useFilterMenuEnabled ? (
+            <div className="ml-auto flex items-end gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="w-28">
+                  <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                    Rows
+                  </label>
+                  <InputElement
+                    id="perPage"
+                    name="perPage"
+                    label=""
+                    value={perPage.toString()}
+                    onChange={handlePerPageChange}
+                    type='text'
+                    className="font-medium text-sm h-10 !w-full text-center"
+                  />
+                </div>
+
+                <div className="w-28">
+                  <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                    Font
+                  </label>
+                  <InputElement
+                    id="fontSize"
+                    name="fontSize"
+                    label=""
+                    value={fontSize.toString()}
+                    onChange={handleFontSizeChange}
+                    type='text'
+                    className="font-medium text-sm h-10 !w-full text-center"
+                  />
+                </div>
+              </div>
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="h-10 px-6"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
+              <div className="flex flex-nowrap items-end gap-2">
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Apply"
+                  icon={<FiCheckSquare />}
+                  className="h-10 px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon={<FiRotateCcw />}
+                  className="h-10 px-4"
+                />
+              </div>
+              <div className="flex flex-nowrap items-end justify-start gap-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="w-28">
+                    <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                      Rows
+                    </label>
+                    <InputElement
+                      id="perPage"
+                      name="perPage"
+                      label=""
+                      value={perPage.toString()}
+                      onChange={handlePerPageChange}
+                      type='text'
+                      className="font-medium text-sm h-10 !w-full text-center"
+                    />
+                  </div>
+
+                  <div className="w-28">
+                    <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
+                      Font
+                    </label>
+                    <InputElement
+                      id="fontSize"
+                      name="fontSize"
+                      label=""
+                      value={fontSize.toString()}
+                      onChange={handleFontSizeChange}
+                      type='text'
+                      className="font-medium text-sm h-10 !w-full text-center"
+                    />
+                  </div>
+                </div>
+                <PrintButton
+                  onClick={handlePrint}
+                  label="Print"
+                  className="h-10 px-6"
+                  disabled={!Array.isArray(tableData) || tableData.length === 0}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div className="overflow-y-auto">
         {cashBookData.isLoading ? <Loader /> : ''}
         <Table columns={columns} data={tableData || []} />
 
+        <ConfirmModal
+          show={showApproveConfirm}
+          title="Confirm Voucher Approval"
+          message={
+            <div className="space-y-2">
+              <p>Are you sure you want to approve voucher</p>
+              <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
+            </div>
+          }
+          confirmLabel="Confirm"
+          cancelLabel="Cancel"
+          loading={approvingId === Number(selectedApprovalRow?.mtm_id ?? selectedApprovalRow?.mtmId ?? 0)}
+          onCancel={() => {
+            if (approvingId) return;
+            setShowApproveConfirm(false);
+            setSelectedApprovalRow(null);
+          }}
+          onConfirm={handleApproveClick}
+          className="bg-green-600 hover:bg-sky-600"
+        />
+
         {/* === Hidden Print Component === */}
         <div className="hidden">
           <CashBookPrint
             ref={printRef}
-            rows={tableData || []} 
+            rows={tableData || []}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Cash Book"
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
+          />
+
+          <VoucherPrintRegistry
+            ref={voucherRegistryRef}
             rowsPerPage={Number(perPage)}
             fontSize={Number(fontSize)}
           />

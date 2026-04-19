@@ -4,18 +4,28 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUser } from './userSlice';
 import Loader from '../../../common/Loader';
-import { FiBook, FiEdit, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheck, FiCheckSquare, FiEdit, FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 import Pagination from '../../utils/utils-functions/Pagination';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import SearchInput from '../../utils/fields/SearchInput';
+import routes from '../../services/appRoutes';
+import { hasPermission } from '../../utils/permissionChecker';
 
 const UserList = () => {
   const userList = useSelector((state) => state.users);
+  const settings = useSelector((state: any) => state.settings);
+  const subscription = useSelector((state: any) => state.subscription);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const userPermissions = settings?.data?.permissions || [];
+  const canCreateUser =
+    hasPermission(userPermissions, 'all.user.create') ||
+    hasPermission(userPermissions, 'user.create') ||
+    hasPermission(userPermissions, 'user.store') ||
+    hasPermission(userPermissions, 'all.user.add');
 
   const [searchValue, setSearchValue] = useState('');
   const [page, setPage] = useState(1);
@@ -24,7 +34,10 @@ const UserList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
-      const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('');
+  const maxUsers = subscription?.current?.max_users;
+  const currentUsers = Number(userList?.data?.total || 0);
+  const userLimitReached = typeof maxUsers === 'number' && maxUsers > 0 && currentUsers >= maxUsers;
 
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);
@@ -33,13 +46,12 @@ const UserList = () => {
     setTotalPages(Math.ceil(userList.data.total / page.target.value));
     setTableData(userList.data.data);
   };
-  
+
   const handleSearchButton = () => {
-    console.log( search  ); 
     setCurrentPage(1);
     setPage(1);
-    dispatch(getUser({ page: 1, perPage,  search })); // Use 'search' instead
-};
+    dispatch(getUser({ page: 1, perPage, search })); // Use 'search' instead
+  };
 
   useEffect(() => {
     dispatch(getUser({ page, perPage, search }));
@@ -69,6 +81,77 @@ const UserList = () => {
     navigate(`/user/user-edit/${user_id}`);
   }
 
+  
+  const handleAddUser = () => {
+    if (!canCreateUser) {
+      toast.error('You are not authorized to create user.');
+      return;
+    }
+    if (userLimitReached) {
+      toast.error(`User limit reached (${currentUsers}/${maxUsers}).`);
+      navigate('/no-access', {
+        state: {
+          from: routes.user_add,
+          reason: 'subscription_quota',
+          quota_type: 'users',
+          quota_limit: maxUsers,
+          current_usage: currentUsers,
+        },
+      });
+      return;
+    }
+    navigate(routes.user_add);
+  };
+
+  const cleanRoleText = (value: any) =>
+    String(value ?? '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const extractRoleNames = (value: any): string[] => {
+    if (!value) return [];
+
+    if (Array.isArray(value)) {
+      return value
+        .flatMap((item: any) =>
+          extractRoleNames(typeof item === 'string' ? item : item?.name ?? item),
+        )
+        .filter(Boolean);
+    }
+
+    if (typeof value === 'object') {
+      return extractRoleNames(value?.name ?? '');
+    }
+
+    const text = String(value);
+    if (/<span[^>]*>/i.test(text)) {
+      const matches = [...text.matchAll(/<span[^>]*>(.*?)<\/span>/gi)];
+      return matches
+        .map((m) => cleanRoleText(m[1]))
+        .filter(Boolean);
+    }
+
+    return text
+      .split(',')
+      .map((item) => cleanRoleText(item))
+      .filter(Boolean);
+  };
+
+  const getPrimaryRoleName = (row: any): string => {
+    const fromRoleName = extractRoleNames(row?.role_name);
+    if (fromRoleName.length > 0) return fromRoleName[0];
+
+    const fromRole = extractRoleNames(row?.role);
+    if (fromRole.length > 0) return fromRole[0];
+
+    const fromRoles = extractRoleNames(row?.roles);
+    if (fromRoles.length > 0) return fromRoles[fromRoles.length - 1];
+
+    return '';
+  };
+
   const columns = [
     {
       key: 'serial',
@@ -78,24 +161,33 @@ const UserList = () => {
     },
     {
       key: 'name',
-      header: 'User Name', 
+      header: 'User Name',
     },
     {
       key: 'branch',
-      header: 'Working Branch', 
+      header: 'Working Branch',
     },
     {
       key: 'email',
-      header: 'Email', 
+      header: 'Email',
     },
     {
       key: 'role',
-      header: 'Role', 
+      header: 'Role',
+      render: (row: any) => {
+        const roleName = getPrimaryRoleName(row);
+        if (!roleName) return <span>-</span>;
+        return (
+          <span className="inline-flex items-center rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+            {roleName}
+          </span>
+        );
+      },
     },
     {
       key: "id",
       header: "Action",
-      render: (row: any) => {  
+      render: (row: any) => {
         return (
           <div className="flex justify-center items-center">
             <button
@@ -107,32 +199,39 @@ const UserList = () => {
           </div>
         );
       },
-    },,
+    },
   ];
 
   return (
     <div>
       <HelmetTitle title={'User List'} />
       <div className="flex justify-between mb-1">
-        <SelectOption onChange={handleSelectChange} />
-       <div className='flex'>
+        <div className="flex gap-2">
+          <SelectOption onChange={handleSelectChange} />
+          <div className='flex'>
             <SearchInput
-                search={search}
-                setSearchValue={setSearch}
-                className="text-nowrap"
+              search={search}
+              setSearchValue={setSearch}
+              className="text-nowrap"
             />
             <ButtonLoading
-                onClick={handleSearchButton}
-                buttonLoading={buttonLoading}
-                label="Search"
-                className="whitespace-nowrap"
+              onClick={handleSearchButton}
+              buttonLoading={buttonLoading}
+              label="Search"
+              className="whitespace-nowrap"
+              icon={<FiCheckSquare />}
             />
-       </div>
-        {/* <ButtonLoading
-          onClick={handleSearchButton}
-          buttonLoading={buttonLoading}
-          label="Save"
-        /> */}
+          </div>
+        </div>
+        {canCreateUser && (
+          <ButtonLoading
+            onClick={handleAddUser}
+            buttonLoading={false}
+            label={userLimitReached ? `User Limit Full (${currentUsers}/${maxUsers})` : "Add User"}
+            className="whitespace-nowrap ml-2"
+            icon={<FiPlus />}
+          />
+        )}
       </div>
 
       <div className="relative overflow-x-auto overflow-y-hidden">

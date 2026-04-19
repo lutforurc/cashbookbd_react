@@ -17,7 +17,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../../common/Loader';
 import { toast } from 'react-toastify';
- 
+
 import InputOnly from '../../../utils/fields/InputOnly';
 import { hasPermission } from '../../../utils/permissionChecker';
 import {
@@ -27,6 +27,17 @@ import {
 } from './cashReceivedSlice';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
+import { useNavigate } from 'react-router-dom';
+import httpService from '../../../services/httpService';
+import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+    : [];
 
 interface ReceivedItem {
   id: string | number;
@@ -44,7 +55,7 @@ const initialReceivedItem: ReceivedItem = {
   account: '',
   accountName: '',
   remarks: '',
-  amount: 0,
+  amount: "",
   currentProduct: undefined, // Use undefined instead of null
 };
 
@@ -60,6 +71,9 @@ const GeneralCashReceived = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [isUpdateButton, setIsUpdateButton] = useState(false);
+  const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [remarkSuggestions, setRemarkSuggestions] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const totalAmount = tableData.reduce(
     (sum, row) => sum + Number(row.amount),
@@ -77,8 +91,10 @@ const GeneralCashReceived = () => {
   };
 
   const handleCashReceivedSave = async () => {
+    setSaveButtonLoading(true);
     if (tableData.length === 0) {
       toast.error('Please add some transactions.');
+      setSaveButtonLoading(false);
       return;
     }
 
@@ -99,29 +115,75 @@ const GeneralCashReceived = () => {
 
     // Dispatch the updated data to your store or API
     try {
-      await dispatch(storeCashReceived(updatedTableData));
+      const response: any = await dispatch(storeCashReceived(updatedTableData) as any);
+
+      if (response?.success) {
+        toast.success(response.message || 'Saved successfully.');
+        setFormData(initialReceivedItem);
+        setTableData([]);
+        setIsUpdating(false);
+        setIsUpdateButton(false);
+        setUpdateId(null);
+      } else {
+        toast.error(response?.message || 'Error saving transactions.');
+      }
     } catch (error) {
-      console.error('Error saving transactions:', error);
+      toast.error('Error saving transactions.');
+    } finally {
+      setSaveButtonLoading(false);
     }
   };
-
-  useEffect(() => {
-    toast.success(cashReceived.data);
-    setFormData({
-      id: formData.id,
-      mtmId: '',
-      account: formData.account,
-      accountName: formData.accountName,
-      remarks: '',
-      amount: '',
-      currentProduct: null,
-    }); // Reset form data
-    setTableData([]); // Clear the table
-  }, [cashReceived.data]);
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  useEffect(() => {
+    const fetchRemarkSuggestions = async () => {
+      const trimmedQuery = formData.remarks.trim();
+      if (!trimmedQuery) {
+        setRemarkSuggestions([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(API_CASH_RECEIVED_SUGGESTIONS_URL, {
+          params: {
+            field: 'remarks',
+            q: trimmedQuery,
+          },
+        });
+        setRemarkSuggestions(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setRemarkSuggestions([]);
+      }
+    };
+
+    const remarkTimer = window.setTimeout(() => {
+      void fetchRemarkSuggestions();
+    }, 250);
+
+    return () => {
+      window.clearTimeout(remarkTimer);
+    };
+  }, [formData.remarks]);
+
+  const handleRemarksKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    if (remarkSuggestions.length > 0) {
+      e.preventDefault();
+      const [matchedRemark] = remarkSuggestions;
+      setFormData((prevState) => ({
+        ...prevState,
+        remarks: matchedRemark,
+      }));
+    }
+
+    handleInputKeyDown(e, 'amount');
   };
 
   const handleAdd = () => {
@@ -213,15 +275,17 @@ const GeneralCashReceived = () => {
     setFormData(initialReceivedItem); // Reset form data
   };
 
-  const searchTransaction = () => {
-    if (search === '') {
+  const searchTransaction = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (invoiceNo === '') {
       toast.error('Please enter a search value.');
       return;
     }
     try {
       // Dispatch the search action
       dispatch(
-        editCashReceived({ invoiceNo: search }, (message: string) => {
+        editCashReceived({ invoiceNo }, (message: string) => {
           if (message) {
             toast.error(message);
           }
@@ -233,6 +297,11 @@ const GeneralCashReceived = () => {
       console.error('Error searching invoice:', error);
     }
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchTransaction,
+  });
 
   useEffect(() => {
     setFormData((prevState) => ({
@@ -265,6 +334,11 @@ const GeneralCashReceived = () => {
     }
   }, [cashReceived.isEdit]);
 
+  
+  const handleHome = () => {
+    navigate('/dashboard');
+  }
+
   // Ctrl + S functionality (save functionality)
   useCtrlS(handleCashReceivedSave);
 
@@ -280,31 +354,31 @@ const GeneralCashReceived = () => {
                   settings.data.permissions,
                   'cash.received.edit',
                 ) && (
-                  <>
-                    <div className="w-full">
-                      <label htmlFor="search">Search Received</label>
-                      <InputOnly
-                        id="search"
-                        value={search}
-                        name="search"
-                        placeholder="Search Received"
-                        label=""
-                        className="py-1 w-full" // Add padding-right to account for the button
-                        onChange={(e) => setSearch(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor=""> </label>
-                      <ButtonLoading
-                        onClick={searchTransaction}
-                        buttonLoading={buttonLoading}
-                        label=" "
-                        className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
-                        icon={<FiSearch className="text-white text-lg ml-2" />}
-                      />
-                    </div>
-                  </>
-                )}
+                    <>
+                      <div className="w-full">
+                        <label htmlFor="search">Search Received</label>
+                        <InputOnly
+                          id="search"
+                          value={search}
+                          name="search"
+                          placeholder="Search Received"
+                          label=""
+                          className="py-1 w-full" // Add padding-right to account for the button
+                          onChange={(e) => setSearch(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor=""> </label>
+                        <ButtonLoading
+                          onClick={searchTransaction}
+                          buttonLoading={buttonLoading}
+                          label=" "
+                          className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
+                          icon={<FiSearch className="text-white text-lg ml-2" />}
+                        />
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -338,9 +412,16 @@ const GeneralCashReceived = () => {
               placeholder={'Enter Remarks'}
               label={'Enter Remarks'}
               className={''}
+              list="general-cash-received-remark-suggestions"
+              autoComplete="off"
               onChange={handleOnChange}
-              onKeyDown={(e) => handleInputKeyDown(e, 'amount')}
+              onKeyDown={handleRemarksKeyDown}
             />
+            <datalist id="general-cash-received-remark-suggestions">
+              {remarkSuggestions.map((item) => (
+                <option key={item} value={item} />
+              ))}
+            </datalist>
             <InputElement
               id="amount"
               value={String(formData.amount)}
@@ -379,7 +460,7 @@ const GeneralCashReceived = () => {
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiPlus className="text-white text-lg ml-2 mr-2 hidden xl:block" />
+                    <FiPlus className="text-white text-lg ml-2 mr-2 " />
                   }
                 />
               )}
@@ -391,24 +472,31 @@ const GeneralCashReceived = () => {
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiEdit2 className="text-white text-lg ml-2  mr-2 hidden xl:block" />
+                    <FiEdit2 className="text-white text-lg ml-2  mr-2 " />
                   }
                 />
               ) : (
                 <ButtonLoading
+                  disabled={saveButtonLoading}
                   onClick={handleCashReceivedSave}
-                  buttonLoading={buttonLoading}
-                  label="Save"
+                  buttonLoading={saveButtonLoading}
+                  label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiSave className="text-white text-lg ml-2  mr-2 hidden xl:block" />
+                    <FiSave className="text-white text-lg ml-2  mr-2 " />
                   }
                 />
               )}
-              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-                <FiHome className="text-white text-lg ml-2  mr-2 hidden xl:block" />
-                <span className="">{'Home'}</span>
-              </Link>
+              <ButtonLoading
+                disabled={saveButtonLoading}
+                onClick={handleHome}
+                buttonLoading={false}
+                label={`Home`}
+                className="whitespace-nowrap text-center mr-0 p-2"
+                icon={
+                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                }
+              />
             </div>
           </div>
         </div>

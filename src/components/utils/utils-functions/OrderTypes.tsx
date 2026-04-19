@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
 
 interface OrderProps {
+  name?: string;
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLSelectElement>) => void;
   className?: string;
   id?: string;
+  value?: string;
 }
 
 const OrderTypes: React.FC<OrderProps> = ({
+  name,
   onChange,
+  onKeyDown,
   className,
   id,
+  value,
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>("");
+
+  React.useEffect(() => {
+    if (value !== undefined) {
+      setSelectedValue(value);
+    }
+  }, [value]);
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedValue(event.target.value); // Update internal state
@@ -21,8 +33,10 @@ const OrderTypes: React.FC<OrderProps> = ({
   return (
     <select
       onChange={handleChange}
+      onKeyDown={onKeyDown}
       value={selectedValue} // Bind the selected value to state
       id={id}
+      name={name}
       className={`block p-2 text-sm text-gray-900 border border-gray-300 rounded-xs bg-gray-50 outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
     >
       <option disabled value="">

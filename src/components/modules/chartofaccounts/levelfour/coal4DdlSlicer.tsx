@@ -3,7 +3,7 @@ import {
     COAL4_DDL_LIST_ERROR,
     COAL4_DDL_LIST_PENDING, COAL4_DDL_LIST_SUCCESS,
 } from '../../../constant/constant/constant';
-import { API_CHART_OF_ACCOUNTS_DDL_L4_URL } from '../../../services/apiRoutes';
+import { API_CHART_OF_ACCOUNTS_DDL_L3_URL, API_CHART_OF_ACCOUNTS_DDL_L4_URL } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
 interface coal4Param {
@@ -96,6 +96,27 @@ export const getCoal4DdlNext = (inputValue: string, acType: string) => async (di
             });
         const data = await response.json();
         dispatch({ type: 'SET_COAL4_DDL_DATA', payload: data });
+        return { payload: data.data.data }; // Ensure this is returned
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        throw error;
+    }
+};
+
+export const getCoal3DdlNext = (inputValue: string, acType: string) => async (dispatch: any) => {
+    try {
+        const token = getToken();
+        const response = await fetch(
+            API_CHART_OF_ACCOUNTS_DDL_L3_URL + `?searchName=${inputValue}&acType=${acType}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+        const data = await response.json();
+        dispatch({ type: 'SET_COAL3_DDL_DATA', payload: data });
         return { payload: data.data.data }; // Ensure this is returned
     } catch (error) {
         console.error('Error fetching data:', error);

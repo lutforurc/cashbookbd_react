@@ -35,8 +35,7 @@ const ChangeVoucherType = () => {
     voucher_number: '',
   };
 
-
-  // console.log('vType', voucherTypes);
+ 
 
   const [formData, setFormData] = useState<VoucherTypeItems>(initialFormData);
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -52,7 +51,6 @@ const ChangeVoucherType = () => {
   }, [dispatch]);
 
 
-  console.log('vouchrType', voucherTypes?.voucherList);
 
   useEffect(() => {
     setDropdownData(branchDdlData?.protectedData?.data || []);

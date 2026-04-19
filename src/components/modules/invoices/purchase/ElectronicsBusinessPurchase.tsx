@@ -34,6 +34,13 @@ import { electronicsPurchaseEdit, electronicsPurchaseStore, electronicsPurchaseU
 import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon.tsx';
 import { PurchaseType } from '../../../../common/dropdownData.tsx';
+<<<<<<< HEAD
+=======
+import QuickCustomerModal from '../sales/QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+>>>>>>> Lutfor-Rahman
 
 interface Product {
   id: number;
@@ -45,6 +52,18 @@ interface Product {
   price: string;
   warehouse: string;
 }
+
+type PurchaseSuggestionField = 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter(
+        (item: string, index: number, arr: string[]) =>
+          item && arr.indexOf(item) === index,
+      )
+    : [];
 
 const ElectronicsBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -66,6 +85,13 @@ const ElectronicsBusinessPurchase = () => {
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
   const [purchaseType, setPurchaseType] = useState('2'); // Define state with type
+<<<<<<< HEAD
+=======
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerDraftName, setCustomerDraftName] = useState('');
+  const [isPaymentAmtManuallyEdited, setIsPaymentAmtManuallyEdited] = useState(false);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
+>>>>>>> Lutfor-Rahman
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -119,6 +145,43 @@ const ElectronicsBusinessPurchase = () => {
   });
 
   useEffect(() => {
+    const fetchSuggestions = async (
+      field: PurchaseSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(
+          API_TRADING_PURCHASE_SUGGESTIONS_URL,
+          {
+            params: {
+              field,
+              q: trimmedQuery,
+            },
+          },
+        );
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.notes]);
+
+  useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
       setWarehouseDdlData(warehouse?.data);
     }
@@ -127,11 +190,23 @@ const ElectronicsBusinessPurchase = () => {
   const supplierAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashSupplier = Number(option?.value) === 17;
+    setIsPaymentAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      paymentAmt: isCashSupplier ? formData.paymentAmt : '0',
     });
+  };
+
+  const openCustomerModal = (typedName = '') => {
+    setCustomerDraftName(typedName);
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
   };
 
   const productSelectHandler = (option: any) => {
@@ -178,14 +253,25 @@ const ElectronicsBusinessPurchase = () => {
   //   setIsInvoiceUpdate(true);
   // };
 
+<<<<<<< HEAD
   const searchInvoice = () => {
     if (!search) {
+=======
+  const searchInvoice = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (!invoiceNo) {
+>>>>>>> Lutfor-Rahman
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
       electronicsPurchaseEdit(
+<<<<<<< HEAD
         { invoiceNo: search, purchaseType: purchaseType },
+=======
+        { invoiceNo, purchaseType: purchaseType },
+>>>>>>> Lutfor-Rahman
         (message: string) => {
           if (message) {
             toast.info(message);
@@ -196,14 +282,30 @@ const ElectronicsBusinessPurchase = () => {
     if (purchase.isEdit === true) {
       setIsUpdateButton(true);
     }
+<<<<<<< HEAD
     setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
+=======
+    setFormData({ ...formData, searchInvoice: invoiceNo }); // Update the state with the search value
+>>>>>>> Lutfor-Rahman
     setIsInvoiceUpdate(true);
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
   // Process `purchase.data` when it updates
   useEffect(() => {
     const trx = purchase?.data?.transaction;
+<<<<<<< HEAD
     if (!trx) return;
+=======
+    if (!trx){
+      setFormData(initialFormData);
+      return;
+    } 
+>>>>>>> Lutfor-Rahman
 
     // 1) products mapping (Electronics fields)
     const products = (trx.purchase_master?.details || []).map((detail: any) => ({
@@ -256,6 +358,10 @@ const ElectronicsBusinessPurchase = () => {
       notes: trx.purchase_master?.notes || '',
       products: products,
     }));
+<<<<<<< HEAD
+=======
+    setIsPaymentAmtManuallyEdited(false);
+>>>>>>> Lutfor-Rahman
 
     toast.success('Invoice loaded successfully!');
   }, [purchase?.data?.transaction]);
@@ -317,6 +423,7 @@ const ElectronicsBusinessPurchase = () => {
   );
 
   useEffect(() => {
+<<<<<<< HEAD
     if (formData.account == '17') {
       setFormData((prevState) => ({
         ...prevState,
@@ -330,8 +437,42 @@ const ElectronicsBusinessPurchase = () => {
         ...prevState,
         paymentAmt: '',
       }));
+=======
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const isCashSupplier = Number(formData.account) === 17;
+    const cashPaymentAmt = Math.max(0, totalAmount - discount).toFixed(2);
+    const existingNetPayment =
+      purchase?.data?.transaction?.purchase_master?.netpayment?.toString() || '0';
+
+    if (isCashSupplier) {
+      if (formData.paymentAmt !== cashPaymentAmt) {
+        setFormData((prevState) => ({
+          ...prevState,
+          paymentAmt: cashPaymentAmt,
+        }));
+      }
+      if (isPaymentAmtManuallyEdited) {
+        setIsPaymentAmtManuallyEdited(false);
+      }
+    } else if (!isPaymentAmtManuallyEdited) {
+      const nextPaymentAmt = formData.mtmId ? existingNetPayment : '0';
+      if (formData.paymentAmt !== nextPaymentAmt) {
+        setFormData((prevState) => ({
+          ...prevState,
+          paymentAmt: nextPaymentAmt,
+        }));
+      }
+>>>>>>> Lutfor-Rahman
     }
-  }, [formData.account]);
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.mtmId,
+    formData.paymentAmt,
+    totalAmount,
+    isPaymentAmtManuallyEdited,
+    purchase?.data?.transaction,
+  ]);
 
   const handleDelete = (id: number) => {
     // Filter out the product with the matching id
@@ -360,6 +501,9 @@ const ElectronicsBusinessPurchase = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'paymentAmt' && Number(formData.account) !== 17) {
+      setIsPaymentAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -491,6 +635,7 @@ const ElectronicsBusinessPurchase = () => {
     setUpdateId(productIndex);
   };
 
+<<<<<<< HEAD
   useEffect(() => {
     const total = formData.products.reduce((acc, product) => {
       const qty = parseFloat(product.qty?.toString() || '0') || 0;
@@ -510,6 +655,8 @@ const ElectronicsBusinessPurchase = () => {
     }));
   }, [formData.products, formData.discountAmt]);
 
+=======
+>>>>>>> Lutfor-Rahman
   useEffect(() => {
     if (productData.qty) {
       const qty = parseFloat(productData.qty) || 0;
@@ -517,6 +664,11 @@ const ElectronicsBusinessPurchase = () => {
       setLineTotal(qty * price);
     }
   }, [productData.qty]);
+<<<<<<< HEAD
+=======
+  
+const BTN = "whitespace-nowrap text-center mr-0 h-9 py-1.5 flex items-center justify-center";
+>>>>>>> Lutfor-Rahman
 
   const handlePurchaseType = (e: any) => {
     setPurchaseType(e.target.value);
@@ -538,6 +690,7 @@ const ElectronicsBusinessPurchase = () => {
                 <label className="text-black dark:text-white" htmlFor="">
                   Select Supplier
                 </label>
+<<<<<<< HEAD
                 <DdlMultiline
                   onSelect={supplierAccountHandler}
                   placeholder="Select Supplier"
@@ -562,6 +715,36 @@ const ElectronicsBusinessPurchase = () => {
                   } // Pass the next field's ID
                   acType={'3'}
                 />
+=======
+                <div className="min-w-0">
+                  <DdlMultiline
+                    onSelect={supplierAccountHandler}
+                    placeholder="Select Supplier"
+                    actionOptionLabel="+ Add New Supplier"
+                    onActionSelect={openCustomerModal}
+                    defaultValue={
+                      formData.account
+                        ? {
+                          value: formData.account,
+                          label: formData.accountName,
+                        }
+                        : null
+                    }
+                    value={
+                      formData.account
+                        ? {
+                          value: formData.account,
+                          label: formData.accountName,
+                        }
+                        : null
+                    }
+                    onKeyDown={(e) =>
+                      handleInputKeyDown(e, 'purchaseOrderNumber')
+                    }
+                    acType={'3'}
+                  />
+                </div>
+>>>>>>> Lutfor-Rahman
               </div>
               <InputElement
                 id="notes"
@@ -569,12 +752,30 @@ const ElectronicsBusinessPurchase = () => {
                 name="notes"
                 placeholder={'Notes'}
                 label={'Notes'}
-                className={'py-1.5'}
+                className={'py-1 h-8.5'}
+                list="purchase-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'product')} // Dynamically pass the next element's ID
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setTimeout(() => {
+                      const productInput = document.querySelector('#product');
+                      if (productInput instanceof HTMLElement) {
+                        productInput.focus();
+                      } else {
+                        console.warn('Product input not found');
+                      }
+                    }, 100);
+                  }
+                }}
               />
+              <datalist id="purchase-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="invoice_no"
                 value={formData.invoice_no}
@@ -609,6 +810,10 @@ const ElectronicsBusinessPurchase = () => {
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'paymentAmt')} // Pass the next field's ID
               />
+              
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
                 id="discountAmt"
                 value={formData.discountAmt.toString()}
@@ -619,9 +824,6 @@ const ElectronicsBusinessPurchase = () => {
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')} // Dynamically pass the next element's ID
               />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
               <InputElement
                 id="paymentAmt"
                 value={formData.paymentAmt}
@@ -629,7 +831,7 @@ const ElectronicsBusinessPurchase = () => {
                 placeholder={'Payment Amount'}
                 disabled={Number(formData.account) === 17}
                 label={'Payment Amount'}
-                className={'py-1'}
+                className={'py-1 text-right'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')} // Pass the next field's ID
               />
@@ -638,9 +840,15 @@ const ElectronicsBusinessPurchase = () => {
                   Total Tk. {thousandSeparator(totalAmount, 0)}
                 </p>
               </div>
+<<<<<<< HEAD
               {hasPermission(permissions, 'sales.edit') && (
                 <>
                   <div className="mt-2">
+=======
+              {hasPermission(permissions, 'purchase.edit') && (
+                <>
+                  <div className="relative ">
+>>>>>>> Lutfor-Rahman
                     <DropdownCommon
                       id="saleType"
                       name="saleType"
@@ -651,7 +859,11 @@ const ElectronicsBusinessPurchase = () => {
                     />
                   </div>
                   <>
+<<<<<<< HEAD
                     <div className="relative mt-2">
+=======
+                    <div className="relative">
+>>>>>>> Lutfor-Rahman
                       <div className="w-full ">
                         <InputOnly
                           id="search"
@@ -710,6 +922,7 @@ const ElectronicsBusinessPurchase = () => {
                       : null
                   }
                   onKeyDown={(e) => handleInputKeyDown(e, 'warehouse')} // Pass the next field's ID
+                  className='h-9'
                 />
               </div>
               <div>
@@ -786,7 +999,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={editProduct}
                 buttonLoading={buttonLoading}
                 label="Update"
-                className="whitespace-nowrap text-center mr-0 py-1.5"
+                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
                 icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
               />
             ) : (
@@ -795,7 +1008,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={addProduct}
                 buttonLoading={buttonLoading}
                 label="Add New"
-                className="whitespace-nowrap text-center mr-0 py-1.5"
+                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
                 icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -814,7 +1027,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={handleInvoiceUpdate}
                 buttonLoading={buttonLoading}
                 label="Update"
-                className="whitespace-nowrap text-center mr-0"
+                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
                 icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
               />
             ) : (
@@ -822,7 +1035,7 @@ const ElectronicsBusinessPurchase = () => {
                 onClick={handlePurchaseInvoiceSave}
                 buttonLoading={saveButtonLoading}
                 label="Save"
-                className="whitespace-nowrap text-center mr-0"
+                className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
                 icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                 disabled={saveButtonLoading}
               />
@@ -832,10 +1045,10 @@ const ElectronicsBusinessPurchase = () => {
               onClick={resetProducts}
               buttonLoading={buttonLoading}
               label="Reset"
-              className="whitespace-nowrap text-center mr-0"
+              className="whitespace-nowrap text-center mr-0 h-9 py-1.5"
               icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
             />
-            <Link to="/dashboard" className="text-nowrap justify-center mr-0">
+            <Link to="/dashboard" className="text-nowrap justify-center mr-0 h-9 py-1.5">
               <FiHome className="text-white text-lg ml-2  mr-2" />
               <span className="hidden md:block">{'Home'}</span>
             </Link>
@@ -927,6 +1140,23 @@ const ElectronicsBusinessPurchase = () => {
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        entityLabel="Supplier"
+        defaultTypeId="2"
+        initialName={customerDraftName}
+        onCustomerSaved={({ id, name }) => {
+          const isCashSupplier = Number(id) === 17;
+          setIsPaymentAmtManuallyEdited(false);
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+            paymentAmt: isCashSupplier ? prev.paymentAmt : '0',
+          }));
+        }}
+      />
     </>
   );
 };

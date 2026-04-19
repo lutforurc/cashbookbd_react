@@ -9,19 +9,23 @@ import { Attachment, ImageVoucherType } from '../../utils/fields/DataConstant';
 import { toast } from 'react-toastify';
 import { bulkUploadImages } from './imageUploadSlice';
 import dayjs from 'dayjs';
-import { FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiX } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 
 export default function BulkImageUpload(user: any): JSX.Element {
   const [files, setFiles] = useState<File[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [buttonLoading, setButtonLoading] = useState(false);
-  const branchDdlData = useSelector((state) => state.branchDdl);
-  const settings = useSelector((state) => state.settings);
-  const imageUpload = useSelector((state) => state.imageUpload);
+
+  const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const settings = useSelector((state: any) => state.settings);
+  const imageUpload = useSelector((state: any) => state.imageUpload);
+
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
+
   const dispatch = useDispatch();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,14 +40,21 @@ export default function BulkImageUpload(user: any): JSX.Element {
     }
   };
 
+  useEffect(() => {
+    dispatch(getDdlProtectedBranch() as any);
+    setBranchId(user?.user?.branch_id);
+  }, []);
+
+  // ✅ Fix: initialize start_date/end_date with safe values (never undefined)
   const [voucherImageFormData, setVoucherImageFormData] = useState({
-    branch_id: user.user.branch_id,
+    branch_id: user?.user?.branch_id,
     voucher_type: '',
     image_type: '',
-    start_date: settings?.data?.trx_dt,
-    end_date: settings?.data?.trx_dt,
+    start_date: dayjs(new Date()).format('YYYY-MM-DD'),
+    end_date: dayjs(new Date()).format('YYYY-MM-DD'),
     vouchers: [], // Initialize with an empty array
   });
+
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
     setVoucherImageFormData((prev) => ({
@@ -51,6 +62,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
       branch_id: e.target.value,
     }));
   };
+
   const handleStartDate = (date: Date) => {
     setStartDate(date);
     setVoucherImageFormData((prev) => ({
@@ -58,8 +70,6 @@ export default function BulkImageUpload(user: any): JSX.Element {
       start_date: dayjs(date).format('YYYY-MM-DD'),
     }));
   };
-
-  // console.log( "Settings:", settings?.data?.trx_dt)
 
   const handleEndDate = (date: Date) => {
     setEndDate(date);
@@ -82,13 +92,22 @@ export default function BulkImageUpload(user: any): JSX.Element {
       branchDdlData?.protectedData?.transactionDate
     ) {
       setDropdownData(branchDdlData?.protectedData?.data);
+
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+
       setStartDate(parsedDate);
       setEndDate(parsedDate);
-      setBranchId(user.user.branch_id);
-    } else {
+      setBranchId(user?.user?.branch_id);
+
+      // ✅ Fix: also update formData dates so payload never becomes undefined
+      setVoucherImageFormData((prev) => ({
+        ...prev,
+        start_date: dayjs(parsedDate).format('YYYY-MM-DD'),
+        end_date: dayjs(parsedDate).format('YYYY-MM-DD'),
+        branch_id: user?.user?.branch_id,
+      }));
     }
   }, [branchDdlData?.protectedData?.data]);
 
@@ -97,7 +116,25 @@ export default function BulkImageUpload(user: any): JSX.Element {
 
     if (!files || files.length === 0) {
       toast.warning('Please select files first!');
-      setButtonLoading(false); // Stop loading immediately
+      setButtonLoading(false);
+      return;
+    }
+
+    if (!voucherImageFormData.branch_id) {
+      toast.warning('Please select branch!');
+      setButtonLoading(false);
+      return;
+    }
+
+    if (!voucherImageFormData.voucher_type) {
+      toast.warning('Please select Voucher Type!');
+      setButtonLoading(false);
+      return;
+    }
+
+    if (!voucherImageFormData.image_type) {
+      toast.warning('Please select Attachment Type!');
+      setButtonLoading(false);
       return;
     }
 
@@ -106,45 +143,42 @@ export default function BulkImageUpload(user: any): JSX.Element {
       formData.append('images[]', file); // append all selected images
     });
 
-    // Logging FormData entries
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value); // Will log the key and value pairs
-    }
-
-    // Continue with appending other fields to FormData
-    formData.append('branch_id', voucherImageFormData.branch_id.toString());
+    formData.append('branch_id', String(voucherImageFormData.branch_id));
     formData.append('voucher_type', voucherImageFormData.voucher_type);
     formData.append('image_type', voucherImageFormData.image_type);
-    formData.append('start_date', voucherImageFormData.start_date);
-    formData.append('end_date', voucherImageFormData.end_date);
+
+    // ✅ Fix: always send dates from Date states (never undefined)
+    formData.append(
+      'start_date',
+      startDate ? dayjs(startDate).format('YYYY-MM-DD') : '',
+    );
+    formData.append(
+      'end_date',
+      endDate ? dayjs(endDate).format('YYYY-MM-DD') : '',
+    );
 
     try {
-      await dispatch(
-        bulkUploadImages(formData, (message, success) => {
+      await (dispatch as any)(
+        bulkUploadImages(formData, (message: string, success: boolean) => {
           if (success) {
-            console.log('Success Message:', message);
             toast.success(message);
-
-            // Clear the files state after successful upload
-            setFiles([]); // This should be fine now, as the upload is successful
+            setFiles([]); // Clear after successful upload
           } else {
-            console.log('Error Message:', message);
             toast.info(message);
           }
         }),
       );
 
-      // After uploading, stop the loading button
       setButtonLoading(false);
     } catch (error) {
       toast.error('Failed to upload data');
-      setButtonLoading(false); // Stop loading immediately on error
+      setButtonLoading(false);
     }
   };
 
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setVoucherImageFormData({ ...voucherImageFormData, [name]: value });
+    setVoucherImageFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleRemoveFile = (index: number) => {
@@ -157,10 +191,16 @@ export default function BulkImageUpload(user: any): JSX.Element {
   return (
     <div className="mx-auto p-4">
       <HelmetTitle title={'Bulk Voucher Upload'} />
+
       <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-9 w-full gap-2">
         {/* 1. Branch Dropdown (wide) */}
         <div className="col-span-1 lg:col-span-2">
-          <label className='font-sm text-gray-900 dark:text-gray-100' htmlFor="">Select Branch</label>
+          <label
+            className="font-sm text-gray-900 dark:text-gray-100"
+            htmlFor=""
+          >
+            Select Branch
+          </label>
           <div className="w-full">
             {branchDdlData.isLoading === true ? <Loader /> : ''}
             <BranchDropdown
@@ -198,7 +238,9 @@ export default function BulkImageUpload(user: any): JSX.Element {
 
         {/* 4. Start Date (narrow) */}
         <div className="lg:col-span-1 w-full">
-          <label className='text-sm text-gray-900 dark:text-gray-100' htmlFor="">Start Date</label>
+          <label className="text-sm text-gray-900 dark:text-gray-100" htmlFor="">
+            Start Date
+          </label>
           <InputDatePicker
             setCurrentDate={handleStartDate}
             className="font-medium text-sm w-full h-8"
@@ -209,7 +251,9 @@ export default function BulkImageUpload(user: any): JSX.Element {
 
         {/* 5. End Date (narrow) */}
         <div className="lg:col-span-1 w-full">
-          <label className='text-sm text-gray-900 dark:text-gray-100' htmlFor="">End Date</label>
+          <label className="text-sm text-gray-900 dark:text-gray-100" htmlFor="">
+            End Date
+          </label>
           <InputDatePicker
             setCurrentDate={handleEndDate}
             className="font-medium text-sm w-full h-8"
@@ -224,6 +268,7 @@ export default function BulkImageUpload(user: any): JSX.Element {
             onClick={handleUploadBulkImage}
             buttonLoading={buttonLoading}
             label="Update"
+            icon={<FiCheckSquare />}
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
           />
         </div>
@@ -257,7 +302,6 @@ export default function BulkImageUpload(user: any): JSX.Element {
       {/* Image Viewer */}
       {files && files.length > 0 && (
         <div className="mt-6">
-          {/* <h3 className="text-xl font-medium mb-4">Voucher Viewer</h3> */}
           <div className="grid grid-cols-3 gap-4">
             {files.map((file, index) => (
               <div key={index} className="border p-2 rounded-md relative">
@@ -267,10 +311,11 @@ export default function BulkImageUpload(user: any): JSX.Element {
                   className="w-full h-auto object-cover"
                 />
                 <p className="mt-2 text-sm">{file.name}</p>
-                {/* Remove button */}
+
                 <button
                   className="mt-2 text-red-500 text-3xl absolute top-2 right-4 bg-gray-100 border border-gray-300"
                   onClick={() => handleRemoveFile(index)}
+                  type="button"
                 >
                   <FiX />
                 </button>
@@ -282,5 +327,3 @@ export default function BulkImageUpload(user: any): JSX.Element {
     </div>
   );
 }
-
-// export default BulkImageUpload;

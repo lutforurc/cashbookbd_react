@@ -44,7 +44,7 @@ interface formData {
 }
 
 
-export const purchaseStore = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+export const purchaseStore = (data: formData, callback?: (message: string, success?: boolean) => void) => (dispatch: any) => {
     dispatch({ type: PURCHASE_TRADING_STORE_PENDING });
     httpService
       .post(API_TRADING_PURCHASE_STORE_URL, data)
@@ -56,7 +56,7 @@ export const purchaseStore = (data: formData, callback?: (message: string) => vo
             payload: _data.data.data,
           });
           if ('function' == typeof callback) {
-            callback(_data.message);
+            callback(_data.message, true);
           }
         } else {
           dispatch({
@@ -64,7 +64,7 @@ export const purchaseStore = (data: formData, callback?: (message: string) => vo
             payload: _data.message,
           });
           if ('function' == typeof callback) {
-            callback(_data.message);
+            callback(_data.message, false);
           }
         }
       })
@@ -74,12 +74,12 @@ export const purchaseStore = (data: formData, callback?: (message: string) => vo
           payload: err.message,
         });
         if ('function' == typeof callback) {
-          callback(err.message);
+          callback(err.message, false);
         }
       });
   };
 
-export const purchaseUpdate = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+export const purchaseUpdate = (data: formData, callback?: (message: string, success?: boolean) => void) => (dispatch: any) => {
     dispatch({ type: PURCHASE_TRADING_UPDATE_PENDING });
     httpService.post(API_TRADING_PURCHASE_UPDATE_URL, data)
       .then((res) => {
@@ -90,7 +90,7 @@ export const purchaseUpdate = (data: formData, callback?: (message: string) => v
             payload: _data.data.data,
           });
           if ('function' == typeof callback) {
-            callback(_data.message);
+            callback(_data.message, true);
           }
         } else {
           dispatch({
@@ -98,7 +98,7 @@ export const purchaseUpdate = (data: formData, callback?: (message: string) => v
             payload: _data.message,
           });
           if ('function' == typeof callback) {
-            callback(_data.message);
+            callback(_data.message, false);
           }
         }
       })
@@ -108,7 +108,7 @@ export const purchaseUpdate = (data: formData, callback?: (message: string) => v
           payload: err.message,
         });
         if ('function' == typeof callback) {
-          callback(err.message);
+          callback(err.message, false);
         }
       });
   };

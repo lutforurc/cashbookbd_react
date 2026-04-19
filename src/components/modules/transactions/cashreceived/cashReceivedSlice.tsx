@@ -11,32 +11,55 @@ import {
 } from '../../../constant/constant/constant';
 import httpService from '../../../services/httpService';
 
-import { API_CASH_RECEIVED_EDIT_URL, API_CASH_RECEIVED_UPDATE_URL, API_CASH_RECEIVED_URL } from '../../../services/apiRoutes';
+import {
+  API_CASH_RECEIVED_EDIT_URL,
+  API_CASH_RECEIVED_UPDATE_URL,
+  API_CASH_RECEIVED_URL,
+  API_HEAD_OFFICE_CASH_RECEIVED_EDIT_URL,
+  API_HEAD_OFFICE_CASH_RECEIVED_STORE_URL,
+  API_HEAD_OFFICE_CASH_RECEIVED_UPDATE_URL,
+} from '../../../services/apiRoutes';
 
 
 export const storeCashReceived = (data: any) => (dispatch: any) => {
   dispatch({ type: CASH_RECEIVED_STORE_PENDING });
-  httpService.post(API_CASH_RECEIVED_URL, data)
+  return httpService.post(API_CASH_RECEIVED_URL, data)
     .then((res) => {
 
       const _data = res.data;
+      const errorMessage =
+        _data?.error?.message || _data?.message || 'Something went wrong.';
       if (_data.success) {
         dispatch({
           type: CASH_RECEIVED_STORE_SUCCESS,
           payload: _data.data.data,
         });
+        return {
+          success: true,
+          data: _data.data.data,
+          message: _data.message,
+        };
       } else {
         dispatch({
           type: CASH_RECEIVED_STORE_ERROR,
-          payload: _data.error.message,
+          payload: errorMessage,
         });
+        return {
+          success: false,
+          message: errorMessage,
+        };
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      const errorMessage = err?.message || 'Something went wrong.';
       dispatch({
         type: CASH_RECEIVED_STORE_ERROR,
-        payload: 'Something went wrong.',
+        payload: errorMessage,
       });
+      return {
+        success: false,
+        message: errorMessage,
+      };
     });
 };
 
@@ -97,6 +120,115 @@ export const updateCashReceived = (data: any, callback?: (message: string) => vo
         dispatch({
           type: CASH_RECEIVED_UPDATE_ERROR,
           payload: _data.error.message,
+        });
+        if ('function' == typeof callback) {
+          callback(_data.message);
+        }
+      }
+    })
+    .catch((err) => {
+      dispatch({
+        type: CASH_RECEIVED_UPDATE_ERROR,
+        payload: err.message,
+      });
+      if ('function' == typeof callback) {
+        callback(err.message);
+      }
+    });
+};
+
+export const storeHeadOfficeCashReceived = (data: any) => (dispatch: any) => {
+  dispatch({ type: CASH_RECEIVED_STORE_PENDING });
+  return httpService.post(API_HEAD_OFFICE_CASH_RECEIVED_STORE_URL, data)
+    .then((res) => {
+      const _data = res.data;
+      const errorMessage =
+        _data?.error?.message || _data?.message || 'Something went wrong.';
+      if (_data.success) {
+        dispatch({
+          type: CASH_RECEIVED_STORE_SUCCESS,
+          payload: _data.data.data,
+        });
+        return {
+          success: true,
+          data: _data.data.data,
+          message: _data.message,
+        };
+      } else {
+        dispatch({
+          type: CASH_RECEIVED_STORE_ERROR,
+          payload: errorMessage,
+        });
+        return {
+          success: false,
+          message: errorMessage,
+        };
+      }
+    })
+    .catch((err) => {
+      const errorMessage = err?.message || 'Something went wrong.';
+      dispatch({
+        type: CASH_RECEIVED_STORE_ERROR,
+        payload: errorMessage,
+      });
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    });
+};
+
+export const editHeadOfficeCashReceived = (data: editTransaction, callback?: (message: string) => void) => (dispatch: any) => {
+  dispatch({ type: CASH_RECEIVED_EDIT_PENDING });
+  httpService.post(API_HEAD_OFFICE_CASH_RECEIVED_EDIT_URL, data)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: CASH_RECEIVED_EDIT_SUCCESS,
+          payload: _data.data.data,
+        });
+        if ('function' == typeof callback) {
+          callback(_data.message);
+        }
+      } else {
+        dispatch({
+          type: CASH_RECEIVED_EDIT_ERROR,
+          payload: _data.error?.message || _data.message,
+        });
+        if ('function' == typeof callback) {
+          callback(_data.message);
+        }
+      }
+    })
+    .catch((err) => {
+      dispatch({
+        type: CASH_RECEIVED_EDIT_ERROR,
+        payload: err.message,
+      });
+      if ('function' == typeof callback) {
+        callback(err.message);
+      }
+    });
+};
+
+export const updateHeadOfficeCashReceived = (data: any, callback?: (message: string) => void) => (dispatch: any) => {
+  dispatch({ type: CASH_RECEIVED_UPDATE_PENDING });
+  httpService.post(API_HEAD_OFFICE_CASH_RECEIVED_UPDATE_URL, data)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: CASH_RECEIVED_UPDATE_SUCCESS,
+          payload: _data.data.data,
+        });
+        if ('function' == typeof callback) {
+          callback(_data.message);
+        }
+      } else {
+        dispatch({
+          type: CASH_RECEIVED_UPDATE_ERROR,
+          payload: _data.error?.message || _data.message,
         });
         if ('function' == typeof callback) {
           callback(_data.message);

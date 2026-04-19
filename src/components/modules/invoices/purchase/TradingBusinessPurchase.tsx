@@ -45,6 +45,10 @@ import {
   handleSelectKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
 import utc from 'dayjs/plugin/utc';
+import QuickCustomerModal from '../sales/QuickCustomerModal';
+import httpService from '../../../services/httpService';
+import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 interface Product {
   id: number;
   product: number;
@@ -57,6 +61,15 @@ interface Product {
   variance?: string;
   variance_type?: string;
 }
+
+type PurchaseSuggestionField = 'vehicle_no' | 'notes';
+
+const normalizeSuggestionItems = (items: any) =>
+  Array.isArray(items)
+    ? items
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+    : [];
 
 const TradingBusinessPurchase = () => {
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -79,6 +92,10 @@ const TradingBusinessPurchase = () => {
   const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [permissions, setPermissions] = useState<any>([]);
   const [lineTotal, setLineTotal] = useState<number>(0);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [isPaymentAmtManuallyEdited, setIsPaymentAmtManuallyEdited] = useState(false);
+  const [vehicleSuggestions, setVehicleSuggestions] = useState<string[]>([]);
+  const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   dayjs.extend(utc); 
       
@@ -125,6 +142,45 @@ const TradingBusinessPurchase = () => {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
   useEffect(() => {
+    const fetchSuggestions = async (
+      field: PurchaseSuggestionField,
+      query: string,
+      setter: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setter([]);
+        return;
+      }
+
+      try {
+        const response = await httpService.get(API_TRADING_PURCHASE_SUGGESTIONS_URL, {
+          params: {
+            field,
+            q: trimmedQuery,
+          },
+        });
+        setter(normalizeSuggestionItems(response?.data?.data?.data));
+      } catch (error) {
+        setter([]);
+      }
+    };
+
+    const vehicleTimer = window.setTimeout(() => {
+      void fetchSuggestions('vehicle_no', formData.vehicleNumber, setVehicleSuggestions);
+    }, 250);
+
+    const notesTimer = window.setTimeout(() => {
+      void fetchSuggestions('notes', formData.notes, setNoteSuggestions);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(vehicleTimer);
+      window.clearTimeout(notesTimer);
+    };
+  }, [formData.vehicleNumber, formData.notes]);
+
+  useEffect(() => {
     if (warehouse?.data && warehouse?.data.length > 0) {
       setWarehouseDdlData(warehouse?.data);
     }
@@ -133,11 +189,22 @@ const TradingBusinessPurchase = () => {
   const supplierAccountHandler = (option: any) => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
+    const isCashSupplier = Number(option?.value) === 17;
+    setIsPaymentAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
+      paymentAmt: isCashSupplier ? formData.paymentAmt : '0',
     });
+  };
+
+  const openCustomerModal = () => {
+    setShowCustomerModal(true);
+  };
+
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
   };
 
 
@@ -187,14 +254,16 @@ const TradingBusinessPurchase = () => {
     setProductData({ ...productData, [variance_type]: e.target.value });
   };
 
-  const searchInvoice = () => {
-    if (!search) {
+  const searchInvoice = (searchValue?: string) => {
+    const invoiceNo = typeof searchValue === 'string' ? searchValue.trim() : search.trim();
+
+    if (!invoiceNo) {
       toast.info('Please enter an invoice number');
       return;
     }
     dispatch(
       tradingPurchaseEdit(
-        { invoiceNo: search, purchaseType: purchaseType },
+        { invoiceNo, purchaseType: purchaseType },
         (message: string) => {
           if (message) {
             toast.error(message);
@@ -205,9 +274,14 @@ const TradingBusinessPurchase = () => {
     if (purchase.isEdit === true) {
       setIsUpdateButton(true);
     }
-    setFormData({ ...formData, searchInvoice: search }); // Update the state with the search value
+    setFormData({ ...formData, searchInvoice: invoiceNo }); // Update the state with the search value
     setIsInvoiceUpdate(true);
   };
+
+  useVoucherAutoEditSearch({
+    setSearch,
+    triggerSearch: searchInvoice,
+  });
 
   // Process `purchase.data` when it updates
   // useEffect(() => {
@@ -302,7 +376,8 @@ const TradingBusinessPurchase = () => {
           products: products || [],
         };
   
-        setFormData(updatedFormData); 
+        setFormData(updatedFormData);
+        setIsPaymentAmtManuallyEdited(false);
       }
     }, [purchase.data.transaction]);
 
@@ -387,10 +462,30 @@ const TradingBusinessPurchase = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (name === 'paymentAmt' && Number(formData.account) !== 17) {
+      setIsPaymentAmtManuallyEdited(true);
+    }
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
+  };
+
+  const handleVehicleNumberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    if (vehicleSuggestions.length > 0) {
+      e.preventDefault();
+      const [matchedVehicleNumber] = vehicleSuggestions;
+      setFormData((prevState) => ({
+        ...prevState,
+        vehicleNumber: matchedVehicleNumber,
+      }));
+    }
+
+    handleInputKeyDown(e, 'paymentAmt');
   };
 
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -454,9 +549,14 @@ const TradingBusinessPurchase = () => {
     }
 
     dispatch(
-      purchaseStore(formData, function (message) {
+      purchaseStore(formData, function (message, success) {
+ 
         if (message) {
-          toast.error(message);
+          if (success) {
+            toast.success(message);
+          } else {
+            toast.info(message);
+          }
         }
         setTimeout(() => {
           setFormData((prevFormData) => ({
@@ -469,7 +569,8 @@ const TradingBusinessPurchase = () => {
             vehicleNumber: '',  
             products: [],
           }));
-            setStartDate(null); // <-- UI DatePicker reset
+          setStartDate(null); // <-- UI DatePicker reset
+          setIsPaymentAmtManuallyEdited(false);
           setSaveButtonLoading(false);
         }, 1000);
       }),
@@ -582,42 +683,46 @@ const TradingBusinessPurchase = () => {
 
 
   
-    useEffect(() => {
-      const total = formData.products.reduce((acc, product) => {
-        const qty = parseFloat(product.qty?.toString() || '0') || 0;
-        const price = parseFloat(product.price?.toString() || '0') || 0;
-        return acc + qty * price;
-      }, 0);
-  
-      if (!formData.mtmId) {
-        if (Number(formData.account) === 17) {
-          setFormData((prev) => ({
-            ...prev,
-            paymentAmt: Math.max(0, total - parseFloat(prev.discountAmt?.toString() || '0')).toFixed(0),
-          }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            paymentAmt: '0',
-          }));
-        }
-      } else if (formData.mtmId) {
-        if (Number(formData.account) === 17) {
-          setFormData((prev) => ({
-            ...prev,
-            paymentAmt: Math.max(
-              0,
-              total - parseFloat(prev.discountAmt?.toString() || '0'),
-            ).toFixed(0),
-          }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            paymentAmt: purchase.data.transaction?.purchase_master?.netpayment?.toString(),
-          }));
-        }
+  useEffect(() => {
+    const total = formData.products.reduce((acc, product) => {
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
+    }, 0);
+    const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const isCashSupplier = Number(formData.account) === 17;
+    const cashPaymentAmt = Math.max(0, total - discount).toFixed(0);
+    const existingNetPayment =
+      purchase.data.transaction?.purchase_master?.netpayment?.toString() || '0';
+
+    if (isCashSupplier) {
+      if (formData.paymentAmt !== cashPaymentAmt) {
+        setFormData((prev) => ({
+          ...prev,
+          paymentAmt: cashPaymentAmt,
+        }));
       }
-    }, [formData.account, formData.discountAmt, formData.products]);
+      if (isPaymentAmtManuallyEdited) {
+        setIsPaymentAmtManuallyEdited(false);
+      }
+    } else if (!isPaymentAmtManuallyEdited) {
+      const nextPaymentAmt = formData.mtmId ? existingNetPayment : '0';
+      if (formData.paymentAmt !== nextPaymentAmt) {
+        setFormData((prev) => ({
+          ...prev,
+          paymentAmt: nextPaymentAmt,
+        }));
+      }
+    }
+  }, [
+    formData.account,
+    formData.discountAmt,
+    formData.mtmId,
+    formData.paymentAmt,
+    formData.products,
+    isPaymentAmtManuallyEdited,
+    purchase.data.transaction,
+  ]);
 
   return (
     <>
@@ -631,27 +736,34 @@ const TradingBusinessPurchase = () => {
                 <label className="text-black dark:text-white" htmlFor="">
                   Select Supplier
                 </label>
-                <DdlMultiline
-                  id="account"
-                  name="account"
-                  onSelect={supplierAccountHandler}
-                  value={
-                    formData.account
-                      ? {
-                          value: formData.account,
-                          label: formData.accountName, //productData.accountName
+                <div className="flex items-start gap-1">
+                  <div className="min-w-0 flex-1">
+                    <DdlMultiline
+                      id="account"
+                      name="account"
+                      className="h-9.5"
+                      onSelect={supplierAccountHandler}
+                      actionOptionLabel="+ Add New Supplier"
+                      onActionSelect={openCustomerModal}
+                      value={
+                        formData.account
+                          ? {
+                              value: formData.account,
+                              label: formData.accountName,
+                            }
+                          : null
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setTimeout(() => {
+                            handleSelectKeyDown(e, '#purchaseOrderNumber');
+                          }, 150);
                         }
-                      : null
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setTimeout(() => {
-                        handleSelectKeyDown(e, '#purchaseOrderNumber');
-                      }, 150);
-                    }
-                  }}
-                  acType={'3'}
-                />
+                      }}
+                      acType={'3'}
+                    />
+                  </div>
+                </div>
               </div>
               <div className="relative">
                 <div>
@@ -678,6 +790,7 @@ const TradingBusinessPurchase = () => {
                           }
                         : null
                     }
+                    orderType="1"
                     onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Pass the next field's ID
                   />
                 </div>
@@ -724,9 +837,16 @@ const TradingBusinessPurchase = () => {
                 placeholder={'Vehicle Number'}
                 label={'Vehicle Number'}
                 className={'py-1'}
+                list="purchase-vehicle-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'paymentAmt')} // Pass the next field's ID
+                onKeyDown={handleVehicleNumberKeyDown}
               />
+              <datalist id="purchase-vehicle-suggestions">
+                {vehicleSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -760,6 +880,8 @@ const TradingBusinessPurchase = () => {
                 placeholder={'Notes'}
                 label={'Notes'}
                 className={'py-1'}
+                list="purchase-notes-suggestions"
+                autoComplete="off"
                 onChange={handleOnChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -774,6 +896,11 @@ const TradingBusinessPurchase = () => {
                   }
                 }}
               />
+              <datalist id="purchase-notes-suggestions">
+                {noteSuggestions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
               <div className="mt-4 ">
@@ -836,6 +963,7 @@ const TradingBusinessPurchase = () => {
                 <ProductDropdown
                   id="product"
                   name="product"
+                  className='h-9'
                   onSelect={productSelectHandler}
                   // defaultValue={
                   //   productData.product_name && productData.product
@@ -1097,6 +1225,22 @@ const TradingBusinessPurchase = () => {
           </tbody>
         </table>
       </div>
+      <QuickCustomerModal
+        isOpen={showCustomerModal}
+        onClose={closeCustomerModal}
+        entityLabel="Supplier"
+        defaultTypeId="2"
+        onCustomerSaved={({ id, name }) => {
+          const isCashSupplier = Number(id) === 17;
+          setIsPaymentAmtManuallyEdited(false);
+          setFormData((prev) => ({
+            ...prev,
+            account: id,
+            accountName: name,
+            paymentAmt: isCashSupplier ? prev.paymentAmt : '0',
+          }));
+        }}
+      />
     </>
   );
 };

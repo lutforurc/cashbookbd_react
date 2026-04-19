@@ -10,6 +10,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../../utils/fields/ActionButton';
+import { FaYoutube } from 'react-icons/fa';
 
 const BranchList = () => {
   const branchList = useSelector((state) => state.branchList);
@@ -65,14 +66,9 @@ const BranchList = () => {
 
   const handleToggle = (row: any) => {
     const newStatus = row.status === 1 ? 0 : 1;
-
     dispatch(branchStatus(row.id, newStatus)).then(() => {
       dispatch(getBranch({ page, perPage, searchValue }));
     });
-
-    console.log(
-      `Toggled row with ID ${row.id} to ${newStatus ? 'enabled' : 'disabled'}`,
-    );
   };
 
   const columns = [
@@ -127,26 +123,38 @@ const BranchList = () => {
       ),
     },
   ];
-  const handleBranchView = (row: any) => {
-    console.log('View =>' + row);
+  const handleBranchView = (row: any) => { 
   };
   const handleBranchEdit = (row: any) => {
     navigate(`/branch/branch-edit/${row.branch_id}`);
   };
-  const handleBranchDelete = (row: any) => {
-    console.log('Delete =>' + row);
+  const handleBranchDelete = (row: any) => { 
     navigate('/branch/branch-list');
   };
 
   return (
     <div className=''>
-      <HelmetTitle title={'Branch List'} />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title={'Branch List'} />
+        <a
+          href="https://youtu.be/mWvu7T-spJg"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Watch registration video"
+          title="Watch registration video"
+          className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition  dark:text-red-400"
+        >
+          <FaYoutube className="text-base" />
+        </a>
+      </div>
+      
       <div className="flex justify-between mb-1">
         <SelectOption onChange={handleSelectChange} />
         <ButtonLoading
           onClick={handleSearchButton}
           buttonLoading={buttonLoading}
           label="Add Branch"
+          icon=""
         />
       </div>
       <div className="relative no-scrollbar">

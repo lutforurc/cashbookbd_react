@@ -1,53 +1,129 @@
 import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useEffect, useState } from 'react';
-import { getPermissions, getRoles, getSelectedPermissions, updateRolePermissions } from './userManagementSlice';
+import {
+  getPermissions,
+  getRoles,
+  getSelectedPermissions,
+  updateRolePermissions,
+} from './userManagementSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { formatRoleNameForCashBook } from '../../utils/utils-functions/formatRoleName';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { toast } from 'react-toastify';
+import { FiPlus } from 'react-icons/fi';
+import { getSettings } from '../settings/settingsSlice';
 
 interface Permission {
   id: number;
   name: string;
   group_name: string;
 }
+
 interface Role {
   id: number;
   name: string;
+  can_edit_permissions?: boolean;
+  is_plan_role?: boolean;
+  role_source?: string;
+  subscription_plan_id?: number | null;
+  role_group_code?: string | null;
+  is_company_owned_role?: boolean;
+  company_id?: number | null;
+  team_id?: number | null;
 }
 
 const Roles = () => {
   const dispatch = useDispatch();
   const rolesPermissions = useSelector((state: any) => state.userManagement);
+  const auth = useSelector((state: any) => state.auth);
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [roleId, setRoleId] = useState<number>(0);
+  const [updating, setUpdating] = useState(false);
+  const [addingRole, setAddingRole] = useState(false);
+  const rolePermissions = Array.isArray(rolesPermissions.selectedPermissions?.data?.data)
+    ? rolesPermissions.selectedPermissions.data.data
+    : [];
+  const currentCompanyId = Number(auth?.me?.company_id || 0);
+  const isSoftwareCompanyUser = currentCompanyId <= 1;
+  const isCompanyBoundRoleView = roles.length === 1;
+  const isReadonlyRole = selectedRole
+    ? isSoftwareCompanyUser
+      ? selectedRole.is_company_owned_role === true
+        || (!!selectedRole.team_id && !!selectedRole.company_id)
+      : selectedRole.can_edit_permissions === false
+        || selectedRole.is_plan_role === true
+        || selectedRole.role_source === 'plan'
+        || selectedRole.role_source === 'global'
+        || selectedRole.subscription_plan_id !== null && selectedRole.subscription_plan_id !== undefined
+    : isCompanyBoundRoleView;
 
   useEffect(() => {
-    dispatch(getRoles());
-    dispatch(getPermissions());
-  }, []);
+    dispatch(getRoles() as any);
+    dispatch(getPermissions() as any);
+  }, [dispatch]);
 
   useEffect(() => {
-    if (Array.isArray(rolesPermissions.permissions?.data?.data)) {
-      setPermissions(rolesPermissions.permissions.data.data);
-    } else {
-      setPermissions([]);
+    const availablePermissions = Array.isArray(rolesPermissions.permissions?.data?.data)
+      ? rolesPermissions.permissions.data.data
+      : [];
+
+    const mergedPermissions = [...availablePermissions];
+    const existingIds = new Set(mergedPermissions.map((perm: Permission) => perm.id));
+
+    rolePermissions.forEach((perm: Permission) => {
+      if (!existingIds.has(perm.id)) {
+        mergedPermissions.push(perm);
+        existingIds.add(perm.id);
+      }
+    });
+
+    mergedPermissions.sort((a, b) => {
+      const groupCompare = (a.group_name || '').localeCompare(b.group_name || '');
+      if (groupCompare !== 0) return groupCompare;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+
+    setPermissions(mergedPermissions);
+  }, [isCompanyBoundRoleView, rolePermissions, rolesPermissions.permissions?.data?.data]);
+
+  useEffect(() => {
+    const rawRoles = rolesPermissions.roles;
+    const incomingRoles = Array.isArray(rawRoles?.data?.data)
+      ? rawRoles.data.data
+      : Array.isArray(rawRoles?.data)
+        ? rawRoles.data
+        : Array.isArray(rawRoles)
+          ? rawRoles
+          : [];
+
+    const uniqueRoles = incomingRoles.filter((role: Role, index: number, arr: Role[]) => {
+      return index === arr.findIndex((item: Role) => {
+        if (item.id === role.id) return true;
+        return item.name?.trim().toLowerCase() === role.name?.trim().toLowerCase();
+      });
+    });
+
+    const nextRoles = uniqueRoles.filter((role) => role?.id && role?.name);
+    setRoles(nextRoles);
+
+    if (nextRoles.length === 1) {
+      setRoleId(nextRoles[0].id);
+      setSelectedRole(nextRoles[0]);
+    } else if (!selectedRole && nextRoles.length > 0) {
+      setRoleId(nextRoles[0].id);
+      setSelectedRole(nextRoles[0]);
     }
-  }, [rolesPermissions.permissions?.data?.data]);
+  }, [rolesPermissions.roles, selectedRole]);
 
   useEffect(() => {
-    setRoles(rolesPermissions.roles?.data?.data || []);
-  }, [rolesPermissions.roles?.data?.data]);
+    if (!selectedRole) return;
 
-  useEffect(() => {
-    if (selectedRole) {
-      dispatch(getSelectedPermissions(selectedRole.id));
-    }
+    dispatch(getSelectedPermissions(selectedRole.id) as any);
   }, [dispatch, selectedRole]);
 
   useEffect(() => {
@@ -59,13 +135,14 @@ const Roles = () => {
   }, [rolesPermissions.selectedPermissions?.data?.data]);
 
   const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const roleId = parseInt(event.target.value);
-    setRoleId(roleId);
-    const role = roles.find((r) => r.id === roleId);
+    const nextRoleId = parseInt(event.target.value);
+    setRoleId(nextRoleId);
+    const role = roles.find((r) => r.id === nextRoleId);
     setSelectedRole(role || null);
   };
 
   const handlePermissionChange = (permName: string) => {
+    if (isReadonlyRole) return;
     setSelectedPermissions((prev) =>
       prev.includes(permName)
         ? prev.filter((p) => p !== permName)
@@ -90,33 +167,39 @@ const Roles = () => {
     allPermissionNames.every((name) => selectedPermissions.includes(name));
 
   const handleRootToggle = (checked: boolean) => {
+    if (isReadonlyRole) return;
     setSelectedPermissions(checked ? allPermissionNames : []);
   };
 
-  // Update permissions of the selected role
   const handleUpdatePermissions = async () => {
-    if (!selectedRole) return toast.info("No role selected");
-    if (selectedPermissions.length === 0) return toast.info("No permissions selected");
+    if (updating) return;
+    if (!selectedRole) return toast.info('No role selected');
+    if (isReadonlyRole) return toast.info('Plan role permissions cannot be changed. Only company custom roles are editable.');
+    if (selectedPermissions.length === 0) return toast.info('No permissions selected');
 
+    setUpdating(true);
     try {
-      await dispatch(updateRolePermissions({ roleId, selectedPermissions })).unwrap();
-      // console.log(rolesPermissions?.updatePermission?.message);
-      toast.success(rolesPermissions?.updatePermission?.message || "Permissions updated successfully");
-    } catch (error) {
-      toast.error(error.message || "Failed to update permissions");
+      await dispatch(updateRolePermissions({ roleId, selectedPermissions }) as any).unwrap();
+      await dispatch(getSettings() as any);
+      toast.success(rolesPermissions?.updatePermission?.message || 'Permissions updated successfully');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to update permissions');
+    } finally {
+      setUpdating(false);
     }
   };
-
-
 
   return (
     <div>
       <HelmetTitle title="Role List" />
 
       <div className="flex justify-end mb-1 gap-2">
-       
-        <ButtonLoading onClick={handleUpdatePermissions} label="Update" />
-        <ButtonLoading onClick={() => {}} buttonLoading={true} label="Add Role" />
+        {!isReadonlyRole && (
+          <ButtonLoading className="p-2 w-30" icon="" onClick={handleUpdatePermissions} buttonLoading={updating} label="Update" />
+        )}
+        {!isCompanyBoundRoleView && (
+          <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className="mr-2" />} onClick={() => {}} buttonLoading={addingRole} label="Add Role" />
+        )}
       </div>
 
       <div className="overflow-y-auto">
@@ -126,17 +209,33 @@ const Roles = () => {
           onChange={handleRoleChange}
           label="Roles"
           data={roles}
+          value={roleId ? String(roleId) : undefined}
         />
       </div>
 
       <div className="text-sm mt-6">
-        {/* Root-level Select All */}
         <div className="mb-4 flex items-center justify-between border-b pb-2 border-gray-300 dark:border-gray-700">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
             Permissions
           </h2>
-          <ToggleSwitch label="All" checked={isAllSelected} onChange={handleRootToggle} />
+          {!isReadonlyRole && (
+            <ToggleSwitch
+              label="All"
+              checked={isAllSelected}
+              onChange={handleRootToggle}
+            />
+          )}
         </div>
+
+        {isReadonlyRole && (
+          <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+            {selectedRole?.is_company_owned_role
+              ? 'This is a company-owned role. Software Company user cannot change its permissions here.'
+              : isSoftwareCompanyUser
+                ? 'This global role can be managed by Software Company user.'
+                : 'This is a global role. Company users cannot change its permissions because it would affect other companies too.'}
+          </div>
+        )}
 
         {Object.keys(groupedPermissions).map((group) => {
           const perms = groupedPermissions[group];
@@ -162,11 +261,13 @@ const Roles = () => {
                 <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
                   {group}
                 </h3>
-                <ToggleSwitch
-                  label="All"
-                  checked={allSelectedInGroup}
-                  onChange={handleGroupToggle}
-                />
+                {!isReadonlyRole && (
+                  <ToggleSwitch
+                    label="All"
+                    checked={allSelectedInGroup}
+                    onChange={handleGroupToggle}
+                  />
+                )}
               </div>
 
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -175,6 +276,8 @@ const Roles = () => {
                     key={perm.id}
                     label={formatRoleNameForCashBook(perm.name)}
                     checked={selectedPermissions.includes(perm.name)}
+                    disabled={isReadonlyRole}
+                    preserveCheckedColorWhenDisabled
                     onChange={() => handlePermissionChange(perm.name)}
                   />
                 ))}

@@ -40,13 +40,15 @@ export const getPurchaseLedger = ({ branchId, ledgerId, productId, startDate, en
 const initialState = {
   isLoading: false,
   errors: {},
-  data: {},
+  data: [],
 };
 const purchaseLedgerReducer = (state = initialState, action: any) => {
   switch (action.type) {
     case PURCHASE_LEDGER_DATA_LIST_PENDING:
       return {
-        data: {}, //...state,
+        ...state,
+        data: [],
+        errors: {},
         isLoading: true,
       };
     case PURCHASE_LEDGER_DATA_LIST_SUCCESS:
@@ -60,6 +62,7 @@ const purchaseLedgerReducer = (state = initialState, action: any) => {
       return {
         ...state,
         isLoading: false,
+        data: [],
         errors: action.payload,
       };
     default:

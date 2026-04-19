@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { API_REMOTE_URL } from '../../services/apiRoutes';
 
 interface Props {
   companyName?: string;
@@ -17,8 +18,10 @@ const FaviconUpdater = ({ companyName }: Props) => {
     };
 
     const sluggedName = slugify(companyName);
-    const dynamicFaviconUrl = `https://nibirnirman.cashbookbd.com/public/backend/${sluggedName}.png`;
-    const fallbackFaviconUrl = 'https://nibirnirman.cashbookbd.com/public/backend/nibir-nirman.png';
+    const api_remote_url =  API_REMOTE_URL  
+
+    const dynamicFaviconUrl = `${api_remote_url}/public/backend/${sluggedName}.png`;
+    const fallbackFaviconUrl = `${api_remote_url}/public/backend/nibir-nirman.png`;
 
     const updateFavicon = (url: string) => {
       const timestamp = new Date().getTime(); // prevent caching

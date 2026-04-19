@@ -6,6 +6,8 @@ import HelmetTitle from "../../utils/others/HelmetTitle";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons"; 
 import { storeRole } from "./userManagementSlice";
 import { toast } from 'react-toastify';
+import { FaSave } from "react-icons/fa";
+import { FiSave } from "react-icons/fi";
 
 interface RoleItem {
   id: string | number;
@@ -28,7 +30,6 @@ const AddRole = () => {
       .unwrap()
       .then((data:any) => {
         toast.success((data?.data?.data || "Role create success!")); 
-        console.log(data?.data?.data);
         setFormData(initialRoleItem); // Reset form
       })
       .catch((error:any) => { 
@@ -64,7 +65,11 @@ const AddRole = () => {
             <ButtonLoading
               onClick={handleRoleSave}
               buttonLoading={loading} // Disable button while loading
+              className="p-2"
               label="Save"
+              icon={
+                <FiSave size={16} className="mr-2" />
+              }
             />
           </div>
         </div>

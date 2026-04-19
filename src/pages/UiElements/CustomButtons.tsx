@@ -1,11 +1,11 @@
 import React from 'react';
-import { FiCheck } from 'react-icons/fi';
+import { FiArrowRightCircle, FiCheck } from 'react-icons/fi';
 
 // Define the props for the Button component
 interface ButtonProps {
   id?: string;
   name?: string;
-  label: string;
+  label?: string | number;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   className?: string;
@@ -28,7 +28,10 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
   onKeyDown,
   buttonLoading = false,
 }) => {
-  label = label || '';
+  const safeLabel = typeof label === 'string' || typeof label === 'number' ? String(label) : '';
+
+  const resolvedIcon = icon ? icon : <FiArrowRightCircle className="h-5 w-5" />;
+  const hasLabel = safeLabel.trim().length > 0;
   return (
     <button
       id={id}
@@ -43,12 +46,12 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
         {buttonLoading ? (
           <>
             <Spinner />
-            {label}
+            {safeLabel}
           </>
         ) : (
           <>
-            {icon}
-            {label}
+            <span className={hasLabel ? 'mr-2 inline-flex items-center' : 'inline-flex items-center'}>{resolvedIcon}</span>
+            {hasLabel ? <span>{safeLabel}</span> : null}
           </>
         )}
       </span>
@@ -89,7 +92,7 @@ type PrintButtonProps = {
 
 export const PrintButton: React.FC<PrintButtonProps> = ({
   label = '',
-  onClick = () => {},
+  onClick = () => { },
   className = '',
   type = 'button',
 }) => {
@@ -125,7 +128,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled || loading}
-      className={`text-white bg-red-600 hover:bg-red-700 focus:outline-none font-medium text-sm px-5 h-8 text-center rounded inline-flex items-center justify-center ${className}`}
+      className={`text-white focus:outline-none font-medium text-sm px-5 h-8 text-center rounded inline-flex items-center justify-center ${className}`}
     >
       <span className="flex items-center">
         {loading ? (

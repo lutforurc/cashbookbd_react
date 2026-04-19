@@ -239,7 +239,6 @@ const RequisitionForm = () => {
   };
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.name, e.target.value);
 
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -303,7 +302,6 @@ const RequisitionForm = () => {
       setSaveButtonLoading(false);
       return;
     }
-    console.log('Ready');
     dispatch(
       requisitionStore(formData, function (message) {
         if (message) {

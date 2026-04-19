@@ -136,7 +136,7 @@ const CoaL3: React.FC = () => {
                         className="whitespace-nowrap"
                     />
                 </div>
-                <Link to="/category/create" className="text-nowrap">
+                <Link to="/category/create" className="text-nowrap hidden">
                     New COA L3
                 </Link>
             </div>

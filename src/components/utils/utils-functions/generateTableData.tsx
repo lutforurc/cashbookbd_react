@@ -3,6 +3,7 @@ import { number } from 'yup';
 export interface TableRow {
   sl_number: number | '';
   vr_date: string;
+  mid: number | string;
   vr_no: string;
   name: string;
   remarks: string | null;
@@ -11,11 +12,11 @@ export interface TableRow {
   debit: number;
   credit: number;
   voucher_image: string | null;
+  running_balance?: number | '';
 }
 
 export const generateTableData = (data: any): TableRow[] => {
 
-    // console.log(data);
   if (!data) return []; // safeguard if data is undefined
 
   
@@ -30,6 +31,7 @@ export const generateTableData = (data: any): TableRow[] => {
   const openingRow: TableRow = {
     sl_number: '',
     vr_date: '',
+    mid: '',
     vr_no: '',
     name: 'Opening',
     remarks: '',
@@ -38,12 +40,14 @@ export const generateTableData = (data: any): TableRow[] => {
     debit: Math.max(totalDebit - totalCredit, 0),
     credit: Math.max(totalCredit - totalDebit, 0),
     voucher_image: '',
+    running_balance: Math.max(totalDebit - totalCredit, 0) - Math.max(totalCredit - totalDebit, 0),
   };
 
   // Flatten details safely
   const detailsRows: TableRow[] = details.map((trx: any, index: number) => ({
   sl_number: index + 1,
   vr_date: trx.vr_date,
+  mid: trx.mid || '',
   vr_no: trx.vr_no,
   name: trx.name, // এখন coa_l4 relation লোড হচ্ছে না, তাই placeholder
   remarks: trx.remarks || '-',
@@ -53,6 +57,12 @@ export const generateTableData = (data: any): TableRow[] => {
   credit: parseFloat(trx.credit || 0),
   voucher_image: trx.voucher_image || null,
 }));
+
+  let previousAmount = Number(openingRow.running_balance || 0);
+  detailsRows.forEach((row) => {
+    previousAmount = previousAmount + Number(row.debit || 0) - Number(row.credit || 0);
+    row.running_balance = previousAmount;
+  });
 
   // Assign sequential sl_number
   detailsRows.forEach((row, idx) => (row.sl_number = idx + 1));
@@ -77,6 +87,7 @@ export const generateTableData = (data: any): TableRow[] => {
     debit: Math.max(rangeDebit, 0),
     credit: Math.max(rangeCredit, 0),
     voucher_image: '',
+    running_balance: '',
   };
 
   // Total & Balance
@@ -94,6 +105,7 @@ export const generateTableData = (data: any): TableRow[] => {
     debit: totalDebitSum,
     credit: totalCreditSum,
     voucher_image: '',
+    running_balance: '',
   };
 
   const balanceRow: TableRow = {
@@ -106,6 +118,7 @@ export const generateTableData = (data: any): TableRow[] => {
     debit: Math.max(totalDebitSum - totalCreditSum, 0),
     credit: Math.max(totalCreditSum - totalDebitSum, 0),
     voucher_image: '',
+    running_balance: '',
   };
 
   return [...allRows, rangeRow, totalRow, balanceRow];

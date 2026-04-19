@@ -2,8 +2,10 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import AsyncSelect from 'react-select/async';
+import { components, OptionProps } from 'react-select';
 import { getDdlOrders } from '../../modules/orders/ordersSlice';
 import {formatDate} from './formatDate';
+import thousandSeparator from './thousandSeparator';
 
 interface OptionType {
     value: string;
@@ -13,7 +15,71 @@ interface OptionType {
     label_4?: string;
     label_5?: string;
     label_6?: string;
+    label_7?: string;
+    label_8?: string | number;
+    label_9?: string;
+    order_type?: string;
+    [key: string]: any;
 }
+
+const toNumber = (value: any) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+};
+
+const getRemainingQty = (option: OptionType) => {
+    const orderQty =
+        toNumber(option.order_qty) ??
+        toNumber(option.total_order) ??
+        toNumber(option.quantity) ??
+        toNumber(option.label_7);
+
+    const trxQty =
+        toNumber(option.trx_quantity) ??
+        toNumber(option.delivery_qty) ??
+        toNumber(option.linked_quantity) ??
+        toNumber(option.base_qty);
+
+    if (orderQty !== null && trxQty !== null) {
+        return orderQty - trxQty;
+    }
+
+    return toNumber(option.remaining_qty) ?? toNumber(option.remaining_quantity) ?? toNumber(option.label_8);
+};
+
+const OrderOption = (props: OptionProps<OptionType, false>) => {
+    const isDarkMode =
+        typeof document !== 'undefined' &&
+        document.documentElement.classList.contains('dark');
+
+    const backgroundColor = props.isSelected
+        ? (isDarkMode ? '#1d4ed8' : '#2563eb')
+        : props.isFocused
+            ? (isDarkMode ? '#475569' : '#dbeafe')
+            : (isDarkMode ? '#374151' : '#f3f4f6');
+
+    const color = props.isSelected
+        ? '#ffffff'
+        : (isDarkMode ? '#f8fafc' : '#0f172a');
+
+    return (
+        <components.Option
+            {...props}
+            innerProps={{
+                ...props.innerProps,
+                style: {
+                    ...(props.innerProps.style || {}),
+                    backgroundColor,
+                    color,
+                    borderLeft: props.isFocused || props.isSelected ? '4px solid #60a5fa' : '4px solid transparent',
+                    boxShadow: props.isFocused ? `inset 0 0 0 1px ${isDarkMode ? '#93c5fd' : '#60a5fa'}` : 'none',
+                },
+            }}
+        >
+            {props.children}
+        </components.Option>
+    );
+};
 
 interface DropdownProps {
     id?: string;
@@ -23,20 +89,71 @@ interface DropdownProps {
     defaultValue?: { value: any, label: any } | null
     value: { value: any, label: any } | null
     onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void; // Optional onKeyDown prop
+    orderType?: string;
+    order_type?: string;
+    excludeId?: string | number;
+    refDirection?: 'reference' | 'linked';
+    isDisabled?: boolean;
+    focusTrigger?: number;
 }
 
-const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultValue, value, id, name, onKeyDown }) => {
+const OrderDropdown: React.FC<DropdownProps> = ({
+    onSelect,
+    heightPx,
+    defaultValue,
+    value,
+    id,
+    name,
+    onKeyDown,
+    orderType,
+    order_type,
+    excludeId,
+    refDirection,
+    isDisabled,
+    focusTrigger,
+}) => {
     const [isSelected, setIsSelected] = React.useState(false);
+    const [loadedOptions, setLoadedOptions] = React.useState<OptionType[]>([]);
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const dispatch = useDispatch();
+    const selectRef = React.useRef<any>(null);
+    const resolvedOrderType = orderType ?? order_type;
+    const isDarkMode =
+        typeof document !== 'undefined' &&
+        document.documentElement.classList.contains('dark');
+
+    React.useEffect(() => {
+        if (!focusTrigger || isDisabled) {
+            return;
+        }
+
+        window.setTimeout(() => {
+            selectRef.current?.focus?.();
+        }, 0);
+    }, [focusTrigger, isDisabled]);
 
     const loadOptions = async (inputValue: string, callback: (options: OptionType[]) => void) => {
         if (inputValue.length >= 3) {
             try {
                 // Dispatch the action and wait for the fetched data
-                const response: any = await dispatch(getDdlOrders(inputValue));
+                const response: any = await dispatch(
+                    getDdlOrders(inputValue, {
+                        orderType: resolvedOrderType,
+                        excludeId,
+                        refDirection,
+                    }),
+                );
                 // Check and format the fetched data
                 if (Array.isArray(response.payload)) {
-                    const formattedOptions: OptionType[] = response.payload.map((item: any) => ({
+                    const hasOrderTypeInPayload = response.payload.some(
+                        (item: any) => item?.order_type !== undefined && item?.order_type !== null,
+                    );
+
+                    const filteredPayload = resolvedOrderType && hasOrderTypeInPayload
+                        ? response.payload.filter((item: any) => String(item.order_type) === String(resolvedOrderType))
+                        : response.payload;
+
+                    const formattedOptions: OptionType[] = filteredPayload.map((item: any) => ({
                         value: item.value,
                         label: item.label,
                         label_2: item.label_2,
@@ -44,58 +161,114 @@ const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultVal
                         label_4: item.label_4,
                         label_5: item.label_5,
                         label_6: item.label_6,
+                        label_7: item.label_7,
+                        label_8: item.label_8,
+                        label_9: item.label_9,
+                        order_type: item.order_type,
+                        ...item,
                     }));
+                    setLoadedOptions(formattedOptions);
                     callback(formattedOptions);
                 } else {
+                    setLoadedOptions([]);
                     callback([]); // Clear options if data is invalid
                 }
             } catch (error) {
                 console.error('Error loading options:', error);
+                setLoadedOptions([]);
                 callback([]); // Clear options in case of an error
             }
         } else {
+            setLoadedOptions([]);
             callback([]); // Clear options if inputValue has less than 3 characters
         }
+    };
+
+    const handleKeyDownInternal = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter' && isMenuOpen && loadedOptions.length > 0) {
+            event.preventDefault();
+
+            const focusedOption = selectRef.current?.state?.focusedOption as OptionType | undefined;
+            const optionToSelect = focusedOption ?? loadedOptions[0];
+
+            if (optionToSelect) {
+                onSelect(optionToSelect);
+                setIsSelected(false);
+                setIsMenuOpen(false);
+                selectRef.current?.blur?.();
+
+                window.setTimeout(() => {
+                    onKeyDown?.(event);
+                }, 0);
+                return;
+            }
+        }
+
+        onKeyDown?.(event);
     };
 
 
     return (
         <div className="dark:bg-black focus:border-blue-500 ">
             <AsyncSelect<OptionType>
+                ref={selectRef}
                 id={id}
+                inputId={id}
                 name={name}
                 className="cash-react-select-container w-full dark:bg-black focus:border-blue-500 "
                 classNamePrefix="cash-react-select"
+                components={{ Option: OrderOption }}
                 loadOptions={loadOptions}
                 onChange={onSelect} // Handle change in selection
-                onMenuOpen={() => setIsSelected(true)}
-                onMenuClose={() => setIsSelected(false)}
-                onKeyDown={onKeyDown} // Pass it to the input
+                onMenuOpen={() => {
+                    setIsSelected(true);
+                    setIsMenuOpen(true);
+                }}
+                onMenuClose={() => {
+                    setIsSelected(false);
+                    setIsMenuOpen(false);
+                }}
+                onKeyDown={handleKeyDownInternal}
+                openMenuOnFocus
+                isDisabled={isDisabled}
+                isClearable={!isDisabled}
+                escapeClearsValue
                 getOptionLabel={(option) => {
                     return option.label
                 }} // Show only primary label in selected input
                 formatOptionLabel={(option) => {
                     return (
-                        <div>
-                            <div className="text-sm text-gray-900  dark:text-white focus:border-blue-500">
+                        <div style={{ color: 'inherit' }}>
+                            <div className="text-sm font-medium" style={{ color: 'inherit' }}>
                                 {option.label}
                             </div>
                             {isSelected && (
                                 <div className='additional-info'>
                                     {option.label_2 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Name : {option.label_2}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Name : {option.label_2}</div>
                                     )}
                                     {option.label_3 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Product: {option.label_3}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Product: {option.label_3}</div>
                                     )}
                                     {option.label_4 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Order Date: {formatDate(option.label_4)}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Order Date: {option.label_4}</div>
                                     )}
                                     {option.label_5 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Order Rate: {option.label_5}</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Order Rate: {option.label_5}</div>
                                     )}
-                                    {option.label_6 && (
-                                        <div className="text-gray-600 dark:text-white text-sm">Last Date: {formatDate(option.label_6)}</div>
+                                    {/* {option.label_6 && (
+                                        <div className="text-gray-600 dark:text-white text-sm">Last Date: {option.label_6}</div>
+                                    )} */}
+                                    {option.label_7 && (
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Order Qty: { thousandSeparator( Number(option.label_7), 0) }</div>
+                                    )}
+                                    {getRemainingQty(option) !== null && (
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>
+                                            Remaining Qty: { thousandSeparator( Number( getRemainingQty(option)),0 ) }
+                                        </div>
+                                    )}
+                                    {option.label_9 && (
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Note: {option.label_9}</div>
                                     )}
                                 </div>
                             )}
@@ -104,7 +277,7 @@ const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultVal
                 }}
                 getOptionValue={(option) => option.value}
 
-                placeholder="Select Order"
+                placeholder={isDisabled ? "Select Order Type First" : "Select Order"}
                 styles={{
                     control: (base) => ({
                         ...base,
@@ -113,10 +286,19 @@ const OrderDropdown: React.FC<DropdownProps> = ({ onSelect, heightPx, defaultVal
                         height: heightPx,
                         minHeight: heightPx,
                     }),
-                    option: (base) => ({
+                    option: (base, state) => ({
                         ...base,
                         whiteSpace: 'normal',
                         borderColor: 'blue',
+                        paddingLeft: 12,
+                        backgroundColor: state.isSelected
+                            ? (isDarkMode ? '#1d4ed8' : '#2563eb')
+                            : state.isFocused
+                                ? (isDarkMode ? '#334155' : '#dbeafe')
+                                : (isDarkMode ? '#374151' : '#f3f4f6'),
+                        color: state.isSelected
+                            ? '#ffffff'
+                            : (isDarkMode ? '#f3f4f6' : '#0f172a'),
                     }),
                     menu: (base) => ({
                         ...base,

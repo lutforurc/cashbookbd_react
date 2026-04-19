@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import httpService from '../../services/httpService';
-import {API_EMPLOYEES_INSTALLMENT_LIST_URL,API_FILTER_INSTALLMENT_LIST_URL,API_INSTALLMENT_DETAILS_BY_ID_URL,API_INSTALLMENT_LIST_URL,API_INSTALLMENT_RECEIVED_URL,} from '../../services/apiRoutes';
+import {API_EMPLOYEES_INSTALLMENT_LIST_URL,API_FILTER_INSTALLMENT_LIST_URL,API_INSTALLMENT_DETAILS_BY_ID_URL,API_INSTALLMENT_EARLY_PAYMENT_APPLY_URL,API_INSTALLMENT_LIST_URL,API_INSTALLMENT_RECEIVED_URL,} from '../../services/apiRoutes';
 import { set } from 'react-datepicker/dist/date_utils';
 
 // Types
@@ -32,6 +32,10 @@ type InstallmentReceivePayload = {
   amount: number;
   remarks: string;
   message?: string; // Optional message for success notification
+};
+
+type InstallmentEarlyPaymentPayload = {
+  installment_id: string;
 };
 
 // Types
@@ -159,6 +163,18 @@ export const installmentReceived = createAsyncThunk<any,InstallmentReceivePayloa
   }
 });
 
+export const installmentEarlyPaymentApply = createAsyncThunk<any,InstallmentEarlyPaymentPayload,{ rejectValue: ErrorResponse }>('installmentEarlyPaymentApply/fetch', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await httpService.post(API_INSTALLMENT_EARLY_PAYMENT_APPLY_URL, payload);
+    return response.data;
+  } catch (error: any) {
+    return rejectWithValue({
+      message:
+        error?.response?.data?.message || 'Failed to apply early payment',
+    });
+  }
+});
+
 // Slice
 const installmentSlice = createSlice({
   name: 'installmentProperties',
@@ -230,6 +246,23 @@ const installmentSlice = createSlice({
         }
       })
       .addCase(installmentReceived.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Something went wrong!';
+      })
+
+      .addCase(installmentEarlyPaymentApply.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(installmentEarlyPaymentApply.fulfilled, (state, action) => {
+        state.loading = false;
+        state.installmentPayment = action.payload;
+        if (action.payload.success) {
+          state.message = action.payload.message;
+        }
+      })
+      .addCase(installmentEarlyPaymentApply.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Something went wrong!';
       })

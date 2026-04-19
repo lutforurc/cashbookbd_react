@@ -68,7 +68,6 @@ export const removeVoucherApproval = (data: any, callback?: (message: string, su
         });
         
         if (typeof callback === 'function') {
-          // console.log('Remove Approval Response:', _data);
           callback(_data.message ?? 'Unexpected error.', false); // ✅ success = false
         }
       }

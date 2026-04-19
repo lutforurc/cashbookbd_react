@@ -8,7 +8,7 @@ import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import OrderDropdown from '../../utils/utils-functions/OrderDropdown';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { orderType } from '../../utils/fields/DataConstant';
-import { FiRefreshCcw } from 'react-icons/fi';
+import { FiCheckSquare, FiRefreshCcw } from 'react-icons/fi';
 import { getAverageOrderPrice } from './ordersSlice';
 import { toast } from 'react-toastify';
 import checkNumber from '../../utils/utils-functions/numberCheck';
@@ -101,7 +101,6 @@ const AveragePrice = (user: any) => {
         setAverageData({ ...averageData, [reportType]: e.target.value });
     }
 
-    // console.log(orderData?.data?.others_expense)
     return (
         <>
             <HelmetTitle title={'Average Price'} />
@@ -129,7 +128,7 @@ const AveragePrice = (user: any) => {
                     </div>
                     <div className=''>
                         <label htmlFor="">Select Order</label>
-                        <OrderDropdown onSelect={selectedOrderOptionHandler} heightPx='32px' />
+                        <OrderDropdown  onSelect={selectedOrderOptionHandler}  />
                     </div>
                     <div className=''>
                         <div>
@@ -138,7 +137,7 @@ const AveragePrice = (user: any) => {
                                 name={'category_type_id'}
                                 label="Report Type"
                                 onChange={handleReportTypeChange}
-                                className="h-8 bg-transparent"
+                                className="h-9 bg-transparent"
                                 data={orderType} />
                         </div>
                     </div>
@@ -147,8 +146,8 @@ const AveragePrice = (user: any) => {
                             onClick={handleActionButtonClick}
                             buttonLoading={buttonLoading}
                             label="Run"
-                            className="mt-0 md:mt-2 w-full h-8"
-                            icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
+                            className="mt-0 md:mt-2 w-full h-10"
+                            icon={<FiCheckSquare className="text-white text-lg ml-2" />}
                         />
                     </div>
                 </div>

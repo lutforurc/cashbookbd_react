@@ -464,6 +464,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                       : null
                   }
                   acType={"3"}
+                  className="h-9"
                 />
               </div>
 
@@ -473,7 +474,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                 value={state.notes}
                 placeholder={"Notes"}
                 label={"Notes"}
-                className={"py-1"}
+                className={"py-1 h-9"}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, "bill_no")}
               />
@@ -581,7 +582,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                     onClick={searchInvoice}
                     buttonLoading={false}
                     label=""
-                    className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute -right-1 top-6"
+                    className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute -right-5 top-6"
                     icon={<FiSearch className="dark:text-white text-black-2 text-lg ml-2  mr-2" />}
                   />
                 </div>
@@ -605,7 +606,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                       ? { label: productData.product_name, value: productData.product }
                       : null
                   }
-                  className={"py-1"}
+                  className={""}
                 />
               </div>
 
@@ -616,7 +617,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   name="qty"
                   placeholder={"Quantity"}
                   label={"Quantity"}
-                  className={"py-1 mt-1"}
+                  className={"py-1 h-9.5"}
                   type="number"
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, "price")}
@@ -631,7 +632,7 @@ function ConstructionLabourInvoice(): JSX.Element {
                   name="price"
                   placeholder={"Price"}
                   label={"Price"}
-                  className={"py-1 mt-1"}
+                  className={"py-1 h-9.5"}
                   type="number"
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, "addProduct")}

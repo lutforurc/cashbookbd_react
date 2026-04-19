@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import SelectOption from '../../../utils/utils-functions/SelectOption';
-import SearchInput from '../../../utils/fields/SearchInput';
+import SelectOption from '../../../utils/utils-functions/SelectOption'; 
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import Link from '../../../utils/others/Link';
 import Loader from '../../../../common/Loader';
@@ -13,12 +12,12 @@ import ActionButtons from '../../../utils/fields/ActionButton';
 import { employeeStatus, fetchEmployees, fetchEmployeeSettings, updateEmployeeFromUI } from './employeeSlice';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { employeeGroup } from '../../../utils/fields/DataConstant';
 import InputElement from '../../../utils/fields/InputElement';
 import { useReactToPrint } from 'react-to-print';
 import EmployeePrint from './EmployeePrint';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { toast } from 'react-toastify';
+import MultiSelectDropdown from '../../../utils/utils-functions/MultiSelectDropdown';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
@@ -36,11 +35,16 @@ const Employees = ({ user }: any) => {
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const printRef = useRef<HTMLDivElement>(null);
   const [designation, setDesignation] = useState<any[]>([]);
+    const [designationLevel, setDesignationLevel] = useState<any[]>([]);
   const [ddlDesignation, setDdlDesignation] = useState<any[]>([]);
   const [ddlDesignationLevel, setDdlDesignationLevel] = useState<any[]>([]);
-
   const [designationId, setDesignationId] = useState<number | undefined>(undefined);
   const [designationLevelId, setDesignationLevelId] = useState<number | undefined>(undefined);
+  const [designationLevels, setDesignationLevels] = useState<any[]>([]);
+  const designationLevelOptions = designationLevel.map((d: any) => ({
+    value: d.id,
+    label: d.name,
+  }));
 
   const [fontSize, setFontSize] = useState<number>(12);
   const navigate = useNavigate();
@@ -55,11 +59,13 @@ const Employees = ({ user }: any) => {
 
 
   useEffect(() => {
-    const list = employees?.employeeSettings?.data?.data || [];
-    setDesignation(list?.designation);
-    setDdlDesignation(list?.designation);
-    setDdlDesignationLevel(list?.designationLevels);
-  }, [employees?.employeeSettings]);
+  const list = employees?.employeeSettings?.data?.data || [];
+
+  setDesignation(list?.designation || []);
+  setDesignationLevel(list?.designationLevels || []); // ✅ THIS LINE
+  setDdlDesignation(list?.designation || []);
+  setDdlDesignationLevel(list?.designationLevels || []);
+}, [employees?.employeeSettings]);
 
   useEffect(() => {
     const list = employees?.employees?.data?.data?.data || [];
@@ -91,7 +97,7 @@ const Employees = ({ user }: any) => {
   const handleSearchButton = (e: any) => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(fetchEmployees({ page, per_page: perPage, branch_id: branchId, level_id: designationLevelId, designation_id: designationId }));
+    dispatch(fetchEmployees({ page, per_page: perPage, branch_id: branchId, level_ids: designationLevels.map(l => l.value), designation_id: designationId }));
     if (employees?.data?.total >= 0) {
       setTotalPages(Math.ceil(employees?.employees?.data?.data?.total / perPage));
       setTableData(employees?.employees?.data?.data?.data || []);
@@ -375,17 +381,10 @@ const Employees = ({ user }: any) => {
   return (
     <div>
       <HelmetTitle title={'Employee List'} />
-      <div className="flex overflow-x-auto justify-between mb-1">
+      <div className="flex  justify-between mb-1">
         <div className='flex'>
-          <div className='mr-2'>
+          <div className='mr-1'>
             <div className="w-full">
-              {/* <BranchDropdown
-                defaultValue={user?.user?.branch_id}
-                onChange={handleBranchChange}
-                className="w-60 font-medium text-sm p-2 "
-                branchDdl={dropdownData}
-              /> */}
-
               <BranchDropdown
                 defaultValue={branchId?.toString()}
                 onChange={(e: any) => {
@@ -397,17 +396,15 @@ const Employees = ({ user }: any) => {
               />
             </div>
           </div>
-          <div className='mr-2'>
-            <DropdownCommon
-              id="designation_level"
-              name="designation_level"
-              label=""
-              onChange={handleOnSelectChange}
-              className="h-[2.4rem] bg-transparent"
-              data={designationLevelAll}
-            />
+          <div className='mr-1'>
+            <MultiSelectDropdown
+              options={designationLevelOptions}
+              value={designationLevels}
+              onChange={setDesignationLevels} 
+              className="w-60"
+            /> 
           </div>
-          <div className='mr-2'>
+          <div className='mr-1'>
             <DropdownCommon
               id="designation"
               name="designation"
@@ -420,25 +417,18 @@ const Employees = ({ user }: any) => {
           <div className="flex">
             <SelectOption
               onChange={handleSelectChange}
-              className="mr-1 md:mr-2"
-            />
-            {/* <SearchInput
-              search={search}
-              setSearchValue={setSearchValue}
-              className="text-nowrap"
-            /> */}
+              className="mr-1 h-9.5"
+            /> 
             <ButtonLoading
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
-              className="whitespace-nowrap"
+              className="whitespace-nowrap h-9.5"
             />
           </div>
         </div>
-
-
-        <div className='flex'>
-          <div className="mr-2">
+        <div className='flex ml-1'>
+          <div className="mr-1">
             <InputElement
               id="perPage"
               name="perPage"
@@ -446,10 +436,10 @@ const Employees = ({ user }: any) => {
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type='text'
-              className="font-medium text-sm h-9 w-12"
+              className="font-medium text-sm h-9.5 w-12"
             />
           </div>
-          <div className="mr-2">
+          <div className="">
             <InputElement
               id="fontSize"
               name="fontSize"
@@ -457,16 +447,16 @@ const Employees = ({ user }: any) => {
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type='text'
-              className="font-medium text-sm h-9 w-12"
+              className="font-medium text-sm h-9.5 w-12"
             />
           </div>
           <PrintButton
             onClick={handlePrint}
             label=""
-            className="ml-2 mr-2"
+            className="ml-1 mr-1"
           />
           <Link to="/hrms/employee/add" className="text-nowrap">
-            New Employee
+            (+) Employee
           </Link>
         </div>
       </div>

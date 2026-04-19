@@ -7,6 +7,7 @@ import InputDatePicker from '../../utils/fields/DatePicker';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../common/Loader';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
+import { getSettings } from '../settings/settingsSlice';
 import dayjs from 'dayjs';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
@@ -14,52 +15,65 @@ import { Attachment, ImageVoucherType } from '../../utils/fields/DataConstant';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import ImagePopup from '../../utils/others/ImagePopup';
 import Table from '../../utils/others/Table';
+import { formatDate } from '../../utils/utils-functions/formatDate';
+import httpService from '../../services/httpService';
+import {
+  API_DELETE_VOUCHER_IMAGE_URL,
+  API_VOUCHER_IMAGE_FOR_UPLOAD_URL,
+} from '../../services/apiRoutes';
+import { hasPermission } from '../../Sidebar/permissionUtils';
+import { FiCheckSquare } from 'react-icons/fi';
 
 type FileMap = { [voucherId: number]: File[] };
 type PreviewMap = { [voucherId: number]: string[] };
 type LoadingMap = { [voucherId: number]: boolean };
+type ResetMap = { [voucherId: number]: number };
+type RemovingUploadedImageMap = { [voucherId: number]: string | null };
 type StatusMap = {
   [voucherId: number]: 'success' | 'error' | null | undefined;
 };
 
+interface Voucher {
+  id?: number;
+  mtm_id: number;
+  serial_no: number;
+  vr_no: string;
+  vr_date?: string;
+  branchPad: string;
+  voucher_image: string;
+  title: string;
+  vr_dt: string;
+  nam: string;
+  debit: number;
+  credit: number;
+}
+
+interface OptionType {
+  value: string;
+  label: string;
+  additionalDetails: string;
+}
+
 export default function VoucherUpload(user: any): JSX.Element {
-  const branchDdlData = useSelector((state) => state.branchDdl);
-  const settings = useSelector((state) => state.settings);
-  const imageUpload = useSelector((state) => state.imageUpload);
+  const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const settings = useSelector((state: any) => state.settings);
+  const imageUpload = useSelector((state: any) => state.imageUpload);
+  const userPermissions = settings?.data?.permissions || [];
+  const canDeleteVoucherPhoto = hasPermission(userPermissions, 'voucher.photo.delete');
 
   const [files, setFiles] = useState<FileMap>({});
   const [previews, setPreviews] = useState<PreviewMap>({});
   const [loading, setLoading] = useState<LoadingMap>({});
+  const [inputResetKeys, setInputResetKeys] = useState<ResetMap>({});
+  const [removingUploadedImages, setRemovingUploadedImages] = useState<RemovingUploadedImageMap>({});
   const [uploadStatus, setUploadStatus] = useState<StatusMap>({});
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [startDate, setStartDate] = useState<Date | null>(null); // Define state with type
-  const [endDate, setEndDate] = useState<Date | null>(null); // Define state with type
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null);
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [tableData, setTableData] = useState<any[]>([]);
-
+  const [tableData, setTableData] = useState<Voucher[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-
-  interface Voucher {
-    mtm_id: number;
-    serial_no: number;
-    vr_no: string;
-    branchPad: string;
-    voucher_image: string;
-    title: string;
-    vr_dt: string;
-    nam: string;
-    debit: number;
-    credit: number;
-    // add other properties you use
-  }
-
-  interface OptionType {
-    value: string;
-    label: string;
-    additionalDetails: string;
-  }
 
   const [voucherImageFormData, setVoucherImageFormData] = useState({
     branch_id: user.user.branch_id,
@@ -69,21 +83,26 @@ export default function VoucherUpload(user: any): JSX.Element {
     end_date: settings?.data?.trx_dt,
   });
 
-  const dispatch = useDispatch();
+
+console.log('settings permissions:', settings?.data?.permissions);
+console.log(
+  'has voucher.photo.delete:',
+  settings?.data?.permissions?.some((p: any) => p?.name === 'voucher.photo.delete')
+);
+
+  const dispatch = useDispatch<any>();
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    // setIsSelected(user.user.branch_id);
+    dispatch(getSettings({}));
     setBranchId(user.user.branch_id);
-    // setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
-  }, []);
+  }, [dispatch, user.user.branch_id]);
 
   useEffect(() => {
     if (Array.isArray(imageUpload?.dataForImage?.data)) {
-      setVouchers(imageUpload.dataForImage?.data);
-      setTableData(imageUpload.dataForImage?.data);
+      setTableData(imageUpload.dataForImage.data);
     } else {
-      setVouchers([]);
+      setTableData([]);
     }
   }, [imageUpload?.dataForImage?.data]);
 
@@ -102,44 +121,58 @@ export default function VoucherUpload(user: any): JSX.Element {
       branchDdlData?.protectedData?.data &&
       branchDdlData?.protectedData?.transactionDate
     ) {
-      setDropdownData(branchDdlData?.protectedData?.data);
+      setDropdownData(branchDdlData.protectedData.data);
       const [day, month, year] =
-        branchDdlData?.protectedData?.transactionDate.split('/');
+        branchDdlData.protectedData.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
       setStartDate(parsedDate);
       setEndDate(parsedDate);
       setBranchId(user.user.branch_id);
-    } else {
     }
-  }, [branchDdlData?.protectedData?.data]);
+  }, [branchDdlData?.protectedData?.data, branchDdlData?.protectedData?.transactionDate, user.user.branch_id]);
 
-  const handleFileChange = (id: number, selectedFiles: FileList | null) => {
+  const getVoucherRowId = (row: Voucher) => Number(row?.id ?? row?.mtm_id ?? 0);
+
+  const buildPreviewList = async (selectedFiles: File[]) => {
+    const previewReaders = selectedFiles.map((file) => {
+      if (file.type === 'application/pdf') {
+        return Promise.resolve('');
+      }
+
+      const reader = new FileReader();
+      return new Promise<string>((resolve) => {
+        reader.onloadend = () => {
+          resolve(typeof reader.result === 'string' ? reader.result : '');
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    const previewUrls = await Promise.all(previewReaders);
+    return previewUrls;
+  };
+
+  const handleFileChange = async (id: number, selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
 
     const fileArray = Array.from(selectedFiles);
+    const mergedFiles = [...(files[id] || []), ...fileArray];
 
-    setFiles((prev) => ({ ...prev, [id]: fileArray }));
+    setFiles((prev) => ({ ...prev, [id]: mergedFiles }));
     setUploadStatus((prev) => ({ ...prev, [id]: null }));
+    setPreviews((prev) => ({
+      ...prev,
+      [id]: [],
+    }));
 
-    const previewURLs: string[] = [];
-
-    fileArray.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          previewURLs.push(reader.result);
-          if (previewURLs.length === fileArray.length) {
-            setPreviews((prev) => ({ ...prev, [id]: previewURLs }));
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    const previewUrls = await buildPreviewList(mergedFiles);
+    setPreviews((prev) => ({
+      ...prev,
+      [id]: previewUrls,
+    }));
   };
 
   const handleUpload = async (id: number) => {
-    console.log(id);
-    
     const selectedFiles = files[id];
     if (!selectedFiles?.length) {
       toast.warning('Please select files first!');
@@ -153,24 +186,19 @@ export default function VoucherUpload(user: any): JSX.Element {
       const formData = new FormData();
 
       selectedFiles.forEach((file) => {
-        formData.append('images[]', file); // ✅ correct way to send multiple files
+        formData.append('images[]', file);
       });
 
       formData.append('voucher_id', id.toString());
 
-      // Debug form data
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-
       await dispatch(uploadImage(formData, id));
+      await refreshVoucherList();
 
       toast.success('Files uploaded successfully!');
       setUploadStatus((prev) => ({ ...prev, [id]: 'success' }));
-
-      // Clear files after successful upload
       setFiles((prev) => ({ ...prev, [id]: [] }));
       setPreviews((prev) => ({ ...prev, [id]: [] }));
+      setInputResetKeys((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
     } catch (err) {
       console.error('Upload error:', err);
       toast.error('Failed to upload files');
@@ -179,6 +207,34 @@ export default function VoucherUpload(user: any): JSX.Element {
       setLoading((prev) => ({ ...prev, [id]: false }));
     }
   };
+
+  const handleClearSelectedFiles = (id: number) => {
+    setFiles((prev) => ({ ...prev, [id]: [] }));
+    setPreviews((prev) => ({ ...prev, [id]: [] }));
+    setUploadStatus((prev) => ({ ...prev, [id]: null }));
+    setInputResetKeys((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+  };
+
+  const handleRemoveSelectedFile = async (id: number, fileIndex: number) => {
+    const currentFiles = files[id] || [];
+    const updatedFiles = currentFiles.filter((_, index) => index !== fileIndex);
+
+    setFiles((prev) => ({ ...prev, [id]: updatedFiles }));
+    setUploadStatus((prev) => ({ ...prev, [id]: null }));
+
+    if (updatedFiles.length === 0) {
+      setPreviews((prev) => ({ ...prev, [id]: [] }));
+      setInputResetKeys((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+      return;
+    }
+
+    const previewUrls = await buildPreviewList(updatedFiles);
+    setPreviews((prev) => ({
+      ...prev,
+      [id]: previewUrls,
+    }));
+  };
+
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
     setVoucherImageFormData((prev) => ({
@@ -194,6 +250,7 @@ export default function VoucherUpload(user: any): JSX.Element {
       start_date: dayjs(date).format('YYYY-MM-DD'),
     }));
   };
+
   const handleEndDate = (date: Date) => {
     setEndDate(date);
     setVoucherImageFormData((prev) => ({
@@ -202,15 +259,173 @@ export default function VoucherUpload(user: any): JSX.Element {
     }));
   };
 
-  const handleActionButtonClick = (e: any) => {
+  const handleActionButtonClick = () => {
     dispatch(getVoucherForImage(voucherImageFormData));
   };
 
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setVoucherImageFormData({ ...voucherImageFormData, [name]: value });
+    setVoucherImageFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    // console.log('Selected value:', voucherImageFormData);
+  const refreshVoucherList = async () => {
+    const response = await httpService.post(API_VOUCHER_IMAGE_FOR_UPLOAD_URL, voucherImageFormData);
+    const refreshedPayload = response?.data?.data?.data || {};
+    const refreshedRows = refreshedPayload?.data || [];
+    setTableData(refreshedRows);
+  };
+
+  const handleRemoveUploadedImage = async (row: Voucher, imageName: string) => {
+    const voucherId = getVoucherRowId(row);
+
+    try {
+      setRemovingUploadedImages((prev) => ({
+        ...prev,
+        [voucherId]: imageName,
+      }));
+
+      await httpService.post(`${API_DELETE_VOUCHER_IMAGE_URL}${voucherId}`, {
+        image_name: imageName,
+        branch_pad: row.branchPad,
+      });
+
+      await refreshVoucherList();
+      toast.success('Uploaded attachment removed successfully!');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to remove uploaded attachment.');
+    } finally {
+      setRemovingUploadedImages((prev) => ({
+        ...prev,
+        [voucherId]: null,
+      }));
+    }
+  };
+
+  const renderExistingVoucherImage = (row: Voucher) => {
+    if (!row?.voucher_image) {
+      return (
+        <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+          No image uploaded yet
+        </div>
+      );
+    }
+
+    return (
+      <ImagePopup
+        title={row.nam}
+        branchPad={row.branchPad || ''}
+        voucher_image={row.voucher_image || ''}
+        onRemoveImage={canDeleteVoucherPhoto ? (imageName) => handleRemoveUploadedImage(row, imageName) : undefined}
+        removingImage={canDeleteVoucherPhoto ? removingUploadedImages[getVoucherRowId(row)] : null}
+      />
+    );
+  };
+
+  const renderVoucherImages = (row: Voucher) => {
+    const voucherId = getVoucherRowId(row);
+    const hasExistingImage = Boolean(row?.voucher_image);
+    const selectedFiles = files[voucherId] || [];
+    const selectedPreviews = previews[voucherId] || [];
+
+    return (
+      <td className="align-top">
+        <div className="w-full max-w-[320px] rounded-xl p-3 shadow-sm">
+          {renderExistingVoucherImage(row)}
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_112px] sm:items-center">
+            <div className="p-2">
+              <input
+                key={inputResetKeys[voucherId] || 0}
+                type="file"
+                multiple
+                accept="image/*,.pdf"
+                onChange={(e) => handleFileChange(voucherId, e.target.files)}
+                className="block w-full cursor-pointer text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-blue-700"
+              />
+            </div>
+
+            <button
+              onClick={() => handleUpload(voucherId)}
+              disabled={loading[voucherId]}
+              className={`inline-flex h-full min-h-[46px] w-full items-center justify-center rounded-lg px-3 py-2 text-sm font-medium text-white transition ${
+                loading[voucherId]
+                  ? 'bg-gray-400'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
+            >
+              {loading[voucherId] ? (
+                <span className="flex items-center gap-1">
+                  <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4"></span>
+                  Uploading...
+                </span>
+              ) : hasExistingImage ? (
+                'Add More'
+              ) : (
+                'Upload'
+              )}
+            </button>
+          </div>
+
+          {selectedFiles.length > 0 && (
+            <div className="mt-3 flex flex-col gap-2 rounded-lg bg-slate-50 p-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-medium text-slate-600">
+                  Selected {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleClearSelectedFiles(voucherId)}
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {selectedFiles.map((file, index) => (
+                  <div
+                    key={`${voucherId}-file-${index}`}
+                    className="relative flex items-center gap-2 rounded-md border border-slate-300 bg-white p-1.5 pr-7"
+                  >
+                    {selectedPreviews[index] ? (
+                      <img
+                        src={selectedPreviews[index]}
+                        alt={`Preview ${index + 1}`}
+                        className="h-10 w-10 rounded border object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded border bg-slate-100 text-[10px] font-medium text-slate-500">
+                        PDF
+                      </div>
+                    )}
+
+                    <span className="max-w-[120px] truncate text-xs text-slate-600">
+                      {file.name}
+                    </span>
+
+                    {canDeleteVoucherPhoto && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSelectedFile(voucherId, index)}
+                        className="absolute right-1 top-1 rounded px-1 text-xs font-bold text-slate-400 transition hover:bg-slate-100 hover:text-red-500"
+                        aria-label={`Remove ${file.name}`}
+                      >
+                        x
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {uploadStatus[voucherId] === 'success' && (
+            <p className="mt-2 text-sm text-green-600">Uploaded successfully!</p>
+          )}
+          {uploadStatus[voucherId] === 'error' && (
+            <p className="mt-2 text-sm text-red-600">Upload failed.</p>
+          )}
+        </div>
+      </td>
+    );
   };
 
   const columns = [
@@ -225,14 +440,14 @@ export default function VoucherUpload(user: any): JSX.Element {
       key: 'vr_no',
       header: 'Voucher No.',
       width: '150px',
-      render: (row: any) => {
+      render: (row: Voucher) => {
         return (
           <div className="flex flex-col">
             <span className="px-4 py-0">{row.vr_no}</span>
-            <span className="px-4 py-0">{row.vr_date}</span>
+            <span className="px-4 py-0">{formatDate(row.vr_date)}</span>
           </div>
-        )
-      }
+        );
+      },
     },
     {
       key: 'nam',
@@ -243,79 +458,23 @@ export default function VoucherUpload(user: any): JSX.Element {
       header: 'Amount (Tk.)',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => {
-        return <span className="px-4 py-2">{row.debit > 0 ? thousandSeparator(row.debit, 0) : thousandSeparator(row.credit, 0)}</span>;
+      render: (row: Voucher) => {
+        return (
+          <span className="px-4 py-2">
+            {row.debit > 0
+              ? thousandSeparator(row.debit, 0)
+              : thousandSeparator(row.credit, 0)}
+          </span>
+        );
       },
     },
     {
       key: 'voucher_image',
       header: 'Voucher Images',
-      render: (row: any) => {
-        return (
-          <td className="px-4 py-2">
-            <div className="flex flex-col gap-2">
-              {row.voucher_image ? (
-                row.voucher_image.toLowerCase().endsWith('.pdf') ? (
-                  <a
-                    target="_blank"
-                    href={`${imageUpload.dataForImage?.project_directory}/voucher/${row.voucher_image}`}
-                    download
-                    className="text-blue-600 text-sm"
-                  >
-                    📄 PDF
-                  </a>
-                ) : (
-                  <ImagePopup
-                    title={row.nam} // `row.nam` used as per your provided code
-                    branchPad={row.branchPad || ''}
-                    voucher_image={row.voucher_image || ''}
-                  />
-                )
-              ) : (
-                <>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) =>
-                      handleFileChange(row.id, e.target.files)
-                    }
-                  />
-                  <button
-                    onClick={() => handleUpload(row.id)}
-                    disabled={loading[row.id]}
-                    className={`px-3 py-1 rounded text-white ${
-                      loading[row.id]
-                        ? 'bg-gray-400'
-                        : 'bg-blue-500 hover:bg-blue-600'
-                    }`}
-                  >
-                    {loading[row.id] ? (
-                      <span className="flex items-center gap-1">
-                        <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4"></span>
-                        Uploading...
-                      </span>
-                    ) : (
-                      'Upload'
-                    )}
-                  </button>
-
-                  {uploadStatus[row.mtm_id] === 'success' && (
-                    <p className="text-green-600 text-sm">
-                      ✅ Uploaded successfully!
-                    </p>
-                  )}
-                  {uploadStatus[row.mtm_id] === 'error' && (
-                    <p className="text-red-600 text-sm">❌ Upload failed.</p>
-                  )}
-                </>
-              )}
-            </div>
-          </td>
-        );
-      },
+      render: (row: Voucher) => renderVoucherImages(row),
     },
   ];
+
   return (
     <div className="p-4 mx-auto">
       <HelmetTitle title={'Upload Voucher Image'} />
@@ -327,7 +486,6 @@ export default function VoucherUpload(user: any): JSX.Element {
           </div>
         )}
         <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-9 w-full gap-2">
-          {/* 1. Branch Dropdown (wide) */}
           <div className="col-span-1 lg:col-span-2">
             <label htmlFor="">Select Branch</label>
             <div className="w-full">
@@ -335,13 +493,12 @@ export default function VoucherUpload(user: any): JSX.Element {
               <BranchDropdown
                 defaultValue={user?.user?.branch_id}
                 onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
+                className="w-full font-medium text-sm p-1 h-8"
                 branchDdl={dropdownData}
               />
             </div>
           </div>
 
-          {/* 2. Image Voucher Type Dropdown (wide) */}
           <div className="col-span-1 lg:col-span-2">
             <DropdownCommon
               id="voucher_type"
@@ -353,7 +510,6 @@ export default function VoucherUpload(user: any): JSX.Element {
             />
           </div>
 
-          {/* 3. image_type Dropdown (wide) */}
           <div className="col-span-1 lg:col-span-2">
             <DropdownCommon
               id="image_type"
@@ -365,7 +521,6 @@ export default function VoucherUpload(user: any): JSX.Element {
             />
           </div>
 
-          {/* 4. Start Date (narrow) */}
           <div className="lg:col-span-1 w-full">
             <label htmlFor="">Start Date</label>
             <InputDatePicker
@@ -376,7 +531,6 @@ export default function VoucherUpload(user: any): JSX.Element {
             />
           </div>
 
-          {/* 5. End Date (narrow) */}
           <div className="lg:col-span-1 w-full">
             <label htmlFor="">End Date</label>
             <InputDatePicker
@@ -387,123 +541,19 @@ export default function VoucherUpload(user: any): JSX.Element {
             />
           </div>
 
-          {/* 6. Run Button (narrow) */}
           <div className="lg:col-span-1 w-full">
             <ButtonLoading
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
+              icon={<FiCheckSquare />}
               className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
             />
           </div>
         </div>
       </div>
 
-      {/* <Table columns={columns} dataSource={data} /> */}
       <Table columns={columns} data={tableData || []} />
-      {/* <table className="w-full border-collapse border">
-        <thead className="bg-gray-200 dark:bg-transparent">
-          <tr className="text-gray-700 dark:text-gray-200">
-            <th className="w-16 border px-2 py-0 text-center">Sl. No</th>
-            <th className="border px-4 py-2">Voucher No.</th>
-            <th className="border px-4 py-2 text-left">Voucher Details</th>
-            <th className="w-36 border px-2 py-2 text-right">Amount (Tk.)</th>
-            <th className="border px-4 py-2">Voucher Images</th>
-          </tr>
-        </thead>
-        <tbody className="text-gray-700 dark:text-gray-200">
-          {imageUpload?.dataForImage?.length === 0 ? (
-            <tr className="text-gray-700 dark:text-gray-200">
-              <td colSpan={5} className="text-center py-4">
-                No data available
-              </td>
-            </tr>
-          ) : (
-            vouchers
-              .filter((voucher) => voucher.debit > 0 || voucher.credit > 0)
-              .map((voucher, index) => (
-                <tr
-                  key={index}
-                  className="border-t text-gray-900 dark:text-gray-200"
-                >
-                  <td className="border px-4 py-2 text-center">{index + 1}</td>
-                  <td className="border px-2 py-2 text-center w-34">
-                    {voucher.vr_no}
-                  </td>
-                  <td className="border px-4 py-2">{voucher.nam}</td>
-                  <td className="border px-4 py-2 text-right">
-                    {thousandSeparator(voucher.debit, 0) ||
-                      thousandSeparator(voucher.credit, 0)}
-                  </td>
-                  <td className="border px-4 py-2">
-                    <div className="flex flex-col gap-2 ">
-                      {voucher.voucher_image ? (
-                        voucher.voucher_image.toLowerCase().endsWith('.pdf') ? (
-                          <>
-                            <a
-                              target="_blank"
-                              href={`${imageUpload.dataForImage?.project_directory}/voucher/${voucher.voucher_image}`}
-                              download
-                              className="text-blue-600 text-sm"
-                            >
-                              📄 PDF
-                            </a>
-                          </>
-                        ) : (
-                          <ImagePopup
-                            title={voucher.title}
-                            branchPad={voucher.branchPad || ''}
-                            voucher_image={voucher.voucher_image || ''}
-                          />
-                        )
-                      ) : (
-                        <>
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={(e) =>
-                              handleFileChange(voucher.mtm_id, e.target.files)
-                            }
-                          />
-                          <button
-                            onClick={() => handleUpload(voucher.mtm_id)}
-                            disabled={loading[voucher.mtm_id]}
-                            className={`px-3 py-1 rounded text-white ${
-                              loading[voucher.mtm_id]
-                                ? 'bg-gray-400'
-                                : 'bg-blue-500 hover:bg-blue-600'
-                            }`}
-                          >
-                            {loading[voucher.mtm_id] ? (
-                              <span className="flex items-center gap-1">
-                                <span className="animate-spin border-2 border-white border-t-transparent rounded-full h-4 w-4"></span>
-                                Uploading...
-                              </span>
-                            ) : (
-                              'Upload'
-                            )}
-                          </button>
-
-                          {uploadStatus[voucher.mtm_id] === 'success' && (
-                            <p className="text-green-600 text-sm">
-                              ✅ Uploaded successfully!
-                            </p>
-                          )}
-                          {uploadStatus[voucher.mtm_id] === 'error' && (
-                            <p className="text-red-600 text-sm">
-                              ❌ Upload failed.
-                            </p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-          )}
-        </tbody>
-      </table> */}
     </div>
   );
 }
