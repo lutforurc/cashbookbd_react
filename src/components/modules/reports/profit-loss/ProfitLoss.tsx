@@ -21,6 +21,8 @@ import { fetchClosingStockItems } from "./profitLossSlice";
 import ProfitLossPrint from "./ProfitLossPrint";
 import ItemDetailsPrint from "./ItemDetailsPrint";
 import ProfitLossReport from "./ProfitLossReport";
+import { API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL } from "../../../services/apiRoutes";
+import httpService from "../../../services/httpService";
 
 type TradingRow = {
   coal3_id?: number | string;
@@ -32,12 +34,23 @@ type TradingRow = {
 };
 
 type NetRow = {
+  coal3_id?: number | string;
   name?: string;
   debit?: number | string;
   credit?: number | string;
 };
 
+type ExpenseSummaryRow = {
+  key: string;
+  coa4Id: number;
+  name: string;
+  movementDebit: number;
+  movementCredit: number;
+  netExpense: number;
+};
+
 type SelectedExpenseDetail = {
+  coal3Id: number | null;
   name: string;
   debit: number;
   credit: number;
@@ -86,6 +99,9 @@ const ProfitLoss = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedExpenseDetail, setSelectedExpenseDetail] =
     useState<SelectedExpenseDetail | null>(null);
+  const [expenseSummaryRows, setExpenseSummaryRows] = useState<ExpenseSummaryRow[]>([]);
+  const [expenseSummaryLoading, setExpenseSummaryLoading] = useState(false);
+  const [expenseSummaryError, setExpenseSummaryError] = useState<string | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -345,13 +361,75 @@ const ProfitLoss = (user: any) => {
     setFilterOpen(false);
   };
 
-  const handleExpenseRowClick = (row: NetRow) => {
+  const handleExpenseRowClick = async (row: NetRow) => {
+    const coal3Id = Number(row.coal3_id);
+
     setSelectedExpenseDetail({
+      coal3Id: Number.isFinite(coal3Id) ? coal3Id : null,
       name: row.name || "Expense Details",
       debit: toNum(row.debit),
       credit: toNum(row.credit),
       netEffect: toNum(row.debit) - toNum(row.credit),
     });
+
+    setExpenseSummaryRows([]);
+    setExpenseSummaryError(null);
+
+    if (!Number.isFinite(coal3Id) || coal3Id <= 0) {
+      setExpenseSummaryError("COA Level 3 id not found for this expense.");
+      return;
+    }
+
+    if (!branchId || !startDate || !endDate) {
+      setExpenseSummaryError("Branch and date range are required to load expense summary.");
+      return;
+    }
+
+    setExpenseSummaryLoading(true);
+
+    try {
+      const startDateValue = dayjs(startDate).format("YYYY-MM-DD");
+      const endDateValue = dayjs(endDate).format("YYYY-MM-DD");
+      const response = await httpService.post(
+        API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL,
+        {
+          coal3_id: coal3Id,
+          branch_id: Number(branchId),
+          start_date: startDateValue,
+          end_date: endDateValue,
+        }
+      );
+
+      const responsePayload = response?.data?.data?.data ?? response?.data?.data ?? {};
+      const apiItems = Array.isArray(responsePayload?.items)
+        ? responsePayload.items
+        : [];
+
+      const detailRows = apiItems
+        .map((item: any, index: number) => ({
+          key: `${toNum(item?.coa4_id) || index}`,
+          coa4Id: toNum(item?.coa4_id),
+          name: String(item?.name || "Unnamed Head"),
+          movementDebit: toNum(item?.debit),
+          movementCredit: toNum(item?.credit),
+          netExpense: toNum(item?.net_expense),
+        }))
+        .filter((item) => item.movementDebit !== 0 || item.movementCredit !== 0);
+
+      setExpenseSummaryRows(detailRows);
+
+      if (detailRows.length === 0) {
+        setExpenseSummaryError("No expense summary found for this COA Level 3 in the selected period.");
+      }
+    } catch (error: any) {
+      setExpenseSummaryError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Expense summary load failed"
+      );
+    } finally {
+      setExpenseSummaryLoading(false);
+    }
   };
 
   return (
@@ -598,7 +676,15 @@ const ProfitLoss = (user: any) => {
       <ExpenseDetailsModal
         open={Boolean(selectedExpenseDetail)}
         detail={selectedExpenseDetail}
-        onClose={() => setSelectedExpenseDetail(null)}
+        rows={expenseSummaryRows}
+        loading={expenseSummaryLoading}
+        error={expenseSummaryError}
+        onClose={() => {
+          setSelectedExpenseDetail(null);
+          setExpenseSummaryRows([]);
+          setExpenseSummaryLoading(false);
+          setExpenseSummaryError(null);
+        }}
       />
 
     </div>
@@ -610,13 +696,23 @@ export default ProfitLoss;
 const ExpenseDetailsModal = ({
   open,
   detail,
+  rows,
+  loading,
+  error,
   onClose,
 }: {
   open: boolean;
   detail: SelectedExpenseDetail | null;
+  rows: ExpenseSummaryRow[];
+  loading: boolean;
+  error: string | null;
   onClose: () => void;
 }) => {
   if (!open || !detail) return null;
+
+  const totalMovementDebit = rows.reduce((sum, row) => sum + row.movementDebit, 0);
+  const totalMovementCredit = rows.reduce((sum, row) => sum + row.movementCredit, 0);
+  const totalNetExpense = rows.reduce((sum, row) => sum + row.netExpense, 0);
 
   return (
     <div
@@ -636,7 +732,7 @@ const ExpenseDetailsModal = ({
                 {detail.name}
               </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
-                NET PROFIT OR LOSS A/C expense details
+                NET PROFIT OR LOSS A/C expense summary
               </p>
             </div>
 
@@ -664,22 +760,70 @@ const ExpenseDetailsModal = ({
                   <th className="px-3 py-3 text-left font-semibold">Particular</th>
                   <th className="px-3 py-3 text-right font-semibold">Debit</th>
                   <th className="px-3 py-3 text-right font-semibold">Credit</th>
-                  <th className="px-3 py-3 text-right font-semibold">Net Effect</th>
+                  <th className="px-3 py-3 text-right font-semibold">Net Expense</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-stroke/70 text-slate-800 dark:border-strokedark dark:text-slate-100">
-                  <td className="px-3 py-3">{detail.name}</td>
-                  <td className="px-3 py-3 text-right">
-                    {detail.debit ? thousandSeparator(detail.debit, 2) : "-"}
-                  </td>
-                  <td className="px-3 py-3 text-right">
-                    {detail.credit ? thousandSeparator(detail.credit, 2) : "-"}
-                  </td>
-                  <td className="px-3 py-3 text-right font-semibold">
-                    {thousandSeparator(detail.netEffect, 2)}
-                  </td>
-                </tr>
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-3 py-6 text-center text-slate-500 dark:text-slate-300"
+                    >
+                      Loading expense summary...
+                    </td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-3 py-6 text-center text-red-500 dark:text-red-300"
+                    >
+                      {error}
+                    </td>
+                  </tr>
+                ) : rows.length > 0 ? (
+                  <>
+                    {rows.map((row) => (
+                      <tr
+                        key={row.key}
+                        className="border-b border-stroke/70 text-slate-800 dark:border-strokedark dark:text-slate-100"
+                      >
+                        <td className="px-3 py-3">{row.name}</td>
+                        <td className="px-3 py-3 text-right">
+                          {row.movementDebit ? thousandSeparator(row.movementDebit, 2) : "-"}
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          {row.movementCredit ? thousandSeparator(row.movementCredit, 2) : "-"}
+                        </td>
+                        <td className="px-3 py-3 text-right font-semibold">
+                          {thousandSeparator(row.netExpense, 2)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="border-t border-stroke font-semibold text-slate-900 dark:border-strokedark dark:text-white">
+                      <td className="px-3 py-3">Total</td>
+                      <td className="px-3 py-3 text-right">
+                        {thousandSeparator(totalMovementDebit, 2)}
+                      </td>
+                      <td className="px-3 py-3 text-right">
+                        {thousandSeparator(totalMovementCredit, 2)}
+                      </td>
+                      <td className="px-3 py-3 text-right">
+                        {thousandSeparator(totalNetExpense, 2)}
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-3 py-6 text-center text-slate-500 dark:text-slate-300"
+                    >
+                      No expense summary found.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
