@@ -49,6 +49,7 @@ import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { getDdlProduct } from '../../product/productSlice';
 interface Product {
   id: number;
   product: number;
@@ -232,14 +233,110 @@ const TradingBusinessPurchase = () => {
   };
 
   // Move this method
-  const orderHandler = (option: any) => {
+  const orderHandler = async (option: any) => {
     const key = 'purchaseOrderNumber'; // Set the desired key dynamically
     const purchaseOrderText = 'purchaseOrderText'; // Set the desired key dynamically
-    setFormData({
-      ...formData,
+    const fallbackProductId =
+      option?.product_id ??
+      option?.item_id ??
+      option?.stock_item_id ??
+      option?.product?.id ??
+      '';
+    const fallbackProductName =
+      option?.product_name ??
+      option?.item_name ??
+      option?.product ??
+      option?.label_3 ??
+      '';
+    const unitName =
+      option?.unit ??
+      option?.unit_name ??
+      option?.qty_unit ??
+      '';
+    const orderQty = Number(
+      option?.remaining_qty ??
+      option?.remaining_quantity ??
+      option?.label_8 ??
+      (
+        Number(
+          option?.order_qty ??
+          option?.total_order ??
+          option?.quantity ??
+          option?.qty ??
+          option?.label_7 ??
+          0,
+        ) -
+        Number(
+          option?.trx_quantity ??
+          option?.delivery_qty ??
+          option?.linked_quantity ??
+          option?.base_qty ??
+          0,
+        )
+      ),
+    );
+    const orderRate = Number(
+      option?.order_rate ??
+      option?.rate ??
+      option?.unit_rate ??
+      option?.unit_price ??
+      option?.price ??
+      option?.label_5 ??
+      0,
+    );
+
+    let resolvedProduct = {
+      id: fallbackProductId,
+      name: fallbackProductName,
+      unit: unitName,
+      price: orderRate,
+    };
+
+    if (fallbackProductName) {
+      try {
+        const response: any = await dispatch(getDdlProduct(fallbackProductName));
+        const matchedProduct = Array.isArray(response?.payload)
+          ? response.payload.find(
+              (item: any) =>
+                String(item?.label || '').trim().toLowerCase() ===
+                String(fallbackProductName).trim().toLowerCase(),
+            ) ?? response.payload[0]
+          : null;
+
+        if (matchedProduct) {
+          resolvedProduct = {
+            id: matchedProduct?.value ?? resolvedProduct.id,
+            name: matchedProduct?.label ?? resolvedProduct.name,
+            unit: matchedProduct?.label_5 ?? resolvedProduct.unit,
+            price: resolvedProduct.price,
+          };
+        }
+      } catch (error) {
+        console.error('Failed to resolve product from purchase order:', error);
+      }
+    }
+
+    setFormData((prevState) => ({
+      ...prevState,
       [key]: option.value,
       [purchaseOrderText]: option.label,
-    });
+    }));
+
+    setProductData((prevState: any) => ({
+      ...prevState,
+      product: resolvedProduct.id,
+      product_name: resolvedProduct.name,
+      qty: orderQty > 0 ? orderQty.toString() : '',
+      price: resolvedProduct.price > 0 ? resolvedProduct.price.toString() : '',
+      unit: resolvedProduct.unit || unitName,
+    }));
+
+    setUnit(resolvedProduct.unit || unitName || null);
+    setLineTotal(
+      Number(
+        (Math.max(orderQty, 0) * Math.max(Number(resolvedProduct.price || 0), 0)).toFixed(0),
+      ),
+    );
   };
 
   const resetProducts = () => {
@@ -651,6 +748,16 @@ const TradingBusinessPurchase = () => {
       purchaseOrderNumber: '', 
       purchaseOrderText: '', 
     }));
+    setProductData((prevState: any) => ({
+      ...prevState,
+      product: '',
+      product_name: '',
+      qty: '',
+      price: '',
+      unit: '',
+    }));
+    setUnit(null);
+    setLineTotal(0);
     setIsResetOrder(false);
   };
 
@@ -774,14 +881,6 @@ const TradingBusinessPurchase = () => {
                     id="purchaseOrderNumber"
                     name="purchaseOrderNumber"
                     onSelect={orderHandler}
-                    // defaultValue={
-                    //   formData.purchaseOrderNumber
-                    //     ? {
-                    //         value: formData.purchaseOrderNumber,
-                    //         label: formData.purchaseOrderText, //productData.accountName
-                    //       }
-                    //     : null
-                    // }
                     value={
                       formData.purchaseOrderNumber
                         ? {
