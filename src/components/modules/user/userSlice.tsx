@@ -17,6 +17,7 @@ import {
   API_USER_EDIT_URL,
   API_USER_LIST_URL,
   API_USER_STORE_URL,
+  API_USER_TEMPORARY_PASSWORD_URL,
   API_USER_UPDATE_URL,
 
   // ✅ ADD these in apiRoutes
@@ -148,6 +149,32 @@ export const updateUser = (data: any, callback: any) => (dispatch: any) => {
           },
         });
       }
+    });
+};
+
+export const generateUserTemporaryPassword = (id: number | string, callback?: any) => () => {
+  return httpService
+    .post(API_USER_TEMPORARY_PASSWORD_URL + `${id}`)
+    .then((res) => {
+      const _data = res.data;
+      if ('function' === typeof callback) {
+        callback(_data);
+      }
+      return _data;
+    })
+    .catch((err) => {
+      const message = extractApiErrorMessage(err?.response?.data, 'Failed to generate temporary password.');
+      const errorResponse = {
+        success: false,
+        message,
+        error: {
+          message,
+        },
+      };
+      if ('function' === typeof callback) {
+        callback(errorResponse);
+      }
+      return errorResponse;
     });
 };
 

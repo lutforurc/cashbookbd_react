@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
-import { getUser } from './userSlice';
+import { generateUserTemporaryPassword, getUser } from './userSlice';
 import Loader from '../../../common/Loader';
-import { FiBook, FiCheck, FiCheckSquare, FiEdit, FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheck, FiCheckSquare, FiEdit, FiEdit2, FiKey, FiPlus, FiTrash2 } from 'react-icons/fi';
 import Pagination from '../../utils/utils-functions/Pagination';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
@@ -35,6 +35,7 @@ const UserList = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [temporaryPasswordLoadingId, setTemporaryPasswordLoadingId] = useState<string | null>(null);
   const maxUsers = subscription?.current?.max_users;
   const currentUsers = Number(userList?.data?.total || 0);
   const userLimitReached = typeof maxUsers === 'number' && maxUsers > 0 && currentUsers >= maxUsers;
@@ -80,6 +81,44 @@ const UserList = () => {
     }
     navigate(`/user/user-edit/${user_id}`);
   }
+
+  const handleGenerateTemporaryPassword = async (userId: string | undefined) => {
+    if (!userId) {
+      toast.error('Something is wrong');
+      return;
+    }
+
+    setTemporaryPasswordLoadingId(userId);
+
+    const response = await dispatch(generateUserTemporaryPassword(userId) as any);
+    setTemporaryPasswordLoadingId(null);
+
+    if (!response?.success) {
+      toast.error(response?.error?.message || response?.message || 'Failed to generate temporary password.');
+      return;
+    }
+
+    const payload = response?.data?.data;
+    const temporaryPassword = payload?.temporary_password;
+    const email = payload?.email;
+
+    if (!temporaryPassword) {
+      toast.error('Temporary password was not returned by the server.');
+      return;
+    }
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(temporaryPassword).catch(() => {});
+    }
+
+    toast.success(response?.message || 'Temporary password generated successfully.');
+    window.prompt(
+      email
+        ? `Temporary password for ${email}. It has also been copied if clipboard access is allowed.`
+        : 'Temporary password generated. It has also been copied if clipboard access is allowed.',
+      temporaryPassword,
+    );
+  };
 
   
   const handleAddUser = () => {
@@ -185,16 +224,29 @@ const UserList = () => {
       },
     },
     {
-      key: "id",
+      key: "action",
       header: "Action",
+      headerClass: "text-center",
+      cellClass: "text-center",
       render: (row: any) => {
         return (
-          <div className="flex justify-center items-center">
+          <div className="flex items-center justify-center gap-2">
             <button
+              type="button"
               onClick={() => handleEditUser(row.user_id)}
               className="text-blue-500 ml-2"
+              title="Edit user"
             >
-              <FiEdit2 className="cursor-pointer" />
+              <FiEdit2 className="cursor-pointer w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGenerateTemporaryPassword(row.user_id)}
+              className="text-blue-500"
+              title="Generate temporary password"
+              disabled={temporaryPasswordLoadingId === row.user_id}
+            >
+              <FiKey className={`cursor-pointer w-5 h-5 ${temporaryPasswordLoadingId === row.user_id ? 'opacity-50' : ''}`} />
             </button>
           </div>
         );
