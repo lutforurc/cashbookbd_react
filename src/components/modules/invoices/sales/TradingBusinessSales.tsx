@@ -45,9 +45,14 @@ import {
 import QuickCustomerModal from './QuickCustomerModal';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import httpService from '../../../services/httpService';
-import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import {
+  API_CHART_OF_ACCOUNTS_DDL_L4_URL,
+  API_ORDERS_DDL_URL,
+  API_TRADING_SALES_SUGGESTIONS_URL,
+} from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getDdlProduct } from '../../product/productSlice';
+import { getToken } from '../../../../features/authReducer';
 
 interface Product {
   id: number;
@@ -70,6 +75,15 @@ const normalizeSuggestionItems = (items: any) =>
       .map((item: any) => String(item ?? '').trim())
       .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
     : [];
+
+const normalizeLookupText = (value: any) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+
+const autofillHighlightClass =
+  'border-blue-500 ring-1 ring-blue-500 bg-[#243245] dark:bg-[#243245]';
 
 const getCashReceivedDebit = (transaction: any): string => {
   const masters = Array.isArray(transaction?.acc_transaction_master)
@@ -105,6 +119,13 @@ const TradingBusinessSales = () => {
   const [unit, setUnit] = useState<string | null>(null); // Define state with type
   const [search, setSearch] = useState(''); // State to store the search value
   const [productData, setProductData] = useState<any>({});
+  const [selectedCustomerOption, setSelectedCustomerOption] = useState<any>(null);
+  const [autofillHighlights, setAutofillHighlights] = useState({
+    customer: false,
+    product: false,
+    qty: false,
+    price: false,
+  });
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateId, setUpdateId] = useState<any>(null);
   const [isInvoiceUpdate, setIsInvoiceUpdate] = useState(false);
@@ -210,6 +231,8 @@ const TradingBusinessSales = () => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
     const isCashCustomer = Number(option?.value) === 17;
+    setSelectedCustomerOption(option || null);
+    setAutofillHighlights((prev) => ({ ...prev, customer: false }));
     setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
@@ -234,6 +257,7 @@ const TradingBusinessSales = () => {
     const unit = 'unit'; // Set the desired key dynamically
     const price = 'price'; // Set the desired key dynamically
     setUnit(option.label_5);
+    setAutofillHighlights((prev) => ({ ...prev, product: false, price: false }));
 
     setProductData({
       ...productData,
@@ -471,6 +495,13 @@ const TradingBusinessSales = () => {
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const newValue = value ? parseFloat(value) : 0;
+    if (name === 'qty' || name === 'price') {
+      setAutofillHighlights((prev) => ({
+        ...prev,
+        qty: name === 'qty' ? false : prev.qty,
+        price: name === 'price' ? false : prev.price,
+      }));
+    }
     setProductData((prevState: any) => ({
       ...prevState,
       [name]: value,
@@ -662,6 +693,13 @@ const TradingBusinessSales = () => {
       price: '',
       unit: '',
     }));
+    setSelectedCustomerOption(null);
+    setAutofillHighlights({
+      customer: false,
+      product: false,
+      qty: false,
+      price: false,
+    });
     setUnit(null);
     setLineTotal(0);
     setIsResetOrder(false);
@@ -734,59 +772,113 @@ const TradingBusinessSales = () => {
         products: products || [],
       };
 
+      setSelectedCustomerOption(
+        updatedFormData.account
+          ? {
+            value: updatedFormData.account,
+            label: updatedFormData.accountName,
+          }
+          : null,
+      );
       setFormData(updatedFormData);
     }
   }, [sales.data.transaction]);
 
   const salesOrderNumberHandler = async (option: any) => {
+    setSelectedCustomerOption(null);
     const salesOrderNumber = 'salesOrderNumber'; // This is the sales order number
     const salesOrderText = 'salesOrderText'; // This is the sales order Text+
+    let selectedOrderOption = option;
+
+    if (!option?.label_2 && (option?.label || option?.value)) {
+      try {
+        const token = getToken();
+        const params = new URLSearchParams();
+        params.set('q', String(option?.label || option?.value || ''));
+        params.set('order_type', '2');
+
+        const orderResponse = await fetch(`${API_ORDERS_DDL_URL}?${params.toString()}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const orderResponseData = await orderResponse.json();
+        const orderOptions = orderResponseData?.data?.data;
+        const matchedOrder = Array.isArray(orderOptions)
+          ? orderOptions.find(
+            (item: any) =>
+              String(item?.value ?? '') === String(option?.value ?? '') ||
+              String(item?.label ?? '').trim().toLowerCase() ===
+              String(option?.label ?? '').trim().toLowerCase(),
+          ) ?? orderOptions[0]
+          : null;
+
+        if (matchedOrder) {
+          selectedOrderOption = matchedOrder;
+        }
+      } catch (error) {
+        console.error('Failed to resolve selected sales order details:', error);
+      }
+    }
+
+    const fallbackCustomerId =
+      selectedOrderOption?.customer_id ??
+      selectedOrderOption?.party_id ??
+      selectedOrderOption?.order_for_id ??
+      selectedOrderOption?.customer?.id ??
+      selectedOrderOption?.account_id ??
+      '';
+    const fallbackCustomerName =
+      selectedOrderOption?.label_2 ??
+      '';
     const fallbackProductId =
-      option?.product_id ??
-      option?.item_id ??
-      option?.stock_item_id ??
-      option?.product?.id ??
+      selectedOrderOption?.product_id ??
+      selectedOrderOption?.item_id ??
+      selectedOrderOption?.stock_item_id ??
+      selectedOrderOption?.product?.id ??
       '';
     const fallbackProductName =
-      option?.product_name ??
-      option?.item_name ??
-      option?.product ??
-      option?.label_3 ??
+      selectedOrderOption?.product_name ??
+      selectedOrderOption?.item_name ??
+      selectedOrderOption?.product ??
+      selectedOrderOption?.label_3 ??
       '';
     const unitName =
-      option?.unit ??
-      option?.unit_name ??
-      option?.qty_unit ??
+      selectedOrderOption?.unit ??
+      selectedOrderOption?.unit_name ??
+      selectedOrderOption?.qty_unit ??
       '';
     const orderQty = Number(
-      option?.remaining_qty ??
-      option?.remaining_quantity ??
-      option?.label_8 ??
+      selectedOrderOption?.remaining_qty ??
+      selectedOrderOption?.remaining_quantity ??
+      selectedOrderOption?.label_8 ??
       (
         Number(
-          option?.order_qty ??
-          option?.total_order ??
-          option?.quantity ??
-          option?.qty ??
-          option?.label_7 ??
+          selectedOrderOption?.order_qty ??
+          selectedOrderOption?.total_order ??
+          selectedOrderOption?.quantity ??
+          selectedOrderOption?.qty ??
+          selectedOrderOption?.label_7 ??
           0,
         ) -
         Number(
-          option?.trx_quantity ??
-          option?.delivery_qty ??
-          option?.linked_quantity ??
-          option?.base_qty ??
+          selectedOrderOption?.trx_quantity ??
+          selectedOrderOption?.delivery_qty ??
+          selectedOrderOption?.linked_quantity ??
+          selectedOrderOption?.base_qty ??
           0,
         )
       ),
     );
     const orderRate = Number(
-      option?.order_rate ??
-      option?.rate ??
-      option?.unit_rate ??
-      option?.unit_price ??
-      option?.price ??
-      option?.label_5 ??
+      selectedOrderOption?.order_rate ??
+      selectedOrderOption?.rate ??
+      selectedOrderOption?.unit_rate ??
+      selectedOrderOption?.unit_price ??
+      selectedOrderOption?.price ??
+      selectedOrderOption?.label_5 ??
       0,
     );
 
@@ -794,12 +886,63 @@ const TradingBusinessSales = () => {
       id: fallbackProductId,
       name: fallbackProductName,
       unit:
-        option?.unit ??
-        option?.unit_name ??
-        option?.qty_unit ??
+        selectedOrderOption?.unit ??
+        selectedOrderOption?.unit_name ??
+        selectedOrderOption?.qty_unit ??
         '',
       price: orderRate,
     };
+    let resolvedCustomer = {
+      id: fallbackCustomerId,
+      name: fallbackCustomerName,
+    };
+
+    const fallbackCustomerOption = fallbackCustomerName
+      ? {
+        value: fallbackCustomerId || fallbackCustomerName,
+        label: fallbackCustomerName,
+      }
+      : null;
+
+    if (fallbackCustomerOption) {
+      setSelectedCustomerOption(fallbackCustomerOption);
+    }
+
+    if (fallbackCustomerName) {
+      try {
+        const token = getToken();
+        const response = await fetch(
+          `${API_CHART_OF_ACCOUNTS_DDL_L4_URL}?searchName=${encodeURIComponent(fallbackCustomerName)}&acType=3`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        const responseData = await response.json();
+        const customerOptions = responseData?.data?.data;
+        const normalizedCustomerName = normalizeLookupText(fallbackCustomerName);
+        const matchedCustomer = Array.isArray(customerOptions)
+          ? customerOptions.find(
+            (item: any) =>
+              normalizeLookupText(item?.label) === normalizedCustomerName ||
+              normalizeLookupText(item?.label).includes(normalizedCustomerName) ||
+              normalizedCustomerName.includes(normalizeLookupText(item?.label)),
+          ) ?? customerOptions[0]
+          : null;
+
+        if (matchedCustomer) {
+          resolvedCustomer = {
+            id: matchedCustomer?.value ?? resolvedCustomer.id,
+            name: matchedCustomer?.label ?? resolvedCustomer.name,
+          };
+        }
+      } catch (error) {
+        console.error('Failed to resolve customer from sales order:', error);
+      }
+    }
 
     if (fallbackProductName) {
       try {
@@ -827,11 +970,28 @@ const TradingBusinessSales = () => {
       }
     }
 
+    const resolvedCustomerOption = resolvedCustomer.name
+      ? {
+        value: resolvedCustomer.id || resolvedCustomer.name,
+        label: resolvedCustomer.name,
+      }
+      : fallbackCustomerOption;
+
     setFormData((prevState) => ({
       ...prevState,
+      account: resolvedCustomer.id || '',
+      accountName: resolvedCustomer.name || fallbackCustomerName,
       [salesOrderNumber]: option.value,
       [salesOrderText]: option.label,
     }));
+
+    setSelectedCustomerOption(resolvedCustomerOption);
+    setAutofillHighlights({
+      customer: Boolean(resolvedCustomerOption),
+      product: Boolean(resolvedProduct.name),
+      qty: orderQty > 0,
+      price: Number(resolvedProduct.price) > 0,
+    });
 
     setProductData((prevState: any) => ({
       ...prevState,
@@ -924,18 +1084,12 @@ const TradingBusinessSales = () => {
                 <div className="flex items-start gap-1">
                   <div className="min-w-0 flex-1">
                     <DdlMultiline
-                      className='h-9.5'
+                      key={`${selectedCustomerOption?.value || 'empty'}-${selectedCustomerOption?.label || 'empty'}`}
+                      className={`h-9.5 ${autofillHighlights.customer ? autofillHighlightClass : ''}`}
                       onSelect={customerAccountHandler}
                       actionOptionLabel="+ Add New Customer"
                       onActionSelect={openCustomerModal}
-                      value={
-                        formData.account
-                          ? {
-                            value: formData.account,
-                            label: formData.accountName,
-                          }
-                          : null
-                      }
+                      value={selectedCustomerOption}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           setTimeout(() => {
@@ -1162,7 +1316,7 @@ const TradingBusinessSales = () => {
                 <ProductDropdown
                   id="products"
                   name="products"
-                  className='h-9'
+                  className={`h-9 ${autofillHighlights.product ? autofillHighlightClass : ''}`}
                   onSelect={productSelectHandler}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -1252,7 +1406,7 @@ const TradingBusinessSales = () => {
                   placeholder={'Enter Quantity'}
                   label={'Enter Quantity'}
                   type="number"
-                  className={'py-1 '}
+                  className={`py-1 ${autofillHighlights.qty ? autofillHighlightClass : ''}`}
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'price')}
                 />
@@ -1266,7 +1420,7 @@ const TradingBusinessSales = () => {
                   type="number"
                   placeholder={'Enter Price'}
                   label={'Enter Price'}
-                  className={'py-1'}
+                  className={`py-1 ${autofillHighlights.price ? autofillHighlightClass : ''}`}
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
                 />

@@ -47,9 +47,13 @@ import {
 import utc from 'dayjs/plugin/utc';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
-import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import {
+  API_CHART_OF_ACCOUNTS_DDL_L4_URL,
+  API_TRADING_PURCHASE_SUGGESTIONS_URL,
+} from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getDdlProduct } from '../../product/productSlice';
+import { getToken } from '../../../../features/authReducer';
 interface Product {
   id: number;
   product: number;
@@ -64,6 +68,9 @@ interface Product {
 }
 
 type PurchaseSuggestionField = 'vehicle_no' | 'notes';
+
+const autofillHighlightClass =
+  'border-blue-500 ring-1 ring-blue-500 bg-[#243245] dark:bg-[#243245]';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -84,6 +91,13 @@ const TradingBusinessPurchase = () => {
   const [unit, setUnit] = useState<string | null>(null); // Define state with type
   const [search, setSearch] = useState(''); // State to store the search value
   const [productData, setProductData] = useState<any>({});
+  const [selectedSupplierOption, setSelectedSupplierOption] = useState<any>(null);
+  const [autofillHighlights, setAutofillHighlights] = useState({
+    supplier: false,
+    product: false,
+    qty: false,
+    price: false,
+  });
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateId, setUpdateId] = useState<any>(null);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
@@ -191,6 +205,8 @@ const TradingBusinessPurchase = () => {
     const key = 'account'; // Set the desired key dynamically
     const accountName = 'accountName'; // Set the desired key dynamically
     const isCashSupplier = Number(option?.value) === 17;
+    setSelectedSupplierOption(option || null);
+    setAutofillHighlights((prev) => ({ ...prev, supplier: false }));
     setIsPaymentAmtManuallyEdited(false);
     setFormData({
       ...formData,
@@ -215,6 +231,7 @@ const TradingBusinessPurchase = () => {
     const unit = 'unit'; // Set the desired key dynamically
     const price = 'price'; // Set the desired key dynamically
     setUnit(option.label_5);
+    setAutofillHighlights((prev) => ({ ...prev, product: false, price: false }));
     setProductData({
       ...productData,
       [key]: option.value,
@@ -236,6 +253,15 @@ const TradingBusinessPurchase = () => {
   const orderHandler = async (option: any) => {
     const key = 'purchaseOrderNumber'; // Set the desired key dynamically
     const purchaseOrderText = 'purchaseOrderText'; // Set the desired key dynamically
+    const fallbackSupplierId =
+      option?.supplier_id ??
+      option?.party_id ??
+      option?.order_for_id ??
+      option?.account_id ??
+      '';
+    const fallbackSupplierName =
+      option?.label_2 ??
+      '';
     const fallbackProductId =
       option?.product_id ??
       option?.item_id ??
@@ -291,6 +317,55 @@ const TradingBusinessPurchase = () => {
       unit: unitName,
       price: orderRate,
     };
+    let resolvedSupplier = {
+      id: fallbackSupplierId,
+      name: fallbackSupplierName,
+    };
+
+    const fallbackSupplierOption = fallbackSupplierName
+      ? {
+          value: fallbackSupplierId || fallbackSupplierName,
+          label: fallbackSupplierName,
+        }
+      : null;
+
+    if (fallbackSupplierOption) {
+      setSelectedSupplierOption(fallbackSupplierOption);
+    }
+
+    if (fallbackSupplierName) {
+      try {
+        const token = getToken();
+        const response = await fetch(
+          `${API_CHART_OF_ACCOUNTS_DDL_L4_URL}?searchName=${encodeURIComponent(fallbackSupplierName)}&acType=3`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        const responseData = await response.json();
+        const supplierOptions = responseData?.data?.data;
+        const matchedSupplier = Array.isArray(supplierOptions)
+          ? supplierOptions.find(
+              (item: any) =>
+                String(item?.label || '').trim().toLowerCase() ===
+                String(fallbackSupplierName).trim().toLowerCase(),
+            ) ?? supplierOptions[0]
+          : null;
+
+        if (matchedSupplier) {
+          resolvedSupplier = {
+            id: matchedSupplier?.value ?? resolvedSupplier.id,
+            name: matchedSupplier?.label ?? resolvedSupplier.name,
+          };
+        }
+      } catch (error) {
+        console.error('Failed to resolve supplier from purchase order:', error);
+      }
+    }
 
     if (fallbackProductName) {
       try {
@@ -318,9 +393,20 @@ const TradingBusinessPurchase = () => {
 
     setFormData((prevState) => ({
       ...prevState,
+      account: resolvedSupplier.id || '',
+      accountName: resolvedSupplier.name || fallbackSupplierName,
       [key]: option.value,
       [purchaseOrderText]: option.label,
     }));
+
+    setSelectedSupplierOption(
+      resolvedSupplier.name
+        ? {
+            value: resolvedSupplier.id || resolvedSupplier.name,
+            label: resolvedSupplier.name,
+          }
+        : fallbackSupplierOption,
+    );
 
     setProductData((prevState: any) => ({
       ...prevState,
@@ -330,6 +416,12 @@ const TradingBusinessPurchase = () => {
       price: resolvedProduct.price > 0 ? resolvedProduct.price.toString() : '',
       unit: resolvedProduct.unit || unitName,
     }));
+    setAutofillHighlights({
+      supplier: Boolean(resolvedSupplier.name || fallbackSupplierName),
+      product: Boolean(resolvedProduct.name),
+      qty: orderQty > 0,
+      price: Number(resolvedProduct.price) > 0,
+    });
 
     setUnit(resolvedProduct.unit || unitName || null);
     setLineTotal(
@@ -588,6 +680,13 @@ const TradingBusinessPurchase = () => {
   const handleProductChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const newValue = value ? parseFloat(value) : 0;
+    if (name === 'qty' || name === 'price') {
+      setAutofillHighlights((prev) => ({
+        ...prev,
+        qty: name === 'qty' ? false : prev.qty,
+        price: name === 'price' ? false : prev.price,
+      }));
+    }
     setProductData((prevState: any) => ({
       ...prevState,
       [name]: value,
@@ -748,6 +847,7 @@ const TradingBusinessPurchase = () => {
       purchaseOrderNumber: '', 
       purchaseOrderText: '', 
     }));
+    setSelectedSupplierOption(null);
     setProductData((prevState: any) => ({
       ...prevState,
       product: '',
@@ -756,6 +856,12 @@ const TradingBusinessPurchase = () => {
       price: '',
       unit: '',
     }));
+    setAutofillHighlights({
+      supplier: false,
+      product: false,
+      qty: false,
+      price: false,
+    });
     setUnit(null);
     setLineTotal(0);
     setIsResetOrder(false);
@@ -848,17 +954,19 @@ const TradingBusinessPurchase = () => {
                     <DdlMultiline
                       id="account"
                       name="account"
-                      className="h-9.5"
+                      className={`h-9.5 ${autofillHighlights.supplier ? autofillHighlightClass : ''}`}
                       onSelect={supplierAccountHandler}
                       actionOptionLabel="+ Add New Supplier"
                       onActionSelect={openCustomerModal}
                       value={
+                        selectedSupplierOption ?? (
                         formData.account
                           ? {
                               value: formData.account,
                               label: formData.accountName,
                             }
                           : null
+                        )
                       }
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -1062,7 +1170,7 @@ const TradingBusinessPurchase = () => {
                 <ProductDropdown
                   id="product"
                   name="product"
-                  className='h-9'
+                  className={`h-9 ${autofillHighlights.product ? autofillHighlightClass : ''}`}
                   onSelect={productSelectHandler}
                   // defaultValue={
                   //   productData.product_name && productData.product
@@ -1153,7 +1261,7 @@ const TradingBusinessPurchase = () => {
                   placeholder={'Enter Quantity'}
                   type="number"
                   label={'Quantity'}
-                  className={'py-1'}
+                  className={`py-1 ${autofillHighlights.qty ? autofillHighlightClass : ''}`}
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'price')} // Pass the next field's ID
                 />
@@ -1167,7 +1275,7 @@ const TradingBusinessPurchase = () => {
                   type="number"
                   placeholder={'Enter Price'}
                   label={'Price'}
-                  className={'py-1'}
+                  className={`py-1 ${autofillHighlights.price ? autofillHighlightClass : ''}`}
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')} // Pass the next field's ID
                 />
