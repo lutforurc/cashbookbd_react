@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -20,15 +21,23 @@ import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckSquare, FiEdit, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { hasPermission } from '../../../utils/permissionChecker';
+import { toast } from 'react-toastify';
+import {
+  buildVoucherAutoEditState,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.purchaseLedger);
   const settings = useSelector((state: any) => state.settings);
   const stockReportType = settings?.data?.branch?.stock_report_type;
+  const userPermissions = settings?.data?.permissions || [];
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]); // Initialize as an empty array
@@ -137,6 +146,19 @@ const PurchaseLedger = (user: any) => {
     setFilterOpen(false);
   };
 
+  const handleEditVoucher = (row: any) => {
+    const voucherNo = String(row?.vr_no || '').trim();
+    const editTarget = getVoucherEditTarget(voucherNo);
+    const editState = buildVoucherAutoEditState(voucherNo);
+
+    if (!voucherNo || !editTarget || !editState) {
+      toast.error('Edit route not found for this voucher.');
+      return;
+    }
+
+    navigate(editTarget.route, { state: editState });
+  };
+
 
 
   const columns = [
@@ -173,7 +195,7 @@ const PurchaseLedger = (user: any) => {
         </div>
       ),
     },
-    
+
     {
       key: 'product_name',
       header: 'Product & Details',
@@ -192,7 +214,7 @@ const PurchaseLedger = (user: any) => {
                   <div key={detail?.id ?? i} className="leading-normal">
                     {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
                     {productName}
-                    
+
                   </div>
                 );
               })}
@@ -201,7 +223,7 @@ const PurchaseLedger = (user: any) => {
                 {coaName}
               </div>
             )}
-            { row?.purchase_master?.notes && (
+            {row?.purchase_master?.notes && (
               <div>{row?.purchase_master?.notes}</div>
             )}
           </div>
@@ -216,7 +238,7 @@ const PurchaseLedger = (user: any) => {
         return (
           <div className="text-left">
             <div>{row?.purchase_master?.vehicle_no}</div>
-            
+
           </div>
         );
       },
@@ -233,7 +255,7 @@ const PurchaseLedger = (user: any) => {
               (detail: any, index: number) => (
                 <div key={index}>
                   <span>
-                    {( thousandSeparator(detail?.quantity, 2))}{' '}
+                    {(thousandSeparator(detail?.quantity, 2))}{' '}
                     {detail?.product?.unit?.name}
                   </span>
                 </div>
@@ -346,6 +368,36 @@ const PurchaseLedger = (user: any) => {
         );
       },
     },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (row: any) => {
+        const canEditVoucher =
+          hasPermission(userPermissions, 'sales.edit') ||
+          hasPermission(userPermissions, 'cash.received.edit') ||
+          hasPermission(userPermissions, 'cash.payment.edit');
+        return (
+          <>
+            {row?.vr_no ? (
+              <>
+                {canEditVoucher && (
+                    <>
+                      <button
+                        onClick={() => handleEditVoucher(row)}
+                        className="text-blue-500 ml-2"
+                      >
+                        <FiEdit className="cursor-pointer" />
+                      </button>
+                    </>
+                  )}
+              </>
+            ) : (
+              ''
+            )}
+          </>
+        );
+      },
+    },
   ];
 
   const handlePrint = useReactToPrint({
@@ -395,11 +447,10 @@ const PurchaseLedger = (user: any) => {
               <button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                  filterOpen
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
                     ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
                     : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-                }`}
+                  }`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -495,7 +546,7 @@ const PurchaseLedger = (user: any) => {
                         <ButtonLoading
                           onClick={handleActionButtonClick}
                           buttonLoading={buttonLoading}
-                          label="Apply" 
+                          label="Apply"
                           icon={<FiCheckSquare />}
                           className="h-10 px-6"
                         />
@@ -535,17 +586,16 @@ const PurchaseLedger = (user: any) => {
                   )}
 
                   <div
-                    className={`flex gap-2 pt-1 ${
-                      useFilterMenuEnabled
+                    className={`flex gap-2 pt-1 ${useFilterMenuEnabled
                         ? 'justify-end'
                         : 'hidden xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
-                    }`}
+                      }`}
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
                       buttonLoading={buttonLoading}
                       label="Apply"
-                       icon={<FiCheckSquare />}
+                      icon={<FiCheckSquare />}
                       className="h-10 px-6"
                     />
                     <ButtonLoading
@@ -591,7 +641,7 @@ const PurchaseLedger = (user: any) => {
                           onClick={handleResetFilters}
                           buttonLoading={false}
                           label="Reset"
-                           icon={<FiRotateCcw />} 
+                          icon={<FiRotateCcw />}
                           className="h-10 px-4"
                         />
                       </div>
@@ -700,7 +750,7 @@ const PurchaseLedger = (user: any) => {
               <div>Total: {thousandSeparator(totalPayment, 0)}</div>
               <div>Discount: {thousandSeparator(discountTotal, 0)}</div>
               <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
-              <div>Balance: {thousandSeparator( (totalPayment - grandTotal - discountTotal), 0)}</div>
+              <div>Balance: {thousandSeparator((totalPayment - grandTotal - discountTotal), 0)}</div>
             </div>
           </div>
         )}

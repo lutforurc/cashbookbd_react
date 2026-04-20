@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -19,15 +20,23 @@ import SalesLedgerPrint from './SalesLedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckSquare, FiEdit, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { hasPermission } from '../../../utils/permissionChecker';
+import { toast } from 'react-toastify';
+import {
+  buildVoucherAutoEditState,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const ledgerData = useSelector((state: any) => state.salesLedger);
   const settings = useSelector((state: any) => state.settings);
   const stockReportType = settings?.data?.branch?.stock_report_type;
+  const userPermissions = settings?.data?.permissions || [];
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [buttonLoading] = useState(false);
@@ -150,6 +159,19 @@ const SalesLedger = (user: any) => {
     setSelectedLedgerOption(null);
     setSelectedProductOption(null);
     setFilterOpen(false);
+  };
+
+  const handleEditVoucher = (row: any) => {
+    const voucherNo = String(row?.vr_no || '').trim();
+    const editTarget = getVoucherEditTarget(voucherNo);
+    const editState = buildVoucherAutoEditState(voucherNo);
+
+    if (!voucherNo || !editTarget || !editState) {
+      toast.error('Edit route not found for this voucher.');
+      return;
+    }
+
+    navigate(editTarget.route, { state: editState });
   };
 
   const columns = [
@@ -399,6 +421,36 @@ const SalesLedger = (user: any) => {
         return <div className="text-right">{thousandSeparator(balance, 0)}</div>;
       },
     },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (row: any) => {
+        const canEditVoucher =
+          hasPermission(userPermissions, 'sales.edit') ||
+          hasPermission(userPermissions, 'cash.received.edit') ||
+          hasPermission(userPermissions, 'cash.payment.edit');
+        return (
+          <>
+            {row?.vr_no ? (
+              <>
+                {canEditVoucher && (
+                  <>
+                    <button
+                      onClick={() => handleEditVoucher(row)}
+                      className="text-blue-500 ml-2"
+                    >
+                      <FiEdit className="cursor-pointer" />
+                    </button>
+                  </>
+                )}
+              </>
+            ) : (
+              ''
+            )}
+          </>
+        );
+      },
+    },
   ];
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -435,11 +487,10 @@ const SalesLedger = (user: any) => {
               <button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                  filterOpen
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
                     ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
                     : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-                }`}
+                  }`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -535,14 +586,14 @@ const SalesLedger = (user: any) => {
                           onClick={handleActionButtonClick}
                           buttonLoading={buttonLoading}
                           label="Apply"
-                           icon={<FiCheckSquare />}
+                          icon={<FiCheckSquare />}
                           className="h-10 px-6"
                         />
                         <ButtonLoading
                           onClick={handleResetFilters}
                           buttonLoading={false}
-                          label="Reset" 
-                          icon={<FiRotateCcw />} 
+                          label="Reset"
+                          icon={<FiRotateCcw />}
                           className="h-10 px-4"
                         />
                         <InputElement
@@ -573,13 +624,12 @@ const SalesLedger = (user: any) => {
                     </div>
                   )}
 
-            {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
+                  {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
                   <div
-                    className={`flex gap-2 pt-1 ${
-                      useFilterMenuEnabled
+                    className={`flex gap-2 pt-1 ${useFilterMenuEnabled
                         ? 'justify-end'
                         : 'hidden xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
-                    }`}
+                      }`}
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
@@ -699,7 +749,7 @@ const SalesLedger = (user: any) => {
                   onClick={handleResetFilters}
                   buttonLoading={false}
                   label="Reset"
-                  icon={<FiRotateCcw />} 
+                  icon={<FiRotateCcw />}
                   className="h-10 px-4 min-[1750px]:hidden"
                 />
               </>

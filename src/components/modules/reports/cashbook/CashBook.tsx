@@ -347,11 +347,11 @@ const CashBook = (user: any) => {
                     )}
                   </button>
                 ) : null}
-                {
+                {(
                 hasPermission(userPermissions, 'sales.edit') || 
                 hasPermission(userPermissions, 'cash.received.edit') ||
-                hasPermission(userPermissions, 'cash.payment.edit') 
-                && (
+                hasPermission(userPermissions, 'cash.payment.edit')
+                ) && (
                   <>
                     <button
                       onClick={() => {}}
