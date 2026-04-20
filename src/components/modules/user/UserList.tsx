@@ -4,12 +4,12 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { generateUserTemporaryPassword, getUser } from './userSlice';
 import Loader from '../../../common/Loader';
-import { FiBook, FiCheck, FiCheckSquare, FiEdit, FiEdit2, FiKey, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiCheckSquare, FiEdit2, FiKey, FiPlus } from 'react-icons/fi';
 import Pagination from '../../utils/utils-functions/Pagination';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import SearchInput from '../../utils/fields/SearchInput';
 import routes from '../../services/appRoutes';
 import { hasPermission } from '../../utils/permissionChecker';
@@ -27,7 +27,6 @@ const UserList = () => {
     hasPermission(userPermissions, 'user.store') ||
     hasPermission(userPermissions, 'all.user.add');
 
-  const [searchValue, setSearchValue] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +38,12 @@ const UserList = () => {
   const maxUsers = subscription?.current?.max_users;
   const currentUsers = Number(userList?.data?.total || 0);
   const userLimitReached = typeof maxUsers === 'number' && maxUsers > 0 && currentUsers >= maxUsers;
+
+
+  console.log('====================================');
+  console.log("settings", settings?.data?.user?.id === 1, settings?.data?.permissions);
+  console.log('====================================');
+
 
   const handleSelectChange = (page: any) => {
     setPerPage(page.target.value);
@@ -100,27 +105,25 @@ const UserList = () => {
 
     const payload = response?.data?.data;
     const temporaryPassword = payload?.temporary_password;
-    const email = payload?.email;
-
     if (!temporaryPassword) {
       toast.error('Temporary password was not returned by the server.');
       return;
     }
 
-    if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(temporaryPassword).catch(() => {});
-    }
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(temporaryPassword);
+        toast.success('Temporary password copied.');
+        return;
+      }
 
-    toast.success(response?.message || 'Temporary password generated successfully.');
-    window.prompt(
-      email
-        ? `Temporary password for ${email}. It has also been copied if clipboard access is allowed.`
-        : 'Temporary password generated. It has also been copied if clipboard access is allowed.',
-      temporaryPassword,
-    );
+      toast.success('Temporary password generated successfully.');
+    } catch (error) {
+      toast.success('Temporary password generated, but copy was blocked.');
+    }
   };
 
-  
+
   const handleAddUser = () => {
     if (!canCreateUser) {
       toast.error('You are not authorized to create user.');
@@ -239,15 +242,18 @@ const UserList = () => {
             >
               <FiEdit2 className="cursor-pointer w-5 h-5" />
             </button>
-            <button
-              type="button"
-              onClick={() => handleGenerateTemporaryPassword(row.user_id)}
-              className="text-blue-500"
-              title="Generate temporary password"
-              disabled={temporaryPasswordLoadingId === row.user_id}
-            >
-              <FiKey className={`cursor-pointer w-5 h-5 ${temporaryPasswordLoadingId === row.user_id ? 'opacity-50' : ''}`} />
-            </button>
+
+            {settings?.data?.user?.id === 1 && (
+              <button
+                type="button"
+                onClick={() => handleGenerateTemporaryPassword(row.user_id)}
+                className="text-blue-500"
+                title="Generate temporary password"
+                disabled={temporaryPasswordLoadingId === row.user_id}
+              >
+                <FiKey className={`cursor-pointer w-5 h-5 ${temporaryPasswordLoadingId === row.user_id ? 'opacity-50' : ''}`} />
+              </button>
+            )}
           </div>
         );
       },
