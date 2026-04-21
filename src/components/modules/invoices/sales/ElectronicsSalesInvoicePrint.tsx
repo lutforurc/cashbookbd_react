@@ -248,15 +248,15 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                     </td>
 
                     <td className="border border-black px-1 text-center" style={{ fontSize: fs }}>
-                      {qty}
+                      { thousandSeparator(qty, 0)}
                     </td>
 
                     <td className="border border-black px-1 text-right" style={{ fontSize: fs }}>
-                      {thousandSeparator(rate, 0)}
+                      {thousandSeparator(rate, 2)}
                     </td>
 
                     <td className="border border-black px-1 text-right" style={{ fontSize: fs }}>
-                      {thousandSeparator(total, 0)}
+                      {thousandSeparator(total, 2)}
                     </td>
                   </tr>
                 );
@@ -290,7 +290,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                         Total Tk.
                       </td>
                       <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
-                        {thousandSeparator(grandTotal, 0)}
+                        {thousandSeparator(grandTotal, 2)}
                       </td>
                     </tr>
 
@@ -300,7 +300,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                           {tdsName} Tk.
                         </td>
                         <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                          {thousandSeparator(tdsAmount, 0)}
+                          {thousandSeparator(tdsAmount, 2)}
                         </td>
                       </tr>
                     )}
@@ -310,7 +310,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                           {serviceChargeName} Tk.
                         </td>
                         <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                          {thousandSeparator(serviceChargeAmount, 0)}
+                          {thousandSeparator(serviceChargeAmount, 2)}
                         </td>
                       </tr>
                     )}
@@ -320,7 +320,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                           {carryingOutwardName} Tk.
                         </td>
                         <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                          {thousandSeparator(carryingOutwardAmount, 0)}
+                          {thousandSeparator(carryingOutwardAmount, 2)}
                         </td>
                       </tr>
                     )}
@@ -331,7 +331,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                           Discount Tk.
                         </td>
                         <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                          (-) {thousandSeparator(discountAmount, 0)}
+                          (-) {thousandSeparator(discountAmount, 2)}
                         </td>
                       </tr>
                     )}
@@ -341,7 +341,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                         Net Tk.
                       </td>
                       <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
-                        {thousandSeparator((grandTotal + tdsAmount + serviceChargeAmount + carryingOutwardAmount - discountAmount), 0)}
+                        {thousandSeparator((grandTotal + tdsAmount + serviceChargeAmount + carryingOutwardAmount - discountAmount), 2)}
                       </td>
                     </tr>
 
@@ -351,7 +351,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                           Received Tk.
                         </td>
                         <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                          {thousandSeparator(receivedAmount, 0)}
+                          {thousandSeparator(receivedAmount, 2)}
                         </td>
                       </tr>
                     )}
@@ -362,7 +362,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                       <td className="border-black px-1 py-1 text-right w-32 font-bold" style={{ fontSize: fs }}>
                         {thousandSeparator(
                           (grandTotal + tdsAmount + serviceChargeAmount + carryingOutwardAmount) - discountAmount - receivedAmount,
-                          0,
+                          2,
                         )}
                       </td>
                     </tr>
@@ -415,7 +415,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                   <div key={idx} className="grid grid-cols-[36px_96px_96px] px-3 py-1 border-b-[0.5px] border-gray-300 last:border-b-0" style={{ fontSize: fs }}>
                     <div className="font-medium text-center">{idx + 1}</div>
                     <div>{dayjs(inst.due_date).format('DD/MM/YYYY')}</div>
-                    <div className="text-right font-medium">{thousandSeparator(Number(inst.amount), 0)}</div>
+                    <div className="text-right font-medium">{thousandSeparator(Number(inst.amount), 2)}</div>
                   </div>
                 ))}
               </div>
