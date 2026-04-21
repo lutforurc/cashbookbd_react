@@ -253,11 +253,15 @@ const SalesLedger = (user: any) => {
     },
     {
       key: 'vhicle',
-      header: 'Vehicle Number',
+      header: 'Vehicle & Order',
       headerClass: 'text-left',
       cellClass: 'text-left align-top',
       width: '120px',
-      render: (row: any) => <div>{ formatTransportationNumber(row?.sales_master?.vehicle_no)}</div>,
+      render: (row: any) => 
+      <div>
+        <span className='block'>{ formatTransportationNumber(row?.sales_master?.vehicle_no)}</span>
+         <span className='text-green-500 dark:text-yellow-300 '>{ row?.sales_master?.sales_order?.order_number}</span>
+      </div>,
     },
     {
       key: 'quantity',

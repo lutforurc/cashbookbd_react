@@ -234,13 +234,13 @@ const PurchaseLedger = (user: any) => {
     },
     {
       key: 'vehicle_no',
-      header: 'Vehicle Number',
+      header: 'Vehicle & Order',
       width: '120px',
       render: (row: any) => {
         return (
           <div className="text-left">
-            <div>{ formatTransportationNumber(row?.purchase_master?.vehicle_no)}</div>
-
+            <span className='block'>{ formatTransportationNumber(row?.purchase_master?.vehicle_no)}</span>
+             <span className='text-green-500 dark:text-yellow-300 '>{ row?.purchase_master?.purchase_order?.order_number}</span>
           </div>
         );
       },
