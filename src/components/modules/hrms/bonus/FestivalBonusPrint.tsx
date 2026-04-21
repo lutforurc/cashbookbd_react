@@ -147,19 +147,19 @@ const FestivalBonusPrint = React.forwardRef<HTMLDivElement, Props>(
                           <span className="block leading-tight">{history.designation_name || "-"}</span>
                         </td>
                         <td style={{ fontSize: fs, textAlign: "right" }}>
-                          {thousandSeparator(Number(row.basic_salary || 0), 0)}
+                          {thousandSeparator(Number(row.basic_salary || 0))}
                         </td>
                         <td style={{ fontSize: fs, textAlign: "center" }}>
                           {Number(row.bonus_percent || 0).toFixed(2)}%
                         </td>
                         <td style={{ fontSize: fs, textAlign: "right", fontWeight: 600 }}>
-                          {thousandSeparator(Number(row.bonus_amount || 0), 0)}
+                          {thousandSeparator(Number(row.bonus_amount || 0))}
                         </td>
                         <td style={{ fontSize: fs, textAlign: "right" }}>
-                          {thousandSeparator(Number(row.payment_amount || 0), 0)}
+                          {thousandSeparator(Number(row.payment_amount || 0))}
                         </td>
                         <td style={{ fontSize: fs, textAlign: "right" }}>
-                          {thousandSeparator(Math.max(dueAmount, 0), 0)}
+                          {thousandSeparator(Math.max(dueAmount, 0))}
                         </td>
                         <td style={{ fontSize: fs, textAlign: "center" }}>
                           {String(row.vr_no || "")
@@ -180,24 +180,24 @@ const FestivalBonusPrint = React.forwardRef<HTMLDivElement, Props>(
                 <tfoot>
                   <tr>
                     <th colSpan={2} style={{ fontSize: fs, textAlign: "right" }}>Page Total</th>
-                    <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(pageBasic, 0)}</th>
+                    <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(pageBasic)}</th>
                     <th />
-                    <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(pageBonus, 0)}</th>
-                    <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(pagePaid, 0)}</th>
+                    <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(pageBonus)}</th>
+                    <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(pagePaid)}</th>
                     <th style={{ fontSize: fs, textAlign: "right" }}>
-                      {thousandSeparator(pageBonus - pagePaid, 0)}
+                      {thousandSeparator(pageBonus - pagePaid)}
                     </th>
                     <th colSpan={2} />
                   </tr>
                   {pageIndex === pages.length - 1 && (
                     <tr>
                       <th colSpan={2} style={{ fontSize: fs, textAlign: "right" }}>Grand Total</th>
-                      <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(grandBasic, 0)}</th>
+                      <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(grandBasic)}</th>
                       <th />
-                      <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(grandBonus, 0)}</th>
-                      <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(grandPaid, 0)}</th>
+                      <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(grandBonus)}</th>
+                      <th style={{ fontSize: fs, textAlign: "right" }}>{thousandSeparator(grandPaid)}</th>
                       <th style={{ fontSize: fs, textAlign: "right" }}>
-                        {thousandSeparator(grandBonus - grandPaid, 0)}
+                        {thousandSeparator(grandBonus - grandPaid)}
                       </th>
                       <th colSpan={2} />
                     </tr>

@@ -22,9 +22,9 @@ type Props = {
     title?: string;
 };
 
-/// ──────────────────────────────────
+/// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 /// Group rows by Category
-/// ──────────────────────────────────
+/// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const groupByCategory = (rows: RowType[]) => {
     const groups: Record<string, RowType[]> = {};
     rows.forEach((row) => {
@@ -35,9 +35,9 @@ const groupByCategory = (rows: RowType[]) => {
     return groups;
 };
 
-/// ──────────────────────────────────
+/// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 /// Convert Grouped Rows Into Page-wise Chunks
-/// ──────────────────────────────────
+/// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const paginateGroupedRows = (
     grouped: Record<string, RowType[]>,
     rowsPerPage: number
@@ -90,9 +90,9 @@ const paginateGroupedRows = (
 };
 
 
-/// ──────────────────────────────────
+/// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 /// COMPONENT
-/// ──────────────────────────────────
+/// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
     (
         {
@@ -131,7 +131,7 @@ const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
                         <div className="mb-4">
                             <h4 className="font-semibold text-center">{title}</h4>
                             <div className="text-center text-xs mt-1">
-                                <strong>Date:</strong> {startDate || "-"} — {endDate || "-"}
+                                <strong>Date:</strong> {startDate || "-"} â€” {endDate || "-"}
                             </div>
                         </div>
 
@@ -198,7 +198,7 @@ const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
                                                     className="border border-gray-900 px-2 py-1 text-right"
                                                     style={{ fontSize: fs }}
                                                 >
-                                                    {thousandSeparator(row.quantity || 0, 0)}{" "}
+                                                    {thousandSeparator(row.quantity || 0)}{" "}
                                                     {row.unit}
                                                 </td>
                                             </tr>
@@ -220,7 +220,7 @@ const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
                                                     className="border border-gray-900 px-2 py-1 text-right"
                                                     style={{ fontSize: fs }}
                                                 >
-                                                    {thousandSeparator(item.subtotal, 0)}
+                                                    {thousandSeparator(item.subtotal)}
                                                 </td>
                                             </tr>
                                         );
@@ -243,7 +243,7 @@ const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
                                             className="border border-gray-900 px-2 py-2 text-right"
                                             style={{ fontSize: fs }}
                                         >
-                                            {thousandSeparator(grandTotal, 0)}
+                                            {thousandSeparator(grandTotal)}
                                         </td>
                                     </tr>
                                 )}

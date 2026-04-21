@@ -40,7 +40,7 @@ interface ReceivedItem {
   bankReceivedAccountName: string;
   receiverAccount: string;
   receiverAccountName: string;
-  transactionList?: TransactionList[]; // ✅ object → array
+  transactionList?: TransactionList[]; // âœ… object â†’ array
 }
 
 const initialReceivedItem: ReceivedItem = {
@@ -71,8 +71,8 @@ const BankReceived = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [receivedData, setReceivedData] = useState<ReceivedItem | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // ✅ new
-  const searchingRef = useRef(false); // ✅ guard against concurrent searches
+  const [isLoading, setIsLoading] = useState(false); // âœ… new
+  const searchingRef = useRef(false); // âœ… guard against concurrent searches
   const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
     null,
   );
@@ -121,7 +121,7 @@ const BankReceived = () => {
       const mapped = mapReceivedData(response);
       setReceivedData(mapped);
       setTableData([mapped]);
-      setFormData({ ...mapped, transactionList: [] }); // ✅ Receiver set করুন, transactionList খালি রাখুন (fields ফাঁকা)
+      setFormData({ ...mapped, transactionList: [] }); // âœ… Receiver set à¦•à¦°à§à¦¨, transactionList à¦–à¦¾à¦²à¦¿ à¦°à¦¾à¦–à§à¦¨ (fields à¦«à¦¾à¦à¦•à¦¾)
       setIsUpdating(false);
       setIsUpdateButton(true);
 
@@ -133,7 +133,7 @@ const BankReceived = () => {
       toast.error(error?.message || 'Error searching invoice.');
       console.error('Error searching invoice:', error);
     } finally {
-      setIsLoading(false);   // ✅ hide Loader
+      setIsLoading(false);   // âœ… hide Loader
       searchingRef.current = false;
     }
   };
@@ -214,7 +214,7 @@ const BankReceived = () => {
           transactionList: [transactionToEdit],
         });
         setUpdateTransactionId(id);
-        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-এ
+        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-à¦
         setIsUpdating(true); // Update mode on
         toast.info('Transaction loaded for editing.'); // Optional: user feedback
       } else {
@@ -225,7 +225,7 @@ const BankReceived = () => {
     [tableData, formData],
   );
 
-  // ✅ Implement editReceivedVoucher like the example (local update)
+  // âœ… Implement editReceivedVoucher like the example (local update)
 
   const editReceivedVoucher = () => {
     if (updateTransactionId == null) {
@@ -272,7 +272,7 @@ const BankReceived = () => {
     setTableData(updatedTableData);
     setIsUpdating(false);
 
-    // ✅ Reset: header-এর id/mtmId/receiver
+    // âœ… Reset: header-à¦à¦° id/mtmId/receiver
     setFormData(prev => ({
       ...initialReceivedItem,
       id: prev?.id as any,
@@ -343,10 +343,10 @@ const BankReceived = () => {
       }
 
 
-      // ✅ Clear table
+      // âœ… Clear table
       setTableData([]);
 
-      // ✅ Reset form but keep account fields
+      // âœ… Reset form but keep account fields
       setFormData({
         ...initialReceivedItem,
         bankReceivedAccount: formData.bankReceivedAccount,
@@ -381,7 +381,7 @@ const BankReceived = () => {
     setUpdatingLoading(true);
     setIsLoading(true);
 
-    // ✅ Validation
+    // âœ… Validation
     const transactions = tableData.flatMap((item) => item.transactionList || []);
     if (!transactions.length) {
       toast.warning('No transactions to update.');
@@ -411,7 +411,7 @@ const BankReceived = () => {
       };
 
 
-      // ✅ API call or redux dispatch
+      // âœ… API call or redux dispatch
       const response = await dispatch(updateBankReceived(payload)).unwrap();
 
 
@@ -432,7 +432,7 @@ const BankReceived = () => {
       setReceivedData(null);
 
     } catch (error: any) {
-      console.error('❌ Error updating transaction:', error);
+      console.error('âŒ Error updating transaction:', error);
       toast.error(error?.message || 'Failed to update transaction.');
     } finally {
       setIsLoading(false);
@@ -506,7 +506,7 @@ const BankReceived = () => {
                   id="account"
                   name="account"
                   placeholder="Select Transaction Account"
-                  onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
+                  onSelect={transactionAccountHandler} // âœ… à¦ªà§à¦°à§‹à¦¨à§‹ handler à¦¬à¦¾à¦¦
                   value={
                     formData.transactionList &&
                       formData.transactionList[0]?.account
@@ -714,7 +714,7 @@ const BankReceived = () => {
                 <td
                   className={`px-2 py-2 font-bold whitespace-nowrap dark:text-white text-right  text-gray-900`}
                 >
-                  {thousandSeparator(Number(totalAmount), 0)}{' '}
+                  {thousandSeparator(Number(totalAmount))}{' '}
                 </td>
                 <td
                   className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center `}

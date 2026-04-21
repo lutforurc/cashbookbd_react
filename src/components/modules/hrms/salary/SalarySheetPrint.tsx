@@ -233,22 +233,22 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         </td>
                         <td style={{ fontSize: fs, textAlign: 'center' }}>{h.working_days || ''}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
-                          {thousandSeparator(row.basic_salary ?? 0, 0)}
+                          {thousandSeparator(row.basic_salary ?? 0)}
                         </td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
-                          {thousandSeparator(row.others_allowance ?? 0, 0)}
+                          {thousandSeparator(row.others_allowance ?? 0)}
                         </td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
-                          {thousandSeparator(row.gross_salary ?? 0, 0)}
+                          {thousandSeparator(row.gross_salary ?? 0)}
                         </td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
-                          {thousandSeparator(row.loan_deduction ?? 0, 0)}
+                          {thousandSeparator(row.loan_deduction ?? 0)}
                         </td>
                         <td style={{ fontSize: fs, textAlign: 'right', fontWeight: 600 }}>
-                          {thousandSeparator(row.net_salary ?? 0, 0)}
+                          {thousandSeparator(row.net_salary ?? 0)}
                         </td>
                         <td style={{ fontSize: fs, textAlign: 'right', fontWeight: 600 }}>
-                          {thousandSeparator(row.payment_amount ?? 0, 0)}
+                          {thousandSeparator(row.payment_amount ?? 0)}
                         </td>
 	                        <td style={{ fontSize: fs, textAlign: 'center' }}>
 	                          {String(row.vr_no || '')
@@ -269,12 +269,12 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   {!isLastPage && (
                     <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
                       <td colSpan={3}>Subtotal (Page {pageIndex + 1})</td>
-                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic, 0)}</td>
-                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance, 0)}</td>
-                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross, 0)}</td>
-                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan, 0)}</td>
-                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageNet, 0)}</td>
-                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment, 0)}</td>
+                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
+                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
+                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
+                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan)}</td>
+                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageNet)}</td>
+                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment)}</td>
                       <td />
                     </tr>
                   )}
@@ -285,23 +285,23 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       {hasMultiplePages && (
                         <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
                           <td colSpan={3}>Page Total</td>
-                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic, 0)}</td>
-                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance, 0)}</td>
-                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross, 0)}</td>
-                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan, 0)}</td>
-                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageNet, 0)}</td>
-                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment, 0)}</td>
+                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
+                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
+                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
+                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan)}</td>
+                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageNet)}</td>
+                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment)}</td>
                           <td></td>
                         </tr>
                       )}
                       <tr style={{ fontSize: fs, fontWeight: 700, background: '#e5e5e5' }}>
                         <td colSpan={3}>Grand Total</td>
-                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandBasic, 0)}</td>
-                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandAllowance, 0)}</td>
-                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandGross, 0)}</td>
-                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandLoan, 0)}</td>
-                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandNet, 0)}</td>
-                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandPayment, 0)}</td>
+                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandBasic)}</td>
+                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandAllowance)}</td>
+                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandGross)}</td>
+                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandLoan)}</td>
+                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandNet)}</td>
+                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandPayment)}</td>
                         <td></td>
                       </tr>
                     </>

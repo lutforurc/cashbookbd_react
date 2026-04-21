@@ -133,7 +133,7 @@ const DueList = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => (
         <>
-          <p>{row.debit > 0 ? thousandSeparator(row.debit, 0) : '-'}</p>
+          <p>{row.debit > 0 ? thousandSeparator(row.debit) : '-'}</p>
         </>
       )
     },
@@ -144,7 +144,7 @@ const DueList = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => (
         <>
-          <p>{row.credit > 0 ? thousandSeparator(row.credit, 0) : '-'}</p>
+          <p>{row.credit > 0 ? thousandSeparator(row.credit) : '-'}</p>
         </>
       )
     }

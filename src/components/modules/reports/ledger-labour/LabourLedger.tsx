@@ -409,13 +409,13 @@ const LabourLedger = (user: any) => {
                                   </span>
                                 </div>
                                 <div className="flex w-full items-center justify-end whitespace-nowrap px-3 py-2 sm:w-1/6">
-                                  {thousandSeparator(item.qty, 2)}
+                                  {thousandSeparator(item.qty)}
                                 </div>
                                 <div className="flex w-full items-center justify-end whitespace-nowrap px-3 py-2 sm:w-1/6">
-                                  {thousandSeparator(item.rate, 2)}
+                                  {thousandSeparator(item.rate)}
                                 </div>
                                 <div className="flex w-full items-center justify-end whitespace-nowrap px-3 py-2 sm:w-1/6">
-                                  {thousandSeparator(item.total, 0)}
+                                  {thousandSeparator(item.total)}
                                 </div>
                               </div>
                             ))}
@@ -423,7 +423,7 @@ const LabourLedger = (user: any) => {
                             <div className="flex border-t border-gray-200 bg-gray-50 text-sm font-semibold dark:border-gray-700 dark:bg-gray-900">
                               <div className="w-4/5 px-3 py-2 text-right">Total:</div>
                               <div className="w-1/5 px-3 py-2 text-right">
-                                {thousandSeparator(groupTotal, 0)}
+                                {thousandSeparator(groupTotal)}
                               </div>
                             </div>
                           </div>
@@ -438,7 +438,7 @@ const LabourLedger = (user: any) => {
                     Grand Total for {branchName}:
                   </div>
                   <div className="w-1/5 px-3 py-2 text-right text-indigo-700 dark:text-indigo-400">
-                    {thousandSeparator(Number(branchTotal), 0)}
+                    {thousandSeparator(Number(branchTotal))}
                   </div>
                 </div>
               </div>

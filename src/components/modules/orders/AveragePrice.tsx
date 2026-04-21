@@ -177,7 +177,7 @@ const AveragePrice = (user: any) => {
 
                                 </div>
                                 <div className="text-right">
-                                    {thousandSeparator(orderData?.data?.total_purchase_qty, 0)}{" "}
+                                    {thousandSeparator(orderData?.data?.total_purchase_qty)}{" "}
                                     {orderData?.data?.product_unit}
                                 </div>
                             </div>
@@ -185,9 +185,7 @@ const AveragePrice = (user: any) => {
                                 <div className="">Total Cost</div>
                                 <div className="text-right">
                                     {thousandSeparator(
-                                        orderData?.data?.total_purchase_cost,
-                                        0
-                                    )}
+                                        orderData?.data?.total_purchase_cost)}
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
@@ -195,9 +193,7 @@ const AveragePrice = (user: any) => {
                                 <div className="text-right">
                                     {thousandSeparator(
                                         (orderData?.data?.total_purchase_cost) /
-                                        orderData?.data?.total_purchase_qty,
-                                        3
-                                    )}
+                                        orderData?.data?.total_purchase_qty)}
                                 </div>
                             </div>
                         </div>
@@ -211,7 +207,7 @@ const AveragePrice = (user: any) => {
                                         Total increase quantity
                                     </div>
                                     <div className="text-right">
-                                        {orderData?.data?.total_increase_qty ? thousandSeparator(orderData?.data?.total_increase_qty, 0) : '-'}
+                                        {orderData?.data?.total_increase_qty ? thousandSeparator(orderData?.data?.total_increase_qty) : '-'}
                                         {orderData?.data?.total_increase_qty ? " " + orderData?.data?.product_unit : ""}
                                     </div>
                                 </div>
@@ -220,7 +216,7 @@ const AveragePrice = (user: any) => {
                                 <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                     <div className="">Total decrease quantity</div>
                                     <div className="text-right">
-                                        {orderData?.data?.total_decrease_qty ? thousandSeparator(orderData?.data?.total_decrease_qty, 0) : '-'}
+                                        {orderData?.data?.total_decrease_qty ? thousandSeparator(orderData?.data?.total_decrease_qty) : '-'}
                                         {orderData?.data?.total_decrease_qty ? " " + orderData?.data?.product_unit : ""}
                                     </div>
                                 </div>
@@ -239,7 +235,7 @@ const AveragePrice = (user: any) => {
                                             <div className="grid grid-cols-2 gap-2 border-b-[1px] border-black dark:border-white pb-1 pt-1 text-black dark:text-white">
                                                 <div className="">{item.name}</div>
                                                 <div className="text-right">
-                                                    {thousandSeparator(item.debit, 0)}{" "}
+                                                    {thousandSeparator(item.debit)}{" "}
                                                 </div>
                                             </div>
                                         </>
@@ -249,8 +245,7 @@ const AveragePrice = (user: any) => {
                                     <div className="">Grand Total Cost</div>
                                     <div className="text-right">
                                         {thousandSeparator(
-                                            orderData?.data?.grand_total_expense,
-                                            0
+                                            orderData?.data?.grand_total_expense 
                                         )}
                                     </div>
                                 </div>
@@ -259,8 +254,8 @@ const AveragePrice = (user: any) => {
                                     <div className="text-right">
                                         {thousandSeparator(
                                             (orderData?.data?.grand_total_expense) /
-                                            orderData?.data?.total_purchase_qty,
-                                            3
+                                            orderData?.data?.total_purchase_qty
+                                   
                                         )}
                                     </div>
                                 </div>

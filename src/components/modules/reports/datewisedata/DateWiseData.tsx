@@ -73,7 +73,7 @@ const DateWiseData = (user: any) => {
   }, [branchDdlData?.protectedData?.data]);
 
   // -----------------------------------------------------
-  // Run Button → Load Table Data
+  // Run Button â†’ Load Table Data
   // -----------------------------------------------------
   const handleRun = () => {
     const startD = dayjs(startDate).format("YYYY-MM-DD");
@@ -165,7 +165,7 @@ const DateWiseData = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) =>
-        row.debit > 0 ? thousandSeparator(row.debit, 0) : "-",
+        row.debit > 0 ? thousandSeparator(row.debit) : "-",
     },
     {
       key: "credit",
@@ -173,7 +173,7 @@ const DateWiseData = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) =>
-        row.credit > 0 ? thousandSeparator(row.credit, 0) : "-",
+        row.credit > 0 ? thousandSeparator(row.credit) : "-",
     },
     {
       key: "cumulative_debit",
@@ -182,7 +182,7 @@ const DateWiseData = (user: any) => {
       cellClass: "text-right",
       render: (row: any) =>
         row.cumulative_debit
-          ? thousandSeparator(row.cumulative_debit, 0)
+          ? thousandSeparator(row.cumulative_debit)
           : "-",
     },
     {
@@ -192,7 +192,7 @@ const DateWiseData = (user: any) => {
       cellClass: "text-right",
       render: (row: any) =>
         row.cumulative_credit
-          ? thousandSeparator(row.cumulative_credit, 0)
+          ? thousandSeparator(row.cumulative_credit)
           : "-",
     },
     {
@@ -200,7 +200,7 @@ const DateWiseData = (user: any) => {
       header: "Balance",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(row.balance, 0),
+      render: (row: any) => thousandSeparator(row.balance),
     },
   ];
 

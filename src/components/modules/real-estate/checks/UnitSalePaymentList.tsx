@@ -96,7 +96,7 @@ export default function UnitSalePaymentList() {
     [dateTo]
   );
 
-  // ✅ backend keys only
+  // âœ… backend keys only
   const params = useMemo(() => {
     return {
       q: q || undefined,
@@ -105,7 +105,7 @@ export default function UnitSalePaymentList() {
       date_from: dateFromStr || undefined,
       date_to: dateToStr || undefined,
 
-      // ✅ add this
+      // âœ… add this
       cheque_collect_status: chequeStatus || undefined,
     };
   }, [q, paymentMode, status, dateFromStr, dateToStr, chequeStatus]);
@@ -151,7 +151,7 @@ export default function UnitSalePaymentList() {
     }
   };
 
-  /* ✅ Only ONE effect for initial load + perPage change */
+  /* âœ… Only ONE effect for initial load + perPage change */
   useEffect(() => {
     setPagination((p) => ({ ...p, current_page: 1 }));
     loadData(1, Number(perPage) || 20);
@@ -195,7 +195,7 @@ export default function UnitSalePaymentList() {
   const handleStartDate = (d: Date | null) => setDateFrom(d);
   const handleEndDate = (d: Date | null) => setDateTo(d);
 
-  /* ✅ Pagination variables */
+  /* âœ… Pagination variables */
   const currentPage = pagination.current_page || 1;
   const totalPages = pagination.last_page || 1;
 
@@ -203,7 +203,7 @@ export default function UnitSalePaymentList() {
     goPage(page);
   };
 
-  /* ✅ UI-only filtering (Cheque Status) */
+  /* âœ… UI-only filtering (Cheque Status) */
   const filteredRows = useMemo(() => {
     if (!chequeStatus) return rows;
     return rows.filter((r) => (r?.cheque_collect_status || "") === chequeStatus);
@@ -313,7 +313,7 @@ export default function UnitSalePaymentList() {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) => (
-        <div>{row?.amount ? thousandSeparator(Number(row.amount), 2) : "-"}</div>
+        <div>{row?.amount ? thousandSeparator(Number(row.amount)) : "-"}</div>
       ),
     },
     {

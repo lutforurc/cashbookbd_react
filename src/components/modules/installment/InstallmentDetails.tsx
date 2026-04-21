@@ -212,7 +212,7 @@ const InstallmentDetails = () => {
         ? 'Early payment already applied.'
         : canApply
           ? 'Early payment condition is satisfied.'
-          : `Need ${thousandSeparator(Math.max(remainingAfterDiscount, 0), 0)} more before early payment can be applied.`,
+          : `Need ${thousandSeparator(Math.max(remainingAfterDiscount, 0))} more before early payment can be applied.`,
     };
   }, [tableData]);
 
@@ -330,7 +330,7 @@ const InstallmentDetails = () => {
       cellClass: 'text-right',
       render: (row: any) => (
         <div className="text-right">
-          {row?.due_amount ?  thousandSeparator (row.due_amount,0) : '-'}
+          {row?.due_amount ?  thousandSeparator (row.due_amount) : '-'}
         </div>
       ),
     },
@@ -409,7 +409,7 @@ const InstallmentDetails = () => {
         <Table columns={columns} data={tableData || []} />
         <div className="text-right font-semibold mt-2">
           Total {columnToSum.replace(/_/g, ' ')}:{' '}
-          {totalSum ? thousandSeparator(totalSum, 0) : 0}
+          {totalSum ? thousandSeparator(totalSum) : 0}
         </div>
       </>
       <InstallmentModal

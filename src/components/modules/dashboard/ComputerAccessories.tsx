@@ -49,9 +49,7 @@ const ComputerAccessories = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.debit > 0
                       ? thousandSeparator(
-                          dashboard?.data?.todayReceived?.debit,
-                          0,
-                        )
+                          dashboard?.data?.todayReceived?.debit)
                       : '-'}
                   </span>
                 </div>
@@ -61,9 +59,7 @@ const ComputerAccessories = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.credit > 0
                       ? thousandSeparator(
-                          dashboard?.data?.todayReceived?.credit,
-                          0,
-                        )
+                          dashboard?.data?.todayReceived?.credit)
                       : '-'}
                   </span>
                 </div>
@@ -77,9 +73,7 @@ const ComputerAccessories = () => {
                         (Number(dashboard?.data?.totalTransaction?.debit) ||
                           0) -
                           (Number(dashboard?.data?.totalTransaction?.credit) ||
-                            0),
-                        0,
-                      )}
+                            0))}
                   </span>
                 </div>
               </div>

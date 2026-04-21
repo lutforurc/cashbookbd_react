@@ -113,7 +113,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
       return received;
     };
 
-    // ✅ Dynamic font for long product names (no ellipsis, no cut)
+    // Ã¢Å“â€¦ Dynamic font for long product names (no ellipsis, no cut)
     const getProductFs = (name: string, baseFs: number) => {
       const len = (name || "").trim().length;
 
@@ -343,7 +343,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                           fontSize: getProductFs(label, fs),
                                         }}
                                       >
-                                        {thousandSeparator(detail?.quantity, 0)}{" "}
+                                        {thousandSeparator(detail?.quantity)}{" "}
                                         {detail?.product?.unit?.name ?? ""}
                                       </div>
                                     );
@@ -367,9 +367,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                         }}
                                       >
                                         {thousandSeparator(
-                                          detail?.sales_price,
-                                          2
-                                        )}
+                                          detail?.sales_price)}
                                       </div>
                                     );
                                   })
@@ -395,9 +393,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                           Math.floor(
                                             (detail?.quantity || 0) *
                                               (detail?.sales_price || 0)
-                                          ),
-                                          0
-                                        )}
+                                          ))}
                                       </div>
                                     );
                                   })
@@ -409,7 +405,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
                               {discountValue
-                                ? thousandSeparator(discountValue, 0)
+                                ? thousandSeparator(discountValue)
                                 : "-"}
                             </td>
 
@@ -418,7 +414,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
                               {receivedValue
-                                ? thousandSeparator(receivedValue, 0)
+                                ? thousandSeparator(receivedValue)
                                 : "-"}
                             </td>
 
@@ -426,7 +422,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {thousandSeparator(due, 0)}
+                              {thousandSeparator(due)}
                             </td>
                           </tr>
                         );
@@ -449,17 +445,17 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                   <div className="mt-3 border-t border-gray-900 pt-2">
                     <div className="flex justify-end gap-6 font-bold text-xs">
                       <div>
-                        Quantity: {thousandSeparator(totalQuantity, 0)}
+                        Quantity: {thousandSeparator(totalQuantity)}
                       </div>
-                      <div>Total: {thousandSeparator(totalPayment, 0)}</div>
-                      <div>Received: {thousandSeparator(grandTotal, 0)}</div>
+                      <div>Total: {thousandSeparator(totalPayment)}</div>
+                      <div>Received: {thousandSeparator(grandTotal)}</div>
                       {totalDiscount > 0 && (
                         <div>
-                          Discount: {thousandSeparator(totalDiscount, 0)}
+                          Discount: {thousandSeparator(totalDiscount)}
                         </div>
                       )}
                       {totalBalance > 0 && (
-                        <div>Due: {thousandSeparator(totalBalance, 0)}</div>
+                        <div>Due: {thousandSeparator(totalBalance)}</div>
                       )}
                     </div>
                   </div>

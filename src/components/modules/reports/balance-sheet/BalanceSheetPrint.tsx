@@ -35,7 +35,7 @@ const formatAmount = (amount: number | string) => {
   const sanitizedAmount =
     typeof amount === "string" ? amount.replace(/,/g, "") : amount;
   const numericAmount = Number(sanitizedAmount || 0);
-  const formatted = thousandSeparator(Math.abs(numericAmount), 2);
+  const formatted = thousandSeparator(Math.abs(numericAmount));
 
   return numericAmount < 0 ? `(${formatted})` : formatted;
 };
@@ -139,14 +139,14 @@ const BalanceSheetPrint = ({
               title="Liabilities"
               groups={liabilities}
               totalLabel="Liabilities Total"
-              totalValue={ thousandSeparator(totals.liabilities, 0)}
+              totalValue={ thousandSeparator(totals.liabilities)}
               fontSize={fs}
             />
             <Section
               title="Equity"
               groups={equity}
               totalLabel="Equity Total"
-              totalValue={ thousandSeparator(totals.equity, 0)}
+              totalValue={ thousandSeparator(totals.equity)}
               fontSize={fs}
             />
             <table className="w-full border-collapse" style={{ fontSize: `${fs}px` }}>

@@ -52,8 +52,8 @@ const toNumber = (value: Primitive) => {
 const formatBalanceAmount = (value: Primitive, decimal = 0) => {
   const amount = toNumber(value);
   return amount < 0
-    ? `(-) ${thousandSeparator(Math.abs(amount), decimal)}`
-    : thousandSeparator(amount, decimal);
+    ? `(-) ${thousandSeparator(Math.abs(amount))}`
+    : thousandSeparator(amount);
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -158,20 +158,20 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
                         {row.hasLineDetail
-                          ? `${thousandSeparator(toNumber(row.quantity), 2)} ${row.unitName || ''}`
+                          ? `${thousandSeparator(toNumber(row.quantity))} ${row.unitName || ''}`
                           : '-'}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
-                        {row.hasLineDetail ? thousandSeparator(toNumber(row.rate), 2) : '-'}
+                        {row.hasLineDetail ? thousandSeparator(toNumber(row.rate)) : '-'}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
-                        {row.hasLineDetail ? thousandSeparator(toNumber(row.total), 0) : '-'}
+                        {row.hasLineDetail ? thousandSeparator(toNumber(row.total)) : '-'}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
-                        {thousandSeparator(toNumber(row.discount), 0)}
+                        {thousandSeparator(toNumber(row.discount))}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
-                        {thousandSeparator(Math.abs(toNumber(row.payment)), 0)}
+                        {thousandSeparator(Math.abs(toNumber(row.payment)))}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
                         {formatBalanceAmount(
@@ -203,7 +203,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs, lineHeight: 1.2 }}
                       className="border border-black px-2 py-1 text-right font-semibold"
                     >
-                      {thousandSeparator(totals.quantity, 2)}
+                      {thousandSeparator(totals.quantity)}
                     </td>
                     <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1" />
                     <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1" />
@@ -212,7 +212,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs, lineHeight: 1.2 }}
                       className="border border-black px-2 py-1 text-right font-semibold"
                     >
-                      {thousandSeparator(Math.abs(totals.payment), 0)}
+                      {thousandSeparator(Math.abs(totals.payment))}
                     </td>
                     <td
                       style={{ fontSize: fs, lineHeight: 1.2 }}

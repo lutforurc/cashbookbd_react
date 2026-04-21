@@ -260,10 +260,10 @@ const DueInstallment = (user: any) => {
       render: (row: any) => (
         <div className="text-right">
           <span className="block">
-            {row?.amount ? thousandSeparator(row.amount, 0) : '-'}
+            {row?.amount ? thousandSeparator(row.amount) : '-'}
           </span>
           <span className="block border-t border-t-red rounded-sm">
-            {row?.due_amount ? thousandSeparator(row.due_amount, 0) : '-'}
+            {row?.due_amount ? thousandSeparator(row.due_amount) : '-'}
           </span>
         </div>
       ),
@@ -276,7 +276,7 @@ const DueInstallment = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => (
         <div className="text-right">
-          {row?.paid_amount ? thousandSeparator(row.paid_amount, 0) : '-'}
+          {row?.paid_amount ? thousandSeparator(row.paid_amount) : '-'}
         </div>
       ),
     },
@@ -417,7 +417,7 @@ const DueInstallment = (user: any) => {
               <Table columns={columns} data={tableData || []} />
               <div className="text-right font-semibold mt-2">
                 Total {columnToSum.replace(/_/g, ' ')}:{' '}
-                {totalSum ? thousandSeparator(totalSum, 0) : 0}
+                {totalSum ? thousandSeparator(totalSum) : 0}
               </div>
 
               {/* === Hidden Print Component === */}

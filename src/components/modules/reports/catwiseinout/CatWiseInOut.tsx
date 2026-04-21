@@ -179,7 +179,7 @@ const CatWiseInOut = (user: any) => {
       render: (row) => {
         return (
           <>
-            { thousandSeparator(row.quantity, 0) } { row.unit || "-"}
+            { thousandSeparator(row.quantity) } { row.unit || "-"}
           </>
         )
       }
@@ -191,7 +191,7 @@ const CatWiseInOut = (user: any) => {
     if (selectedOption) {
       setCategoryId(selectedOption.value);
     } else {
-      setCategoryId(null); // অথবা default value
+      setCategoryId(null); // à¦…à¦¥à¦¬à¦¾ default value
     }
   };
 

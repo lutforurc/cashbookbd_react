@@ -434,7 +434,7 @@ const RequisitionForm = () => {
               <InputElement
                 id="requisitionAmt"
                 name="requisitionAmt"
-                value={thousandSeparator(Number(formData.requisitionAmt), 0)}
+                value={thousandSeparator(Number(formData.requisitionAmt))}
                 placeholder={'Requisition Amount'}
                 label={'Requisition Amount'}
                 className={'py-1 text-right'}
@@ -581,7 +581,7 @@ const RequisitionForm = () => {
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')} // Pass the next field's ID
                 />
-                <span className="absolute top-7 right-3 z-1">{thousandSeparator(lineTotal, 0)}</span>
+                <span className="absolute top-7 right-3 z-1">{thousandSeparator(lineTotal)}</span>
               </div>
             </div>
             <div className="grid grid-cols-4 gap-x-1 gap-y-1">
@@ -703,24 +703,22 @@ const RequisitionForm = () => {
                     {row.product_name}
                   </td>
                   <td className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}>
-                    {thousandSeparator(Number(row.day), 2)}
+                    {thousandSeparator(Number(row.day))}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.qty), 2)} {row.unit}
+                    {thousandSeparator(Number(row.qty))} {row.unit}
                   </td>
                   <td className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}>
-                    {thousandSeparator(Number(row.price), 2)}
+                    {thousandSeparator(Number(row.price))}
                   </td>
 
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
                     {thousandSeparator(
-                      Math.floor(Number(row.price) * Number(row.day) * Number(row.qty)),
-                      2,
-                    )}
+                      Math.floor(Number(row.price) * Number(row.day) * Number(row.qty)))}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}

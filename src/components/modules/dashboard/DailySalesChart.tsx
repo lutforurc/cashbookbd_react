@@ -42,7 +42,7 @@ const DailySalesChart = () => {
       style: { color: mode === "dark" ? "#fff" : "#333" },
     },
     tooltip: {
-      y: { formatter: (v) => thousandSeparator(v, 0) },
+      y: { formatter: (v) => thousandSeparator(v) },
     },
     xaxis: {
       ...getApexTheme(mode).xaxis,
@@ -54,7 +54,7 @@ const DailySalesChart = () => {
       },
       labels: {
         formatter: function (value:number) {
-          return thousandSeparator(value, 0);
+          return thousandSeparator(value);
         }
       }
     },

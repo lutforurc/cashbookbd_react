@@ -44,7 +44,7 @@ const PaymentDetailsModal: React.FC<InstallmentModalProps> = ({
       cellClass: 'text-right',
       render: (row: Installment) => (
         <span className="text-right">
-          {thousandSeparator(Number(row.amount), 0)}
+          {thousandSeparator(Number(row.amount))}
         </span>
       ),
     },
@@ -65,7 +65,7 @@ const totalAmount = installments
             <>
             <Table columns={columns} data={installments || []} />
             <div className="mt-4 ml-4">
-              <h3 className="text-md font-semibold">Total amount paid: { thousandSeparator (totalAmount,0)}</h3>
+              <h3 className="text-md font-semibold">Total amount paid: { thousandSeparator (totalAmount)}</h3>
             </div>
             </>
           ) : (

@@ -66,7 +66,7 @@ const HeadOfficePaymentChart: React.FC = () => {
       },
       labels: {
         formatter: function (value:number) {
-          return thousandSeparator(value, 0);
+          return thousandSeparator(value);
         }
       }
     },
@@ -75,7 +75,7 @@ const HeadOfficePaymentChart: React.FC = () => {
       enabled: true, theme: "dark", style: { fontSize: "12px" },
       y: {
         formatter: (value: number): string => {
-          return `${ thousandSeparator (value,0)}`;
+          return `${ thousandSeparator (value)}`;
         }
       }
     }

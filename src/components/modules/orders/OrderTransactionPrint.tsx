@@ -120,7 +120,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
     const computedOrderAmount = toNumber(order?.order_amount) || (toNumber(order?.total_order) * toNumber(order?.order_rate));
     const orderDetailsText =
       order?.order_details_text ||
-      `Order Qty: ${thousandSeparator(toNumber(order?.total_order), 0)} ${order?.unit || ''}, Rate: ${thousandSeparator(toNumber(order?.order_rate), 2)}`;
+      `Order Qty: ${thousandSeparator(toNumber(order?.total_order))} ${order?.unit || ''}, Rate: ${thousandSeparator(toNumber(order?.order_rate))}`;
 
 
       const receivedOrPaymentText = orderTypeLabel === 'Purchase' ? 'Payment' : 'Received';
@@ -172,17 +172,17 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 
                 <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Order Rate:</span>
-                  <span className="">{thousandSeparator(toNumber(order?.order_rate), 2)}</span>
+                  <span className="">{thousandSeparator(toNumber(order?.order_rate))}</span>
                 </div>
                 <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Order Qty:</span>
-                  <span className="">{thousandSeparator(toNumber(order?.total_order), 0)} { order?.unit }</span>
+                  <span className="">{thousandSeparator(toNumber(order?.total_order))} { order?.unit }</span>
                 </div>
 
                 <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Amount:</span>
                   <span className="">
-                    Tk. {thousandSeparator(computedOrderAmount, 0)}
+                    Tk. {thousandSeparator(computedOrderAmount)}
                   </span>
                 </div>
               </div>
@@ -231,19 +231,19 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                           { formatTransportationNumber (row.vehicle_no) || '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(weight, 0)} {row.unit || order?.unit || ''}
+                          {thousandSeparator(weight)} {row.unit || order?.unit || ''}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(rate, 2)}
+                          {thousandSeparator(rate)}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(amount, 0)}
+                          {thousandSeparator(amount)}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {freight > 0 ? thousandSeparator(freight, 0) : '-'}
+                          {freight > 0 ? thousandSeparator(freight) : '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(due, 0)}
+                          {thousandSeparator(due)}
                         </td>
                       </tr>
                     );
@@ -268,17 +268,17 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                       Grand Total
                     </td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                      {thousandSeparator(totals.weight, 0)} {order?.unit || ''}
+                      {thousandSeparator(totals.weight)} {order?.unit || ''}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right"></td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                      {thousandSeparator(totals.amount, 0)}
+                      {thousandSeparator(totals.amount)}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                      {totals.freight > 0 ? thousandSeparator(totals.freight, 0) : '-'}
+                      {totals.freight > 0 ? thousandSeparator(totals.freight) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                      {thousandSeparator(totals.due, 0)}
+                      {thousandSeparator(totals.due)}
                     </td>
                   </tr>
                 ) : null}

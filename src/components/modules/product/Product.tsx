@@ -47,16 +47,16 @@ const buildCategoryWiseRows = (rows: any[]) => {
   return out;
 };
 
-// ✅ API response কে flat rows এ normalize করবে (paginate vs showAll)
+// âœ… API response à¦•à§‡ flat rows à¦ normalize à¦•à¦°à¦¬à§‡ (paginate vs showAll)
 const normalizeProductRows = (apiState: any) => {
   const raw = apiState?.data?.data;
 
-  // ✅ flat paginate response
+  // âœ… flat paginate response
   if (Array.isArray(raw) && raw.length > 0 && !raw[0]?.items) {
     return raw;
   }
 
-  // ✅ grouped showAll response: [{category, items:[]}, ...]
+  // âœ… grouped showAll response: [{category, items:[]}, ...]
   if (Array.isArray(raw) && raw.length > 0 && Array.isArray(raw[0]?.items)) {
     const flat: any[] = [];
     raw.forEach((group: any) => {
@@ -78,7 +78,7 @@ const Product = (user: any) => {
   const navigate = useNavigate();
 
   const [search, setSearchValue] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState(''); // ✅ Search চাপলে apply হবে
+  const [appliedSearch, setAppliedSearch] = useState(''); // âœ… Search à¦šà¦¾à¦ªà¦²à§‡ apply à¦¹à¦¬à§‡
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number>(10);
@@ -86,7 +86,7 @@ const Product = (user: any) => {
   const [totalPages, setTotalPages] = useState(0);
 
   const [tableData, setTableData] = useState<any[]>([]);
-  const [editedRows, setEditedRows] = useState<Record<string, any>>({}); // ✅ product_id hash string
+  const [editedRows, setEditedRows] = useState<Record<string, any>>({}); // âœ… product_id hash string
 
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
@@ -116,7 +116,7 @@ const Product = (user: any) => {
     dispatch(getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any);
   }, [page, perPage, categoryId, brandId, appliedSearch]);
 
-  /* ✅ এখানে per_page=0 (showAll) + paginate দুটোই handle হবে */
+  /* âœ… à¦à¦–à¦¾à¦¨à§‡ per_page=0 (showAll) + paginate à¦¦à§à¦Ÿà§‹à¦‡ handle à¦¹à¦¬à§‡ */
   useEffect(() => {
     if (!product?.data) return;
 
@@ -200,7 +200,7 @@ const Product = (user: any) => {
     );
   };
 
-  // ✅ Save button click এ API update হবে
+  // âœ… Save button click à¦ API update à¦¹à¦¬à§‡
   const handleSaveRow = async (row: any) => {
     if (isGroupRow(row)) return;
 
@@ -238,7 +238,7 @@ const Product = (user: any) => {
           })
         );
 
-        // ✅ save হলে draft clear
+        // âœ… save à¦¹à¦²à§‡ draft clear
         setEditedRows((prev) => {
           const copy = { ...prev };
           delete copy[row.product_id];
@@ -252,7 +252,7 @@ const Product = (user: any) => {
     }
   };
 
-  // ✅ Cancel/Reset draft
+  // âœ… Cancel/Reset draft
   const handleCancelRow = (row: any) => {
     if (isGroupRow(row)) return;
 
@@ -315,7 +315,7 @@ const Product = (user: any) => {
             placeholder="Qty"
             value={editedRows[row.product_id]?.qty ?? row.qty ?? row.openingbalance ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'qty', e.target.value)}
-          // ✅ onBlur removed (auto-save বন্ধ)
+          // âœ… onBlur removed (auto-save à¦¬à¦¨à§à¦§)
           />
         );
       },
@@ -334,7 +334,7 @@ const Product = (user: any) => {
             className="text-right w-24" 
             value={editedRows[row.product_id]?.rate ?? row.purchase ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'rate', e.target.value)}
-          // ✅ onBlur removed (auto-save বন্ধ)
+          // âœ… onBlur removed (auto-save à¦¬à¦¨à§à¦§)
           />
         );
       },
@@ -410,7 +410,7 @@ const Product = (user: any) => {
         cellClass: 'text-right',
         render: (row: any) => {
           if (isGroupRow(row)) return '';
-          return row.purchase > 0 ? thousandSeparator(row.purchase, 0) : '-';
+          return row.purchase > 0 ? thousandSeparator(row.purchase) : '-';
         },
       },
       {
@@ -420,7 +420,7 @@ const Product = (user: any) => {
         cellClass: 'text-right',
         render: (row: any) => {
           if (isGroupRow(row)) return '';
-          return row.sales > 0 ? thousandSeparator(row.sales, 0) : '-';
+          return row.sales > 0 ? thousandSeparator(row.sales) : '-';
         },
       },
       {
@@ -511,7 +511,7 @@ const Product = (user: any) => {
               <SelectOption
                 className="!w-full h-9"
                 onChange={(e: any) => {
-                  const v = Number(e.target.value); // ✅ string -> number
+                  const v = Number(e.target.value); // âœ… string -> number
                   const next = Number.isFinite(v) ? v : 10;
                   setPerPage(next);
                   setPage(1);
@@ -571,7 +571,7 @@ const Product = (user: any) => {
         <div className="hidden">
           <ProductPrint
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group row print এ যাবে না
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // âœ… group row print à¦ à¦¯à¦¾à¦¬à§‡ à¦¨à¦¾
             title="Product List"
             rowsPerPage={Number(rowsPerPage)}
             fontSize={Number(fontSize)}

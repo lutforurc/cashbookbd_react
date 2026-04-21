@@ -62,7 +62,7 @@ const HeadOfficeReceivedChart: React.FC<HeadOfficeReceivedChartProps> = ({ month
       theme: "dark",
       style: { fontSize: "12px" },
       y: {
-        formatter: (value: number): string => `${thousandSeparator(value, 0)}`,
+        formatter: (value: number): string => `${thousandSeparator(value)}`,
       },
     },
   };

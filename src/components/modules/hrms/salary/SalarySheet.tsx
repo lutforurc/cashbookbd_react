@@ -167,28 +167,28 @@ const SalarySheet = ({ user }: any) => {
       header: "Gross Salary",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(row.gross_salary, 0),
+      render: (row: any) => thousandSeparator(row.gross_salary),
     },
     {
       key: "net_salary",
       header: "Net Salary",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(row.net_salary, 0),
+      render: (row: any) => thousandSeparator(row.net_salary),
     },
     {
       key: "total_deduction",
       header: "Loan Ded.",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(row.total_deduction, 0),
+      render: (row: any) => thousandSeparator(row.total_deduction),
     },
     {
       key: "payment_amount",
       header: "Payment Amount",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(row.payment_amount, 0),
+      render: (row: any) => thousandSeparator(row.payment_amount),
     },
     {
       key: "due",
@@ -196,7 +196,7 @@ const SalarySheet = ({ user }: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) =>
-        thousandSeparator(Number(row.net_salary) - Number(row.payment_amount), 0),
+        thousandSeparator(Number(row.net_salary) - Number(row.payment_amount)),
     },
     {
       key: "action",

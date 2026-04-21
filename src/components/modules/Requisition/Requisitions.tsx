@@ -166,8 +166,8 @@ const Requisitions = (user: any) => {
       ),
       render: (data: any) => (
         <div className="text-right">
-          <span className="block">{thousandSeparator(data.req_total, 0)}</span>
-          <span className="block">{thousandSeparator(data.approved_total, 0)}</span>
+          <span className="block">{thousandSeparator(data.req_total)}</span>
+          <span className="block">{thousandSeparator(data.approved_total)}</span>
         </div>
       ),
     },

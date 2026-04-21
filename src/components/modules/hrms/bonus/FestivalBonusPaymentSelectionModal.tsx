@@ -196,7 +196,7 @@ const FestivalBonusPaymentSelectionModal = ({
           <div className="text-sm text-slate-700 dark:text-slate-200">
             Selected: <span className="font-semibold">{selectedSummary.count}</span>
             {" | "}
-            Amount: <span className="font-semibold">{thousandSeparator(selectedSummary.amount, 0)}</span>
+            Amount: <span className="font-semibold">{thousandSeparator(selectedSummary.amount)}</span>
           </div>
         </div>
 
@@ -253,14 +253,14 @@ const FestivalBonusPaymentSelectionModal = ({
                       </div>
                     </td>
                     <td className="px-3 py-2 text-right align-top">
-                      {thousandSeparator(Number(row.bonus_amount || 0), 0)}
+                      {thousandSeparator(Number(row.bonus_amount || 0))}
                     </td>
                     <td className="px-3 py-2 text-right align-top">
-                      {thousandSeparator(Number(row.payment_amount || 0), 0)}
+                      {thousandSeparator(Number(row.payment_amount || 0))}
                     </td>
                     <td className="px-3 py-2 text-right align-top">
                       <span className={dueAmount > 0 ? "font-semibold text-amber-700" : "text-green-600"}>
-                        {thousandSeparator(dueAmount, 0)}
+                        {thousandSeparator(dueAmount)}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-right align-top">

@@ -562,19 +562,19 @@ const WarehouseReceived = () => {
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-white">{index + 1}</td>
                 <td className="px-2 py-2 text-gray-900 dark:text-white">{row.productName}</td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
-                  {thousandSeparator(Number(row.quantity), 2)} {row.unit}
+                  {thousandSeparator(Number(row.quantity))} {row.unit}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
-                  {thousandSeparator(Number(row.damagedQty || 0), 2)}
+                  {thousandSeparator(Number(row.damagedQty || 0))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
-                  {thousandSeparator(Number(row.shortQty || 0), 2)}
+                  {thousandSeparator(Number(row.shortQty || 0))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
-                  {thousandSeparator(Number(row.rate), 2)}
+                  {thousandSeparator(Number(row.rate))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
-                  {thousandSeparator(Number(row.quantity) * Number(row.rate), 2)}
+                  {thousandSeparator(Number(row.quantity) * Number(row.rate))}
                 </td>
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-white">
                   <button

@@ -214,13 +214,13 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                           >
                             <div className="text-right">
                               <span className="block">
-                                {thousandSeparator(Number(row?.amount), 0)}
+                                {thousandSeparator(Number(row?.amount))}
                               </span>
                               <span className="block border-t border-gray-900">
-                                {thousandSeparator(Number(row?.paid_amount), 0)}
+                                {thousandSeparator(Number(row?.paid_amount))}
                               </span>
                               <span className="block border-t border-gray-900">
-                                {thousandSeparator(Number(row?.due_amount), 0)}
+                                {thousandSeparator(Number(row?.due_amount))}
                               </span>
                             </div>
                           </td>
@@ -253,13 +253,13 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td className="border border-gray-900 px-2 py-2 ">
                         <div className="text-right">
                           <span className="block">
-                            {thousandSeparator(Number(pageTotal.amount), 0)}
+                            {thousandSeparator(Number(pageTotal.amount))}
                           </span>
                           <span className="block border-t border-gray-900">
-                            {thousandSeparator(Number(pageTotal.paid), 0)}
+                            {thousandSeparator(Number(pageTotal.paid))}
                           </span>
                           <span className="block border-t border-gray-900">
-                            {thousandSeparator(Number(pageTotal.due), 0)}
+                            {thousandSeparator(Number(pageTotal.due))}
                           </span>
                         </div>
                       </td>
@@ -290,13 +290,13 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
                   <td className="border-l border-r border-b border-gray-900 px-2 py-2 w-39">
                     <div className="text-right">
                       <span className="block">
-                        {thousandSeparator(Number(grand.amount), 0)}
+                        {thousandSeparator(Number(grand.amount))}
                       </span>
                       <span className="block border-t border-gray-900">
-                        {thousandSeparator(Number(grand.paid), 0)}
+                        {thousandSeparator(Number(grand.paid))}
                       </span>
                       <span className="block border-t border-gray-900">
-                        {thousandSeparator(Number(grand.due), 0)}
+                        {thousandSeparator(Number(grand.due))}
                       </span>
                     </div>
                   </td>

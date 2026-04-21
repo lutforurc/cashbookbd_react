@@ -1,12 +1,20 @@
-const thousandSeparator = (value: number, decimal: number) => {
+import store from "../../../store";
 
-  if (value==0) return '-';
-  const decimalFormattedValue = Number(value).toLocaleString('en-IN', {
-    minimumFractionDigits: decimal,
-    maximumFractionDigits: decimal,
+const thousandSeparator = (value: number) => {
+  const settings = store.getState()?.settings;
+  const decimalPlaces = Number(settings?.data?.branch?.decimal_places ?? 0);
+
+  if (value == 0) return "-";
+
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) return "-";
+
+  return numericValue.toLocaleString("en-IN", {
+    minimumFractionDigits: decimalPlaces,
+    maximumFractionDigits: decimalPlaces,
     useGrouping: true,
   });
-  return decimalFormattedValue;
 };
 
 export default thousandSeparator;

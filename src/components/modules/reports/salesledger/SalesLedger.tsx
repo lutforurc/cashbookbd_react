@@ -53,11 +53,11 @@ const SalesLedger = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
-  // ✅ Rows + Font controls (like your screenshot)
+  // Ã¢Å“â€¦ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
 
-  // ✅ Print
+  // Ã¢Å“â€¦ Print
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
@@ -76,7 +76,7 @@ const SalesLedger = (user: any) => {
       if (Array.isArray(ledgerData?.data)) {
         setTableData(ledgerData.data);
       } else {
-        setTableData([]); // 🔥 CLEAR OLD DATA
+        setTableData([]); // Ã°Å¸â€Â¥ CLEAR OLD DATA
       }
     }
   }, [ledgerData.isLoading, ledgerData.data]);
@@ -226,7 +226,7 @@ const SalesLedger = (user: any) => {
 
         return (
           <div className="min-w-52 break-words align-top">
-            {/* ✅ Product list (safe + category like Purchase print) */}
+            {/* Ã¢Å“â€¦ Product list (safe + category like Purchase print) */}
             {Array.isArray(details) &&
               details.length > 0 &&
               details.map((detail: any, i: number) => {
@@ -269,7 +269,7 @@ const SalesLedger = (user: any) => {
         <>
           {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
             <div key={detail?.id ?? index}>
-              {thousandSeparator(detail?.quantity, 0)} {detail?.product?.unit?.name}
+              {thousandSeparator(detail?.quantity)} {detail?.product?.unit?.name}
             </div>
           ))}
         </>
@@ -285,7 +285,7 @@ const SalesLedger = (user: any) => {
         <>
           {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
             <div key={detail?.id ?? index}>
-              {thousandSeparator(detail?.sales_price, 2)}
+              {thousandSeparator(detail?.sales_price)}
             </div>
           ))}
         </>
@@ -302,9 +302,7 @@ const SalesLedger = (user: any) => {
           {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
             <div key={detail?.id ?? index}>
               {thousandSeparator(
-                Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0)),
-                0,
-              )}
+                Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0)))}
             </div>
           ))}
         </>
@@ -343,7 +341,7 @@ const SalesLedger = (user: any) => {
             return s + (Number.isFinite(n) ? n : 0);
           }, 0);
 
-        return <div className="text-right">{totalDiscount ? thousandSeparator(totalDiscount, 0) : '-'}</div>;
+        return <div className="text-right">{totalDiscount ? thousandSeparator(totalDiscount) : '-'}</div>;
       },
     },
     {
@@ -379,7 +377,7 @@ const SalesLedger = (user: any) => {
             return s + (Number.isFinite(n) ? n : 0);
           }, 0);
 
-        return <div className="text-right">{totalReceived ? thousandSeparator(totalReceived, 0) : '-'}</div>;
+        return <div className="text-right">{totalReceived ? thousandSeparator(totalReceived) : '-'}</div>;
       },
     },
     {
@@ -419,7 +417,7 @@ const SalesLedger = (user: any) => {
         const total = parseNumber(row?.sales_master?.total);
         const balance = total - payment - discount;
 
-        return <div className="text-right">{thousandSeparator(balance, 0)}</div>;
+        return <div className="text-right">{thousandSeparator(balance)}</div>;
       },
     },
     {
@@ -625,7 +623,7 @@ const SalesLedger = (user: any) => {
                     </div>
                   )}
 
-                  {/* ✅ Rows + Font + Run + Print (like your screenshot) */}
+                  {/* Ã¢Å“â€¦ Rows + Font + Run + Print (like your screenshot) */}
                   <div
                     className={`flex gap-2 pt-1 ${useFilterMenuEnabled
                         ? 'justify-end'
@@ -792,17 +790,17 @@ const SalesLedger = (user: any) => {
         {tableData.length > 0 && (
           <div className="mt-2 border-t font-bold">
             <div className="flex justify-end space-x-8 p-2">
-              <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
-              <div>Total: {thousandSeparator(totalPayment, 0)}</div>
-              <div>Discount: {thousandSeparator(totalDiscount, 0)}</div>
-              <div>Received: {thousandSeparator(grandTotal, 0)}</div>
-              <div>Balance: {thousandSeparator(totalBalance, 0)}</div>
+              <div>Quantity: {thousandSeparator(totalQuantity)}</div>
+              <div>Total: {thousandSeparator(totalPayment)}</div>
+              <div>Discount: {thousandSeparator(totalDiscount)}</div>
+              <div>Received: {thousandSeparator(grandTotal)}</div>
+              <div>Balance: {thousandSeparator(totalBalance)}</div>
             </div>
           </div>
         )}
       </div>
 
-      {/* ✅ Hidden print component */}
+      {/* Ã¢Å“â€¦ Hidden print component */}
       <div className="hidden">
         <SalesLedgerPrint
           ref={printRef}

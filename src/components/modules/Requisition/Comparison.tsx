@@ -101,7 +101,7 @@ const Requisition = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <div className="w-25">{row?.requisition_qty ? thousandSeparator(row.requisition_qty, 0) : '-'}</div>
+        <div className="w-25">{row?.requisition_qty ? thousandSeparator(row.requisition_qty) : '-'}</div>
       ),
       width: '100px',
     },
@@ -111,7 +111,7 @@ const Requisition = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <div className="">{row?.purchase_qty ? thousandSeparator(Number(row.purchase_qty), 0) : '-'}</div>
+        <div className="">{row?.purchase_qty ? thousandSeparator(Number(row.purchase_qty)) : '-'}</div>
       ),
       width: '100px',
     },
@@ -122,7 +122,7 @@ const Requisition = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <div className="">{row?.requisition_total ? thousandSeparator(row.requisition_total, 0) : '-'}</div>
+        <div className="">{row?.requisition_total ? thousandSeparator(row.requisition_total) : '-'}</div>
       ),
       width: '100px',
     },
@@ -132,7 +132,7 @@ const Requisition = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <div className="">{ row?.approved_amt ? thousandSeparator(row.approved_amt, 0) : '-'}</div>
+        <div className="">{ row?.approved_amt ? thousandSeparator(row.approved_amt) : '-'}</div>
       ),
       width: '100px',
     },
@@ -143,7 +143,7 @@ const Requisition = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => (
         <div className="">
-          {row?.purchase_total ? thousandSeparator(Number(row.purchase_total), 0) : '-'}
+          {row?.purchase_total ? thousandSeparator(Number(row.purchase_total)) : '-'}
         </div>
       ),
       width: '100px',
@@ -153,7 +153,7 @@ const Requisition = (user: any) => {
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div className="">{row?.difference ? thousandSeparator(Math.abs(row.difference), 0) : '-'}</div>,
+      render: (row: any) => <div className="">{row?.difference ? thousandSeparator(Math.abs(row.difference)) : '-'}</div>,
       width: '100px',
     },
     {

@@ -460,7 +460,7 @@ const Orders = () => {
       {
         key: 'trx-qty',
         label: 'Total Trx Qty',
-        value: thousandSeparator(summary.totalTrxQuantity, 0),
+        value: thousandSeparator(summary.totalTrxQuantity),
       },
     ];
 
@@ -469,17 +469,17 @@ const Orders = () => {
         {
           key: 'po-trx-qty',
           label: 'PO Trx Qty',
-          value: thousandSeparator(summary.purchaseTrxQuantity, 0),
+          value: thousandSeparator(summary.purchaseTrxQuantity),
         },
         {
           key: 'po-qty',
           label: 'PO Qty',
-          value: thousandSeparator(summary.purchaseQuantity, 0),
+          value: thousandSeparator(summary.purchaseQuantity),
         },
         {
           key: 'po-bal-qty',
           label: 'PO Bal. Qty',
-          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0),
+          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity),
           highlight: true,
         },
       );
@@ -488,17 +488,17 @@ const Orders = () => {
         {
           key: 'do-trx-qty',
           label: 'DO Trx Qty',
-          value: thousandSeparator(summary.salesTrxQuantity, 0),
+          value: thousandSeparator(summary.salesTrxQuantity),
         },
         {
           key: 'do-qty',
           label: 'DO Qty',
-          value: thousandSeparator(summary.salesQuantity, 0),
+          value: thousandSeparator(summary.salesQuantity),
         },
         {
           key: 'do-bal-qty',
           label: 'DO Bal. Qty',
-          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0),
+          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity),
           highlight: true,
         },
       );
@@ -507,46 +507,46 @@ const Orders = () => {
         {
           key: 'po-trx-qty',
           label: 'PO Trx Qty',
-          value: thousandSeparator(summary.purchaseTrxQuantity, 0),
+          value: thousandSeparator(summary.purchaseTrxQuantity),
         },
         {
           key: 'do-trx-qty',
           label: 'DO Trx Qty',
-          value: thousandSeparator(summary.salesTrxQuantity, 0),
+          value: thousandSeparator(summary.salesTrxQuantity),
         },
         {
           key: 'po-bal-qty',
           label: 'PO Trx. Bal. Qty',
-          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity, 0),
+          value: thousandSeparator(summary.purchaseQuantity - summary.purchaseTrxQuantity),
           highlight: true,
         },
        
         {
           key: 'do-bal-qty',
           label: 'DO Trx. Bal. Qty',
-          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity, 0),
+          value: thousandSeparator(summary.salesQuantity - summary.salesTrxQuantity),
           highlight: true,
         },
         {
           key: 'trx-def-qty',
           label: 'Trx. Def. Qty',
-          value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity)), 0),
+          value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity))),
           highlight: true,
         },
         {
           key: 'po-qty',
           label: 'PO Qty',
-          value: thousandSeparator(summary.purchaseQuantity, 0),
+          value: thousandSeparator(summary.purchaseQuantity),
         },
         {
           key: 'do-qty',
           label: 'DO Qty',
-          value: thousandSeparator(summary.salesQuantity, 0),
+          value: thousandSeparator(summary.salesQuantity),
         },
         {
           key: 'po-do-bal-qty',
           label: 'Order Bal. Qty',
-          value: thousandSeparator(summary.purchaseQuantity - summary.salesQuantity, 0),
+          value: thousandSeparator(summary.purchaseQuantity - summary.salesQuantity),
           highlight: true,
         },
       );
@@ -639,7 +639,7 @@ const Orders = () => {
       setSelectedPrintOrder(normalizeOrderPrintPayload(order, payload));
     } catch (error) {
       console.error(error);
-      toast.error('Order print data load করা যায়নি।');
+      toast.error('Order print data load Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦Â¯Ã Â¦Â¾Ã Â§Å¸Ã Â¦Â¨Ã Â¦Â¿Ã Â¥Â¤');
     } finally {
       setPrintingOrderId(null);
     }
@@ -666,7 +666,7 @@ const Orders = () => {
       }, 0);
     } catch (error) {
       console.error(error);
-      toast.error('Orders print data load করা যায়নি।');
+      toast.error('Orders print data load Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦Â¯Ã Â¦Â¾Ã Â§Å¸Ã Â¦Â¨Ã Â¦Â¿Ã Â¥Â¤');
     } finally {
       setButtonLoading(false);
     }
@@ -708,7 +708,7 @@ const Orders = () => {
         <p>
           <span className="block">{data.product_name}</span>
           {data.trx_quantity == 0 ? "-" : (
-            <span className="block text-green-500 dark:text-yellow-300 font-semibold">{thousandSeparator(data.trx_quantity, 0)}</span>
+            <span className="block text-green-500 dark:text-yellow-300 font-semibold">{thousandSeparator(data.trx_quantity)}</span>
           )}
         </p>
       ),
@@ -754,10 +754,10 @@ const Orders = () => {
         <p className="text-right">
           <span className="block">{data.order_rate}</span>
           <span className="block">
-            {thousandSeparator(data.total_order, 0)}
+            {thousandSeparator(data.total_order)}
           </span>
           <span className="block text-green-500 dark:text-yellow-300 font-semibold">
-            {thousandSeparator((Number(data.total_order) - Number(data.trx_quantity)), 0)}
+            {thousandSeparator((Number(data.total_order) - Number(data.trx_quantity)))}
           </span>
         </p>
       ),
@@ -777,16 +777,16 @@ const Orders = () => {
         <p className="text-right">
           <span className="block">
             {data.linked_order_count != null || data.linked_orders_count != null
-              ? thousandSeparator(data.linked_order_count ?? data.linked_orders_count ?? 0, 0)
+              ? thousandSeparator(data.linked_order_count ?? data.linked_orders_count ?? 0)
               : '-'}
           </span>
           <span className="block">
             {data.linked_quantity != null
-              ? thousandSeparator(data.linked_quantity, 0)
+              ? thousandSeparator(data.linked_quantity)
               : '-'}
           </span>
           <span className="block">
-            {thousandSeparator(Number(data.total_order) - Number(data.linked_quantity), 0)}
+            {thousandSeparator(Number(data.total_order) - Number(data.linked_quantity))}
           </span>
         </p>
       ),
@@ -805,7 +805,7 @@ const Orders = () => {
             disabled={printingOrderId === data?.id}
           >
             <FiPrinter className="cursor-pointer" />
-            {/* 🖨️ */}
+            {/* Ã°Å¸â€“Â¨Ã¯Â¸Â */}
           </button>
           <button onClick={() => navigate(`/orders/edit/${data.id}`, { state: { order: data } })} className="text-blue-500  ml-2">
             <FiEdit2 className="cursor-pointer" />
@@ -1171,9 +1171,7 @@ const Orders = () => {
                 {thousandSeparator(
                   selectedLinkedOrder.linked_order_count ??
                   selectedLinkedOrder.linked_orders_count ??
-                  0,
-                  0,
-                )}
+                  0)}
               </div>
 
               <div className="overflow-x-auto border border-slate-200 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-900">
@@ -1203,16 +1201,16 @@ const Orders = () => {
                             {item.company_name || '-'}
                           </td>
                           <td className="px-3 py-2 text-right">
-                            {thousandSeparator(item.order_qty ?? 0, 0)}
+                            {thousandSeparator(item.order_qty ?? 0)}
                           </td>
                           <td className="px-3 py-2 text-right">
-                            {thousandSeparator(item.order_rate ?? 0, 2)}
+                            {thousandSeparator(item.order_rate ?? 0)}
                           </td>
                           <td className="px-3 py-2 text-right">
-                            {thousandSeparator(item.delivery_qty ?? 0, 0)}
+                            {thousandSeparator(item.delivery_qty ?? 0)}
                           </td>
                           <td className="px-3 py-2 text-right">
-                            {thousandSeparator(item.remaining_qty ?? 0, 0)}
+                            {thousandSeparator(item.remaining_qty ?? 0)}
                           </td>
                         </tr>
                       ))

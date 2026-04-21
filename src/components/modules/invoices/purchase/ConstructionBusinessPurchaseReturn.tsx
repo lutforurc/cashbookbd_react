@@ -443,7 +443,7 @@ const ConstructionBusinessPurchaseReturn = () => {
               <div className="grid grid-cols-1 md:gap-x-1 -mb-1">
                 <span>Total Tk.</span>
                 <span className="text-xs font-bold dark:text-white">
-                  {thousandSeparator(Math.floor(totalAmount), 0)}
+                  {thousandSeparator(Math.floor(totalAmount))}
                 </span>
               </div>
             </div>
@@ -578,13 +578,13 @@ const ConstructionBusinessPurchaseReturn = () => {
                   {row.product_name}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                  {thousandSeparator(Number(row.qty), 2)} {row.unit}
+                  {thousandSeparator(Number(row.qty))} {row.unit}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                  {thousandSeparator(Number(row.price), 2)}
+                  {thousandSeparator(Number(row.price))}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                  {thousandSeparator(Math.floor(Number(row.price) * Number(row.qty)), 2)}
+                  {thousandSeparator(Math.floor(Number(row.price) * Number(row.qty)))}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
                   <button onClick={() => handleDelete(row.id)} className="text-red-500 ml-2 text-center">

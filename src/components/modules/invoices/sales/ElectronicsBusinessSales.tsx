@@ -350,10 +350,10 @@ const ElectronicsBusinessSales = () => {
       items.find(item => item.coa4_id === target) ||
       items.find(item => item.coa4_id === fallback);
 
-    // যদি না পায় → null
+    // Ã Â¦Â¯Ã Â¦Â¦Ã Â¦Â¿ Ã Â¦Â¨Ã Â¦Â¾ Ã Â¦ÂªÃ Â¦Â¾Ã Â§Å¸ Ã¢â€ â€™ null
     if (!found) return null;
 
-    // "65" কে number 65 এ convert করে রিটার্ন
+    // "65" Ã Â¦â€¢Ã Â§â€¡ number 65 Ã Â¦Â convert Ã Â¦â€¢Ã Â¦Â°Ã Â§â€¡ Ã Â¦Â°Ã Â¦Â¿Ã Â¦Å¸Ã Â¦Â¾Ã Â¦Â°Ã Â§ÂÃ Â¦Â¨
     return Number(found.credit);
   }
 
@@ -962,7 +962,7 @@ const ElectronicsBusinessSales = () => {
                             className="font-medium text-sm w-full h-8"
                             selectedDate={startDate}
                             setSelectedDate={setStartDate}
-                            placeholderText="Select Start Date" // ফাঁকা থাকলে প্লেসহোল্ডার দেখাবে
+                            placeholderText="Select Start Date" // Ã Â¦Â«Ã Â¦Â¾Ã Â¦ÂÃ Â¦â€¢Ã Â¦Â¾ Ã Â¦Â¥Ã Â¦Â¾Ã Â¦â€¢Ã Â¦Â²Ã Â§â€¡ Ã Â¦ÂªÃ Â§ÂÃ Â¦Â²Ã Â§â€¡Ã Â¦Â¸Ã Â¦Â¹Ã Â§â€¹Ã Â¦Â²Ã Â§ÂÃ Â¦Â¡Ã Â¦Â¾Ã Â¦Â° Ã Â¦Â¦Ã Â§â€¡Ã Â¦â€“Ã Â¦Â¾Ã Â¦Â¬Ã Â§â€¡
                           />
                         </div>
 
@@ -1127,7 +1127,7 @@ const ElectronicsBusinessSales = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
             <div className="mt-4">
               <p className="text-sm font-bold dark:text-white">
-                Total Tk. {thousandSeparator((totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)), 0)}  {Number(formData?.receivedAmt) > 0 ? `(${(totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)) - Number(formData?.receivedAmt)})` : ""}
+                Total Tk. {thousandSeparator((totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)))}  {Number(formData?.receivedAmt) > 0 ? `(${(totalAmount + Number(formData?.serviceCharge) + Number(formData?.tdsAmount) + Number(formData?.transportationAmt) - Number(formData?.discountAmt)) - Number(formData?.receivedAmt)})` : ""}
               </p>
             </div>
             {hasPermission(permissions, 'sales.edit') && (
@@ -1403,9 +1403,7 @@ const ElectronicsBusinessSales = () => {
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
                     {thousandSeparator(
-                      parseFloat((row.price * row.qty).toFixed(2)),
-                      2,
-                    )}
+                      parseFloat((row.price * row.qty).toFixed(2)))}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
                     <button

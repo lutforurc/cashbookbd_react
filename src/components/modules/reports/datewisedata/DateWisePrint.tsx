@@ -74,19 +74,19 @@ const DateWisePrint = React.forwardRef<HTMLDivElement, Props>(
                       {row.vr_date}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {row.debit > 0 ? thousandSeparator(row.debit, 0) : "-"}
+                      {row.debit > 0 ? thousandSeparator(row.debit) : "-"}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {row.credit > 0 ? thousandSeparator(row.credit, 0) : "-"}
+                      {row.credit > 0 ? thousandSeparator(row.credit) : "-"}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {row.cumulative_debit ? thousandSeparator(row.cumulative_debit, 0) : "-"}
+                      {row.cumulative_debit ? thousandSeparator(row.cumulative_debit) : "-"}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {row.cumulative_credit ? thousandSeparator(row.cumulative_credit, 0) : "-"}
+                      {row.cumulative_credit ? thousandSeparator(row.cumulative_credit) : "-"}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {thousandSeparator(row.balance, 0)}
+                      {thousandSeparator(row.balance)}
                     </td>
                   </tr>
                 ))}

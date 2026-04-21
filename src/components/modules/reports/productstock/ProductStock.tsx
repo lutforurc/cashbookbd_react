@@ -131,7 +131,7 @@ const ProductStock = ( user : any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
-  const [brandId, setBrandId] = useState<string | null>(''); // null হতে পারবে
+  const [brandId, setBrandId] = useState<string | null>(''); // null à¦¹à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡
 
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(35);
@@ -187,7 +187,7 @@ const ProductStock = ( user : any) => {
   };
 
   const handleBrandChange = (selectedOption: any) => {
-    setBrandId(selectedOption?.value ?? null); // "" এর বদলে null
+    setBrandId(selectedOption?.value ?? null); // "" à¦à¦° à¦¬à¦¦à¦²à§‡ null
   };
 
   const handleCategoryChange = (selectedOption: any) => {
@@ -222,10 +222,10 @@ const ProductStock = ( user : any) => {
     const startD = dayjs(startDate).format('YYYY-MM-DD');
     const endD = dayjs(endDate).format('YYYY-MM-DD');
 
-    // ডিবাগের জন্য দেখতে পারেন
+    // à¦¡à¦¿à¦¬à¦¾à¦—à§‡à¦° à¦œà¦¨à§à¦¯ à¦¦à§‡à¦–à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨
     console.log('Sending payload:', {
       branchId,
-      brandId,           // এখন null হলে null-ই যাবে
+      brandId,           // à¦à¦–à¦¨ null à¦¹à¦²à§‡ null-à¦‡ à¦¯à¦¾à¦¬à§‡
       categoryId,
       search,
       startDate: startD,
@@ -235,7 +235,7 @@ const ProductStock = ( user : any) => {
     dispatch(
       getProductStock({
         branchId: branchId || null,
-        brandId: brandId,           // null পাঠালে ব্যাকএন্ডে সব ব্র্যান্ড আসবে (আশা করা যায়)
+        brandId: brandId,           // null à¦ªà¦¾à¦ à¦¾à¦²à§‡ à¦¬à§à¦¯à¦¾à¦•à¦à¦¨à§à¦¡à§‡ à¦¸à¦¬ à¦¬à§à¦°à§à¦¯à¦¾à¦¨à§à¦¡ à¦†à¦¸à¦¬à§‡ (à¦†à¦¶à¦¾ à¦•à¦°à¦¾ à¦¯à¦¾à¦¯à¦¼)
         categoryId,
         search: search || undefined,
         startDate: startD,
@@ -280,7 +280,7 @@ const ProductStock = ( user : any) => {
           return (
             <div className="font-semibold py-1">
               <span className="font-semibold">{row.brand_name}</span>
-              <span className="mx-1 text-gray-800 dark:text-gray-100">→</span>
+              <span className="mx-1 text-gray-800 dark:text-gray-100">â†’</span>
               <span>{row.cat_name}</span>
             </div>
           );
@@ -298,11 +298,11 @@ const ProductStock = ( user : any) => {
           ''
         ) : isGrandTotalRow(row) ? (
           <p className="font-bold">
-            {thousandSeparator(Math.floor(row.opening || 0), 0)}
+            {thousandSeparator(Math.floor(row.opening || 0))}
           </p>
         ) : (
           <p>
-            {thousandSeparator(Math.floor(row.opening || 0), 0)}
+            {thousandSeparator(Math.floor(row.opening || 0))}
             {row.opening ? <span className="text-sm"> ({row.unit})</span> : ''}
           </p>
         ),
@@ -317,11 +317,11 @@ const ProductStock = ( user : any) => {
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
-            {thousandSeparator(Math.floor(row.stock_in || 0), 0)}
+            {thousandSeparator(Math.floor(row.stock_in || 0))}
           </span>
         ) : row.stock_in ? (
           <span className="text-sm">
-            {thousandSeparator(Math.floor(row.stock_in), 0)} ({row.unit})
+            {thousandSeparator(Math.floor(row.stock_in))} ({row.unit})
           </span>
         ) : (
           '-'
@@ -337,11 +337,11 @@ const ProductStock = ( user : any) => {
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
-            {thousandSeparator(Math.floor(row.stock_out || 0), 0)}
+            {thousandSeparator(Math.floor(row.stock_out || 0))}
           </span>
         ) : row.stock_out ? (
           <span className="text-sm">
-            {thousandSeparator(Math.floor(row.stock_out), 0)} ({row.unit})
+            {thousandSeparator(Math.floor(row.stock_out))} ({row.unit})
           </span>
         ) : (
           '-'
@@ -357,11 +357,11 @@ const ProductStock = ( user : any) => {
           ''
         ) : isGrandTotalRow(row) ? (
           <span className="text-sm font-bold">
-            {thousandSeparator(Math.floor(row.balance || 0), 0)}
+            {thousandSeparator(Math.floor(row.balance || 0))}
           </span>
         ) : Math.floor(row.balance || 0) ? (
           <span className="text-sm">
-            {thousandSeparator(Math.floor(row.balance), 0)} ({row.unit})
+            {thousandSeparator(Math.floor(row.balance))} ({row.unit})
           </span>
         ) : (
           '-'

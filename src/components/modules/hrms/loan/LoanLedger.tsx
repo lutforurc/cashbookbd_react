@@ -140,7 +140,7 @@ const LoanLedger = (user: any) => {
       headerClass: 'text-right ',
       cellClass: 'text-right ',
       render: (row: any) => (
-        <div className="">{row.received_amt ?  thousandSeparator( row.received_amt,0) : ''}</div>
+        <div className="">{row.received_amt ?  thousandSeparator( row.received_amt) : ''}</div>
       ),
     }, 
     {
@@ -149,7 +149,7 @@ const LoanLedger = (user: any) => {
       headerClass: 'text-right ',
       cellClass: 'text-right ',
       render: (row: any) => (
-        <div className="">{row.payment_amt ?  thousandSeparator( row.payment_amt,0) : ''}</div>
+        <div className="">{row.payment_amt ?  thousandSeparator( row.payment_amt) : ''}</div>
       ),
     }, 
   ];

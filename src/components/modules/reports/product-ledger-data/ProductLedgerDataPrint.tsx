@@ -58,7 +58,7 @@ const toNumber = (value: any) => {
 
 const formatQty = (value: any) => {
   if (value === null || value === undefined || value === '') return '-';
-  return thousandSeparator(toNumber(value), 0);
+  return thousandSeparator(toNumber(value));
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -258,25 +258,25 @@ const ProductLedgerDataPrint = React.forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-2 text-right font-bold"
                     >
-                      {summary.totalPurchase > 0 ? thousandSeparator(summary.totalPurchase, 0) : '-'}
+                      {summary.totalPurchase > 0 ? thousandSeparator(summary.totalPurchase) : '-'}
                     </td>
                     <td
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-2 text-right font-bold"
                     >
-                      {summary.totalSalesReturn > 0 ? thousandSeparator(summary.totalSalesReturn, 0) : '-'}
+                      {summary.totalSalesReturn > 0 ? thousandSeparator(summary.totalSalesReturn) : '-'}
                     </td>
                     <td
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-2 text-right font-bold"
                     >
-                      {summary.totalSales > 0 ? thousandSeparator(summary.totalSales, 0) : '-'}
+                      {summary.totalSales > 0 ? thousandSeparator(summary.totalSales) : '-'}
                     </td>
                     <td
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-2 text-right font-bold"
                     >
-                      {summary.totalPurchaseReturn > 0 ? thousandSeparator(summary.totalPurchaseReturn, 0) : '-'}
+                      {summary.totalPurchaseReturn > 0 ? thousandSeparator(summary.totalPurchaseReturn) : '-'}
                     </td>
                     <td
                       style={{ fontSize: fs }}

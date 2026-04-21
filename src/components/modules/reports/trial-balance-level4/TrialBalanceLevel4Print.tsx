@@ -194,22 +194,22 @@ const TrialBalanceLevel4Print = React.forwardRef<
                           <div className="break-words whitespace-normal">{row.name}</div>
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-right">
-                          {thousandSeparator(Number(row.openingDebit || 0), 0)}
+                          {thousandSeparator(Number(row.openingDebit || 0))}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-right">
-                          {thousandSeparator(Number(row.openingCredit || 0), 0)}
+                          {thousandSeparator(Number(row.openingCredit || 0))}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-right">
-                          {thousandSeparator(Number(row.movementDebit || 0), 0)}
+                          {thousandSeparator(Number(row.movementDebit || 0))}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-right">
-                          {thousandSeparator(Number(row.movementCredit || 0), 0)}
+                          {thousandSeparator(Number(row.movementCredit || 0))}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-right">
-                          {thousandSeparator(Number(row.closingDebit || 0), 0)}
+                          {thousandSeparator(Number(row.closingDebit || 0))}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-right">
-                          {thousandSeparator(Number(row.closingCredit || 0), 0)}
+                          {thousandSeparator(Number(row.closingCredit || 0))}
                         </td>
                       </tr>
                     ))
@@ -234,22 +234,22 @@ const TrialBalanceLevel4Print = React.forwardRef<
                         Subtotal (Page {pageIndex + 1})
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(pageTotals.openingDebit, 0)}
+                        {thousandSeparator(pageTotals.openingDebit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(pageTotals.openingCredit, 0)}
+                        {thousandSeparator(pageTotals.openingCredit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(pageTotals.movementDebit, 0)}
+                        {thousandSeparator(pageTotals.movementDebit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(pageTotals.movementCredit, 0)}
+                        {thousandSeparator(pageTotals.movementCredit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(pageTotals.closingDebit, 0)}
+                        {thousandSeparator(pageTotals.closingDebit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(pageTotals.closingCredit, 0)}
+                        {thousandSeparator(pageTotals.closingCredit)}
                       </td>
                     </tr>
                   )}
@@ -265,22 +265,22 @@ const TrialBalanceLevel4Print = React.forwardRef<
                         Grand Total
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(totals.openingDebit, 0)}
+                        {thousandSeparator(totals.openingDebit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(totals.openingCredit, 0)}
+                        {thousandSeparator(totals.openingCredit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(totals.movementDebit, 0)}
+                        {thousandSeparator(totals.movementDebit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(totals.movementCredit, 0)}
+                        {thousandSeparator(totals.movementCredit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(totals.closingDebit, 0)}
+                        {thousandSeparator(totals.closingDebit)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator(totals.closingCredit, 0)}
+                        {thousandSeparator(totals.closingCredit)}
                       </td>
                     </tr>
                   </tfoot>

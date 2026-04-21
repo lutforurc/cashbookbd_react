@@ -543,7 +543,7 @@ const GeneralCashReceived = () => {
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.amount), 0)}
+                    {thousandSeparator(Number(row.amount))}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}
@@ -574,7 +574,7 @@ const GeneralCashReceived = () => {
                 <td
                   className={`px-2 py-2 font-bold whitespace-nowrap dark:text-white text-right  text-gray-900`}
                 >
-                  {thousandSeparator(Number(totalAmount), 0)}{' '}
+                  {thousandSeparator(Number(totalAmount))}{' '}
                 </td>
                 <td
                   className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center `}

@@ -112,7 +112,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
       headerClass: 'text-right w-24',
       cellClass: 'text-right w-24',
       render: (row: any) => (
-        <span>{thousandSeparator(Number(pickFirst(row, ['qty', 'quantity']) || 0), 2)}</span>
+        <span>{thousandSeparator(Number(pickFirst(row, ['qty', 'quantity']) || 0))}</span>
       ),
     },
     {
@@ -121,7 +121,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
       headerClass: 'text-right w-28',
       cellClass: 'text-right w-28',
       render: (row: any) => (
-        <span>{thousandSeparator(Number(pickFirst(row, ['rate', 'unit_price']) || 0), 2)}</span>
+        <span>{thousandSeparator(Number(pickFirst(row, ['rate', 'unit_price']) || 0))}</span>
       ),
     },
     {
@@ -132,7 +132,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
       render: (row: any) => {
         const qty = Number(pickFirst(row, ['qty', 'quantity']) || 0);
         const rate = Number(pickFirst(row, ['rate', 'unit_price']) || 0);
-        return <span>{thousandSeparator(qty * rate, 2)}</span>;
+        return <span>{thousandSeparator(qty * rate)}</span>;
       },
     },
   ];

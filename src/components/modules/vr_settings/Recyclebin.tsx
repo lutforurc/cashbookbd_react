@@ -149,14 +149,14 @@ const Recyclebin = () => {
       header: 'Debit',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <p>{thousandSeparator(row.debit, 0)}</p>,
+      render: (row: any) => <p>{thousandSeparator(row.debit)}</p>,
     },
     {
       key: 'credit',
       header: 'Credit',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <p>{thousandSeparator(row.credit, 0)}</p>,
+      render: (row: any) => <p>{thousandSeparator(row.credit)}</p>,
     },
     {
       key: 'action',

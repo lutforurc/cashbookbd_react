@@ -29,10 +29,10 @@ const JournalTable = ({ details, coaNameMap, tableKey }) => {
             <tr key={d?.id ?? `${tableKey}-${di}`}>
               <td className="border px-2 py-1 dark:border-gray-700">{coaTitle}</td>
               <td className="border px-2 py-1 text-right dark:border-gray-700">
-                { thousandSeparator(d.debit, 0) }
+                { thousandSeparator(d.debit) }
               </td>
               <td className="border px-2 py-1 text-right dark:border-gray-700">
-                { thousandSeparator(d.credit, 0) }
+                { thousandSeparator(d.credit) }
               </td>
             </tr>
           );

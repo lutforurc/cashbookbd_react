@@ -118,10 +118,10 @@ const paymentList = customer?.me?.data?.payments?.original?.data?.data?.payments
 
 const allPayments = paymentList.map((pay: any) => ({
   id: pay.id,
-  vr_no: pay.main_transaction?.vr_no || pay.main_trx_id, // main_transaction থেকে vr_no
+  vr_no: pay.main_transaction?.vr_no || pay.main_trx_id, // main_transaction Ã Â¦Â¥Ã Â§â€¡Ã Â¦â€¢Ã Â§â€¡ vr_no
   paid_at: pay.paid_at,
   amount: pay.amount,
-  installment_no: pay.installment?.installment_no,       // installment relation থেকে
+  installment_no: pay.installment?.installment_no,       // installment relation Ã Â¦Â¥Ã Â§â€¡Ã Â¦â€¢Ã Â§â€¡
   due_date: pay.installment?.due_date,
   status: pay.installment?.status,
   invoice_no: pay.installment?.invoice_no ?? null,       // future-proof
@@ -207,7 +207,7 @@ const allPayments = paymentList.map((pay: any) => ({
         return (
           <>
             <div className="text-right">
-              ৳ {thousandSeparator(row.amount, 0)}
+              Ã Â§Â³ {thousandSeparator(row.amount)}
             </div>
           </>
         );
@@ -297,10 +297,8 @@ const allPayments = paymentList.map((pay: any) => ({
                           Total Purchase
                         </span>
                         <span className="text-green-600 text-sm dark:text-green-400 mt-0">
-                          ৳{' '}
-                          {thousandSeparator(
-                            summary.total[0]?.total_debit,0,
-                          ) || 0}
+                          Ã Â§Â³{' '}
+                          {thousandSeparator(summary.total[0]?.total_debit) || 0}
                         </span>
                       </div>
                       <div className="mt-1">
@@ -308,11 +306,8 @@ const allPayments = paymentList.map((pay: any) => ({
                           Total Payment
                         </span>
                         <span className="text-cyan-700 text-sm dark:text-cyan-400">
-                          ৳{' '}
-                          {thousandSeparator(
-                            summary.total[0]?.total_credit,
-                            0,
-                          ) || 0}
+                          Ã Â§Â³{' '}
+                          {thousandSeparator(summary.total[0]?.total_credit) || 0}
                         </span>
                       </div>
                     </div>
@@ -322,12 +317,10 @@ const allPayments = paymentList.map((pay: any) => ({
                           Balance (Due)
                         </span>
                         <span className="text-green-600 text-sm dark:text-green-400 mt-0">
-                          ৳{' '}
+                          Ã Â§Â³{' '}
                           {thousandSeparator(
                             summary.total[0]?.total_debit -
-                              summary.total[0]?.total_credit,
-                            0,
-                          )}
+                              summary.total[0]?.total_credit)}
                         </span>
                       </div>
                     </div>

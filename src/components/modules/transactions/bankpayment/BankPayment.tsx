@@ -34,7 +34,7 @@ interface PaymentItem {
   bankPaymentAccountName: string;
   paymentAccount: string;
   paymentAccountName: string;
-  transactionList?: TransactionList[]; // ✅ object → array
+  transactionList?: TransactionList[]; // âœ… object â†’ array
 }
 
 const initialPaymentItem: PaymentItem = {
@@ -65,8 +65,8 @@ const BankPayment = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentItem | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // ✅ new
-  const searchingRef = useRef(false); // ✅ guard against concurrent searches
+  const [isLoading, setIsLoading] = useState(false); // âœ… new
+  const searchingRef = useRef(false); // âœ… guard against concurrent searches
   const [updateTransactionId, setUpdateTransactionId] = useState<number | null>(
     null,
   );
@@ -116,7 +116,7 @@ const BankPayment = () => {
       const mapped = mapReceivedData(response);
       setPaymentData(mapped);
       setTableData([mapped]);
-      setFormData({ ...mapped, transactionList: [] }); // ✅ Payment set করুন, transactionList খালি রাখুন (fields ফাঁকা)
+      setFormData({ ...mapped, transactionList: [] }); // âœ… Payment set à¦•à¦°à§à¦¨, transactionList à¦–à¦¾à¦²à¦¿ à¦°à¦¾à¦–à§à¦¨ (fields à¦«à¦¾à¦à¦•à¦¾)
       setIsUpdating(false);
       setIsUpdateButton(true);
 
@@ -128,7 +128,7 @@ const BankPayment = () => {
       toast.error(error?.message || 'Error searching invoice.');
       console.error('Error searching invoice:', error);
     } finally {
-      setIsLoading(false);   // ✅ hide Loader
+      setIsLoading(false);   // âœ… hide Loader
       searchingRef.current = false;
     }
   };
@@ -208,7 +208,7 @@ const BankPayment = () => {
           transactionList: [transactionToEdit],
         });
         setUpdateTransactionId(id);
-        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-এ
+        setTimeout(() => document.getElementById('account')?.focus(), 100); // Optional: focus account-à¦
         setIsUpdating(true); // Update mode on
         toast.info('Transaction loaded for editing.'); // Optional: user feedback
       } else {
@@ -219,7 +219,7 @@ const BankPayment = () => {
     [tableData, formData],
   );
 
-  // ✅ Implement editPaymentVoucher like the example (local update)
+  // âœ… Implement editPaymentVoucher like the example (local update)
 
   const editPaymentVoucher = () => {
     if (updateTransactionId == null) {
@@ -266,7 +266,7 @@ const BankPayment = () => {
     setTableData(updatedTableData);
     setIsUpdating(false);
 
-    // ✅ Reset: header-এর id/mtmId/receiver
+    // âœ… Reset: header-à¦à¦° id/mtmId/receiver
     setFormData(prev => ({
       ...initialPaymentItem,
       id: prev?.id as any,
@@ -336,10 +336,10 @@ const BankPayment = () => {
         toast.success(voucherText, { toastId: `bank-payment-success-${voucherText}` });
       }
 
-      // ✅ Clear table
+      // âœ… Clear table
       setTableData([]);
 
-      // ✅ Reset form but keep account fields
+      // âœ… Reset form but keep account fields
       setFormData({
         ...initialPaymentItem,
         bankPaymentAccount: formData.bankPaymentAccount,
@@ -374,7 +374,7 @@ const BankPayment = () => {
     setUpdatingLoading(true);
     setIsLoading(true);
 
-    // ✅ Validation
+    // âœ… Validation
     const transactions = tableData.flatMap((item) => item.transactionList || []);
     if (!transactions.length) {
       toast.warning('No transactions to update.');
@@ -404,7 +404,7 @@ const BankPayment = () => {
       };
 
 
-      // ✅ API call or redux dispatch
+      // âœ… API call or redux dispatch
       const response = await dispatch(updateBankPayment(payload)).unwrap();
 
 
@@ -425,7 +425,7 @@ const BankPayment = () => {
       setPaymentData(null);
 
     } catch (error: any) {
-      console.error('❌ Error updating transaction:', error);
+      console.error('âŒ Error updating transaction:', error);
       toast.error(error?.message || 'Failed to update transaction.');
     } finally {
       setIsLoading(false);
@@ -501,7 +501,7 @@ const BankPayment = () => {
                   id="account"
                   name="account"
                   placeholder="Select Transaction Account"
-                  onSelect={transactionAccountHandler} // ✅ পুরোনো handler বাদ
+                  onSelect={transactionAccountHandler} // âœ… à¦ªà§à¦°à§‹à¦¨à§‹ handler à¦¬à¦¾à¦¦
                   value={
                     formData.transactionList &&
                       formData.transactionList[0]?.account
@@ -675,7 +675,7 @@ const BankPayment = () => {
                       {t.remarks}
                     </td>
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                      {thousandSeparator(Number(t.amount), 0)}
+                      {thousandSeparator(Number(t.amount))}
                     </td>
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
                       <button
@@ -706,7 +706,7 @@ const BankPayment = () => {
                 <td
                   className={`px-2 py-2 font-bold whitespace-nowrap dark:text-white text-right  text-gray-900`}
                 >
-                  {thousandSeparator(Number(totalAmount), 0)}{' '}
+                  {thousandSeparator(Number(totalAmount))}{' '}
                 </td>
                 <td
                   className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center `}

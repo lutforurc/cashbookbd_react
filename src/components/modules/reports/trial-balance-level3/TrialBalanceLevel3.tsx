@@ -126,7 +126,7 @@ const normalizeRows = (items: any[]): TrialBalanceRow[] => {
 };
 
 const formatAmount = (amount: number) => {
-  const formatted = thousandSeparator(Math.abs(amount), 2);
+  const formatted = thousandSeparator(Math.abs(amount));
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
@@ -318,8 +318,8 @@ const TrialBalanceLevel3 = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select করুন");
-    if (!startDate || !endDate) return alert("Start/End Date দিন");
+    if (!branchId) return alert("Branch select Ã Â¦â€¢Ã Â¦Â°Ã Â§ÂÃ Â¦Â¨");
+    if (!startDate || !endDate) return alert("Start/End Date Ã Â¦Â¦Ã Â¦Â¿Ã Â¦Â¨");
 
     setButtonLoading(true);
 
@@ -370,42 +370,42 @@ const TrialBalanceLevel3 = (user: any) => {
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.openingDebit, 0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.openingDebit)}</div>,
     },
     {
       key: "openingCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.openingCredit, 0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.openingCredit)}</div>,
     },
     {
       key: "movementDebit",
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.movementDebit, 0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.movementDebit)}</div>,
     },
     {
       key: "movementCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.movementCredit, 0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.movementCredit)}</div>,
     },
     {
       key: "closingDebit",
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.closingDebit, 0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.closingDebit)}</div>,
     },
     {
       key: "closingCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.closingCredit, 0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.closingCredit)}</div>,
     },
   ];
 
@@ -430,12 +430,12 @@ const TrialBalanceLevel3 = (user: any) => {
   const footerRows = [
     [
       { label: "Grand Total", colSpan: 2, className: "text-right" },
-      { label: thousandSeparator(totals.openingDebit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.openingCredit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.movementDebit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.movementCredit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.closingDebit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.closingCredit, 0), className: "text-right" },
+      { label: thousandSeparator(totals.openingDebit), className: "text-right" },
+      { label: thousandSeparator(totals.openingCredit), className: "text-right" },
+      { label: thousandSeparator(totals.movementDebit), className: "text-right" },
+      { label: thousandSeparator(totals.movementCredit), className: "text-right" },
+      { label: thousandSeparator(totals.closingDebit), className: "text-right" },
+      { label: thousandSeparator(totals.closingCredit), className: "text-right" },
     ],
   ];
 
@@ -686,19 +686,19 @@ const TrialBalanceLevel3 = (user: any) => {
                     <div className="flex items-center justify-between gap-3">
                       <span>Opening Dr - Cr</span>
                       <span className="font-semibold">
-                        {thousandSeparator(diagnostics.totalsGap.opening, 0)}
+                        {thousandSeparator(diagnostics.totalsGap.opening)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>Movement Dr - Cr</span>
                       <span className="font-semibold">
-                        {thousandSeparator(diagnostics.totalsGap.movement, 0)}
+                        {thousandSeparator(diagnostics.totalsGap.movement)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>Closing Dr - Cr</span>
                       <span className="font-semibold text-amber-700 dark:text-amber-200">
-                        {thousandSeparator(diagnostics.totalsGap.closing, 0)}
+                        {thousandSeparator(diagnostics.totalsGap.closing)}
                       </span>
                     </div>
                   </div>
@@ -712,37 +712,37 @@ const TrialBalanceLevel3 = (user: any) => {
                     <div className="flex items-center justify-between gap-3">
                       <span>Opening Debit</span>
                       <span className="font-semibold">
-                        {thousandSeparator(diagnostics.sourceVsRows.openingDebit, 0)}
+                        {thousandSeparator(diagnostics.sourceVsRows.openingDebit)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>Opening Credit</span>
                       <span className="font-semibold">
-                        {thousandSeparator(diagnostics.sourceVsRows.openingCredit, 0)}
+                        {thousandSeparator(diagnostics.sourceVsRows.openingCredit)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>Movement Debit</span>
                       <span className="font-semibold">
-                        {thousandSeparator(diagnostics.sourceVsRows.movementDebit, 0)}
+                        {thousandSeparator(diagnostics.sourceVsRows.movementDebit)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>Movement Credit</span>
                       <span className="font-semibold">
-                        {thousandSeparator(diagnostics.sourceVsRows.movementCredit, 0)}
+                        {thousandSeparator(diagnostics.sourceVsRows.movementCredit)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>Closing Debit</span>
                       <span className="font-semibold">
-                        {thousandSeparator(diagnostics.sourceVsRows.closingDebit, 0)}
+                        {thousandSeparator(diagnostics.sourceVsRows.closingDebit)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>Closing Credit</span>
                       <span className="font-semibold">
-                        {thousandSeparator(diagnostics.sourceVsRows.closingCredit, 0)}
+                        {thousandSeparator(diagnostics.sourceVsRows.closingCredit)}
                       </span>
                     </div>
                   </div>
@@ -763,8 +763,8 @@ const TrialBalanceLevel3 = (user: any) => {
                       <span>Largest Row Gap</span>
                       <span className="font-semibold">
                         {diagnostics.imbalanceRows[0]
-                          ? thousandSeparator(diagnostics.imbalanceRows[0].rowDifference, 0)
-                          : thousandSeparator(0, 0)}
+                          ? thousandSeparator(diagnostics.imbalanceRows[0].rowDifference)
+                          : thousandSeparator(0)}
                       </span>
                     </div>
                     <p className="pt-2 text-xs text-slate-500 dark:text-slate-400">
@@ -800,16 +800,16 @@ const TrialBalanceLevel3 = (user: any) => {
                             <td className="px-2 py-2">{row.code || "-"}</td>
                             <td className="px-2 py-2">{row.name}</td>
                             <td className="px-2 py-2 text-right">
-                              {thousandSeparator(row.rowNetOpening, 0)}
+                              {thousandSeparator(row.rowNetOpening)}
                             </td>
                             <td className="px-2 py-2 text-right">
-                              {thousandSeparator(row.rowNetMovement, 0)}
+                              {thousandSeparator(row.rowNetMovement)}
                             </td>
                             <td className="px-2 py-2 text-right">
-                              {thousandSeparator(row.rowNetClosing, 0)}
+                              {thousandSeparator(row.rowNetClosing)}
                             </td>
                             <td className="px-2 py-2 text-right font-semibold text-amber-700 dark:text-amber-200">
-                              {thousandSeparator(row.rowDifference, 0)}
+                              {thousandSeparator(row.rowDifference)}
                             </td>
                           </tr>
                         ))}
@@ -829,7 +829,7 @@ const TrialBalanceLevel3 = (user: any) => {
                       Trial Balance Rows
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {branchName} • {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
+                      {branchName} Ã¢â‚¬Â¢ {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
                       {endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
                     </p>
                   </div>
@@ -894,7 +894,7 @@ const SummaryCard = ({
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
         {title}
       </p>
-      <p className="mt-3 text-2xl font-semibold">{thousandSeparator(value, 0)}</p>
+      <p className="mt-3 text-2xl font-semibold">{thousandSeparator(value)}</p>
     </div>
   );
 };

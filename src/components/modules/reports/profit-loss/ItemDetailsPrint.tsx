@@ -4,7 +4,7 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import { firstLetterCapitalize } from "../../../utils/utils-functions/formatRoleName";
 
-const fmtNum = (n: any, dec = 0) => thousandSeparator(Number(n || 0), dec);
+const fmtNum = (n: any, dec = 0) => thousandSeparator(Number(n || 0));
 const toNum = (v: any) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -58,7 +58,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         ? 26
         : 22;
 
-    // ✅ API map flatten: report.data = { BRAND: [..], "": [..] }
+    // âœ… API map flatten: report.data = { BRAND: [..], "": [..] }
     const flatRows: RowAny[] = useMemo(() => {
       if (!report) return [];
       if (Array.isArray(report)) return report;
@@ -119,7 +119,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       return toNum(getQty(r)) * toNum(getRate(r));
     };
 
-    // ✅ group: brand -> category -> items
+    // âœ… group: brand -> category -> items
     const grouped = useMemo(() => {
       const map = new Map<string, Map<string, RowAny[]>>();
 
@@ -142,7 +142,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       }));
     }, [flatRows]);
 
-    // ✅ RenderRow list (linear) — Category Total শেষে Brand Total
+    // âœ… RenderRow list (linear) â€” Category Total à¦¶à§‡à¦·à§‡ Brand Total
     const renderRows: RenderRow[] = useMemo(() => {
       const out: RenderRow[] = [];
       let grand = 0;
@@ -176,7 +176,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           });
         });
 
-        // ✅ Brand Total after all Category Totals
+        // âœ… Brand Total after all Category Totals
         out.push({ type: "brandTotal", brand: g.brand, total: brandTotal });
         grand += brandTotal;
       });
@@ -185,7 +185,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       return out;
     }, [grouped]);
 
-    // ✅ Pagination: rp rows পরে page break + header repeat
+    // âœ… Pagination: rp rows à¦ªà¦°à§‡ page break + header repeat
     const pages: RenderRow[][] = useMemo(() => {
       const pages: RenderRow[][] = [];
       let page: RenderRow[] = [];
@@ -223,7 +223,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           pushPage();
         }
 
-        // item শেষে catTotal/brandTotal কে একা না ফেলতে চাইলে
+        // item à¦¶à§‡à¦·à§‡ catTotal/brandTotal à¦•à§‡ à¦à¦•à¦¾ à¦¨à¦¾ à¦«à§‡à¦²à¦¤à§‡ à¦šà¦¾à¦‡à¦²à§‡
         if (
           page.length > 0 &&
           r.type === "item" &&
@@ -238,7 +238,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           pushPage();
         }
 
-        // new page শুরু হলে item/catTotal হলে brand+category repeat
+        // new page à¦¶à§à¦°à§ à¦¹à¦²à§‡ item/catTotal à¦¹à¦²à§‡ brand+category repeat
         if (page.length === 0 && (r.type === "item" || r.type === "catTotal")) {
           addContextHeaders(r.brand, r.category);
 
@@ -248,7 +248,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           }
         }
 
-        // new page শুরু হলে brandTotal হলে brand repeat
+        // new page à¦¶à§à¦°à§ à¦¹à¦²à§‡ brandTotal à¦¹à¦²à§‡ brand repeat
         if (page.length === 0 && r.type === "brandTotal") {
           addBrandHeader(r.brand);
 
@@ -289,7 +289,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
               style={{ fontSize: fs }}
               className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} font-semibold`}
             >
-              { firstLetterCapitalize(r.brand)} → { r.category }
+              { firstLetterCapitalize(r.brand)} â†’ { r.category }
             </td>
           </tr>
         );
@@ -422,7 +422,7 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
               <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
                 <div>
                   <span className="font-semibold">Report Date:</span>{" "}
-                  {startDate} — {endDate}
+                  {startDate} â€” {endDate}
                 </div>
               </div>
             </div>

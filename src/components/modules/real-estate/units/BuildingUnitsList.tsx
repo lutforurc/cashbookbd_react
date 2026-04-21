@@ -155,14 +155,14 @@ const handleToggle = (row: any) => {
       header: 'Size',
       headerClass: 'text-center',
       cellClass: 'text-right',
-      render: (row: any) => <div>{thousandSeparator(row.size_sqft, 0)} Sft</div>,
+      render: (row: any) => <div>{thousandSeparator(row.size_sqft)} Sft</div>,
     },
     {
       key: 'sale_price',
       header: 'Unit Price',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <div>{thousandSeparator(row.sale_price, 0) ?? '-'}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.sale_price) ?? '-'}</div>,
     },
     {
       key: 'total_price',
@@ -171,7 +171,7 @@ const handleToggle = (row: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         const total = Number(row?.size_sqft) * Number(row?.sale_price);
-        return <div>{isNaN(total) ? "-" : thousandSeparator(total, 0)}</div>;
+        return <div>{isNaN(total) ? "-" : thousandSeparator(total)}</div>;
       },
     },
     {

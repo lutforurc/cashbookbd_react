@@ -51,8 +51,8 @@ const toNum = (v: any) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-const fmtZero = (n: number) => thousandSeparator(n || 0, 0);
-const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n, 0) : "");
+const fmtZero = (n: number) => thousandSeparator(n || 0);
+const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n) : "");
 
 const ProfitLossReport = ({
   loading = false,

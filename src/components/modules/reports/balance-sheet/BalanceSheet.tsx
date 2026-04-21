@@ -51,7 +51,7 @@ const toNum = (value: any) => {
 };
 
 const formatAmount = (amount: number) => {
-  const formatted = thousandSeparator(Math.abs(amount), 2);
+  const formatted = thousandSeparator(Math.abs(amount));
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
@@ -197,8 +197,8 @@ const BalanceSheet = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
-    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
+    if (!branchId) return alert("Branch select ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â§Ã‚ÂÃƒÂ Ã‚Â¦Ã‚Â¨");
+    if (!startDate || !endDate) return alert("Start/End Date ÃƒÂ Ã‚Â¦Ã‚Â¦ÃƒÂ Ã‚Â¦Ã‚Â¿ÃƒÂ Ã‚Â¦Ã‚Â¨");
 
     setButtonLoading(true);
 
@@ -671,13 +671,13 @@ const SectionCard = ({
                   </div>
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
-                  {thousandSeparator(row.opening, 0)}
+                  {thousandSeparator(row.opening)}
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
-                  {thousandSeparator(row.movement, 0)}
+                  {thousandSeparator(row.movement)}
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-slate-900 dark:text-white">
-                  {thousandSeparator(row.closing, 0)}
+                  {thousandSeparator(row.closing)}
                 </td>
               </tr>
             ))}
@@ -688,13 +688,13 @@ const SectionCard = ({
                 {totalLabel}
               </td>
               <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                {thousandSeparator(totalColumns.opening, 0)}
+                {thousandSeparator(totalColumns.opening)}
               </td>
               <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                {thousandSeparator(totalColumns.movement, 0)}
+                {thousandSeparator(totalColumns.movement)}
               </td>
               <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-white">
-                {thousandSeparator(totalColumns.closing || totalValue, 0)}
+                {thousandSeparator(totalColumns.closing || totalValue)}
               </td>
             </tr>
           </tfoot>

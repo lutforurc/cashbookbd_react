@@ -135,7 +135,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="mb-4">
                 <h1 className="text-2xl font-bold text-center">{title}</h1>
                 <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
-                  {/* বাম পাশ */}
+                  {/* à¦¬à¦¾à¦® à¦ªà¦¾à¦¶ */}
                   <div>
                     <span className="block font-semibold">
                       <span>Name: {coal4?.name} {ledgerCode && <span className=''>Ledger Name: ({ledgerCode})</span>}</span>
@@ -152,10 +152,10 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                     )}
                   </div>
 
-                  {/* ডান পাশ */}
+                  {/* à¦¡à¦¾à¦¨ à¦ªà¦¾à¦¶ */}
                   <div className="text-right">
                     <span className="font-semibold">Report Date:</span>{' '}
-                    {startDate || '-'} — {endDate || '-'}
+                    {startDate || '-'} â€” {endDate || '-'}
                   </div>
                 </div>
               </div>
@@ -253,13 +253,13 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                             style={{ fontSize: fs }}
                             className="border border-gray-900 px-2 py-1 text-right align-middle"
                           >
-                            {thousandSeparator(Number(row?.debit || 0), 0)}
+                            {thousandSeparator(Number(row?.debit || 0))}
                           </td>
                           <td
                             style={{ fontSize: fs }}
                             className="border border-gray-900 px-2 py-1 text-right align-middle"
                           >
-                            {thousandSeparator(Number(row?.credit || 0), 0)}
+                            {thousandSeparator(Number(row?.credit || 0))}
                           </td>
                           <td
                             style={{ fontSize: fs }}
@@ -267,7 +267,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                           >
                             {row?.runningBalance === undefined
                               ? ''
-                              : thousandSeparator(Number(row.runningBalance), 0)}
+                              : thousandSeparator(Number(row.runningBalance))}
                           </td>
                         </tr>
                       ))
@@ -296,19 +296,19 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-1 text-right"
                         >
-                          {thousandSeparator(pageDebit, 0)}
+                          {thousandSeparator(pageDebit)}
                         </td>
                         <td
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-1 text-right"
                         >
-                          {thousandSeparator(pageCredit, 0)}
+                          {thousandSeparator(pageCredit)}
                         </td>
                         <td
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-1 text-right"
                         >
-                          {thousandSeparator(pageClosingBalance, 0)}
+                          {thousandSeparator(pageClosingBalance)}
                         </td>
                       </tr>
                     )}
@@ -319,7 +319,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
               {/* Footer */}
               <div className="mt-2 flex items-center justify-between text-xs">
                 <div style={{ fontSize: fs }} className="font-semibold">
-                  {pIdx !== pages.length - 1 ? `Balance: ${thousandSeparator(pageClosingBalance, 0)}` : ''}
+                  {pIdx !== pages.length - 1 ? `Balance: ${thousandSeparator(pageClosingBalance)}` : ''}
                 </div>
                 <div style={{ fontSize: fs }} className="text-right">
                   Page {pIdx + 1} of {pages.length}
@@ -340,10 +340,10 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                   Grand Total
                 </td>
                 <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right w-28">
-                  {thousandSeparator(grandDebit, 0)}
+                  {thousandSeparator(grandDebit)}
                 </td>
                 <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right w-28">
-                  {thousandSeparator(grandCredit, 0)}
+                  {thousandSeparator(grandCredit)}
                 </td>
               </tr>
             </tbody>

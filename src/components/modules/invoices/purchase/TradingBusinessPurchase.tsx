@@ -1112,7 +1112,7 @@ const TradingBusinessPurchase = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
               <div className="mt-4 ">
                 <p className="text-sm font-bold dark:text-white">
-                  Total Tk. {thousandSeparator(totalAmount, 0)}
+                  Total Tk. {thousandSeparator(totalAmount)}
                 </p>
               </div>
               {hasPermission(permissions, 'sales.edit') && (
@@ -1399,17 +1399,17 @@ const TradingBusinessPurchase = () => {
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.qty), 2)} {row.unit}
+                    {thousandSeparator(Number(row.qty))} {row.unit}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.price), 2)}
+                    {thousandSeparator(Number(row.price))}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.price) * Number(row.qty), 2)}
+                    {thousandSeparator(Number(row.price) * Number(row.qty))}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}

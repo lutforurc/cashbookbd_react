@@ -301,7 +301,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{thousandSeparator(row?.sold_qty, 0)}</div>
+        <div>{thousandSeparator(row?.sold_qty)}</div>
       ),
     },
     {
@@ -310,7 +310,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{thousandSeparator( Number(row?.unit_purchase_rate), 2)}</div>
+        <div>{thousandSeparator( Number(row?.unit_purchase_rate))}</div>
       ),
     },
     {
@@ -319,7 +319,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{thousandSeparator( Number(row?.purchase_total), 0)}</div>
+        <div>{thousandSeparator( Number(row?.purchase_total))}</div>
       ),
     },
     {
@@ -328,7 +328,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{thousandSeparator( Number(row?.unit_sale_rate), 2)}</div>
+        <div>{thousandSeparator( Number(row?.unit_sale_rate))}</div>
       ),
     },
     {
@@ -337,7 +337,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{thousandSeparator( Number(row?.sale_total), 0)}</div>
+        <div>{thousandSeparator( Number(row?.sale_total))}</div>
       ),
     },
     {
@@ -346,7 +346,7 @@ const ProductProfitLoss = (user: any) => {
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: ProductProfitRow) => (
-        <div>{thousandSeparator( Number(row?.profit), 0)}</div>
+        <div>{thousandSeparator( Number(row?.profit))}</div>
       ),
     },
     {
@@ -372,7 +372,7 @@ const ProductProfitLoss = (user: any) => {
             className: "text-left",
           },
           {
-            label: thousandSeparator(summary.totalQty, 0),
+            label: thousandSeparator(summary.totalQty),
             className: "text-right",
           },
           {
@@ -380,7 +380,7 @@ const ProductProfitLoss = (user: any) => {
             className: "text-right",
           },
           {
-            label: thousandSeparator(summary.totalPurchase, 0),
+            label: thousandSeparator(summary.totalPurchase),
             className: "text-right",
           },
           {
@@ -388,20 +388,18 @@ const ProductProfitLoss = (user: any) => {
             className: "text-right",
           },
           {
-            label: thousandSeparator(summary.totalSales, 0),
+            label: thousandSeparator(summary.totalSales),
             className: "text-right",
           },
           {
             label: `${getNetLabel(summary.totalProfit)}: ${thousandSeparator(
-              Math.abs(summary.totalProfit),
-              0
-            )}`,
+              Math.abs(summary.totalProfit))}`,
             className: "text-right",
           },
           {
             label:
               summary.warningCount > 0
-                ? `${thousandSeparator(summary.warningCount, 0)} warning`
+                ? `${thousandSeparator(summary.warningCount)} warning`
                 : "-",
           },
         ],
@@ -614,7 +612,7 @@ const ProductProfitLoss = (user: any) => {
                 Qty.
               </p>
               <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-                {thousandSeparator(summary.totalQty, 0)}
+                {thousandSeparator(summary.totalQty)}
               </p>
             </div>
 
@@ -623,7 +621,7 @@ const ProductProfitLoss = (user: any) => {
                 Purchase
               </p>
               <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-                {thousandSeparator(summary.totalPurchase, 0)}
+                {thousandSeparator(summary.totalPurchase)}
               </p>
             </div>
 
@@ -632,7 +630,7 @@ const ProductProfitLoss = (user: any) => {
                 Sales
               </p>
               <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-                {thousandSeparator(summary.totalSales, 0)}
+                {thousandSeparator(summary.totalSales)}
               </p>
             </div>
 
@@ -641,7 +639,7 @@ const ProductProfitLoss = (user: any) => {
                 {getNetLabel(summary.totalProfit)}
               </p>
               <p className="mt-2 text-lg font-semibold text-amber-900 dark:text-amber-100">
-                {thousandSeparator(Math.abs(summary.totalProfit), 0)}
+                {thousandSeparator(Math.abs(summary.totalProfit))}
               </p>
             </div>
 
@@ -650,7 +648,7 @@ const ProductProfitLoss = (user: any) => {
                 Warning
               </p>
               <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-                {thousandSeparator(summary.warningCount, 0)}
+                {thousandSeparator(summary.warningCount)}
               </p>
             </div>
           </div>

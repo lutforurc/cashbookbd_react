@@ -49,7 +49,7 @@ const TransactionChart: React.FC = () => {
       tools: {
         zoom: false,      // Disable zoom selection
         zoomin: false,    // Disable + zoom button
-        zoomout: false,   // Disable − zoom button
+        zoomout: false,   // Disable âˆ’ zoom button
         pan: false,       // Disable panning
       }
     },
@@ -70,7 +70,7 @@ const TransactionChart: React.FC = () => {
           style: { fontSize: "14px", fontWeight: 600 }
         },
         labels: {
-          formatter: (value: number) => thousandSeparator(value, 0),
+          formatter: (value: number) => thousandSeparator(value),
         },
     },
 
@@ -85,7 +85,7 @@ const TransactionChart: React.FC = () => {
     theme: "dark",
     style: { fontSize: "12px" },
     y: {
-      formatter: (value:number) => `${thousandSeparator(value, 0)}`
+      formatter: (value:number) => `${thousandSeparator(value)}`
     }
   }
 };

@@ -71,7 +71,7 @@ const formatCellNumber = (value: any) => {
   if (value === null || value === undefined || value === '') return '-';
   const numericValue = Number(value);
   if (Number.isNaN(numericValue)) return value;
-  return thousandSeparator(numericValue, Number.isInteger(numericValue) ? 0 : 2);
+  return thousandSeparator(numericValue);
 };
 
 const numberOrZero = (value: any) => {

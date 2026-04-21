@@ -462,8 +462,8 @@ console.log(
         return (
           <span className="px-4 py-2">
             {row.debit > 0
-              ? thousandSeparator(row.debit, 0)
-              : thousandSeparator(row.credit, 0)}
+              ? thousandSeparator(row.debit)
+              : thousandSeparator(row.credit)}
           </span>
         );
       },

@@ -55,7 +55,7 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
 
     tooltip: {
       theme: mode === "dark" ? "dark" : "light",
-      y: { formatter: (v: number) => thousandSeparator(v, 0) },
+      y: { formatter: (v: number) => thousandSeparator(v) },
     },
 
     xaxis: {
@@ -68,7 +68,7 @@ const MonthlyPurchaseSalesChart: React.FC = () => {
       },
       labels: {
         formatter: function (value:number) {
-          return thousandSeparator(value, 0);
+          return thousandSeparator(value);
         }
       }
     },

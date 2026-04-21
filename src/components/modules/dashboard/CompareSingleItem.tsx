@@ -26,7 +26,7 @@ const CompareSingleItem = ({
   });
 
   /* ===============================
-   ✅ Dynamic API Call (SAFE)
+   âœ… Dynamic API Call (SAFE)
   ================================= */
   useEffect(() => {
     if (!branchId || !startDate1 || !endDate1) return;
@@ -61,7 +61,7 @@ const CompareSingleItem = ({
   ]);
 
   /* ===============================
-   ✅ Chart Data Mapping (SAFE)
+   âœ… Chart Data Mapping (SAFE)
   ================================= */
   useEffect(() => {
     const compare = charts?.compareData?.data?.period1;
@@ -75,7 +75,7 @@ const CompareSingleItem = ({
   }, [charts]);
 
   /* ===============================
-   ✅ Chart Options
+   âœ… Chart Options
   ================================= */
 
   const allValues = chartData.series.flatMap((s) => s.data);
@@ -98,15 +98,15 @@ const CompareSingleItem = ({
     },
 
     yaxis: {
-      min: 0, // নিচের সর্বনিম্ন ভ্যালু
-      max: maxValue, // উপরের সর্বোচ্চ ভ্যালু ✅ (আপনার ডাটা অনুযায়ী সেট করবেন)
-      tickAmount: 10, // ✅ মোট 5টা স্টেপ হবে (gap control)
+      min: 0, // à¦¨à¦¿à¦šà§‡à¦° à¦¸à¦°à§à¦¬à¦¨à¦¿à¦®à§à¦¨ à¦­à§à¦¯à¦¾à¦²à§
+      max: maxValue, // à¦‰à¦ªà¦°à§‡à¦° à¦¸à¦°à§à¦¬à§‹à¦šà§à¦š à¦­à§à¦¯à¦¾à¦²à§ âœ… (à¦†à¦ªà¦¨à¦¾à¦° à¦¡à¦¾à¦Ÿà¦¾ à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€ à¦¸à§‡à¦Ÿ à¦•à¦°à¦¬à§‡à¦¨)
+      tickAmount: 10, // âœ… à¦®à§‹à¦Ÿ 5à¦Ÿà¦¾ à¦¸à§à¦Ÿà§‡à¦ª à¦¹à¦¬à§‡ (gap control)
 
       labels: {
-        // formatter: (value) => thousandSeparator(value, 0),
+        // formatter: (value) => thousandSeparator(value),
         formatter: (value) => {
-          const rounded = Math.round(value / 100) * 100; // ✅ 495 → 500
-          return thousandSeparator(rounded, 0);
+          const rounded = Math.round(value / 100) * 100; // âœ… 495 â†’ 500
+          return thousandSeparator(rounded);
         },
       },
     },
@@ -123,7 +123,7 @@ const CompareSingleItem = ({
       y: {
         formatter: (value, { dataPointIndex }) => {
           const label = chartData.labels[dataPointIndex] || '';
-          return `${label} → ${thousandSeparator(value, 0)}`;
+          return `${label} â†’ ${thousandSeparator(value)}`;
         },
       },
     },

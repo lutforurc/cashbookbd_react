@@ -308,7 +308,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       headerClass: "text-right w-24",
       cellClass: "text-right font-semibold text-green-700 dark:text-green-400 w-24",
       render: (row: SalaryRow) =>
-        thousandSeparator(totalSalary(row), 0),
+        thousandSeparator(totalSalary(row)),
     },
 
     // ✅ Loan Ded. input এখন loan_balance edit করবে
@@ -333,7 +333,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       header: "Net Salary",
       headerClass: "text-right w-28",
       cellClass: "text-right font-bold text-green-700 dark:text-green-400",
-      render: (row: SalaryRow) => thousandSeparator(netSalary(row), 0),
+      render: (row: SalaryRow) => thousandSeparator(netSalary(row)),
     },
 
     {
@@ -515,14 +515,14 @@ const SalarySheetGenerate = ({ user }: any) => {
         <div className="flex gap-6">
           <div>
             Total Salary:{" "}
-            <span className="font-semibold">{thousandSeparator(grandTotals.total_salary, 0)}</span>
+            <span className="font-semibold">{thousandSeparator(grandTotals.total_salary)}</span>
           </div>
           <div>
             Total Deduction:{" "}
-            <span className="font-semibold">{thousandSeparator(grandTotals?.loan_deduction, 0)}</span>
+            <span className="font-semibold">{thousandSeparator(grandTotals?.loan_deduction)}</span>
           </div>
           <div className="font-bold text-green-700 dark:text-green-400">
-            Net Total: {thousandSeparator(grandTotals.net_salary, 0)}
+            Net Total: {thousandSeparator(grandTotals.net_salary)}
           </div>
         </div>
       </div>

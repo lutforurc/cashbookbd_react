@@ -205,7 +205,7 @@ const Ledger = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         return (
-          <span>{row.debit > 0 ? thousandSeparator(Number(row.debit), 0) : '-'}</span>
+          <span>{row.debit > 0 ? thousandSeparator(Number(row.debit)) : '-'}</span>
         );
       },
     },
@@ -217,7 +217,7 @@ const Ledger = (user: any) => {
       cellClass: 'text-right',
       render: (row: any) => {
         return (
-          <span>{row.credit > 0 ? thousandSeparator(Number(row.credit), 0) : '-'}</span>
+          <span>{row.credit > 0 ? thousandSeparator(Number(row.credit)) : '-'}</span>
         );
       },
     },
@@ -232,7 +232,7 @@ const Ledger = (user: any) => {
           <span>
             {row.running_balance === '' || row.running_balance === undefined
               ? '-'
-              : thousandSeparator(Number(row.running_balance), 0)}
+              : thousandSeparator(Number(row.running_balance))}
           </span>
         );
       },

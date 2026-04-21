@@ -25,8 +25,8 @@ const InvoiceChangesTable = ({ changes }) => {
           {changes.map((c, i) => (
             <tr key={i}>
               <td className="border px-2 py-1 dark:border-gray-700">{c.field}</td>
-              <td className="border px-2 py-1 text-red-600 dark:border-gray-700">{ thousandSeparator( c.old, 0)}</td>
-              <td className="border px-2 py-1 text-green-600 dark:border-gray-700">{thousandSeparator(c.new, 0)}</td>
+              <td className="border px-2 py-1 text-red-600 dark:border-gray-700">{ thousandSeparator( c.old)}</td>
+              <td className="border px-2 py-1 text-green-600 dark:border-gray-700">{thousandSeparator(c.new)}</td>
             </tr>
           ))}
         </tbody>

@@ -424,7 +424,7 @@ const GeneralBusinessSalesReturn = () => {
               <div className="grid grid-cols-2 md:gap-x-1 mt-3">
                 <p className="text-sm font-bold dark:text-white">Total Tk.</p>
                 <span className="text-sm font-bold dark:text-white">
-                  {thousandSeparator(totalAmount, 0)}
+                  {thousandSeparator(totalAmount)}
                 </span>
               </div>
             </div>
@@ -552,13 +552,13 @@ const GeneralBusinessSalesReturn = () => {
                   {row.product_name}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                  {thousandSeparator(row.qty, 2)} {row.unit}
+                  {thousandSeparator(row.qty)} {row.unit}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                  {thousandSeparator(row.price, 2)}
+                  {thousandSeparator(row.price)}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                  {thousandSeparator(row.price * row.qty, 0)}
+                  {thousandSeparator(row.price * row.qty)}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
                   <button onClick={() => handleDelete(row.id)} className="text-red-500 ml-2 text-center">

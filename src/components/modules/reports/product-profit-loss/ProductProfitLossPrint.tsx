@@ -179,22 +179,22 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                         {formatVoucherDate(row?.vr_date)}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator( Number(row?.sold_qty), 0)}
+                        {thousandSeparator( Number(row?.sold_qty))}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator( Number(row?.unit_purchase_rate), 2)}
+                        {thousandSeparator( Number(row?.unit_purchase_rate))}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator( Number(row?.purchase_total), 0)}
+                        {thousandSeparator( Number(row?.purchase_total))}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator( Number(row?.unit_sale_rate), 2)}
+                        {thousandSeparator( Number(row?.unit_sale_rate))}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator( Number(row?.sale_total), 0)}
+                        {thousandSeparator( Number(row?.sale_total))}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                        {thousandSeparator( Number(row?.profit), 0)}
+                        {thousandSeparator( Number(row?.profit))}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                         {row?.warning || "-"}
@@ -219,16 +219,16 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                     Summary
                   </div>
                   <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
-                    Sold Qty: {thousandSeparator(summary.totalQty, 0)}
+                    Sold Qty: {thousandSeparator(summary.totalQty)}
                   </div>
                   <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
-                    Purchase Total: {thousandSeparator(summary.totalPurchase, 0)}
+                    Purchase Total: {thousandSeparator(summary.totalPurchase)}
                   </div>
                   <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
-                    Sale Total: {thousandSeparator(summary.totalSales, 0)}
+                    Sale Total: {thousandSeparator(summary.totalSales)}
                   </div>
                   <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
-                    { profitLabel == "+" ? "Profit" : "Loss"  } {profitLabel} {thousandSeparator(Math.abs(summary.totalProfit), 0)}
+                    { profitLabel == "+" ? "Profit" : "Loss"  } {profitLabel} {thousandSeparator(Math.abs(summary.totalProfit))}
                   </div>
                   <div style={{ fontSize: fs }} className="font-bold text-right whitespace-nowrap">
                     {summary.warningCount > 0 ? `${summary.warningCount} warning` : "-"}

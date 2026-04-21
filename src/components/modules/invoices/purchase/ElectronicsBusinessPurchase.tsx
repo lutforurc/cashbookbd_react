@@ -296,7 +296,7 @@ const ElectronicsBusinessPurchase = () => {
       warehouse: detail.godown_id ? detail.godown_id.toString() : '',
     }));
 
-    // 2) accountName বের করা (supplier name)
+    // 2) accountName à¦¬à§‡à¦° à¦•à¦°à¦¾ (supplier name)
     let accountName = '-';
     const supplierId = trx.purchase_master?.supplier_id;
 
@@ -741,7 +741,7 @@ const ElectronicsBusinessPurchase = () => {
               />
               <div className="flex items-end mb-2">
                 <p className="text-xs font-bold dark:text-white">
-                  Total Tk. {thousandSeparator(totalAmount, 0)}
+                  Total Tk. {thousandSeparator(totalAmount)}
                 </p>
               </div>
               {hasPermission(permissions, 'purchase.edit') && (
@@ -1001,17 +1001,17 @@ const ElectronicsBusinessPurchase = () => {
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.qty), 2)} {row.unit}
+                    {thousandSeparator(Number(row.qty))} {row.unit}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.price), 2)}
+                    {thousandSeparator(Number(row.price))}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
-                    {thousandSeparator(Number(row.price) * Number(row.qty), 2)}
+                    {thousandSeparator(Number(row.price) * Number(row.qty))}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20 `}

@@ -31,7 +31,7 @@ type TrialBalanceLevel3PrintProps = {
 };
 
 const formatAmount = (amount: number) => {
-  const formatted = thousandSeparator(Math.abs(amount), 2);
+  const formatted = thousandSeparator(Math.abs(amount));
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
@@ -117,22 +117,22 @@ const TrialBalanceLevel3Print = ({
                 </td>
                 <td className="border border-slate-300 px-2 py-0">{row.name}</td>
                 <td className="border border-slate-300 px-2 py-0 text-right">
-                  {thousandSeparator(row.openingDebit, 0)}
+                  {thousandSeparator(row.openingDebit)}
                 </td>
                 <td className="border border-slate-300 px-2 py-0 text-right">
-                  {thousandSeparator(row.openingCredit, 0)}
+                  {thousandSeparator(row.openingCredit)}
                 </td>
                 <td className="border border-slate-300 px-2 py-0 text-right">
-                  {thousandSeparator(row.movementDebit, 0)}
+                  {thousandSeparator(row.movementDebit)}
                 </td>
                 <td className="border border-slate-300 px-2 py-0 text-right">
-                  {thousandSeparator(row.movementCredit, 0)}
+                  {thousandSeparator(row.movementCredit)}
                 </td>
                 <td className="border border-slate-300 px-2 py-0 text-right">
-                  {thousandSeparator(row.closingDebit, 0)}
+                  {thousandSeparator(row.closingDebit)}
                 </td>
                 <td className="border border-slate-300 px-2 py-0 text-right">
-                  {thousandSeparator(row.closingCredit, 0)}
+                  {thousandSeparator(row.closingCredit)}
                 </td>
               </tr>
             ))}
@@ -146,22 +146,22 @@ const TrialBalanceLevel3Print = ({
               </td>
               {/* <td className="border border-slate-300 px-2 py-0"></td> */}
               <td className="border border-slate-300 px-2 py-0 text-right">
-                {thousandSeparator(totals.openingDebit,0)}
+                {thousandSeparator(totals.openingDebit)}
               </td>
               <td className="border border-slate-300 px-2 py-0 text-right">
-                {thousandSeparator(totals.openingCredit,0)}
+                {thousandSeparator(totals.openingCredit)}
               </td>
               <td className="border border-slate-300 px-2 py-0 text-right">
-                {thousandSeparator(totals.movementDebit,0)}
+                {thousandSeparator(totals.movementDebit)}
               </td>
               <td className="border border-slate-300 px-2 py-0 text-right">
-                {thousandSeparator(totals.movementCredit,0)}
+                {thousandSeparator(totals.movementCredit)}
               </td>
               <td className="border border-slate-300 px-2 py-0 text-right">
-                {thousandSeparator(totals.closingDebit,0)}
+                {thousandSeparator(totals.closingDebit)}
               </td>
               <td className="border border-slate-300 px-2 py-0 text-right">
-                {thousandSeparator(totals.closingCredit,0)}
+                {thousandSeparator(totals.closingCredit)}
               </td>
             </tr>
           </tfoot>

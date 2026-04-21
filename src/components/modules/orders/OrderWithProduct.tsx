@@ -161,8 +161,8 @@ const toNumber = (value: Primitive) => {
 const formatBalanceAmount = (value: Primitive, decimal = 0) => {
   const amount = toNumber(value);
   return amount < 0
-    ? `(-) ${thousandSeparator(Math.abs(amount), decimal)}`
-    : thousandSeparator(amount, decimal);
+    ? `(-) ${thousandSeparator(Math.abs(amount))}`
+    : thousandSeparator(amount);
 };
 
 const OrderWithProduct = ({
@@ -517,7 +517,7 @@ const OrderWithProduct = ({
         cellClass: 'text-right w-36',
         render: (row: any) => (
           <span>
-            {row.hasLineDetail ? `${thousandSeparator(row.quantity, 2)} ${row.unitName}` : '-'}
+            {row.hasLineDetail ? `${thousandSeparator(row.quantity)} ${row.unitName}` : '-'}
           </span>
         ),
       },
@@ -526,28 +526,28 @@ const OrderWithProduct = ({
         header: 'RATE',
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
-        render: (row: any) => <span>{row.hasLineDetail ? thousandSeparator(row.rate, 2) : '-'}</span>,
+        render: (row: any) => <span>{row.hasLineDetail ? thousandSeparator(row.rate) : '-'}</span>,
       },
       {
         key: 'total',
         header: 'TOTAL',
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
-        render: (row: any) => <span>{row.hasLineDetail ? thousandSeparator(row.total, 0) : '-'}</span>,
+        render: (row: any) => <span>{row.hasLineDetail ? thousandSeparator(row.total) : '-'}</span>,
       },
       {
         key: 'discount',
         header: 'DISCOUNT',
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
-        render: (row: any) => <span>{thousandSeparator(row.discount, 0)}</span>,
+        render: (row: any) => <span>{thousandSeparator(row.discount)}</span>,
       },
       {
         key: 'payment',
         header: paymentColumnLabel,
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
-        render: (row: any) => <span>{thousandSeparator(Math.abs(toNumber(row.payment)), 0)}</span>,
+        render: (row: any) => <span>{thousandSeparator(Math.abs(toNumber(row.payment)))}</span>,
       },
       {
         key: 'balance',
@@ -577,7 +577,7 @@ const OrderWithProduct = ({
               {
                 label: (
                   <span>
-                    {thousandSeparator(totals.quantity, 2)} {unitName}
+                    {thousandSeparator(totals.quantity)} {unitName}
                   </span>
                 ),
                 className: 'text-right',
@@ -587,15 +587,15 @@ const OrderWithProduct = ({
                 className: 'text-right',
               },
               {
-                label: thousandSeparator(totals.total, 0),
+                label: thousandSeparator(totals.total),
                 className: 'text-right',
               },
               {
-                label: thousandSeparator(totals.discount, 0),
+                label: thousandSeparator(totals.discount),
                 className: 'text-right',
               },
               {
-                label: thousandSeparator(Math.abs(totals.payment), 0),
+                label: thousandSeparator(Math.abs(totals.payment)),
                 className: 'text-right',
               },
               {

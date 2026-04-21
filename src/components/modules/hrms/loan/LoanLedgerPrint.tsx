@@ -170,11 +170,11 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                             </td>
 
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right align-middle">
-                              {thousandSeparator(Number(row?.received_amt ?? 0), 0)}
+                              {thousandSeparator(Number(row?.received_amt ?? 0))}
                             </td>
 
                             <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right align-middle">
-                              {thousandSeparator(Number(row?.payment_amt ?? 0), 0)}
+                              {thousandSeparator(Number(row?.payment_amt ?? 0))}
                             </td>
                           </tr>
                         );
@@ -194,10 +194,10 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                           Subtotal (Page {pIdx + 1})
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                          {thousandSeparator(pageReceived, 0)}
+                          {thousandSeparator(pageReceived)}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                          {thousandSeparator(pagePayment, 0)}
+                          {thousandSeparator(pagePayment)}
                         </td>
                       </tr>
                     )}
@@ -215,13 +215,13 @@ const LoanLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-1 text-right"
                         >
-                          {thousandSeparator(grandBalance, 0)}
+                          {thousandSeparator(grandBalance)}
                         </td> 
                         <td
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-1 text-right"
                         >
-                          {thousandSeparator(grandBalance, 0)}
+                          {thousandSeparator(grandBalance)}
                         </td> 
                       </tr>
                     )} */}

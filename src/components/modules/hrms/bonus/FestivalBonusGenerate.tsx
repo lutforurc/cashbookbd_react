@@ -248,7 +248,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
       header: "Basic Salary",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(row.basic_salary, 0),
+      render: (row: any) => thousandSeparator(row.basic_salary),
     },
     {
       key: "bonus_percent",
@@ -262,7 +262,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
       header: "Bonus Amount",
       headerClass: "text-right",
       cellClass: "text-right font-semibold text-blue-600 dark:text-blue-400",
-      render: (row: any) => thousandSeparator(row.bonus_amount, 0),
+      render: (row: any) => thousandSeparator(row.bonus_amount),
     },
     {
       key: "action",
@@ -335,7 +335,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
               <div className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
                 <div className="text-slate-500 dark:text-slate-400">Projected Bonus</div>
                 <div className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {thousandSeparator(totalBonus, 0)}
+                  {thousandSeparator(totalBonus)}
                 </div>
               </div>
             </div>
@@ -426,11 +426,11 @@ const FestivalBonusGenerate = ({ user }: any) => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Total Basic Salary</div>
-                <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{thousandSeparator(totalBasic, 0)}</div>
+                <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{thousandSeparator(totalBasic)}</div>
               </div>
               <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Total Bonus Amount</div>
-                <div className="mt-2 text-2xl font-bold text-blue-600 dark:text-blue-400">{thousandSeparator(totalBonus, 0)}</div>
+                <div className="mt-2 text-2xl font-bold text-blue-600 dark:text-blue-400">{thousandSeparator(totalBonus)}</div>
               </div>
               <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Employees in Batch</div>
@@ -456,7 +456,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
             Create bonus batch
             <span className="mt-1 block font-bold">{resolvedBonusTitle}</span>
             <span className="mt-1 block text-sm font-normal text-slate-600">
-              Month: {monthText || "-"} | Employees: {totalEmployees} | Amount: {thousandSeparator(totalBonus, 0)}
+              Month: {monthText || "-"} | Employees: {totalEmployees} | Amount: {thousandSeparator(totalBonus)}
             </span>
           </>
         }

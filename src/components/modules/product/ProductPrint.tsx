@@ -32,7 +32,7 @@ type Props = {
   showQtyRate?: boolean; // default false
 };
 
-// ✅ No Subtotal / Grand Total
+// âœ… No Subtotal / Grand Total
 type PrintRow =
   | { __type: 'CAT_HEADER'; category: string }
   | ({ __type: 'ITEM' } & ProductRow);
@@ -51,7 +51,7 @@ const toNum = (v: any) => {
 
 const formatMoney = (v: any) => {
   const n = toNum(v);
-  return n > 0 ? thousandSeparator(n, 0) : '-';
+  return n > 0 ? thousandSeparator(n) : '-';
 };
 
 const ProductPrint = React.forwardRef<HTMLDivElement, Props>(
@@ -74,14 +74,14 @@ const ProductPrint = React.forwardRef<HTMLDivElement, Props>(
     const printableRows: PrintRow[] = useMemo(() => {
       const rowsArr: ProductRow[] = Array.isArray(rows) ? rows : [];
 
-      // ✅ sort: category first, then product name
+      // âœ… sort: category first, then product name
       const sorted = [...rowsArr].sort((a, b) => {
         const c1 = String(a.category || '').localeCompare(String(b.category || ''));
         if (c1 !== 0) return c1;
         return String(a.name || '').localeCompare(String(b.name || ''));
       });
 
-      // ✅ group by category
+      // âœ… group by category
       const map = new Map<string, ProductRow[]>();
       for (const r of sorted) {
         const key = (r.category || 'Uncategorized').trim() || 'Uncategorized';
@@ -134,7 +134,7 @@ const ProductPrint = React.forwardRef<HTMLDivElement, Props>(
               {(startDate || endDate) && (
                 <div className="mt-1 text-xs">
                   <span className="font-semibold">Report Date:</span>{' '}
-                  {startDate || '-'} — {endDate || '-'}
+                  {startDate || '-'} â€” {endDate || '-'}
                 </div>
               )}
             </div>
@@ -261,13 +261,13 @@ const ProductPrint = React.forwardRef<HTMLDivElement, Props>(
                                 style={{ fontSize: fs }}
                                 className="border border-gray-900 px-2 py-1 text-right"
                               >
-                                {toNum(row.qty) > 0 ? thousandSeparator(toNum(row.qty), 0) : '-'}
+                                {toNum(row.qty) > 0 ? thousandSeparator(toNum(row.qty)) : '-'}
                               </td>
                               <td
                                 style={{ fontSize: fs }}
                                 className="border border-gray-900 px-2 py-1 text-right"
                               >
-                                {toNum(row.rate) > 0 ? thousandSeparator(toNum(row.rate), 0) : '-'}
+                                {toNum(row.rate) > 0 ? thousandSeparator(toNum(row.rate)) : '-'}
                               </td>
                             </>
                           )}
@@ -278,7 +278,7 @@ const ProductPrint = React.forwardRef<HTMLDivElement, Props>(
                               className="border border-gray-900 px-2 py-1 text-right"
                             >
                               {toNum(row.openingbalance) > 0
-                                ? thousandSeparator(toNum(row.openingbalance), 0)
+                                ? thousandSeparator(toNum(row.openingbalance))
                                 : '-'}
                             </td>
                           )}

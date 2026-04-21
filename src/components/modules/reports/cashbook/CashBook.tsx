@@ -69,6 +69,11 @@ const CashBook = (user: any) => {
     additionalDetails: string;
   }
 
+  console.log('====================================');
+  console.log("settings", settings?.branch?.decimal_places);
+  console.log('====================================');
+
+
   const runCashBook = () => {
     const startD = dayjs(startDate).format('YYYY-MM-DD');
     const endD = dayjs(endDate).format('YYYY-MM-DD');
@@ -287,7 +292,7 @@ const CashBook = (user: any) => {
       render: (row: any) => (
         <>
           <p className="">
-            {row.credit > 0 ? thousandSeparator(row.credit, 0) : '-'}
+            {row.credit > 0 ? thousandSeparator(row.credit) : '-'}
           </p>
         </>
       ),
@@ -300,7 +305,7 @@ const CashBook = (user: any) => {
       render: (row: any) => (
         <>
           <p className="">
-            {row.debit > 0 ? thousandSeparator(row.debit, 0) : '-'}
+            {row.debit > 0 ? thousandSeparator(row.debit) : '-'}
           </p>
         </>
       ),

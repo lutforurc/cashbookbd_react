@@ -535,7 +535,7 @@ function ConstructionLabourInvoice(): JSX.Element {
               <div className="grid grid-cols-1 md:gap-x-1 -mb-1 ">
                 <p className="text-sm font-bold dark:text-white">Total Tk.</p>
                 <span className="text-sm font-bold dark:text-white">
-                  {thousandSeparator(totalAmountForUI, 0)}
+                  {thousandSeparator(totalAmountForUI)}
                 </span>
               </div>
             </div>
@@ -730,13 +730,13 @@ function ConstructionLabourInvoice(): JSX.Element {
                     {row.product_name}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                    {thousandSeparator(Number(row.qty), 2)} {row.unit}
+                    {thousandSeparator(Number(row.qty))} {row.unit}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                    {thousandSeparator(Number(row.price), 2)}
+                    {thousandSeparator(Number(row.price))}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
-                    {thousandSeparator(Number(row.price) * Number(row.qty), 2)}
+                    {thousandSeparator(Number(row.price) * Number(row.qty))}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center w-20">
                     <button onClick={() => removeProduct(row.id)} className="text-red-500 ml-2">

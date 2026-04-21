@@ -347,7 +347,7 @@ const SalarySheetUpdate = ( user : any) => {
       header: "Gross",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: UpdateRow) => thousandSeparator(calculateGross(row), 0),
+      render: (row: UpdateRow) => thousandSeparator(calculateGross(row)),
     },
     {
       key: "loan_deduction",
@@ -372,14 +372,14 @@ const SalarySheetUpdate = ( user : any) => {
       header: "Net Salary",
       headerClass: "text-right",
       cellClass: "text-right font-semibold",
-      render: (row: UpdateRow) => thousandSeparator(calculateNet(row), 0),
+      render: (row: UpdateRow) => thousandSeparator(calculateNet(row)),
     },
     {
       key: "payment_amount",
       header: "Paid",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: UpdateRow) => thousandSeparator(Number(row.payment_amount || 0), 0),
+      render: (row: UpdateRow) => thousandSeparator(Number(row.payment_amount || 0)),
     },
     {
       key: "action",
@@ -443,23 +443,23 @@ const SalarySheetUpdate = ( user : any) => {
       <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-5">
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Basic</div>
-          <div className="font-semibold">{thousandSeparator(totals.basic, 0)}</div>
+          <div className="font-semibold">{thousandSeparator(totals.basic)}</div>
         </div>
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Allowance</div>
-          <div className="font-semibold">{thousandSeparator(totals.allowance, 0)}</div>
+          <div className="font-semibold">{thousandSeparator(totals.allowance)}</div>
         </div>
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Gross</div>
-          <div className="font-semibold">{thousandSeparator(totals.gross, 0)}</div>
+          <div className="font-semibold">{thousandSeparator(totals.gross)}</div>
         </div>
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Loan</div>
-          <div className="font-semibold">{thousandSeparator(totals.loan, 0)}</div>
+          <div className="font-semibold">{thousandSeparator(totals.loan)}</div>
         </div>
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Net</div>
-          <div className="font-semibold">{thousandSeparator(totals.net, 0)}</div>
+          <div className="font-semibold">{thousandSeparator(totals.net)}</div>
         </div>
       </div>
 

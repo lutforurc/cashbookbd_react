@@ -475,9 +475,9 @@ export default function UnitSalePaymentEntry() {
               <div className="font-medium">
                 {saleSummary?.amounts?.due_amount !== undefined &&
                   saleSummary?.amounts?.due_amount !== null
-                  ? thousandSeparator(Number(saleSummary.amounts.due_amount || 0), 2)
+                  ? thousandSeparator(Number(saleSummary.amounts.due_amount || 0))
                   : form.amount !== ""
-                    ? thousandSeparator(Number(form.amount || 0), 2)
+                    ? thousandSeparator(Number(form.amount || 0))
                     : "-"}
               </div>
             </div>

@@ -164,7 +164,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
                           <span className="block">{row?.product_name || '-'}</span>
                           <span className="block">
-                            Trx. Qty {thousandSeparator(Number(row?.trx_quantity || 0), 0)}
+                            Trx. Qty {thousandSeparator(Number(row?.trx_quantity || 0))}
                           </span>
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
@@ -172,9 +172,9 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                           <span className="block">{row?.order_date || '-'}</span>
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                          <span className="block">{thousandSeparator(Number(row?.order_rate || 0), 2)}</span>
+                          <span className="block">{thousandSeparator(Number(row?.order_rate || 0))}</span>
                           <span className="block">
-                            {thousandSeparator(Number(row?.total_order || 0), 0)}
+                            {thousandSeparator(Number(row?.total_order || 0))}
                           </span>
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
@@ -182,15 +182,15 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                             {row?.reference_order?.order_number || row?.ref_order_number || '-'}
                           </span>
                           <span className="block">
-                            {thousandSeparator(Number(row?.base_order_quantity || 0), 0)}
+                            {thousandSeparator(Number(row?.base_order_quantity || 0))}
                           </span>
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                           <span className="block">
-                            Linked {thousandSeparator(Number(row?.linked_quantity || 0), 0)}
+                            Linked {thousandSeparator(Number(row?.linked_quantity || 0))}
                           </span>
                           <span className="block">
-                            Remaining {thousandSeparator(getLinkedRemainingQuantity(row), 0)}
+                            Remaining {thousandSeparator(getLinkedRemainingQuantity(row))}
                           </span>
                         </td>
                       </tr>
@@ -213,16 +213,16 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
 	                      Page Total
 	                    </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                      Order Qty {thousandSeparator(Number(pageSummary.totalOrder || 0), 0)}
+                      Order Qty {thousandSeparator(Number(pageSummary.totalOrder || 0))}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                      Base Qty {thousandSeparator(Number(pageSummary.baseOrderQuantity || 0), 0)}
+                      Base Qty {thousandSeparator(Number(pageSummary.baseOrderQuantity || 0))}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                      Linked Qty {thousandSeparator(Number(pageSummary.linkedQuantity || 0), 0)}
+                      Linked Qty {thousandSeparator(Number(pageSummary.linkedQuantity || 0))}
                     </td>
 	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-	                      Remaining Qty {thousandSeparator(Number(pageSummary.remainingQuantity || 0), 0)}
+	                      Remaining Qty {thousandSeparator(Number(pageSummary.remainingQuantity || 0))}
 	                    </td>
 	                  </tr>
                     {pageIndex === pages.length - 1 ? (
@@ -238,25 +238,25 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-2 text-right"
                         >
-                          Order Qty {thousandSeparator(Number(grandSummary.totalOrder || 0), 0)}
+                          Order Qty {thousandSeparator(Number(grandSummary.totalOrder || 0))}
                         </td>
                         <td
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-2 text-right"
                         >
-                          Base Qty {thousandSeparator(Number(grandSummary.baseOrderQuantity || 0), 0)}
+                          Base Qty {thousandSeparator(Number(grandSummary.baseOrderQuantity || 0))}
                         </td>
                         <td
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-2 text-right"
                         >
-                          Linked Qty {thousandSeparator(Number(grandSummary.linkedQuantity || 0), 0)}
+                          Linked Qty {thousandSeparator(Number(grandSummary.linkedQuantity || 0))}
                         </td>
                         <td
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-2 text-right"
                         >
-                          Remaining Qty {thousandSeparator(Number(grandSummary.remainingQuantity || 0), 0)}
+                          Remaining Qty {thousandSeparator(Number(grandSummary.remainingQuantity || 0))}
                         </td>
                       </tr>
                     ) : null}

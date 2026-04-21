@@ -73,7 +73,7 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                 <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
                   <div>
                     <span className="font-semibold">Report Date:</span>{' '}
-                    {startDate || '-'} — {endDate || '-'}
+                    {startDate || '-'} â€” {endDate || '-'}
                   </div>
                 </div>
               </div>
@@ -177,13 +177,13 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                           </div>
                         </td>
                         <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 py-1 text-right align-middle`}>
-                          <span>{thousandSeparator(Number(row?.credit), 0)}</span>
+                          <span>{thousandSeparator(Number(row?.credit))}</span>
                         </td>
                         <td
                           style={{ fontSize: fs }}
                           className={`border border-gray-900 px-2 py-1 text-right align-middle`}
                         >
-                          {thousandSeparator(Number(row?.debit), 0)}
+                          {thousandSeparator(Number(row?.debit))}
                         </td>
                       </tr>
                     ))
@@ -200,7 +200,7 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                   </tbody>
                 </table>
 
-                {/* 👇 Force break after each page except the last */}
+                {/* ðŸ‘‡ Force break after each page except the last */}
               </div>
               <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
                 Page {pIdx + 1} of {pages.length}

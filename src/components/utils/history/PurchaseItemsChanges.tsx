@@ -33,10 +33,10 @@ const PurchaseItemsChanges = ({ items }) => {
                 {r.new_quantity}
               </td>
               <td className="border px-2 py-1 text-right text-red-600 dark:border-gray-700">
-                { thousandSeparator(r.old_price, 0)}
+                { thousandSeparator(r.old_price)}
               </td>
               <td className="border px-2 py-1 text-right text-green-600 dark:border-gray-700">
-                { thousandSeparator(r.new_price, 0)}
+                { thousandSeparator(r.new_price)}
               </td>
             </tr>
           ))}

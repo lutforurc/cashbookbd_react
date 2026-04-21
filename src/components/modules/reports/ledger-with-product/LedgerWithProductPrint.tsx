@@ -5,7 +5,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 
 const formatAmount = (value: any, precision = 0) => {
   const amount = Number(value || 0);
-  const formatted = thousandSeparator(Math.abs(amount), precision);
+  const formatted = thousandSeparator(Math.abs(amount));
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
@@ -217,13 +217,13 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       {row.truck_no || ''}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row), 2) : '-'}
+                      {getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row)) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {getSalesQty(row) ? thousandSeparator(getSalesQty(row), 2) : '-'}
+                      {getSalesQty(row) ? thousandSeparator(getSalesQty(row)) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
+                      {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0)) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {Number(row.total || 0) ? formatAmount(row.total) : '-'}
@@ -254,8 +254,8 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="mt-3 flex justify-end gap-6 text-xs font-bold">
                 <div>Opening: {Number(summary.opening_balance || 0) ? formatAmount(summary.opening_balance) : '-'}</div>
                 <div>Received: {formatAmount(summary.total_received)}</div>
-                <div>Pur. Qty: {thousandSeparator(Number(summary.purchase_qty), 2)}</div>
-                <div>Sal. Qty: {thousandSeparator(Number(summary.sales_qty), 2)}</div>
+                <div>Pur. Qty: {thousandSeparator(Number(summary.purchase_qty))}</div>
+                <div>Sal. Qty: {thousandSeparator(Number(summary.sales_qty))}</div>
                 <div>Payment: {formatAmount(summary.total_payment)}</div>
                 <div>Closing: {formatAmount(summary.closing_balance)}</div>
               </div>

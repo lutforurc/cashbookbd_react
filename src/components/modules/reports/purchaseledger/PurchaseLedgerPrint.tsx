@@ -256,7 +256,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       className="leading-normal"
                                       style={{ fontSize: getProductFs(label, fs) }}
                                     >
-                                      { thousandSeparator(detail?.quantity ?? 0, 2) }
+                                      { thousandSeparator(detail?.quantity ?? 0) }
                                     </div>
                                   );
                                 })
@@ -279,9 +279,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       style={{ fontSize: getProductFs(label, fs) }}
                                     >
                                       {thousandSeparator(
-                                        (detail?.purchase_price || 0) ,
-                                        2
-                                      )}
+                                        (detail?.purchase_price || 0) )}
                                     </div>
                                   );
                                 })
@@ -305,9 +303,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       style={{ fontSize: getProductFs(label, fs) }}
                                     >
                                       {thousandSeparator(
-                                        (detail?.purchase_price || 0) * (detail?.quantity || 0),
-                                        0
-                                      )}
+                                        (detail?.purchase_price || 0) * (detail?.quantity || 0))}
                                     </div>
                                   );
                                 })
@@ -319,7 +315,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               className="border border-gray-900 px-2 py-1 text-right"
                             >
                               {discountValue
-                                ? thousandSeparator(discountValue, 0)
+                                ? thousandSeparator(discountValue)
                                 : "-"}
                             </td>
 
@@ -328,7 +324,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               className="border border-gray-900 px-2 py-1 text-right"
                             >
                               {paymentValue
-                                ? thousandSeparator(paymentValue, 0)
+                                ? thousandSeparator(paymentValue)
                                 : "-"}
                             </td>
                           </tr>
@@ -351,10 +347,10 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                 {rowsArr?.length > 0 && pIdx === pages.length - 1 && (
                   <div className="mt-3 border-t border-gray-900 pt-2">
                     <div className="flex justify-end gap-6 font-bold text-xs">
-                      <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
-                      <div>Total: {thousandSeparator(totalPayment, 0)}</div>
-                      { discountTotal > 0 && <div>Discount: {thousandSeparator(discountTotal, 0)}</div>}
-                      <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
+                      <div>Quantity: {thousandSeparator(totalQuantity)}</div>
+                      <div>Total: {thousandSeparator(totalPayment)}</div>
+                      { discountTotal > 0 && <div>Discount: {thousandSeparator(discountTotal)}</div>}
+                      <div>Payment: {thousandSeparator(grandTotal)}</div>
                     </div>
                   </div>
                 )}

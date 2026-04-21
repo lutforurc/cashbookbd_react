@@ -91,7 +91,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-2 py-1 text-right align-middle"
                       >
-                        { Number(row?.debit) > 0 ? thousandSeparator(Number(row?.debit), 0) : "-"}
+                        { Number(row?.debit) > 0 ? thousandSeparator(Number(row?.debit)) : "-"}
                       </td>
 
                       {/* Credit */}
@@ -99,7 +99,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-2 py-1 text-right align-middle"
                       >
-                        { Number(row.credit) > 0 ? thousandSeparator( Number(row.credit), 0) : "-"}
+                        { Number(row.credit) > 0 ? thousandSeparator( Number(row.credit)) : "-"}
                       </td>
                     </tr>
                   ))

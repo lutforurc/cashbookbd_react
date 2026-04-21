@@ -164,21 +164,21 @@ const LoanBalance = (user: any) => {
       header: 'Total Senction',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <span>{thousandSeparator(row.total_senction, 0)}</span>,
+      render: (row: any) => <span>{thousandSeparator(row.total_senction)}</span>,
     },
     {
       key: 'total_payment',
       header: 'Total Payment',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <span>{thousandSeparator(row.total_payment, 0)}</span>,
+      render: (row: any) => <span>{thousandSeparator(row.total_payment)}</span>,
     },
     {
       key: 'balance',
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => <span>{thousandSeparator(row.balance, 0)}</span>,
+      render: (row: any) => <span>{thousandSeparator(row.balance)}</span>,
     },
   ];
 
@@ -270,7 +270,7 @@ const LoanBalance = (user: any) => {
           <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="rounded-xs border border-stroke px-3 py-1.5 text-sm font-semibold text-black dark:border-strokedark dark:text-white">
-                Total Balance: {thousandSeparator(grandTotalBalance, 0)}
+                Total Balance: {thousandSeparator(grandTotalBalance)}
               </div>
             </div>
             <div>

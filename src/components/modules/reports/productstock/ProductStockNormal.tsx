@@ -25,7 +25,7 @@ import StockBookPrintNormal from './StockBookPrintNormal';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 // ======================
-// ✅ Category-wise helper
+// âœ… Category-wise helper
 // ======================
 const isGroupRow = (row: any) => row?.__type === 'GROUP';
 const isGrandTotalRow = (row: any) => row?.__type === 'GRAND_TOTAL';
@@ -163,7 +163,7 @@ const ProductStockNormal = ({ user }: any) => {
     removeAfterPrint: true,
   });
 
-  // ✅ stock data -> convert to category-wise rows
+  // âœ… stock data -> convert to category-wise rows
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
       const grouped = buildCategoryWiseRows(stock.data);
@@ -291,13 +291,13 @@ const ProductStockNormal = ({ user }: any) => {
         if (isGrandTotalRow(row)) {
           return (
             <p className="font-bold">
-              {thousandSeparator(Math.floor(row.opening || 0), 0)}
+              {thousandSeparator(Math.floor(row.opening || 0))}
             </p>
           );
         }
         return (
           <p>
-            {thousandSeparator(Math.floor(row.opening), 0)}
+            {thousandSeparator(Math.floor(row.opening))}
             {Math.floor(row.opening) ? (
               <span className="text-sm "> ({row.unit})</span>
             ) : (
@@ -317,13 +317,13 @@ const ProductStockNormal = ({ user }: any) => {
         if (isGrandTotalRow(row)) {
           return (
             <span className="text-sm font-bold">
-              {thousandSeparator(Math.floor(row.stock_in || 0), 0)}
+              {thousandSeparator(Math.floor(row.stock_in || 0))}
             </span>
           );
         }
         return row.stock_in ? (
           <span className="text-sm ">
-            {thousandSeparator(Math.floor(row.stock_in), 0)} ({row.unit})
+            {thousandSeparator(Math.floor(row.stock_in))} ({row.unit})
           </span>
         ) : (
           '-'
@@ -340,13 +340,13 @@ const ProductStockNormal = ({ user }: any) => {
         if (isGrandTotalRow(row)) {
           return (
             <span className="text-sm font-bold">
-              {thousandSeparator(Math.floor(row.stock_out || 0), 0)}
+              {thousandSeparator(Math.floor(row.stock_out || 0))}
             </span>
           );
         }
         return row.stock_out ? (
           <span className="text-sm ">
-            {thousandSeparator(Math.floor(row.stock_out), 0)} ({row.unit})
+            {thousandSeparator(Math.floor(row.stock_out))} ({row.unit})
           </span>
         ) : (
           '-'
@@ -363,13 +363,13 @@ const ProductStockNormal = ({ user }: any) => {
         if (isGrandTotalRow(row)) {
           return (
             <span className="text-sm font-bold">
-              {thousandSeparator(Math.floor(row.balance || 0), 0)}
+              {thousandSeparator(Math.floor(row.balance || 0))}
             </span>
           );
         }
         return Math.floor(row.balance) ? (
           <span className="text-sm ">
-            {thousandSeparator(Math.floor(row.balance), 0)} ({row.unit})
+            {thousandSeparator(Math.floor(row.balance))} ({row.unit})
           </span>
         ) : (
           '-'
@@ -587,7 +587,7 @@ const ProductStockNormal = ({ user }: any) => {
         <div className="hidden">
           <StockBookPrintNormal
             ref={printRef}
-            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // ✅ group row print এ যাবে না
+            rows={(tableData || []).filter((r: any) => !isGroupRow(r))} // âœ… group row print à¦ à¦¯à¦¾à¦¬à§‡ à¦¨à¦¾
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : undefined}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
             title="Product Stock"

@@ -105,7 +105,7 @@ const ProfitLoss = (user: any) => {
 
   const printRef = useRef<HTMLDivElement>(null);
 
-  // ✅ অতিরিক্ত: ItemDetailsPrint এর জন্য আলাদা ref + loading + data
+  // âœ… à¦…à¦¤à¦¿à¦°à¦¿à¦•à§à¦¤: ItemDetailsPrint à¦à¦° à¦œà¦¨à§à¦¯ à¦†à¦²à¦¾à¦¦à¦¾ ref + loading + data
   const itemPrintRef = useRef<HTMLDivElement>(null);
   const [itemPrintLoading, setItemPrintLoading] = useState(false);
   const closingStockData = profitLossState?.closingStockData;
@@ -156,8 +156,8 @@ const ProfitLoss = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select করুন");
-    if (!startDate || !endDate) return alert("Start/End Date দিন");
+    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
+    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
@@ -181,7 +181,7 @@ const ProfitLoss = (user: any) => {
     setFilterOpen(false);
   };
 
-  // nested data normalize (আপনার sample অনুযায়ী)
+  // nested data normalize (à¦†à¦ªà¦¨à¦¾à¦° sample à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€)
   const apiData = useMemo(() => {
     const raw = profitLossState?.data;
 
@@ -215,13 +215,13 @@ const ProfitLoss = (user: any) => {
     // Purchase: coal3_id=9 coal4_id=35 => debit
     const purchaseDebit = sumByIds(trading, 9, 35).debit;
 
-    // ✅ Purchase Return: coal3_id=9 coal4_id=16 => credit (এটাই বাদ যাবে)
+    // âœ… Purchase Return: coal3_id=9 coal4_id=16 => credit (à¦à¦Ÿà¦¾à¦‡ à¦¬à¦¾à¦¦ à¦¯à¦¾à¦¬à§‡)
     const purchaseReturnCredit = sumByIds(trading, 9, 16).credit;
 
     // Purchase Discount: coal3_id=8 coal4_id=40 => credit
     const purchaseDiscountCredit = sumByIds(trading, 8, 40).credit;
 
-    // ✅ Net Purchase = Purchase - Purchase Return - Purchase Discount
+    // âœ… Net Purchase = Purchase - Purchase Return - Purchase Discount
     const netPurchase = Math.max(
       0,
       purchaseDebit - purchaseReturnCredit - purchaseDiscountCredit
@@ -233,10 +233,10 @@ const ProfitLoss = (user: any) => {
     // Sales Discount: coal3_id=7 coal4_id=23 => debit
     const salesDiscountDebit = sumByIds(trading, 7, 23).debit;
 
-    // ✅ Sales Return: coal3_id=7 coal4_id=19 => debit (এটাই বাদ যাবে)
+    // âœ… Sales Return: coal3_id=7 coal4_id=19 => debit (à¦à¦Ÿà¦¾à¦‡ à¦¬à¦¾à¦¦ à¦¯à¦¾à¦¬à§‡)
     const salesReturnDebit = sumByIds(trading, 7, 19).debit;
 
-    // ✅ Net Sales = Sales - Sales Discount - Sales Return
+    // âœ… Net Sales = Sales - Sales Discount - Sales Return
     const netSalesCredit = Math.max(
       0,
       salesCredit - salesDiscountDebit - salesReturnDebit
@@ -310,17 +310,17 @@ const ProfitLoss = (user: any) => {
     removeAfterPrint: true,
   });
 
-  // ✅ অতিরিক্ত: ItemDetailsPrint এর জন্য print handler
+  // âœ… à¦…à¦¤à¦¿à¦°à¦¿à¦•à§à¦¤: ItemDetailsPrint à¦à¦° à¦œà¦¨à§à¦¯ print handler
   const handleItemPrint = useReactToPrint({
     content: () => itemPrintRef.current,
     documentTitle: "Stock Details with rate",
     removeAfterPrint: true,
   });
 
-  // ✅ অতিরিক্ত: নতুন বাটন ক্লিক -> fetchClosingStockItems -> তারপর print
+  // âœ… à¦…à¦¤à¦¿à¦°à¦¿à¦•à§à¦¤: à¦¨à¦¤à§à¦¨ à¦¬à¦¾à¦Ÿà¦¨ à¦•à§à¦²à¦¿à¦• -> fetchClosingStockItems -> à¦¤à¦¾à¦°à¦ªà¦° print
   const handleItemPrintButtonClick = async () => {
-    if (!branchId) return alert("Branch select করুন");
-    if (!startDate || !endDate) return alert("Start/End Date দিন");
+    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
+    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
@@ -343,7 +343,7 @@ const ProfitLoss = (user: any) => {
       return alert(action?.payload || "Closing stock load failed");
     }
 
-    // store update/render complete হওয়ার জন্য
+    // store update/render complete à¦¹à¦“à§Ÿà¦¾à¦° à¦œà¦¨à§à¦¯
     setTimeout(() => handleItemPrint(), 0);
   };
 
@@ -791,26 +791,26 @@ const ExpenseDetailsModal = ({
                       >
                         <td className="px-3 py-3">{row.name}</td>
                         <td className="px-3 py-3 text-right">
-                          {row.movementDebit ? thousandSeparator(row.movementDebit, 2) : "-"}
+                          {row.movementDebit ? thousandSeparator(row.movementDebit) : "-"}
                         </td>
                         <td className="px-3 py-3 text-right">
-                          {row.movementCredit ? thousandSeparator(row.movementCredit, 2) : "-"}
+                          {row.movementCredit ? thousandSeparator(row.movementCredit) : "-"}
                         </td>
                         <td className="px-3 py-3 text-right font-semibold">
-                          {thousandSeparator(row.netExpense, 2)}
+                          {thousandSeparator(row.netExpense)}
                         </td>
                       </tr>
                     ))}
                     <tr className="border-t border-stroke font-semibold text-slate-900 dark:border-strokedark dark:text-white">
                       <td className="px-3 py-3">Total</td>
                       <td className="px-3 py-3 text-right">
-                        {thousandSeparator(totalMovementDebit, 2)}
+                        {thousandSeparator(totalMovementDebit)}
                       </td>
                       <td className="px-3 py-3 text-right">
-                        {thousandSeparator(totalMovementCredit, 2)}
+                        {thousandSeparator(totalMovementCredit)}
                       </td>
                       <td className="px-3 py-3 text-right">
-                        {thousandSeparator(totalNetExpense, 2)}
+                        {thousandSeparator(totalNetExpense)}
                       </td>
                     </tr>
                   </>
@@ -846,7 +846,7 @@ const ModalStat = ({
         {label}
       </p>
       <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-        {thousandSeparator(value, 2)}
+        {thousandSeparator(value)}
       </p>
     </div>
   );

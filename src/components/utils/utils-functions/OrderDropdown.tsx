@@ -260,11 +260,11 @@ const OrderDropdown: React.FC<DropdownProps> = ({
                                         <div className="text-gray-600 dark:text-white text-sm">Last Date: {option.label_6}</div>
                                     )} */}
                                     {option.label_7 && (
-                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Order Qty: { thousandSeparator( Number(option.label_7), 0) }</div>
+                                        <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>Order Qty: { thousandSeparator( Number(option.label_7)) }</div>
                                     )}
                                     {getRemainingQty(option) !== null && (
                                         <div className="text-sm" style={{ color: 'inherit', opacity: 0.92 }}>
-                                            Remaining Qty: { thousandSeparator( Number( getRemainingQty(option)),0 ) }
+                                            Remaining Qty: { thousandSeparator( Number( getRemainingQty(option))) }
                                         </div>
                                     )}
                                     {option.label_9 && (

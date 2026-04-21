@@ -29,7 +29,7 @@ interface EarlyPaymentModalProps {
 
 const formatAmount = (value: number) => {
   if (value === 0) return '0';
-  return thousandSeparator(value, 0);
+  return thousandSeparator(value);
 };
 
 const formatDisplayDate = (value: string) => {

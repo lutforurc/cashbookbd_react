@@ -229,9 +229,7 @@ const ConstructionDashboard = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.debit > 0
                       ? thousandSeparator(
-                        dashboard?.data?.todayReceived?.debit,
-                        0,
-                      )
+                        dashboard?.data?.todayReceived?.debit)
                       : 0}
                   </span>
                 </div>
@@ -241,9 +239,7 @@ const ConstructionDashboard = () => {
                     {' '}
                     {dashboard?.data?.todayReceived?.credit > 0
                       ? thousandSeparator(
-                        dashboard?.data?.todayReceived?.credit,
-                        0,
-                      )
+                        dashboard?.data?.todayReceived?.credit)
                       : 0}
                   </span>
                 </div>
@@ -257,9 +253,7 @@ const ConstructionDashboard = () => {
                         (Number(dashboard?.data?.totalTransaction?.debit) ||
                           0) -
                         (Number(dashboard?.data?.totalTransaction?.credit) ||
-                          0),
-                        0,
-                      )}
+                          0))}
                   </span>
                 </div>
               </div>
@@ -305,7 +299,7 @@ const ConstructionDashboard = () => {
                               </div>
                               <div className="ml-2">
                                 <span className={`font-bold ${fontClass}`}>
-                                  {thousandSeparator((Number(item.qty)), 0)}
+                                  {thousandSeparator((Number(item.qty)))}
                                 </span>
                               </div>
                             </li>
@@ -336,7 +330,7 @@ const ConstructionDashboard = () => {
                   {!dashboard.isLoading && dashboard?.data?.transactionText}
                 </span>
                 <span>
-                  {totalDebit ? `Tk. ${thousandSeparator(totalDebit, 0)}` : '-'}
+                  {totalDebit ? `Tk. ${thousandSeparator(totalDebit)}` : '-'}
                 </span>
               </div>
               <div className="max-h-96 overflow-y-auto">
@@ -371,7 +365,7 @@ const ConstructionDashboard = () => {
                           <span className="font-semibold flex-1">{branchName}</span>
                           <span className="font-semibold whitespace-nowrap">
                             <span className="mr-2"></span>
-                            <span>{thousandSeparator(branchTotal, 0)}</span>
+                            <span>{thousandSeparator(branchTotal)}</span>
                           </span>
                           <span className="w-5 text-right text-sky-600">
                             {isHeadOfficeBranch ? (
@@ -410,7 +404,7 @@ const ConstructionDashboard = () => {
                                   </div>
                                 </div>
                                 <div className="text-xs min-[462px]:text-sm w-26 min-[462px]:w-32 text-right shrink-0">
-                                  {thousandSeparator(item.debit, 0)}
+                                  {thousandSeparator(item.debit)}
                                 </div>
                                 <div className="text-xs min-[462px]:text-sm w-8 min-[462px]:w-10 ml-3 mr-2 text-right">
                                   {!isProcessed ? (

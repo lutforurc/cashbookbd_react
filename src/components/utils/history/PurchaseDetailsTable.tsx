@@ -23,10 +23,10 @@ const PurchaseDetailsTable = ({ details }) => {
               {d?.product_name ?? d?.product_id ?? ''}
             </td>
             <td className="border px-2 py-1 text-right dark:border-gray-700">
-              { thousandSeparator( d?.quantity, 0)}
+              { thousandSeparator( d?.quantity)}
             </td>
             <td className="border px-2 py-1 text-right dark:border-gray-700">
-              { thousandSeparator( d?.purchase_price, 0)}
+              { thousandSeparator( d?.purchase_price)}
             </td>
           </tr>
         ))}

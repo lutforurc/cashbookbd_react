@@ -257,7 +257,7 @@ const PurchaseLedger = (user: any) => {
               (detail: any, index: number) => (
                 <div key={index}>
                   <span>
-                    {(thousandSeparator(detail?.quantity, 2))}{' '}
+                    {(thousandSeparator(detail?.quantity))}{' '}
                     {detail?.product?.unit?.name}
                   </span>
                 </div>
@@ -277,7 +277,7 @@ const PurchaseLedger = (user: any) => {
         <div>
           {row?.purchase_master?.details?.map((detail: any, index: number) => (
             <div key={index}>
-              <span>{thousandSeparator(detail?.purchase_price, 2)}</span>
+              <span>{thousandSeparator(detail?.purchase_price)}</span>
             </div>
           ))}
         </div>
@@ -296,9 +296,7 @@ const PurchaseLedger = (user: any) => {
             <div key={index}>
               <span>
                 {thousandSeparator(
-                  detail?.purchase_price * detail?.quantity,
-                  0,
-                )}
+                  detail?.purchase_price * detail?.quantity)}
               </span>
             </div>
           ))}
@@ -321,9 +319,9 @@ const PurchaseLedger = (user: any) => {
           (detail: any) => detail?.coa4_id === 40,
         )?.credit;
 
-        // value format করা এবং default
+        // value format Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦ÂÃ Â¦Â¬Ã Â¦â€š default
         const displayValue = creditValue
-          ? thousandSeparator(creditValue, 0)
+          ? thousandSeparator(creditValue)
           : '-';
 
         return <div className="text-right">{displayValue}</div>;
@@ -345,9 +343,9 @@ const PurchaseLedger = (user: any) => {
           (detail: any) => detail?.coa4_id === 17,
         )?.credit;
 
-        // value format করা এবং default
+        // value format Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦ÂÃ Â¦Â¬Ã Â¦â€š default
         const displayValue = creditValue
-          ? thousandSeparator(creditValue, 0)
+          ? thousandSeparator(creditValue)
           : '-';
 
         return <div className="text-right">{displayValue}</div>;
@@ -364,7 +362,7 @@ const PurchaseLedger = (user: any) => {
         return (
           <ImagePopup
             title={row?.remarks || ''}
-            branchPad={row?.branch_id?.toString().padStart(4, '0') || ''} // 👈 here
+            branchPad={row?.branch_id?.toString().padStart(4, '0') || ''} // Ã°Å¸â€˜Ë† here
             voucher_image={row?.voucher_image || ''}
           />
         );
@@ -748,11 +746,11 @@ const PurchaseLedger = (user: any) => {
         {tableData.length > 0 && (
           <div className="mt-2 border-t font-bold">
             <div className="flex justify-end space-x-8 p-2">
-              <div>Quantity: {thousandSeparator(totalQuantity, 0)}</div>
-              <div>Total: {thousandSeparator(totalPayment, 0)}</div>
-              <div>Discount: {thousandSeparator(discountTotal, 0)}</div>
-              <div>Payment: {thousandSeparator(grandTotal, 0)}</div>
-              <div>Balance: {thousandSeparator((totalPayment - grandTotal - discountTotal), 0)}</div>
+              <div>Quantity: {thousandSeparator(totalQuantity)}</div>
+              <div>Total: {thousandSeparator(totalPayment)}</div>
+              <div>Discount: {thousandSeparator(discountTotal)}</div>
+              <div>Payment: {thousandSeparator(grandTotal)}</div>
+              <div>Balance: {thousandSeparator((totalPayment - grandTotal - discountTotal))}</div>
             </div>
           </div>
         )}

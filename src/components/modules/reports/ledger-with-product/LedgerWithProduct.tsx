@@ -22,7 +22,7 @@ import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
 const formatAmount = (value: any, precision = 0) => {
   const amount = Number(value || 0);
-  const formatted = thousandSeparator(Math.abs(amount), precision);
+  const formatted = thousandSeparator(Math.abs(amount));
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
@@ -351,7 +351,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'w-[10.5%] text-right',
       cellClass: 'w-[10.5%] text-right',
       render: (row: any) => (
-        <div>{getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row), 2) : '-'}</div>
+        <div>{getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row)) : '-'}</div>
       ),
     },
     {
@@ -360,7 +360,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'w-[10.5%] text-right',
       cellClass: 'w-[10.5%] text-right',
       render: (row: any) => (
-        <div>{getSalesQty(row) ? thousandSeparator(getSalesQty(row), 2) : '-'}</div>
+        <div>{getSalesQty(row) ? thousandSeparator(getSalesQty(row)) : '-'}</div>
       ),
     },
     {
@@ -370,7 +370,7 @@ const LedgerWithProduct = (user: any) => {
       cellClass: 'w-[7%] text-right',
       render: (row: any) => (
         <div>
-          {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0), 2) : '-'}
+          {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0)) : '-'}
         </div>
       ),
     },
@@ -435,7 +435,7 @@ const LedgerWithProduct = (user: any) => {
           <div className="text-right">
             <span className="text-slate-500 dark:text-slate-400">Pur. Qty:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {thousandSeparator(Number(summary?.purchase_qty || 0), 2)}
+              {thousandSeparator(Number(summary?.purchase_qty || 0))}
             </span>
           </div>
         ),
@@ -446,7 +446,7 @@ const LedgerWithProduct = (user: any) => {
           <div className="text-right">
             <span className="text-slate-500 dark:text-slate-400">Sal. Qty:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {thousandSeparator(Number(summary?.sales_qty || 0), 2)}
+              {thousandSeparator(Number(summary?.sales_qty || 0))}
             </span>
           </div>
         ),

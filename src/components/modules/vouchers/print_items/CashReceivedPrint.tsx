@@ -149,7 +149,7 @@ const CashReceivedPrint = React.forwardRef<HTMLDivElement, Props>(
 
                             <td className="border border-black px-2 text-right align-middle">
                                 <div className="mr-2">
-                                    {thousandSeparator(amount, 0)}
+                                    {thousandSeparator(amount)}
                                 </div>
                             </td>
                         </tr>
@@ -160,7 +160,7 @@ const CashReceivedPrint = React.forwardRef<HTMLDivElement, Props>(
                             </td>
                             <td className="border border-black px-2 py-1 text-right font-semibold">
                                 <div className="mr-2">
-                                    {thousandSeparator(amount, 0)}
+                                    {thousandSeparator(amount)}
                                 </div>
                             </td>
                         </tr>

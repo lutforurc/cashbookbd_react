@@ -126,7 +126,7 @@ const normalizeRows = (items: any[]): TrialBalanceRow[] => {
 };
 
 const formatAmount = (amount: number) => {
-  const formatted = thousandSeparator(Math.abs(amount), 2);
+  const formatted = thousandSeparator(Math.abs(amount));
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
@@ -247,8 +247,8 @@ const TrialBalanceLevel4 = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select করুন");
-    if (!startDate || !endDate) return alert("Start/End Date দিন");
+    if (!branchId) return alert("Branch select Ã Â¦â€¢Ã Â¦Â°Ã Â§ÂÃ Â¦Â¨");
+    if (!startDate || !endDate) return alert("Start/End Date Ã Â¦Â¦Ã Â¦Â¿Ã Â¦Â¨");
 
     setButtonLoading(true);
 
@@ -299,42 +299,42 @@ const TrialBalanceLevel4 = (user: any) => {
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.openingDebit,0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.openingDebit)}</div>,
     },
     {
       key: "openingCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.openingCredit,0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.openingCredit)}</div>,
     },
     {
       key: "movementDebit",
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.movementDebit,0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.movementDebit)}</div>,
     },
     {
       key: "movementCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.movementCredit,0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.movementCredit)}</div>,
     },
     {
       key: "closingDebit",
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.closingDebit,0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.closingDebit)}</div>,
     },
     {
       key: "closingCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.closingCredit,0)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.closingCredit)}</div>,
     },
   ];
 
@@ -359,12 +359,12 @@ const TrialBalanceLevel4 = (user: any) => {
   const footerRows = [
     [
       { label: "Grand Total", colSpan: 2, className: "text-right" },
-      { label: thousandSeparator(totals.openingDebit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.openingCredit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.movementDebit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.movementCredit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.closingDebit, 0), className: "text-right" },
-      { label: thousandSeparator(totals.closingCredit, 0), className: "text-right" },
+      { label: thousandSeparator(totals.openingDebit), className: "text-right" },
+      { label: thousandSeparator(totals.openingCredit), className: "text-right" },
+      { label: thousandSeparator(totals.movementDebit), className: "text-right" },
+      { label: thousandSeparator(totals.movementCredit), className: "text-right" },
+      { label: thousandSeparator(totals.closingDebit), className: "text-right" },
+      { label: thousandSeparator(totals.closingCredit), className: "text-right" },
     ],
   ];
 
@@ -594,7 +594,7 @@ const TrialBalanceLevel4 = (user: any) => {
                       Trial Balance Rows
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {branchName} • {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
+                      {branchName} Ã¢â‚¬Â¢ {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
                       {endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
                     </p>
                   </div>
@@ -660,7 +660,7 @@ const SummaryCard = ({
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
         {title}
       </p>
-      <p className="mt-3 text-2xl font-semibold">{thousandSeparator(value, 0)}</p>
+      <p className="mt-3 text-2xl font-semibold">{thousandSeparator(value)}</p>
     </div>
   );
 };

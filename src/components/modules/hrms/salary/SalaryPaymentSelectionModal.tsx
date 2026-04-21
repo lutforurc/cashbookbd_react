@@ -202,7 +202,7 @@ const SalaryPaymentSelectionModal = ({
             {" | "}
             Amount:{" "}
             <span className="font-semibold">
-              {thousandSeparator(selectedSummary.amount, 0)}
+              {thousandSeparator(selectedSummary.amount)}
             </span>
           </div>
         </div>
@@ -264,16 +264,16 @@ const SalaryPaymentSelectionModal = ({
                       {history.working_days || "-"}
                     </td>
                     <td className="px-3 py-2 text-right align-top">
-                      {thousandSeparator(Number(row.net_salary || 0), 0)}
+                      {thousandSeparator(Number(row.net_salary || 0))}
                     </td>
                     <td className="px-3 py-2 text-right align-top">
-                      {thousandSeparator(Number(row.payment_amount || 0), 0)}
+                      {thousandSeparator(Number(row.payment_amount || 0))}
                     </td>
                     <td className="px-3 py-2 text-right align-top">
                       <span
                         className={dueAmount > 0 ? "font-semibold text-amber-700" : "text-green-600"}
                       >
-                        {thousandSeparator(dueAmount, 0)}
+                        {thousandSeparator(dueAmount)}
                       </span>
                     </td>
                     <td className="px-3 py-2 align-top text-right">

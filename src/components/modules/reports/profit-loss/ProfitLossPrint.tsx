@@ -3,8 +3,8 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 
-const fmtZero = (n: number) => thousandSeparator(n || 0, 0);
-const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n, 0) : "");
+const fmtZero = (n: number) => thousandSeparator(n || 0);
+const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n) : "");
 
 type Props = {
   report: any;
@@ -22,7 +22,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
   ) => {
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 11;
 
-    // ✅ fs অনুযায়ী padding-y (9-11 => 0.5px, 12-15 => 0.7px, 16+ => 1)
+    // âœ… fs à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€ padding-y (9-11 => 0.5px, 12-15 => 0.7px, 16+ => 1)
     const cellPy = fs <= 11 ? "py-[0.5px]" : fs <= 15 ? "py-[.9px]" : "py-1";
 
 
@@ -42,7 +42,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
               <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
                 <div>
                   <span className="font-semibold">Report Date:</span>{" "}
-                  {startDate} — {endDate}
+                  {startDate} â€” {endDate}
                 </div>
               </div>
             </div>
