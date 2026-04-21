@@ -1239,11 +1239,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Admin */}
               {hasMenuPermission(permissions, 'admin') && (
                 <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/branch/branch-list' ||
-                    pathname === '/user/user-list' ||
-                    pathname === '/admin/dayclose' ||
-                    pathname === '/order/order-list' ||
+	                  activeCondition={
+	                    pathname === '/branch/branch-list' ||
+	                    pathname === '/user/user-list' ||
+	                    pathname === routes.company_user_list ||
+	                    pathname === '/admin/dayclose' ||
+	                    pathname === '/order/order-list' ||
                     pathname === routes.sms_send ||
                     pathname === routes.sms_template_list ||
                     pathname === routes.sms_template_create ||
@@ -1258,10 +1259,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
-                          pathname === '/user/user-list' ||
-                          pathname === '/admin/dayclose' ||
-                          pathname === '/order/order-list' ||
+	                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
+	                          pathname === '/user/user-list' ||
+	                          pathname === routes.company_user_list ||
+	                          pathname === '/admin/dayclose' ||
+	                          pathname === '/order/order-list' ||
                           pathname === '/admin/voucher-approval' ||
                           pathname === '/admin/remove-approval' ||
                           pathname === '/admin/voucher/type-change' ||
@@ -1307,19 +1309,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
-                            <li>
-                              <NavLink
-                                to="/user/user-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+	                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
+	                            <li>
+	                              <NavLink
+	                                to={routes.user_list}
+	                                className={({ isActive }) =>
+	                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+	                                  (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                User List
-                              </NavLink>
-                            </li>
-                          )}
+	                                User List
+	                              </NavLink>
+	                            </li>
+	                          )}
+	                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
+	                            <li>
+	                              <NavLink
+	                                to={routes.company_user_list}
+	                                className={({ isActive }) =>
+	                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+	                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+	                                }
+	                              >
+	                                Company User
+	                              </NavLink>
+	                            </li>
+	                          )}
                           {hasPermission(permissions, 'dayclose.create') && (
                             <li>
                               <NavLink

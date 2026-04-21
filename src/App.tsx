@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import routes from './components/services/appRoutes';
 import BranchList from './components/modules/branch/BranchList';
 import UserList from './components/modules/user/UserList';
+import CompanyUsers from './components/modules/user/CompanyUsers';
 import AddUser from './components/modules/user/AddUser';
 import Product from './components/modules/product/Product';
 import DateWiseData from './components/modules/reports/datewisedata/DateWiseData';
@@ -284,10 +285,11 @@ function App() {
                 <Route path={routes.branch_add} element={<AddBranch />} />
                 <Route path={routes.branch_edit} element={<AddBranch />} />
               </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view']} loading={permissionsLoading} />}>
-              <Route path={routes.user_list} element={<UserList />} />
-              <Route path={routes.user_edit} element={<EditUser user={me} />} />
-            </Route>
+	            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view']} loading={permissionsLoading} />}>
+	              <Route path={routes.user_list} element={<UserList />} />
+	              <Route path={routes.company_user_list} element={<CompanyUsers />} />
+	              <Route path={routes.user_edit} element={<EditUser user={me} />} />
+	            </Route>
             <Route
               element={
                 <RequirePermission
