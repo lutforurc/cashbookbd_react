@@ -240,9 +240,9 @@ const PurchaseLedger = (user: any) => {
         return (
           <div className="text-left">
             <span className='block'>{ formatTransportationNumber(row?.purchase_master?.vehicle_no)}</span>
-             <span className='text-green-500 dark:text-yellow-300 '>{ row?.purchase_master?.purchase_order?.order_number}</span>
+             <span className='text-green-500 dark:text-yellow-300 block'>{ row?.purchase_master?.purchase_order?.order_number}</span>
              { row?.purchase_master?.purchase_order?.delivery_location && (
-               <span className='text-green-500 dark:text-yellow-300 bold'>{ row?.purchase_master?.purchase_order?.delivery_location}</span>
+               <span className='text-green-500 dark:text-yellow-300 block'>{ row?.purchase_master?.purchase_order?.delivery_location}</span>
              )}
           </div>
         );

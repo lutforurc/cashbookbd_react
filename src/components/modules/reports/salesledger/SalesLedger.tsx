@@ -260,7 +260,7 @@ const SalesLedger = (user: any) => {
       render: (row: any) => 
       <div>
         <span className='block'>{ formatTransportationNumber(row?.sales_master?.vehicle_no)}</span>
-         <span className='text-green-500 dark:text-yellow-300 '>{ row?.sales_master?.sales_order?.order_number}</span>
+         <span className='text-green-500 dark:text-yellow-300 block'>{ row?.sales_master?.sales_order?.order_number}</span>
          { row?.sales_master?.sales_order?.delivery_location && (
            <span className='text-green-500 dark:text-yellow-300 block '>{ row?.sales_master?.sales_order?.delivery_location}</span>
          )}
