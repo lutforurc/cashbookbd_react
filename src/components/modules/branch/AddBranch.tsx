@@ -44,6 +44,7 @@ interface branchItem {
   phone: string;
   notes: string;
   invoice_label: string;
+  decimal_places: number;
   status: string;
   warranty_controll: boolean;
   have_warehouse: boolean;
@@ -130,6 +131,7 @@ const AddBranch = () => {
     phone: '',
     notes: '',
     invoice_label: '',
+    decimal_places: 0,
     status: '',
     warranty_controll: false,
     have_warehouse: false,
@@ -159,7 +161,7 @@ const AddBranch = () => {
   const dispatch = useDispatch();
 
   const { id } = useParams();
- 
+
 
 
 
@@ -317,7 +319,6 @@ const AddBranch = () => {
           setPadHeaderPreview('');
           return;
         }
-
         toast.info(res?.error?.message || res?.message || 'Failed to save branch');
       })
     );
@@ -348,13 +349,12 @@ const AddBranch = () => {
                     key={step}
                     type="button"
                     onClick={() => setCurrentStep(index)}
-                    className={`rounded border px-4 py-3 text-left transition ${
-                      isActive
+                    className={`rounded border px-4 py-3 text-left transition ${isActive
                         ? 'border-blue-600 text-black-0 dark:text-white'
                         : isCompleted
                           ? 'border-green-500  text-green-700'
                           : 'border-gray-300  text-gray-600 dark:bg-transparent dark:text-gray-300'
-                    }`}
+                      }`}
                   >
                     <span className="block text-xs font-semibold uppercase tracking-wide">
                       Step {index + 1}
@@ -579,6 +579,15 @@ const AddBranch = () => {
                       className={''}
                       onChange={handleOnChange}
                     />
+                    <InputElement
+                      id="decimal_places"
+                      value={formData.decimal_places || 0}
+                      name="decimal_places"
+                      placeholder={'Enter Decimal Places'}
+                      label={'Decimal Places'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
                   </div>
                 </>
               )}
@@ -705,7 +714,7 @@ const AddBranch = () => {
                       />
                     </div>
                   )}
-                  
+
                 </>
               )}
             </div>
