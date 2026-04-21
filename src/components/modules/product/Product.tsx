@@ -546,7 +546,7 @@ const Product = (user: any) => {
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type="text"
-                className="font-medium text-sm h-9 w-12"
+                className="font-medium text-sm h-9 !w-12"
               />
             </div>
             <PrintButton onClick={handlePrint} label="Print" className="ml-2 pt-[0.45rem] pb-[0.45rem] h-9" />

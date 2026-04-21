@@ -309,7 +309,7 @@ const GeneralBusinessSalesReturn = () => {
 
   return (
     <>
-      <HelmetTitle title="General Sales Return" />
+      <HelmetTitle title="Sales Return" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {buttonLoading ? <Loader /> : null}
         <div className="self-start md:self-auto">

@@ -449,7 +449,7 @@ const ProductStockNormal = ({ user }: any) => {
                         value={perPage.toString()}
                         onChange={handlePerPageChange}
                         type="text"
-                        className="w-full text-sm h-10"
+                        className="text-sm h-10 !w-20"
                       />
                     </div>
                   )}
@@ -567,7 +567,7 @@ const ProductStockNormal = ({ user }: any) => {
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type="text"
-              className="font-medium text-sm h-10 w-20"
+              className="font-medium text-sm h-10 !w-20"
             />
 
             <PrintButton
