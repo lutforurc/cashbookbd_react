@@ -64,7 +64,7 @@ function formatLongDateUsdToBd(dateString: string) {
     const [day, month, year] = dateString.split("/");
     if (!day || !month || !year) return dateString;
 
-    // Only last two digits of ye
+    // Only last two digits of year
 
     return `${day}/${month}/${year}`;
   } catch {

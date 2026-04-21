@@ -28,6 +28,7 @@ import {
   buildVoucherAutoEditState,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -256,7 +257,7 @@ const SalesLedger = (user: any) => {
       headerClass: 'text-left',
       cellClass: 'text-left align-top',
       width: '120px',
-      render: (row: any) => <div>{row?.sales_master?.vehicle_no}</div>,
+      render: (row: any) => <div>{ formatTransportationNumber(row?.sales_master?.vehicle_no)}</div>,
     },
     {
       key: 'quantity',

@@ -29,6 +29,8 @@ import {
   buildVoucherAutoEditState,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
+import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -237,7 +239,7 @@ const PurchaseLedger = (user: any) => {
       render: (row: any) => {
         return (
           <div className="text-left">
-            <div>{row?.purchase_master?.vehicle_no}</div>
+            <div>{ formatTransportationNumber(row?.purchase_master?.vehicle_no)}</div>
 
           </div>
         );

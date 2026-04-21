@@ -198,15 +198,15 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                       </td>
 
                       <td className="border border-black px-1 text-center" style={{ fontSize: fs }}>
-                        {qty}
+                        {thousandSeparator(qty, 2)}
                       </td>
 
                       <td className="border border-black px-1 text-right" style={{ fontSize: fs }}>
-                        {thousandSeparator(rate, 0)}
+                        {thousandSeparator(rate, 2)}
                       </td>
 
                       <td className="border border-black px-1 text-right" style={{ fontSize: fs }}>
-                        {thousandSeparator(total, 0)}
+                        {thousandSeparator(total, 2)}
                       </td>
                     </tr>
                   );
@@ -237,7 +237,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                           Total Tk.
                         </td>
                         <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
-                          {thousandSeparator(totalAmount, 0)}
+                          {thousandSeparator(totalAmount, 2)}
                         </td>
                       </tr>
 
@@ -247,7 +247,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                             Discount Tk.
                           </td>
                           <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                            (-) {thousandSeparator(discountAmount, 0)}
+                            (-) {thousandSeparator(discountAmount, 2)}
                           </td>
                         </tr>
                       )}
@@ -257,7 +257,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                           Net Tk.
                         </td>
                         <td className="border-y border-black px-1 py-1 text-right w-32 font-semibold" style={{ fontSize: fs }}>
-                          {thousandSeparator(netAmount, 0)}
+                          {thousandSeparator(netAmount, 2)}
                         </td>
                       </tr>
 
@@ -266,7 +266,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                           Paid Tk.
                         </td>
                         <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                          {thousandSeparator(paidAmount, 0)}
+                          {thousandSeparator(paidAmount, 2)}
                         </td>
                       </tr>
 
@@ -275,7 +275,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                           Due Tk.
                         </td>
                         <td className="border-black px-1 py-1 text-right w-32 font-bold" style={{ fontSize: fs }}>
-                          {thousandSeparator(dueAmount, 0)}
+                          {thousandSeparator(dueAmount, 2)}
                         </td>
                       </tr>
                     </tbody>
