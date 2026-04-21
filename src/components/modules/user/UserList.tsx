@@ -18,9 +18,13 @@ const UserList = () => {
   const userList = useSelector((state) => state.users);
   const settings = useSelector((state: any) => state.settings);
   const subscription = useSelector((state: any) => state.subscription);
+  const auth = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userPermissions = settings?.data?.permissions || [];
+  const currentCompanyId = Number(auth?.me?.company_id || settings?.data?.user?.company_id || 0);
+  const currentUserId = Number(auth?.me?.id || settings?.data?.user?.id || 0);
+  const isSaasOwnerList = currentCompanyId <= 1 || currentUserId === 1;
   const canCreateUser =
     hasPermission(userPermissions, 'all.user.create') ||
     hasPermission(userPermissions, 'user.create') ||
@@ -38,34 +42,28 @@ const UserList = () => {
   const maxUsers = subscription?.current?.max_users;
   const currentUsers = Number(userList?.data?.total || 0);
   const userLimitReached = typeof maxUsers === 'number' && maxUsers > 0 && currentUsers >= maxUsers;
-
-
-  console.log('====================================');
-  console.log("settings", settings?.data?.user?.id === 1, settings?.data?.permissions);
-  console.log('====================================');
-
-
   const handleSelectChange = (page: any) => {
-    setPerPage(page.target.value);
+    const nextPerPage = Number(page.target.value);
+    setPerPage(nextPerPage);
     setPage(1);
     setCurrentPage(1);
-    setTotalPages(Math.ceil(userList.data.total / page.target.value));
+    setTotalPages(Math.ceil((userList?.data?.total || 0) / nextPerPage));
     setTableData(userList.data.data);
   };
 
   const handleSearchButton = () => {
     setCurrentPage(1);
     setPage(1);
-    dispatch(getUser({ page: 1, perPage, search })); // Use 'search' instead
+    dispatch(getUser({ page: 1, perPage, search, ownersOnly: isSaasOwnerList }));
   };
 
   useEffect(() => {
-    dispatch(getUser({ page, perPage, search }));
+    dispatch(getUser({ page, perPage, search, ownersOnly: isSaasOwnerList }));
     if (userList?.data?.total) {
       setTotalPages(Math.ceil(userList?.data?.total / perPage));
       setTableData(userList.data.data);
     }
-  }, [page, perPage, userList?.data?.total]);
+  }, [page, perPage, userList?.data?.total, isSaasOwnerList]);
 
   useEffect(() => {
     setTableData(userList.data.data);
@@ -205,13 +203,22 @@ const UserList = () => {
       key: 'name',
       header: 'User Name',
     },
+    ...(isSaasOwnerList
+      ? [
+          {
+            key: 'company',
+            header: 'Company',
+          },
+        ]
+      : []),
     {
       key: 'branch',
       header: 'Working Branch',
     },
     {
       key: 'email',
-      header: 'Email',
+      header: 'Email/Phone',
+      render: (row: any) => row?.email || row?.phone || '-',
     },
     {
       key: 'role',
@@ -243,7 +250,7 @@ const UserList = () => {
               <FiEdit2 className="cursor-pointer w-5 h-5" />
             </button>
 
-            {settings?.data?.user?.id === 1 && (
+            {isSaasOwnerList && (
               <button
                 type="button"
                 onClick={() => handleGenerateTemporaryPassword(row.user_id)}
@@ -262,7 +269,7 @@ const UserList = () => {
 
   return (
     <div>
-      <HelmetTitle title={'User List'} />
+      <HelmetTitle title={isSaasOwnerList ? 'Company Owner List' : 'User List'} />
       <div className="flex justify-between mb-1">
         <div className="flex gap-2">
           <SelectOption onChange={handleSelectChange} />
@@ -281,7 +288,7 @@ const UserList = () => {
             />
           </div>
         </div>
-        {canCreateUser && (
+        {!isSaasOwnerList && canCreateUser && (
           <ButtonLoading
             onClick={handleAddUser}
             buttonLoading={false}
@@ -294,7 +301,12 @@ const UserList = () => {
 
       <div className="relative overflow-x-auto overflow-y-hidden">
         {userList.isLoading == true ? <Loader /> : ''}
-        <Table columns={columns} data={userList?.data?.data} className="" />
+        <Table
+          columns={columns}
+          data={tableData}
+          className=""
+          noDataMessage={isSaasOwnerList ? 'No company owner found' : 'No user found'}
+        />
 
         {totalPages > 1 ? (
           <Pagination

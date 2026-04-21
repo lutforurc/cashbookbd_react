@@ -61,13 +61,16 @@ interface userListParam {
   page: number;
   perPage: number;
   search: string;
+  ownersOnly?: boolean;
 }
 
 export const getUser =
-  ({ page, perPage, search = '' }: userListParam) =>
+  ({ page, perPage, search = '', ownersOnly = false }: userListParam) =>
   (dispatch: any) => {
     dispatch({ type: USER_LIST_PENDING });
-    httpService.get(API_USER_LIST_URL + `?page=${page}&per_page=${perPage}&search=${search}`)
+    httpService.get(
+      API_USER_LIST_URL + `?page=${page}&per_page=${perPage}&search=${search}&owners_only=${ownersOnly ? 1 : 0}`,
+    )
       .then((res) => {
         let _data = res.data;
         if (_data.success) {
