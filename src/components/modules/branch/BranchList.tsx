@@ -11,6 +11,7 @@ import Table from '../../utils/others/Table';
 import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../../utils/fields/ActionButton';
 import { FaYoutube } from 'react-icons/fa';
+import { FiPlus } from 'react-icons/fi';
 
 const BranchList = () => {
   const branchList = useSelector((state) => state.branchList);
@@ -154,7 +155,7 @@ const BranchList = () => {
           onClick={handleSearchButton}
           buttonLoading={buttonLoading}
           label="Add Branch"
-          icon=""
+          icon={<FiPlus size={15} />}
         />
       </div>
       <div className="relative no-scrollbar">
