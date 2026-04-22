@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
-import { FiFilter, FiX } from "react-icons/fi";
+import { FiFilter, FiSearch, FiX } from "react-icons/fi";
 import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -343,7 +343,7 @@ const FestivalBonus = ({ user }: any) => {
                   onChange={(e) => setFontSize(Number(e.target.value) || 11)}
                 />
               </div>
-              <ButtonLoading onClick={handleSearch} label="Search" className="h-10 px-6 bg-meta-4 hover:bg-graydark" />
+              <ButtonLoading onClick={handleSearch} label="Search" icon={<FiSearch size={15} />} className="h-10 px-6 bg-meta-4 hover:bg-graydark" />
               <PrintButton
                 onClick={handleHeaderPrint}
                 label="Print"

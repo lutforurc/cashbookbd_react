@@ -18,6 +18,7 @@ import EmployeePrint from './EmployeePrint';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { toast } from 'react-toastify';
 import MultiSelectDropdown from '../../../utils/utils-functions/MultiSelectDropdown';
+import { FiSearch } from 'react-icons/fi';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
@@ -424,6 +425,7 @@ const Employees = ({ user }: any) => {
               buttonLoading={buttonLoading}
               label="Search"
               className="whitespace-nowrap h-9.5"
+              icon={<FiSearch size={15} />}
             />
           </div>
         </div>

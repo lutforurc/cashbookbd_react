@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -121,12 +121,14 @@ const CoaL4 = () => {
                         search={search}
                         setSearchValue={setSearchValue}
                         className="text-nowrap"
+                       
                     />
                     <ButtonLoading
                         onClick={handleSearchButton}
                         buttonLoading={buttonLoading}
                         label="Search"
                         className="whitespace-nowrap"
+                        icon={<FiSearch size={15} />}
                     />
                 </div>
                 <Link to={routes.coal4_add} className="text-nowrap">

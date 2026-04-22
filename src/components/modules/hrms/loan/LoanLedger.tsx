@@ -15,6 +15,7 @@ import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropd
 import { employeeLoanLedger } from './employeeLoanSlice'; 
 import LoanLedgerPrint from './LoanLedgerPrint';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { FiSearch } from 'react-icons/fi';
 
 const LoanLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -289,7 +290,7 @@ const LoanLedger = (user: any) => {
               onClick={handleActionButtonClick}
               buttonLoading={buttonLoading}
               label="Run"
-              icon=""
+              icon={<FiSearch size={15} />}
               className="mt-6 md:mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
             />
             <PrintButton

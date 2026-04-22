@@ -13,6 +13,7 @@ import ActionButtons from '../../../utils/fields/ActionButton';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import { deleteHrmDesignation, fetchHrmDesignations } from './hrmDesignationSlice';
+import { FiSearch } from 'react-icons/fi';
 
 const HrmDesignations = () => {
   const dispatch = useDispatch<any>();
@@ -151,6 +152,7 @@ const HrmDesignations = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
+             icon={<FiSearch size={15} />}
           />
         </div>
 

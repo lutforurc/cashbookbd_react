@@ -13,6 +13,7 @@ import ActionButtons from '../../../utils/fields/ActionButton';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import { deleteDesignationLevel, fetchDesignationLevels } from './designationLevelSlice';
+import { FiSearch } from 'react-icons/fi';
 
 const DesignationLevels = () => {
   const dispatch = useDispatch<any>();
@@ -159,6 +160,7 @@ const DesignationLevels = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
+             icon={<FiSearch size={15} />}
           />
         </div>
 

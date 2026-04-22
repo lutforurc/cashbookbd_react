@@ -11,6 +11,7 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import SearchInput from '../../../utils/fields/SearchInput';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { FiSearch } from 'react-icons/fi';
 
 type BalanceRow = {
   employee_name: string;
@@ -258,6 +259,7 @@ const LoanBalance = (user: any) => {
               buttonLoading={buttonLoading}
               label="Search"
               className="whitespace-nowrap h-8.5 w-25"
+               icon={<FiSearch size={15} />}
             />
           </div>
         </div>

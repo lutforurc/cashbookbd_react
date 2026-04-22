@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiPlusSquare, FiRefreshCcw, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiPlusSquare, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -345,7 +345,7 @@ const CustomerSupplier = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
-            icon={<FiCheckSquare className="inline mr-1" />}
+             icon={<FiSearch size={15} />}
           />
         </div>
 

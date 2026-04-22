@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -118,6 +118,7 @@ const CoaL2 = () => {
                         buttonLoading={buttonLoading}
                         label="Search"
                         className="whitespace-nowrap"
+                         icon={<FiSearch size={15} />}
                     />
                 </div>
                 <Link to="/category/create" className="text-nowrap hidden">

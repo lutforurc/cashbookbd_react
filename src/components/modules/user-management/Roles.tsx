@@ -12,7 +12,7 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { formatRoleNameForCashBook } from '../../utils/utils-functions/formatRoleName';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { toast } from 'react-toastify';
-import { FiPlus } from 'react-icons/fi';
+import { FiCheckSquare, FiPlus } from 'react-icons/fi';
 import { getSettings } from '../settings/settingsSlice';
 
 interface Permission {
@@ -195,7 +195,7 @@ const Roles = () => {
 
       <div className="flex justify-end mb-1 gap-2">
         {!isReadonlyRole && (
-          <ButtonLoading className="p-2 w-30" icon="" onClick={handleUpdatePermissions} buttonLoading={updating} label="Update" />
+          <ButtonLoading className="p-2 w-30" icon={<FiCheckSquare />} onClick={handleUpdatePermissions} buttonLoading={updating} label="Update" />
         )}
         {!isCompanyBoundRoleView && (
           <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className="mr-2" />} onClick={() => {}} buttonLoading={addingRole} label="Add Role" />

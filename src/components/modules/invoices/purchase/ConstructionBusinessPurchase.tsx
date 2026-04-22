@@ -811,32 +811,6 @@ const ConstructionBusinessPurchase = () => {
                   {thousandSeparator(Math.floor(totalAmount))}
                 </span>
               </div>
-              {/* {hasPermission(permissions, 'purchase.edit') && (
-                                <div className='relative col-span-2 '>
-                                    <label className='text-black dark:text-white' htmlFor="">Search Invoice</label>
-                                    <div className="w-full">
-                                        <InputOnly
-                                            id="search"
-                                            value={search}
-                                            name="search"
-                                            placeholder={'Search Invoice'}
-                                            label={''}
-                                            className={'py-1.1 w-full'}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            onKeyDown={(e) => handleInputKeyDown(e, 'btnSearch')} // Pass the next field's ID 
-                                        />
-                                    </div>
-                                    <ButtonLoading
-                                        id='btnSearch'
-                                        name='btnSearch'
-                                        onClick={searchInvoice}
-                                        buttonLoading={buttonLoading}
-                                        label=""
-                                        className="whitespace-nowrap !bg-transparent text-center mr-0 py-2 absolute right-0 top-6 background-red-500 !pr-2 !pl-2"
-                                        icon={<FiSearch className="text-white text-lg ml-2  mr-2" />}
-                                    />
-                                </div>
-                            )} */}
             </div>
           </div>
         </div>

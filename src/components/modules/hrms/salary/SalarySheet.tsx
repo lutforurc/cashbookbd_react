@@ -18,6 +18,7 @@ import SalarySheetPrint from "./SalarySheetPrint";
 import SalaryPaymentSelectionModal from "./SalaryPaymentSelectionModal";
 import { salarySheetPrint } from "./salarySlice";
 import routes from "../../../services/appRoutes";
+import { FiSearch } from "react-icons/fi";
 
 const SalarySheet = ({ user }: any) => {
   const employees = useSelector((state: any) => state.employees);
@@ -328,7 +329,7 @@ const SalarySheet = ({ user }: any) => {
               onClick={handleSearchButton}
               buttonLoading={buttonLoading}
               label="Search"
-              icon=""
+              icon={<FiSearch size={15} />}
               className="whitespace-nowrap"
             />
           </div>
