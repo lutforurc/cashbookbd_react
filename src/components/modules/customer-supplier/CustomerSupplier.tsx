@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiEdit2, FiPlus, FiRefreshCcw, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiPlusSquare, FiRefreshCcw, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -263,15 +263,16 @@ const CustomerSupplier = () => {
         return (
         <div className="flex justify-center items-center gap-2">
           <ButtonLoading
-            icon=""
+            // icon=""
             className="py-1 px-2"
             label="Save"
             type="button"
             disabled={!dirty}
             onClick={() => handleSaveRow(row)}
+            icon = { <FiCheckSquare size={15} /> }
           />
           <ButtonLoading
-            icon={<FiRefreshCcw />}
+            icon={<FiX />}
             className="py-1 px-2"
             label="Cancel"
             type="button"
@@ -344,6 +345,7 @@ const CustomerSupplier = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
+            icon={<FiCheckSquare className="inline mr-1" />}
           />
         </div>
 
