@@ -7,7 +7,7 @@ import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
-import { ClientType, TrueFalse } from '../../utils/fields/DataConstant';
+import { ClientType, relationType, TrueFalse } from '../../utils/fields/DataConstant';
 import DdlDynamicMultiline from '../../utils/utils-functions/DdlDynamicMultiline';
 import { getDdlArea } from '../area/areaSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -168,18 +168,36 @@ const AddCustomerSupplier = () => {
                 <div className="text-red-500 text-sm">{formik.errors.name}</div>
               )}
             </div>
-            <InputElement
-              id="father"
-              name="father"
-              placeholder="Enter father's Name"
-              label="Father's Name"
-              value={formik.values.father}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-            {formik.touched.father && formik.errors.father && (
-              <div className="text-red-500 text-sm">{formik.errors.father}</div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+              <div className="md:col-span-1">
+                <DropdownCommon
+                  id="relation_id"
+                  name="relation_id"
+                  label="Relation"
+                  selectOption="Access Customer Login"
+                  onChange={formik.handleChange}
+                  defaultValue={formik.values.customerLogin.toString()}
+                  className="h-[2.1rem] bg-transparent"
+                  data={relationType}
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <InputElement
+                  id="father"
+                  name="father"
+                  placeholder="Enter father's Name"
+                  label="Father's Name"
+                  value={formik.values.father}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.father && formik.errors.father && (
+                  <div className="text-red-500 text-sm">{formik.errors.father}</div>
+                )}
+              </div>
+            </div>
+
           </div>
           <div className="grid grid-cols-1 mb-2">
             <div className="text-left flex flex-col">

@@ -131,7 +131,14 @@ export const ClientType = [
 ];
 
 
+
 export const TrueFalse = [
   { id: 0, name: 'No' }, 
   { id: 1, name: 'Yes' },
+];
+
+export const relationType = [
+  { id: 'father', name: 'Father' },
+  { id: 'husband', name: 'Husband' },
+  { id: 'other', name: 'Other' },
 ];
