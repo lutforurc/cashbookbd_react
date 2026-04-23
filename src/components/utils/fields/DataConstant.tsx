@@ -142,3 +142,13 @@ export const relationType = [
   { id: 'husband', name: 'Husband' },
   { id: 'other', name: 'Other' },
 ];
+export const nomineeRelationType = [
+  { id: 'father', name: 'Father' },
+  { id: 'mother', name: 'Mother' },
+  { id: 'husband', name: 'Husband' },
+  { id: 'brother', name: 'Brother' },
+  { id: 'sister', name: 'Sister' },
+  { id: 'grandmother', name: 'Grand Mother' },
+  { id: 'grandfather', name: 'Grand Father' },
+  { id: 'other', name: 'Other' },
+];

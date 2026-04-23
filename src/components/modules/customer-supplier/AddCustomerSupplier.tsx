@@ -7,7 +7,7 @@ import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
-import { ClientType, relationType, TrueFalse } from '../../utils/fields/DataConstant';
+import { ClientType, nomineeRelationType, relationType, TrueFalse } from '../../utils/fields/DataConstant';
 import DdlDynamicMultiline from '../../utils/utils-functions/DdlDynamicMultiline';
 import { getDdlArea } from '../area/areaSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -85,6 +85,7 @@ const AddCustomerSupplier = () => {
       Yup.object().shape({
         name: Yup.string().required('Nominee name required'),
         relation: Yup.string(),
+        relation_name: Yup.string(),
         date_of_birth: Yup.string(),
         mobile: Yup.string(),
         present_address: Yup.string(),
@@ -287,7 +288,7 @@ const AddCustomerSupplier = () => {
               </div>
             )}
           </div>
-        
+
           {settings?.data?.branch?.need_contact_person === '1' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
               <div className="text-left flex flex-col">
@@ -348,7 +349,10 @@ const AddCustomerSupplier = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+            <div
+              className={`grid grid-cols-1 ${settings?.data?.branch?.have_customer_sl === 1 ? 'md:grid-cols-2' : 'md:grid-cols-1'
+                } gap-2`}
+            >
               <InputElement
                 id="national_id"
                 name="national_id"
@@ -357,14 +361,17 @@ const AddCustomerSupplier = () => {
                 label="National ID"
                 onChange={formik.handleChange}
               />
-              <InputElement
-                id="idfr_code"
-                name="idfr_code"
-                value={formik.values.idfr_code}
-                placeholder="Enter Customer Number"
-                label="Customer Number"
-                onChange={formik.handleChange}
-              />
+
+              {settings?.data?.branch?.have_customer_sl === 1 && (
+                <InputElement
+                  id="idfr_code"
+                  name="idfr_code"
+                  value={formik.values.idfr_code}
+                  placeholder="Enter Customer Number"
+                  label="Customer Number"
+                  onChange={formik.handleChange}
+                />
+              )}
             </div>
             <DropdownCommon
               id="customerLogin"
@@ -439,11 +446,20 @@ const AddCustomerSupplier = () => {
                             value={n.name}
                             onChange={formik.handleChange}
                           />
-                          <InputElement
+                          <DropdownCommon
+                            id={`nominees.${index}.relation`}
                             name={`nominees.${index}.relation`}
                             label="Relation"
-                            placeholder="Enter Relation"
-                            value={n.relation}
+                            onChange={formik.handleChange}
+                            value={n.relation || ''}
+                            className="h-[2.1rem] bg-transparent"
+                            data={nomineeRelationType}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.relation_name`}
+                            label="Relation's Name"
+                            placeholder="Enter Relation's Name"
+                            value={n.relation_name}
                             onChange={formik.handleChange}
                           />
                           <InputDatePicker
@@ -458,13 +474,6 @@ const AddCustomerSupplier = () => {
                             setSelectedDate={(date) =>
                               formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
                             }
-                          />
-                          <InputElement
-                            name={`nominees.${index}.father_name`}
-                            label="Father Name"
-                            placeholder="Enter Father Name"
-                            value={n.father_name}
-                            onChange={formik.handleChange}
                           />
                           <InputElement
                             name={`nominees.${index}.mother_name`}
@@ -572,9 +581,9 @@ const AddCustomerSupplier = () => {
                       onClick={() =>
                         push({
                           name: '',
-                          father_name: '',
-                          mother_name: '',
                           relation: '',
+                          relation_name: '',
+                          mother_name: '',
                           date_of_birth: '',
                           mobile: '',
                           present_address: '',
