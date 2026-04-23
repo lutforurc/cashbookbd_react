@@ -67,6 +67,9 @@ interface branchItem {
   show_instalment_list: boolean;
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
+  need_contact_person: boolean;
+  need_relation_info: boolean;
+  need_mother_name: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -99,6 +102,8 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
 
   return payload;
 };
+
+const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
 
 const AddBranch = () => {
   const steps = ['Basic Info', 'Print Setup', 'Feature Controls'];
@@ -155,6 +160,9 @@ const AddBranch = () => {
     show_instalment_list: false,
     show_spelling_of_money: false,
     need_demo_tutorial: false,
+    need_contact_person: false,
+    need_relation_info: false,
+    need_mother_name: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -202,25 +210,29 @@ const AddBranch = () => {
         paper_size: b.paper_size != null ? String(b.paper_size) : '',
 
         // 🔑 CHECKBOX FIX
-        is_opening: b.is_opening == 1 || b.is_opening === '1',
-        have_is_guaranter: b.have_is_guaranter == 1 || b.have_is_guaranter === '1',
-        have_is_nominee: b.have_is_nominee == 1 || b.have_is_nominee === '1',
-        report_zero_bal: b.report_zero_bal == 1 || b.report_zero_bal === '1',
-        manufactur_control: b.manufactur_control == 1 || b.manufactur_control === '1',
-        warranty_controll: b.warranty_controll == 1 || b.warranty_controll === '1',
-        have_warehouse: b.have_warehouse == 1 || b.have_warehouse === '1',
-        share_product_with_other_branch: b.share_product_with_other_branch == 1 || b.share_product_with_other_branch === '1',
-        share_customer_with_other_branch: b.share_customer_with_other_branch == 1 || b.share_customer_with_other_branch === '1',
-        have_customer_sl: b.have_customer_sl == 1 || b.have_customer_sl === '1',
-        stock_report_type: b.stock_report_type == 1 || b.stock_report_type === '1',
-        use_bangla: b.use_bangla == 1 || b.use_bangla === '1',
-        show_instalment_list: b.show_instalment_list == 1 || b.show_instalment_list === '1',
-        show_spelling_of_money: b.show_spelling_of_money == 1 || b.show_spelling_of_money === '1',
-        sms_service: b.sms_service == 1 || b.sms_service === '1',
-        received_sms: b.received_sms == 1 || b.received_sms === '1',
-        purchase_sms: b.purchase_sms == 1 || b.purchase_sms === '1',
-        sales_sms: b.sales_sms == 1 || b.sales_sms === '1',
-        payment_sms: b.payment_sms == 1 || b.payment_sms === '1',
+        is_opening: toBooleanFlag(b.is_opening),
+        have_is_guaranter: toBooleanFlag(b.have_is_guaranter),
+        have_is_nominee: toBooleanFlag(b.have_is_nominee),
+        report_zero_bal: toBooleanFlag(b.report_zero_bal),
+        manufactur_control: toBooleanFlag(b.manufactur_control),
+        warranty_controll: toBooleanFlag(b.warranty_controll),
+        have_warehouse: toBooleanFlag(b.have_warehouse),
+        share_product_with_other_branch: toBooleanFlag(b.share_product_with_other_branch),
+        share_customer_with_other_branch: toBooleanFlag(b.share_customer_with_other_branch),
+        have_customer_sl: toBooleanFlag(b.have_customer_sl),
+        stock_report_type: toBooleanFlag(b.stock_report_type),
+        use_bangla: toBooleanFlag(b.use_bangla),
+        show_instalment_list: toBooleanFlag(b.show_instalment_list),
+        show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
+        need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
+        need_contact_person: toBooleanFlag(b.need_contact_person),
+        need_relation_info: toBooleanFlag(b.need_relation_info),
+        need_mother_name: toBooleanFlag(b.need_mother_name),
+        sms_service: toBooleanFlag(b.sms_service),
+        received_sms: toBooleanFlag(b.received_sms),
+        purchase_sms: toBooleanFlag(b.purchase_sms),
+        sales_sms: toBooleanFlag(b.sales_sms),
+        payment_sms: toBooleanFlag(b.payment_sms),
         pad_header_image: b.pad_header_image || b.pad_heading_image || b.letterhead_image || b.pad_image || b.header_image || '',
       }));
 
@@ -369,7 +381,7 @@ const AddBranch = () => {
             </div>
 
             <div className="mb-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
-              <div className="mb-4">
+              <div className="mb-2">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                   {steps[currentStep]}
                 </h2>
@@ -691,6 +703,27 @@ const AddBranch = () => {
                       checked={Boolean(formData.need_demo_tutorial)}
                       onChange={(checked) =>
                         handleToggleFieldChange('need_demo_tutorial', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Need Relation's Information?"
+                      checked={Boolean(formData.need_relation_info)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('need_relation_info', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Need Contact Person?"
+                      checked={Boolean(formData.need_contact_person)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('need_contact_person', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Need Mother's Name?"
+                      checked={Boolean(formData.need_mother_name)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('need_mother_name', checked)
                       }
                     />
                   </div>

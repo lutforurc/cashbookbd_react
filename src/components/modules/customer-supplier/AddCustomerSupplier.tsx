@@ -239,81 +239,88 @@ const AddCustomerSupplier = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-              <div className="md:col-span-1">
-                <DropdownCommon
-                  id="relation_id"
-                  name="relation_id"
-                  label="Relation"
-                  onChange={formik.handleChange}
-                  defaultValue={formik.values.customerLogin.toString()}
-                  className="h-[2.1rem] bg-transparent"
-                  data={relationType}
-                />
+            {settings?.data?.branch?.need_relation_info === '1' && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                <>
+                  <div className="md:col-span-1">
+                    <DropdownCommon
+                      id="relation_id"
+                      name="relation_id"
+                      label="Relation"
+                      onChange={formik.handleChange}
+                      defaultValue={formik.values.customerLogin.toString()}
+                      className="h-[2.1rem] bg-transparent"
+                      data={relationType}
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <InputElement
+                      id="father"
+                      name="father"
+                      placeholder="Enter relation's name"
+                      label="Relation's Name"
+                      value={formik.values.father}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    />
+                    {formik.touched.father && formik.errors.father && (
+                      <div className="text-red-500 text-sm">{formik.errors.father}</div>
+                    )}
+                  </div>
+                </>
               </div>
-              <div className="md:col-span-3">
+            )}
+            {settings?.data?.branch?.need_mother_name === '1' && (
+              <div className="text-left flex flex-col">
                 <InputElement
-                  id="father"
-                  name="father"
-                  placeholder="Enter relation's name"
-                  label="Relation's Name"
-                  value={formik.values.father}
+                  id="mother_name"
+                  name="mother_name"
+                  placeholder="Enter Mother's Name"
+                  label="Mother's Name"
+                  value={formik.values.mother_name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
-                {formik.touched.father && formik.errors.father && (
-                  <div className="text-red-500 text-sm">{formik.errors.father}</div>
+                {formik.touched.mother_name && formik.errors.mother_name && (
+                  <div className="text-red-500 text-sm">{formik.errors.mother_name}</div>
+                )}
+              </div>
+            )}
+          </div>
+        
+          {settings?.data?.branch?.need_contact_person === '1' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <div className="text-left flex flex-col">
+                <InputElement
+                  id="contact_person"
+                  name="contact_person"
+                  placeholder="Enter Contact Person"
+                  label="Contact Person"
+                  value={formik.values.contact_person}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.contact_person && formik.errors.contact_person && (
+                  <div className="text-red-500 text-sm">{formik.errors.contact_person}</div>
+                )}
+              </div>
+
+              <div className="text-left flex flex-col">
+                <InputElement
+                  id="contact_number"
+                  name="contact_number"
+                  placeholder="Enter Contact Number"
+                  label="Contact Number"
+                  value={formik.values.contact_number}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.contact_number && formik.errors.contact_number && (
+                  <div className="text-red-500 text-sm">{formik.errors.contact_number}</div>
                 )}
               </div>
             </div>
-            <div className="text-left flex flex-col">
-              <InputElement
-                id="mother_name"
-                name="mother_name"
-                placeholder="Enter Mother's Name"
-                label="Mother's Name"
-                value={formik.values.mother_name}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.mother_name && formik.errors.mother_name && (
-                <div className="text-red-500 text-sm">{formik.errors.mother_name}</div>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div className="text-left flex flex-col">
-              <InputElement
-                id="contact_person"
-                name="contact_person"
-                placeholder="Enter Contact Person"
-                label="Contact Person"
-                value={formik.values.contact_person}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.contact_person && formik.errors.contact_person && (
-                <div className="text-red-500 text-sm">{formik.errors.contact_person}</div>
-              )}
-            </div>
-
-            <div className="text-left flex flex-col">
-              <InputElement
-                id="contact_number"
-                name="contact_number"
-                placeholder="Enter Contact Number"
-                label="Contact Number"
-                value={formik.values.contact_number}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.contact_number && formik.errors.contact_number && (
-                <div className="text-red-500 text-sm">{formik.errors.contact_number}</div>
-              )}
-            </div>
-          </div>
-
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="text-left flex flex-col">
               <InputElement
