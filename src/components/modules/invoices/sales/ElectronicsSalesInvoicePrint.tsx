@@ -26,6 +26,9 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
 
   const settings = useSelector((state: any) => state.settings);
 
+  console.log('====================================');
+  console.log("data", data?.sales_master?.sales_order?.order_number);
+  console.log('====================================');
 
   if (!data?.sales_master) {
     return <div ref={ref}>No invoice data</div>;
@@ -151,7 +154,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                   {customerName}
                 </div>
 
-                {customerMobile && (
+                {customerMobile.length > 5 && (
                   <div style={{ fontSize: fs }}>
                     Mobile: {String(customerMobile).replace(/^(\d{5})(\d+)/, '$1-$2')}
                   </div>
@@ -162,6 +165,18 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                     Address: {customerAddress}
                   </div>
                 )}
+                
+                {data?.sales_master?.sales_order?.order_number && (
+                  <div style={{ fontSize: fs }}>
+                    Order Number: {data.sales_master.sales_order.order_number}
+                  </div>
+                )}
+                {data?.sales_master?.sales_order?.delivery_location && (
+                  <div style={{ fontSize: fs }}>
+                    Delivery Location: {data.sales_master.sales_order.delivery_location}
+                  </div>
+                )}
+                
               </div>
 
               <div className="text-right space-y-1 col-span-1">

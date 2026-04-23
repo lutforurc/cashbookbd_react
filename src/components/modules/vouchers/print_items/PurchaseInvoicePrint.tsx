@@ -105,7 +105,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                     {supplierName}
                   </div>
 
-                  {supplierMobile && (
+                  {supplierMobile.length > 5 && (
                     <div style={{ fontSize: fs }}>
                       Mobile: {String(supplierMobile).replace(/^(\d{5})(\d+)/, '$1-$2')}
                     </div>
@@ -114,6 +114,16 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                   {supplierAddress && (
                     <div style={{ fontSize: fs }}>
                       Address: {supplierAddress}
+                    </div>
+                  )}
+                  {data?.purchase_master?.purchase_order?.order_number && (
+                    <div style={{ fontSize: fs }}>
+                      Order Number: {data.purchase_master.purchase_order.order_number}
+                    </div>
+                  )}
+                  {data?.purchase_master?.purchase_order?.delivery_location && (
+                    <div style={{ fontSize: fs }}>
+                      Delivery Location: {data.purchase_master.purchase_order.delivery_location}
                     </div>
                   )}
 
@@ -224,7 +234,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                           className="inline-block border border-black px-2 py-1 font-semibold"
                           style={{ fontSize: fs }}
                         >
-                          Vehicle No: <span className="uppercase">{ formatTransportationNumber(purchaseMaster?.vehicle_no)}</span>
+                          Vehicle No: <span className="uppercase">{formatTransportationNumber(purchaseMaster?.vehicle_no)}</span>
                         </span>
                       </div>
                     )}
