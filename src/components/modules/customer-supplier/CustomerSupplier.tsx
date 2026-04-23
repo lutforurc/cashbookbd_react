@@ -31,8 +31,9 @@ const CustomerSupplier = () => {
   const navigate = useNavigate();
   const customerPageData = customers?.customer || {};
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
-  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
-  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
+	  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
+	  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
+	  const isOpeningEnabled = settings?.data?.branch?.is_opening == 1;
 
 
 
@@ -194,7 +195,7 @@ const CustomerSupplier = () => {
       )
     },
   
-    ...(settings?.data?.branch?.is_opening == 1 ? isOpeningColumns : []),
+	    ...(isOpeningEnabled ? isOpeningColumns : []),
 
     {
       key: "manual_address",
@@ -262,27 +263,30 @@ const CustomerSupplier = () => {
       render: (row: any) => {
         const dirty = isRowDirty(row);
 
-        return (
-        <div className="flex justify-center items-center gap-2">
-          <ButtonLoading
-            // icon=""
-            className="py-1 px-2"
-            label="Save"
-            type="button"
-            disabled={!dirty}
-            onClick={() => handleSaveRow(row)}
-            icon = { <FiCheckSquare size={15} /> }
-          />
-          <ButtonLoading
-            icon={<FiX />}
-            className="py-1 px-2"
-            label="Cancel"
-            type="button"
-            disabled={!editedRows[row.id]}
-            onClick={() => handleCancelRow(row)}
-          />
+	        return (
+	        <div className="flex justify-center items-center gap-2">
+	          {isOpeningEnabled && (
+	            <>
+	              <ButtonLoading
+	                className="py-1 px-2"
+	                label="Save"
+	                type="button"
+	                disabled={!dirty}
+	                onClick={() => handleSaveRow(row)}
+	                icon={<FiCheckSquare size={15} />}
+	              />
+	              <ButtonLoading
+	                icon={<FiX />}
+	                className="py-1 px-2"
+	                label="Cancel"
+	                type="button"
+	                disabled={!editedRows[row.id]}
+	                onClick={() => handleCancelRow(row)}
+	              />
+	            </>
+	          )}
 
-          {/* ===== Guarantor Slot (fixed) ===== */}
+	          {/* ===== Guarantor Slot (fixed) ===== */}
           <div className="w-4 flex justify-center">
             {row.guarantors?.length > 0 && (
               <button
