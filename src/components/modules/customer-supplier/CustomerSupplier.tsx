@@ -26,6 +26,8 @@ const CustomerSupplier = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [showGuarantorModal, setShowGuarantorModal] = useState(false);
   const [selectedGuarantors, setSelectedGuarantors] = useState<any[]>([]);
+  const [showNomineeModal, setShowNomineeModal] = useState(false);
+  const [selectedNominees, setSelectedNominees] = useState<any[]>([]);
   const navigate = useNavigate();
   const customerPageData = customers?.customer || {};
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
@@ -296,6 +298,21 @@ const CustomerSupplier = () => {
             )}
           </div>
 
+          <div className="w-4 flex justify-center">
+            {row.nominees?.length > 0 && (
+              <button
+                title="View nominees"
+                onClick={() => {
+                  setSelectedNominees(row.nominees);
+                  setShowNomineeModal(true);
+                }}
+                className="text-emerald-600 hover:text-emerald-800"
+              >
+                <FiBook size={16} />
+              </button>
+            )}
+          </div>
+
           {/* ===== Edit Slot ===== */}
           <div className="w-4 flex justify-center">
             <button
@@ -463,6 +480,99 @@ const CustomerSupplier = () => {
               </table>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {showNomineeModal && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-40 pt-50">
+          <div
+            className="
+        bg-white dark:bg-gray-800
+        rounded-sm
+        w-[1100px] max-h-[85vh]
+        overflow-hidden
+        shadow-xl
+        border border-gray-300 dark:border-gray-600
+      "
+          >
+            <div
+              className="
+          flex justify-between items-center
+          px-4 py-3
+          bg-gray-300 dark:bg-gray-700
+          border-b border-gray-300 dark:border-gray-600
+        "
+            >
+              <h2 className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-200">
+                Nominee Details
+              </h2>
+
+              <button
+                onClick={() => setShowNomineeModal(false)}
+                className="text-gray-600 dark:text-gray-300 hover:text-red-500"
+              >
+                <FiX className="text-lg cursor-pointer" />
+              </button>
+            </div>
+
+            <div className="overflow-auto max-h-[75vh]">
+              <table className="min-w-full table-fixed text-sm text-left text-gray-700 dark:text-gray-300">
+                <thead
+                  className="
+              text-xs uppercase
+              bg-gray-200 dark:bg-gray-700
+              text-gray-800 dark:text-gray-300
+              border-b border-gray-300 dark:border-gray-600
+            "
+                >
+                  <tr>
+                    <th className="px-3 py-2">Name</th>
+                    <th className="px-3 py-2">Relation</th>
+                    <th className="px-3 py-2">Mobile</th>
+                    <th className="px-3 py-2 text-center">Share %</th>
+                    <th className="px-3 py-2 text-center">Priority</th>
+                    <th className="px-3 py-2 text-center">Minor</th>
+                    <th className="px-3 py-2">Guardian</th>
+                    <th className="px-3 py-2 text-center">Status</th>
+                  </tr>
+                </thead>
+
+                <tbody
+                  className="
+              bg-white dark:bg-gray-800
+              divide-y divide-gray-200 dark:divide-gray-700
+            "
+                >
+                  {selectedNominees.length > 0 ? (
+                    selectedNominees.map((n, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-emerald-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <td className="px-3 py-2 truncate">{n.name}</td>
+                        <td className="px-3 py-2 truncate">{n.relation || ''}</td>
+                        <td className="px-3 py-2">{n.mobile || ''}</td>
+                        <td className="px-3 py-2 text-center">{n.share_percentage || ''}</td>
+                        <td className="px-3 py-2 text-center">{n.priority_order || ''}</td>
+                        <td className="px-3 py-2 text-center">{Number(n.is_minor) === 1 ? 'Yes' : 'No'}</td>
+                        <td className="px-3 py-2 truncate">{n.guardian_name || ''}</td>
+                        <td className="px-3 py-2 text-center">{n.status || 'active'}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="text-center py-4 text-gray-500 dark:text-gray-400"
+                      >
+                        No nominee found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
