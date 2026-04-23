@@ -11,7 +11,7 @@ import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButt
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
-import { FiCheckSquare, FiEdit2, FiEye, FiFilter, FiPrinter, FiRefreshCw, FiTrash2, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiEye, FiFilter, FiPrinter, FiRefreshCw, FiX } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
@@ -20,13 +20,14 @@ import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
-import { API_ORDERS_LIST_URL, API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
+import { API_ORDERS_LIST_URL, API_ORDERS_STATUS_URL, API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 import { toast } from 'react-toastify';
 import { ORDER_STATUS } from '../../constant/constant/variables';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { render } from 'react-dom';
 import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
+import ActionButtons from '../../utils/fields/ActionButton';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -645,6 +646,51 @@ const Orders = () => {
     }
   };
 
+  const handleOrderEdit = (row: any) => {
+    navigate(`/orders/edit/${row.id}`, { state: { order: row } });
+  };
+
+  const refreshOrders = () => {
+    dispatch(
+      getOrders({
+        page,
+        perPage,
+        search: searchFilter,
+        orderType,
+        orderFor: selectedLedger?.value ?? '',
+        productId: selectedProductOption?.value ?? '',
+        status: orderStatus,
+        startDate,
+        endDate,
+      }),
+    );
+  };
+
+  const handleOrderToggle = async (row: any) => {
+
+
+    const nextStatus = Number(row?.status) === 1 ? 2 : 1;
+
+    try {
+      const response = await httpService.post(API_ORDERS_STATUS_URL, {
+        id: row.id,
+        status: nextStatus,
+      });
+
+      if (response.data?.success) {
+        toast.success(nextStatus === 1 ? 'Order activated successfully.' : 'Order inactivated successfully.');
+        refreshOrders();
+        return;
+      }
+
+      toast.error(response.data?.message || response.data?.error?.message || 'Order status update failed.');
+      refreshOrders();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.response?.data?.error?.message || 'Order status update failed.');
+      refreshOrders();
+    }
+  };
+
   const handleListPrint = async () => {
     try {
       setButtonLoading(true);
@@ -666,7 +712,7 @@ const Orders = () => {
       }, 0);
     } catch (error) {
       console.error(error);
-      toast.error('Orders print data load Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦Â¯Ã Â¦Â¾Ã Â§Å¸Ã Â¦Â¨Ã Â¦Â¿Ã Â¥Â¤');
+      toast.error('Orders print data load.');
     } finally {
       setButtonLoading(false);
     }
@@ -800,19 +846,20 @@ const Orders = () => {
           <button
             type="button"
             onClick={() => void handleOrderTransactionPrint(data)}
-            className="text-blue-500"
+            className="text-blue-500 mr-2"
             title="Open print page"
             disabled={printingOrderId === data?.id}
           >
-            <FiPrinter className="cursor-pointer" />
-            {/* Ã°Å¸â€“Â¨Ã¯Â¸Â */}
+            <FiPrinter className="cursor-pointer h-5 w-5" />
           </button>
-          <button onClick={() => navigate(`/orders/edit/${data.id}`, { state: { order: data } })} className="text-blue-500  ml-2">
-            <FiEdit2 className="cursor-pointer" />
-          </button>
-          <button onClick={() => { }} className="text-red-500 ml-2">
-            <FiTrash2 className="cursor-pointer" />
-          </button>
+          <ActionButtons
+            row={data}
+            showEdit={true}
+            handleEdit={handleOrderEdit}
+            showDelete={false}
+            showToggle={true}
+            handleToggle={() => handleOrderToggle(data)}
+          />
         </div>
       ),
     },

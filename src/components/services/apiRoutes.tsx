@@ -397,6 +397,7 @@ export const API_ADMIN_ORDERS_TRANSACTION_URL = `${API_BASE_URL}/admin/order/tra
 export const API_ORDERS_EDIT_URL = `${API_BASE_URL}/invoice/order/edit/`;
 export const API_ORDERS_STORE_URL = `${API_BASE_URL}/invoice/order/store`;
 export const API_ORDERS_UPDATE_URL = `${API_BASE_URL}/invoice/order/update`;
+export const API_ORDERS_STATUS_URL = `${API_BASE_URL}/invoice/order/status`;
 export const API_ORDERS_AVERAGE_URL = `${API_BASE_URL}/invoice/order/avg-price`;
 
 // Day Close Route
