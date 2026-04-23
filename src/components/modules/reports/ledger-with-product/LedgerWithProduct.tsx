@@ -43,6 +43,27 @@ const getDisplayedReceivedValue = (row: any) => {
 
   if (isOpeningRow(row)) return 0;
 
+  return Number(row?.received || 0);
+};
+
+const getDisplayedPaymentValue = (row: any) => {
+  if (Number.isFinite(Number(row?.displayed_payment))) {
+    return Number(row.displayed_payment);
+  }
+
+  const balanceValue = Math.abs(Number(row?.balance || 0));
+  const paymentValue = Number(row?.payment || 0);
+
+  if (isOpeningRow(row) && balanceValue > 0) {
+    return balanceValue;
+  }
+
+  return paymentValue;
+};
+
+const getBalanceReceivedValue = (row: any) => {
+  if (isOpeningRow(row)) return 0;
+
   const receivedValue = Number(row?.received || 0);
   const totalValue = Number(row?.total || 0);
   const voucherType = getVoucherType(row?.vr_no);
@@ -52,11 +73,7 @@ const getDisplayedReceivedValue = (row: any) => {
     : receivedValue;
 };
 
-const getDisplayedPaymentValue = (row: any) => {
-  if (Number.isFinite(Number(row?.displayed_payment))) {
-    return Number(row.displayed_payment);
-  }
-
+const getBalancePaymentValue = (row: any) => {
   const balanceValue = Math.abs(Number(row?.balance || 0));
   const paymentValue = Number(row?.payment || 0);
   const totalValue = Number(row?.total || 0);
@@ -183,7 +200,7 @@ const LedgerWithProduct = (user: any) => {
         };
         const displayedReceived = getDisplayedReceivedValue(normalizedRow);
         const displayedPayment = getDisplayedPaymentValue(normalizedRow);
-        runningBalance += displayedReceived - displayedPayment;
+        runningBalance += getBalanceReceivedValue(normalizedRow) - getBalancePaymentValue(normalizedRow);
 
         return {
           ...normalizedRow,

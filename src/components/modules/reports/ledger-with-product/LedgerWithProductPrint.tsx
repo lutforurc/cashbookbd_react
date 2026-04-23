@@ -26,13 +26,7 @@ const getDisplayedReceivedValue = (row: any) => {
 
   if (isOpeningRow(row)) return 0;
 
-  const receivedValue = Number(row?.received || 0);
-  const totalValue = Number(row?.total || 0);
-  const voucherType = getVoucherType(row?.vr_no);
-
-  return voucherType === '4' && receivedValue <= 0 && totalValue > 0
-    ? totalValue
-    : receivedValue;
+  return Number(row?.received || 0);
 };
 
 const getDisplayedPaymentValue = (row: any) => {
@@ -42,16 +36,12 @@ const getDisplayedPaymentValue = (row: any) => {
 
   const balanceValue = Math.abs(Number(row?.balance || 0));
   const paymentValue = Number(row?.payment || 0);
-  const totalValue = Number(row?.total || 0);
-  const voucherType = getVoucherType(row?.vr_no);
 
   if (isOpeningRow(row) && balanceValue > 0) {
     return balanceValue;
   }
 
-  return voucherType === '3' && paymentValue <= 0 && totalValue > 0
-    ? totalValue
-    : paymentValue;
+  return paymentValue;
 };
 
 const getPurchaseQty = (row: any) => {
