@@ -52,6 +52,7 @@ interface branchItem {
   share_customer_with_other_branch: boolean;
   have_customer_sl: boolean;
   have_is_guaranter: boolean;
+  have_is_nominee: boolean;
   stock_report_type: boolean;
   is_opening: boolean;
   use_bangla: boolean;
@@ -139,6 +140,7 @@ const AddBranch = () => {
     share_customer_with_other_branch: false,
     have_customer_sl: false,
     have_is_guaranter: false,
+    have_is_nominee: false,
     stock_report_type: false,
     is_opening: false,
     use_bangla: false,
@@ -202,6 +204,7 @@ const AddBranch = () => {
         // 🔑 CHECKBOX FIX
         is_opening: b.is_opening == 1 || b.is_opening === '1',
         have_is_guaranter: b.have_is_guaranter == 1 || b.have_is_guaranter === '1',
+        have_is_nominee: b.have_is_nominee == 1 || b.have_is_nominee === '1',
         report_zero_bal: b.report_zero_bal == 1 || b.report_zero_bal === '1',
         manufactur_control: b.manufactur_control == 1 || b.manufactur_control === '1',
         warranty_controll: b.warranty_controll == 1 || b.warranty_controll === '1',
@@ -654,10 +657,13 @@ const AddBranch = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
-                      label="Use Guarantor?"
-                      checked={Boolean(formData.have_is_guaranter)}
-                      onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
+                      label="Show spelling of money in invoice?"
+                      checked={Boolean(formData.show_spelling_of_money)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_spelling_of_money', checked)
+                      }
                     />
+                    
                     <FormToggleField
                       label="Stock: Brand->Category->Item"
                       checked={Boolean(formData.stock_report_type)}
@@ -671,11 +677,14 @@ const AddBranch = () => {
                       }
                     />
                     <FormToggleField
-                      label="Show spelling of money in invoice?"
-                      checked={Boolean(formData.show_spelling_of_money)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_spelling_of_money', checked)
-                      }
+                      label="Use Guarantor?"
+                      checked={Boolean(formData.have_is_guaranter)}
+                      onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
+                    />
+                    <FormToggleField
+                      label="Use Nominee?"
+                      checked={Boolean(formData.have_is_nominee)}
+                      onChange={(checked) => handleToggleFieldChange('have_is_nominee', checked)}
                     />
                     <FormToggleField
                       label="Need Demo Tutorial?"
