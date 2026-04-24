@@ -55,7 +55,7 @@ const SalesLedger = (user: any) => {
 
   // Ã¢Å“â€¦ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
-  const [fontSize, setFontSize] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(10);
 
   // Ã¢Å“â€¦ Print
   const printRef = useRef<HTMLDivElement>(null);

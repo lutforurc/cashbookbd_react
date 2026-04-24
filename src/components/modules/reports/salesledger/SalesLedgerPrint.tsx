@@ -125,6 +125,13 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
       return baseFs;
     };
 
+    const getCompactLineHeight = (currentFs: number) => {
+      if (currentFs <= 7) return 1.05;
+      if (currentFs <= 8) return 1.1;
+      if (currentFs <= 9) return 1.2;
+      return 1.3;
+    };
+
     const makeLabel = (detail: any) => {
       const categoryName = detail?.product?.category?.name ?? "";
       const productName2 = detail?.product?.name ?? "";
@@ -274,12 +281,22 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
 
                             <td
                               style={{ fontSize: fs - 1 }}
-                              className="border border-gray-900 px-2 py-1 text-left leading-normal"
+                              className="border border-gray-900 px-2 py-1 text-left"
                             >
-                              <div className={`text-[${fs - 2}px]`}>
+                              <div
+                                style={{
+                                  fontSize: fs - 1,
+                                  lineHeight: getCompactLineHeight(fs - 2),
+                                }}
+                              >
                                 {row?.challan_no || ""}
                               </div>
-                              <div className={`text-[${fs}px]`}>
+                              <div
+                                style={{
+                                  fontSize: fs - 1,
+                                  lineHeight: getCompactLineHeight(fs),
+                                }}
+                              >
                                 {row?.challan_date || ""}
                               </div>
                             </td>
@@ -288,7 +305,10 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 align-top"
                             >
-                              <div className="w-full max-w-4xl leading-normal">
+                              <div
+                                className="w-full max-w-4xl"
+                                style={{ lineHeight: getCompactLineHeight(fs) }}
+                              >
                                 {Array.isArray(details) &&
                                   details.length > 0 &&
                                   details.map((detail: any, i: number) => {
@@ -301,9 +321,12 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                     return (
                                       <div
                                         key={detail?.id ?? i}
-                                        className="leading-normal whitespace-nowrap"
+                                        className="whitespace-nowrap"
                                         style={{
                                           fontSize: getProductFs(label, fs),
+                                          lineHeight: getCompactLineHeight(
+                                            getProductFs(label, fs)
+                                          ),
                                         }}
                                       >
                                         {String(stockReportType) === "1" &&
@@ -320,11 +343,16 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                 ) : null}
 
                                 {notes ? (
-                                  <div className="mt-1 text-xs">{notes}</div>
-                                ) : null}
-                                {/* {remarks ? (
-                                  <div className="mt-1 text-xs">{remarks}</div>
-                                ) : null} */}
+                                  <div
+                                    style={{
+                                      fontSize: fs,
+                                      lineHeight: getCompactLineHeight(fs),
+                                    }}
+                                    className="mt-1 text-xs"
+                                  >
+                                    {notes}
+                                  </div>
+                                ) : null} 
                               </div>
                             </td>
 
@@ -341,6 +369,9 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                         className="leading-normal"
                                         style={{
                                           fontSize: getProductFs(label, fs),
+                                          lineHeight: getCompactLineHeight(
+                                            getProductFs(label, fs)
+                                          ),
                                         }}
                                       >
                                         {thousandSeparator(detail?.quantity)}{" "}
@@ -364,6 +395,9 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                         className="leading-normal"
                                         style={{
                                           fontSize: getProductFs(label, fs),
+                                          lineHeight: getCompactLineHeight(
+                                            getProductFs(label, fs)
+                                          ),
                                         }}
                                       >
                                         {thousandSeparator(
@@ -387,6 +421,9 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                         className="leading-normal"
                                         style={{
                                           fontSize: getProductFs(label, fs),
+                                          lineHeight: getCompactLineHeight(
+                                            getProductFs(label, fs)
+                                          ),
                                         }}
                                       >
                                         {thousandSeparator(
