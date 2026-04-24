@@ -66,6 +66,7 @@ interface branchItem {
   payment_sms: boolean;
   pad_header_image?: string;
   show_instalment_list: boolean;
+  show_brand_in_invoice: boolean;
   show_category_in_invoice: boolean;
   show_description_in_invoice: boolean;
   show_spelling_of_money: boolean;
@@ -162,6 +163,7 @@ const AddBranch = () => {
     payment_sms: false,
     pad_header_image: '',
     show_instalment_list: false,
+    show_brand_in_invoice: false,
     show_category_in_invoice: false,
     show_description_in_invoice: false,
     show_spelling_of_money: false,
@@ -247,6 +249,7 @@ const AddBranch = () => {
         sales_sms: toBooleanFlag(b.sales_sms),
         payment_sms: toBooleanFlag(b.payment_sms),
         pad_header_image: b.pad_header_image || b.pad_heading_image || b.letterhead_image || b.pad_image || b.header_image || '',
+        show_brand_in_invoice: toBooleanFlag(b.show_brand_in_invoice),
         show_category_in_invoice: toBooleanFlag(b.show_category_in_invoice),
         show_description_in_invoice: toBooleanFlag(b.show_description_in_invoice),
       }));
@@ -650,15 +653,6 @@ const AddBranch = () => {
                       }
                     />
                     <FormToggleField
-                      label="Show Category in Invoice?"
-                      checked={Boolean(formData.show_category_in_invoice)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_category_in_invoice', checked)
-                      }
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
                       label="Show description in invoice?"
                       checked={Boolean(formData.show_description_in_invoice)}
                       onChange={(checked) =>
@@ -666,6 +660,23 @@ const AddBranch = () => {
                       }
                     />
                     
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    
+                    <FormToggleField
+                      label="Show Brand in Invoice?"
+                      checked={Boolean(formData.show_brand_in_invoice)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_brand_in_invoice', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Show Category in Invoice?"
+                      checked={Boolean(formData.show_category_in_invoice)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_category_in_invoice', checked)
+                      }
+                    />
                   </div>
                 </>
               )}

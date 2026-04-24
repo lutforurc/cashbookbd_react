@@ -22,17 +22,22 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
-const formatWarrantyText = (warranty: any) => {
+const getWarrantyInfo = (warranty: any) => {
   if (!warranty || typeof warranty !== 'object') return '';
 
   const labelKey = Object.keys(warranty).find((key) => !Number.isNaN(Number(key)));
   const label = labelKey ? warranty[labelKey] : '';
   const dayValue = warranty?.day;
 
-  if (!label || dayValue == null || dayValue === '') return '';
+  if (!label || dayValue == null || dayValue === '') return null;
 
-  return `${label}: ${dayValue} day`;
+  return {
+    label: `${label}:`,
+    value: `${dayValue} day`,
+  };
 };
+
+const isEnabled = (value: unknown) => value === true || value === 1 || value === '1';
 
 const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ data, rowsPerPage = 10, fontSize = 10 }, ref) => {
 
@@ -233,7 +238,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                 const qty = Number(row.quantity);
                 const rate = Number(row.sales_price);
                 const total = qty * rate;
-                const warrantyText = formatWarrantyText(row.product?.warranty_days);
+                const warrantyInfo = getWarrantyInfo(row.product?.warranty_days);
 
                 return (
                   <tr key={idx} className="avoid-break">
@@ -252,25 +257,18 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                         style={{ fontSize: fs - 1, lineHeight: 1.5 }}
                       >
                         {/* Category (optional) */}
-                        {settings?.data?.branch?.show_category_in_invoice && row.product?.category?.name && (
+                        {isEnabled(settings?.data?.branch?.show_category_in_invoice) && row.product?.category?.name && (
                           <span className='block'>{row.product.category.name}</span>
                         )}
-
-
-  {/* console.log("show_description_in_invoice", settings?.data?.branch?.show_description_in_invoice);
-  console.log("show_category_in_invoice", settings?.data?.branch?.show_category_in_invoice); */}
-
-                        {/* {row.product?.category?.name && <br />} */}
-
                         {/* Brand + Product Name */}
                         <span>
-                          {/* {row.product?.brand?.name && (
+                          {isEnabled(settings?.data?.branch?.show_brand_in_invoice) && row.product?.brand?.name && (
                             <span className=''>{row.product.brand.name} </span>
-                          )} */}
+                          )}
                           {row.product?.name}
                         </span>
 
-                         {settings?.data?.branch?.show_description_in_invoice && row.product?.description && (
+                         {isEnabled(settings?.data?.branch?.show_description_in_invoice) && row.product?.description && (
                           <span className='block italic'>({row.product.description})</span>
                         )}
 
@@ -278,8 +276,11 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                         {row.serial_no && (
                           <span className='block'> <span className='font-semibold'>{ settings?.data?.branch?.device_identifier_text && `${settings.data.branch.device_identifier_text} `}</span> {row.serial_no}</span>
                         )}
-                        {warrantyText && (
-                          <span className='block'>{warrantyText}</span>
+                        {warrantyInfo && (
+                          <span className='block'>
+                            <span className='font-semibold'>{warrantyInfo.label}</span>{' '}
+                            {warrantyInfo.value}
+                          </span>
                         )}
                       </div>
                       {/* )} */}
