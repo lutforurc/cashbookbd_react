@@ -3,6 +3,9 @@ import dayjs from 'dayjs';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
+import { useSelector } from 'react-redux';
+import { chartDateTime } from '../../../utils/utils-functions/formatDate';
+import numberToWords from '../../../utils/utils-functions/numberToWords';
 
 type Props = {
   data: any;
@@ -19,8 +22,26 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
+const getWarrantyInfo = (warranty: any) => {
+  if (!warranty || typeof warranty !== 'object') return null;
+
+  const labelKey = Object.keys(warranty).find((key) => !Number.isNaN(Number(key)));
+  const label = labelKey ? warranty[labelKey] : '';
+  const dayValue = warranty?.day;
+
+  if (!label || dayValue == null || dayValue === '') return null;
+
+  return {
+    label: `${label}:`,
+    value: `${dayValue} day`,
+  };
+};
+
+const isEnabled = (value: unknown) => value === true || value === 1 || value === '1';
+
 const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
   ({ data, rowsPerPage = 10, fontSize = 10 }, ref) => {
+    const settings = useSelector((state: any) => state.settings);
     const purchaseMaster = data?.purchase_master;
     const details = purchaseMaster?.details || [];
 
@@ -56,6 +77,10 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
       .filter((row: any) => Number(row?.coa4_id) === 17)
       .reduce((sum: number, row: any) => sum + Number(row?.credit ?? 0), 0);
     const dueAmount = Math.max(netAmount - paidAmount, 0);
+    const purchaseInWord =
+      data?.inword ||
+      purchaseMaster?.inword ||
+      `${numberToWords(netAmount)} Only`.trim();
 
     return (
       <div ref={ref} className="print-root text-gray-900">
@@ -178,6 +203,7 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                   const qty = Number(row?.quantity ?? 0);
                   const rate = Number(row?.purchase_price ?? 0);
                   const total = qty * rate;
+                  const warrantyInfo = getWarrantyInfo(row?.product?.warranty_days);
 
                   return (
                     <tr key={row?.id ?? idx} className="avoid-break">
@@ -190,19 +216,37 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                         style={{ fontSize: fs, lineHeight: 1.25 }}
                       >
                         <div className="text-black" style={{ fontSize: fs - 1, lineHeight: 1.5 }}>
-                          {row?.product?.category?.name && <span>{row.product.category.name}</span>}
-                          {row?.product?.category?.name && <br />}
+                          {isEnabled(settings?.data?.branch?.show_category_in_invoice) && row?.product?.category?.name && (
+                            <span className="block">{row.product.category.name}</span>
+                          )}
 
                           <span>
-                            {row?.product?.brand?.name && <>{row.product.brand.name} </>}
+                            {isEnabled(settings?.data?.branch?.show_brand_in_invoice) && row?.product?.brand?.name && (
+                              <>{row.product.brand.name} </>
+                            )}
                             {row?.product?.name || '-'}
                           </span>
 
+                          {isEnabled(settings?.data?.branch?.show_description_in_invoice) && row?.product?.description && (
+                            <span className="block italic">({row.product.description})</span>
+                          )}
+
                           {row?.serial_no && (
-                            <>
-                              <br />
-                              <span>SN: {row.serial_no}</span>
-                            </>
+                            <span className="block">
+                              <span className="font-semibold">
+                                {settings?.data?.branch?.device_identifier_text
+                                  ? `${settings.data.branch.device_identifier_text} `
+                                  : ''}
+                              </span>
+                              {row.serial_no}
+                            </span>
+                          )}
+
+                          {warrantyInfo && (
+                            <span className="block">
+                              <span className="font-semibold">{warrantyInfo.label}</span>{' '}
+                              {warrantyInfo.value}
+                            </span>
                           )}
                         </div>
                       </td>
@@ -290,6 +334,26 @@ const PurchaseInvoicePrint = React.forwardRef<HTMLDivElement, Props>(
                       </tr>
                     </tbody>
                   </table>
+                </div>
+
+                {settings?.data?.branch?.show_spelling_of_money == '1' && (
+                  <div
+                    className="w-full pt-4 text-left leading-snug"
+                    style={{ fontSize: fs - 0.25, textAlign: 'left' }}
+                  >
+                    <span className="tracking-wide">{purchaseInWord}</span>
+                  </div>
+                )}
+
+                <div className="flex items-end justify-end pt-8 pr-8">
+                  <div className="text-left" style={{ fontSize: fs }}>
+                    <div className="border-t border-black min-w-[140px] text-center">
+                      {data?.user?.name}
+                    </div>
+                    <div className="text-center leading-none mt-0.5">
+                      {chartDateTime(data?.created_at)}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
