@@ -22,12 +22,25 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
+const formatWarrantyText = (warranty: any) => {
+  if (!warranty || typeof warranty !== 'object') return '';
+
+  const labelKey = Object.keys(warranty).find((key) => !Number.isNaN(Number(key)));
+  const label = labelKey ? warranty[labelKey] : '';
+  const dayValue = warranty?.day;
+
+  if (!label || dayValue == null || dayValue === '') return '';
+
+  return `${label}: ${dayValue} day`;
+};
+
 const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ data, rowsPerPage = 10, fontSize = 10 }, ref) => {
 
   const settings = useSelector((state: any) => state.settings);
 
   console.log('====================================');
-  console.log("data", data?.sales_master?.sales_order?.order_number);
+  console.log("show_description_in_invoice", settings?.data?.branch?.show_description_in_invoice);
+  console.log("show_category_in_invoice", settings?.data?.branch?.show_category_in_invoice);
   console.log('====================================');
 
   if (!data?.sales_master) {
@@ -220,6 +233,7 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                 const qty = Number(row.quantity);
                 const rate = Number(row.sales_price);
                 const total = qty * rate;
+                const warrantyText = formatWarrantyText(row.product?.warranty_days);
 
                 return (
                   <tr key={idx} className="avoid-break">
@@ -238,25 +252,34 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                         style={{ fontSize: fs - 1, lineHeight: 1.5 }}
                       >
                         {/* Category (optional) */}
-                        {row.product?.category?.name && (
-                          <span>{row.product.category.name}</span>
+                        {settings?.data?.branch?.show_category_in_invoice && row.product?.category?.name && (
+                          <span className='block'>{row.product.category.name}</span>
                         )}
 
-                        {row.product?.category?.name && <br />}
+
+  {/* console.log("show_description_in_invoice", settings?.data?.branch?.show_description_in_invoice);
+  console.log("show_category_in_invoice", settings?.data?.branch?.show_category_in_invoice); */}
+
+                        {/* {row.product?.category?.name && <br />} */}
 
                         {/* Brand + Product Name */}
                         <span>
-                          {row.product?.brand?.name && (
-                            <>{row.product.brand.name} </>
-                          )}
+                          {/* {row.product?.brand?.name && (
+                            <span className=''>{row.product.brand.name} </span>
+                          )} */}
                           {row.product?.name}
                         </span>
 
-                        <br />
+                         {settings?.data?.branch?.show_description_in_invoice && row.product?.description && (
+                          <span className='block italic'>({row.product.description})</span>
+                        )}
 
                         {/* Serial */}
                         {row.serial_no && (
-                          <span>SN: {row.serial_no}</span>
+                          <span className='block'> <span className='font-semibold'>{ settings?.data?.branch?.device_identifier_text && `${settings.data.branch.device_identifier_text} `}</span> {row.serial_no}</span>
+                        )}
+                        {warrantyText && (
+                          <span className='block'>{warrantyText}</span>
                         )}
                       </div>
                       {/* )} */}

@@ -68,12 +68,12 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
             <div key={pIdx} className="print-page">
               <PadPrinting />
               {/* Per-page header (prints on every page) */}
-              <div className="mb-4">
+              <div className="mb-2">
                 <h1 className="text-2xl font-bold text-center">{title}</h1>
                 <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
                   <div>
                     <span className="font-semibold">Report Date:</span>{' '}
-                    {startDate || '-'} â€” {endDate || '-'}
+                    {startDate || '-'} to {endDate || '-'}
                   </div>
                 </div>
               </div>

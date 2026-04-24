@@ -45,6 +45,7 @@ interface branchItem {
   notes: string;
   invoice_label: string;
   decimal_places: number;
+  device_identifier_text?: string;
   status: string;
   warranty_controll: boolean;
   have_warehouse: boolean;
@@ -65,6 +66,8 @@ interface branchItem {
   payment_sms: boolean;
   pad_header_image?: string;
   show_instalment_list: boolean;
+  show_category_in_invoice: boolean;
+  show_description_in_invoice: boolean;
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
   need_contact_person: boolean;
@@ -106,7 +109,7 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
 const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
 
 const AddBranch = () => {
-  const steps = ['Basic Info', 'Print Setup', 'Feature Controls'];
+  const steps = ['Basic Info', 'Print Setup', 'Invoice Setup', 'Feature Controls'];
   const navigate = useNavigate();
   const branchEditData = useSelector((state: any) => state.branchList);
   const settings = useSelector((state: any) => state.settings);
@@ -138,6 +141,7 @@ const AddBranch = () => {
     notes: '',
     invoice_label: '',
     decimal_places: 0,
+    device_identifier_text: '',
     status: '',
     warranty_controll: false,
     have_warehouse: false,
@@ -158,6 +162,8 @@ const AddBranch = () => {
     payment_sms: false,
     pad_header_image: '',
     show_instalment_list: false,
+    show_category_in_invoice: false,
+    show_description_in_invoice: false,
     show_spelling_of_money: false,
     need_demo_tutorial: false,
     need_contact_person: false,
@@ -208,6 +214,13 @@ const AddBranch = () => {
         ...b,
         pad_heading_print: b.pad_heading_print != null ? String(b.pad_heading_print) : '',
         paper_size: b.paper_size != null ? String(b.paper_size) : '',
+        device_identifier_text:
+          b.device_identifier_text == null ||
+          b.device_identifier_text === '' ||
+          b.device_identifier_text === 0 ||
+          b.device_identifier_text === '0'
+            ? ''
+            : String(b.device_identifier_text),
 
         // 🔑 CHECKBOX FIX
         is_opening: toBooleanFlag(b.is_opening),
@@ -234,6 +247,8 @@ const AddBranch = () => {
         sales_sms: toBooleanFlag(b.sales_sms),
         payment_sms: toBooleanFlag(b.payment_sms),
         pad_header_image: b.pad_header_image || b.pad_heading_image || b.letterhead_image || b.pad_image || b.header_image || '',
+        show_category_in_invoice: toBooleanFlag(b.show_category_in_invoice),
+        show_description_in_invoice: toBooleanFlag(b.show_description_in_invoice),
       }));
 
       setPadHeaderFile(null);
@@ -354,7 +369,7 @@ const AddBranch = () => {
 
         <>
           <div>
-            <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-3">
+            <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-4">
               {steps.map((step, index) => {
                 const isActive = index === currentStep;
                 const isCompleted = index < currentStep;
@@ -387,8 +402,9 @@ const AddBranch = () => {
                 </h2>
                 <p className="text-sm text-gray-500">
                   {currentStep === 0 && 'Branch identity, contact details, and status.'}
-                  {currentStep === 1 && 'Print preferences, invoice settings, and document notes.'}
-                  {currentStep === 2 && 'Operational controls, sharing options, and SMS preferences.'}
+                  {currentStep === 1 && 'Print preferences, page size, and letterhead setup.'}
+                  {currentStep === 2 && 'Invoice labels, notes, formatting, and invoice display options.'}
+                  {currentStep === 3 && 'Operational controls, sharing options, and SMS preferences.'}
                 </p>
               </div>
 
@@ -555,6 +571,11 @@ const AddBranch = () => {
                     </div>
                   )}
 
+                </>
+              )}
+
+              {currentStep === 2 && (
+                <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <InputElement
                       id="purchase_note"
@@ -595,6 +616,15 @@ const AddBranch = () => {
                       onChange={handleOnChange}
                     />
                     <InputElement
+                      id="device_identifier_text"
+                      value={formData.device_identifier_text || ''}
+                      name="device_identifier_text"
+                      placeholder={'Device Identifier Text'}
+                      label={'Device Identifier Text'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <InputElement
                       id="decimal_places"
                       value={formData.decimal_places || 0}
                       name="decimal_places"
@@ -604,10 +634,43 @@ const AddBranch = () => {
                       onChange={handleOnChange}
                     />
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <FormToggleField
+                      label="Show spelling of money in invoice?"
+                      checked={Boolean(formData.show_spelling_of_money)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_spelling_of_money', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Show Instalment List in Invoice"
+                      checked={Boolean(formData.show_instalment_list)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_instalment_list', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Show Category in Invoice?"
+                      checked={Boolean(formData.show_category_in_invoice)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_category_in_invoice', checked)
+                      }
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <FormToggleField
+                      label="Show description in invoice?"
+                      checked={Boolean(formData.show_description_in_invoice)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_description_in_invoice', checked)
+                      }
+                    />
+                    
+                  </div>
                 </>
               )}
 
-              {currentStep === 2 && (
+              {currentStep === 3 && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
@@ -669,24 +732,9 @@ const AddBranch = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
-                      label="Show spelling of money in invoice?"
-                      checked={Boolean(formData.show_spelling_of_money)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_spelling_of_money', checked)
-                      }
-                    />
-                    
-                    <FormToggleField
                       label="Stock: Brand->Category->Item"
                       checked={Boolean(formData.stock_report_type)}
                       onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
-                    />
-                    <FormToggleField
-                      label="Show Instalment List in Invoice"
-                      checked={Boolean(formData.show_instalment_list)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('show_instalment_list', checked)
-                      }
                     />
                     <FormToggleField
                       label="Use Guarantor?"
@@ -713,17 +761,17 @@ const AddBranch = () => {
                       }
                     />
                     <FormToggleField
-                      label="Need Contact Person?"
-                      checked={Boolean(formData.need_contact_person)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('need_contact_person', checked)
-                      }
-                    />
-                    <FormToggleField
                       label="Need Mother's Name?"
                       checked={Boolean(formData.need_mother_name)}
                       onChange={(checked) =>
                         handleToggleFieldChange('need_mother_name', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Need Contact Person?"
+                      checked={Boolean(formData.need_contact_person)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('need_contact_person', checked)
                       }
                     />
                   </div>
