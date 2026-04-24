@@ -54,7 +54,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   const handleToggleClick = () => {
     const newState = !enabled;
     setEnabled(newState);
-    handleToggle && handleToggle(row.branch_id, newState);
+    handleToggle && handleToggle(row.id, newState);
   };
 
   return (

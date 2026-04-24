@@ -9,10 +9,12 @@ import Pagination from '../../../utils/utils-functions/Pagination';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useNavigate } from 'react-router-dom';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { buildingUnitList } from './unitSlice';
+import { buildingUnitList, unitUpdate } from './unitSlice';
 import routes from '../../../services/appRoutes';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ActionButtons from '../../../utils/fields/ActionButton';
+import { FiPlus } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 
 const BuildingUnitsList = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -91,14 +93,34 @@ const handleUnitEdit = (row: any) => {
 };
 
 const handleToggle = (row: any) => {
-  const newStatus = row.status === 0 ? 1 : 0; // only if your toggle is Active/Inactive
+  if (![0, 1].includes(Number(row.status))) {
+    const statusTextMap: Record<number, string> = {
+      2: 'Under Dev',
+      3: 'Completed',
+      4: 'Sold',
+    };
 
-  dispatch(buildingUnitStatusUpdate({ id: row.id, status: newStatus }) as any).then(() => {
+    const statusText = statusTextMap[Number(row.status)] ?? 'This status';
+    toast.warning(`${statusText} item can't be change`);
+    return;
+  }
+
+  const newStatus = row.status === 1 ? 0 : 1;
+  const nextStatusText = newStatus === 1 ? 'Active' : 'Inactive';
+
+  dispatch(
+    unitUpdate({
+      ...row,
+      id: row.id,
+      status: newStatus,
+    }) as any
+  ).then(() => {
+    toast.success(`Unit status changed to ${nextStatusText}`);
     dispatch(
       buildingUnitList({
         page,
         per_page: perPage,
-        // branch_id: branchId ? Number(branchId) : undefined,
+        branch_id: branchId ? Number(branchId) : undefined,
       }) as any
     );
   });
@@ -240,7 +262,7 @@ const handleToggle = (row: any) => {
           className="h-9"
           onClick={handleCreateUnit}
           label="New Unit"
-          icon=""
+          icon={ <FiPlus className="text-lg" /> }
         />
       </div>
 
