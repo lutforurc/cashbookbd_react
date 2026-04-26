@@ -314,30 +314,28 @@ const LedgerWithProduct = (user: any) => {
     },
     {
       key: 'vr_date',
-      header: 'Vr Date',
+      header: 'Vr No. & Date',
       headerClass: 'text-center',
       cellClass: 'text-center',
-      render: (row: any) => <div>{row.vr_date || ''}</div>,
-    },
-    {
-      key: 'vr_no',
-      header: 'Vr No',
       render: (row: any) => {
         const isOpening = String(row?.vr_no || '').toLowerCase() === 'opening';
 
         return (
-          <div
-            className={isOpening ? '' : 'cursor-pointer hover:underline'}
-            onClick={() => {
-              if (isOpening) return;
-              handleVoucherPrint({
-                ...row,
-                mtm_id: row?.mtm_id ?? row?.mtmid ?? row?.mtmId ?? row?.mid ?? row?.id,
-              });
-            }}
-          >
-            {row.vr_no || ''}
-          </div>
+          <>
+            <div
+              className={isOpening ? '' : 'cursor-pointer hover:underline'}
+              onClick={() => {
+                if (isOpening) return;
+                handleVoucherPrint({
+                  ...row,
+                  mtm_id: row?.mtm_id ?? row?.mtmid ?? row?.mtmId ?? row?.mid ?? row?.id,
+                });
+              }}
+            >
+              {row.vr_no || ''}
+            </div>
+            <div>{row.vr_date || ''}</div>
+          </>
         );
       },
     },
@@ -352,6 +350,7 @@ const LedgerWithProduct = (user: any) => {
           {row.remarks ? (
             <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.remarks}</div>
           ) : null}
+          <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.order_number}</div>
         </div>
       ),
     },

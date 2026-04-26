@@ -158,14 +158,14 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     style={{ fontSize: fs }}
                     className={`border border-gray-900 px-2 py-2 text-center ${dateWidthClass}`}
                   >
-                    Date
+                     Vr No & Date
                   </th>
-                  <th
+                  {/* <th
                     style={{ fontSize: fs }}
                     className={`border border-gray-900 px-2 py-2 text-left ${vrNoWidthClass}`}
                   >
                     Vr No
-                  </th>
+                  </th> */}
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-36 text-left">Description</th>
                   <th
                     style={{ fontSize: fs }}
@@ -188,12 +188,14 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
                       {row.sl_number}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
-                      {row.vr_date || ''}
+                    <td
+                       style={{ fontSize: fs, lineHeight: 0.95 }}
+                      className="border border-gray-900 px-2 py-[2px] text-center"
+                    >
+                      <div style={{fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }}>{row.vr_no || ''}</div>
+                      <div style={{fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="block ">{row.vr_date || ''}</div>
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                      {row.vr_no || ''}
-                    </td>
+                   
                     <td
                       style={{ fontSize: fs, lineHeight: 0.95 }}
                       className="border border-gray-900 px-2 py-[2px] align-middle w-36"
@@ -201,7 +203,8 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }}>
                         {row.product_name || row.trx_type || ''}
                       </div>
-                      {row.remarks ? <div className="text-xs">{row.remarks}</div> : null}
+                      {row.remarks ? <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }} className="text-xs">{row.remarks}</div> : null}
+                      {row.order_number ? <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }} className="text-xs">Order: {row.order_number}</div> : null}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
                       {row.truck_no || ''}
