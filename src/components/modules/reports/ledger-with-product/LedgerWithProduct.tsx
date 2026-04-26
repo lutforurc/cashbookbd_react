@@ -350,7 +350,9 @@ const LedgerWithProduct = (user: any) => {
           {row.remarks ? (
             <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.remarks}</div>
           ) : null}
-          <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.order_number}</div>
+          { row.order_number && (
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">Order: {row.order_number}</div>
+          )}
         </div>
       ),
     },
