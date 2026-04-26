@@ -21,10 +21,14 @@ import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiCheckSquare, FiEdit, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { FiBook, FiCheckCircle, FiCheckSquare, FiEdit, FiFilter, FiLogIn, FiPrinter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { hasPermission } from '../../../utils/permissionChecker';
 import { toast } from 'react-toastify';
+import httpService from '../../../services/httpService';
+import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
+import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import {
   buildVoucherAutoEditState,
   getVoucherEditTarget,
@@ -58,7 +62,11 @@ const PurchaseLedger = (user: any) => {
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
+  const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
 
 
   useEffect(() => {
@@ -84,7 +92,7 @@ const PurchaseLedger = (user: any) => {
     setEndDate(e);
   };
 
-  const handleActionButtonClick = () => {
+  const runPurchaseLedger = () => {
     const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
     dispatch(
@@ -97,6 +105,10 @@ const PurchaseLedger = (user: any) => {
       }),
     );
     setFilterOpen(false);
+  };
+
+  const handleActionButtonClick = () => {
+    runPurchaseLedger();
   };
 
   useEffect(() => {
@@ -159,6 +171,76 @@ const PurchaseLedger = (user: any) => {
     }
 
     navigate(editTarget.route, { state: editState });
+  };
+
+  const handleApprovePrompt = (row: any) => {
+    setSelectedApprovalRow(row);
+    setShowApproveConfirm(true);
+  };
+
+  const handleApproveClick = async () => {
+    const voucherId = Number(
+      selectedApprovalRow?.mtm_id ??
+      selectedApprovalRow?.smtm_id ??
+      selectedApprovalRow?.mtmid ??
+      selectedApprovalRow?.mtmId ??
+      selectedApprovalRow?.mid ??
+      selectedApprovalRow?.id ??
+      0,
+    );
+
+    if (!voucherId) {
+      toast.error('Approval id not found.');
+      return;
+    }
+
+    try {
+      setApprovingId(voucherId);
+      const response = await httpService.get(`${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`);
+      const result = response?.data;
+
+      if (result === '1' || result?.success) {
+        toast.success('Voucher approved successfully.');
+        setShowApproveConfirm(false);
+        setSelectedApprovalRow(null);
+        runPurchaseLedger();
+        return;
+      }
+
+      if (result === '2') {
+        toast.error('Voucher not found.');
+        return;
+      }
+
+      toast.error(typeof result === 'string' ? result : 'Voucher approval failed.');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Voucher approval failed.');
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const buildVoucherActionRow = (row: any) => ({
+    ...row,
+    vr_no: row?.vr_no ?? row?.challan_no,
+    mtm_id:
+      row?.mtm_id ??
+      row?.smtm_id ??
+      row?.mtmid ??
+      row?.mtmId ??
+      row?.mid ??
+      row?.id,
+  });
+
+  const handlePrintVoucher = (row: any) => {
+    const printableRow = buildVoucherActionRow(row);
+
+    if (!printableRow?.vr_no || !printableRow?.mtm_id) {
+      toast.error('Voucher print data not found.');
+      return;
+    }
+
+    handleVoucherPrint(printableRow);
   };
 
 
@@ -376,23 +458,78 @@ const PurchaseLedger = (user: any) => {
       header: 'Action',
       render: (row: any) => {
         const canEditVoucher =
+          hasPermission(userPermissions, 'purchase.edit') ||
           hasPermission(userPermissions, 'sales.edit') ||
           hasPermission(userPermissions, 'cash.received.edit') ||
           hasPermission(userPermissions, 'cash.payment.edit');
+        const voucherId = Number(
+          row?.mtm_id ??
+          row?.smtm_id ??
+          row?.mtmid ??
+          row?.mtmId ??
+          row?.mid ??
+          row?.id ??
+          0,
+        );
+        const isApproved = Number(row?.is_approved ?? 0) === 1;
+        const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
         return (
           <>
             {row?.vr_no ? (
               <>
+                {canShowApproveAction ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!isApproved && approvingId !== voucherId) {
+                        handleApprovePrompt(row);
+                      }
+                    }}
+                    className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
+                    title={
+                      isApproved
+                        ? `Approved${row?.approved_by ? ` by ${row.approved_by}` : ''}`
+                        : 'Approve voucher'
+                    }
+                    disabled={isApproved || approvingId === voucherId}
+                  >
+                    {isApproved ? (
+                      <FiCheckCircle className="text-green-500 font-bold" />
+                    ) : (
+                      <FiLogIn className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`} />
+                    )}
+                  </button>
+                ) : null}
                 {canEditVoucher && (
-                    <>
-                      <button
-                        onClick={() => handleEditVoucher(row)}
-                        className="text-blue-500 ml-2"
-                      >
-                        <FiEdit className="cursor-pointer" />
-                      </button>
-                    </>
-                  )}
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handlePrintVoucher(row);
+                      }}
+                      className="text-blue-500 ml-2"
+                      title="Print Invoice"
+                    >
+                      <FiPrinter className="cursor-pointer" width="30" height="30" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleEditVoucher(buildVoucherActionRow(row));
+                      }}
+                      className="text-blue-500 ml-2"
+                      title="Edit Invoice"
+                    >
+                      <FiEdit className="cursor-pointer" />
+                    </button>
+                  </>
+                )}
               </>
             ) : (
               ''
@@ -745,6 +882,34 @@ const PurchaseLedger = (user: any) => {
       <div className="overflow-y-auto">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />
+        <ConfirmModal
+          show={showApproveConfirm}
+          title="Confirm Voucher Approval"
+          message={
+            <div className="space-y-2">
+              <p>Are you sure you want to approve voucher</p>
+              <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
+            </div>
+          }
+          confirmLabel="Confirm"
+          cancelLabel="Cancel"
+          loading={approvingId === Number(
+            selectedApprovalRow?.mtm_id ??
+            selectedApprovalRow?.smtm_id ??
+            selectedApprovalRow?.mtmid ??
+            selectedApprovalRow?.mtmId ??
+            selectedApprovalRow?.mid ??
+            selectedApprovalRow?.id ??
+            0,
+          )}
+          onCancel={() => {
+            if (approvingId) return;
+            setShowApproveConfirm(false);
+            setSelectedApprovalRow(null);
+          }}
+          onConfirm={handleApproveClick}
+          className="bg-green-600 hover:bg-sky-600"
+        />
         {/* Summary row */}
         {tableData.length > 0 && (
           <div className="mt-2 border-t font-bold">
