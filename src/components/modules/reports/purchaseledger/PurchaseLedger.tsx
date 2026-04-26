@@ -308,7 +308,7 @@ const PurchaseLedger = (user: any) => {
               </div>
             )}
             {row?.purchase_master?.notes && (
-              <div>{row?.purchase_master?.notes}</div>
+              <div className='text-green-500 dark:text-yellow-300'>{row?.purchase_master?.notes}</div>
             )}
           </div>
         );

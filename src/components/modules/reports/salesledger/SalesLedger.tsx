@@ -246,7 +246,7 @@ const SalesLedger = (user: any) => {
               <div className="text-sm mt-1 font-semibold">{coaName}</div>
             )}
 
-            {detailText ? <div className="mt-1">{detailText}</div> : null}
+            {detailText ? <div className="mt-1 text-green-500 dark:text-yellow-300">{detailText}</div> : null}
           </div>
         );
       },
