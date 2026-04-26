@@ -125,7 +125,7 @@ const TradingBusinessPurchase = () => {
     account: string;
     accountName: string;
     paymentAmt: string;
-    discountAmt: number;
+    discountAmt: string | number;
     purchaseOrderNumber: string;
     purchaseOrderText: string;
     invoice_no: string;
@@ -142,7 +142,7 @@ const TradingBusinessPurchase = () => {
     account: '',
     accountName: '',
     paymentAmt: '',
-    discountAmt: 0,
+    discountAmt: '',
     purchaseOrderNumber: '',
     purchaseOrderText: '',
     invoice_no: '',
@@ -212,7 +212,7 @@ const TradingBusinessPurchase = () => {
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
-      paymentAmt: isCashSupplier ? formData.paymentAmt : '0',
+      paymentAmt: isCashSupplier ? formData.paymentAmt : '',
     });
   };
 
@@ -738,14 +738,15 @@ const TradingBusinessPurchase = () => {
       setSaveButtonLoading(false);
       return;
     }
-    if (formData.paymentAmt.toString() == '') {
-      toast.error('Please add payment amount!');
-      setSaveButtonLoading(false);
-      return;
-    }
+
+    const payload = {
+      ...formData,
+      paymentAmt: formData.paymentAmt === '' ? '0' : formData.paymentAmt,
+      discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
+    };
 
     dispatch(
-      purchaseStore(formData, function (message, success) {
+      purchaseStore(payload, function (message, success) {
  
         if (message) {
           if (success) {
@@ -758,7 +759,7 @@ const TradingBusinessPurchase = () => {
           setFormData((prevFormData) => ({
             ...prevFormData,
             paymentAmt: '',
-            discountAmt: 0,
+            discountAmt: '',
             notes: '',
             invoice_no: '',
             invoice_date: '',
@@ -786,9 +787,15 @@ const TradingBusinessPurchase = () => {
       return;
     }
 
+    const payload = {
+      ...formData,
+      paymentAmt: formData.paymentAmt === '' ? '0' : formData.paymentAmt,
+      discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
+    };
+
     // Save Invoice
     dispatch(
-      purchaseUpdate(formData, function (message) {
+      purchaseUpdate(payload, function (message) {
         if (message) {
           toast.info(message);
         }
@@ -847,7 +854,6 @@ const TradingBusinessPurchase = () => {
       purchaseOrderNumber: '', 
       purchaseOrderText: '', 
     }));
-    setSelectedSupplierOption(null);
     setProductData((prevState: any) => ({
       ...prevState,
       product: '',
@@ -918,8 +924,8 @@ const TradingBusinessPurchase = () => {
       if (isPaymentAmtManuallyEdited) {
         setIsPaymentAmtManuallyEdited(false);
       }
-    } else if (!isPaymentAmtManuallyEdited) {
-      const nextPaymentAmt = formData.mtmId ? existingNetPayment : '0';
+    } else if (formData.account && !isPaymentAmtManuallyEdited) {
+      const nextPaymentAmt = formData.mtmId ? existingNetPayment : '';
       if (formData.paymentAmt !== nextPaymentAmt) {
         setFormData((prev) => ({
           ...prev,
@@ -1071,7 +1077,7 @@ const TradingBusinessPurchase = () => {
               />
               <InputElement
                 id="discountAmt"
-                value={formData.discountAmt.toString()}
+                value={formData.discountAmt?.toString() ?? ''}
                 name="discountAmt"
                 type="number"
                 placeholder={'Discount Amount'}
@@ -1444,7 +1450,7 @@ const TradingBusinessPurchase = () => {
             ...prev,
             account: id,
             accountName: name,
-            paymentAmt: isCashSupplier ? prev.paymentAmt : '0',
+            paymentAmt: isCashSupplier ? prev.paymentAmt : '',
           }));
         }}
       />

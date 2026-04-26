@@ -20,7 +20,7 @@ interface formData {
   account: string;
   accountName: string;
   receivedAmt: string;
-  discountAmt: number;
+  discountAmt: string | number;
   salesOrderNumber: string;
   salesOrderText: string;
   purchaseOrderNumber: string;

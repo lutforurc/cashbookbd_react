@@ -35,7 +35,7 @@ interface formData {
   invoice_no: string;
   invoice_date: string;
   paymentAmt: string;
-  discountAmt: number;
+  discountAmt: string | number;
   purchaseOrderNumber: string;
   purchaseOrderText: string;
   vehicleNumber: string;

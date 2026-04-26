@@ -151,7 +151,7 @@ const TradingBusinessSales = () => {
     account: string;
     accountName: string;
     receivedAmt: string;
-    discountAmt: number;
+    discountAmt: string | number;
     salesOrderNumber: string;
     salesOrderText: string;
     purchaseOrderNumber: string;
@@ -168,7 +168,7 @@ const TradingBusinessSales = () => {
     account: '',
     accountName: '',
     receivedAmt: '',
-    discountAmt: 0,
+    discountAmt: '',
     salesOrderNumber: '',
     salesOrderText: '',
     purchaseOrderNumber: '',
@@ -238,7 +238,7 @@ const TradingBusinessSales = () => {
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
-      receivedAmt: isCashCustomer ? formData.receivedAmt : '0',
+      receivedAmt: isCashCustomer ? formData.receivedAmt : '',
     });
   };
 
@@ -547,20 +547,21 @@ const TradingBusinessSales = () => {
       setSaveButtonLoading(false);
       return;
     }
-    if (formData.receivedAmt == '') {
-      toast.info('Please enter received amount');
-      setSaveButtonLoading(false);
-      return;
-    }
     if (formData.products.length == 0) {
       toast.info('Please add some products.');
       setSaveButtonLoading(false);
       return;
     }
 
+    const payload = {
+      ...formData,
+      receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
+      discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
+    };
+
     try {
       dispatch(
-        tradingSalesStore(formData, function (message) {
+        tradingSalesStore(payload, function (message) {
           if (message) {
             toast.success(message);
             setTimeout(() => {
@@ -568,7 +569,7 @@ const TradingBusinessSales = () => {
               setFormData((prevFormData) => ({
                 ...prevFormData,
                 receivedAmt: '',
-                discountAmt: 0,
+                discountAmt: '',
                 vehicleNumber: '',
                 notes: '',
                 invoice_no: '',
@@ -618,14 +619,20 @@ const TradingBusinessSales = () => {
       return;
     }
 
+    const payload = {
+      ...formData,
+      receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
+      discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
+    };
+
     // Save Invoice Update
     dispatch(
-      tradingSalesUpdate(formData, function (message) {
+      tradingSalesUpdate(payload, function (message) {
         if (message) {
           toast.info(message);
           setFormData((prevState) => ({
             ...prevState,
-            discountAmt: 0,
+            discountAmt: '',
             products: [],
           }));
         }
@@ -693,7 +700,6 @@ const TradingBusinessSales = () => {
       price: '',
       unit: '',
     }));
-    setSelectedCustomerOption(null);
     setAutofillHighlights({
       customer: false,
       product: false,
@@ -1035,10 +1041,10 @@ const TradingBusinessSales = () => {
       if (isReceivedAmtManuallyEdited) {
         setIsReceivedAmtManuallyEdited(false);
       }
-    } else if (!isReceivedAmtManuallyEdited && formData.receivedAmt !== '0') {
+    } else if (formData.account && !isReceivedAmtManuallyEdited && formData.receivedAmt !== '') {
       setFormData((prev) => ({
         ...prev,
-        receivedAmt: '0',
+        receivedAmt: '',
       }));
     }
   }, [
@@ -1084,12 +1090,20 @@ const TradingBusinessSales = () => {
                 <div className="flex items-start gap-1">
                   <div className="min-w-0 flex-1">
                     <DdlMultiline
-                      key={`${selectedCustomerOption?.value || 'empty'}-${selectedCustomerOption?.label || 'empty'}`}
+                      key={`${selectedCustomerOption?.value || formData.account || 'empty'}-${selectedCustomerOption?.label || formData.accountName || 'empty'}`}
                       className={`h-9.5 ${autofillHighlights.customer ? autofillHighlightClass : ''}`}
                       onSelect={customerAccountHandler}
                       actionOptionLabel="+ Add New Customer"
                       onActionSelect={openCustomerModal}
-                      value={selectedCustomerOption}
+                      value={
+                        selectedCustomerOption ||
+                        (formData.account
+                          ? {
+                              value: formData.account,
+                              label: formData.accountName,
+                            }
+                          : null)
+                      }
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           setTimeout(() => {
@@ -1211,7 +1225,7 @@ const TradingBusinessSales = () => {
               />
               <InputElement
                 id="discountAmt"
-                value={formData.discountAmt.toString()}
+                value={formData.discountAmt?.toString() ?? ''}
                 name="discountAmt"
                 type="number"
                 placeholder={'Discount Amount'}
@@ -1591,7 +1605,7 @@ const TradingBusinessSales = () => {
             ...prev,
             account: id,
             accountName: name,
-            receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
+            receivedAmt: isCashCustomer ? prev.receivedAmt : '',
           }));
         }}
       />
