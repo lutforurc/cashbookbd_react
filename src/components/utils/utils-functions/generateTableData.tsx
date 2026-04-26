@@ -4,11 +4,14 @@ export interface TableRow {
   sl_number: number | '';
   vr_date: string;
   mid: number | string;
+  mtm_id?: number | string;
   vr_no: string;
   name: string;
   remarks: string | null;
   branch_id: string | null;
   branch_name?: string | null;
+  is_approved?: number | string;
+  approved_by?: string | null;
   debit: number;
   credit: number;
   voucher_image: string | null;
@@ -48,11 +51,14 @@ export const generateTableData = (data: any): TableRow[] => {
   sl_number: index + 1,
   vr_date: trx.vr_date,
   mid: trx.mid || '',
+  mtm_id: trx.mtm_id || trx.mid || '',
   vr_no: trx.vr_no,
   name: trx.name, // এখন coa_l4 relation লোড হচ্ছে না, তাই placeholder
   remarks: trx.remarks || '-',
   branch_id: String(trx.branch_id).padStart(4, '0'), // 4-digit format
   branch_name: trx.branch_name || '',
+  is_approved: trx.is_approved ?? 0,
+  approved_by: trx.approved_by || null,
   debit: parseFloat(trx.debit || 0),
   credit: parseFloat(trx.credit || 0),
   voucher_image: trx.voucher_image || null,

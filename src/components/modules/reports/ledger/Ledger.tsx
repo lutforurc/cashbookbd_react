@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -21,12 +22,22 @@ import InputElement from '../../../utils/fields/InputElement';
 import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckCircle, FiCheckSquare, FiEdit, FiFilter, FiLogIn, FiRotateCcw } from 'react-icons/fi';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import httpService from '../../../services/httpService';
+import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
+import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import ConfirmModal from '../../../utils/components/ConfirmModalProps';
+import { hasPermission } from '../../../utils/permissionChecker';
+import {
+  buildVoucherAutoEditState,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.ledger);
   const coal4 = useSelector((state) => state.coal4);
@@ -49,6 +60,11 @@ const Ledger = (user: any) => {
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const selectedLedgerName = selectedLedgerOption?.label?.trim() || '';
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
+  const userPermissions = settings?.data?.permissions || [];
+  const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -59,7 +75,11 @@ const Ledger = (user: any) => {
 
 
   useEffect(() => {
-    if (ledgerData && !ledgerData.isLoading && !(ledgerData.data?.data)) {
+    if (ledgerData?.isLoading) {
+      return;
+    }
+
+    if (ledgerData && !(ledgerData.data?.data)) {
       const tableRows = generateTableData(ledgerData.data);
       setTableData(tableRows);
     } else {
@@ -134,6 +154,64 @@ const Ledger = (user: any) => {
       value: option.value,
       label: option.label,
     });
+  };
+
+  const handleApprovePrompt = (row: any) => {
+    setSelectedApprovalRow(row);
+    setShowApproveConfirm(true);
+  };
+
+  const handleApproveClick = async () => {
+    const voucherId = Number(
+      selectedApprovalRow?.mtm_id ??
+      selectedApprovalRow?.mtmId ??
+      selectedApprovalRow?.mid ??
+      selectedApprovalRow?.id ??
+      0,
+    );
+
+    if (!voucherId) {
+      toast.error('Approval id not found.');
+      return;
+    }
+
+    try {
+      setApprovingId(voucherId);
+      const response = await httpService.get(`${API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL}/${voucherId}`);
+      const result = response?.data;
+
+      if (result === '1' || result?.success) {
+        toast.success('Voucher approved successfully.');
+        setShowApproveConfirm(false);
+        setSelectedApprovalRow(null);
+        handleActionButtonClick();
+        return;
+      }
+
+      if (result === '2') {
+        toast.error('Voucher not found.');
+        return;
+      }
+
+      toast.error(typeof result === 'string' ? result : 'Voucher approval failed.');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Voucher approval failed.');
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleEditVoucher = (row: any) => {
+    const voucherNo = String(row?.vr_no || '').trim();
+    const editTarget = getVoucherEditTarget(voucherNo);
+    const editState = buildVoucherAutoEditState(voucherNo);
+
+    if (!voucherNo || !editTarget || !editState) {
+      toast.error('Edit route not found for this voucher.');
+      return;
+    }
+
+    navigate(editTarget.route, { state: editState });
   };
 
 
@@ -247,6 +325,66 @@ const Ledger = (user: any) => {
             voucher_image={row?.voucher_image || ''} // Ensure voucher_image is defined
             title={row?.remarks || ''} // Ensure title is defined
           />
+        );
+      },
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        const voucherId = Number(
+          row?.mtm_id ??
+          row?.mtmId ??
+          row?.mid ??
+          row?.id ??
+          0,
+        );
+        const isApproved = Number(row?.is_approved ?? 0) === 1;
+        const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
+        const canEditVoucher =
+          hasPermission(userPermissions, 'sales.edit') ||
+          hasPermission(userPermissions, 'cash.received.edit') ||
+          hasPermission(userPermissions, 'cash.payment.edit') ||
+          hasPermission(userPermissions, 'purchase.edit');
+
+        if (!row?.vr_no) {
+          return null;
+        }
+
+        return (
+          <>
+            {canShowApproveAction ? (
+              <button
+                type="button"
+                onClick={() => !isApproved && approvingId !== voucherId && handleApprovePrompt(row)}
+                className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
+                title={
+                  isApproved
+                    ? `Approved${row?.approved_by ? ` by ${row.approved_by}` : ''}`
+                    : 'Approve voucher'
+                }
+                disabled={isApproved || approvingId === voucherId}
+              >
+                {isApproved ? (
+                  <FiCheckCircle className="text-green-500 font-bold" />
+                ) : (
+                  <FiLogIn className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`} />
+                )}
+              </button>
+            ) : null}
+            {canEditVoucher ? (
+              <button
+                type="button"
+                onClick={() => handleEditVoucher(row)}
+                className="text-blue-500 ml-2"
+                title="Edit Voucher"
+              >
+                <FiEdit className="cursor-pointer" />
+              </button>
+            ) : null}
+          </>
         );
       },
     },
@@ -466,6 +604,27 @@ const Ledger = (user: any) => {
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />{' '}
         {/* Ensure data is always an array */}
+
+        <ConfirmModal
+          show={showApproveConfirm}
+          title="Confirm Voucher Approval"
+          message={
+            <div className="space-y-2">
+              <p>Are you sure you want to approve voucher</p>
+              <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
+            </div>
+          }
+          confirmLabel="Confirm"
+          cancelLabel="Cancel"
+          loading={approvingId === Number(selectedApprovalRow?.mtm_id ?? selectedApprovalRow?.mtmId ?? selectedApprovalRow?.mid ?? selectedApprovalRow?.id ?? 0)}
+          onCancel={() => {
+            if (approvingId) return;
+            setShowApproveConfirm(false);
+            setSelectedApprovalRow(null);
+          }}
+          onConfirm={handleApproveClick}
+          className="bg-green-600 hover:bg-sky-600"
+        />
 
         <div className="hidden">
           <LedgerPrint
