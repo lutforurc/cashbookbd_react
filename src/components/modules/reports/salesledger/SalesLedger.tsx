@@ -19,10 +19,12 @@ import { useReactToPrint } from 'react-to-print';
 import SalesLedgerPrint from './SalesLedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
-import { useVoucherPrint } from '../../vouchers';
-import { FiCheckCircle, FiCheckSquare, FiEdit, FiFilter, FiLogIn, FiPrinter, FiRotateCcw } from 'react-icons/fi';
+import {
+  useVoucherPrint,
+  VoucherActionButtons,
+} from '../../vouchers';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
-import { hasPermission } from '../../../utils/permissionChecker';
 import { toast } from 'react-toastify';
 import httpService from '../../../services/httpService';
 import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
@@ -60,6 +62,11 @@ const SalesLedger = (user: any) => {
   const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
+  const canEditVoucher = hasAnyPermission(userPermissions, [
+    'sales.edit',
+    'cash.received.edit',
+    'cash.payment.edit',
+  ]);
 
   // Ã¢Å“â€¦ Rows + Font controls (like your screenshot)
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
@@ -509,10 +516,6 @@ const SalesLedger = (user: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => {
-        const canEditVoucher =
-          hasPermission(userPermissions, 'sales.edit') ||
-          hasPermission(userPermissions, 'cash.received.edit') ||
-          hasPermission(userPermissions, 'cash.payment.edit');
         const voucherId = Number(
           row?.mtm_id ??
           row?.smtm_id ??
@@ -525,67 +528,21 @@ const SalesLedger = (user: any) => {
         const isApproved = Number(row?.is_approved ?? 0) === 1;
         const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
         return (
-          <>
-            {row?.vr_no ? (
-              <>
-                {canShowApproveAction ? (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!isApproved && approvingId !== voucherId) {
-                        handleApprovePrompt(row);
-                      }
-                    }}
-                    className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
-                    title={
-                      isApproved
-                        ? `Approved${row?.approved_by ? ` by ${row.approved_by}` : ''}`
-                        : 'Approve voucher'
-                    }
-                    disabled={isApproved || approvingId === voucherId}
-                  >
-                    {isApproved ? (
-                      <FiCheckCircle className="text-green-500 font-bold" />
-                    ) : (
-                      <FiLogIn className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`} />
-                    )}
-                  </button>
-                ) : null}
-                {canEditVoucher && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handlePrintVoucher(row);
-                      }}
-                      className="text-blue-500 ml-2"
-                      title="Print Invoice"
-                    >
-                      <FiPrinter className="cursor-pointer" width="30" height="30" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleEditVoucher(buildVoucherActionRow(row));
-                      }}
-                      className="text-blue-500 ml-2"
-                      title="Edit Invoice"
-                    >
-                      <FiEdit className="cursor-pointer" />
-                    </button>
-                  </>
-                )}
-              </>
-            ) : (
-              ''
-            )}
-          </>
+          <VoucherActionButtons
+            row={row}
+            voucherId={voucherId}
+            isApproved={isApproved}
+            approvingId={approvingId}
+            canShowApproveAction={canShowApproveAction}
+            canShowPrintAction={canEditVoucher}
+            canShowEditAction={canEditVoucher}
+            stopPropagation
+            printTitle="Print Invoice"
+            editTitle="Edit Invoice"
+            onApprove={handleApprovePrompt}
+            onPrint={handlePrintVoucher}
+            onEdit={(actionRow) => handleEditVoucher(buildVoucherActionRow(actionRow))}
+          />
         );
       },
     },

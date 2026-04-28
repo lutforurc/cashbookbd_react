@@ -433,6 +433,7 @@ export const API_OWNER_ROLE_GROUP_SYNC_URL = `${API_BASE_URL}/admin/owner-role-g
 export const API_VOUCHER_APPROVAL_STORE_URL = `${API_BASE_URL}/admin/voucher/voucher-approval-all`;
 
 export const API_VOUCHER_APPROVAL_REMOVE_URL = `${API_BASE_URL}/admin/voucher/remove-approval`;
+export const API_VOUCHER_APPROVAL_REMOVE_BY_ID_URL = `${API_BASE_URL}/admin/voucher/remove/approval`;
 export const API_VOUCHER_TYPE_CHANGE_STORE_URL = `${API_BASE_URL}/admin/voucher/voucher-type-change`;
 export const API_VOUCHER_TYPE_URL = `${API_BASE_URL}/settings/voucher-types`;
 

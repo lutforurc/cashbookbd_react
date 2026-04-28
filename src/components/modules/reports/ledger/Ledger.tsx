@@ -21,8 +21,11 @@ import LedgerPrint from './LedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { getCoal4ById } from '../../chartofaccounts/levelfour/coal4Sliders';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
-import { useVoucherPrint } from '../../vouchers';
-import { FiCheckCircle, FiCheckSquare, FiEdit, FiFilter, FiLogIn, FiRotateCcw } from 'react-icons/fi';
+import {
+  useVoucherPrint,
+  VoucherActionButtons,
+} from '../../vouchers';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import httpService from '../../../services/httpService';
@@ -34,6 +37,7 @@ import {
   buildVoucherAutoEditState,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
+import { useRemoveVoucherApproval } from '../../vouchers';
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
@@ -58,13 +62,22 @@ const Ledger = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const selectedLedgerName = selectedLedgerOption?.label?.trim() || '';
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [showRemoveApprovalConfirm, setShowRemoveApprovalConfirm] = useState(false);
   const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
   const userPermissions = settings?.data?.permissions || [];
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
+  const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
+  const canEditVoucher = hasAnyPermission(userPermissions, [
+    'sales.edit',
+    'cash.received.edit',
+    'cash.payment.edit',
+    'purchase.edit',
+  ]);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -161,6 +174,11 @@ const Ledger = (user: any) => {
     setShowApproveConfirm(true);
   };
 
+  const handleRemoveApprovalPrompt = (row: any) => {
+    setSelectedApprovalRow(row);
+    setShowRemoveApprovalConfirm(true);
+  };
+
   const handleApproveClick = async () => {
     const voucherId = Number(
       selectedApprovalRow?.mtm_id ??
@@ -199,6 +217,16 @@ const Ledger = (user: any) => {
     } finally {
       setApprovingId(null);
     }
+  };
+
+  const handleRemoveApprovalClick = async () => {
+    await removeVoucherApproval(selectedApprovalRow, {
+      onSuccess: () => {
+        setShowRemoveApprovalConfirm(false);
+        setSelectedApprovalRow(null);
+        handleActionButtonClick();
+      },
+    });
   };
 
   const handleEditVoucher = (row: any) => {
@@ -334,57 +362,24 @@ const Ledger = (user: any) => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => {
-        const voucherId = Number(
-          row?.mtm_id ??
-          row?.mtmId ??
-          row?.mid ??
-          row?.id ??
-          0,
-        );
+        const voucherId = getVoucherId(row);
         const isApproved = Number(row?.is_approved ?? 0) === 1;
         const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
-        const canEditVoucher =
-          hasPermission(userPermissions, 'sales.edit') ||
-          hasPermission(userPermissions, 'cash.received.edit') ||
-          hasPermission(userPermissions, 'cash.payment.edit') ||
-          hasPermission(userPermissions, 'purchase.edit');
-
-        if (!row?.vr_no) {
-          return null;
-        }
-
+        const canShowRemoveApprovalAction = canRemoveApproval && !!row?.vr_no && voucherId > 0 && isApproved;
         return (
-          <>
-            {canShowApproveAction ? (
-              <button
-                type="button"
-                onClick={() => !isApproved && approvingId !== voucherId && handleApprovePrompt(row)}
-                className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
-                title={
-                  isApproved
-                    ? `Approved${row?.approved_by ? ` by ${row.approved_by}` : ''}`
-                    : 'Approve voucher'
-                }
-                disabled={isApproved || approvingId === voucherId}
-              >
-                {isApproved ? (
-                  <FiCheckCircle className="text-green-500 font-bold" />
-                ) : (
-                  <FiLogIn className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`} />
-                )}
-              </button>
-            ) : null}
-            {canEditVoucher && !isApproved ? (
-              <button
-                type="button"
-                onClick={() => handleEditVoucher(row)}
-                className="text-blue-500 ml-2"
-                title="Edit Voucher"
-              >
-                <FiEdit className="cursor-pointer" />
-              </button>
-            ) : null}
-          </>
+          <VoucherActionButtons
+            row={row}
+            voucherId={voucherId}
+            isApproved={isApproved}
+            approvingId={approvingId}
+            removingApprovalId={removingApprovalId}
+            canShowApproveAction={canShowApproveAction}
+            canShowRemoveApprovalAction={canShowRemoveApprovalAction}
+            canShowEditAction={canEditVoucher && !isApproved}
+            onApprove={handleApprovePrompt}
+            onRemoveApproval={handleRemoveApprovalPrompt}
+            onEdit={handleEditVoucher}
+          />
         );
       },
     },
@@ -624,6 +619,27 @@ const Ledger = (user: any) => {
           }}
           onConfirm={handleApproveClick}
           className="bg-green-600 hover:bg-sky-600"
+        />
+
+        <ConfirmModal
+          show={showRemoveApprovalConfirm}
+          title="Confirm Remove Approval"
+          message={
+            <div className="space-y-2">
+              <p>Are you sure you want to remove approval from voucher</p>
+              <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
+            </div>
+          }
+          confirmLabel="Remove"
+          cancelLabel="Cancel"
+          loading={removingApprovalId === Number(selectedApprovalRow?.mtm_id ?? selectedApprovalRow?.mtmId ?? selectedApprovalRow?.mid ?? selectedApprovalRow?.id ?? 0)}
+          onCancel={() => {
+            if (removingApprovalId) return;
+            setShowRemoveApprovalConfirm(false);
+            setSelectedApprovalRow(null);
+          }}
+          onConfirm={handleRemoveApprovalClick}
+          className="bg-amber-600 hover:bg-amber-700"
         />
 
         <div className="hidden">

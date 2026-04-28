@@ -10,7 +10,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCashBook } from './cashBookSlice';
-import { FiBook, FiCheckCircle, FiCheckSquare, FiEdit, FiFilter, FiLogIn, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
@@ -19,7 +19,11 @@ import thousandSeparator from './../../../utils/utils-functions/thousandSeparato
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import CashBookPrint from './CashBookPrint';
-import { useVoucherPrint } from '../../vouchers';
+import {
+  useRemoveVoucherApproval,
+  useVoucherPrint,
+  VoucherActionButtons,
+} from '../../vouchers';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import httpService from '../../../services/httpService';
 import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
@@ -54,14 +58,22 @@ const CashBook = (user: any) => {
   const [branchPad, setBranchPad] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [showRemoveApprovalConfirm, setShowRemoveApprovalConfirm] = useState(false);
   const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
   const printRef = useRef<HTMLDivElement>(null); 
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const settings = useSelector((state: any) => state.settings);
   const userPermissions = settings?.data?.permissions || [];
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
+  const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
+  const canEditVoucher = hasAnyPermission(userPermissions, [
+    'sales.edit',
+    'cash.received.edit',
+    'cash.payment.edit',
+  ]);
 
   interface OptionType {
     value: string;
@@ -131,6 +143,11 @@ const CashBook = (user: any) => {
     setShowApproveConfirm(true);
   };
 
+  const handleRemoveApprovalPrompt = (row: any) => {
+    setSelectedApprovalRow(row);
+    setShowRemoveApprovalConfirm(true);
+  };
+
   const handleApproveClick = async () => {
     const voucherId = Number(selectedApprovalRow?.mtm_id ?? selectedApprovalRow?.mtmId ?? 0);
 
@@ -163,6 +180,16 @@ const CashBook = (user: any) => {
     } finally {
       setApprovingId(null);
     }
+  };
+
+  const handleRemoveApprovalClick = async () => {
+    await removeVoucherApproval(selectedApprovalRow, {
+      onSuccess: () => {
+        setShowRemoveApprovalConfirm(false);
+        setSelectedApprovalRow(null);
+        runCashBook();
+      },
+    });
   };
 
   const handleEditVoucher = (row: any) => {
@@ -327,56 +354,24 @@ const CashBook = (user: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => {
-        const voucherId = Number(row?.mtm_id ?? row?.mtmId ?? 0);
+        const voucherId = getVoucherId(row);
         const isApproved = Number(row?.is_approved ?? 0) === 1;
         const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
+        const canShowRemoveApprovalAction = canRemoveApproval && !!row?.vr_no && voucherId > 0 && isApproved;
         return (
-          <>
-            {row?.vr_no ? (
-              <>
-                {canShowApproveAction ? (
-                  <button
-                    onClick={() => !isApproved && approvingId !== voucherId && handleApprovePrompt(row)}
-                    className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
-                    title={
-                      isApproved
-                        ? `Approved${row?.approved_by ? ` by ${row.approved_by}` : ''}`
-                        : 'Approve voucher'
-                    }
-                    disabled={isApproved || approvingId === voucherId}
-                  >
-                    {isApproved ? (
-                      <FiCheckCircle className="text-green-500 font-bold" />
-                    ) : (
-                      <FiLogIn className={`${approvingId === voucherId ? 'text-amber-500' : 'text-red-500'}`} />
-                    )}
-                  </button>
-                ) : null}
-                {(
-                hasPermission(userPermissions, 'sales.edit') || 
-                hasPermission(userPermissions, 'cash.received.edit') ||
-                hasPermission(userPermissions, 'cash.payment.edit')
-                ) && (
-                  <>
-                    <button
-                      onClick={() => {}}
-                      className="text-blue-500 ml-2"
-                    >
-                      <FiBook className="cursor-pointer" />
-                    </button>
-                    <button
-                      onClick={() => handleEditVoucher(row)}
-                      className="text-blue-500 ml-2"
-                    >
-                      <FiEdit className="cursor-pointer" />
-                    </button>
-                  </>
-                )}
-              </>
-            ) : (
-              ''
-            )}
-          </>
+          <VoucherActionButtons
+            row={row}
+            voucherId={voucherId}
+            isApproved={isApproved}
+            approvingId={approvingId}
+            removingApprovalId={removingApprovalId}
+            canShowApproveAction={canShowApproveAction}
+            canShowRemoveApprovalAction={canShowRemoveApprovalAction}
+            canShowEditAction={canEditVoucher && !isApproved}
+            onApprove={handleApprovePrompt}
+            onRemoveApproval={handleRemoveApprovalPrompt}
+            onEdit={handleEditVoucher}
+          />
         );
       },
     },
@@ -575,6 +570,27 @@ const CashBook = (user: any) => {
           }}
           onConfirm={handleApproveClick}
           className="bg-green-600 hover:bg-sky-600"
+        />
+
+        <ConfirmModal
+          show={showRemoveApprovalConfirm}
+          title="Confirm Remove Approval"
+          message={
+            <div className="space-y-2">
+              <p>Are you sure you want to remove approval from voucher</p>
+              <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
+            </div>
+          }
+          confirmLabel="Remove"
+          cancelLabel="Cancel"
+          loading={removingApprovalId === getVoucherId(selectedApprovalRow)}
+          onCancel={() => {
+            if (removingApprovalId) return;
+            setShowRemoveApprovalConfirm(false);
+            setSelectedApprovalRow(null);
+          }}
+          onConfirm={handleRemoveApprovalClick}
+          className="bg-amber-600 hover:bg-amber-700"
         />
 
         {/* === Hidden Print Component === */}
