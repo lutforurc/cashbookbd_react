@@ -26,6 +26,13 @@ type ProductProfitRow = {
   mid?: number | null;
   vr_no?: string | number | null;
   vr_date?: string | null;
+  purchase_invoice?: string | null;
+  purchase_invoice_date?: string | null;
+  purchase_vr_no?: string | number | null;
+  purchase_vr_date?: string | null;
+  purchase_invoice_no?: string | number | null;
+  purchase_invoices?: Array<string | number | null> | null;
+  purchase_details?: Array<Record<string, any>> | null;
   product_id?: number;
   product_name: string;
   sold_qty: number;
@@ -41,6 +48,12 @@ type ProductProfitRow = {
   sale_total: number;
   profit: number | null;
   warning?: string;
+};
+
+type PurchaseInvoiceEntry = {
+  label: string;
+  vrNo: string;
+  mtmId: number | null;
 };
 
 const formatNumber = (value: number | null | undefined, decimal = 2) => {
@@ -64,6 +77,88 @@ const formatVoucherDate = (value: string | null | undefined) => {
   }
 
   return value;
+};
+
+const normalizeTextList = (values: Array<unknown>) => {
+  const seen = new Set<string>();
+
+  return values
+    .map((value) => {
+      if (value === null || value === undefined) return "";
+      return String(value).trim();
+    })
+    .filter((value) => {
+      if (!value || seen.has(value)) return false;
+      seen.add(value);
+      return true;
+    });
+};
+
+const getPurchaseInvoiceLines = (row: ProductProfitRow) => {
+  const detailLines = Array.isArray(row?.purchase_details)
+    ? row.purchase_details.flatMap((detail) =>
+        normalizeTextList([
+          detail?.purchase_invoice,
+          detail?.purchase_invoice_no,
+          detail?.purchase_vr_no,
+          detail?.invoice_no,
+          detail?.vr_no,
+          detail?.label,
+        ])
+      )
+    : [];
+
+  return normalizeTextList([
+    row?.purchase_invoice,
+    row?.purchase_vr_no,
+    row?.purchase_invoice_no,
+    ...(Array.isArray(row?.purchase_invoices) ? row.purchase_invoices : []),
+    ...detailLines,
+  ]);
+};
+
+const getPurchaseInvoiceEntries = (row: ProductProfitRow): PurchaseInvoiceEntry[] => {
+  const entries: PurchaseInvoiceEntry[] = [];
+  const seen = new Set<string>();
+
+  const pushEntry = (value: unknown, mtmId?: unknown) => {
+    if (value === null || value === undefined) return;
+
+    const label = String(value).trim();
+    if (!label) return;
+
+    const key = `${label}::${String(mtmId ?? "")}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+
+    const parsedMtmId = Number(mtmId);
+
+    entries.push({
+      label,
+      vrNo: label,
+      mtmId: Number.isFinite(parsedMtmId) && parsedMtmId > 0 ? parsedMtmId : null,
+    });
+  };
+
+  if (Array.isArray(row?.purchase_details)) {
+    row.purchase_details.forEach((detail) => {
+      pushEntry(
+        detail?.purchase_invoice ??
+          detail?.purchase_invoice_no ??
+          detail?.purchase_vr_no ??
+          detail?.invoice_no ??
+          detail?.vr_no ??
+          detail?.label,
+        detail?.mtm_id ?? detail?.mid ?? detail?.mtmId
+      );
+    });
+  }
+
+  if (entries.length === 0) {
+    getPurchaseInvoiceLines(row).forEach((line) => pushEntry(line));
+  }
+
+  return entries;
 };
 
 const getNetLabel = (amount: number) => {
@@ -200,7 +295,19 @@ const ProductProfitLoss = (user: any) => {
       const apiItems = Array.isArray(reportData?.items) ? reportData.items : [];
       const apiSummary = reportData?.summary ?? {};
 
-      setReportRows(apiItems);
+      setReportRows(
+        apiItems.map((item: ProductProfitRow) => {
+          const purchaseInvoiceLines = getPurchaseInvoiceLines(item);
+
+          return {
+            ...item,
+            purchase_invoice:
+              item?.purchase_invoice ||
+              purchaseInvoiceLines.join("\n") ||
+              null,
+          };
+        })
+      );
       setSummary({
         totalQty: Number(apiSummary?.total_qty || 0),
         totalPurchase: Number(apiSummary?.total_purchase || 0),
@@ -268,6 +375,38 @@ const ProductProfitLoss = (user: any) => {
       render: (row: ProductProfitRow) => (
         <div className="font-medium">{row?.product_name || "-"}</div>
       ),
+    },
+    {
+      key: "purchase_invoice",
+      header: "Purchase Invoice",
+      render: (row: ProductProfitRow) => {
+        const purchaseInvoiceEntries = getPurchaseInvoiceEntries(row);
+
+        return (
+          <div className="whitespace-pre-line break-words">
+            {purchaseInvoiceEntries.length ? (
+              purchaseInvoiceEntries.map((entry, index) => (
+                <div
+                  key={`${entry.vrNo}-${entry.mtmId ?? index}`}
+                  className={entry.mtmId ? "cursor-pointer hover:underline" : undefined}
+                  onClick={() => {
+                    if (!entry.mtmId || !entry.vrNo) return;
+
+                    handleVoucherPrint({
+                      vr_no: entry.vrNo,
+                      mtm_id: entry.mtmId,
+                    });
+                  }}
+                >
+                  {entry.label}
+                </div>
+              ))
+            ) : (
+              "-"
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "vr_no",
@@ -368,7 +507,7 @@ const ProductProfitLoss = (user: any) => {
         [
           {
             label: "Summary",
-            colSpan: 4,
+            colSpan: 5,
             className: "text-left",
           },
           {

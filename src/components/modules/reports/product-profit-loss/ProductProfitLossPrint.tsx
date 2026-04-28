@@ -8,6 +8,11 @@ export type ProductProfitPrintRow = {
   sl?: number;
   vr_no?: string | number | null;
   vr_date?: string | null;
+  purchase_invoice?: string | null;
+  purchase_vr_no?: string | number | null;
+  purchase_invoice_no?: string | number | null;
+  purchase_invoices?: Array<string | number | null> | null;
+  purchase_details?: Array<Record<string, any>> | null;
   product_name?: string;
   sold_qty?: number;
   unit_purchase_rate?: number | null;
@@ -27,6 +32,46 @@ const formatVoucherDate = (value: string | null | undefined) => {
   }
 
   return value;
+};
+
+const normalizeTextList = (values: Array<unknown>) => {
+  const seen = new Set<string>();
+
+  return values
+    .map((value) => {
+      if (value === null || value === undefined) return "";
+      return String(value).trim();
+    })
+    .filter((value) => {
+      if (!value || seen.has(value)) return false;
+      seen.add(value);
+      return true;
+    });
+};
+
+const getPurchaseInvoiceText = (row: ProductProfitPrintRow) => {
+  const detailLines = Array.isArray(row?.purchase_details)
+    ? row.purchase_details.flatMap((detail) =>
+        normalizeTextList([
+          detail?.purchase_invoice,
+          detail?.purchase_invoice_no,
+          detail?.purchase_vr_no,
+          detail?.invoice_no,
+          detail?.vr_no,
+          detail?.label,
+        ])
+      )
+    : [];
+
+  const lines = normalizeTextList([
+    row?.purchase_invoice,
+    row?.purchase_vr_no,
+    row?.purchase_invoice_no,
+    ...(Array.isArray(row?.purchase_invoices) ? row.purchase_invoices : []),
+    ...detailLines,
+  ]);
+
+  return lines.length ? lines.join(", ") : "-";
 };
 
 type Props = {
@@ -112,17 +157,18 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
 
             <table className="w-full table-fixed border-collapse">
               <colgroup>
-                <col style={{ width: "6%" }} />
-                <col style={{ width: "16%" }} />
+                <col style={{ width: "5%" }} />
+                <col style={{ width: "15%" }} />
                 <col style={{ width: "13%" }} />
                 <col style={{ width: "11%" }} />
+                <col style={{ width: "10%" }} />
                 <col style={{ width: "8%" }} />
-                <col style={{ width: "9%" }} />
-                <col style={{ width: "9%" }} />
                 <col style={{ width: "8%" }} />
-                <col style={{ width: "9%" }} />
-                <col style={{ width: "9%" }} />
                 <col style={{ width: "8%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "6%" }} />
               </colgroup>
               <thead className="bg-gray-100">
                 <tr>
@@ -131,6 +177,9 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
                     Product Name
+                  </th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
+                    Purchase Invoice
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
                     VR No
@@ -173,6 +222,9 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                         {row?.product_name || "-"}
                       </td>
                       <td style={{ fontSize: (fs - 1) }} className="border border-gray-900 px-2 py-1">
+                        {getPurchaseInvoiceText(row)}
+                      </td>
+                      <td style={{ fontSize: (fs - 1) }} className="border border-gray-900 px-2 py-1">
                         {row?.vr_no || "-"}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
@@ -203,7 +255,7 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={11} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
+                    <td colSpan={12} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
                       No data found
                     </td>
                   </tr>
