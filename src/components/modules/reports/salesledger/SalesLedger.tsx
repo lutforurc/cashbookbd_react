@@ -20,6 +20,7 @@ import SalesLedgerPrint from './SalesLedgerPrint';
 import InputElement from '../../../utils/fields/InputElement';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import {
+  useRemoveVoucherApproval,
   useVoucherPrint,
   VoucherActionButtons,
 } from '../../vouchers';
@@ -29,6 +30,7 @@ import { toast } from 'react-toastify';
 import httpService from '../../../services/httpService';
 import { API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL } from '../../../services/apiRoutes';
 import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import { hasPermission } from '../../../utils/permissionChecker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import {
   buildVoucherAutoEditState,
@@ -59,9 +61,11 @@ const SalesLedger = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [showRemoveApprovalConfirm, setShowRemoveApprovalConfirm] = useState(false);
   const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
+  const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
   const canEditVoucher = hasAnyPermission(userPermissions, [
     'sales.edit',
     'cash.received.edit',
@@ -76,6 +80,7 @@ const SalesLedger = (user: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+  const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: 'Sales Ledger',
@@ -195,6 +200,11 @@ const SalesLedger = (user: any) => {
     setShowApproveConfirm(true);
   };
 
+  const handleRemoveApprovalPrompt = (row: any) => {
+    setSelectedApprovalRow(row);
+    setShowRemoveApprovalConfirm(true);
+  };
+
   const handleApproveClick = async () => {
     const voucherId = Number(
       selectedApprovalRow?.mtm_id ??
@@ -235,6 +245,16 @@ const SalesLedger = (user: any) => {
     } finally {
       setApprovingId(null);
     }
+  };
+
+  const handleRemoveApprovalClick = async () => {
+    await removeVoucherApproval(selectedApprovalRow, {
+      onSuccess: () => {
+        setShowRemoveApprovalConfirm(false);
+        setSelectedApprovalRow(null);
+        handleActionButtonClick();
+      },
+    });
   };
 
   const buildVoucherActionRow = (row: any) => ({
@@ -527,19 +547,24 @@ const SalesLedger = (user: any) => {
         );
         const isApproved = Number(row?.is_approved ?? 0) === 1;
         const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
+        const canShowRemoveApprovalAction =
+          canRemoveApproval && !!row?.vr_no && voucherId > 0 && isApproved;
         return (
           <VoucherActionButtons
             row={row}
             voucherId={voucherId}
             isApproved={isApproved}
             approvingId={approvingId}
+            removingApprovalId={removingApprovalId}
             canShowApproveAction={canShowApproveAction}
+            canShowRemoveApprovalAction={canShowRemoveApprovalAction}
             canShowPrintAction={canEditVoucher}
-            canShowEditAction={canEditVoucher}
+            canShowEditAction={canEditVoucher && !isApproved}
             stopPropagation
             printTitle="Print Invoice"
             editTitle="Edit Invoice"
             onApprove={handleApprovePrompt}
+            onRemoveApproval={handleRemoveApprovalPrompt}
             onPrint={handlePrintVoucher}
             onEdit={(actionRow) => handleEditVoucher(buildVoucherActionRow(actionRow))}
           />
@@ -897,9 +922,9 @@ const SalesLedger = (user: any) => {
       </div>
 
       {/* Ã¢Å“â€¦ Hidden print component */}
-      <ConfirmModal
-        show={showApproveConfirm}
-        title="Confirm Voucher Approval"
+        <ConfirmModal
+          show={showApproveConfirm}
+          title="Confirm Voucher Approval"
         message={
           <div className="space-y-2">
             <p>Are you sure you want to approve voucher</p>
@@ -925,9 +950,29 @@ const SalesLedger = (user: any) => {
           setShowApproveConfirm(false);
           setSelectedApprovalRow(null);
         }}
-        onConfirm={handleApproveClick}
-        className="bg-green-600 hover:bg-sky-600"
-      />
+          onConfirm={handleApproveClick}
+          className="bg-green-600 hover:bg-sky-600"
+        />
+        <ConfirmModal
+          show={showRemoveApprovalConfirm}
+          title="Confirm Remove Approval"
+          message={
+            <div className="space-y-2">
+              <p>Are you sure you want to remove approval from voucher</p>
+              <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
+            </div>
+          }
+          confirmLabel="Remove"
+          cancelLabel="Cancel"
+          loading={removingApprovalId === getVoucherId(selectedApprovalRow)}
+          onCancel={() => {
+            if (removingApprovalId) return;
+            setShowRemoveApprovalConfirm(false);
+            setSelectedApprovalRow(null);
+          }}
+          onConfirm={handleRemoveApprovalClick}
+          className="bg-amber-600 hover:bg-amber-700"
+        />
 
       <div className="hidden">
         <SalesLedgerPrint
