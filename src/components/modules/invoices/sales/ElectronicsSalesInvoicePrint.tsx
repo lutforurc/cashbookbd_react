@@ -384,16 +384,14 @@ const ElectronicsSalesInvoicePrint = React.forwardRef<HTMLDivElement, Props>(({ 
                       </td>
                     </tr>
 
-                    {receivedAmount !== 0 && (
-                      <tr>
-                        <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
-                          Received Tk.
-                        </td>
-                        <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
-                          {thousandSeparator(receivedAmount)}
-                        </td>
-                      </tr>
-                    )}
+                    <tr>
+                      <td className="border-y border-black px-1 py-1 text-right" style={{ fontSize: fs }}>
+                        Received Tk.
+                      </td>
+                      <td className="border-y border-black px-1 py-1 text-right w-32" style={{ fontSize: fs }}>
+                        {thousandSeparator(receivedAmount)}
+                      </td>
+                    </tr>
                     <tr>
                       <td className="border-black px-1 py-1 text-right font-bold" style={{ fontSize: fs }}>
                         Due Tk.

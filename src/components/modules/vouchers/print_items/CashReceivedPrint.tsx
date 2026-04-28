@@ -2,6 +2,7 @@ import React from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import dayjs from 'dayjs';
+import { chartDateTime } from '../../../utils/utils-functions/formatDate';
 
 type Props = {
     data: any;
@@ -91,6 +92,7 @@ const CashReceivedPrint = React.forwardRef<HTMLDivElement, Props>(
         const remarks = creditEntry?.remarks ?? '';
         const address = creditEntry?.coa_l4?.cust_party_infos?.address ?? '';
         const mobile = creditEntry?.coa_l4?.cust_party_infos?.mobile ?? '';
+        const preparedBy = data?.user?.name ?? '';
 
         return (
             <div ref={ref} className="print-root text-gray-900">
@@ -173,12 +175,17 @@ const CashReceivedPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div>
 
                 {/* SIGNATURE */}
-                <div className="mt-10 grid grid-cols-2 gap-6 text-xs">
+                <div className="mt-10 grid grid-cols-3 gap-6 text-xs">
                     <div>
-                        <div className="border-t border-black pt-1 w-40">Received By</div>
+                        <div className="border-t border-black pt-1 w-40 text-center">Received By</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="border-t border-black pt-1 w-40 mx-auto">Prepared by</div>
+                        {preparedBy && <div className="mt-1">{preparedBy}</div>}
+                        {data?.created_at && <div>{chartDateTime(data.created_at)}</div>}
                     </div>
                     <div className="text-right">
-                        <div className="border-t border-black pt-1 w-40 ml-auto">Approved By</div>
+                        <div className="border-t border-black pt-1 w-40 ml-auto text-center">Approved By</div>
                     </div>
                 </div>
 
