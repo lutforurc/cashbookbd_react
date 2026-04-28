@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
-import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
 import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
@@ -11,7 +10,6 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import InputElement from "../../../utils/fields/InputElement";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
-import routes from "../../../services/appRoutes";
 import httpService from "../../../services/httpService";
 import { API_REPORT_PRODUCT_PROFIT_LOSS_URL } from "../../../services/apiRoutes";
 import Table from "../../../utils/others/Table";
@@ -54,18 +52,6 @@ type PurchaseInvoiceEntry = {
   label: string;
   vrNo: string;
   mtmId: number | null;
-};
-
-const formatNumber = (value: number | null | undefined, decimal = 2) => {
-  if (value === null || value === undefined) return "-";
-  return Number(value).toLocaleString("en-IN", {
-    minimumFractionDigits: decimal,
-    maximumFractionDigits: decimal,
-  });
-};
-
-const formatMoney = (value: number | null | undefined) => {
-  return formatNumber(value, 2);
 };
 
 const formatVoucherDate = (value: string | null | undefined) => {
@@ -378,7 +364,7 @@ const ProductProfitLoss = (user: any) => {
     },
     {
       key: "purchase_invoice",
-      header: "Purchase Invoice",
+      header: "Pur. Invoice",
       render: (row: ProductProfitRow) => {
         const purchaseInvoiceEntries = getPurchaseInvoiceEntries(row);
 
@@ -410,7 +396,7 @@ const ProductProfitLoss = (user: any) => {
     },
     {
       key: "vr_no",
-      header: "VR No",
+      header: "Sal. Invoice",
       render: (row: ProductProfitRow) => (
         <div
           className={row?.vr_no ? "cursor-pointer hover:underline" : undefined}
@@ -491,16 +477,9 @@ const ProductProfitLoss = (user: any) => {
     {
       key: "warning",
       header: "Remarks",
-      render: (row: ProductProfitRow) =>
-        row?.warning ? (
-          <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
-            {row.warning}
-          </span>
-        ) : (
-          <div>-</div>
-        ),
+      render: () => <div>-</div>,
     },
-  ];
+  ].filter((column) => column.key !== "warning");
 
   const footerRows = tableData.length
     ? [
@@ -534,12 +513,6 @@ const ProductProfitLoss = (user: any) => {
             label: `${getNetLabel(summary.totalProfit)}: ${thousandSeparator(
               Math.abs(summary.totalProfit))}`,
             className: "text-right",
-          },
-          {
-            label:
-              summary.warningCount > 0
-                ? `${thousandSeparator(summary.warningCount)} warning`
-                : "-",
           },
         ],
       ]
@@ -745,7 +718,7 @@ const ProductProfitLoss = (user: any) => {
         </div>
 
         <div className="mt-2">
-          <div className="grid grid-cols-2 gap-3 border-b border-slate-200 pb-3 sm:grid-cols-3 xl:grid-cols-5 dark:border-strokedark">
+          <div className="grid grid-cols-2 gap-3 border-b border-slate-200 pb-3 sm:grid-cols-2 xl:grid-cols-4 dark:border-strokedark">
             <div className="rounded border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-strokedark dark:bg-boxdark">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                 Qty.
@@ -782,14 +755,6 @@ const ProductProfitLoss = (user: any) => {
               </p>
             </div>
 
-            <div className="rounded border border-amber-300 bg-white px-3 py-3 shadow-sm dark:border-amber-500/40 dark:bg-boxdark">
-              <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-200">
-                Warning
-              </p>
-              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-                {thousandSeparator(summary.warningCount)}
-              </p>
-            </div>
           </div>
 
           <div className="pt-2">

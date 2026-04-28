@@ -121,7 +121,6 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
         acc.totalPurchase += Number(row?.purchase_total || 0);
         acc.totalSales += Number(row?.sale_total || 0);
         acc.totalProfit += Number(row?.profit || 0);
-        acc.warningCount += row?.warning ? 1 : 0;
         return acc;
       },
       {
@@ -129,7 +128,6 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
         totalPurchase: 0,
         totalSales: 0,
         totalProfit: 0,
-        warningCount: 0,
       }
     );
     const profitLabel =
@@ -168,7 +166,6 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                 <col style={{ width: "8%" }} />
                 <col style={{ width: "8%" }} />
                 <col style={{ width: "8%" }} />
-                <col style={{ width: "6%" }} />
               </colgroup>
               <thead className="bg-gray-100">
                 <tr>
@@ -179,7 +176,7 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                     Product Name
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
-                    Purchase Invoice
+                    Invoice
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
                     VR No
@@ -191,22 +188,19 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                     Sold Qty
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                    Unit Purchase
+                    U. Pur.
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                    Purchase Total
+                    P. Total
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                    Unit Sale
+                    U. Sale
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                    Sale Total
+                    S. Total
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
-                    Profit / Loss
-                  </th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">
-                    Remarks
+                    Effect
                   </th>
                 </tr>
               </thead>
@@ -218,10 +212,10 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
                         {row?.sl ?? pageIndex * rowsPerPage + idx + 1}
                       </td>
-                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
+                      <td style={{ fontSize: fs, lineHeight: 1.35 }} className="border border-gray-900 px-2 py-1">
                         {row?.product_name || "-"}
                       </td>
-                      <td style={{ fontSize: (fs - 1) }} className="border border-gray-900 px-2 py-1">
+                      <td style={{ fontSize: (fs - 1), lineHeight: 1.35 }} className="border border-gray-900 px-2 py-1">
                         {getPurchaseInvoiceText(row)}
                       </td>
                       <td style={{ fontSize: (fs - 1) }} className="border border-gray-900 px-2 py-1">
@@ -248,14 +242,12 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                         {thousandSeparator( Number(row?.profit))}
                       </td>
-                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                        {row?.warning || "-"}
-                      </td>
+                      
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={12} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
+                    <td colSpan={11} className="border border-gray-900 px-3 py-6 text-center text-gray-500">
                       No data found
                     </td>
                   </tr>
@@ -281,9 +273,6 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
                   </div>
                   <div style={{ fontSize: fs }} className="text-right font-bold whitespace-nowrap">
                     { profitLabel == "+" ? "Profit" : "Loss"  } {profitLabel} {thousandSeparator(Math.abs(summary.totalProfit))}
-                  </div>
-                  <div style={{ fontSize: fs }} className="font-bold text-right whitespace-nowrap">
-                    {summary.warningCount > 0 ? `${summary.warningCount} warning` : "-"}
                   </div>
                 </div>
               </div>
