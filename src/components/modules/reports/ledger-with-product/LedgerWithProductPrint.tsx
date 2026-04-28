@@ -103,7 +103,6 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 	    const pages = chunkRows(rows, rowsPerPage);
 	    const fs = Number.isFinite(fontSize) ? fontSize : 9;
 	    const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
-	    const vrNoWidthClass = fs >= 12 ? 'w-26' : fs <= 10 ? 'w-22' : 'w-24';
 	    const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
 
     return (
@@ -160,12 +159,6 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   >
                      Vr No & Date
                   </th>
-                  {/* <th
-                    style={{ fontSize: fs }}
-                    className={`border border-gray-900 px-2 py-2 text-left ${vrNoWidthClass}`}
-                  >
-                    Vr No
-                  </th> */}
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-36 text-left">Description</th>
                   <th
                     style={{ fontSize: fs }}

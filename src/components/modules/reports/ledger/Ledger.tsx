@@ -374,7 +374,7 @@ const Ledger = (user: any) => {
                 )}
               </button>
             ) : null}
-            {canEditVoucher ? (
+            {canEditVoucher && !isApproved ? (
               <button
                 type="button"
                 onClick={() => handleEditVoucher(row)}
