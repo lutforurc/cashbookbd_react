@@ -295,15 +295,19 @@ const ProductStockNormal = ({ user }: any) => {
             </p>
           );
         }
-        return (
-          <p>
+        return Math.floor(row.opening) ? (
+          <p
+            className={
+              Math.floor(Number(row.opening) || 0) < 0
+                ? 'font-semibold text-orange-700 dark:text-orange-300'
+                : undefined
+            }
+          >
             {thousandSeparator(Math.floor(row.opening))}
-            {Math.floor(row.opening) ? (
-              <span className="text-sm "> ({row.unit})</span>
-            ) : (
-              ''
-            )}
+            <span className="text-sm "> ({row.unit})</span>
           </p>
+        ) : (
+          '-'
         );
       },
     },
@@ -368,7 +372,13 @@ const ProductStockNormal = ({ user }: any) => {
           );
         }
         return Math.floor(row.balance) ? (
-          <span className="text-sm ">
+          <span
+            className={`text-sm ${
+              Math.floor(Number(row.balance) || 0) < 0
+                ? 'font-semibold text-orange-700 dark:text-orange-300'
+                : ''
+            }`}
+          >
             {thousandSeparator(Math.floor(row.balance))} ({row.unit})
           </span>
         ) : (

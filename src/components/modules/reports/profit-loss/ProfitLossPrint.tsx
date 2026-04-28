@@ -42,7 +42,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
               <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
                 <div>
                   <span className="font-semibold">Report Date:</span>{" "}
-                  {startDate} â€” {endDate}
+                  {startDate} to {endDate}
                 </div>
               </div>
             </div>

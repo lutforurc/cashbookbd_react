@@ -155,7 +155,7 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                   {/* à¦¡à¦¾à¦¨ à¦ªà¦¾à¦¶ */}
                   <div className="text-right">
                     <span className="font-semibold">Report Date:</span>{' '}
-                    {startDate || '-'} â€” {endDate || '-'}
+                    {startDate || '-'} to {endDate || '-'}
                   </div>
                 </div>
               </div>

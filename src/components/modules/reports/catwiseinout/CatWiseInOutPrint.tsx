@@ -131,7 +131,7 @@ const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
                         <div className="mb-4">
                             <h4 className="font-semibold text-center">{title}</h4>
                             <div className="text-center text-xs mt-1">
-                                <strong>Date:</strong> {startDate || "-"} â€” {endDate || "-"}
+                                <strong>Date:</strong> {startDate || "-"} to {endDate || "-"}
                             </div>
                         </div>
 

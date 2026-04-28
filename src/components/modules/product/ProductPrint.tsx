@@ -134,7 +134,7 @@ const ProductPrint = React.forwardRef<HTMLDivElement, Props>(
               {(startDate || endDate) && (
                 <div className="mt-1 text-xs">
                   <span className="font-semibold">Report Date:</span>{' '}
-                  {startDate || '-'} â€” {endDate || '-'}
+                  {startDate || '-'} to {endDate || '-'}
                 </div>
               )}
             </div>

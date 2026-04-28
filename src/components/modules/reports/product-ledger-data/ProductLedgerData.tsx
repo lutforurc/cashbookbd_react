@@ -268,7 +268,11 @@ const ProductLedgerData = (user: any) => {
       header: 'Invoice No.',
       render: (row: any) => (
         <div
-          className={`${row?.rowType === 'opening' ? 'font-medium text-white' : 'cursor-pointer hover:underline'}`}
+          className={`${
+            row?.rowType === 'opening'
+              ? 'font-medium text-slate-900 dark:text-white'
+              : 'cursor-pointer hover:underline'
+          }`}
           onClick={() => {
             if (row?.rowType === 'opening') return;
             handleVoucherPrint({
@@ -278,7 +282,9 @@ const ProductLedgerData = (user: any) => {
             });
           }}
         >
-          {aliasValue(row, ['invoice_no', 'invoice', 'vr_no', 'label'], '-')}
+          {row?.rowType === 'opening'
+            ? 'Opening'
+            : aliasValue(row, ['invoice_no', 'invoice', 'vr_no', 'label'], '-')}
         </div>
       ),
     },

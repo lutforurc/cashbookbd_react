@@ -300,11 +300,19 @@ const ProductStock = ( user : any) => {
           <p className="font-bold">
             {thousandSeparator(Math.floor(row.opening || 0))}
           </p>
-        ) : (
-          <p>
+        ) : row.opening ? (
+          <p
+            className={
+              Math.floor(Number(row.opening) || 0) < 0
+                ? 'font-semibold text-orange-700 dark:text-orange-300'
+                : undefined
+            }
+          >
             {thousandSeparator(Math.floor(row.opening || 0))}
-            {row.opening ? <span className="text-sm"> ({row.unit})</span> : ''}
+            <span className="text-sm"> ({row.unit})</span>
           </p>
+        ) : (
+          '-'
         ),
     },
     {
@@ -360,7 +368,13 @@ const ProductStock = ( user : any) => {
             {thousandSeparator(Math.floor(row.balance || 0))}
           </span>
         ) : Math.floor(row.balance || 0) ? (
-          <span className="text-sm">
+          <span
+            className={`text-sm ${
+              Math.floor(Number(row.balance) || 0) < 0
+                ? 'font-semibold text-orange-700 dark:text-orange-300'
+                : ''
+            }`}
+          >
             {thousandSeparator(Math.floor(row.balance))} ({row.unit})
           </span>
         ) : (
