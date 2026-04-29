@@ -778,6 +778,8 @@ const TradingCombinedEntry = () => {
 		                    </label>
 	                  </div>
 	                </div>
+
+                  
 	                <InputElement
                   id="amount"
                   value={String(formData.amount ?? '')}
