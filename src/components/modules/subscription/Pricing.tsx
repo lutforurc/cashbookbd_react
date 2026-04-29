@@ -5,6 +5,8 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import routes from '../../services/appRoutes';
 import { fetchSubscriptionPlans } from './subscriptionSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { FiCheckSquare, FiPlusSquare, FiSquare } from 'react-icons/fi';
+import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 
 const Pricing: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -49,7 +51,7 @@ const Pricing: React.FC = () => {
 
             <div className="mt-5">
               <p className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white">
-                {plan.currency || 'BDT'} {Number(plan.price || 0).toFixed(0)}
+                {plan.currency || 'BDT'} { thousandSeparator(Number(plan.price || 0)) }
               </p>
               <p className="mt-2 text-sm font-medium text-slate-500 dark:text-bodydark2">
                 Trial: {plan.trial_days || 0} days
@@ -131,6 +133,7 @@ const Pricing: React.FC = () => {
                 <ButtonLoading
                   label="Pay Manually"
                   className="mr-0 whitespace-nowrap rounded-sm px-5 py-2.5 text-center"
+                  icon={ <FiCheckSquare /> }
                 />
               </Link>
               <Link
