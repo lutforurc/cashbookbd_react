@@ -26,6 +26,8 @@ import { getDdlWarehouse } from '../../warehouse/ddlWarehouseSlider';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import {
+  API_CHART_OF_ACCOUNTS_DDL_L4_URL,
+  API_ORDERS_DDL_URL,
   API_TRADING_COMBINED_STORE_URL,
   API_TRADING_COMBINED_SUGGESTIONS_URL,
 } from '../../../services/apiRoutes';
@@ -60,6 +62,12 @@ const normalizeSuggestionItems = (items: any) =>
         .map((item: any) => String(item ?? '').trim())
         .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
     : [];
+
+const normalizeLookupText = (value: any) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
 
 const initialProductData = {
   product: '',
@@ -246,17 +254,198 @@ const TradingCombinedEntry = () => {
     }, 150);
   };
 
-  const purchaseOrderHandler = (option: any) => {
+  const purchaseOrderHandler = async (option: any) => {
+    if (!option) {
+      setFormData((prev) => ({
+        ...prev,
+        purchaseOrderNumber: '',
+        purchaseOrderText: '',
+      }));
+      return;
+    }
+
+    let selectedOrderOption = option;
+
+    if (!option?.label_2 && (option?.label || option?.value)) {
+      try {
+        const orderResponse = await httpService.get(API_ORDERS_DDL_URL, {
+          params: {
+            q: String(option?.label || option?.value || ''),
+            order_type: '1',
+          },
+        });
+        const orderOptions = orderResponse?.data?.data?.data;
+        const matchedOrder = Array.isArray(orderOptions)
+          ? orderOptions.find(
+              (item: any) =>
+                String(item?.value ?? '') === String(option?.value ?? '') ||
+                normalizeLookupText(item?.label) === normalizeLookupText(option?.label),
+            ) ?? orderOptions[0]
+          : null;
+
+        if (matchedOrder) {
+          selectedOrderOption = matchedOrder;
+        }
+      } catch (error) {
+        console.error('Failed to resolve selected purchase order details:', error);
+      }
+    }
+
+    const fallbackSupplierId =
+      selectedOrderOption?.supplier_id ??
+      selectedOrderOption?.party_id ??
+      selectedOrderOption?.order_for_id ??
+      selectedOrderOption?.account_id ??
+      '';
+    const fallbackSupplierName = selectedOrderOption?.label_2 ?? '';
+
+    let resolvedSupplier = {
+      id: fallbackSupplierId,
+      name: fallbackSupplierName,
+    };
+
+    if (fallbackSupplierName) {
+      try {
+        const response = await httpService.get(API_CHART_OF_ACCOUNTS_DDL_L4_URL, {
+          params: {
+            searchName: fallbackSupplierName,
+            acType: 3,
+          },
+        });
+        const supplierOptions = response?.data?.data?.data;
+        const normalizedSupplierName = normalizeLookupText(fallbackSupplierName);
+        const matchedSupplier = Array.isArray(supplierOptions)
+          ? supplierOptions.find(
+              (item: any) =>
+                normalizeLookupText(item?.label) === normalizedSupplierName ||
+                normalizeLookupText(item?.label).includes(normalizedSupplierName) ||
+                normalizedSupplierName.includes(normalizeLookupText(item?.label)),
+            ) ?? supplierOptions[0]
+          : null;
+
+        if (matchedSupplier) {
+          resolvedSupplier = {
+            id: matchedSupplier?.value ?? resolvedSupplier.id,
+            name: matchedSupplier?.label ?? resolvedSupplier.name,
+          };
+        }
+      } catch (error) {
+        console.error('Failed to resolve supplier from purchase order:', error);
+      }
+    }
+
+    setSelectedSupplierOption(
+      resolvedSupplier.name
+        ? {
+            value: resolvedSupplier.id || resolvedSupplier.name,
+            label: resolvedSupplier.name,
+          }
+        : null,
+    );
+
     setFormData((prev) => ({
       ...prev,
+      supplierAccount: resolvedSupplier.id || '',
+      supplierName: resolvedSupplier.name || '',
       purchaseOrderNumber: option?.value || '',
       purchaseOrderText: option?.label || '',
     }));
   };
 
-  const salesOrderHandler = (option: any) => {
+  const salesOrderHandler = async (option: any) => {
+    if (!option) {
+      setFormData((prev) => ({
+        ...prev,
+        salesOrderNumber: '',
+        salesOrderText: '',
+      }));
+      return;
+    }
+
+    let selectedOrderOption = option;
+
+    if (!option?.label_2 && (option?.label || option?.value)) {
+      try {
+        const orderResponse = await httpService.get(API_ORDERS_DDL_URL, {
+          params: {
+            q: String(option?.label || option?.value || ''),
+            order_type: '2',
+          },
+        });
+        const orderOptions = orderResponse?.data?.data?.data;
+        const matchedOrder = Array.isArray(orderOptions)
+          ? orderOptions.find(
+              (item: any) =>
+                String(item?.value ?? '') === String(option?.value ?? '') ||
+                normalizeLookupText(item?.label) === normalizeLookupText(option?.label),
+            ) ?? orderOptions[0]
+          : null;
+
+        if (matchedOrder) {
+          selectedOrderOption = matchedOrder;
+        }
+      } catch (error) {
+        console.error('Failed to resolve selected sales order details:', error);
+      }
+    }
+
+    const fallbackCustomerId =
+      selectedOrderOption?.customer_id ??
+      selectedOrderOption?.party_id ??
+      selectedOrderOption?.order_for_id ??
+      selectedOrderOption?.customer?.id ??
+      selectedOrderOption?.account_id ??
+      '';
+    const fallbackCustomerName = selectedOrderOption?.label_2 ?? '';
+
+    let resolvedCustomer = {
+      id: fallbackCustomerId,
+      name: fallbackCustomerName,
+    };
+
+    if (fallbackCustomerName) {
+      try {
+        const response = await httpService.get(API_CHART_OF_ACCOUNTS_DDL_L4_URL, {
+          params: {
+            searchName: fallbackCustomerName,
+            acType: 3,
+          },
+        });
+        const customerOptions = response?.data?.data?.data;
+        const normalizedCustomerName = normalizeLookupText(fallbackCustomerName);
+        const matchedCustomer = Array.isArray(customerOptions)
+          ? customerOptions.find(
+              (item: any) =>
+                normalizeLookupText(item?.label) === normalizedCustomerName ||
+                normalizeLookupText(item?.label).includes(normalizedCustomerName) ||
+                normalizedCustomerName.includes(normalizeLookupText(item?.label)),
+            ) ?? customerOptions[0]
+          : null;
+
+        if (matchedCustomer) {
+          resolvedCustomer = {
+            id: matchedCustomer?.value ?? resolvedCustomer.id,
+            name: matchedCustomer?.label ?? resolvedCustomer.name,
+          };
+        }
+      } catch (error) {
+        console.error('Failed to resolve customer from sales order:', error);
+      }
+    }
+
+    setSelectedCustomerOption(
+      resolvedCustomer.name
+        ? {
+            value: resolvedCustomer.id || resolvedCustomer.name,
+            label: resolvedCustomer.name,
+          }
+        : null,
+    );
+
     setFormData((prev) => ({
       ...prev,
+      customerAccount: resolvedCustomer.id || '',
+      customerName: resolvedCustomer.name || '',
       salesOrderNumber: option?.value || '',
       salesOrderText: option?.label || '',
     }));
