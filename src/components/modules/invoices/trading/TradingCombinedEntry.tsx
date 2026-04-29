@@ -633,7 +633,7 @@ const TradingCombinedEntry = () => {
 
   return (
     <>
-      <HelmetTitle title="Trading Combined Invoice" />
+      <HelmetTitle title="Combined Invoice" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         <div className="self-start md:self-auto">
           <div className="grid grid-cols-1 gap-y-1">
@@ -770,8 +770,8 @@ const TradingCombinedEntry = () => {
 		                        }`}
 		                      >
 		                        <span
-		                          className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
-		                            formData.onlySalesPosting ? 'translate-x-5' : 'translate-x-0'
+		                          className={`absolute left-0.5 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-white transition duration-200 ${
+		                            formData.onlySalesPosting ? 'translate-x-[18px]' : 'translate-x-0'
 		                          }`}
 		                        />
 		                      </span>

@@ -422,21 +422,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {currentBranch?.business_type_id === 8 &&
-                            hasPermission(permissions, 'purchase.create') &&
-                            hasPermission(permissions, 'sales.create') && (
-                              <li>
-                                <NavLink
-                                  to={routes.inv_trading_combined}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-white')
-                                  }
-                                >
-                                  Trading Combined Entry
-                                </NavLink>
-                              </li>
-                            )}
                           {hasPermission(permissions, 'purchase.create') && (
                             <li>
                               <NavLink
@@ -502,6 +487,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+
+                          {currentBranch?.business_type_id === 8 &&
+                            hasPermission(permissions, 'purchase.create') &&
+                            hasPermission(permissions, 'sales.create') && (
+                              <li>
+                                <NavLink
+                                  to={routes.inv_trading_combined}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Combined Invoice
+                                </NavLink>
+                              </li>
+                            )}
                           {/* {(hasPermission(permissions, 'branch.received.create') ||
                             hasPermission(permissions, 'inventory.received.create') ||
                             hasPermission(permissions, 'product.received.create') ||
