@@ -439,8 +439,15 @@ const TradingBusinessPurchase = () => {
 
 
   const weightVarianceType = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const variance_type = 'variance_type'; // Set the desired key dynamically
-    setProductData({ ...productData, [variance_type]: e.target.value });
+    const nextVarianceType = e.target.value;
+    setProductData((prevState: any) => ({
+      ...prevState,
+      variance_type: nextVarianceType,
+      variance:
+        nextVarianceType && nextVarianceType !== 'Not Applicable'
+          ? prevState.variance
+          : '',
+    }));
   };
 
   const searchInvoice = (searchValue?: string) => {
@@ -1243,6 +1250,7 @@ const TradingBusinessPurchase = () => {
                   placeholder={'Weight Variance'}
                   label={'Weight Variance'}
                   className={'py-1'}
+                  disabled={!productData.variance_type || productData.variance_type === 'Not Applicable'}
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'qty')} // Pass the next field's ID
                 />
@@ -1367,13 +1375,17 @@ const TradingBusinessPurchase = () => {
                 {' '}
                 Sl. No.{' '}
               </th>
-              <th scope="col" className={`px-2 py-2 `}>
-                {' '}
-                Product Name{' '}
-              </th>
-              <th scope="col" className={`px-2 py-2 text-right`}>
-                {' '}
-                Quantity{' '}
+	              <th scope="col" className={`px-2 py-2 `}>
+	                {' '}
+	                Product Name{' '}
+	              </th>
+	              <th scope="col" className={`px-2 py-2 text-right`}>
+	                {' '}
+	                Weight Variance{' '}
+	              </th>
+	              <th scope="col" className={`px-2 py-2 text-right`}>
+	                {' '}
+	                Quantity{' '}
               </th>
               <th scope="col" className={`px-2 py-2 text-right`}>
                 {' '}
@@ -1400,14 +1412,21 @@ const TradingBusinessPurchase = () => {
                   >
                     {++index}
                   </td>
-                  <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
-                  >
-                    {row.product_name}
-                  </td>
-                  <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
-                  >
+	                  <td
+	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
+	                  >
+	                    {row.product_name}
+	                  </td>
+	                  <td
+	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+	                  >
+	                    {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'
+	                      ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
+	                      : '-'}
+	                  </td>
+	                  <td
+	                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
+	                  >
                     {thousandSeparator(Number(row.qty))} {row.unit}
                   </td>
                   <td

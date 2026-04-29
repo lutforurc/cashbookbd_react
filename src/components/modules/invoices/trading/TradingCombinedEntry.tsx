@@ -463,9 +463,14 @@ const TradingCombinedEntry = () => {
   };
 
   const handleVarianceTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextVarianceType = e.target.value;
     setProductData((prev: any) => ({
       ...prev,
-      variance_type: e.target.value,
+      variance_type: nextVarianceType,
+      variance:
+        nextVarianceType && nextVarianceType !== 'Not Applicable'
+          ? prev.variance
+          : '',
     }));
   };
 
@@ -832,17 +837,18 @@ const TradingCombinedEntry = () => {
               onChange={handleProductChange}
               onKeyDown={(e) => handleInputKeyDown(e, 'variance')}
             />
-            <InputElement
-              id="variance"
-              value={productData.variance || ''}
-              name="variance"
-              type="number"
-              placeholder="Weight Variance"
-              label="Weight Variance"
-              className="py-1"
-              onChange={handleProductChange}
-              onKeyDown={(e) => handleInputKeyDown(e, 'qty')}
-            />
+	            <InputElement
+	              id="variance"
+	              value={productData.variance || ''}
+	              name="variance"
+	              type="number"
+	              placeholder="Weight Variance"
+	              label="Weight Variance"
+	              className="py-1"
+	              disabled={!productData.variance_type || productData.variance_type === 'Not Applicable'}
+	              onChange={handleProductChange}
+	              onKeyDown={(e) => handleInputKeyDown(e, 'qty')}
+	            />
             <div>
               <label htmlFor="">Variance Type</label>
               <SelectWeightVariance
@@ -971,11 +977,11 @@ const TradingCombinedEntry = () => {
 	                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
 	                        {row.product_name}
 	                      </td>
-	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-	                        {row.variance
-	                          ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
-	                          : '-'}
-	                      </td>
+		                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+		                        {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'
+		                          ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
+		                          : '-'}
+		                      </td>
 	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
 	                        {thousandSeparator(Number(row.qty))} {row.unit}
 	                      </td>
