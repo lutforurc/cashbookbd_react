@@ -94,6 +94,7 @@ const initialFormData = {
   invoice_no: '',
   invoice_date: '',
   amount: '',
+  onlySalesPosting: false,
   purchaseDiscountAmt: '',
   salesDiscountAmt: '',
   vehicleNumber: '',
@@ -235,6 +236,13 @@ const TradingCombinedEntry = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleOnlySalesPostingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      onlySalesPosting: e.target.checked,
     }));
   };
 
@@ -594,6 +602,7 @@ const TradingCombinedEntry = () => {
         invoice_no: formData.invoice_no || null,
         invoice_date: formData.invoice_date || null,
         amount: Number(formData.amount || 0),
+        onlySalesPosting: Boolean(formData.onlySalesPosting),
         purchaseDiscountAmt: 0,
         salesDiscountAmt: Number(formData.salesDiscountAmt || 0),
         vehicleNumber: formData.vehicleNumber || null,
@@ -736,17 +745,51 @@ const TradingCombinedEntry = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <InputElement
-                id="amount"
-                value={String(formData.amount ?? '')}
-                name="amount"
-                type="number"
-                placeholder="Transaction Amount"
-                label="Transaction Amount"
-                className="py-1"
-                onChange={handleFormChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'salesDiscountAmt')}
-              />
+	              <div>
+	                <div className="mb-1 flex items-center justify-between gap-2">
+	                  <label htmlFor="amount">Transaction Amount</label>
+		                  <div className="flex items-center gap-2">
+		                    <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
+		                      {formData.onlySalesPosting ? 'Sales Only' : 'Both'}
+		                    </span>
+		                    <label
+		                      htmlFor="onlySalesPosting"
+		                      className="relative inline-flex cursor-pointer items-center"
+		                    >
+		                      <input
+		                        id="onlySalesPosting"
+		                        name="onlySalesPosting"
+		                        type="checkbox"
+		                        checked={Boolean(formData.onlySalesPosting)}
+		                        onChange={handleOnlySalesPostingChange}
+		                        className="peer sr-only"
+		                      />
+		                      <span
+		                        className={`relative h-5 w-10 rounded-full border border-blue-500/70 transition-colors ${
+		                          formData.onlySalesPosting ? 'bg-blue-600' : 'bg-slate-700'
+		                        }`}
+		                      >
+		                        <span
+		                          className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
+		                            formData.onlySalesPosting ? 'translate-x-5' : 'translate-x-0'
+		                          }`}
+		                        />
+		                      </span>
+		                    </label>
+	                  </div>
+	                </div>
+	                <InputElement
+                  id="amount"
+                  value={String(formData.amount ?? '')}
+                  name="amount"
+                  type="number"
+                  placeholder="Transaction Amount"
+                  label=""
+                  className="py-1"
+                  onChange={handleFormChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'salesDiscountAmt')}
+                />
+              </div>
               <InputElement
                 id="salesDiscountAmt"
                 value={String(formData.salesDiscountAmt ?? '')}
