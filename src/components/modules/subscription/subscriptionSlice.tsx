@@ -44,6 +44,7 @@ export interface SubscriptionPlan {
   max_users?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;
+  support_time?: string | null;
   sort_order?: number;
   is_active?: boolean;
   description?: string | null;
@@ -63,6 +64,7 @@ export interface SubscriptionPlanPayload {
   max_users?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;
+  support_time?: string | null;
   features?: SubscriptionFeature[];
   sort_order?: number;
   is_active: boolean;

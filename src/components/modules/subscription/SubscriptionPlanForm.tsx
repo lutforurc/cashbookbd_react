@@ -32,6 +32,7 @@ type PlanFormState = {
   max_users: string;
   max_branches: string;
   max_transactions_per_month: string;
+  support_time: string;
   sort_order: string;
   is_active: string;
   description: string;
@@ -64,6 +65,7 @@ const initialForm: PlanFormState = {
   max_users: '',
   max_branches: '',
   max_transactions_per_month: '',
+  support_time: '',
   sort_order: '0',
   is_active: '1',
   description: '',
@@ -109,6 +111,7 @@ const SubscriptionPlanForm: React.FC = () => {
       max_users: editingPlan.max_users ?? '',
       max_branches: editingPlan.max_branches ?? '',
       max_transactions_per_month: editingPlan.max_transactions_per_month ?? '',
+      support_time: editingPlan.support_time || '',
       sort_order: String(editingPlan.sort_order ?? 0),
       is_active: editingPlan.is_active ? '1' : '0',
       description: editingPlan.description || '',
@@ -167,6 +170,7 @@ const SubscriptionPlanForm: React.FC = () => {
         max_users: editingPlan.max_users ?? '',
         max_branches: editingPlan.max_branches ?? '',
         max_transactions_per_month: editingPlan.max_transactions_per_month ?? '',
+        support_time: editingPlan.support_time || '',
         sort_order: String(editingPlan.sort_order ?? 0),
         is_active: editingPlan.is_active ? '1' : '0',
         description: editingPlan.description || '',
@@ -206,6 +210,7 @@ const SubscriptionPlanForm: React.FC = () => {
       max_users: toNullableNumber(form.max_users),
       max_branches: toNullableNumber(form.max_branches),
       max_transactions_per_month: toNullableNumber(form.max_transactions_per_month),
+      support_time: form.support_time.trim() || undefined,
       features: FEATURE_DEFINITIONS.map((feature) => ({
         feature_key: feature.feature_key,
         feature_name: feature.feature_name,
@@ -376,6 +381,14 @@ const SubscriptionPlanForm: React.FC = () => {
             onChange={handleChange as any}
             inputMode="numeric"
             placeholder="Blank = Unlimited"
+          />
+          <InputElement
+            id="support_time"
+            name="support_time"
+            label="Support Time"
+            value={form.support_time}
+            onChange={handleChange as any}
+            placeholder="e.g. 10 AM - 6 PM"
           />
 
           <div className="md:col-span-2 xl:col-span-4">

@@ -84,6 +84,7 @@ const SubscriptionPlanList: React.FC = () => {
                     <div>Users: {plan.max_users ?? 'Unlimited'}</div>
                     <div>Branches: {plan.max_branches ?? 'Unlimited'}</div>
                     <div>Txn/Month: {plan.max_transactions_per_month ?? 'Unlimited'}</div>
+                    <div>Support: {plan.support_time || '-'}</div>
                   </td>
                   <td className="px-4 py-3">
                     <span

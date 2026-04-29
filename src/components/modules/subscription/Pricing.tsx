@@ -94,6 +94,12 @@ const Pricing: React.FC = () => {
                     {plan.max_transactions_per_month ?? 'Unlimited'}
                   </span>
                 </li>
+                <li className="flex items-start justify-between gap-4">
+                  <span className="font-medium text-slate-500 dark:text-slate-300">Support Time</span>
+                  <span className="text-right font-semibold text-slate-900 dark:text-white">
+                    {plan.support_time || '-'}
+                  </span>
+                </li>
               </ul>
             </div>
 

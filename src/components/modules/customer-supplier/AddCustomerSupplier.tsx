@@ -192,7 +192,7 @@ const AddCustomerSupplier = () => {
               <DropdownCommon
                 id="type_id"
                 name="type_id"
-                label="Select Customer / Supplier Type"
+                label="Select Type"
                 onChange={formik.handleChange}
                 defaultValue={formik.values.type_id}
                 className="h-[2.4rem] bg-transparent"
