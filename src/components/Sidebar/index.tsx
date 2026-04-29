@@ -381,6 +381,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {hasMenuPermission(permissions, 'invoice') && (
                 <SidebarLinkGroup
                   activeCondition={
+                    pathname === routes.inv_trading_combined ||
                     pathname === '/invoice/purchase' ||
                     pathname === '/invoice/sales' ||
                     pathname === routes.branch_transfer ||
@@ -396,6 +397,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       <NavLink
                         to="#"
                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/invoice/purchase' ||
+                          pathname === routes.inv_trading_combined ||
                           pathname === '/invoice/purchase-return' ||
                           pathname === '/invoice/sales' ||
                           pathname === '/invoice/sales-return' ||
@@ -420,6 +422,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {currentBranch?.business_type_id === 8 &&
+                            hasPermission(permissions, 'purchase.create') &&
+                            hasPermission(permissions, 'sales.create') && (
+                              <li>
+                                <NavLink
+                                  to={routes.inv_trading_combined}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Trading Combined Entry
+                                </NavLink>
+                              </li>
+                            )}
                           {hasPermission(permissions, 'purchase.create') && (
                             <li>
                               <NavLink

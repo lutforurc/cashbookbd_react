@@ -54,6 +54,7 @@ import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex'
 import ConstructionBusinessPurchaseReturn from './components/modules/invoices/purchase/ConstructionBusinessPurchaseReturn';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
 import GeneralBusinessSalesReturn from './components/modules/invoices/sales/GeneralBusinessSalesReturn';
+import TradingCombinedEntry from './components/modules/invoices/trading/TradingCombinedEntry';
 import CashReceivedIndex from './components/modules/transactions/cashreceived/CashReceivedIndex';
 import CashPaymentIndex from './components/modules/transactions/cashpayment/CashPaymentIndex';
 import ChangeVoucherType from './components/modules/change_voucher_type/ChangeVoucherType';
@@ -495,6 +496,9 @@ function App() {
             {/* voucher_activity: '/vr-settings/voucher-activity', */}
 
             {/* Invoices */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create', 'sales.create']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_trading_combined} element={<TradingCombinedEntry />} />
+            </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
             </Route>
