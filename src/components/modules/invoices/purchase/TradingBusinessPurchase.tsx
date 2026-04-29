@@ -253,6 +253,16 @@ const TradingBusinessPurchase = () => {
   const orderHandler = async (option: any) => {
     const key = 'purchaseOrderNumber'; // Set the desired key dynamically
     const purchaseOrderText = 'purchaseOrderText'; // Set the desired key dynamically
+
+    if (!option) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [key]: '',
+        [purchaseOrderText]: '',
+      }));
+      return;
+    }
+
     const fallbackSupplierId =
       option?.supplier_id ??
       option?.party_id ??
@@ -858,31 +868,6 @@ const TradingBusinessPurchase = () => {
   };
 
 
-  const handleOrderReset = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      purchaseOrderNumber: '', 
-      purchaseOrderText: '', 
-    }));
-    setProductData((prevState: any) => ({
-      ...prevState,
-      product: '',
-      product_name: '',
-      qty: '',
-      price: '',
-      unit: '',
-    }));
-    setAutofillHighlights({
-      supplier: false,
-      product: false,
-      qty: false,
-      price: false,
-    });
-    setUnit(null);
-    setLineTotal(0);
-    setIsResetOrder(false);
-  };
-
   const handlePurchaseType = (e: any) => {
     setPurchaseType(e.target.value);
   };
@@ -996,10 +981,10 @@ const TradingBusinessPurchase = () => {
                   </div>
                 </div>
               </div>
-              <div className="relative">
-                <div>
-                  <label className="text-black dark:text-white" htmlFor="">
-                    Select Purchase Order
+	              <div>
+	                <div>
+	                  <label className="text-black dark:text-white" htmlFor="">
+	                    Select Purchase Order
                   </label>
                   <OrderDropdown
                     id="purchaseOrderNumber"
@@ -1013,18 +998,11 @@ const TradingBusinessPurchase = () => {
                           }
                         : null
                     }
-                    orderType="1"
-                    onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Pass the next field's ID
-                  />
-                </div>
-                <ButtonLoading
-                  onClick={handleOrderReset}
-                  buttonLoading={buttonLoading}
-                  label=" "
-                  className="whitespace-nowrap text-center mr-0 w-15 absolute right-0 top-6 h-9.5"
-                  icon={<FiRefreshCcw className="text-white text-lg" />}
-                />
-              </div>
+	                    orderType="1"
+	                    onKeyDown={(e) => handleInputKeyDown(e, 'invoice_no')} // Pass the next field's ID
+	                  />
+	                </div>
+	              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>

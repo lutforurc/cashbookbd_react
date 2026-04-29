@@ -681,38 +681,6 @@ const TradingBusinessSales = () => {
     setUpdateId(productIndex);
   };
 
-  const handlePurchaseOrderReset = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      purchaseOrderNumber: '', // Clear this field
-      purchaseOrderText: '', // Clear this field
-    }));
-    setIsResetOrder(false);
-  };
-  const handleSalesOrderReset = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      salesOrderNumber: '', // Clear this field
-      salesOrderText: '', // Clear this field
-    }));
-    setProductData((prevState: any) => ({
-      ...prevState,
-      product: '',
-      product_name: '',
-      qty: '',
-      price: '',
-      unit: '',
-    }));
-    setAutofillHighlights({
-      customer: false,
-      product: false,
-      qty: false,
-      price: false,
-    });
-    setUnit(null);
-    setLineTotal(0);
-    setIsResetOrder(false);
-  };
 
   // useEffect(() => {
   //   const total = formData.products.reduce((acc, product) => {
@@ -797,6 +765,21 @@ const TradingBusinessSales = () => {
   }, [sales.data.transaction]);
 
   const salesOrderNumberHandler = async (option: any) => {
+    if (!option) {
+      setFormData((prevState) => ({
+        ...prevState,
+        salesOrderNumber: '',
+        salesOrderText: '',
+      }));
+      setAutofillHighlights((prev) => ({
+        ...prev,
+        product: false,
+        qty: false,
+        price: false,
+      }));
+      return;
+    }
+
     setSelectedCustomerOption(null);
     const salesOrderNumber = 'salesOrderNumber'; // This is the sales order number
     const salesOrderText = 'salesOrderText'; // This is the sales order Text+
@@ -1068,6 +1051,15 @@ const TradingBusinessSales = () => {
     const purchaseOrderNumber = 'purchaseOrderNumber'; // Key for sales order number
     const purchaseOrderText = 'purchaseOrderText'; // Key for sales order text
 
+    if (!option) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [purchaseOrderNumber]: '',
+        [purchaseOrderText]: '',
+      }));
+      return;
+    }
+
     setFormData({
       ...formData,
       [purchaseOrderNumber]: option.value,
@@ -1152,21 +1144,13 @@ const TradingBusinessSales = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div className="relative">
-                <div>
-                  <label htmlFor="">Select Purchase Order</label>
-                  <OrderDropdown
-                    id="purchaseOrderNumber"
+	            <div>
+	                <div>
+	                  <label htmlFor="">Select Purchase Order</label>
+	                  <OrderDropdown
+	                    id="purchaseOrderNumber"
                     name="purchaseOrderNumber"
                     onSelect={purchaseOrderNumberHandler}
-                    // defaultValue={
-                    //   formData.purchaseOrderNumber
-                    //     ? {
-                    //         value: formData.purchaseOrderNumber,
-                    //         label: formData.purchaseOrderText, //productData.accountName
-                    //       }
-                    //     : null
-                    // }
                     value={
                       formData.purchaseOrderNumber
                         ? {
@@ -1182,23 +1166,14 @@ const TradingBusinessSales = () => {
                           handleSelectKeyDown(e, '#salesOrderNumber');
                         }, 150);
                       }
-                    }}
-                  // onKeyDown={(e) => handleInputKeyDown(e, 'salesOrderNumber')} // Pass the next field's ID
-                  />
-                </div>
-
-                <ButtonLoading
-                  onClick={handlePurchaseOrderReset}
-                  buttonLoading={buttonLoading}
-                  label=" "
-                  className="whitespace-nowrap text-center mr-0 w-15 absolute right-0 top-6 h-9.5"
-                  icon={<FiRefreshCcw className="text-white text-lg" />}
-                />
-              </div>
-              <div className="relative">
-                <div>
-                  <label htmlFor="">Select Sales Order</label>
-                  <OrderDropdown
+	                    }}
+	                  />
+	                </div>
+	              </div>
+	              <div>
+	                <div>
+	                  <label htmlFor="">Select Sales Order</label>
+	                  <OrderDropdown
                     id="salesOrderNumber"
                     name="salesOrderNumber"
                     onSelect={salesOrderNumberHandler}
@@ -1211,17 +1186,10 @@ const TradingBusinessSales = () => {
                         : null
                     }
                     orderType="2"
-                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
-                  />
-                </div>
-                <ButtonLoading
-                  onClick={handleSalesOrderReset}
-                  buttonLoading={buttonLoading}
-                  label=" "
-                  className="whitespace-nowrap text-center mr-0 w-15 absolute right-0 top-6 h-9.5"
-                  icon={<FiRefreshCcw className="text-white text-lg" />}
-                />
-              </div>
+	                    onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
+	                  />
+	                </div>
+	              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
