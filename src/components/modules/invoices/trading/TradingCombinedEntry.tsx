@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { toast } from 'react-toastify';
 import {
+  FiEdit2,
   FiHome,
   FiPlus,
   FiRefreshCcw,
@@ -103,6 +104,7 @@ const TradingCombinedEntry = () => {
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
   const [productData, setProductData] = useState<any>(initialProductData);
   const [formData, setFormData] = useState(initialFormData);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [showPartyModal, setShowPartyModal] = useState(false);
   const [partyTarget, setPartyTarget] = useState<PartyTarget>('supplier');
   const [partyDraftName, setPartyDraftName] = useState('');
@@ -288,6 +290,7 @@ const TradingCombinedEntry = () => {
 
   const resetProductEditor = () => {
     setProductData(initialProductData);
+    setEditingProductId(null);
   };
 
   const addProduct = () => {
@@ -309,7 +312,7 @@ const TradingCombinedEntry = () => {
     }
 
     const newProduct: CombinedProduct = {
-      id: Date.now(),
+      id: editingProductId ?? Date.now(),
       product: Number(productData.product),
       product_name: productData.product_name || '',
       unit: productData.unit || '',
@@ -324,9 +327,27 @@ const TradingCombinedEntry = () => {
 
     setFormData((prev) => ({
       ...prev,
-      products: [...prev.products, newProduct],
+      products: editingProductId
+        ? prev.products.map((item) => (item.id === editingProductId ? newProduct : item))
+        : [...prev.products, newProduct],
     }));
     resetProductEditor();
+  };
+
+  const handleEdit = (row: CombinedProduct) => {
+    setEditingProductId(row.id);
+    setProductData({
+      product: String(row.product || ''),
+      product_name: row.product_name || '',
+      unit: row.unit || '',
+      qty: String(row.qty || ''),
+      purchase_price: String(row.purchase_price || ''),
+      sales_price: String(row.sales_price || ''),
+      bag: row.bag || '',
+      warehouse: row.warehouse || '',
+      variance: row.variance || '',
+      variance_type: row.variance_type || '',
+    });
   };
 
   const handleDelete = (id: number) => {
@@ -334,6 +355,9 @@ const TradingCombinedEntry = () => {
       ...prev,
       products: prev.products.filter((item) => item.id !== id),
     }));
+    if (editingProductId === id) {
+      resetProductEditor();
+    }
   };
 
   const resetForm = () => {
@@ -562,14 +586,15 @@ const TradingCombinedEntry = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
               <div className="mt-4">
                 <p className="text-sm font-bold dark:text-white">
-                  Total Tk. {thousandSeparator(salesTotal)}
+                  Purchase Tk. {thousandSeparator(purchaseTotal)}
                 </p>
               </div>
               <div className="mt-4">
                 <p className="text-sm font-bold dark:text-white">
-                  Purchase Tk. {thousandSeparator(purchaseTotal)}
+                  Sales Tk. {thousandSeparator(salesTotal)}
                 </p>
               </div>
+              
               <div className="mt-4">
                 <p className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   Profit Tk. {thousandSeparator(profitAmount)}
@@ -694,9 +719,15 @@ const TradingCombinedEntry = () => {
               id="addProduct"
               onClick={addProduct}
               buttonLoading={buttonLoading}
-              label="Add New"
+              label={editingProductId ? 'Update Item' : 'Add New'}
               className="whitespace-nowrap text-center mr-0 py-1.5"
-              icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+              icon={
+                editingProductId ? (
+                  <FiEdit2 className="text-white text-lg ml-2 mr-2" />
+                ) : (
+                  <FiPlus className="text-white text-lg ml-2 mr-2" />
+                )
+              }
             />
             <ButtonLoading
               onClick={handleSave}
@@ -726,10 +757,11 @@ const TradingCombinedEntry = () => {
               <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
                 <tr>
                   <th className="px-2 py-2 text-center">SL. NO.</th>
-                  <th className="px-2 py-2">PRODUCT NAME</th>
-                  <th className="px-2 py-2 text-right">QUANTITY</th>
-	                  <th className="px-2 py-2 text-right">PURCHASE</th>
+	                  <th className="px-2 py-2">PRODUCT NAME</th>
+	                  <th className="px-2 py-2 text-right">WEIGHT VARIANCE</th>
+	                  <th className="px-2 py-2 text-right">QUANTITY</th>
 	                  <th className="px-2 py-2 text-right">PURCHASE RATE</th>
+	                  <th className="px-2 py-2 text-right">PURCHASE</th>
 	                  <th className="px-2 py-2 text-right">SALES RATE</th>
 	                  <th className="px-2 py-2 text-right">TOTAL</th>
                   <th className="px-2 py-2 text-center">ACTION</th>
@@ -747,32 +779,46 @@ const TradingCombinedEntry = () => {
                       <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
                         {index + 1}
                       </td>
-                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
-                        {row.product_name}
-                      </td>
-                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-                        {thousandSeparator(Number(row.qty))} {row.unit}
-                      </td>
-                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-                        {thousandSeparator(rowPurchaseTotal)}
-                      </td>
+	                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+	                        {row.product_name}
+	                      </td>
+	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+	                        {row.variance
+	                          ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
+	                          : '-'}
+	                      </td>
+	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+	                        {thousandSeparator(Number(row.qty))} {row.unit}
+	                      </td>
+                      
 	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
 	                        {thousandSeparator(Number(row.purchase_price))}
 	                      </td>
+                        <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                        {thousandSeparator(rowPurchaseTotal)}
+                      </td>
 	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
 	                        {thousandSeparator(Number(row.sales_price))}
 	                      </td>
 	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
 	                        {thousandSeparator(rowSalesTotal)}
 	                      </td>
-                      <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
-                        <button
-                          onClick={() => handleDelete(row.id)}
-                          className="text-red-500 ml-2 text-center"
-                        >
-                          <FiTrash2 className="cursor-pointer text-center" />
-                        </button>
-                      </td>
+	                      <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
+	                        <button
+	                          onClick={() => handleEdit(row)}
+	                          className="text-blue-500 text-center"
+	                          type="button"
+	                        >
+	                          <FiEdit2 className="cursor-pointer text-center" />
+	                        </button>
+	                        <button
+	                          onClick={() => handleDelete(row.id)}
+	                          className="text-red-500 ml-2 text-center"
+	                          type="button"
+	                        >
+	                          <FiTrash2 className="cursor-pointer text-center" />
+	                        </button>
+	                      </td>
                     </tr>
                   );
                 })}
