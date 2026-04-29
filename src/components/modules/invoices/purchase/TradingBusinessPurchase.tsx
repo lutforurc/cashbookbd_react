@@ -521,19 +521,22 @@ const TradingBusinessPurchase = () => {
   // }, [purchase?.data]);
 
 
-    useEffect(() => {
-      if (purchase.data.transaction) {
-        const products = purchase.data.transaction?.purchase_master.details.map((detail: any) => ({
-            id: detail.id,
-            product: detail.product.id,
-            product_name: detail.product.name,
-            serial_no: detail.serial_no,
-            unit: detail.product.unit.name,
-            qty: detail.quantity,
-            price: detail.purchase_price,
-            warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-          }),
-        );
+	    useEffect(() => {
+	      if (purchase.data.transaction) {
+	        const products = purchase.data.transaction?.purchase_master.details.map((detail: any) => ({
+	            id: detail.id,
+	            product: detail.product.id,
+	            product_name: detail.product.name,
+	            serial_no: detail.serial_no,
+	            bag: detail.bag || '',
+	            unit: detail.product.unit.name,
+	            qty: detail.quantity,
+	            price: detail.purchase_price,
+	            variance: detail.weight_variance || '',
+	            variance_type: detail.variance_type || '',
+	            warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+	          }),
+	        );
   
         // Find accountName
         let accountName = '-';

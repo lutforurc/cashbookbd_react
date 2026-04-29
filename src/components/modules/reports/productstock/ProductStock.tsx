@@ -523,7 +523,7 @@ const ProductStock = ( user : any) => {
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
-                      buttonLoading={buttonLoading}
+                      buttonLoading={false}
                       label="Apply"
                       icon={<FiCheckSquare />}
                       className="h-10 px-6"

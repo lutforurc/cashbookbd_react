@@ -318,18 +318,21 @@ const TradingBusinessSales = () => {
 
   // Process `purchase.data` when it updates
   useEffect(() => {
-    if (sales.data.transaction) {
-      const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
-        id: detail.id,
-        product: detail.product.id,
-        product_name: detail.product.name,
-        serial_no: detail.serial_no,
-        unit: detail.product.unit.name,
-        qty: detail.quantity,
-        price: detail.sales_price,
-        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-      }),
-      );
+	    if (sales.data.transaction) {
+	      const products = sales.data.transaction?.sales_master.details.map((detail: any) => ({
+	        id: detail.id,
+	        product: detail.product.id,
+	        product_name: detail.product.name,
+	        serial_no: detail.serial_no,
+	        bag: detail.bag || '',
+	        unit: detail.product.unit.name,
+	        qty: detail.quantity,
+	        price: detail.sales_price,
+	        variance: detail.weight_variance || '',
+	        variance_type: detail.variance_type || '',
+	        warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+	      }),
+	      );
 
       // Find accountName
       let accountName = '-';
@@ -728,19 +731,22 @@ const TradingBusinessSales = () => {
   // }, [formData.account, formData.products, formData.discountAmt]);
 
   useEffect(() => {
-    if (sales.data.transaction) {
-      const products = sales.data.transaction?.sales_master.details.map(
-        (detail: any) => ({
-          id: detail.id,
-          product: detail.product.id,
-          product_name: detail.product.name,
-          serial_no: detail.serial_no,
-          unit: detail.product.unit.name,
-          qty: detail.quantity,
-          price: detail.sales_price,
-          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
-        }),
-      );
+	    if (sales.data.transaction) {
+	      const products = sales.data.transaction?.sales_master.details.map(
+	        (detail: any) => ({
+	          id: detail.id,
+	          product: detail.product.id,
+	          product_name: detail.product.name,
+	          serial_no: detail.serial_no,
+	          bag: detail.bag || '',
+	          unit: detail.product.unit.name,
+	          qty: detail.quantity,
+	          price: detail.sales_price,
+	          variance: detail.weight_variance || '',
+	          variance_type: detail.variance_type || '',
+	          warehouse: detail.godown_id ? detail.godown_id.toString() : '',
+	        }),
+	      );
 
       // Find accountName
       let accountName = '-';
