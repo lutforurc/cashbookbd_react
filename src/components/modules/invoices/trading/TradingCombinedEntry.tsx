@@ -832,11 +832,11 @@ const TradingCombinedEntry = () => {
                 </p>
               </div>
               
-              <div className="mt-4">
-                <p className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  Profit Tk. {thousandSeparator(profitAmount)}
-                </p>
-              </div>
+	              <div className="mt-4">
+	                <p className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+	                  {profitAmount > 0 ? 'Profit Tk.' : profitAmount < 0 ? 'Loss Tk.' : ''} {thousandSeparator(Math.abs(profitAmount))}
+	                </p>
+	              </div>
             </div>
           </div>
         </div>
