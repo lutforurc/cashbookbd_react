@@ -163,6 +163,11 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
     const pageRows = Math.min(rowsPerPage, config.rowsLimit);
     const pages = chunkRows(meta.details, pageRows);
     const isHalf = variant.startsWith('half');
+    const hasInstallments =
+      settings?.data?.branch?.show_instalment_list == '1' &&
+      data?.installments &&
+      data.installments.length > 0 &&
+      !isHalf;
 
     return (
       <div ref={ref} className="print-root text-gray-900">
@@ -288,6 +293,30 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
                         </span>
                       </div>
                     )}
+
+                    {hasInstallments && settings?.data?.branch?.show_spelling_of_money == '1' && (
+                      <div className={isHalf ? 'pt-2' : 'pt-4 text-left leading-snug'} style={{ fontSize: fs - 0.25 }}>
+                        <span className="tracking-wide">{data?.inword}</span>
+                      </div>
+                    )}
+
+                    {hasInstallments && (
+                      <div className="mt-4 w-[260px] overflow-hidden avoid-break">
+                        <h2 className="block w-full text-center text-xs">Installment Details</h2>
+                        <div className="grid grid-cols-[36px_96px_96px] border-b-[0.5px] border-black px-3 py-1 font-semibold" style={{ fontSize: fs - 0.5 }}>
+                          <div className="text-center">SL</div>
+                          <div>Due Date</div>
+                          <div className="text-right">Amount</div>
+                        </div>
+                        {data.installments.map((inst: any, idx: number) => (
+                          <div key={idx} className="grid grid-cols-[36px_96px_96px] px-3 py-1 border-b-[0.5px] border-gray-300 last:border-b-0" style={{ fontSize: fs }}>
+                            <div className="font-medium text-center">{idx + 1}</div>
+                            <div>{dayjs(inst.due_date).format('DD/MM/YYYY')}</div>
+                            <div className="text-right font-medium">{thousandSeparator(Number(inst.amount))}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <table className="border-collapse">
@@ -350,7 +379,7 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
                   </table>
                 </div>
 
-                {settings?.data?.branch?.show_spelling_of_money == '1' && (
+                {!hasInstallments && settings?.data?.branch?.show_spelling_of_money == '1' && (
                   <div className={isHalf ? 'pt-2' : 'w-full pt-4 text-left leading-snug'} style={{ fontSize: fs - 0.25 }}>
                     <span className="tracking-wide">{data?.inword}</span>
                   </div>
@@ -364,25 +393,6 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
                 </div>
               </div>
             )}
-
-            {settings?.data?.branch?.show_instalment_list == '1' && pageIndex === pages.length - 1 &&
-              data?.installments && data.installments.length > 0 && !isHalf && (
-                <div className="ml-10 w-[260px] overflow-hidden avoid-break">
-                  <h2 className="block w-full text-center text-xs">Installment Details</h2>
-                  <div className="grid grid-cols-[36px_96px_96px] border-b-[0.5px] border-black px-3 py-1 font-semibold" style={{ fontSize: fs - 0.5 }}>
-                    <div className="text-center">SL</div>
-                    <div>Due Date</div>
-                    <div className="text-right">Amount</div>
-                  </div>
-                  {data.installments.map((inst: any, idx: number) => (
-                    <div key={idx} className="grid grid-cols-[36px_96px_96px] px-3 py-1 border-b-[0.5px] border-gray-300 last:border-b-0" style={{ fontSize: fs }}>
-                      <div className="font-medium text-center">{idx + 1}</div>
-                      <div>{dayjs(inst.due_date).format('DD/MM/YYYY')}</div>
-                      <div className="text-right font-medium">{thousandSeparator(Number(inst.amount))}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
 
             {config.showFooter && (
               <div className="mt-auto text-xs text-right" style={{ lineHeight: 1.2 }}>
