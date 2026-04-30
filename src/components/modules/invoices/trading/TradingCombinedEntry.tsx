@@ -59,8 +59,8 @@ type PartyTarget = 'supplier' | 'customer';
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
     ? items
-        .map((item: any) => String(item ?? '').trim())
-        .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+      .map((item: any) => String(item ?? '').trim())
+      .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
     : [];
 
 const normalizeLookupText = (value: any) =>
@@ -285,10 +285,10 @@ const TradingCombinedEntry = () => {
         const orderOptions = orderResponse?.data?.data?.data;
         const matchedOrder = Array.isArray(orderOptions)
           ? orderOptions.find(
-              (item: any) =>
-                String(item?.value ?? '') === String(option?.value ?? '') ||
-                normalizeLookupText(item?.label) === normalizeLookupText(option?.label),
-            ) ?? orderOptions[0]
+            (item: any) =>
+              String(item?.value ?? '') === String(option?.value ?? '') ||
+              normalizeLookupText(item?.label) === normalizeLookupText(option?.label),
+          ) ?? orderOptions[0]
           : null;
 
         if (matchedOrder) {
@@ -324,11 +324,11 @@ const TradingCombinedEntry = () => {
         const normalizedSupplierName = normalizeLookupText(fallbackSupplierName);
         const matchedSupplier = Array.isArray(supplierOptions)
           ? supplierOptions.find(
-              (item: any) =>
-                normalizeLookupText(item?.label) === normalizedSupplierName ||
-                normalizeLookupText(item?.label).includes(normalizedSupplierName) ||
-                normalizedSupplierName.includes(normalizeLookupText(item?.label)),
-            ) ?? supplierOptions[0]
+            (item: any) =>
+              normalizeLookupText(item?.label) === normalizedSupplierName ||
+              normalizeLookupText(item?.label).includes(normalizedSupplierName) ||
+              normalizedSupplierName.includes(normalizeLookupText(item?.label)),
+          ) ?? supplierOptions[0]
           : null;
 
         if (matchedSupplier) {
@@ -345,9 +345,9 @@ const TradingCombinedEntry = () => {
     setSelectedSupplierOption(
       resolvedSupplier.name
         ? {
-            value: resolvedSupplier.id || resolvedSupplier.name,
-            label: resolvedSupplier.name,
-          }
+          value: resolvedSupplier.id || resolvedSupplier.name,
+          label: resolvedSupplier.name,
+        }
         : null,
     );
 
@@ -383,10 +383,10 @@ const TradingCombinedEntry = () => {
         const orderOptions = orderResponse?.data?.data?.data;
         const matchedOrder = Array.isArray(orderOptions)
           ? orderOptions.find(
-              (item: any) =>
-                String(item?.value ?? '') === String(option?.value ?? '') ||
-                normalizeLookupText(item?.label) === normalizeLookupText(option?.label),
-            ) ?? orderOptions[0]
+            (item: any) =>
+              String(item?.value ?? '') === String(option?.value ?? '') ||
+              normalizeLookupText(item?.label) === normalizeLookupText(option?.label),
+          ) ?? orderOptions[0]
           : null;
 
         if (matchedOrder) {
@@ -423,11 +423,11 @@ const TradingCombinedEntry = () => {
         const normalizedCustomerName = normalizeLookupText(fallbackCustomerName);
         const matchedCustomer = Array.isArray(customerOptions)
           ? customerOptions.find(
-              (item: any) =>
-                normalizeLookupText(item?.label) === normalizedCustomerName ||
-                normalizeLookupText(item?.label).includes(normalizedCustomerName) ||
-                normalizedCustomerName.includes(normalizeLookupText(item?.label)),
-            ) ?? customerOptions[0]
+            (item: any) =>
+              normalizeLookupText(item?.label) === normalizedCustomerName ||
+              normalizeLookupText(item?.label).includes(normalizedCustomerName) ||
+              normalizedCustomerName.includes(normalizeLookupText(item?.label)),
+          ) ?? customerOptions[0]
           : null;
 
         if (matchedCustomer) {
@@ -444,9 +444,9 @@ const TradingCombinedEntry = () => {
     setSelectedCustomerOption(
       resolvedCustomer.name
         ? {
-            value: resolvedCustomer.id || resolvedCustomer.name,
-            label: resolvedCustomer.name,
-          }
+          value: resolvedCustomer.id || resolvedCustomer.name,
+          label: resolvedCustomer.name,
+        }
         : null,
     );
 
@@ -685,7 +685,7 @@ const TradingCombinedEntry = () => {
                   acType={'3'}
                 />
               </div>
-              
+
               <div>
                 <InputElement
                   id="vehicleNumber"
@@ -710,77 +710,73 @@ const TradingCombinedEntry = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="relative">
                 <div>
-                <label htmlFor="">Select Purchase Order</label>
-                <OrderDropdown
-                  id="purchaseOrderNumber"
-                  name="purchaseOrderNumber"
-                  onSelect={purchaseOrderHandler}
-                  value={
-                    formData.purchaseOrderNumber
-                      ? { value: formData.purchaseOrderNumber, label: formData.purchaseOrderText }
-                      : null
-                  }
-                  orderType="1"
-                  onKeyDown={(e) => handleInputKeyDown(e, 'salesOrderNumber')}
-                />
-              </div>
+                  <label htmlFor="">Select Purchase Order</label>
+                  <OrderDropdown
+                    id="purchaseOrderNumber"
+                    name="purchaseOrderNumber"
+                    onSelect={purchaseOrderHandler}
+                    value={
+                      formData.purchaseOrderNumber
+                        ? { value: formData.purchaseOrderNumber, label: formData.purchaseOrderText }
+                        : null
+                    }
+                    orderType="1"
+                    onKeyDown={(e) => handleInputKeyDown(e, 'salesOrderNumber')}
+                  />
+                </div>
               </div>
               <div className="relative">
                 <div>
-                <label htmlFor="">Select Sales Order</label>
-                <OrderDropdown
-                  id="salesOrderNumber"
-                  name="salesOrderNumber"
-                  onSelect={salesOrderHandler}
-                  value={
-                    formData.salesOrderNumber
-                      ? { value: formData.salesOrderNumber, label: formData.salesOrderText }
-                      : null
-                  }
-                  orderType="2"
-                  onKeyDown={(e) => handleInputKeyDown(e, 'amount')}
-                />
-              </div>
+                  <label htmlFor="">Select Sales Order</label>
+                  <OrderDropdown
+                    id="salesOrderNumber"
+                    name="salesOrderNumber"
+                    onSelect={salesOrderHandler}
+                    value={
+                      formData.salesOrderNumber
+                        ? { value: formData.salesOrderNumber, label: formData.salesOrderText }
+                        : null
+                    }
+                    orderType="2"
+                    onKeyDown={(e) => handleInputKeyDown(e, 'amount')}
+                  />
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-	              <div>
-	                <div className="mb-1 flex items-center justify-between gap-2">
-	                  <label htmlFor="amount">Transaction Amount</label>
-		                  <div className="flex items-center gap-2">
-		                    <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
-		                      {formData.onlySalesPosting ? 'Sales Only' : 'Both'}
-		                    </span>
-		                    <label
-		                      htmlFor="onlySalesPosting"
-		                      className="relative inline-flex cursor-pointer items-center"
-		                    >
-		                      <input
-		                        id="onlySalesPosting"
-		                        name="onlySalesPosting"
-		                        type="checkbox"
-		                        checked={Boolean(formData.onlySalesPosting)}
-		                        onChange={handleOnlySalesPostingChange}
-		                        className="peer sr-only"
-		                      />
-		                      <span
-		                        className={`relative h-5 w-10 rounded-full border border-blue-500/70 transition-colors ${
-		                          formData.onlySalesPosting ? 'bg-blue-600' : 'bg-slate-700'
-		                        }`}
-		                      >
-		                        <span
-		                          className={`absolute left-0.5 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-white transition duration-200 ${
-		                            formData.onlySalesPosting ? 'translate-x-[18px]' : 'translate-x-0'
-		                          }`}
-		                        />
-		                      </span>
-		                    </label>
-	                  </div>
-	                </div>
-
-                  
-	                <InputElement
+              <div>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <label htmlFor="amount">Transaction Amount</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
+                      {formData.onlySalesPosting ? 'Sales Only' : 'Both'}
+                    </span>
+                    <label
+                      htmlFor="onlySalesPosting"
+                      className="relative inline-flex cursor-pointer items-center"
+                    >
+                      <input
+                        id="onlySalesPosting"
+                        name="onlySalesPosting"
+                        type="checkbox"
+                        checked={Boolean(formData.onlySalesPosting)}
+                        onChange={handleOnlySalesPostingChange}
+                        className="peer sr-only"
+                      />
+                      <span
+                        className={`relative h-5 w-10 rounded-full border border-blue-500/70 transition-colors ${formData.onlySalesPosting ? 'bg-blue-600' : 'bg-slate-700'
+                          }`}
+                      >
+                        <span
+                          className={`absolute left-0.5 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-white transition duration-200 ${formData.onlySalesPosting ? 'translate-x-[18px]' : 'translate-x-0'
+                            }`}
+                        />
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <InputElement
                   id="amount"
                   value={String(formData.amount ?? '')}
                   name="amount"
@@ -833,238 +829,238 @@ const TradingCombinedEntry = () => {
                   Sales Tk. {thousandSeparator(salesTotal)}
                 </p>
               </div>
-              
-	              <div className="mt-4">
-	                <p className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-	                  {profitAmount > 0 ? 'Profit Tk.' : profitAmount < 0 ? 'Loss Tk.' : ''} {thousandSeparator(Math.abs(profitAmount))}
-	                </p>
-	              </div>
+
+              <div className="mt-4">
+                <p className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {profitAmount > 0 ? 'Profit Tk.' : profitAmount < 0 ? 'Loss Tk.' : ''} {thousandSeparator(Math.abs(profitAmount))}
+                </p>
+              </div>
             </div>
           </div>
         </div>
         <div className="">
           {warehouse.isLoading ? <Loader /> : null}
           <div className="grid grid-cols-1 gap-y-1">
-          <div className="grid grid-cols-1 gap-2">
-            <div>
-              <label htmlFor="">Select Product</label>
-              <ProductDropdown
-                id="product"
-                name="product"
-                className="h-9"
-                onSelect={productSelectHandler}
-                value={
-                  productData.product_name && productData.product
-                    ? { label: productData.product_name, value: productData.product }
-                    : null
-                }
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setTimeout(() => {
-                      const input = document.getElementById('warehouse');
-                      input?.focus();
-                    }, 150);
+            <div className="grid grid-cols-1 gap-2">
+              <div>
+                <label htmlFor="">Select Product</label>
+                <ProductDropdown
+                  id="product"
+                  name="product"
+                  className="h-9"
+                  onSelect={productSelectHandler}
+                  value={
+                    productData.product_name && productData.product
+                      ? { label: productData.product_name, value: productData.product }
+                      : null
                   }
-                }}
-              />
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setTimeout(() => {
+                        const input = document.getElementById('warehouse');
+                        input?.focus();
+                      }, 150);
+                    }
+                  }}
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <InputElement
-              id="bag"
-              value={productData.bag || ''}
-              name="bag"
-              type="number"
-              placeholder="Bag Number"
-              label="Bag Number"
-              className="py-1"
-              onChange={handleProductChange}
-              onKeyDown={(e) => handleInputKeyDown(e, 'variance')}
-            />
-	            <InputElement
-	              id="variance"
-	              value={productData.variance || ''}
-	              name="variance"
-	              type="number"
-	              placeholder="Weight Variance"
-	              label="Weight Variance"
-	              className="py-1"
-	              disabled={!productData.variance_type || productData.variance_type === 'Not Applicable'}
-	              onChange={handleProductChange}
-	              onKeyDown={(e) => handleInputKeyDown(e, 'qty')}
-	            />
-            <div>
-              <label htmlFor="">Variance Type</label>
-              <SelectWeightVariance
-                value={productData.variance_type}
-                onChange={handleVarianceTypeChange}
-                defaultValue={productData?.variance_type || ''}
-                className="w-full h-8.5"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <div className="relative">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
-                id="qty"
-                value={productData.qty || ''}
-                name="qty"
+                id="bag"
+                value={productData.bag || ''}
+                name="bag"
                 type="number"
-                placeholder="Quantity"
-                label="Quantity"
+                placeholder="Bag Number"
+                label="Bag Number"
                 className="py-1"
                 onChange={handleProductChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'purchase_price')}
+                onKeyDown={(e) => handleInputKeyDown(e, 'variance')}
               />
-              <span className="absolute right-3 top-8 z-50 text-xs">{productData.unit || ''}</span>
-            </div>
-            <div className="relative">
               <InputElement
-                id="purchase_price"
-                value={productData.purchase_price || ''}
-                name="purchase_price"
+                id="variance"
+                value={productData.variance || ''}
+                name="variance"
                 type="number"
-                placeholder="Enter Purchase Rate"
-                label="Purchase Rate"
+                placeholder="Weight Variance"
+                label="Weight Variance"
                 className="py-1"
+                disabled={!productData.variance_type || productData.variance_type === 'Not Applicable'}
                 onChange={handleProductChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'sales_price')}
+                onKeyDown={(e) => handleInputKeyDown(e, 'qty')}
               />
-              <span className="absolute right-3 top-8 z-50 text-xs">
-                {thousandSeparator(purchaseLineTotal)}
-              </span>
+              <div>
+                <label htmlFor="">Variance Type</label>
+                <SelectWeightVariance
+                  value={productData.variance_type}
+                  onChange={handleVarianceTypeChange}
+                  defaultValue={productData?.variance_type || ''}
+                  className="w-full h-8.5"
+                />
+              </div>
             </div>
-            <div className="relative">
-              <InputElement
-                id="sales_price"
-                value={productData.sales_price || ''}
-                name="sales_price"
-                type="number"
-                placeholder="Sales Rate"
-                label="Sales Rate"
-                className="py-1"
-                onChange={handleProductChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
-              />
-              <span className="absolute right-3 top-8 z-50 text-xs">
-                {thousandSeparator(salesLineTotal)}
-              </span>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-4 gap-x-1 gap-y-1 mt-2">
-            <ButtonLoading
-              id="addProduct"
-              onClick={addProduct}
-              buttonLoading={buttonLoading}
-              label={editingProductId ? 'Update Item' : 'Add New'}
-              className="whitespace-nowrap text-center mr-0 py-1.5"
-              icon={
-                editingProductId ? (
-                  <FiEdit2 className="text-white text-lg ml-2 mr-2" />
-                ) : (
-                  <FiPlus className="text-white text-lg ml-2 mr-2" />
-                )
-              }
-            />
-            <ButtonLoading
-              onClick={handleSave}
-              buttonLoading={saveButtonLoading}
-              label={saveButtonLoading ? 'Saving...' : 'Save'}
-              className="whitespace-nowrap text-center mr-0"
-              icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
-              disabled={saveButtonLoading}
-            />
-            <ButtonLoading
-              onClick={resetForm}
-              buttonLoading={buttonLoading}
-              label="Reset"
-              className="whitespace-nowrap text-center mr-0"
-              icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
-            />
-            <Link to="/dashboard" className="text-nowrap justify-center mr-0">
-              <FiHome className="text-white text-lg ml-2 mr-2" />
-              <span className="hidden md:block">Home</span>
-            </Link>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div className="relative">
+                <InputElement
+                  id="qty"
+                  value={productData.qty || ''}
+                  name="qty"
+                  type="number"
+                  placeholder="Quantity"
+                  label="Quantity"
+                  className="py-1"
+                  onChange={handleProductChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'purchase_price')}
+                />
+                <span className="absolute right-3 top-8 z-50 text-xs">{productData.unit || ''}</span>
+              </div>
+              <div className="relative">
+                <InputElement
+                  id="purchase_price"
+                  value={productData.purchase_price || ''}
+                  name="purchase_price"
+                  type="number"
+                  placeholder="Enter Purchase Rate"
+                  label="Purchase Rate"
+                  className="py-1"
+                  onChange={handleProductChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'sales_price')}
+                />
+                <span className="absolute right-3 top-8 z-50 text-xs">
+                  {thousandSeparator(purchaseLineTotal)}
+                </span>
+              </div>
+              <div className="relative">
+                <InputElement
+                  id="sales_price"
+                  value={productData.sales_price || ''}
+                  name="sales_price"
+                  type="number"
+                  placeholder="Sales Rate"
+                  label="Sales Rate"
+                  className="py-1"
+                  onChange={handleProductChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
+                />
+                <span className="absolute right-3 top-8 z-50 text-xs">
+                  {thousandSeparator(salesLineTotal)}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-x-1 gap-y-1 mt-2">
+              <ButtonLoading
+                id="addProduct"
+                onClick={addProduct}
+                buttonLoading={buttonLoading}
+                label={editingProductId ? 'Update Item' : 'Add New'}
+                className="whitespace-nowrap text-center mr-0 py-1.5"
+                icon={
+                  editingProductId ? (
+                    <FiEdit2 className="text-white text-lg ml-2 mr-2" />
+                  ) : (
+                    <FiPlus className="text-white text-lg ml-2 mr-2" />
+                  )
+                }
+              />
+              <ButtonLoading
+                onClick={handleSave}
+                buttonLoading={saveButtonLoading}
+                label={saveButtonLoading ? 'Saving...' : 'Save'}
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                disabled={saveButtonLoading}
+              />
+              <ButtonLoading
+                onClick={resetForm}
+                buttonLoading={buttonLoading}
+                label="Reset"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+              />
+              <Link to="/dashboard" className="text-nowrap justify-center mr-0">
+                <FiHome className="text-white text-lg ml-2 mr-2" />
+                <span className="hidden md:block">Home</span>
+              </Link>
+            </div>
           </div>
         </div>
 
         <div className="mt-4 col-span-2 overflow-x-auto">
-            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
-                <tr>
-                  <th className="px-2 py-2 text-center">SL. NO.</th>
-	                  <th className="px-2 py-2">PRODUCT NAME</th>
-	                  <th className="px-2 py-2 text-right">WEIGHT VARIANCE</th>
-	                  <th className="px-2 py-2 text-right">QUANTITY</th>
-	                  <th className="px-2 py-2 text-right">PURCHASE RATE</th>
-	                  <th className="px-2 py-2 text-right">PURCHASE</th>
-	                  <th className="px-2 py-2 text-right">SALES RATE</th>
-	                  <th className="px-2 py-2 text-right">TOTAL</th>
-                  <th className="px-2 py-2 text-center">ACTION</th>
-                </tr>
-              </thead>
-              <tbody>
-                {formData.products.map((row, index) => {
-                  const rowPurchaseTotal = Number(row.qty) * Number(row.purchase_price);
-                  const rowSalesTotal = Number(row.qty) * Number(row.sales_price);
-                  return (
-                    <tr
-                      key={row.id}
-                      className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                    >
-                      <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
-                        {index + 1}
-                      </td>
-	                      <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
-	                        {row.product_name}
-	                      </td>
-		                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-		                        {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'
-		                          ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
-		                          : '-'}
-		                      </td>
-	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-	                        {thousandSeparator(Number(row.qty))} {row.unit}
-	                      </td>
-                      
-	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-	                        {thousandSeparator(Number(row.purchase_price))}
-	                      </td>
-                        <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-                        {thousandSeparator(rowPurchaseTotal)}
-                      </td>
-	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-	                        {thousandSeparator(Number(row.sales_price))}
-	                      </td>
-	                      <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
-	                        {thousandSeparator(rowSalesTotal)}
-	                      </td>
-	                      <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
-	                        <button
-	                          onClick={() => handleEdit(row)}
-	                          className="text-blue-500 text-center"
-	                          type="button"
-	                        >
-	                          <FiEdit2 className="cursor-pointer text-center" />
-	                        </button>
-	                        <button
-	                          onClick={() => handleDelete(row.id)}
-	                          className="text-red-500 ml-2 text-center"
-	                          type="button"
-	                        >
-	                          <FiTrash2 className="cursor-pointer text-center" />
-	                        </button>
-	                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
+              <tr>
+                <th className="px-2 py-2 text-center">SL. NO.</th>
+                <th className="px-2 py-2">PRODUCT NAME</th>
+                <th className="px-2 py-2 text-right">WEIGHT VARIANCE</th>
+                <th className="px-2 py-2 text-right">QUANTITY</th>
+                <th className="px-2 py-2 text-right">PURCHASE RATE</th>
+                <th className="px-2 py-2 text-right">PURCHASE</th>
+                <th className="px-2 py-2 text-right">SALES RATE</th>
+                <th className="px-2 py-2 text-right">TOTAL</th>
+                <th className="px-2 py-2 text-center">ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.products.map((row, index) => {
+                const rowPurchaseTotal = Number(row.qty) * Number(row.purchase_price);
+                const rowSalesTotal = Number(row.qty) * Number(row.sales_price);
+                return (
+                  <tr
+                    key={row.id}
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                  >
+                    <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
+                      {index + 1}
+                    </td>
+                    <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
+                      {row.product_name}
+                    </td>
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                      {row.variance && row.variance_type && row.variance_type !== 'Not Applicable'
+                        ? `(${row.variance_type || '-'}) ${thousandSeparator(Number(row.variance))}`
+                        : '-'}
+                    </td>
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                      {thousandSeparator(Number(row.qty))} {row.unit}
+                    </td>
+
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                      {thousandSeparator(Number(row.purchase_price))}
+                    </td>
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                      {thousandSeparator(rowPurchaseTotal)}
+                    </td>
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                      {thousandSeparator(Number(row.sales_price))}
+                    </td>
+                    <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
+                      {thousandSeparator(rowSalesTotal)}
+                    </td>
+                    <td className="px-2 py-2 text-center font-medium text-gray-900 dark:text-white">
+                      <button
+                        onClick={() => handleEdit(row)}
+                        className="text-blue-500 text-center"
+                        type="button"
+                      >
+                        <FiEdit2 className="cursor-pointer text-center" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(row.id)}
+                        className="text-red-500 ml-2 text-center"
+                        type="button"
+                      >
+                        <FiTrash2 className="cursor-pointer text-center" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <QuickCustomerModal
