@@ -64,47 +64,47 @@ const TrialBalanceLevel3Print = ({
           className="w-full border-collapse"
           style={{ fontSize: `${fs}px` }}
         >
-          <thead>
+          <thead className="bg-gray-100">
             <tr>
               <th
                 rowSpan={2}
-                className="border border-slate-300 bg-slate-100 px-2 py-0 text-center font-semibold"
+                className="border border-gray-900 px-1 py-2 text-center font-semibold"
               >
                 Serial
               </th>
               <th
                 rowSpan={2}
-                className="border border-slate-300 bg-slate-100 px-2 py-0 text-left font-semibold"
+                className="border border-gray-900 px-2 py-2 text-left font-semibold"
               >
                 COA L3 Name
               </th>
-              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-2 py-0 text-center font-semibold">
+              <th colSpan={2} className="border border-gray-900 px-2 py-2 text-center font-semibold">
                 Opening
               </th>
-              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-2 py-0 text-center font-semibold">
+              <th colSpan={2} className="border border-gray-900 px-2 py-2 text-center font-semibold">
                 Movement
               </th>
-              <th colSpan={2} className="border border-slate-300 bg-slate-100 px-2 py-0 text-center font-semibold">
+              <th colSpan={2} className="border border-gray-900 px-2 py-2 text-center font-semibold">
                 Closing
               </th>
             </tr>
             <tr>
-              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
+              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
                 Dr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
+              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
                 Cr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
+              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
                 Dr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
+              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
                 Cr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
+              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
                 Dr
               </th>
-              <th className="border border-slate-300 bg-slate-100 px-2 py-0 text-right font-semibold">
+              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
                 Cr
               </th>
             </tr>
@@ -112,55 +112,55 @@ const TrialBalanceLevel3Print = ({
           <tbody>
             {rows.map((row, index) => (
               <tr key={row.key}>
-                <td className="border border-slate-300 px-2 py-0 text-center">
+                <td className="border border-gray-900 px-1 py-1 text-center align-middle">
                   {index + 1}
                 </td>
-                <td className="border border-slate-300 px-2 py-0">{row.name}</td>
-                <td className="border border-slate-300 px-2 py-0 text-right">
+                <td className="border border-gray-900 px-2 py-1 align-middle">{row.name}</td>
+                <td className="border border-gray-900 px-1 py-1 text-right">
                   {thousandSeparator(row.openingDebit)}
                 </td>
-                <td className="border border-slate-300 px-2 py-0 text-right">
+                <td className="border border-gray-900 px-1 py-1 text-right">
                   {thousandSeparator(row.openingCredit)}
                 </td>
-                <td className="border border-slate-300 px-2 py-0 text-right">
+                <td className="border border-gray-900 px-1 py-1 text-right">
                   {thousandSeparator(row.movementDebit)}
                 </td>
-                <td className="border border-slate-300 px-2 py-0 text-right">
+                <td className="border border-gray-900 px-1 py-1 text-right">
                   {thousandSeparator(row.movementCredit)}
                 </td>
-                <td className="border border-slate-300 px-2 py-0 text-right">
+                <td className="border border-gray-900 px-1 py-1 text-right">
                   {thousandSeparator(row.closingDebit)}
                 </td>
-                <td className="border border-slate-300 px-2 py-0 text-right">
+                <td className="border border-gray-900 px-1 py-1 text-right">
                   {thousandSeparator(row.closingCredit)}
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr>
+            <tr className="bg-gray-100 font-semibold">
               <td colSpan={2}
-                className="border border-slate-300 px-2 py-0 text-right font-semibold"
+                className="border border-gray-900 px-2 py-1 text-right"
               >
                 Grand Total
               </td>
-              {/* <td className="border border-slate-300 px-2 py-0"></td> */}
-              <td className="border border-slate-300 px-2 py-0 text-right">
+              {/* <td className="border border-gray-900 px-2 py-1"></td> */}
+              <td className="border border-gray-900 px-2 py-1 text-right">
                 {thousandSeparator(totals.openingDebit)}
               </td>
-              <td className="border border-slate-300 px-2 py-0 text-right">
+              <td className="border border-gray-900 px-2 py-1 text-right">
                 {thousandSeparator(totals.openingCredit)}
               </td>
-              <td className="border border-slate-300 px-2 py-0 text-right">
+              <td className="border border-gray-900 px-2 py-1 text-right">
                 {thousandSeparator(totals.movementDebit)}
               </td>
-              <td className="border border-slate-300 px-2 py-0 text-right">
+              <td className="border border-gray-900 px-2 py-1 text-right">
                 {thousandSeparator(totals.movementCredit)}
               </td>
-              <td className="border border-slate-300 px-2 py-0 text-right">
+              <td className="border border-gray-900 px-2 py-1 text-right">
                 {thousandSeparator(totals.closingDebit)}
               </td>
-              <td className="border border-slate-300 px-2 py-0 text-right">
+              <td className="border border-gray-900 px-2 py-1 text-right">
                 {thousandSeparator(totals.closingCredit)}
               </td>
             </tr>

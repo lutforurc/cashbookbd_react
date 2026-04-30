@@ -157,22 +157,22 @@ const TrialBalanceLevel4Print = React.forwardRef<
                     </th>
                   </tr>
                   <tr>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-right">
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-center">
                       Dr
                     </th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-right">
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-center">
                       Cr
                     </th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-right">
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-center">
                       Dr
                     </th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-right">
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-center">
                       Cr
                     </th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-right">
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-center">
                       Dr
                     </th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-right">
+                    <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-2 text-center">
                       Cr
                     </th>
                   </tr>
