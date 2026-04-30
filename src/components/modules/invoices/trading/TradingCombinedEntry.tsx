@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { toast } from 'react-toastify';
@@ -28,8 +29,10 @@ import httpService from '../../../services/httpService';
 import {
   API_CHART_OF_ACCOUNTS_DDL_L4_URL,
   API_ORDERS_DDL_URL,
+  API_TRADING_COMBINED_EDIT_URL,
   API_TRADING_COMBINED_STORE_URL,
   API_TRADING_COMBINED_SUGGESTIONS_URL,
+  API_TRADING_COMBINED_UPDATE_URL,
 } from '../../../services/apiRoutes';
 import {
   handleInputKeyDown,
@@ -104,6 +107,7 @@ const initialFormData = {
 
 const TradingCombinedEntry = () => {
   const dispatch = useDispatch<any>();
+  const location = useLocation();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [buttonLoading] = useState(false);
@@ -117,11 +121,68 @@ const TradingCombinedEntry = () => {
   const [showPartyModal, setShowPartyModal] = useState(false);
   const [partyTarget, setPartyTarget] = useState<PartyTarget>('supplier');
   const [partyDraftName, setPartyDraftName] = useState('');
+  const [editingCombinedNumber, setEditingCombinedNumber] = useState('');
 
   useEffect(() => {
     dispatch(userCurrentBranch());
     dispatch(getDdlWarehouse());
   }, [dispatch]);
+
+  useEffect(() => {
+    const combinedNumber = String((location.state as any)?.combinedNumber || '').trim();
+    const shouldAutoEdit = Boolean((location.state as any)?.combinedAutoEdit && combinedNumber);
+
+    if (!shouldAutoEdit) return;
+
+    const fetchCombinedEntry = async () => {
+      try {
+        const response = await httpService.post(API_TRADING_COMBINED_EDIT_URL, {
+          combined_number: combinedNumber,
+        });
+        const result = response?.data;
+        const editData = result?.data?.data || {};
+
+        if (!result?.success || !editData?.combined_number) {
+          toast.error(result?.message || 'Combined entry not found.');
+          return;
+        }
+
+        setEditingCombinedNumber(String(editData.combined_number));
+        setSelectedSupplierOption({
+          value: editData.supplierAccount,
+          label: editData.supplierName,
+        });
+        setSelectedCustomerOption({
+          value: editData.customerAccount,
+          label: editData.customerName,
+        });
+        setFormData({
+          supplierAccount: String(editData.supplierAccount || ''),
+          supplierName: editData.supplierName || '',
+          customerAccount: String(editData.customerAccount || ''),
+          customerName: editData.customerName || '',
+          purchaseOrderNumber: editData.purchaseOrderNumber || '',
+          purchaseOrderText: editData.purchaseOrderText || '',
+          salesOrderNumber: editData.salesOrderNumber || '',
+          salesOrderText: editData.salesOrderText || '',
+          invoice_no: editData.invoice_no || '',
+          invoice_date: editData.invoice_date || '',
+          amount: String(editData.amount ?? ''),
+          onlySalesPosting: Boolean(editData.onlySalesPosting),
+          purchaseDiscountAmt: String(editData.purchaseDiscountAmt ?? ''),
+          salesDiscountAmt: String(editData.salesDiscountAmt ?? ''),
+          vehicleNumber: editData.vehicleNumber || '',
+          notes: editData.notes || '',
+          products: Array.isArray(editData.products) ? editData.products : [],
+        });
+        resetProductEditor();
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || error?.message || 'Failed to load combined entry.');
+      }
+    };
+
+    void fetchCombinedEntry();
+  }, [location.state]);
 
   useEffect(() => {
     const fetchSuggestions = async (
@@ -569,6 +630,7 @@ const TradingCombinedEntry = () => {
     setSelectedCustomerOption(null);
     setVehicleSuggestions([]);
     setNoteSuggestions([]);
+    setEditingCombinedNumber('');
   };
 
   const handleSave = async () => {
@@ -608,9 +670,13 @@ const TradingCombinedEntry = () => {
         vehicleNumber: formData.vehicleNumber || null,
         notes: formData.notes || null,
         products: formData.products,
+        ...(editingCombinedNumber ? { combined_number: editingCombinedNumber } : {}),
       };
 
-      const response = await httpService.post(API_TRADING_COMBINED_STORE_URL, payload);
+      const response = await httpService.post(
+        editingCombinedNumber ? API_TRADING_COMBINED_UPDATE_URL : API_TRADING_COMBINED_STORE_URL,
+        payload,
+      );
       const result = response?.data;
 
       if (result?.success) {
@@ -633,7 +699,7 @@ const TradingCombinedEntry = () => {
 
   return (
     <>
-      <HelmetTitle title="Combined Invoice" />
+      <HelmetTitle title={editingCombinedNumber ? 'Edit Combined Invoice' : 'Combined Invoice'} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         <div className="self-start md:self-auto">
           <div className="grid grid-cols-1 gap-y-1">
@@ -968,7 +1034,7 @@ const TradingCombinedEntry = () => {
               <ButtonLoading
                 onClick={handleSave}
                 buttonLoading={saveButtonLoading}
-                label={saveButtonLoading ? 'Saving...' : 'Save'}
+                label={saveButtonLoading ? 'Saving...' : editingCombinedNumber ? 'Update' : 'Save'}
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                 disabled={saveButtonLoading}

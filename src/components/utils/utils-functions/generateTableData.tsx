@@ -5,6 +5,7 @@ export interface TableRow {
   vr_date: string;
   mid: number | string;
   mtm_id?: number | string;
+  combined_number?: string | null;
   vr_no: string;
   name: string;
   remarks: string | null;
@@ -52,6 +53,7 @@ export const generateTableData = (data: any): TableRow[] => {
   vr_date: trx.vr_date,
   mid: trx.mid || '',
   mtm_id: trx.mtm_id || trx.mid || '',
+  combined_number: trx.combined_number || null,
   vr_no: trx.vr_no,
   name: trx.name, // এখন coa_l4 relation লোড হচ্ছে না, তাই placeholder
   remarks: trx.remarks || '-',

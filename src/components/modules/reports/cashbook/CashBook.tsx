@@ -37,6 +37,7 @@ import {
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import routes from '../../../services/appRoutes';
 
 
 const CashBook = (user: any) => {
@@ -70,6 +71,7 @@ const CashBook = (user: any) => {
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
   const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
   const canEditVoucher = hasAnyPermission(userPermissions, [
+    'purchase.edit',
     'sales.edit',
     'cash.received.edit',
     'cash.payment.edit',
@@ -193,6 +195,17 @@ const CashBook = (user: any) => {
   };
 
   const handleEditVoucher = (row: any) => {
+    const combinedNumber = String(row?.combined_number || '').trim();
+    if (combinedNumber) {
+      navigate(routes.inv_trading_combined, {
+        state: {
+          combinedAutoEdit: true,
+          combinedNumber,
+        },
+      });
+      return;
+    }
+
     const voucherNo = String(row?.vr_no || '').trim();
     const editTarget = getVoucherEditTarget(voucherNo);
     const editState = buildVoucherAutoEditState(voucherNo);

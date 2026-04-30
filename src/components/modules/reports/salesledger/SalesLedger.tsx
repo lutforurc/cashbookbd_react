@@ -37,6 +37,7 @@ import {
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
+import routes from '../../../services/appRoutes';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -183,6 +184,17 @@ const SalesLedger = (user: any) => {
   };
 
   const handleEditVoucher = (row: any) => {
+    const combinedNumber = String(row?.combined_number || '').trim();
+    if (combinedNumber) {
+      navigate(routes.inv_trading_combined, {
+        state: {
+          combinedAutoEdit: true,
+          combinedNumber,
+        },
+      });
+      return;
+    }
+
     const voucherNo = String(row?.vr_no || '').trim();
     const editTarget = getVoucherEditTarget(voucherNo);
     const editState = buildVoucherAutoEditState(voucherNo);
