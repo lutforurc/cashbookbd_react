@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import httpService from '../../../services/httpService';
-import { API_CHART_OF_ACCOUNTS_L4_STORE_URL, API_CHART_OF_ACCOUNTS_L4_URL } from '../../../services/apiRoutes';
+import {
+  API_CHART_OF_ACCOUNTS_BY_ID_L4_URL,
+  API_CHART_OF_ACCOUNTS_L4_STORE_URL,
+  API_CHART_OF_ACCOUNTS_L4_URL,
+  API_CHART_OF_ACCOUNTS_L4_UPDATE_URL,
+} from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import ChartOfAccountsL3 from '../../../utils/utils-functions/ChartOfAccountsL3';
 import { useSelector } from 'react-redux';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import Loader from '../../../../common/Loader';
 
 type SelectOption = {
   value: string | number;
@@ -22,8 +28,12 @@ const DEFAULT_REPORTING_TO_ID = '3';
 
 const AddCoaL4 = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState(false);
   const coal4 = useSelector((state: any) => state.coal4);
+  const [reportToOptions, setReportToOptions] = useState<{ id: string | number; name: string }[]>([]);
   const [formData, setFormData] = useState({
     coal3_id: '',
     coal3_label: '',
@@ -33,8 +43,64 @@ const AddCoaL4 = () => {
   });
 
   useEffect(() => {
-    const selectedItem = (coal4?.data?.reporttos || []).find(
-      (item: { id: string | number; name: string }) => String(item.id) === DEFAULT_REPORTING_TO_ID,
+    const loadReportToOptions = async () => {
+      try {
+        const res = await httpService.get(`${API_CHART_OF_ACCOUNTS_L4_URL}?page=1&per_page=1&search=`);
+        const data = res?.data?.data?.data || res?.data?.data;
+        const reporttos = data?.reporttos || [];
+
+        if (Array.isArray(reporttos)) {
+          setReportToOptions(reporttos);
+        }
+      } catch (error) {
+        setReportToOptions([]);
+      }
+    };
+
+    loadReportToOptions();
+  }, []);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    const loadCoal4 = async () => {
+      try {
+        setIsEditLoading(true);
+        const res = await httpService.get(`${API_CHART_OF_ACCOUNTS_BY_ID_L4_URL}${id}`);
+        const data = res?.data?.data?.data || res?.data?.data;
+
+        if (!res?.data?.success || !data) {
+          toast.error(res?.data?.message || 'COA L4 data not found.');
+          navigate(routes.coal4_list);
+          return;
+        }
+
+        setFormData({
+          coal3_id: data?.acc_coa_level3_id ? String(data.acc_coa_level3_id) : '',
+          coal3_label: data?.coa3s?.name || data?.l3_name || '',
+          reporting_to: data?.acc_reporting_to_id
+            ? String(data.acc_reporting_to_id)
+            : DEFAULT_REPORTING_TO_ID,
+          reporting_to_label: data?.reporting_to?.name || '',
+          name: data?.name || '',
+        });
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || error?.message || 'Unable to load COA L4.');
+        navigate(routes.coal4_list);
+      } finally {
+        setIsEditLoading(false);
+      }
+    };
+
+    loadCoal4();
+  }, [id, navigate]);
+
+  useEffect(() => {
+    const reportingToData = reportToOptions.length > 0 ? reportToOptions : coal4?.data?.reporttos || [];
+    const selectedItem = reportingToData.find(
+      (item: { id: string | number; name: string }) => String(item.id) === formData.reporting_to,
     );
 
     if (!selectedItem) {
@@ -52,13 +118,10 @@ const AddCoaL4 = () => {
       return {
         ...prev,
         reporting_to: prev.reporting_to || DEFAULT_REPORTING_TO_ID,
-        reporting_to_label:
-          prev.reporting_to === DEFAULT_REPORTING_TO_ID || !prev.reporting_to_label
-            ? selectedItem.name
-            : prev.reporting_to_label,
+        reporting_to_label: selectedItem.name,
       };
     });
-  }, [coal4?.data?.reporttos]);
+  }, [coal4?.data?.reporttos, formData.reporting_to, reportToOptions]);
 
   const handleSelect =
     (field: 'coal3_id' | 'reporting_to', labelField: 'coal3_label' | 'reporting_to_label') =>
@@ -72,7 +135,8 @@ const AddCoaL4 = () => {
 
   const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
-    const selectedItem = (coal4?.data?.reporttos || []).find(
+    const reportingToData = reportToOptions.length > 0 ? reportToOptions : coal4?.data?.reporttos || [];
+    const selectedItem = reportingToData.find(
       (item: { id: string | number; name: string }) => String(item.id) === value,
     );
 
@@ -120,11 +184,14 @@ const AddCoaL4 = () => {
 
     try {
       setButtonLoading(true);
-      const res = await httpService.post(API_CHART_OF_ACCOUNTS_L4_STORE_URL, payload);
+      const res = await httpService.post(
+        isEditMode ? `${API_CHART_OF_ACCOUNTS_L4_UPDATE_URL}/${id}` : API_CHART_OF_ACCOUNTS_L4_STORE_URL,
+        payload,
+      );
       const data = res?.data;
 
       if (data?.success) {
-        toast.success(data?.message || 'COA L4 created successfully.');
+        toast.success(data?.message || `COA L4 ${isEditMode ? 'updated' : 'created'} successfully.`);
         navigate(routes.coal4_list);
         return;
       }
@@ -139,12 +206,14 @@ const AddCoaL4 = () => {
 
   return (
     <div>
-      <HelmetTitle title="New Chart of Accounts (L-4)" />
+      <HelmetTitle title={isEditMode ? 'Edit Chart of Accounts (L-4)' : 'New Chart of Accounts (L-4)'} />
 
       <div className="mx-auto max-w-4xl rounded-sm border border-gray-300  p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <h1 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-100">
-          New Chart of Accounts (L-4)
+          {isEditMode ? 'Edit Chart of Accounts (L-4)' : 'New Chart of Accounts (L-4)'}
         </h1>
+
+        {isEditLoading ? <Loader /> : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -173,7 +242,7 @@ const AddCoaL4 = () => {
               onChange={handleOnSelectChange}
               value={formData?.reporting_to || ''}
               className="h-[2.1rem] bg-transparent"
-              data={coal4?.data?.reporttos || []}
+              data={reportToOptions.length > 0 ? reportToOptions : coal4?.data?.reporttos || []}
             />
           </div>
           <div>
@@ -193,7 +262,7 @@ const AddCoaL4 = () => {
           <div className="flex items-center gap-1 pt-2">
             <ButtonLoading
               type="submit"
-              label="SAVE"
+              label={isEditMode ? 'UPDATE' : 'SAVE'}
               buttonLoading={buttonLoading}
               className="px-4 h-6 min-w-30"
             />

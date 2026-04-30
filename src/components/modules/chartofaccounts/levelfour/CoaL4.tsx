@@ -11,10 +11,12 @@ import { getCoal4, getCoal4Ddl } from './coal4Sliders';
 import SearchInput from '../../../utils/fields/SearchInput';
 import Link from '../../../utils/others/Link';
 import routes from '../../../services/appRoutes';
+import { useNavigate } from 'react-router-dom';
 
 const CoaL4 = () => {
     const coal4 = useSelector((state) => state.coal4);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [search, setSearchValue] = useState('');
     const [page, setPage] = useState(0);
     const [perPage, setPerPage] = useState(10);
@@ -97,7 +99,11 @@ const CoaL4 = () => {
                     <button onClick={() => { }} className="text-blue-500">
                         <FiBook className="cursor-pointer" />
                     </button>
-                    <button onClick={() => { }} className="text-blue-500  ml-2">
+                    <button
+                        onClick={() => navigate(`/coal4/edit-coal4/${data.id}`)}
+                        className="text-blue-500 ml-2"
+                        title="Edit"
+                    >
                         <FiEdit2 className="cursor-pointer" />
                     </button>
                     <button onClick={() => { }} className="text-red-500 ml-2">

@@ -269,6 +269,7 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l4.view']} loading={permissionsLoading} />}>
                 <Route path={routes.coal4_list} element={<CoaL4 />} />
                 <Route path={routes.coal4_add} element={<AddCoaL4 />} />
+                <Route path={routes.coal4_edit} element={<AddCoaL4 />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.customer} loading={permissionsLoading} />}>
                 <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />

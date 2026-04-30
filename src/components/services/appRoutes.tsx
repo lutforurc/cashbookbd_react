@@ -93,6 +93,7 @@ const ROUTES = {
   coal4_ddl_list: '/coal4/coal4-list',
   coal4_list: '/coal4/coal4-list',
   coal4_add: '/coal4/add-coal4',
+  coal4_edit: '/coal4/edit-coal4/:id',
 
   report_ledger: '/reports/ledger',
   report_cashbook: '/reports/cashbook',
