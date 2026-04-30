@@ -29,6 +29,7 @@ import Ledger from './components/modules/reports/ledger/Ledger';
 import CoaL4 from './components/modules/chartofaccounts/levelfour/CoaL4';
 import AddCoaL4 from './components/modules/chartofaccounts/levelfour/AddCoaL4';
 import CoaL3 from './components/modules/chartofaccounts/levelthree/CoaL3';
+import AddCoaL3 from './components/modules/chartofaccounts/levelthree/AddCoaL3';
 import CoaL2 from './components/modules/chartofaccounts/leveltwo/CoaL2';
 import CoaL1 from './components/modules/chartofaccounts/levelone/CoaL1';
 import DueList from './components/modules/reports/duelist/DueList';
@@ -265,6 +266,8 @@ function App() {
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l3.view']} loading={permissionsLoading} />}>
                 <Route path={routes.coal3_list} element={<CoaL3 />} />
+                <Route path={routes.coal3_add} element={<AddCoaL3 />} />
+                <Route path={routes.coal3_edit} element={<AddCoaL3 />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l4.view']} loading={permissionsLoading} />}>
                 <Route path={routes.coal4_list} element={<CoaL4 />} />

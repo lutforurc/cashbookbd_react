@@ -88,6 +88,7 @@ const ROUTES = {
   // COA L3
   coal3_list: '/coal3/coal3-list',
   coal3_add: '/coal3/add-coal3',
+  coal3_edit: '/coal3/edit-coal3/:id',
 
   // COA L4
   coal4_ddl_list: '/coal4/coal4-list',
