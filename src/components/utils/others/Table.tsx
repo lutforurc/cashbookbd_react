@@ -30,6 +30,7 @@ interface TableProps {
   theadClassName?: string;
   tbodyClassName?: string;
   rowClassName?: string | ((row: any, index: number) => string);
+  onRowClick?: (row: any, index: number) => void;
   getRowKey?: (row: any, index: number) => React.Key;
   noDataMessage?: string;
   headerRows?: TableHeaderCell[][];
@@ -45,6 +46,7 @@ const Table: React.FC<TableProps> = ({
   theadClassName,
   tbodyClassName,
   rowClassName,
+  onRowClick,
   getRowKey,
   noDataMessage = "",
   headerRows,
@@ -98,7 +100,10 @@ const Table: React.FC<TableProps> = ({
             data.map((row, rowIndex) => (
               <tr
                 key={getRowKey ? getRowKey(row, rowIndex) : rowIndex}
+                onClick={() => onRowClick?.(row, rowIndex)}
                 className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
+                  onRowClick ? "cursor-pointer " : ""
+                }${
                   typeof rowClassName === 'function'
                     ? rowClassName(row, rowIndex)
                     : rowClassName || ''

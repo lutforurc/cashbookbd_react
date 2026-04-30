@@ -15,6 +15,8 @@ import Loader from "../../../../common/Loader";
 import InputElement from "../../../utils/fields/InputElement";
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import httpService from "../../../services/httpService";
+import { API_REPORT_TRIAL_BALANCE_LEVEL4_URL } from "../../../services/apiRoutes";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchTrialBalanceLevel3 } from "./trialBalanceLevel3Slice";
@@ -31,6 +33,10 @@ type TrialBalanceRow = {
   movementCredit: number;
   closingDebit: number;
   closingCredit: number;
+};
+
+type TrialBalanceLevel4Row = TrialBalanceRow & {
+  coa3Id: number;
 };
 
 type TrialBalanceDiagnosticRow = TrialBalanceRow & {
@@ -125,6 +131,50 @@ const normalizeRows = (items: any[]): TrialBalanceRow[] => {
     .filter((row) => row.closingDebit !== 0 || row.closingCredit !== 0);
 };
 
+const normalizeLevel4Rows = (items: any[]): TrialBalanceLevel4Row[] => {
+  return items
+    .map((item: any, index: number) => ({
+      key: `${pickFirst(item, ["coa4_id", "id", "code", "head_code"]) || index}`,
+      code: String(
+        pickFirst(item, ["coa4_id", "id", "code", "head_code", "account_code", "coa_code"]) ||
+          "",
+      ),
+      coa3Id: toNum(
+        pickFirst(item, ["coa3_id", "coal3_id", "acc_coa_level3_id"]),
+      ),
+      name: String(
+        pickFirst(item, [
+          "coal4_name",
+          "NAME",
+          "name",
+          "head_name",
+          "account_name",
+          "title",
+          "particulars",
+        ]) || "Unnamed Head",
+      ),
+      openingDebit: toNum(
+        pickFirst(item, ["opening_debit_bal", "opening_debit", "opening_dr"]),
+      ),
+      openingCredit: toNum(
+        pickFirst(item, ["opening_credit_bal", "opening_credit", "opening_cr"]),
+      ),
+      movementDebit: toNum(
+        pickFirst(item, ["movement_debit_bal", "movement_debit", "movement_dr"]),
+      ),
+      movementCredit: toNum(
+        pickFirst(item, ["movement_credit_bal", "movement_credit", "movement_cr"]),
+      ),
+      closingDebit: toNum(
+        pickFirst(item, ["debit_bal", "closing_debit_bal", "debit"]),
+      ),
+      closingCredit: toNum(
+        pickFirst(item, ["credit_bal", "closing_credit_bal", "credit"]),
+      ),
+    }))
+    .filter((row) => row.closingDebit !== 0 || row.closingCredit !== 0);
+};
+
 const formatAmount = (amount: number) => {
   const formatted = thousandSeparator(Math.abs(amount));
   return amount < 0 ? `(${formatted})` : formatted;
@@ -148,6 +198,10 @@ const TrialBalanceLevel3 = (user: any) => {
   const [perPage, setPerPage] = useState<number>(40);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [expandedL3Id, setExpandedL3Id] = useState<number | null>(null);
+  const [level4Rows, setLevel4Rows] = useState<TrialBalanceLevel4Row[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -305,6 +359,37 @@ const TrialBalanceLevel3 = (user: any) => {
 
   const hasReportData = rows.length > 0;
 
+  const selectedLevel3Row = useMemo(() => {
+    return rows.find((row) => Number(row.key) === Number(expandedL3Id)) || null;
+  }, [expandedL3Id, rows]);
+
+  const selectedLevel4Rows = useMemo(() => {
+    if (!expandedL3Id) return [];
+    return level4Rows.filter((row) => Number(row.coa3Id) === Number(expandedL3Id));
+  }, [expandedL3Id, level4Rows]);
+
+  const selectedLevel4Totals = useMemo(() => {
+    return selectedLevel4Rows.reduce(
+      (acc, row) => {
+        acc.openingDebit += row.openingDebit;
+        acc.openingCredit += row.openingCredit;
+        acc.movementDebit += row.movementDebit;
+        acc.movementCredit += row.movementCredit;
+        acc.closingDebit += row.closingDebit;
+        acc.closingCredit += row.closingCredit;
+        return acc;
+      },
+      {
+        openingDebit: 0,
+        openingCredit: 0,
+        movementDebit: 0,
+        movementCredit: 0,
+        closingDebit: 0,
+        closingCredit: 0,
+      },
+    );
+  }, [selectedLevel4Rows]);
+
   const branchName = useMemo(() => {
     const selected = dropdownData.find(
       (branch: any) => Number(branch.id) === Number(branchId),
@@ -322,6 +407,9 @@ const TrialBalanceLevel3 = (user: any) => {
     if (!startDate || !endDate) return alert("Start/End Date Ã Â¦Â¦Ã Â¦Â¿Ã Â¦Â¨");
 
     setButtonLoading(true);
+    setExpandedL3Id(null);
+    setLevel4Rows([]);
+    setDetailError(null);
 
     const action = await dispatch(
       fetchTrialBalanceLevel3({
@@ -339,6 +427,40 @@ const TrialBalanceLevel3 = (user: any) => {
     }
 
     setFilterOpen(false);
+  };
+
+  const handleLevel3RowClick = async (row: TrialBalanceRow) => {
+    const coa3Id = Number(row.key || row.code);
+    if (!Number.isFinite(coa3Id) || !branchId || !startDate || !endDate) return;
+
+    if (expandedL3Id === coa3Id) {
+      setExpandedL3Id(null);
+      return;
+    }
+
+    setExpandedL3Id(coa3Id);
+    setDetailError(null);
+
+    if (level4Rows.length > 0) return;
+
+    try {
+      setDetailLoading(true);
+      const res = await httpService.get(API_REPORT_TRIAL_BALANCE_LEVEL4_URL, {
+        params: {
+          branch_id: Number(branchId),
+          start_date: dayjs(startDate).format("YYYY-MM-DD"),
+          end_date: dayjs(endDate).format("YYYY-MM-DD"),
+        },
+      });
+
+      setLevel4Rows(normalizeLevel4Rows(findArrayCollection(res.data)));
+    } catch (error: any) {
+      setDetailError(
+        error?.response?.data?.message || error.message || "Details load failed",
+      );
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
   const handlePrint = useReactToPrint({
@@ -840,14 +962,94 @@ const TrialBalanceLevel3 = (user: any) => {
               </div>
 
               <div className="space-y-3 p-5" style={{ fontSize: `${fontSize}px` }}>
-                <Table
-                  columns={columns}
-                  data={tableData || []}
-                  headerRows={headerRows}
-                  footerRows={footerRows}
-                  noDataMessage="No trial balance data found"
-                />
-              </div>
+	                <Table
+	                  columns={columns}
+	                  data={tableData || []}
+	                  headerRows={headerRows}
+	                  footerRows={footerRows}
+	                  noDataMessage="No trial balance data found"
+                    onRowClick={handleLevel3RowClick}
+                    rowClassName={(row: any) =>
+                      Number(row.key) === Number(expandedL3Id)
+                        ? "bg-indigo-100 dark:bg-indigo-500/20"
+                        : ""
+                    }
+	                />
+
+                  {expandedL3Id && (
+                    <div className="rounded-sm border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/30">
+                      <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700">
+                        <div>
+                          <h4 className="font-semibold text-slate-900 dark:text-white">
+                            {selectedLevel3Row?.name || "COA L3"} Details
+                          </h4>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            COA L3 ID: {expandedL3Id}
+                          </p>
+                        </div>
+                        <div className="rounded-sm bg-white px-3 py-2 text-sm font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                          Level 4 Heads: {detailLoading ? "Loading..." : selectedLevel4Rows.length}
+                        </div>
+                      </div>
+
+                      {detailError && (
+                        <div className="px-4 py-3 text-sm text-red-600 dark:text-red-300">
+                          {detailError}
+                        </div>
+                      )}
+
+                      {!detailLoading && !detailError && selectedLevel4Rows.length === 0 && (
+                        <div className="px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                          No Level 4 details found
+                        </div>
+                      )}
+
+                      {selectedLevel4Rows.length > 0 && (
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full table-fixed text-left text-sm text-slate-700 dark:text-slate-200">
+                            <thead className="bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                              <tr>
+                                <th className="w-16 px-3 py-3 text-center">Sl. No</th>
+                                <th className="w-80 px-3 py-3">COA L4 Name</th>
+                                <th className="w-32 px-3 py-3 text-right">Opening Dr</th>
+                                <th className="w-32 px-3 py-3 text-right">Opening Cr</th>
+                                <th className="w-32 px-3 py-3 text-right">Movement Dr</th>
+                                <th className="w-32 px-3 py-3 text-right">Movement Cr</th>
+                                <th className="w-32 px-3 py-3 text-right">Closing Dr</th>
+                                <th className="w-32 px-3 py-3 text-right">Closing Cr</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-gray-800">
+                              {selectedLevel4Rows.map((row, index) => (
+                                <tr key={row.key}>
+                                  <td className="px-3 py-2 text-center">{index + 1}</td>
+                                  <td className="px-3 py-2">{row.name}</td>
+                                  <td className="px-3 py-2 text-right">{thousandSeparator(row.openingDebit)}</td>
+                                  <td className="px-3 py-2 text-right">{thousandSeparator(row.openingCredit)}</td>
+                                  <td className="px-3 py-2 text-right">{thousandSeparator(row.movementDebit)}</td>
+                                  <td className="px-3 py-2 text-right">{thousandSeparator(row.movementCredit)}</td>
+                                  <td className="px-3 py-2 text-right">{thousandSeparator(row.closingDebit)}</td>
+                                  <td className="px-3 py-2 text-right">{thousandSeparator(row.closingCredit)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot className="bg-slate-100 font-semibold text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+                              <tr>
+                                <td colSpan={2} className="px-3 py-3 text-right">Total</td>
+                                <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.openingDebit)}</td>
+                                <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.openingCredit)}</td>
+                                <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.movementDebit)}</td>
+                                <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.movementCredit)}</td>
+                                <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.closingDebit)}</td>
+                                <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.closingCredit)}</td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+	              </div>
             </div>
           </>
         )}
