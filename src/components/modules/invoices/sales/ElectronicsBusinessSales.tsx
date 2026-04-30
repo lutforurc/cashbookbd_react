@@ -350,10 +350,7 @@ const ElectronicsBusinessSales = () => {
       items.find(item => item.coa4_id === target) ||
       items.find(item => item.coa4_id === fallback);
 
-    // Ã Â¦Â¯Ã Â¦Â¦Ã Â¦Â¿ Ã Â¦Â¨Ã Â¦Â¾ Ã Â¦ÂªÃ Â¦Â¾Ã Â§Å¸ Ã¢â€ â€™ null
     if (!found) return null;
-
-    // "65" Ã Â¦â€¢Ã Â§â€¡ number 65 Ã Â¦Â convert Ã Â¦â€¢Ã Â¦Â°Ã Â§â€¡ Ã Â¦Â°Ã Â¦Â¿Ã Â¦Å¸Ã Â¦Â¾Ã Â¦Â°Ã Â§ÂÃ Â¦Â¨
     return Number(found.credit);
   }
 

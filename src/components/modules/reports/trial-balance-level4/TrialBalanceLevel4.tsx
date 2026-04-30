@@ -594,7 +594,7 @@ const TrialBalanceLevel4 = (user: any) => {
                       Trial Balance Rows
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {branchName} Ã¢â‚¬Â¢ {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
+                      {branchName}‚ {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
                       {endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
                     </p>
                   </div>
