@@ -42,9 +42,12 @@ export const formatTransportationNumber = (text: any) => {
   const s = String(text ?? "").trim();
   if (!s) return "";
 
-  const [prefix, ...restParts] = s.split("-");
-  if (!prefix) return s;
-  if (restParts.length === 0) return prefix.toUpperCase();
+  const normalized = s.replace(/\s*-\s*/g, "-").replace(/\s+/g, " ");
+  const match = normalized.match(/^([A-Za-z]+)(?:[-\s]+(.+))?$/);
+  if (!match) return normalized;
 
-  return `${prefix.toUpperCase()} ${restParts.join("-")}`;
+  const [, prefix, numberPart] = match;
+  if (!numberPart) return prefix.toUpperCase();
+
+  return `${prefix.toUpperCase()} ${numberPart}`;
 };

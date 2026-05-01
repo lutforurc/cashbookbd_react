@@ -634,6 +634,8 @@ const TradingCombinedEntry = () => {
   };
 
   const handleSave = async () => {
+    const amount = Number(formData.amount || 0);
+
     if (!formData.supplierAccount) {
       toast.info('Please select a supplier.');
       return;
@@ -642,7 +644,7 @@ const TradingCombinedEntry = () => {
       toast.info('Please select a customer.');
       return;
     }
-    if (!formData.amount || Number(formData.amount) < 0) {
+    if (!Number.isFinite(amount) || amount < 0) {
       toast.info('Please enter the trading amount.');
       return;
     }
@@ -663,7 +665,7 @@ const TradingCombinedEntry = () => {
         salesOrderNumber: formData.salesOrderNumber || null,
         invoice_no: formData.invoice_no || null,
         invoice_date: formData.invoice_date || null,
-        amount: Number(formData.amount || 0),
+        amount,
         onlySalesPosting: Boolean(formData.onlySalesPosting),
         purchaseDiscountAmt: 0,
         salesDiscountAmt: Number(formData.salesDiscountAmt || 0),
@@ -813,10 +815,10 @@ const TradingCombinedEntry = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <label htmlFor="amount">Transaction Amount</label>
+                  <label htmlFor="amount">Trax. Amount</label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
-                      {formData.onlySalesPosting ? 'Sales Only' : 'Both'}
+                      {formData.onlySalesPosting ? 'Sales' : 'Both'}
                     </span>
                     <label
                       htmlFor="onlySalesPosting"
