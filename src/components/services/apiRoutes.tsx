@@ -240,6 +240,7 @@ export const API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL = `${API_BASE_URL}/repor
 export const API_REPORT_PRODUCT_PROFIT_LOSS_URL = `${API_BASE_URL}/reports/product-profit-loss`;
 export const API_REPORT_PRODUCT_LEDGER_DATA_URL = `${API_BASE_URL}/reports/product-ledger-data`;
 export const API_REPORT_DATE_WISE_IN_OUT_URL = `${API_BASE_URL}/reports/in-out/date-wise/data`;
+export const API_REPORT_DATE_WISE_IN_OUT_DETAILS_URL = `${API_BASE_URL}/reports/in-out/date-wise/details`;
 // Balance Sheet url
 export const API_REPORT_BALANCE_SHEET_URL = `${API_BASE_URL}/reports/balance-sheet`;
 // Trial Balance Group url
