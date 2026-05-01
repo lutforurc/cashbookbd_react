@@ -52,6 +52,7 @@ import AddRole from './components/modules/user-management/AddRole';
 import JumpDate from './components/modules/dayclose/JumpDate';
 import VoucherApproval from './components/modules/voucher_approval/VoucherApproval';
 import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex';
+import TradingPurchaseImport from './components/modules/invoices/purchase/TradingPurchaseImport';
 import ConstructionBusinessPurchaseReturn from './components/modules/invoices/purchase/ConstructionBusinessPurchaseReturn';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
 import TradingSalesImport from './components/modules/invoices/sales/TradingSalesImport';
@@ -512,6 +513,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_purchase_import} element={<TradingPurchaseImport />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_purchase_return} element={<ConstructionBusinessPurchaseReturn />} />

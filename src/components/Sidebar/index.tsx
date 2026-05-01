@@ -383,6 +383,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                   activeCondition={
                     pathname === routes.inv_trading_combined ||
                     pathname === '/invoice/purchase' ||
+                    pathname === routes.inv_purchase_import ||
                     pathname === '/invoice/sales' ||
                     pathname === routes.branch_transfer ||
                     pathname === routes.branch_received ||
@@ -399,6 +400,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/invoice/purchase' ||
                           pathname === routes.inv_trading_combined ||
                           pathname === '/invoice/purchase-return' ||
+                          pathname === routes.inv_purchase_import ||
                           pathname === '/invoice/sales' ||
                           pathname === '/invoice/sales-return' ||
                           pathname === '/invoice/labour-invoice' ||
@@ -432,6 +434,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Purchase
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'purchase.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.inv_purchase_import}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Purchase Import
                               </NavLink>
                             </li>
                           )}

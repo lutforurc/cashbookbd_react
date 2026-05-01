@@ -158,6 +158,7 @@ const ROUTES = {
   // Invoices
   // Purchase
   inv_purchase: '/invoice/purchase',
+  inv_purchase_import: '/invoice/purchase-import',
   inv_trading_combined: '/invoice/trading-combined',
   inv_purchase_return: '/invoice/purchase-return',
   // Sales
