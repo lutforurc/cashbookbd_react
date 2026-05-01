@@ -33,11 +33,41 @@
   z-index: 9999;
   min-width: 280px;
   max-width: 340px;
+  max-height: none;
   overflow: hidden;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.5rem;
   background: white;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+}
+
+.topbar-menu nav > div > ul > li > div::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: none;
+  height: 42px;
+  color: rgb(203 213 225);
+  content: '';
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), white 38%);
+}
+
+.topbar-menu nav > div > ul > li > div::before {
+  position: absolute;
+  display: none;
+  bottom: 13px;
+  left: 50%;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  color: rgb(148 163 184);
+  content: '';
+  cursor: pointer;
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .topbar-menu nav > div > ul > li > div[class*='max-h-0'] {
@@ -50,6 +80,25 @@
   max-height: none !important;
 }
 
+.topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) {
+  max-height: min(58vh, 520px) !important;
+}
+
+.topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9))::after,
+.topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9))::before {
+  display: block;
+}
+
+.topbar-menu.topbar-menu-expanded nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) {
+  max-width: min(760px, calc(100vw - 2rem));
+  max-height: calc(100vh - 5rem) !important;
+}
+
+.topbar-menu.topbar-menu-expanded nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9))::before {
+  bottom: 10px;
+  transform: translateX(-50%) rotate(225deg);
+}
+
 .topbar-menu nav > div > ul > li > div > ul {
   display: flex;
   flex-direction: column;
@@ -57,6 +106,17 @@
   margin: 0 !important;
   padding: 0.5rem !important;
   background: white;
+}
+
+.topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) > ul {
+  padding-bottom: 2.75rem !important;
+}
+
+.topbar-menu.topbar-menu-expanded nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) > ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  width: max-content;
+  max-width: min(760px, calc(100vw - 2rem));
 }
 
 .topbar-menu nav > div > ul > li > div > ul > li {
@@ -87,6 +147,15 @@
 .dark .topbar-menu nav > div > ul > li > div {
   border-color: rgb(51 65 85);
   background: rgb(30 41 59);
+}
+
+.dark .topbar-menu nav > div > ul > li > div::after {
+  color: rgb(148 163 184);
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.1), rgb(30 41 59) 38%);
+}
+
+.dark .topbar-menu nav > div > ul > li > div::before {
+  color: rgb(148 163 184);
 }
 
 .dark .topbar-menu nav > div > ul > li > div > ul,
