@@ -707,7 +707,7 @@ const TradingCombinedEntry = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
-                <label htmlFor="">Select Supplier</label>
+                <label htmlFor="" className='text-black dark:text-white'>Select Supplier</label>
                 <DdlMultiline
                   id="supplierAccount"
                   className="h-9.5"
@@ -731,7 +731,7 @@ const TradingCombinedEntry = () => {
                 />
               </div>
               <div>
-                <label htmlFor="">Select Customer</label>
+                <label htmlFor="" className='text-black dark:text-white'>Select Customer</label>
                 <DdlMultiline
                   className="h-9.5"
                   onSelect={customerAccountHandler}
@@ -778,7 +778,7 @@ const TradingCombinedEntry = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="relative">
                 <div>
-                  <label htmlFor="">Select Purchase Order</label>
+                  <label htmlFor="" className='text-black dark:text-white'>Select Purchase Order</label>
                   <OrderDropdown
                     id="purchaseOrderNumber"
                     name="purchaseOrderNumber"
@@ -795,7 +795,7 @@ const TradingCombinedEntry = () => {
               </div>
               <div className="relative">
                 <div>
-                  <label htmlFor="">Select Sales Order</label>
+                  <label htmlFor="" className='text-black dark:text-white'>Select Sales Order</label>
                   <OrderDropdown
                     id="salesOrderNumber"
                     name="salesOrderNumber"
@@ -815,14 +815,15 @@ const TradingCombinedEntry = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <label htmlFor="amount">Trax. Amount</label>
+                  <label htmlFor="amount" className='text-black dark:text-white'>Trax. Amount</label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
-                      {formData.onlySalesPosting ? 'Sales' : 'Both'}
+                     <span className='font-semibold'> {formData.onlySalesPosting ? 'Sales' : 'Both'}</span>
                     </span>
                     <label
                       htmlFor="onlySalesPosting"
                       className="relative inline-flex cursor-pointer items-center"
+                      title="It helps to identify whether the transaction amount is for sales only or includes both purchase and sales."
                     >
                       <input
                         id="onlySalesPosting"
@@ -911,7 +912,9 @@ const TradingCombinedEntry = () => {
           <div className="grid grid-cols-1 gap-y-1">
             <div className="grid grid-cols-1 gap-2">
               <div>
-                <label htmlFor="">Select Product</label>
+                <label htmlFor="" className='text-black dark:text-white'>
+                  Select Product
+                </label>
                 <ProductDropdown
                   id="product"
                   name="product"
@@ -959,7 +962,9 @@ const TradingCombinedEntry = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'qty')}
               />
               <div>
-                <label htmlFor="">Variance Type</label>
+                <label htmlFor="" className='text-black dark:text-white'>
+                  Variance Type
+                </label>
                 <SelectWeightVariance
                   value={productData.variance_type}
                   onChange={handleVarianceTypeChange}
