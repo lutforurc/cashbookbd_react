@@ -115,6 +115,7 @@ const ROUTES = {
   mitch_match: '/reports/mitch-match',
   report_labour_ledger: '/reports/labour/ledger',
   group_report: '/reports/group-report',
+  somity_collection_sheet: '/somity-report/collection-sheet',
 
   // Cash Received',
   cash_received: '/accounts/cash/receive',

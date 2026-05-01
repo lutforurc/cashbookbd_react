@@ -135,6 +135,7 @@ import BalanceSheet from './components/modules/reports/balance-sheet/BalanceShee
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
 import LedgerWithProduct from './components/modules/reports/ledger-with-product/LedgerWithProduct';
+import CollectionSheet from './components/modules/reports/somity/CollectionSheet';
 import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTransfer';
 import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
 import SendSms from './components/modules/sms/SendSms';
@@ -424,6 +425,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report']} loading={permissionsLoading} />}>
               <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report', 'ledger.due.view', 'cashbook.view']} loading={permissionsLoading} />}>
+              <Route path={routes.somity_collection_sheet} element={<CollectionSheet user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_product_stock} element={<ProductStockIndex user={me} />} />

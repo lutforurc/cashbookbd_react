@@ -568,6 +568,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/reports/purchase-ledger' ||
                     pathname === '/reports/sales-ledger' ||
                     pathname === '/reports/group-report' ||
+                    pathname === routes.somity_collection_sheet ||
                     pathname === '/reports/mitch-match' ||
                     pathname.includes('forms')
                   }
@@ -590,6 +591,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname.includes('/reports/purchase-ledger') ||
                           pathname.includes('/reports/sales-ledger') ||
                           pathname.includes('/reports/group-report') ||
+                          pathname.includes(routes.somity_collection_sheet) ||
                           pathname.includes('/reports/labour/ledger') ||
                           pathname.includes('/reports/mitch-match') ||
                           pathname.includes(routes.profit_loss) ||
@@ -802,6 +804,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Due List
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'group.report') ||
+                            hasPermission(permissions, 'ledger.due.view') ||
+                            hasPermission(permissions, 'cashbook.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.somity_collection_sheet}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Collection Sheet
                               </NavLink>
                             </li>
                           )}

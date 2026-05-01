@@ -252,6 +252,7 @@ export const API_REPORT_DUE_LIST_URL = `${API_BASE_URL}/reports/duelist`;
 export const API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL = `${API_BASE_URL}/reports/ledger-with-product`;
 // Date Wise Report url
 export const API_DATE_WISE_TOTAL_URL = `${API_BASE_URL}/reports/date-wise-total-data`;
+export const API_SOMITY_COLLECTION_SHEET_URL = `${API_BASE_URL}/somity-report/collection-sheet`;
 
 // Mitch Match url
 export const API_REPORT_MITCH_MATCH_URL = `${API_BASE_URL}/reports/mitch-match/data`;
