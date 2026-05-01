@@ -17,9 +17,10 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import Table from '../../../utils/others/Table';
-import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import { DateWiseInOutDetailPrint, DateWiseInOutPrint } from './DateWiseInOutPrint';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
-type DateWiseInOutRow = {
+export type DateWiseInOutRow = {
   sl_no: string;
   vr_date: string;
   date_link?: string;
@@ -31,7 +32,7 @@ type DateWiseInOutRow = {
   stockTone: 'positive' | 'negative' | 'neutral';
 };
 
-type InOutDetailRow = {
+export type InOutDetailRow = {
   vr_no?: string;
   mid?: number;
   vr_date?: string;
@@ -223,34 +224,6 @@ const DateWiseInOut = ({ user }: any) => {
     }
   };
 
-  const formatNumber = (value: any, decimals = 0) => {
-    const numericValue = Number(value || 0);
-    if (!Number.isFinite(numericValue) || numericValue === 0) return '-';
-
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    }).format(numericValue);
-  };
-
-  const signedVariance = (type: any, value: any) => {
-    const numericValue = Number(value || 0);
-    if (!Number.isFinite(numericValue) || numericValue === 0) return 0;
-    return String(type || '').trim() === '-' ? -numericValue : numericValue;
-  };
-
-  const adjustedSalesTotal = (row: InOutDetailRow) => {
-    const qty = Number(row?.out_qty || 0);
-    const damage = Number(row?.damage || 0);
-    const varianceType = String(row?.variance_type || '').trim();
-    if (varianceType === '-') return qty + damage;
-    if (varianceType === '+') return qty - damage;
-    return qty;
-  };
-
-  const adjustedPurchaseTotal = (row: InOutDetailRow) =>
-    Number(row?.in_qty || 0) + signedVariance(row?.variance_type, row?.over);
-
   const columns = useMemo(
     () => [
       {
@@ -311,71 +284,13 @@ const DateWiseInOut = ({ user }: any) => {
         cellClass: 'text-right',
         render: (row: DateWiseInOutRow) => (
           <span className={row.stockTone === 'negative' ? 'font-bold text-red-700' : row.stockTone === 'positive' ? 'font-bold text-green-700' : ''}>
-            {row.stock}
+            {thousandSeparator(Number(row.stock))}
           </span>
         ),
       },
     ],
     [branchId, detailLoadingDate, productId],
   );
-
-  const printColumns = useMemo(
-    () =>
-      columns.map((column: any) =>
-        column.key === 'vr_date'
-          ? {
-              ...column,
-              render: (row: DateWiseInOutRow) => <span className="text-emerald-600">{row.vr_date}</span>,
-            }
-          : column,
-      ),
-    [columns],
-  );
-
-  const printPages = useMemo(() => {
-    const perPage = Math.max(Number(rowsPerPage) || 12, 1);
-    const pages: DateWiseInOutRow[][] = [];
-
-    for (let index = 0; index < rows.length; index += perPage) {
-      pages.push(rows.slice(index, index + perPage));
-    }
-
-    return pages.length > 0 ? pages : [[]];
-  }, [rows, rowsPerPage]);
-
-  const detailPrintPages = useMemo(() => {
-    const perPage = Math.max(Number(rowsPerPage) || 12, 1);
-    const maxRows = Math.max(detailRows.purchase.length, detailRows.sales.length);
-    const pageCount = Math.max(Math.ceil(maxRows / perPage), 1);
-
-    return Array.from({ length: pageCount }, (_, pageIndex) => {
-      const start = pageIndex * perPage;
-      const end = start + perPage;
-
-      return {
-        purchase: detailRows.purchase.slice(start, end),
-        sales: detailRows.sales.slice(start, end),
-        isLastPage: pageIndex === pageCount - 1,
-        start,
-      };
-    });
-  }, [detailRows.purchase, detailRows.sales, rowsPerPage]);
-
-  const detailTotals = useMemo(() => {
-    const totalOutQty = detailRows.sales.reduce((sum, row) => sum + Number(row?.out_qty || 0), 0);
-    const totalDamage = detailRows.sales.reduce((sum, row) => sum + signedVariance(row?.variance_type, row?.damage), 0);
-    const totalInQty = detailRows.purchase.reduce((sum, row) => sum + Number(row?.in_qty || 0), 0);
-    const totalOver = detailRows.purchase.reduce((sum, row) => sum + signedVariance(row?.variance_type, row?.over), 0);
-
-    return {
-      totalOutQty,
-      totalDamage,
-      totalSales: totalDamage < 0 ? totalOutQty + totalDamage : totalOutQty - totalDamage,
-      totalInQty,
-      totalOver,
-      totalPurchase: totalInQty + totalOver,
-    };
-  }, [detailRows]);
 
   return (
     <div>
@@ -498,128 +413,23 @@ const DateWiseInOut = ({ user }: any) => {
       </div>
 
       <div className="fixed left-[-10000px] top-0 bg-white">
-        <div ref={printRef} className="p-6 text-black" style={{ fontSize }}>
-          {printPages.map((pageRows, index) => (
-            <div
-              key={index}
-              style={{
-                pageBreakAfter: index === printPages.length - 1 ? 'auto' : 'always',
-              }}
-            >
-              <PadPrinting />
-              <h1 className="mb-4 text-center text-lg font-bold">Date Wise In Out</h1>
-              <Table
-                columns={printColumns as any}
-                data={pageRows}
-                tableClassName="table-auto border border-slate-900"
-                theadClassName="bg-white text-black"
-                noDataMessage="No data found"
-                tableStyle={{ fontSize }}
-              />
-            </div>
-          ))}
-        </div>
+        <DateWiseInOutPrint
+          ref={printRef}
+          rows={rows}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
+        />
       </div>
 
       <div className="fixed left-[-10000px] top-0 bg-white">
-        <div ref={detailPrintRef} className="p-5 text-black" style={{ fontSize }}>
-          <style>
-            {'@page { size: landscape; margin: 10mm; }'}
-          </style>
-          {detailPrintPages.map((page, pageIndex) => (
-            <div
-              key={pageIndex}
-              style={{
-                pageBreakAfter: page.isLastPage ? 'auto' : 'always',
-              }}
-            >
-              <PadPrinting />
-              <h1 className="mb-4 text-center text-xl font-bold">Date Wise In Out</h1>
-              <div className="mb-3 flex justify-center gap-6">
-                <span><strong>Date:</strong> {detailDate || '-'}</span>
-                <span><strong>Product:</strong> {selectedProductOption?.label || '-'}</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <h2 className="mb-2 text-center text-lg font-semibold">Purchase</h2>
-                  <table className="w-full border-collapse" style={{ fontSize }}>
-                    <thead>
-                      <tr>
-                        {['Sl. No.', 'Inv No', 'Inv Dt', 'Vehicle No', 'Weight', 'Variance', 'Total', 'Rate'].map((label) => (
-                          <th key={label} className="border border-black px-1 py-1 text-center">{label}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {page.purchase.map((row, index) => (
-                        <tr key={`${row.vr_no || index}-purchase-${pageIndex}`}>
-                          <td className="border border-black px-1 py-1 text-center">{page.start + index + 1}</td>
-                          <td className="border border-black px-1 py-1 text-center">{row.vr_no || '-'}</td>
-                          <td className="border border-black px-1 py-1 text-center">{detailDate || '-'}</td>
-                          <td className="border border-black px-1 py-1 text-center">{row.vehicle_no || '-'}</td>
-                          <td className="border border-black px-1 py-1 text-right">{formatNumber(row.in_qty)}</td>
-                          <td className="border border-black px-1 py-1 text-right">
-                            {row.variance_type || ''}{formatNumber(row.over)}
-                          </td>
-                          <td className="border border-black px-1 py-1 text-right">{formatNumber(adjustedPurchaseTotal(row))}</td>
-                          <td className="border border-black px-1 py-1 text-right">{formatNumber(row.rate, 2)}</td>
-                        </tr>
-                      ))}
-                      {page.isLastPage ? (
-                        <tr>
-                          <td className="border border-black px-1 py-1 text-right font-semibold" colSpan={4}>Total</td>
-                          <td className="border border-black px-1 py-1 text-right font-semibold">{formatNumber(detailTotals.totalInQty)}</td>
-                          <td className="border border-black px-1 py-1 text-right font-semibold">{formatNumber(detailTotals.totalOver)}</td>
-                          <td className="border border-black px-1 py-1 text-right font-semibold">{formatNumber(detailTotals.totalPurchase)}</td>
-                          <td className="border border-black px-1 py-1" />
-                        </tr>
-                      ) : null}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div>
-                  <h2 className="mb-2 text-center text-lg font-semibold">Sales</h2>
-                  <table className="w-full border-collapse" style={{ fontSize }}>
-                    <thead>
-                      <tr>
-                        {['Sl. No.', 'Inv No', 'Inv Dt', 'Vehicle No', 'Weight', 'Variance', 'Total', 'Rate'].map((label) => (
-                          <th key={label} className="border border-black px-1 py-1 text-center">{label}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {page.sales.map((row, index) => (
-                        <tr key={`${row.vr_no || index}-sales-${pageIndex}`}>
-                          <td className="border border-black px-1 py-1 text-center">{page.start + index + 1}</td>
-                          <td className="border border-black px-1 py-1 text-center">{row.vr_no || '-'}</td>
-                          <td className="border border-black px-1 py-1 text-center">{detailDate || '-'}</td>
-                          <td className="border border-black px-1 py-1 text-center">{row.vehicle_no || '-'}</td>
-                          <td className="border border-black px-1 py-1 text-right">{formatNumber(row.out_qty)}</td>
-                          <td className="border border-black px-1 py-1 text-right">
-                            {row.variance_type || ''} {formatNumber(row.damage)}
-                          </td>
-                          <td className="border border-black px-1 py-1 text-right">{formatNumber(adjustedSalesTotal(row))}</td>
-                          <td className="border border-black px-1 py-1 text-right">{formatNumber(row.rate, 2)}</td>
-                        </tr>
-                      ))}
-                      {page.isLastPage ? (
-                        <tr>
-                          <td className="border border-black px-1 py-1 text-right font-semibold" colSpan={4}>Total</td>
-                          <td className="border border-black px-1 py-1 text-right font-semibold">{formatNumber(detailTotals.totalOutQty)}</td>
-                          <td className="border border-black px-1 py-1 text-right font-semibold">{formatNumber(detailTotals.totalDamage)}</td>
-                          <td className="border border-black px-1 py-1 text-right font-semibold">{formatNumber(detailTotals.totalSales)}</td>
-                          <td className="border border-black px-1 py-1" />
-                        </tr>
-                      ) : null}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <DateWiseInOutDetailPrint
+          ref={detailPrintRef}
+          detailDate={detailDate}
+          detailRows={detailRows}
+          productName={selectedProductOption?.label}
+          rowsPerPage={rowsPerPage}
+          fontSize={fontSize}
+        />
       </div>
     </div>
   );
