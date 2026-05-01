@@ -563,6 +563,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/reports/ledger' ||
                     pathname === '/reports/due-installments' ||
                     pathname === '/reports/date-wise-total-data' ||
+                    pathname === routes.report_date_wise_in_out ||
                     pathname === '/reports/due-list' ||
                     pathname === '/reports/purchase-ledger' ||
                     pathname === '/reports/sales-ledger' ||
@@ -584,6 +585,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname === '/reports/due-installments' ||
                           pathname.includes('/reports/due-list') ||
                           pathname.includes('/reports/product/stock') ||
+                          pathname.includes(routes.report_date_wise_in_out) ||
                           pathname.includes('/reports/cat-wise/in-out') ||
                           pathname.includes('/reports/purchase-ledger') ||
                           pathname.includes('/reports/sales-ledger') ||
@@ -748,6 +750,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Product In Out
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.in.out') && (
+                            <li>
+                              <NavLink
+                                to={routes.report_date_wise_in_out}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Date-wise In/Out
                               </NavLink>
                             </li>
                           )}

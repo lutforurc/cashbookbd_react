@@ -130,6 +130,7 @@ import ProductStockIndex from './components/modules/reports/productstock/Product
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
 import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
+import DateWiseInOut from './components/modules/reports/date-wise-in-out/DateWiseInOut';
 import BalanceSheet from './components/modules/reports/balance-sheet/BalanceSheet';
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
@@ -428,6 +429,7 @@ function App() {
               <Route path={routes.report_product_stock} element={<ProductStockIndex user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.out']} loading={permissionsLoading} />}>
+              <Route path={routes.report_date_wise_in_out} element={<DateWiseInOut user={me} />} />
               <Route path={routes.cat_wise_in_out} element={<CatWiseInOut user={me} />} />
             </Route>
 
