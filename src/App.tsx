@@ -54,6 +54,7 @@ import VoucherApproval from './components/modules/voucher_approval/VoucherApprov
 import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex';
 import ConstructionBusinessPurchaseReturn from './components/modules/invoices/purchase/ConstructionBusinessPurchaseReturn';
 import SalesIndex from './components/modules/invoices/sales/SalesIndex';
+import TradingSalesImport from './components/modules/invoices/sales/TradingSalesImport';
 import GeneralBusinessSalesReturn from './components/modules/invoices/sales/GeneralBusinessSalesReturn';
 import TradingCombinedEntry from './components/modules/invoices/trading/TradingCombinedEntry';
 import CashReceivedIndex from './components/modules/transactions/cashreceived/CashReceivedIndex';
@@ -517,6 +518,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales} element={<SalesIndex />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
+              <Route path={routes.inv_sales_import} element={<TradingSalesImport />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales_return} element={<GeneralBusinessSalesReturn />} />

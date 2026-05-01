@@ -44,6 +44,7 @@
     "react-toastify": "^10.0.6",
     "redux-thunk": "^3.1.0",
     "sort-by": "^0.0.2",
+    "xlsx": "^0.18.5",
     "yup": "^1.6.1"
   },
   "devDependencies": {
