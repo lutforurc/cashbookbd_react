@@ -605,6 +605,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === routes.profit_loss || //'/reports/profit-loss' ||
                     pathname === routes.product_profit_loss ||
                     pathname === routes.bank_information ||
+                    pathname === routes.connected_member ||
                     pathname === routes.balance_sheet ||
                     pathname === routes.trial_balance_level3 ||
                     pathname === routes.trial_balance_level4 ||
@@ -620,6 +621,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/reports/sales-ledger' ||
                     pathname === '/reports/group-report' ||
                     pathname === routes.somity_collection_sheet ||
+                    pathname === routes.somity_monthly_report ||
                     pathname === '/reports/mitch-match' ||
                     pathname.includes('forms')
                   }
@@ -643,11 +645,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname.includes('/reports/sales-ledger') ||
                           pathname.includes('/reports/group-report') ||
                           pathname.includes(routes.somity_collection_sheet) ||
+                          pathname.includes(routes.somity_monthly_report) ||
                           pathname.includes('/reports/labour/ledger') ||
                           pathname.includes('/reports/mitch-match') ||
                           pathname.includes(routes.profit_loss) ||
                           pathname.includes(routes.product_profit_loss) ||
                           pathname.includes(routes.bank_information) ||
+                          pathname.includes(routes.connected_member) ||
                           pathname.includes(routes.balance_sheet) ||
                           pathname.includes(routes.trial_balance_level3) ||
                           pathname.includes(routes.trial_balance_level4) ||
@@ -724,6 +728,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Bank Information
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'connected.member.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.connected_member}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Connected Member
                               </NavLink>
                             </li>
                           )}
@@ -884,7 +902,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Collection Sheet
+                              Collection Sheet
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'group.report') ||
+                            hasPermission(permissions, 'ledger.due.view') ||
+                            hasPermission(permissions, 'cashbook.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.somity_monthly_report}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Monthly Report
                               </NavLink>
                             </li>
                           )}

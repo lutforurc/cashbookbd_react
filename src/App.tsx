@@ -134,11 +134,13 @@ import ProductProfitLoss from './components/modules/reports/product-profit-loss/
 import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
 import DateWiseInOut from './components/modules/reports/date-wise-in-out/DateWiseInOut';
 import BankInformation from './components/modules/reports/bank-information/BankInformation';
+import ConnectedMember from './components/modules/reports/connected-member/ConnectedMember';
 import BalanceSheet from './components/modules/reports/balance-sheet/BalanceSheet';
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
 import LedgerWithProduct from './components/modules/reports/ledger-with-product/LedgerWithProduct';
 import CollectionSheet from './components/modules/reports/somity/CollectionSheet';
+import MonthlyReport from './components/modules/reports/somity/MonthlyReport';
 import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTransfer';
 import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
 import SendSms from './components/modules/sms/SendSms';
@@ -400,6 +402,9 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.information']} loading={permissionsLoading} />}>
               <Route path={routes.bank_information} element={<BankInformation />} />
             </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['connected.member.view']} loading={permissionsLoading} />}>
+              <Route path={routes.connected_member} element={<ConnectedMember user={me} />} />
+            </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit']} loading={permissionsLoading} />}>
               <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
             </Route>
@@ -434,6 +439,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report', 'ledger.due.view', 'cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.somity_collection_sheet} element={<CollectionSheet user={me} />} />
+              <Route path={routes.somity_monthly_report} element={<MonthlyReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_product_stock} element={<ProductStockIndex user={me} />} />

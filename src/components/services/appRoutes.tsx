@@ -102,6 +102,7 @@ const ROUTES = {
   product_profit_loss: '/reports/product-profit-loss',
   product_ledger_data: '/reports/product-ledger-data',
   bank_information: '/reports/bank-information',
+  connected_member: '/reports/connected-member',
   balance_sheet: '/reports/balance-sheet',
   trial_balance_level3: '/reports/trialbalance-level3',
   trial_balance_level4: '/reports/trialbalance-level4',
@@ -117,6 +118,7 @@ const ROUTES = {
   report_labour_ledger: '/reports/labour/ledger',
   group_report: '/reports/group-report',
   somity_collection_sheet: '/somity-report/collection-sheet',
+  somity_monthly_report: '/somity-report/monthly-report',
 
   // Cash Received',
   cash_received: '/accounts/cash/receive',

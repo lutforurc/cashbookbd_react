@@ -244,6 +244,7 @@ export const API_REPORT_DATE_WISE_IN_OUT_DETAILS_URL = `${API_BASE_URL}/reports/
 // Balance Sheet url
 export const API_REPORT_BALANCE_SHEET_URL = `${API_BASE_URL}/reports/balance-sheet`;
 export const API_REPORT_BANK_INFORMATION_DATA_URL = `${API_BASE_URL}/reports/bank-information-data`;
+export const API_REPORT_CONNECTED_MEMBER_DATA_URL = `${API_BASE_URL}/reports/connected-member-data`;
 // Trial Balance Group url
 export const API_REPORT_TRIAL_BALANCE_LEVEL3_URL = `${API_BASE_URL}/reports/trialbalance-level3`;
 // Trial Balance Details url
@@ -254,6 +255,7 @@ export const API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL = `${API_BASE_URL}/repor
 // Date Wise Report url
 export const API_DATE_WISE_TOTAL_URL = `${API_BASE_URL}/reports/date-wise-total-data`;
 export const API_SOMITY_COLLECTION_SHEET_URL = `${API_BASE_URL}/somity-report/collection-sheet`;
+export const API_SOMITY_MONTHLY_REPORT_DATA_URL = `${API_BASE_URL}/somity-report/monthly-report/data`;
 
 // Mitch Match url
 export const API_REPORT_MITCH_MATCH_URL = `${API_BASE_URL}/reports/mitch-match/data`;
