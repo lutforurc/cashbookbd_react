@@ -586,7 +586,7 @@ function App() {
             </Route>
 
               {/* All Cart */}
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'product.in.out', 'group.report']} loading={permissionsLoading} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['analytics.comparison']} loading={permissionsLoading} />}>
                 <Route path={routes.item_chart} element={<ItemChart user={me} />} />
               </Route>
             </Route>

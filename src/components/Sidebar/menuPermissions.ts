@@ -79,7 +79,7 @@ export const MENU_PERMISSIONS = {
     'coa.l3.view',
     'coa.l4.view',
   ],
-  analytics: ['product.stock.view', 'product.in.out', 'group.report'],
+  analytics: ['analytics.comparison'],
   subscription_history: ['subscription.view', 'subscription.history'],
   // customer_dashboard: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'],
 };

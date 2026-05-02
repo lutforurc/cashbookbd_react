@@ -123,6 +123,7 @@ const Roles = () => {
   useEffect(() => {
     if (!selectedRole) return;
 
+    setSelectedPermissions([]);
     dispatch(getSelectedPermissions(selectedRole.id) as any);
   }, [dispatch, selectedRole]);
 
@@ -150,7 +151,11 @@ const Roles = () => {
     );
   };
 
-  const groupedPermissions: Record<string, Permission[]> = permissions.reduce(
+  const visiblePermissions = isReadonlyRole
+    ? permissions.filter((perm) => selectedPermissions.includes(perm.name))
+    : permissions;
+
+  const groupedPermissions: Record<string, Permission[]> = visiblePermissions.reduce(
     (acc: Record<string, Permission[]>, perm) => {
       if (!acc[perm.group_name]) {
         acc[perm.group_name] = [];
@@ -161,7 +166,7 @@ const Roles = () => {
     {}
   );
 
-  const allPermissionNames = permissions.map((perm) => perm.name);
+  const allPermissionNames = visiblePermissions.map((perm) => perm.name);
   const isAllSelected =
     allPermissionNames.length > 0 &&
     allPermissionNames.every((name) => selectedPermissions.includes(name));
@@ -175,11 +180,14 @@ const Roles = () => {
     if (updating) return;
     if (!selectedRole) return toast.info('No role selected');
     if (isReadonlyRole) return toast.info('Plan role permissions cannot be changed. Only company custom roles are editable.');
-    if (selectedPermissions.length === 0) return toast.info('No permissions selected');
+    const selectedPermissionIds = permissions
+      .filter((permission) => selectedPermissions.includes(permission.name))
+      .map((permission) => permission.id);
 
     setUpdating(true);
     try {
-      await dispatch(updateRolePermissions({ roleId, selectedPermissions }) as any).unwrap();
+      await dispatch(updateRolePermissions({ roleId, selectedPermissions: selectedPermissionIds }) as any).unwrap();
+      await dispatch(getSelectedPermissions(roleId) as any);
       await dispatch(getSettings() as any);
       toast.success(rolesPermissions?.updatePermission?.message || 'Permissions updated successfully');
     } catch (error: any) {
