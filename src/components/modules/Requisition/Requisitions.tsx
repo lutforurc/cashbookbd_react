@@ -9,7 +9,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Link from '../../utils/others/Link';
-import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getOrders } from '../orders/ordersSlice';
@@ -237,6 +237,7 @@ const Requisitions = (user: any) => {
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}
             label="Search"
+            icon={<FiSearch />}
             className="whitespace-nowrap"
           />
           <Link to="/requisition/create" className="text-nowrap ml-2">
