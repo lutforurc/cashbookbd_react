@@ -46,25 +46,48 @@ export type InOutDetailRow = {
   damage?: number;
 };
 
-const parseDateWiseInOutRows = (html: string): DateWiseInOutRow[] => {
-  if (!html || typeof DOMParser === 'undefined') return [];
+const toQuantityNumber = (value: string) => {
+  const numericValue = Number(String(value || '').replace(/,/g, '').trim());
+  return Number.isFinite(numericValue) ? numericValue : 0;
+};
 
-  const doc = new DOMParser().parseFromString(`<table><tbody>${html}</tbody></table>`, 'text/html');
-  return Array.from(doc.querySelectorAll('tbody tr')).map((tr) => {
-    const cells = Array.from(tr.querySelectorAll('td'));
-    const dateLink = cells[1]?.querySelector('a')?.getAttribute('href') || undefined;
-    const stockHtml = cells[6]?.innerHTML || '';
+const calculateBalance = (inQty: string, outQty: string, damage: string, over: string) =>
+  toQuantityNumber(inQty) - (toQuantityNumber(outQty) + toQuantityNumber(damage) - toQuantityNumber(over));
+
+const formatQuantity = (value: any) => {
+  const numericValue = Number(value || 0);
+  if (!Number.isFinite(numericValue) || numericValue === 0) return '-';
+
+  return thousandSeparator(numericValue);
+};
+
+const formatReportDate = (value: any) => {
+  const dateValue = String(value || '').trim();
+  if (!dateValue) return '';
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateValue) ? dayjs(dateValue).format('DD/MM/YYYY') : dateValue;
+};
+
+const mapDateWiseInOutRows = (payload: any): DateWiseInOutRow[] => {
+  const data = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+
+  return data.map((item: any, index: number) => {
+    const inQty = formatQuantity(item?.in_qty);
+    const outQty = formatQuantity(item?.out_qty);
+    const damage = formatQuantity(item?.damage ?? item?.demage);
+    const over = formatQuantity(item?.over);
+    const balance = calculateBalance(inQty, outQty, damage, over);
 
     return {
-      sl_no: cells[0]?.textContent?.trim() || '',
-      vr_date: cells[1]?.textContent?.trim() || '',
-      date_link: dateLink,
-      in_qty: cells[2]?.textContent?.trim() || '-',
-      out_qty: cells[3]?.textContent?.trim() || '-',
-      damage: cells[4]?.textContent?.trim() || '-',
-      over: cells[5]?.textContent?.trim() || '-',
-      stock: cells[6]?.textContent?.trim() || '-',
-      stockTone: stockHtml.includes('text-red') ? 'negative' : stockHtml.includes('text-green') ? 'positive' : 'neutral',
+      sl_no: String(item?.sl_no || index + 1),
+      vr_date: formatReportDate(item?.vr_date || item?.date),
+      date_link: item?.date_link,
+      in_qty: inQty,
+      out_qty: outQty,
+      damage,
+      over,
+      stock: String(balance),
+      stockTone: balance < 0 ? 'negative' : balance > 0 ? 'positive' : 'neutral',
     };
   });
 };
@@ -82,7 +105,7 @@ const DateWiseInOut = ({ user }: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(12);
-  const [fontSize, setFontSize] = useState(12);
+  const [fontSize, setFontSize] = useState(10);
   const [detailLoadingDate, setDetailLoadingDate] = useState('');
   const [detailPrintReady, setDetailPrintReady] = useState(false);
   const [detailDate, setDetailDate] = useState('');
@@ -146,11 +169,14 @@ const DateWiseInOut = ({ user }: any) => {
           ledger_id: productId || null,
           startdate: dayjs(startDate).format('DD/MM/YYYY'),
           enddate: dayjs(endDate).format('DD/MM/YYYY'),
+          response_type: 'json',
         },
-        responseType: 'text',
+        headers: {
+          Accept: 'application/json',
+        },
       });
 
-      setRows(parseDateWiseInOutRows(String(response?.data || '')));
+      setRows(mapDateWiseInOutRows(response?.data));
     } catch (err: any) {
       setRows([]);
       setError(err?.response?.data?.message || err?.message || 'Date wise in/out report load failed.');
@@ -267,7 +293,7 @@ const DateWiseInOut = ({ user }: any) => {
       },
       {
         key: 'damage',
-        header: 'Demage',
+        header: 'Damage',
         headerClass: 'text-right',
         cellClass: 'text-right',
       },
@@ -279,7 +305,7 @@ const DateWiseInOut = ({ user }: any) => {
       },
       {
         key: 'stock',
-        header: 'Stock',
+        header: 'Balance',
         headerClass: 'text-right',
         cellClass: 'text-right',
         render: (row: DateWiseInOutRow) => (
@@ -404,9 +430,9 @@ const DateWiseInOut = ({ user }: any) => {
             columns={columns as any}
             data={rows}
             className="rounded-none"
-            tableClassName="table-auto border border-slate-200 text-sm"
-            theadClassName="bg-slate-800 text-white dark:bg-slate-800 dark:text-white"
-            tbodyClassName="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-900"
+            tableClassName="table-auto text-sm"
+            theadClassName=""
+            tbodyClassName="divide-y"
             noDataMessage="No data found"
           />
         </div>

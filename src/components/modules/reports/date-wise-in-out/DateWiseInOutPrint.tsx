@@ -63,7 +63,7 @@ const adjustedPurchaseTotal = (row: InOutDetailRow) =>
 export const DateWiseInOutPrint = React.forwardRef<HTMLDivElement, DateWiseInOutPrintProps>(
   ({ rows, rowsPerPage, fontSize }, ref) => {
     const printPages = useMemo(() => chunkRows(rows, rowsPerPage), [rows, rowsPerPage]);
-    const headers = ['Sl. No.', 'Date', 'In Qty', 'Out Qty', 'Demage', 'Over', 'Stock'];
+    const headers = ['Sl. No.', 'Date', 'In Qty', 'Out Qty', 'Damage', 'Over', 'Balance'];
 
     return (
       <div ref={ref} className="p-6 text-black" style={{ fontSize }}>
