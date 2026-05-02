@@ -5,7 +5,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiEdit2, FiRefreshCcw, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiCheckSquare, FiEdit2, FiRefreshCcw, FiSearch, FiTrash2 } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import Link from '../../utils/others/Link';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -351,10 +351,10 @@ const Product = (user: any) => {
 
         return (
           <div className="flex justify-center gap-2">
-            <ButtonLoading icon="" className='py-1 px-2' label='Save' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
+            <ButtonLoading icon={<FiCheckSquare className="" />} className='py-1 px-2' label='Save' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
             <ButtonLoading icon={
-              <>
-              <FiRefreshCcw className="" />
+              <> 
+              <FiCheckSquare className="" />
               </>
             } className='py-1 px-2' label='Cancel' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
           </div>
@@ -522,7 +522,7 @@ const Product = (user: any) => {
             <div className="w-full sm:w-64">
               <SearchInput className="!w-full h-9" search={search} setSearchValue={setSearchValue} />
             </div>
-            <ButtonLoading label="Search" onClick={handleSearchButton} className="h-9 w-full sm:w-auto" />
+            <ButtonLoading label="Search" icon={<FiSearch className="text-gray-500" />}  onClick={handleSearchButton} className="h-9 w-full sm:w-auto" />
           </div>
 
           <div className="flex w-full">

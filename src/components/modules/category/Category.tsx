@@ -4,7 +4,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import Link from '../../utils/others/Link';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -125,6 +125,7 @@ const Category = () => {
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}
             label="Search"
+            icon={<FiSearch className="" />}
             className="whitespace-nowrap"
           />
         </div>

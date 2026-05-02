@@ -142,6 +142,7 @@ const Brands = () => {
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}
             label="Search"
+            icon={<FiSearch className="" />}
             className="whitespace-nowrap"
           />
         </div>

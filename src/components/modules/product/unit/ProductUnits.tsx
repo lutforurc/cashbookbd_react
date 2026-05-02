@@ -12,6 +12,7 @@ import Pagination from '../../../utils/utils-functions/Pagination';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import ROUTES from '../../../services/appRoutes';
 import { fetchProductUnits } from './unitSlice';
+import { FiSearch } from 'react-icons/fi';
 
 const ProductUnits = () => {
   const dispatch = useDispatch<any>();
@@ -128,6 +129,7 @@ const ProductUnits = () => {
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}
             label="Search"
+            icon={<FiSearch className="" />}
             className="whitespace-nowrap"
           />
         </div>
