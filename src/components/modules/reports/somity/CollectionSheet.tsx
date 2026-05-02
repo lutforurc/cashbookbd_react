@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
-import { FiArrowLeft, FiHome, FiPrinter, FiRefreshCw } from 'react-icons/fi';
+import { FiArrowLeft, FiCheckSquare, FiHome, FiPrinter, FiRefreshCcw } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
@@ -133,101 +133,129 @@ const CollectionSheet = (user: any) => {
     removeAfterPrint: true,
   });
 
+  const handleReset = () => {
+    setBranchId(user?.user?.branch_id ? String(user.user.branch_id) : '');
+    setSomityId(somityOptions[0]?.id ? String(somityOptions[0].id) : '');
+    setMonthYear(getCurrentMonth());
+    setTypeId('1');
+    setRows([]);
+  };
+
+  const labelClass = 'mb-1 block text-sm font-semibold text-slate-900 dark:text-white';
+  const controlClass = 'h-10 w-full rounded-none !border !border-slate-300 !bg-white px-3 text-sm font-semibold !text-slate-900 outline-none focus:!border-slate-500 dark:!border-[#3a475b] dark:!bg-[#1c2938] dark:!text-white dark:focus:!border-[#59677c]';
+  const buttonClass = 'inline-flex h-10 items-center justify-center gap-2 rounded-none bg-slate-800 px-6 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#3b4658] dark:hover:bg-[#465267]';
+
   return (
-    <div>
+    <div className="min-h-screen bg-slate-100 p-3 text-slate-900 dark:bg-[#18212e] dark:text-white">
       <HelmetTitle title="Collection Sheet" />
 
-      <div className="mb-4 text-center text-lg font-medium text-slate-900 dark:text-white">Collection Sheet</div>
-
-      <div className="mb-5 grid grid-cols-1 items-end gap-4 md:grid-cols-12">
-        <div className="md:col-span-3">
-          <label className="mb-1 block text-sm font-semibold text-slate-900 dark:text-white">Select Branch <span className="text-red-500">*</span></label>
+      <div className="mb-3 grid grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(180px,1.1fr)_minmax(220px,1.4fr)_minmax(150px,0.7fr)_minmax(130px,0.65fr)_auto_auto_minmax(90px,0.45fr)_minmax(90px,0.45fr)_auto_auto]">
+        <div>
+          <label className={labelClass}>Select Branch</label>
           {branchDdlData?.isLoading && <Loader />}
           <BranchDropdown
             onChange={(event: any) => setBranchId(event.target.value)}
             value={branchId}
-            className="h-10 w-full bg-transparent text-sm font-medium"
+            className={controlClass}
             branchDdl={branchOptions}
           />
         </div>
 
-        <div className="md:col-span-4">
+        <div>
+          <label className={labelClass}>Select Somity</label>
           <DropdownCommon
             id="somity_id"
             name="somity_id"
-            label="Select Somity *"
             value={somityId}
             onChange={(event) => setSomityId(event.target.value)}
-            className="h-10 bg-transparent"
+            className={controlClass}
             data={somityOptions}
           />
         </div>
 
-        <div className="md:col-span-2">
-          <label className="mb-1 block text-sm font-semibold text-slate-900 dark:text-white">Start Month <span className="text-red-500">*</span></label>
+        <div>
+          <label className={labelClass}>Month</label>
           <input
             type="month"
             value={monthYear}
             onChange={(event) => setMonthYear(event.target.value)}
-            className="h-10 w-full rounded-xs border border-gray-300 bg-transparent px-3 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-form-strokedark dark:text-white"
+            className={controlClass}
           />
         </div>
 
-        <div className="md:col-span-2">
+        <div>
+          <label className={labelClass}>Status</label>
           <DropdownCommon
             id="type_id"
             name="type_id"
-            label="Status *"
             value={typeId}
             onChange={(event) => setTypeId(event.target.value)}
-            className="h-10 bg-transparent"
+            className={controlClass}
             data={statusOptions}
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 md:col-span-1">
-          <button type="button" onClick={handleLoad} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-slate-800 shadow hover:bg-slate-300 dark:bg-slate-700 dark:text-white" title="Load data">
-            <FiRefreshCw size={18} />
+        <button type="button" onClick={handleLoad} className={buttonClass}>
+          <FiCheckSquare size={15} />
+          Apply
+        </button>
+        <button type="button" onClick={handleReset} className={buttonClass}>
+          <FiRefreshCcw size={15} />
+          Reset
+        </button>
+
+        <label className="block">
+          <span className={labelClass}>Rows</span>
+          <input
+            type="number"
+            min={1}
+            value={rowsPerPage}
+            onChange={(event) => setRowsPerPage(Number(event.target.value) || 16)}
+            className={`${controlClass} text-center`}
+          />
+        </label>
+        <label className="block">
+          <span className={labelClass}>Font</span>
+          <input
+            type="number"
+            min={8}
+            value={fontSize}
+            onChange={(event) => setFontSize(Number(event.target.value) || 11)}
+            className={`${controlClass} text-center`}
+          />
+        </label>
+
+        <button type="button" onClick={handlePrint} disabled={rows.length === 0} className={buttonClass}>
+          <FiPrinter size={15} />
+          Print
+        </button>
+
+        <div className="flex items-center justify-end gap-2">
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex h-10 w-10 items-center justify-center rounded-none bg-slate-800 text-white transition hover:bg-slate-700 dark:bg-[#2b3546] dark:hover:bg-[#3b4658]" title="Back">
+            <FiArrowLeft size={16} />
           </button>
-          <button type="button" onClick={handlePrint} disabled={rows.length === 0} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-slate-800 shadow hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-700 dark:text-white" title="Print">
-            <FiPrinter size={18} />
-          </button>
-          <button type="button" onClick={() => navigate(-1)} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-800 shadow hover:bg-slate-200 dark:bg-slate-700 dark:text-white" title="Back">
-            <FiArrowLeft size={18} />
-          </button>
-          <button type="button" onClick={() => navigate('/dashboard')} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-800 shadow hover:bg-slate-100 dark:bg-slate-700 dark:text-white" title="Home">
-            <FiHome size={18} />
+          <button type="button" onClick={() => navigate('/dashboard')} className="inline-flex h-10 w-10 items-center justify-center rounded-none bg-slate-800 text-white transition hover:bg-slate-700 dark:bg-[#2b3546] dark:hover:bg-[#3b4658]" title="Home">
+            <FiHome size={16} />
           </button>
         </div>
       </div>
 
-      <div className="mb-3 flex flex-wrap justify-end gap-3">
-        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-          Rows
-          <input type="number" min={1} value={rowsPerPage} onChange={(event) => setRowsPerPage(Number(event.target.value) || 16)} className="h-8 w-20 rounded-xs border border-gray-300 bg-transparent px-2 text-center dark:border-form-strokedark" />
-        </label>
-        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-          Font
-          <input type="number" min={8} value={fontSize} onChange={(event) => setFontSize(Number(event.target.value) || 11)} className="h-8 w-20 rounded-xs border border-gray-300 bg-transparent px-2 text-center dark:border-form-strokedark" />
-        </label>
-      </div>
-
       <div className="overflow-x-auto">
         {loading ? <Loader /> : null}
-        <table className="w-full min-w-[980px] table-fixed border-collapse bg-white dark:bg-boxdark">
+        <table className="w-full min-w-[980px] table-fixed border-collapse bg-white text-sm text-slate-900 dark:bg-[#1d2735] dark:text-[#d7deea]">
           <thead>
-            <tr className="bg-green-700 text-white">
-              <th className="w-20 border border-slate-200 px-3 py-4 text-center">Sl. No.</th>
-              <th className="border border-slate-200 px-3 py-4 text-left">Member Details</th>
-              <th className="w-36 border border-slate-200 px-3 py-4 text-left">Total Sales</th>
-              <th className="w-40 border border-slate-200 px-3 py-4 text-left">Down Payment</th>
-              <th className="w-36 border border-slate-200 px-3 py-4 text-left">Prv. Coll.</th>
-              <th className="w-36 border border-slate-200 px-3 py-4 text-left">Installment</th>
-              <th className="w-36 border border-slate-200 px-3 py-4 text-left">This Month</th>
-              <th className="w-36 border border-slate-200 px-3 py-4 text-left">Balance</th>
+            <tr className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[#3a4659] dark:text-white">
+              <th className="w-20 px-3 py-4 text-center">SL. NO</th>
+              <th className="px-3 py-4 text-left">MEMBER DETAILS</th>
+              <th className="w-36 px-3 py-4 text-right">TOTAL SALES</th>
+              <th className="w-40 px-3 py-4 text-right">DOWN PAYMENT</th>
+              <th className="w-36 px-3 py-4 text-right">PRV. COLL.</th>
+              <th className="w-36 px-3 py-4 text-right">INSTALLMENT</th>
+              <th className="w-36 px-3 py-4 text-right">THIS MONTH</th>
+              <th className="w-36 px-3 py-4 text-right">BALANCE</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100 dark:divide-[#2e394b]">
             {rows.length > 0 ? (
               rows.map((row, index) => {
                 const balance =
@@ -237,39 +265,39 @@ const CollectionSheet = (user: any) => {
                   toNumber(row.this_month_collection);
 
                 return (
-                  <tr key={`${row.idfr_code ?? index}-${index}`} className={balance === 0 ? 'bg-green-50 font-semibold dark:bg-green-900/20' : ''}>
-                    <td className="border border-slate-200 px-3 py-4 text-center align-middle dark:border-slate-700">{index + 1}</td>
-                    <td className="border border-slate-200 px-3 py-4 dark:border-slate-700">
-                      {row.bangla ? <div className="text-base font-medium">{row.bangla} ({row.idfr_code})</div> : null}
-                      <div>{row.name || '-'} ({row.idfr_code || '-'})</div>
-                      {row.father_bangla ? <div>পি/স্বা: {row.father_bangla}</div> : null}
+                  <tr key={`${row.idfr_code ?? index}-${index}`} className={balance === 0 ? 'bg-slate-50 font-semibold dark:bg-[#243445]' : 'bg-white dark:bg-[#1d2735]'}>
+                    <td className="px-3 py-4 text-center align-middle">{index + 1}</td>
+                    <td className="px-3 py-4">
+                      {row.bangla ? <div className="text-base font-semibold text-slate-950 dark:text-white">{row.bangla} ({row.idfr_code})</div> : null}
+                      <div className="text-slate-950 dark:text-white">{row.name || '-'} ({row.idfr_code || '-'})</div>
+                      {row.father_bangla ? <div className="text-slate-600 dark:text-[#b6c0cf]">পি/স্বা: {row.father_bangla}</div> : null}
                       {row.mobile ? <div>{row.mobile}</div> : null}
                     </td>
-                    <td className="border border-slate-200 px-3 py-4 text-right align-middle dark:border-slate-700">{thousandSeparator(toNumber(row.sales))}</td>
-                    <td className="border border-slate-200 px-3 py-4 text-right align-middle dark:border-slate-700">{thousandSeparator(toNumber(row.down_payment))}</td>
-                    <td className="border border-slate-200 px-3 py-4 text-right align-middle dark:border-slate-700">{thousandSeparator(toNumber(row.previous_collection))}</td>
-                    <td className="border border-slate-200 px-3 py-4 text-right align-middle dark:border-slate-700">{thousandSeparator(toNumber(row.installment))}</td>
-                    <td className="border border-slate-200 px-3 py-4 text-right align-middle dark:border-slate-700">{thousandSeparator(toNumber(row.this_month_collection))}</td>
-                    <td className="border border-slate-200 px-3 py-4 text-right align-middle dark:border-slate-700">{thousandSeparator(balance)}</td>
+                    <td className="px-3 py-4 text-right align-middle">{thousandSeparator(toNumber(row.sales))}</td>
+                    <td className="px-3 py-4 text-right align-middle">{thousandSeparator(toNumber(row.down_payment))}</td>
+                    <td className="px-3 py-4 text-right align-middle">{thousandSeparator(toNumber(row.previous_collection))}</td>
+                    <td className="px-3 py-4 text-right align-middle">{thousandSeparator(toNumber(row.installment))}</td>
+                    <td className="px-3 py-4 text-right align-middle">{thousandSeparator(toNumber(row.this_month_collection))}</td>
+                    <td className="px-3 py-4 text-right align-middle">{thousandSeparator(balance)}</td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={8} className="border border-slate-200 px-3 py-8 text-center text-slate-500 dark:border-slate-700">
+                <td colSpan={8} className="px-3 py-8 text-center text-slate-500 dark:text-[#b6c0cf]">
                   No data found
                 </td>
               </tr>
             )}
             {rows.length > 0 ? (
-              <tr className="font-bold">
-                <td colSpan={2} className="border border-slate-200 px-3 py-3 text-right dark:border-slate-700">Grand Total</td>
-                <td className="border border-slate-200 px-3 py-3 text-right dark:border-slate-700">{thousandSeparator(totals.sales)}</td>
-                <td className="border border-slate-200 px-3 py-3 text-right dark:border-slate-700">{thousandSeparator(totals.downPayment)}</td>
-                <td className="border border-slate-200 px-3 py-3 text-right dark:border-slate-700">{thousandSeparator(totals.previous)}</td>
-                <td className="border border-slate-200 px-3 py-3 text-right dark:border-slate-700"></td>
-                <td className="border border-slate-200 px-3 py-3 text-right dark:border-slate-700">{thousandSeparator(totals.thisMonth)}</td>
-                <td className="border border-slate-200 px-3 py-3 text-right dark:border-slate-700">{thousandSeparator(totals.balance)}</td>
+              <tr className="bg-slate-300 font-bold text-slate-950 dark:bg-[#3a4659] dark:text-white">
+                <td colSpan={2} className="px-3 py-3 text-right">Grand Total</td>
+                <td className="px-3 py-3 text-right">{thousandSeparator(totals.sales)}</td>
+                <td className="px-3 py-3 text-right">{thousandSeparator(totals.downPayment)}</td>
+                <td className="px-3 py-3 text-right">{thousandSeparator(totals.previous)}</td>
+                <td className="px-3 py-3 text-right"></td>
+                <td className="px-3 py-3 text-right">{thousandSeparator(totals.thisMonth)}</td>
+                <td className="px-3 py-3 text-right">{thousandSeparator(totals.balance)}</td>
               </tr>
             ) : null}
           </tbody>
