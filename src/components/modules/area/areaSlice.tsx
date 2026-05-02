@@ -5,6 +5,7 @@ import { API_DDL_AREA_LIST_URL } from '../../services/apiRoutes';
 // Types
 type AreaRequestPayload = {
   searchName: string | null;
+  force?: boolean;
 };
 
 type Area = {
@@ -21,6 +22,13 @@ type AreaResponse = {
 };
 
 type ErrorResponse = { message: string };
+
+const getAreaListFromResponse = (response: any) => {
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response)) return response;
+  return [];
+};
 
 interface AreaState {
   area: Area[];
@@ -47,7 +55,7 @@ export const getDdlArea = createAsyncThunk<
       const { data } = await httpService.post(API_DDL_AREA_LIST_URL, {
         searchName: payload?.searchName ?? '',
       });
-      return data.data; // already an array
+      return getAreaListFromResponse(data);
     } catch (error) {
       return rejectWithValue({
         message: 'Failed to fetch areas',
@@ -57,6 +65,10 @@ export const getDdlArea = createAsyncThunk<
   {
     condition: (payload, { getState }) => {
       const { area } = getState();
+      if (payload?.force) {
+        return true;
+      }
+
       const hasSearch = Boolean(payload?.searchName?.trim());
 
       if (hasSearch) {

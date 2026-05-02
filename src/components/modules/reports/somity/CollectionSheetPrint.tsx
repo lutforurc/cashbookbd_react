@@ -9,6 +9,8 @@ export type CollectionSheetRow = {
   name?: string | null;
   relation?: string | number | null;
   father_bangla?: string | null;
+  father_name?: string | null;
+  father?: string | null;
   mobile?: string | null;
   sales?: number | string | null;
   down_payment?: number | string | null;
@@ -31,6 +33,25 @@ const toNumber = (value: unknown) => {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
 };
+
+const hasBanglaText = (value?: string | null) => /[\u0980-\u09FF]/.test(String(value || ''));
+
+const withCode = (value?: string | null, code?: string | number | null) => {
+  const text = String(value || '').trim();
+  const idCode = String(code || '').trim();
+  if (!text) return '';
+  return idCode ? `${text} (${idCode})` : text;
+};
+
+const guardianNameOf = (row: CollectionSheetRow) => {
+  const banglaGuardian = String(row.father_bangla || '').trim();
+  return banglaGuardian || row.father_name || row.father || '';
+};
+
+const banglaValueOf = (value?: string | null) => String(value || '').trim();
+
+const banglaTextClass = (value?: string | null) =>
+  hasBanglaText(value) ? 'font-semibold' : 'sutonny-text text-[20px] leading-6';
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
   if (size <= 0) return [data];
@@ -90,6 +111,14 @@ const CollectionSheetPrint = React.forwardRef<HTMLDivElement, Props>(
         <PrintStyles />
         <style>
           {`
+            @font-face {
+              font-family: 'SutonnyMJ';
+              src: url('/suttony/SutonnyMJ.woff') format('woff'),
+                   url('/suttony/SutonnyMJ.ttf') format('truetype');
+              font-weight: normal;
+              font-style: normal;
+            }
+            .sutonny-text { font-family: 'SutonnyMJ', serif; }
             @media print {
               @page { size: A4 landscape; margin: 7mm; }
               .print-page { min-height: calc(210mm - 14mm - 16mm); }
@@ -129,14 +158,20 @@ const CollectionSheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   const globalIndex = pageIndex * rowsPerPage + index + 1;
                   const balance = balanceOf(row);
                   const isClosed = balance === 0;
+                  const banglaName = banglaValueOf(row.bangla);
+                  const guardianName = guardianNameOf(row);
 
                   return (
                     <tr key={`${row.idfr_code ?? globalIndex}-${globalIndex}`} className={isClosed ? 'bg-pink-100 font-semibold' : ''}>
                       <td style={{ fontSize }} className="border border-gray-900 px-2 py-2 text-center align-middle">{globalIndex}</td>
                       <td style={{ fontSize }} className="border border-gray-900 px-2 py-2">
-                        {row.bangla ? <div className="font-semibold">{row.bangla} ({row.idfr_code})</div> : null}
-                        <div>{row.name || '-'} ({row.idfr_code || '-'})</div>
-                        {row.father_bangla ? <div>পি/স্বা: {row.father_bangla}</div> : null}
+                        {banglaName ? <div className={banglaTextClass(banglaName)}>{withCode(banglaName, row.idfr_code)}</div> : null}
+                        <div>{withCode(row.name || '-', row.idfr_code)}</div>
+                        {guardianName ? (
+                          <div>
+                            পি:/স্বা: <span className={hasBanglaText(guardianName) ? '' : 'sutonny-text text-[20px] leading-6'}>{guardianName}</span>
+                          </div>
+                        ) : null}
                         {row.mobile ? <div>{row.mobile}</div> : null}
                       </td>
                       <td style={{ fontSize }} className="border border-gray-900 px-2 py-2 text-right align-middle">{thousandSeparator(toNumber(row.sales))}</td>

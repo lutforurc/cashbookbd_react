@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'SutonnyMJ';
+  src:
+    url('/suttony/SutonnyMJ.woff') format('woff'),
+    url('/suttony/SutonnyMJ.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   body {
     @apply font-satoshi font-normal text-base text-body bg-whiten relative z-1;
@@ -54,6 +64,10 @@
   .cash-react-select-container .cash-react-select__placeholder,
   .cash-react-select-container .cash-react-select__single-value {
     @apply text-gray-600 dark:text-gray-200;
+  }
+
+  .sutonny-text {
+    font-family: 'SutonnyMJ', serif;
   }
 }
 
