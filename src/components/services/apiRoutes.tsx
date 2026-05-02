@@ -243,6 +243,7 @@ export const API_REPORT_DATE_WISE_IN_OUT_URL = `${API_BASE_URL}/reports/in-out/d
 export const API_REPORT_DATE_WISE_IN_OUT_DETAILS_URL = `${API_BASE_URL}/reports/in-out/date-wise/details`;
 // Balance Sheet url
 export const API_REPORT_BALANCE_SHEET_URL = `${API_BASE_URL}/reports/balance-sheet`;
+export const API_REPORT_BANK_INFORMATION_DATA_URL = `${API_BASE_URL}/reports/bank-information-data`;
 // Trial Balance Group url
 export const API_REPORT_TRIAL_BALANCE_LEVEL3_URL = `${API_BASE_URL}/reports/trialbalance-level3`;
 // Trial Balance Details url

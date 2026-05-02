@@ -133,6 +133,7 @@ import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
 import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
 import DateWiseInOut from './components/modules/reports/date-wise-in-out/DateWiseInOut';
+import BankInformation from './components/modules/reports/bank-information/BankInformation';
 import BalanceSheet from './components/modules/reports/balance-sheet/BalanceSheet';
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
@@ -395,6 +396,9 @@ function App() {
               <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
               <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
               <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.information']} loading={permissionsLoading} />}>
+              <Route path={routes.bank_information} element={<BankInformation />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit']} loading={permissionsLoading} />}>
               <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
