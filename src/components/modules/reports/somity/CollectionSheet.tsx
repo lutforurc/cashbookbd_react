@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
-import { FiArrowLeft, FiCheckSquare, FiHome, FiPrinter, FiRefreshCcw } from 'react-icons/fi';
+import { FiCheckSquare, FiPrinter, FiRefreshCcw } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
@@ -39,7 +38,6 @@ const getCurrentMonth = () => {
 
 const CollectionSheet = (user: any) => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const printRef = useRef<HTMLDivElement>(null);
 
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -149,93 +147,88 @@ const CollectionSheet = (user: any) => {
     <div className="min-h-screen bg-slate-100 p-3 text-slate-900 dark:bg-[#18212e] dark:text-white">
       <HelmetTitle title="Collection Sheet" />
 
-      <div className="mb-3 grid grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(180px,1.1fr)_minmax(220px,1.4fr)_minmax(150px,0.7fr)_minmax(130px,0.65fr)_auto_auto_minmax(90px,0.45fr)_minmax(90px,0.45fr)_auto_auto]">
-        <div>
-          <label className={labelClass}>Select Branch</label>
-          {branchDdlData?.isLoading && <Loader />}
-          <BranchDropdown
-            onChange={(event: any) => setBranchId(event.target.value)}
-            value={branchId}
-            className={controlClass}
-            branchDdl={branchOptions}
-          />
+      <div className="mb-3 flex flex-wrap items-end gap-3">
+        <div className="grid min-w-[min(100%,680px)] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(150px,1.05fr)_minmax(180px,1.25fr)_minmax(120px,0.7fr)_minmax(110px,0.65fr)]">
+          <div>
+            <label className={labelClass}>Select Branch</label>
+            {branchDdlData?.isLoading && <Loader />}
+            <BranchDropdown
+              onChange={(event: any) => setBranchId(event.target.value)}
+              value={branchId}
+              className={controlClass}
+              branchDdl={branchOptions}
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Select Somity</label>
+            <DropdownCommon
+              id="somity_id"
+              name="somity_id"
+              value={somityId}
+              onChange={(event) => setSomityId(event.target.value)}
+              className={controlClass}
+              data={somityOptions}
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Month</label>
+            <input
+              type="month"
+              value={monthYear}
+              onChange={(event) => setMonthYear(event.target.value)}
+              className={controlClass}
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Status</label>
+            <DropdownCommon
+              id="type_id"
+              name="type_id"
+              value={typeId}
+              onChange={(event) => setTypeId(event.target.value)}
+              className={controlClass}
+              data={statusOptions}
+            />
+          </div>
         </div>
 
-        <div>
-          <label className={labelClass}>Select Somity</label>
-          <DropdownCommon
-            id="somity_id"
-            name="somity_id"
-            value={somityId}
-            onChange={(event) => setSomityId(event.target.value)}
-            className={controlClass}
-            data={somityOptions}
-          />
-        </div>
-
-        <div>
-          <label className={labelClass}>Month</label>
-          <input
-            type="month"
-            value={monthYear}
-            onChange={(event) => setMonthYear(event.target.value)}
-            className={controlClass}
-          />
-        </div>
-
-        <div>
-          <label className={labelClass}>Status</label>
-          <DropdownCommon
-            id="type_id"
-            name="type_id"
-            value={typeId}
-            onChange={(event) => setTypeId(event.target.value)}
-            className={controlClass}
-            data={statusOptions}
-          />
-        </div>
-
-        <button type="button" onClick={handleLoad} className={buttonClass}>
-          <FiCheckSquare size={15} />
-          Apply
-        </button>
-        <button type="button" onClick={handleReset} className={buttonClass}>
-          <FiRefreshCcw size={15} />
-          Reset
-        </button>
-
-        <label className="block">
-          <span className={labelClass}>Rows</span>
-          <input
-            type="number"
-            min={1}
-            value={rowsPerPage}
-            onChange={(event) => setRowsPerPage(Number(event.target.value) || 16)}
-            className={`${controlClass} text-center`}
-          />
-        </label>
-        <label className="block">
-          <span className={labelClass}>Font</span>
-          <input
-            type="number"
-            min={8}
-            value={fontSize}
-            onChange={(event) => setFontSize(Number(event.target.value) || 11)}
-            className={`${controlClass} text-center`}
-          />
-        </label>
-
-        <button type="button" onClick={handlePrint} disabled={rows.length === 0} className={buttonClass}>
-          <FiPrinter size={15} />
-          Print
-        </button>
-
-        <div className="flex items-center justify-end gap-2">
-          <button type="button" onClick={() => navigate(-1)} className="inline-flex h-10 w-10 items-center justify-center rounded-none bg-slate-800 text-white transition hover:bg-slate-700 dark:bg-[#2b3546] dark:hover:bg-[#3b4658]" title="Back">
-            <FiArrowLeft size={16} />
+        <div className="grid min-w-max grid-cols-[auto_auto_64px_64px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
+          <button type="button" onClick={handleLoad} className={buttonClass}>
+            <FiCheckSquare size={15} />
+            Apply
           </button>
-          <button type="button" onClick={() => navigate('/dashboard')} className="inline-flex h-10 w-10 items-center justify-center rounded-none bg-slate-800 text-white transition hover:bg-slate-700 dark:bg-[#2b3546] dark:hover:bg-[#3b4658]" title="Home">
-            <FiHome size={16} />
+          <button type="button" onClick={handleReset} className={buttonClass}>
+            <FiRefreshCcw size={15} />
+            Reset
+          </button>
+
+          <label className="block">
+            <span className={labelClass}>Rows</span>
+            <input
+              type="number"
+              min={1}
+              value={rowsPerPage}
+              onChange={(event) => setRowsPerPage(Number(event.target.value) || 16)}
+              className={`${controlClass} text-center`}
+            />
+          </label>
+          <label className="block">
+            <span className={labelClass}>Font</span>
+            <input
+              type="number"
+              min={8}
+              value={fontSize}
+              onChange={(event) => setFontSize(Number(event.target.value) || 11)}
+              className={`${controlClass} text-center`}
+            />
+          </label>
+
+          <button type="button" onClick={handlePrint} disabled={rows.length === 0} className={buttonClass}>
+            <FiPrinter size={15} />
+            Print
           </button>
         </div>
       </div>

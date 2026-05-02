@@ -460,9 +460,22 @@ const CashBook = (user: any) => {
           </FilterMenuShell>
 
           {useFilterMenuEnabled ? (
-            <div className="ml-auto flex items-end gap-2">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="w-28">
+            <div className="ml-auto grid grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2">
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={buttonLoading}
+                label="Apply"
+                icon={<FiCheckSquare />}
+                className="h-10 px-6"
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset"
+                icon={<FiRotateCcw />}
+                className="h-10 px-4"
+              />
+              <div>
                   <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                     Rows
                   </label>
@@ -475,9 +488,9 @@ const CashBook = (user: any) => {
                     type='text'
                     className="font-medium text-sm h-10 !w-full text-center"
                   />
-                </div>
+              </div>
 
-                <div className="w-28">
+              <div>
                   <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                     Font
                   </label>
@@ -490,7 +503,6 @@ const CashBook = (user: any) => {
                     type='text'
                     className="font-medium text-sm h-10 !w-full text-center"
                   />
-                </div>
               </div>
               <PrintButton
                 onClick={handlePrint}
@@ -500,26 +512,22 @@ const CashBook = (user: any) => {
               />
             </div>
           ) : (
-            <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
-              <div className="flex flex-nowrap items-end gap-2">
-                <ButtonLoading
-                  onClick={handleActionButtonClick}
-                  buttonLoading={buttonLoading}
-                  label="Apply"
-                  icon={<FiCheckSquare />}
-                  className="h-10 px-6"
-                />
-                <ButtonLoading
-                  onClick={handleResetFilters}
-                  buttonLoading={false}
-                  label="Reset"
-                  icon={<FiRotateCcw />}
-                  className="h-10 px-4"
-                />
-              </div>
-              <div className="flex flex-nowrap items-end justify-start gap-2">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="w-28">
+            <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={buttonLoading}
+                label="Apply"
+                icon={<FiCheckSquare />}
+                className="h-10 px-6"
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset"
+                icon={<FiRotateCcw />}
+                className="h-10 px-4"
+              />
+              <div>
                     <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                       Rows
                     </label>
@@ -532,9 +540,9 @@ const CashBook = (user: any) => {
                       type='text'
                       className="font-medium text-sm h-10 !w-full text-center"
                     />
-                  </div>
+              </div>
 
-                  <div className="w-28">
+              <div>
                     <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
                       Font
                     </label>
@@ -547,15 +555,13 @@ const CashBook = (user: any) => {
                       type='text'
                       className="font-medium text-sm h-10 !w-full text-center"
                     />
-                  </div>
-                </div>
-                <PrintButton
-                  onClick={handlePrint}
-                  label="Print"
-                  className="h-10 px-6"
-                  disabled={!Array.isArray(tableData) || tableData.length === 0}
-                />
               </div>
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="h-10 px-6"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiArrowRightCircle, FiCheck } from 'react-icons/fi';
+import { FiArrowRightCircle, FiCheck, FiPrinter } from 'react-icons/fi';
 
 // Define the props for the Button component
 interface ButtonProps {
@@ -95,15 +95,19 @@ export const PrintButton: React.FC<PrintButtonProps> = ({
   onClick = () => { },
   className = '',
   type = 'button',
+  disabled = false,
 }) => {
   return (
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm px-5 text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center
+                  disabled:cursor-not-allowed
                   ${className}`}
     >
-      🖨️ {label}
+      <span className="mr-2 inline-flex items-center"><FiPrinter /></span>
+      {label}
     </button>
   );
 };
