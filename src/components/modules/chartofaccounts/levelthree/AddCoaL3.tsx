@@ -235,7 +235,7 @@ const AddCoaL3 = () => {
               type="submit"
               label={isEditMode ? 'UPDATE' : 'SAVE'}
               buttonLoading={buttonLoading}
-              className="h-6 min-w-30 px-4"
+              className="h-9 min-w-30 px-4"
             />
             <ButtonLoading
               type="button"

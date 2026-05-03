@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FiArrowLeft } from 'react-icons/fi';
+import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -264,13 +264,14 @@ const AddCoaL4 = () => {
               type="submit"
               label={isEditMode ? 'UPDATE' : 'SAVE'}
               buttonLoading={buttonLoading}
-              className="px-4 h-6 min-w-30"
+              className="px-4 h-9 min-w-30"
+              icon={<FiCheckSquare />}
             />
             <ButtonLoading
               type="button"
               label={"Back"}
               onClick={() => navigate(-1)}
-              className="px-4 h-6 min-w-30"
+              className="px-4 h-9 min-w-30"
               icon={<FiArrowLeft className="text-sm" />}
             />
 

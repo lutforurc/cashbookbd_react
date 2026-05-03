@@ -213,7 +213,7 @@ const LoanLedger = (user: any) => {
       <HelmetTitle title={'Loan Ledger'} />
       <div className="mb-2">
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
-          <div className="">
+          <div className="mt-2">
             <div>
               {' '}
               <label htmlFor="">Select Branch</label>
@@ -236,7 +236,7 @@ const LoanLedger = (user: any) => {
               name="account"
               placeholder="Select Employee"
               onSelect={transactionAccountHandler} 
-              className="w-full font-medium text-sm h-6"
+              className="w-full font-medium text-sm h-9"
               onKeyDown={(e: any) => {
                 if (e.key === 'Enter') document.getElementById('remarks')?.focus();
               }}

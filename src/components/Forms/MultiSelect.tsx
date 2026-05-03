@@ -160,7 +160,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
                     <button
                       type="button"
                       onClick={open}
-                      className="h-6 w-6 cursor-pointer outline-none focus:outline-none"
+                      className="h-9 w-6 cursor-pointer outline-none focus:outline-none"
                     >
                       <svg
                         width="24"
