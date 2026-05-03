@@ -230,7 +230,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
                           </td>
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                            <span className="block">
+                            <span style={{ fontSize: fs }}  className="block">
                               {row.brand_name && <span className="text-xs text-gray-900">{row.brand_name} </span>}
                               {row.product_name && <span className="text-xs text-gray-900">{row.product_name}</span>}
                             </span>
@@ -238,7 +238,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                             {Number(row?.opening) > 0 ? (
-                              <span className="text-sm">
+                              <span style={{ fontSize: fs }}  className="text-sm">
                                 {thousandSeparator(Number(row.opening))} {row.unit ? `(${row.unit})` : ''}
                               </span>
                             ) : (
@@ -248,7 +248,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                             {Number(row?.stock_in) > 0 ? (
-                              <span className="text-sm">
+                              <span style={{ fontSize: fs }}  className="text-sm">
                                 {thousandSeparator(Number(row.stock_in))} {row.unit ? `(${row.unit})` : ''}
                               </span>
                             ) : (
@@ -258,7 +258,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                             {Number(row?.stock_out) > 0 ? (
-                              <span className="text-sm">
+                              <span style={{ fontSize: fs }}  className="text-sm">
                                 {thousandSeparator(Number(row.stock_out))} {row.unit ? `(${row.unit})` : ''}
                               </span>
                             ) : (
@@ -268,7 +268,7 @@ const StockBookPrintNormal = React.forwardRef<HTMLDivElement, Props>(
 
                           <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                             {Number(row?.balance) !== 0 ? (  // balance 0 à¦¹à¦²à§‡ "-"
-                              <span className="text-sm">
+                              <span style={{ fontSize: fs }}  className="text-sm">
                                 {thousandSeparator(Number(row.balance))} {row.unit ? `(${row.unit})` : ''}
                               </span>
                             ) : (

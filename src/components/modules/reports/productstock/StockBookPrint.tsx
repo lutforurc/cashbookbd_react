@@ -323,14 +323,14 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                             style={{ fontSize: fs, borderWidth: '0.5px', verticalAlign: 'middle' }}
                             className="border border-gray-500 px-2 py-0 align-middle"
                           >
-                            <span className="text-xs text-gray-900 leading-tight">
+                            <span style={{ fontSize: fs, borderWidth: '0.5px' }} className="text-xs text-gray-900 leading-tight">
                               {(row.product_name) || ''}
                             </span>
                           </td>
 
                           <td style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 text-right">
                             {Number(row?.opening) > 0 ? (
-                              <span className="text-sm">
+                              <span style={{ fontSize: fs, borderWidth: '0.5px' }} className="text-sm">
                                 {thousandSeparator(Number(row.opening))} {row.unit ? `(${row.unit})` : ''}
                               </span>
                             ) : (
@@ -340,7 +340,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
                           <td style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 text-right">
                             {Number(row?.stock_in) > 0 ? (
-                              <span className="text-sm">
+                              <span style={{ fontSize: fs, borderWidth: '0.5px' }} className="text-sm">
                                 {thousandSeparator(Number(row.stock_in))} {row.unit ? `(${row.unit})` : ''}
                               </span>
                             ) : (
@@ -350,7 +350,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
 
                           <td style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 text-right">
                             {Number(row?.stock_out) > 0 ? (
-                              <span className="text-sm">
+                              <span style={{ fontSize: fs, borderWidth: '0.5px' }} className="text-sm">
                                 {thousandSeparator(Number(row.stock_out))} {row.unit ? `(${row.unit})` : ''}
                               </span>
                             ) : (
