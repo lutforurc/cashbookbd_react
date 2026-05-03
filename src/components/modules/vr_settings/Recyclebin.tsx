@@ -5,7 +5,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiTrash2 } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
@@ -190,6 +190,7 @@ const Recyclebin = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
+            icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
           />
         </div>
       </div>

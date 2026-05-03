@@ -108,7 +108,7 @@ const ChangeHistory = (user: any) => {
         ))}
       </div>
 
-        <div className="max-w-5xl mx-auto mt-6">
+        <div className="mx-auto mt-6">
           {historyList.length > 0 && <div className="border rounded-lg pl-4 pt-2 pb-2 mb-4 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
             {historyList.map((item, index) => (
               <div key={index} className="text-sm text-gray-700 dark:text-gray-300">

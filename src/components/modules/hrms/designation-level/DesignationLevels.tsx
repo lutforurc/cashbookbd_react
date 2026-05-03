@@ -114,8 +114,8 @@ const DesignationLevels = () => {
         <span
           className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
             Number(row.status) === 1
-              ? 'bg-green-100 text-green-700'
-              : 'bg-red-100 text-red-700'
+              ? 'text-green-700'
+              : 'text-red-700'
           }`}
         >
           {Number(row.status) === 1 ? 'Active' : 'Inactive'}
