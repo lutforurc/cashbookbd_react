@@ -119,7 +119,7 @@ const ComputerAccessories = () => {
                               </div>
                               <div className="ml-2">
                                 <span className={`font-bold ${fontClass}`}>
-                                  {Number(item.qty)}
+                                  {thousandSeparator(Number(item.qty))}
                                 </span>
                               </div>
                             </li>
@@ -170,7 +170,7 @@ const ComputerAccessories = () => {
                               </div>
                               <div className="ml-2">
                                 <span className={`font-bold ${fontClass}`}>
-                                  {Number(item.qty)}
+                                  {thousandSeparator(Number(item.qty))}
                                 </span>
                               </div>
                             </li>
