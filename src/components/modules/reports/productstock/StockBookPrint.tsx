@@ -203,16 +203,16 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 text-left">
                       Product Name
                     </th>
-                    <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-26 text-right">
+                    <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-26 text-center">
                       Opening
                     </th>
-                    <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-26 text-right">
+                    <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-26 text-center">
                       Stock In
                     </th>
-                    <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-26 text-right">
+                    <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-26 text-center">
                       Stock Out
                     </th>
-                    <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-26 text-right">
+                    <th style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 w-26 text-center">
                       Balance
                     </th>
                   </tr>
