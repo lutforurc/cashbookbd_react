@@ -624,7 +624,7 @@ const ProfitLoss = (user: any) => {
 
                 <PrintButton
                   onClick={handleItemPrintButtonClick}
-                  label="Item Print"
+                  label="Item"
                   className="h-10 px-6"
                   disabled={!hasReportData || itemPrintLoading}
                 />

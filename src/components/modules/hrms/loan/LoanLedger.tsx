@@ -207,11 +207,10 @@ const LoanLedger = (user: any) => {
     setLedgerAccount(Number(selectedOption?.value ?? '')); 
   };
 
-
   return (
     <div className="">
       <HelmetTitle title={'Loan Ledger'} />
-      <div className="mb-0">
+      <div className="mb-2">
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
           <div className="">
             <div>
