@@ -298,12 +298,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
               <p className="mt-0 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
                 Generate festival bonus batches based on a fixed percentage of basic salary.
               </p>
-              <p className="hidden">
-                Basic salary-এর নির্দিষ্ট percentage অনুযায়ী Eid, Boishakh বা special bonus batch তৈরি করুন।
-              </p>
-              <p className="hidden">
-                Basic salary-এর নির্দিষ্ট percentage অনুযায়ী Eid, Boishakh বা special bonus batch তৈরি করুন।
-              </p>
+              
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-sm border-slate-200  dark:border-slate-700 ">
                   <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-white">Bonus % of Basic</label>
@@ -323,7 +318,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                     className="w-full whitespace-nowrap h-8.5  xl:w-auto"
                   />
                   <div className="ml-2 mt-5 flex justify-end">
-                    <ButtonLoading className="bg-blue-600 px-5 py-2 hover:bg-blue-700 h-8.5"  onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus Sheet" icon={<FiCheckSquare className="h-4 w-4" />}  />
+                    <ButtonLoading className="px-5 py-2 h-8.5"  onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus Sheet" icon={<FiCheckSquare className="h-4 w-4" />}  />
                   </div>
                 </div>
               </div>
