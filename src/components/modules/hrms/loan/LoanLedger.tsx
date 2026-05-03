@@ -211,9 +211,9 @@ const LoanLedger = (user: any) => {
   return (
     <div className="">
       <HelmetTitle title={'Loan Ledger'} />
-      <div className="mb-2">
+      <div className="mb-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
-          <div className="mt-2">
+          <div className="">
             <div>
               {' '}
               <label htmlFor="">Select Branch</label>
