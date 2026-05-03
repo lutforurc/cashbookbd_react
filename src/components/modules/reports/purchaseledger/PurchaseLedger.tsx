@@ -687,8 +687,8 @@ const PurchaseLedger = (user: any) => {
                           onClick={handleResetFilters}
                           buttonLoading={false}
                           label="Reset"
-                          icon=""
                           className="h-10 px-4"
+                          icon ={<FiRotateCcw />}
                         />
                         <InputElement
                           id="perPageInline"

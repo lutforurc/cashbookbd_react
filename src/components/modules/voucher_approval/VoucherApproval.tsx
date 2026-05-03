@@ -13,6 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { formatDateBdToUsd } from '../../utils/utils-functions/formatDate';
 import { storeVoucherApproval } from './voucherApprovalSlice'; 
+import { FaCheckSquare } from 'react-icons/fa';
+import { FiCheckSquare } from 'react-icons/fi';
 
 interface Props {
   transaction_date: string;
@@ -134,7 +136,7 @@ const VoucherApproval = () => {
             buttonLoading={saveButtonLoading}
             label="Approved"
             className="whitespace-nowrap text-center mr-0 h-8"
-            icon={<FaCheckDouble className="text-white text-lg ml-2  mr-2" />}
+            icon={<FiCheckSquare className="text-white text-lg ml-2  mr-2" />}
           />
           <Link
             to="/admin/remove-approval"

@@ -17,6 +17,7 @@ import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { changeVoucherDate } from './changeVoucherDateSlice';
 import { VOUCHER_TYPES } from '../../constant/constant/variables';
 import InputDatePicker from '../../utils/fields/DatePicker';
+import { FiArrowLeft, FiCheckSquare, FiHome } from 'react-icons/fi';
 
 const ChangeDate = () => {
   const dispatch = useDispatch();
@@ -91,7 +92,7 @@ const ChangeDate = () => {
       >
         {({ isSubmitting, setFieldValue, values, errors, touched }) => (
           <Form>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full 2xl:w-2/3 mx-auto mt-5">
               <div>
                 <label>Select Branch</label>
                 {branchDdlData.isLoading && <Loader />}
@@ -128,7 +129,7 @@ const ChangeDate = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full 2xl:w-2/3 mx-auto mt-5">
               <div className="w-full">
                 <label htmlFor="present_date">Enter Current Date</label>
                 <InputDatePicker
@@ -141,7 +142,6 @@ const ChangeDate = () => {
                     setFieldValue('present_date', val)
                   }
                 />
-
                 {touched.present_date && errors.present_date && (
                   <div className="text-red-500 text-sm">
                     {errors.present_date}
@@ -168,7 +168,7 @@ const ChangeDate = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full 2xl:w-2/3 mx-auto mt-5">
               <div className="flex flex-col">
                 <InputElement
                   id="start_voucher"
@@ -205,7 +205,7 @@ const ChangeDate = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 mx-auto mt-5">
+            <div className="grid grid-cols-1 gap-2 w-full 2xl:w-2/3 mx-auto mt-5">
               <div className="grid grid-cols-1 gap-1 md:grid-cols-3">
                 <ButtonLoading
                   type="submit"
@@ -213,21 +213,21 @@ const ChangeDate = () => {
                   label="Change"
                   className="whitespace-nowrap text-center mr-0 h-8"
                   icon={
-                    <FaArrowsTurnToDots className="text-white text-lg ml-2 mr-2" />
+                    <FiCheckSquare className="text-white text-lg ml-2 mr-2" />
                   }
                 />
                 <Link
                   to="/admin/dayclose"
                   className="text-nowrap justify-center mr-0 h-8"
                 >
-                  <FaArrowLeft className="text-white text-lg ml-2 mr-2" />
+                  <FiArrowLeft className="text-white text-lg ml-2 mr-2" />
                   <span className="hidden md:block">Back</span>
                 </Link>
                 <Link
                   to="/dashboard"
                   className="text-nowrap justify-center mr-0 h-8"
                 >
-                  <FaHouse className="text-white text-lg ml-2 mr-2" />
+                  <FiHome className="text-white text-lg ml-2 mr-2" />
                   <span className="hidden md:block">Home</span>
                 </Link>
               </div>
