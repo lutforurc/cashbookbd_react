@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiGift, FiSave, FiSearch, FiTrash2 } from "react-icons/fi";
+import { FiCheckSquare, FiGift, FiSave, FiSearch, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Loader from "../../../../common/Loader";
@@ -322,6 +322,9 @@ const FestivalBonusGenerate = ({ user }: any) => {
                     icon={<FiSearch className="h-4 w-4" />}
                     className="w-full whitespace-nowrap h-8.5  xl:w-auto"
                   />
+                  <div className="ml-2 mt-5 flex justify-end">
+                    <ButtonLoading className="bg-blue-600 px-5 py-2 hover:bg-blue-700 h-8.5"  onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus Sheet" icon={<FiCheckSquare className="h-4 w-4" />}  />
+                  </div>
                 </div>
               </div>
 
@@ -352,7 +355,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                   const value = e.target.value;
                   setBranchId(value === "" ? "" : Number(value));
                 }}
-                className="w-60 font-medium text-sm p-2 mr-2"
+                className="w-60 font-medium text-sm p-2 mr-2 h-9"
                 branchDdl={dropdownData}
               />
             </div>
@@ -364,7 +367,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 name="bonus_month_id"
                 value={monthId}
                 onChange={handleMonthChange}
-                className="h-8.5 bg-transparent min-w-35"
+                className="h-9 bg-transparent min-w-35"
               />
             </div>
 
@@ -386,7 +389,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 value={selectedLevels}
                 onChange={setSelectedLevels}
                 placeholder="All levels"
-                className="h-8"
+                className="h-9"
               />
             </div>
 
@@ -440,9 +443,6 @@ const FestivalBonusGenerate = ({ user }: any) => {
 
             <div className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
               <Table columns={columns} data={employees} perPage={20} />
-              <div className="mt-5 flex justify-end">
-                <ButtonLoading onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus Sheet" icon={<FiSave className="h-4 w-4" />} className="bg-blue-600 px-5 py-2 hover:bg-blue-700" />
-              </div>
             </div>
           </>
         )}

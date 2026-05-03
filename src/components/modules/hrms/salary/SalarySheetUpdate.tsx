@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiTrash2 } from "react-icons/fi";
+import { FiArrowLeft, FiCheckSquare, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -428,14 +428,16 @@ const SalarySheetUpdate = ( user : any) => {
               })
             }
             label="Back"
-            className="whitespace-nowrap bg-slate-500 hover:bg-slate-600 px-6 py-1"
+            className="whitespace-nowrap bg-slate-500 hover:bg-slate-600 px-6 py-1 h-9"
+            icon={<FiArrowLeft className="" />}
           />
           <ButtonLoading
             onClick={handleUpdate}
             buttonLoading={saveLoading}
             disabled={saveLoading || rows.length === 0}
             label="Update Salary"
-            className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 px-6 py-1"
+            className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 px-6 py-1 h-9"
+            icon={<FiCheckSquare />}
           />
         </div>
       </div>

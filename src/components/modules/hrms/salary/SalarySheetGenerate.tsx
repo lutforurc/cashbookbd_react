@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiSave, FiPrinter, FiTrash2, FiSearch } from "react-icons/fi";
+import { FiSave, FiPrinter, FiTrash2, FiSearch, FiSquare, FiCheck, FiCheckSquare } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -493,9 +493,9 @@ const SalarySheetGenerate = ({ user }: any) => {
                 setShowConfirm(true);
               }}
               buttonLoading={saveButtonLoading}
-              label="Generate Salary"
+              label="Salary Generate"
               className="whitespace-nowrap h-9"
-              icon={<FiSave className="mr-2" />}
+              icon={<FiCheckSquare className="mr-2" />}
             />
           )}
         </div>
