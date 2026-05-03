@@ -528,9 +528,7 @@ const CashBook = (user: any) => {
                 className="h-10 px-4"
               />
               <div>
-                    <label htmlFor="perPage" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
-                      Rows
-                    </label>
+                    
                     <InputElement
                       id="perPage"
                       name="perPage"
@@ -543,9 +541,7 @@ const CashBook = (user: any) => {
               </div>
 
               <div>
-                    <label htmlFor="fontSize" className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">
-                      Font
-                    </label>
+                    
                     <InputElement
                       id="fontSize"
                       name="fontSize"
