@@ -32,6 +32,7 @@ const FestivalBonus = ({ user }: any) => {
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [tableData, setTableData] = useState<any[]>([]);
   const [fontSize, setFontSize] = useState<number>(11);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(20);
   const [shouldPrint, setShouldPrint] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
@@ -234,6 +235,15 @@ const FestivalBonus = ({ user }: any) => {
     },
   ];
 
+  const handlePerPageChange = (e: any) => {
+    const value = e.target.value;
+    const numericValue = Number(value);
+    if (!isNaN(numericValue) && numericValue > 0) {
+      setRowsPerPage(numericValue);
+    }
+  };
+
+
   return (
     <>
       <HelmetTitle title="Bonus Reports" />
@@ -307,19 +317,6 @@ const FestivalBonus = ({ user }: any) => {
                       />
                     </div>
 
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">Font Size</label>
-                      <InputElement
-                        id="print_font_size"
-                        value={String(fontSize)}
-                        name="print_font_size"
-                        placeholder="Enter Print Font Size"
-                        label=""
-                        className="mt-0 h-10 border-form-strokedark bg-boxdark text-white"
-                        type="number"
-                        onChange={(e) => setFontSize(Number(e.target.value) || 11)}
-                      />
-                    </div>
 
                     <div className="flex justify-end gap-2 pt-1">
                       <ButtonLoading onClick={handleApplyFilters} label="Apply" className="h-10 px-6 bg-meta-4 hover:bg-graydark" />
@@ -337,8 +334,9 @@ const FestivalBonus = ({ user }: any) => {
                     id="perPage"
                     name="perPage"
                     label=""
-                    // value={perPage.toString()}
+                    value={rowsPerPage.toString()}
                     // onChange={handlePerPageChange}
+                    onChange={(e) => setRowsPerPage(Number(e.target.value) || 18)}
                     type='text'
                     className="mt-0 h-10 !w-20 border-form-strokedark bg-boxdark text-center text-white"
                   />
@@ -374,7 +372,7 @@ const FestivalBonus = ({ user }: any) => {
 
       <div className="hidden">
         <div ref={printRef}>
-          <FestivalBonusPrint rows={bonusPrintSheet?.data || []} meta={bonusPrintSheet?.meta} vr_no={bonusPrintSheet?.vr_no} vr_date={bonusPrintSheet?.vr_date} fontSize={fontSize} />
+          <FestivalBonusPrint rows={bonusPrintSheet?.data || []} meta={bonusPrintSheet?.meta} vr_no={bonusPrintSheet?.vr_no} vr_date={bonusPrintSheet?.vr_date} rowsPerPage={rowsPerPage} fontSize={fontSize} />
         </div>
       </div>
 
