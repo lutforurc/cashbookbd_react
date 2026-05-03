@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
-import { FiFilter, FiSearch, FiX } from "react-icons/fi";
+import { FiCheckSquare, FiFilter, FiSearch, FiX } from "react-icons/fi";
 import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -185,7 +185,7 @@ const FestivalBonus = ({ user }: any) => {
       key: "bonus_title",
       header: "Bonus Title",
       render: (row: any) => (
-        <button type="button" onClick={() => handleOpenDetails(row, "print")} className="text-left font-semibold text-blue-600 hover:text-blue-700">
+        <button type="button" onClick={() => handleOpenDetails(row, "print")} className="text-left font-semibold">
           {row.bonus_title}
         </button>
       ),
@@ -226,8 +226,8 @@ const FestivalBonus = ({ user }: any) => {
 
         return (
           <div className="flex justify-end gap-2">
-            <ButtonLoading onClick={() => handleOpenDetails(row, "print")} label="Print" className="bg-slate-600 px-3 py-1 text-xs hover:bg-slate-700" />
-            <ButtonLoading onClick={() => handleOpenDetails(row, "payment")} label="Payment" className="bg-blue-600 px-3 py-1 text-xs hover:bg-blue-700" />
+            <PrintButton onClick={() => handleOpenDetails(row, "print")} className="bg-slate-600 px-3 py-1 text-xs hover:bg-slate-700 h-7" />
+            <ButtonLoading onClick={() => handleOpenDetails(row, "payment")} label="Payment" className="px-3 py-1 text-xs h-7" icon={<FiCheckSquare />} />
           </div>
         );
       },

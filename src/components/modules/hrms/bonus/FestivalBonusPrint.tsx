@@ -105,8 +105,7 @@ const FestivalBonusPrint = React.forwardRef<HTMLDivElement, Props>(
               <PadPrinting />
               <div className="grid grid-cols-3 items-center">
                 <div className="text-xs">
-                  <span className="font-semibold">Vr. No. & Date:</span> {vr_no || "-"},{" "}
-                  {vr_date ? formatDate(vr_date) : "-"}
+                  <span className="font-semibold text-[11px]">Vr. No. & Date:</span> {vr_no || "-"},{" "}{vr_date ? formatDate(vr_date) : "-"}
                 </div>
                 <h1 className="text-center text-xl font-bold">{title}</h1>
                 <div />

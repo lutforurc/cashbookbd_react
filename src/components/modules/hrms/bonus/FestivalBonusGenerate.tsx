@@ -127,7 +127,8 @@ const FestivalBonusGenerate = ({ user }: any) => {
           designation_name: employee.designations?.name || employee.designation_name || "",
           basic_salary: basicSalary,
           bonus_percent: percent,
-          bonus_amount: Math.round((basicSalary * percent) / 100),
+          bonus_amount: Math.ceil(((basicSalary * percent) / 100) / 10) * 10
+          // bonus_amount: Math.round((basicSalary * percent) / 100),
         };
       });
 
@@ -149,10 +150,13 @@ const FestivalBonusGenerate = ({ user }: any) => {
     () => employees.reduce((sum, row) => sum + Number(row.basic_salary || 0), 0),
     [employees]
   );
-  const totalBonus = useMemo(
-    () => employees.reduce((sum, row) => sum + Number(row.bonus_amount || 0), 0),
-    [employees]
-  );
+  const totalBonus = useMemo(() => {
+  return (employees || []).reduce((sum, row) => {
+    const bonusAmount = Number(row?.bonus_amount || 0);
+    const roundedBonus = Math.ceil(bonusAmount / 10) * 10;
+    return sum + roundedBonus;
+  }, 0);
+}, [employees]);
 
   const handleGenerate = async () => {
     if (employees.length === 0) {
@@ -324,8 +328,11 @@ const FestivalBonusGenerate = ({ user }: any) => {
               </div>
 
             </div>
-
-            <div className="grid grid-cols-2 gap-3 text-sm md:min-w-[320px]">
+            <div className="grid grid-cols-3 gap-3 text-sm md:min-w-[320px]">
+              <div className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                <div className="text-sm text-slate-500 dark:text-slate-400">Total Basic Salary</div>
+                <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{thousandSeparator(totalBasic)}</div>
+              </div>
               <div className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
                 <div className="text-slate-500 dark:text-slate-400">Eligible Employees</div>
                 <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{totalEmployees}</div>
@@ -422,18 +429,18 @@ const FestivalBonusGenerate = ({ user }: any) => {
         {employees.length > 0 && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              {/* <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Total Basic Salary</div>
                 <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{thousandSeparator(totalBasic)}</div>
-              </div>
-              <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              </div> */}
+              {/* <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Total Bonus Amount</div>
                 <div className="mt-2 text-2xl font-bold text-blue-600 dark:text-blue-400">{thousandSeparator(totalBonus)}</div>
-              </div>
-              <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              </div> */}
+              {/* <div className="rounded-sm border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <div className="text-sm text-slate-500 dark:text-slate-400">Employees in Batch</div>
                 <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{totalEmployees}</div>
-              </div>
+              </div> */}
             </div>
 
             <div className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
