@@ -233,7 +233,7 @@ const BalanceSheet = (user: any) => {
   return (
     <>
       <HelmetTitle title="Balance Sheet" />
-      <div className="mx-auto space-y-6 ">
+      <div className="mx-auto space-y-2 ">
         <div className="pl-0 pr-1 py-3">
           <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col xl:flex-row xl:items-end"}`}>
             <FilterMenuShell
@@ -350,7 +350,7 @@ const BalanceSheet = (user: any) => {
                   <InputElement
                     type="number"
                     id="bs-per-page"
-                    label="Rows"
+                    label=""
                     value={perPage}
                     onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
                     className="h-10 !w-28 text-center"
@@ -358,7 +358,7 @@ const BalanceSheet = (user: any) => {
                   <InputElement
                     type="number"
                     id="bs-font-size"
-                    label="Font"
+                    label=""
                     value={fontSize}
                     onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
                     className="h-10 !w-28 text-center"

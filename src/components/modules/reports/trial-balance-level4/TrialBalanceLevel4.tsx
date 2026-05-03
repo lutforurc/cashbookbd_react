@@ -371,7 +371,7 @@ const TrialBalanceLevel4 = (user: any) => {
   return (
     <>
       <HelmetTitle title="Trial Balance Details" />
-      <div className="mx-auto space-y-6">
+      <div className="mx-auto space-y-2">
         <div className="pl-0 pr-1 py-3">
           <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col xl:flex-row xl:items-end"}`}>
             <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1"}>

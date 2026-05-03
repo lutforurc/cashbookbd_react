@@ -510,7 +510,7 @@ const LedgerWithProduct = (user: any) => {
   return (
     <>
       <HelmetTitle title="Ledger with Product" />
-      <div className="mx-auto space-y-4 ">
+      <div className="mx-auto space-y-2 ">
         <div className="py-3">
           <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
             <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
