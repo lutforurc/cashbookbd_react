@@ -331,14 +331,28 @@ const FestivalBonus = ({ user }: any) => {
             </div>
 
             <div className="ml-auto flex items-end gap-2">
-              <div className="w-28">
+              <div>
+                  
+                  <InputElement
+                    id="perPage"
+                    name="perPage"
+                    label=""
+                    // value={perPage.toString()}
+                    // onChange={handlePerPageChange}
+                    type='text'
+                    className="mt-0 h-10 !w-20 border-form-strokedark bg-boxdark text-center text-white"
+                  />
+              </div>
+
+              
+              <div className="">
                 <InputElement
                   id="print_font_size_inline"
                   value={String(fontSize)}
                   name="print_font_size_inline"
                   placeholder="Font Size"
                   label=""
-                  className="mt-0 h-10 !w-full border-form-strokedark bg-boxdark text-center text-white"
+                  className="mt-0 h-10 !w-20 border-form-strokedark bg-boxdark text-center text-white"
                   type="number"
                   onChange={(e) => setFontSize(Number(e.target.value) || 11)}
                 />
