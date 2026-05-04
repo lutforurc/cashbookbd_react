@@ -815,7 +815,7 @@ const TradingCombinedEntry = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <label htmlFor="amount" className='text-black dark:text-white'>Trax. Amount</label>
+                  <label htmlFor="amount" className='text-black dark:text-white'>Amount Tk.</label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
                      <span className='font-semibold'> {formData.onlySalesPosting ? 'Sales' : 'Both'}</span>
