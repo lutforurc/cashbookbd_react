@@ -112,37 +112,37 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2"
+                        className="border border-gray-900 px-2 py-2 text-left"
                       >
                         Description
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-18 text-right"
+                        className="border border-gray-900 px-2 py-2 w-18 text-center"
                       >
                         Qty
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-20 text-right"
+                        className="border border-gray-900 px-2 py-2 w-20 text-center"
                       >
                         Rate
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-24 text-right"
+                        className="border border-gray-900 px-2 py-2 w-24 text-center"
                       >
                         Total
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-16 text-right"
+                        className="border border-gray-900 px-2 py-2 w-16 text-center"
                       >
                         Discount
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-18 text-right"
+                        className="border border-gray-900 px-2 py-2 w-18 text-center"
                       >
                         Payment
                       </th>
@@ -209,6 +209,13 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                             >
                               <div className="w-full max-w-4xl leading-normal">
                                 {/* Product list */}
+                                {/* COA Name */}
+                                {coaName ? (
+                                  <div className="font-semibold">
+                                    {coaName}
+                                  </div>
+                                ) : null}
+                                
                                 {Array.isArray(details) && details.length > 0 &&
                                   details.map((detail: any, i: number) => {
                                     const categoryName = detail?.product?.category?.name ?? "";
@@ -227,12 +234,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                      
                                     );
                                   })}
-                                {/* COA Name */}
-                                {coaName ? (
-                                  <div className="font-semibold">
-                                    {coaName}
-                                  </div>
-                                ) : null}
+                                
                                 { row?.purchase_master?.notes ? (
                                   <div className="mt-1 text-xs">
                                     {row?.purchase_master?.notes}

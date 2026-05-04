@@ -198,7 +198,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                       </th>
                       <th
                         style={{ fontSize: fs }}
-                        className="border border-gray-900 px-2 py-2 w-22 text-left"
+                        className="border border-gray-900 px-2 py-2 w-20 text-left"
                       >
                         Chal. & Date
                       </th>
@@ -309,6 +309,10 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                 className="w-full max-w-4xl"
                                 style={{ lineHeight: getCompactLineHeight(fs) }}
                               >
+                                {coaName ? (
+                                  <div className="font-semibold">{coaName}</div>
+                                ) : null}
+
                                 {Array.isArray(details) &&
                                   details.length > 0 &&
                                   details.map((detail: any, i: number) => {
@@ -321,7 +325,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                     return (
                                       <div
                                         key={detail?.id ?? i}
-                                        className="whitespace-nowrap"
+                                        className="whitespace-nowrap font-semibold"
                                         style={{
                                           fontSize: getProductFs(label, fs),
                                           lineHeight: getCompactLineHeight(
@@ -337,18 +341,13 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       </div>
                                     );
                                   })}
-
-                                {coaName ? (
-                                  <div className="font-semibold">{coaName}</div>
-                                ) : null}
-
-                                {notes ? (
+                                  {notes ? (
                                   <div
                                     style={{
                                       fontSize: fs,
                                       lineHeight: getCompactLineHeight(fs),
                                     }}
-                                    className="mt-1 text-xs"
+                                    className="text-xs"
                                   >
                                     {notes}
                                   </div>
@@ -375,7 +374,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                         }}
                                       >
                                         {thousandSeparator(detail?.quantity)}{" "}
-                                        {detail?.product?.unit?.name ?? ""}
+                                        {/* {detail?.product?.unit?.name ?? ""} */}
                                       </div>
                                     );
                                   })

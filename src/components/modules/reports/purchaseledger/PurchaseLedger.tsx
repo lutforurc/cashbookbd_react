@@ -329,6 +329,11 @@ const PurchaseLedger = (user: any) => {
         const coaName = getRelevantCoaName(row);
         return (
           <div className="min-w-52 break-words align-top">
+            {coaName && (
+              <div className="text-sm font-semibold">
+                {coaName}
+              </div>
+            )}
             {Array.isArray(row?.purchase_master?.details) &&
               row.purchase_master.details.length > 0 &&
               row.purchase_master.details.map((detail: any, i: number) => {
@@ -338,15 +343,10 @@ const PurchaseLedger = (user: any) => {
                   <div key={detail?.id ?? i} className="leading-normal">
                     {String(stockReportType) === "1" && categoryName ? `${categoryName} ` : ""}
                     {productName}
-
                   </div>
                 );
               })}
-            {coaName && (
-              <div className="text-sm mt-1 font-semibold">
-                {coaName}
-              </div>
-            )}
+            
             {row?.purchase_master?.notes && (
               <div className='text-green-500 dark:text-yellow-300'>{row?.purchase_master?.notes}</div>
             )}

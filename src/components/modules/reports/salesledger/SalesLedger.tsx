@@ -343,7 +343,10 @@ const SalesLedger = (user: any) => {
 
         return (
           <div className="min-w-52 break-words align-top">
-            {/* Ã¢Å“â€¦ Product list (safe + category like Purchase print) */}
+            {coaName && (
+              <div className="text-sm mt-1 font-semibold">{coaName}</div>
+            )}
+            
             {Array.isArray(details) &&
               details.length > 0 &&
               details.map((detail: any, i: number) => {
@@ -358,12 +361,7 @@ const SalesLedger = (user: any) => {
                   </div>
                 );
               })}
-
-            {coaName && (
-              <div className="text-sm mt-1 font-semibold">{coaName}</div>
-            )}
-
-            {detailText ? <div className="mt-1 text-green-500 dark:text-yellow-300">{detailText}</div> : null}
+              {detailText ? <div className=" text-green-500 dark:text-yellow-300">{detailText}</div> : null}
           </div>
         );
       },
