@@ -2,6 +2,7 @@ import React from "react";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import { useSelector } from "react-redux";
 
 type DueRow = {
   sl_number?: number | string;
@@ -34,6 +35,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
     const rowsArr = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
     const fs = fontSize;
+    const settings = useSelector((state: any) => state.settings);
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -76,10 +78,14 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
 
                       {/* Member Info */}
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                        <div className="font-semibold">{row.coa4_name}</div>
-                        {(row.mobile?.length ?? 0) > 10 && <div className="text-xs">{row.mobile}</div>}
-                        <div className="text-xs">{row.manual_address}</div>
-                        {/* <div className="text-xs">{row.ledger_page}</div> */}
+                        <div className={settings?.data?.branch?.due_list_with_address ? `font-semibold` : ``}>{row.coa4_name}</div>
+                        {settings?.data?.branch?.due_list_with_address && (row.mobile?.length ?? 0) > 10 && (
+                          <>
+                            <div className="text-xs">{row.mobile}</div>
+                            <div className="text-xs">{row.manual_address}</div>
+                            {/* <div className="text-xs">{row.ledger_page}</div> */}
+                          </>
+                        )}
                       </td>
                       {/* Area */}
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
@@ -91,7 +97,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-2 py-1 text-right align-middle"
                       >
-                        { Number(row?.debit) > 0 ? thousandSeparator(Number(row?.debit)) : "-"}
+                        {Number(row?.debit) > 0 ? thousandSeparator(Number(row?.debit)) : "-"}
                       </td>
 
                       {/* Credit */}
@@ -99,7 +105,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-2 py-1 text-right align-middle"
                       >
-                        { Number(row.credit) > 0 ? thousandSeparator( Number(row.credit)) : "-"}
+                        {Number(row.credit) > 0 ? thousandSeparator(Number(row.credit)) : "-"}
                       </td>
                     </tr>
                   ))
