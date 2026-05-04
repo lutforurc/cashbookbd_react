@@ -72,6 +72,7 @@ interface branchItem {
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
   need_contact_person: boolean;
+  due_list_with_address: boolean;
   need_relation_info: boolean;
   need_mother_name: boolean;
 }
@@ -169,6 +170,7 @@ const AddBranch = () => {
     show_spelling_of_money: false,
     need_demo_tutorial: false,
     need_contact_person: false,
+    due_list_with_address: false,
     need_relation_info: false,
     need_mother_name: false,
   };
@@ -241,6 +243,7 @@ const AddBranch = () => {
         show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
         need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
         need_contact_person: toBooleanFlag(b.need_contact_person),
+        due_list_with_address: toBooleanFlag(b.due_list_with_address),
         need_relation_info: toBooleanFlag(b.need_relation_info),
         need_mother_name: toBooleanFlag(b.need_mother_name),
         sms_service: toBooleanFlag(b.sms_service),
@@ -783,6 +786,13 @@ const AddBranch = () => {
                       checked={Boolean(formData.need_contact_person)}
                       onChange={(checked) =>
                         handleToggleFieldChange('need_contact_person', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Report Due List with Address?"
+                      checked={Boolean(formData.due_list_with_address)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('due_list_with_address', checked)
                       }
                     />
                   </div>

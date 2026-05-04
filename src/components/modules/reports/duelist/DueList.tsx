@@ -39,7 +39,7 @@ const DueList = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
 
 
-    interface OptionType {
+  interface OptionType {
     value: string;
     label: string;
     additionalDetails: string;
@@ -75,6 +75,10 @@ const DueList = (user: any) => {
   };
 
 
+  console.log('====================================');
+  console.log("settings", settings?.data?.branch?.due_list_with_address);
+  console.log('====================================');
+
 
   useEffect(() => {
     if (
@@ -104,8 +108,12 @@ const DueList = (user: any) => {
       render: (row: any) => (
         <>
           <p>{row.coa4_name}</p>
-          <p className="text-sm text-gray-500">{(row.mobile?.length ?? 0) > 10 && <div className="text-xs">{row.mobile}</div>}</p>
-          <p className="text-sm text-gray-500">{row.manual_address}</p>
+          {settings?.data?.branch?.due_list_with_address && (
+            <>
+              <p className="text-sm text-gray-500">{(row.mobile?.length ?? 0) > 10 && <div className="text-xs">{row.mobile}</div>}</p>
+              <p className="text-sm text-gray-500">{row.manual_address}</p>
+            </>
+          )}
         </>
       ),
     },
@@ -197,11 +205,10 @@ const DueList = (user: any) => {
               <button
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
-                  filterOpen
+                className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
                     ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
                     : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-                }`}
+                  }`}
                 title="Open filters"
                 aria-label="Open filters"
               >
@@ -246,11 +253,10 @@ const DueList = (user: any) => {
                   </div>
 
                   <div
-                    className={`flex gap-2 pt-1 ${
-                      useFilterMenuEnabled
+                    className={`flex gap-2 pt-1 ${useFilterMenuEnabled
                         ? 'justify-end'
                         : 'hidden'
-                    }`}
+                      }`}
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
@@ -273,11 +279,10 @@ const DueList = (user: any) => {
           </div>
 
           <div
-            className={`${
-              useFilterMenuEnabled
+            className={`${useFilterMenuEnabled
                 ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300'
                 : 'hidden'
-            }`}
+              }`}
           >
             Use the filter
           </div>
@@ -335,12 +340,12 @@ const DueList = (user: any) => {
         {/* === Hidden Print Component === */}
         <div className="hidden">
           <DueListPrint
-          ref={printRef}
-          rows={tableData || []}
-          endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
-          title="Due List"
-          rowsPerPage={Number(perPage)}
-          fontSize={Number(fontSize)}
+            ref={printRef}
+            rows={tableData || []}
+            endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : undefined}
+            title="Due List"
+            rowsPerPage={Number(perPage)}
+            fontSize={Number(fontSize)}
           />
         </div>
       </div>
