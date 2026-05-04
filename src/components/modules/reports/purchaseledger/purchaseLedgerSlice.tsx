@@ -10,11 +10,11 @@ interface ledgerParam {
   endDate: string;
 }
 
-export const getPurchaseLedger = ({ branchId, ledgerId, productId, startDate, endDate }: ledgerParam) =>
+export const getPurchaseLedger = ({ branchId, ledgerId, productId, startDate, endDate, search }: ledgerParam & { search: string }) =>
   (dispatch: any) => {
     dispatch({ type: PURCHASE_LEDGER_DATA_LIST_PENDING });
     httpService
-      .get(API_REPORT_PURCHASE_LEDGER_URL + `?branch_id=${branchId}&ledger_id=${ledgerId}&item_id=${productId}&startdate=${startDate}&enddate=${endDate}&delay=1`,
+      .get(API_REPORT_PURCHASE_LEDGER_URL + `?branch_id=${branchId}&ledger_id=${ledgerId}&item_id=${productId}&startdate=${startDate}&enddate=${endDate}&search=${search}&delay=1`,
       )
       .then((res) => {
         let _data = res.data;

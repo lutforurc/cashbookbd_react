@@ -40,6 +40,7 @@ import {
 import { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import routes from '../../../services/appRoutes';
+import SearchInput from '../../../utils/fields/SearchInput';
 
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -72,6 +73,7 @@ const PurchaseLedger = (user: any) => {
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showRemoveApprovalConfirm, setShowRemoveApprovalConfirm] = useState(false);
   const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
+    const [search, setSearchValue] = useState('');
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
   const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
@@ -116,6 +118,7 @@ const PurchaseLedger = (user: any) => {
         productId,
         startDate: startD,
         endDate: endD,
+        search,
       }),
     );
     setFilterOpen(false);
@@ -660,6 +663,17 @@ const PurchaseLedger = (user: any) => {
                       className="w-full font-medium text-sm h-10"
                       selectedDate={endDate}
                       setSelectedDate={setEndDate}
+                    />
+                  </div>
+
+                  <div >
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Search
+                    </label>
+                    <SearchInput
+                      search={search}
+                      setSearchValue={setSearchValue}
+                      className="h-10 w-full"
                     />
                   </div>
 
