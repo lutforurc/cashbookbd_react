@@ -44,7 +44,7 @@ const MySubscription: React.FC = () => {
                   {current.plan_name || 'Subscription Plan'}
                 </h2>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <span className={`rounded px-3 py-1 text-xs font-medium capitalize ${statusClassName}`}>
+                  <span className={`px-3 py-1 text-xs font-medium capitalize ${statusClassName}`}>
                     {statusLabel}
                   </span>
                 </div>
@@ -97,7 +97,7 @@ const MySubscription: React.FC = () => {
                 {(current.features || []).map((feature) => (
                   <span
                     key={feature.feature_key}
-                    className="rounded border border-gray-300 bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100"
+                    className="border border-gray-300 bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100"
                   >
                     {feature.feature_name}
                   </span>
@@ -122,19 +122,19 @@ const MySubscription: React.FC = () => {
             <div className="mt-5 space-y-3">
               <Link
                 to={routes.subscription_payment_submit}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
               >
                 Submit Payment
               </Link>
               <Link
                 to={routes.subscription_billing_history}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
               >
                 Billing History
               </Link>
               <Link
                 to={routes.subscription_pricing}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
               >
                 Compare Plans
               </Link>
@@ -159,7 +159,7 @@ const MySubscription: React.FC = () => {
             <div className="mt-5 space-y-3">
               <Link
                 to={routes.subscription_pricing}
-                className="flex w-full items-center justify-center whitespace-nowrap p-3"
+                className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
               >
                 View Plans
               </Link>

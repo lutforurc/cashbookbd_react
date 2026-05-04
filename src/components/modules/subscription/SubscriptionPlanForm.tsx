@@ -444,19 +444,19 @@ const SubscriptionPlanForm: React.FC = () => {
             buttonLoading={savingPlan || loadingPlanDetails}
             disabled={savingPlan || loadingPlanDetails}
             label={isEdit ? 'Update' : 'Save'}
-            className="h-10 px-5"
+            className="h-10 px-5 w-34"
             icon={<FiSave className="text-lg" />}
           />
           <ButtonLoading
             type="button"
             onClick={() => resetForm()}
             label="Reset"
-            className="h-10 px-5"
+            className="h-10 px-5 w-34"
             icon={<FiRefreshCcw className="text-lg" />}
           />
           <Link
             to={routes.subscription_plan_list}
-            className="inline-flex items-center justify-center gap-2 rounded bg-slate-600 px-4 text-sm font-medium text-white hover:bg-slate-500"
+            className="inline-flex items-center justify-center gap-2  bg-slate-600 px-4 text-sm font-medium text-white hover:bg-slate-500"
           >
             <FiArrowLeft />
             Back To List

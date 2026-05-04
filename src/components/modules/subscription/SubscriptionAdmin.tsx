@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { FiCheck, FiX } from 'react-icons/fi';
+import { FiCheck, FiCheckSquare, FiList, FiPlus, FiX } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -148,10 +148,10 @@ const SubscriptionAdmin: React.FC = () => {
 
           <div className="flex flex-wrap gap-2">
             <Link to={routes.subscription_plan_list} className="inline-flex">
-              <ButtonLoading label="Plan List" className="h-10 px-4" />
+              <ButtonLoading label="Plan List" icon={<FiList />} className="h-10 px-4" />
             </Link>
             <Link to={routes.subscription_plan_entry} className="inline-flex">
-              <ButtonLoading label="New Plan" className="h-10 px-4" />
+              <ButtonLoading label="New Plan" icon={<FiPlus />} className="h-10 px-4" />
             </Link>
           </div>
         </div>
@@ -302,8 +302,9 @@ const SubscriptionAdmin: React.FC = () => {
               type="submit"
               buttonLoading={updatingAdminPayment}
               disabled={updatingAdminPayment}
+              icon={<FiCheckSquare className="text-white" />}
               label={updatingAdminPayment ? 'Saving...' : 'Assign Subscription'}
-              className="w-45 p-2"
+              className="w-50 p-2 h-10"
             />
           </div>
         </form>

@@ -241,7 +241,7 @@ const AddCoaL3 = () => {
               type="button"
               label="Back"
               onClick={() => navigate(-1)}
-              className="h-6 min-w-30 px-4"
+              className="h-9 min-w-30 px-4"
               icon={<FiArrowLeft className="text-sm" />}
             />
           </div>
