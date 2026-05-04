@@ -811,7 +811,6 @@ const TradingCombinedEntry = () => {
                 </div>
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
                 <div className="mb-1 flex items-center justify-between gap-2">

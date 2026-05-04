@@ -38,6 +38,7 @@ import {
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import routes from '../../../services/appRoutes';
+import SearchInput from '../../../utils/fields/SearchInput';
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -64,6 +65,7 @@ const SalesLedger = (user: any) => {
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showRemoveApprovalConfirm, setShowRemoveApprovalConfirm] = useState(false);
   const [selectedApprovalRow, setSelectedApprovalRow] = useState<any | null>(null);
+  const [search, setSearchValue] = useState('');
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
   const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
@@ -125,6 +127,7 @@ const SalesLedger = (user: any) => {
         productId,
         startDate: startD,
         endDate: endD,
+        search,
       }),
     );
     setFilterOpen(false);
@@ -346,7 +349,7 @@ const SalesLedger = (user: any) => {
             {coaName && (
               <div className="text-sm mt-1 font-semibold">{coaName}</div>
             )}
-            
+
             {Array.isArray(details) &&
               details.length > 0 &&
               details.map((detail: any, i: number) => {
@@ -361,7 +364,7 @@ const SalesLedger = (user: any) => {
                   </div>
                 );
               })}
-              {detailText ? <div className=" text-green-500 dark:text-yellow-300">{detailText}</div> : null}
+            {detailText ? <div className=" text-green-500 dark:text-yellow-300">{detailText}</div> : null}
           </div>
         );
       },
@@ -372,14 +375,14 @@ const SalesLedger = (user: any) => {
       headerClass: 'text-left',
       cellClass: 'text-left align-top',
       width: '120px',
-      render: (row: any) => 
-      <div>
-        <span className='block'>{ formatTransportationNumber(row?.sales_master?.vehicle_no)}</span>
-         <span className='text-green-500 dark:text-yellow-300 block'>{ row?.sales_master?.sales_order?.order_number}</span>
-         { row?.sales_master?.sales_order?.delivery_location && (
-           <span className='text-green-500 dark:text-yellow-300 block '>{ row?.sales_master?.sales_order?.delivery_location}</span>
-         )}
-      </div>,
+      render: (row: any) =>
+        <div>
+          <span className='block'>{formatTransportationNumber(row?.sales_master?.vehicle_no)}</span>
+          <span className='text-green-500 dark:text-yellow-300 block'>{row?.sales_master?.sales_order?.order_number}</span>
+          {row?.sales_master?.sales_order?.delivery_location && (
+            <span className='text-green-500 dark:text-yellow-300 block '>{row?.sales_master?.sales_order?.delivery_location}</span>
+          )}
+        </div>,
     },
     {
       key: 'quantity',
@@ -618,8 +621,8 @@ const SalesLedger = (user: any) => {
                 type="button"
                 onClick={() => setFilterOpen((prev) => !prev)}
                 className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
-                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+                  ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                  : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
                   }`}
                 title="Open filters"
                 aria-label="Open filters"
@@ -699,6 +702,16 @@ const SalesLedger = (user: any) => {
                       setSelectedDate={setEndDate}
                     />
                   </div>
+                  <div >
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Search
+                    </label>
+                    <SearchInput
+                      search={search}
+                      setSearchValue={setSearchValue}
+                      className="h-10 w-full"
+                    />
+                  </div>
                   {!useFilterMenuEnabled && (
                     <div className="hidden items-end gap-3 md:col-span-2 md:flex xl:hidden">
                       <div className="min-w-0 flex-[1.1]">
@@ -757,8 +770,8 @@ const SalesLedger = (user: any) => {
                   {/* Ã¢Å“â€¦ Rows + Font + Run + Print (like your screenshot) */}
                   <div
                     className={`flex gap-2 pt-1 ${useFilterMenuEnabled
-                        ? 'justify-end'
-                        : 'hidden xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
+                      ? 'justify-end'
+                      : 'hidden xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
                       }`}
                   >
                     <ButtonLoading
@@ -932,9 +945,9 @@ const SalesLedger = (user: any) => {
       </div>
 
       {/* Ã¢Å“â€¦ Hidden print component */}
-        <ConfirmModal
-          show={showApproveConfirm}
-          title="Confirm Voucher Approval"
+      <ConfirmModal
+        show={showApproveConfirm}
+        title="Confirm Voucher Approval"
         message={
           <div className="space-y-2">
             <p>Are you sure you want to approve voucher</p>
@@ -960,29 +973,29 @@ const SalesLedger = (user: any) => {
           setShowApproveConfirm(false);
           setSelectedApprovalRow(null);
         }}
-          onConfirm={handleApproveClick}
-          className="bg-green-600 hover:bg-sky-600"
-        />
-        <ConfirmModal
-          show={showRemoveApprovalConfirm}
-          title="Confirm Remove Approval"
-          message={
-            <div className="space-y-2">
-              <p>Are you sure you want to remove approval from voucher</p>
-              <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
-            </div>
-          }
-          confirmLabel="Remove"
-          cancelLabel="Cancel"
-          loading={removingApprovalId === getVoucherId(selectedApprovalRow)}
-          onCancel={() => {
-            if (removingApprovalId) return;
-            setShowRemoveApprovalConfirm(false);
-            setSelectedApprovalRow(null);
-          }}
-          onConfirm={handleRemoveApprovalClick}
-          className="bg-amber-600 hover:bg-amber-700"
-        />
+        onConfirm={handleApproveClick}
+        className="bg-green-600 hover:bg-sky-600"
+      />
+      <ConfirmModal
+        show={showRemoveApprovalConfirm}
+        title="Confirm Remove Approval"
+        message={
+          <div className="space-y-2">
+            <p>Are you sure you want to remove approval from voucher</p>
+            <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
+          </div>
+        }
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        loading={removingApprovalId === getVoucherId(selectedApprovalRow)}
+        onCancel={() => {
+          if (removingApprovalId) return;
+          setShowRemoveApprovalConfirm(false);
+          setSelectedApprovalRow(null);
+        }}
+        onConfirm={handleRemoveApprovalClick}
+        className="bg-amber-600 hover:bg-amber-700"
+      />
 
       <div className="hidden">
         <SalesLedgerPrint
