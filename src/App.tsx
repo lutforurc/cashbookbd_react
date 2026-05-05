@@ -129,6 +129,7 @@ import UnitSalePaymentList from './components/modules/real-estate/checks/UnitSal
 import UnitSalePaymentEdit from './components/modules/real-estate/checks/UnitSalePaymentEdit';
 import UnitSalePaymentEntry from './components/modules/real-estate/checks/UnitSalePaymentEntry';
 import ProductStockIndex from './components/modules/reports/productstock/ProductStockIndex';
+import ImeiStock from './components/modules/reports/imei-stock/ImeiStock';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
 import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
@@ -443,6 +444,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_product_stock} element={<ProductStockIndex user={me} />} />
+              <Route path={routes.report_imei_stock} element={<ImeiStock />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.out']} loading={permissionsLoading} />}>
               <Route path={routes.report_date_wise_in_out} element={<DateWiseInOut user={me} />} />

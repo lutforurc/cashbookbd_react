@@ -227,6 +227,7 @@ export const API_REPORT_SALES_LEDGER_URL = `${API_BASE_URL}/reports/sales/ledger
 
 // Stock Product url
 export const API_REPORT_PRODUCT_STOCK_URL = `${API_BASE_URL}/reports/product-stock`;
+export const API_REPORT_STOCK_IMEI_DATA_URL = `${API_BASE_URL}/reports/stock-imei-data`;
 
 // Categories Wise Products In Out of Stock url
 export const API_REPORT_CAT_IN_OUT_URL = `${API_BASE_URL}/reports/category-wise-in-out`;

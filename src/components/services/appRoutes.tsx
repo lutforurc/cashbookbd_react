@@ -111,6 +111,7 @@ const ROUTES = {
   report_date_wise_total: '/reports/date-wise-total-data',
   report_date_wise_in_out: '/reports/in-out/date-wise',
   report_product_stock: '/reports/product/stock',
+  report_imei_stock: '/reports/stock-imei',
   cat_wise_in_out: '/reports/cat-wise/in-out',
   purchase_ledger: '/reports/purchase-ledger',
   sales_ledger: '/reports/sales-ledger',
