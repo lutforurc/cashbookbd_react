@@ -52,35 +52,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
   // State to track which menu is open (null means no menu is open)
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [expandedTopbarMenu, setExpandedTopbarMenu] = useState<string | null>(null);
 
   useEffect(() => {
     if (isTopbar) {
       setOpenMenu(null);
-      setExpandedTopbarMenu(null);
     }
   }, [isTopbar, pathname]);
 
   // Handler to toggle menu
   const handleMenuClick = (menuId: string) => {
-    setExpandedTopbarMenu(null);
     setOpenMenu(openMenu === menuId ? null : menuId); // Toggle the clicked menu, close others
-  };
-
-  const handleTopbarDropdownClick = (event: React.MouseEvent<HTMLElement>) => {
-    if (!isTopbar || !openMenu) return;
-
-    const target = event.target as HTMLElement;
-    const dropdown = target.closest('.topbar-menu nav > div > ul > li > div');
-    if (!dropdown) return;
-
-    const rect = dropdown.getBoundingClientRect();
-    const clickedOverflowArrow = event.clientY >= rect.bottom - 42;
-    if (!clickedOverflowArrow) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    setExpandedTopbarMenu((current) => (current === openMenu ? null : openMenu));
   };
   const extractRoleNames = (value: any): string[] => {
     if (!value) return [];
@@ -168,8 +149,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       ref={sidebar}
       className={
         isTopbar
-          ? `topbar-menu sticky top-0 isolate z-[9998] w-full border-b border-stroke bg-white dark:border-strokedark dark:bg-boxdark ${expandedTopbarMenu === openMenu ? 'topbar-menu-expanded' : ''}`
-          : `absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden duration-300 ease-linear bg-white dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+          ? 'topbar-menu sticky top-0 isolate z-[9998] w-full border-b border-stroke bg-white dark:border-strokedark dark:bg-boxdark'
+          : `app-sidebar-menu absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden duration-300 ease-linear bg-white dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
       }
     >
       {!isTopbar ? (
@@ -202,10 +183,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       <div className={isTopbar ? 'no-scrollbar overflow-visible' : 'no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear'}>
         <nav
           className={isTopbar ? 'overflow-visible px-2 py-2 md:px-4' : 'py-2 px-4 lg:mt-1 lg:px-6'}
-          onClick={handleTopbarDropdownClick}
         >
-          <div className={isTopbar ? 'flex items-center gap-3' : ''}>
-            <ul className={isTopbar ? 'flex items-stretch gap-1.5 whitespace-nowrap pb-1' : 'flex flex-col gap-1.5'}>
+          <div className={isTopbar ? 'flex flex-wrap items-start gap-3' : ''}>
+            <ul className={isTopbar ? 'flex min-w-0 flex-1 flex-wrap items-stretch gap-1.5 pb-1' : 'flex flex-col gap-1.5'}>
               {/* Dashboard */}
               <SidebarLinkGroup
                 activeCondition={

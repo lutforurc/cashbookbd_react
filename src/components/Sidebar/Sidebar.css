@@ -12,6 +12,10 @@
   max-height: 0;
 }
 
+.app-sidebar-menu nav > div > ul > li > div[class*='max-h-180'] {
+  max-height: none !important;
+}
+
 .topbar-menu nav > div > ul > li {
   position: relative;
   flex: 0 0 auto;
@@ -81,22 +85,11 @@
 }
 
 .topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) {
-  max-height: min(58vh, 520px) !important;
-}
-
-.topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9))::after,
-.topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9))::before {
-  display: block;
+  max-width: min(760px, calc(100vw - 2rem));
 }
 
 .topbar-menu.topbar-menu-expanded nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) {
   max-width: min(760px, calc(100vw - 2rem));
-  max-height: calc(100vh - 5rem) !important;
-}
-
-.topbar-menu.topbar-menu-expanded nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9))::before {
-  bottom: 10px;
-  transform: translateX(-50%) rotate(225deg);
 }
 
 .topbar-menu nav > div > ul > li > div > ul {
@@ -109,7 +102,10 @@
 }
 
 .topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) > ul {
-  padding-bottom: 2.75rem !important;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  width: max-content;
+  max-width: min(760px, calc(100vw - 2rem));
 }
 
 .topbar-menu.topbar-menu-expanded nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) > ul {
@@ -117,6 +113,22 @@
   grid-template-columns: repeat(2, minmax(280px, 1fr));
   width: max-content;
   max-width: min(760px, calc(100vw - 2rem));
+}
+
+@media (max-width: 680px) {
+  .topbar-menu nav > div > ul > li > div {
+    max-width: calc(100vw - 1rem);
+  }
+
+  .topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)),
+  .topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) > ul {
+    width: min(320px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
+  }
+
+  .topbar-menu nav > div > ul > li > div[class*='max-h-180']:has(> ul > li:nth-child(9)) > ul {
+    grid-template-columns: 1fr;
+  }
 }
 
 .topbar-menu nav > div > ul > li > div > ul > li {
