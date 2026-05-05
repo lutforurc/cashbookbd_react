@@ -18,12 +18,11 @@ import {
 } from 'react-icons/fi';
 import { FaBluetooth, FaGear, FaRegStar } from 'react-icons/fa6';
 import { hasPermission } from '../utils/permissionChecker';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
-import { logout } from '../../features/authReducer';
-import DarkModeSwitcher from '../Header/DarkModeSwitcher';
+import DropdownUser from '../Header/DropdownUser';
 
 const PRIVILEGED_ROLE_NAMES = ['super administrator', 'dba'];
 
@@ -37,7 +36,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const location = useLocation();
   const { pathname } = location;
   const isTopbar = mode === 'topbar';
-  const dispatch = useDispatch<any>();
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
   const authMe = useSelector((s: any) => s.auth?.me);
@@ -98,8 +96,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
     setPermissions(settings.data.permissions ?? []);
   }, [isPrivilegedUser, settings.data.permissions]);
-
-  const canSeeSubscriptionSelfService = Boolean(authMe);
 
   useEffect(() => {
     if (isTopbar) {
@@ -1372,6 +1368,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 	                    pathname === '/branch/branch-list' ||
 	                    pathname === '/user/user-list' ||
 	                    pathname === routes.company_user_list ||
+                      pathname === routes.roles ||
+                      pathname === routes.add_role ||
 	                    pathname === '/admin/dayclose' ||
 	                    pathname === '/order/order-list' ||
                     pathname === routes.sms_send ||
@@ -1391,6 +1389,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 	                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
 	                          pathname === '/user/user-list' ||
 	                          pathname === routes.company_user_list ||
+                            pathname === routes.roles ||
+                            pathname === routes.add_role ||
 	                          pathname === '/admin/dayclose' ||
 	                          pathname === '/order/order-list' ||
                           pathname === '/admin/voucher-approval' ||
@@ -1464,6 +1464,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 	                              </NavLink>
 	                            </li>
 	                          )}
+                          {hasPermission(permissions, 'roles.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.roles}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Roles
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'roles.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.add_role}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Add Roles
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'dayclose.create') && (
                             <li>
                               <NavLink
@@ -1918,81 +1944,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 </SidebarLinkGroup>
               )}
 
-              {/* User Management */}
-              {hasMenuPermission(permissions, 'roles') && (
-                <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/user-management/roles' ||
-                    pathname.includes('forms')
-                  }
-                  menuId="user-management"
-                  open={openMenu === 'user-management'}
-                  handleClick={() => handleMenuClick('user-management')}
-                >
-                  {(handleClick, open) => (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/user-management/roles' ||
-                          pathname === '/user-management/create-role' ||
-                          pathname.includes('/user-management/roles')) &&
-                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FiUsers />
-                        User Management
-                      </NavLink>
-                      <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
-                          }`}
-                      >
-                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {hasPermission(permissions, 'roles.view') && (
-                            <li>
-                              <NavLink
-                                to="/user-management/roles"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Roles
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'roles.create') && (
-                            <li>
-                              <NavLink
-                                to="/user-management/create-role"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Add Roles
-                              </NavLink>
-                            </li>
-                          )}
-
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  )}
-                </SidebarLinkGroup>
-              )}
-
               {/* Customer & Supplier */}
               {hasMenuPermission(permissions, 'customer') && (
                 <>
                   <SidebarLinkGroup
                     activeCondition={
                       pathname === '/customer-supplier/list' ||
+                      pathname === '/coal1/coal1-list' ||
+                      pathname === '/coal2/coal2-list' ||
+                      pathname === '/coal3/coal3-list' ||
+                      pathname === '/coal4/coal4-list' ||
                       pathname.includes('forms')
                     }
                     menuId="customer-supplier"
@@ -2004,7 +1965,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         <NavLink
                           to="#"
                           className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/customer-supplier/list' ||
-                            pathname.includes('/customer-supplier/list')) &&
+                            pathname.includes('/customer-supplier/list') ||
+                            pathname === '/coal1/coal1-list' ||
+                            pathname === '/coal2/coal2-list' ||
+                            pathname === '/coal3/coal3-list' ||
+                            pathname === '/coal4/coal4-list' ||
+                            pathname.includes('/coal4/coal4-list')) &&
                             'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                             }`}
                           onClick={(e) => {
@@ -2033,6 +1999,58 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Customer & Supplier List
                               </NavLink>
                             </li>
+                            {hasPermission(permissions, 'coa.l1.view') && (
+                              <li>
+                                <NavLink
+                                  to="/coal1/coal1-list"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  CoA L1
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'coa.l2.view') && (
+                              <li>
+                                <NavLink
+                                  to="/coal2/coal2-list"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  CoA L2
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'coa.l3.view') && (
+                              <li>
+                                <NavLink
+                                  to="/coal3/coal3-list"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  CoA L3
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPermission(permissions, 'coa.l4.view') && (
+                              <li>
+                                <NavLink
+                                  to="/coal4/coal4-list"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  CoA L4
+                                </NavLink>
+                              </li>
+                            )}
                           </ul>
                         </div>
                       </React.Fragment>
@@ -2041,104 +2059,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
                 </>
               )}
-
-
-              {/* Chart of Accounts */}
-              {hasMenuPermission(permissions, 'chart_of_accounts') && (
-                <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/coal4/coal4-list' || pathname.includes('forms')
-                  }
-                  menuId="chart-of-accounts"
-                  open={openMenu === 'chart-of-accounts'}
-                  handleClick={() => handleMenuClick('chart-of-accounts')}
-                >
-                  {(handleClick, open) => (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/coal1/coal1-list' ||
-                          pathname === '/coal2/coal2-list' ||
-                          pathname === '/coal3/coal3-list' ||
-                          pathname === '/coal4/coal4-list' ||
-                          pathname.includes('/coal4/coal4-list')) &&
-                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FiServer />
-                        Chart of Accounts
-                      </NavLink>
-                      <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
-                          }`}
-                      >
-                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {hasPermission(permissions, 'coa.l1.view') && (
-                            <li>
-                              <NavLink
-                                to="/coal1/coal1-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                CoA L1
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'coa.l2.view') && (
-                            <li>
-                              <NavLink
-                                to="/coal2/coal2-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                CoA L2
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'coa.l3.view') && (
-                            <li>
-                              <NavLink
-                                to="/coal3/coal3-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                CoA L3
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'coa.l4.view') && (
-                            <li>
-                              <NavLink
-                                to="/coal4/coal4-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                CoA L4
-                              </NavLink>
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  )}
-                </SidebarLinkGroup>
-              )}
-
-
 
               {/* Analytics */}
               {hasMenuPermission(permissions, 'analytics') && (
@@ -2194,107 +2114,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                   )}
                 </SidebarLinkGroup>
               )}
-              {canSeeSubscriptionSelfService && (
-                <SidebarLinkGroup
-                  activeCondition={
-                    pathname === routes.my_subscription ||
-                    pathname === routes.subscription_pricing ||
-                    pathname === routes.subscription_payment_submit ||
-                    pathname === routes.subscription_billing_history ||
-                    pathname === routes.subscription_admin ||
-                    pathname === routes.subscription_plan_list ||
-                    pathname === routes.subscription_plan_entry ||
-                    pathname.startsWith('/subscription/admin/plans/edit/')
-                  }
-                  menuId="subscription"
-                  open={openMenu === 'subscription'}
-                  handleClick={() => handleMenuClick('subscription')}
-                >
-                  {(handleClick, open) => (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${
-                          pathname === routes.my_subscription ||
-                          pathname === routes.subscription_pricing ||
-                          pathname === routes.subscription_payment_submit ||
-                          pathname === routes.subscription_billing_history ||
-                          pathname === routes.subscription_admin ||
-                          pathname === routes.subscription_plan_list ||
-                          pathname === routes.subscription_plan_entry ||
-                          pathname.startsWith('/subscription/admin/plans/edit/')
-                            ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                            : ''
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FiBook />
-                        Subscription
-                      </NavLink>
-
-                      <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                          open ? 'max-h-180' : 'max-h-0'
-                        }`}
-                      >
-                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to={routes.my_subscription}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive ||
-                                pathname === routes.subscription_pricing ||
-                                pathname === routes.subscription_payment_submit ||
-                                pathname === routes.subscription_billing_history
-                                  ? 'text-gray-900 font-bold dark:text-white'
-                                  : '')
-                              }
-                            >
-                              Subscription
-                            </NavLink>
-                          </li>
-                          {hasPermission(permissions, 'subscription.history') && (
-                            <li>
-                              <NavLink
-                                to={routes.subscription_admin}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive ? 'text-gray-900 font-bold dark:text-white' : '')
-                                }
-                              >
-                                Subscription History
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'subscription.plans') && (
-                            <li>
-                              <NavLink
-                                to={routes.subscription_plan_list}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive ||
-                                  pathname === routes.subscription_plan_entry ||
-                                  pathname.startsWith('/subscription/admin/plans/edit/')
-                                    ? 'text-gray-900 font-bold dark:text-white'
-                                    : '')
-                                }
-                              >
-                                Subscription Plans
-                              </NavLink>
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  )}
-                </SidebarLinkGroup>
-              )}
-
-
               {/* Customer Dashboard */}
               {hasMenuPermission(permissions, 'customer_dashboard') && (
                 <li>
@@ -2339,17 +2158,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               )}
             </ul>
             {isTopbar ? (
-              <div className="mb-1 flex shrink-0 items-center gap-3">
-                <ul className="flex items-center">
-                  <DarkModeSwitcher />
-                </ul>
-                <button
-                  type="button"
-                  onClick={() => dispatch(logout())}
-                  className="rounded-sm px-4 py-2 font-medium text-meta-1 transition hover:bg-gray-100 dark:hover:bg-meta-4"
-                >
-                  Logout
-                </button>
+              <div className="mb-1 flex shrink-0 items-center">
+                <DropdownUser />
               </div>
             ) : null}
           </div>

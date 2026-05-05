@@ -25,6 +25,7 @@ import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import DueInstallmentsPrint, { InstallmentRow } from './DueInstallmentsPrint';
 import { set } from 'react-datepicker/dist/date_utils';
+import { FiFileText } from 'react-icons/fi';
 
 const DueInstallment = (user: any) => {
   const dispatch = useDispatch();
@@ -228,6 +229,7 @@ const DueInstallment = (user: any) => {
             <ButtonLoading
               onClick={() => handleInstallments(row.payments)}
               label={row.installment_no}
+              icon={<FiFileText className="h-5 w-5" />}
               className="mt-0 pt-1 pb-1 border border-black dark:border-white rounded-sm"
             />
           ) : (

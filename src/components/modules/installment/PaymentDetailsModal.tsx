@@ -2,7 +2,7 @@ import React from 'react';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Table from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { render } from 'react-dom';
+import { FiX } from 'react-icons/fi';
 
 interface Installment {
   amount: string | number; // Allow string or number to handle potential string values
@@ -78,6 +78,7 @@ const totalAmount = installments
           <ButtonLoading
             onClick={onClose}
             label="Cancel"
+            icon={<FiX className="h-5 w-5" />}
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
           />
         </div>

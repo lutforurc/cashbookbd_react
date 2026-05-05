@@ -44,6 +44,10 @@ export const MENU_PERMISSIONS = {
     'voucher.photo.upload',
     'voucher.photo.delete',
     'bulk.photo.upload',
+    'roles.view',
+    'roles.create',
+    'roles.edit',
+    'roles.delete',
   ],
   voucher_settings: [
     'voucher.delete',
@@ -72,6 +76,10 @@ export const MENU_PERMISSIONS = {
     'cs.photo.view',
     'cs.update',
     'cs.view',
+    'coa.l1.view',
+    'coa.l2.view',
+    'coa.l3.view',
+    'coa.l4.view',
   ],
   chart_of_accounts: [
     'coa.l1.view',

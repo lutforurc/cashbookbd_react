@@ -4,6 +4,10 @@ import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-demo.png';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/authReducer';
+import DarkModeSwitcher from './DarkModeSwitcher';
+import useColorMode from '../../hooks/useColorMode';
+import routes from '../services/appRoutes';
+import { hasPermission } from '../utils/permissionChecker';
 
 
 const DropdownUser = () => {
@@ -13,6 +17,8 @@ const DropdownUser = () => {
   const settings = useSelector((s: any) => s.settings);
   const [trxDate, setTrxDate] = useState<string>('');
   const dayclose = useSelector((s: any) => s.dayclose);
+  const [colorMode] = useColorMode();
+  const permissions = settings?.data?.permissions ?? [];
 
 
   useEffect(() => {
@@ -102,6 +108,16 @@ const DropdownUser = () => {
               </Link>
             </li>
             <li>
+              <div className="flex items-center justify-end gap-3 rounded-sm bg-gray-50 px-3 py-2.5 text-sm font-medium dark:bg-meta-4 lg:text-base">
+                <div className="flex items-center gap-2.5">
+                  <span className="min-w-10 text-right text-xs font-medium text-body dark:text-bodydark2">
+                    {colorMode === 'dark' ? 'Dark' : 'Light'}
+                  </span>
+                  <DarkModeSwitcher />
+                </div>
+              </div>
+            </li>
+            <li>
               <Link
                 to="#"
                 className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
@@ -147,6 +163,36 @@ const DropdownUser = () => {
                 Account Settings
               </Link>
             </li>
+            {me && (
+              <li>
+                <Link
+                  to={routes.my_subscription}
+                  className="flex items-center pl-9 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                >
+                  Subscription
+                </Link>
+              </li>
+            )}
+            {hasPermission(permissions, 'subscription.history') && (
+              <li>
+                <Link
+                  to={routes.subscription_admin}
+                  className="flex items-center pl-9 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                >
+                  Subscription History
+                </Link>
+              </li>
+            )}
+            {hasPermission(permissions, 'subscription.plans') && (
+              <li>
+                <Link
+                  to={routes.subscription_plan_list}
+                  className="flex items-center pl-9 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                >
+                  Subscription Plans
+                </Link>
+              </li>
+            )}
           </ul>
           <button
             onClick={() => dispatch(logout())}
