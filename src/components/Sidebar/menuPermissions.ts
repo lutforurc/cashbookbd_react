@@ -29,7 +29,7 @@ export const MENU_PERMISSIONS = {
     'mitch.match',
     'productwise.profit',
   ],
-  requisition: ['requisition.create', 'requisition.comparison'],
+  requisition: ['requisition.view', 'requisition.create', 'requisition.comparison'],
   products: ['products.view'],
   admin: [
     'check.register.view',

@@ -158,26 +158,6 @@ import SubscriptionPlanList from './components/modules/subscription/Subscription
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
 import RequireUserQuota from './components/auth/RequireUserQuota';
 
-const extractRoleNames = (value: any): string[] => {
-  if (!value) return [];
-
-  if (Array.isArray(value)) {
-    return value
-      .flatMap((item) => extractRoleNames(typeof item === 'string' ? item : item?.name ?? item))
-      .filter(Boolean);
-  }
-
-  if (typeof value === 'object') {
-    return extractRoleNames(value?.name ?? '');
-  }
-
-  return String(value)
-    .split(',')
-    .map((item) => item.replace(/<[^>]+>/g, '').trim().toLowerCase())
-    .filter(Boolean);
-};
-
-const PRIVILEGED_ROLE_NAMES = ['super administrator', 'dba'];
 const SUBSCRIPTION_EXEMPT_COMPANY_IDS = new Set([1]);
 
 
@@ -191,19 +171,10 @@ function App() {
   const companyName = currentBranch?.currentBranch?.company?.name;
   const settings = useSelector((s: any) => s.settings);
   const subscription = useSelector((s: any) => s.subscription);
-  const authRoleNames = [
-    ...extractRoleNames(me?.role_name),
-    ...extractRoleNames(me?.role),
-    ...extractRoleNames(me?.roles),
-  ];
   const currentCompanyId = Number(me?.company_id || 0);
-  const isPrivilegedUser =
-    authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName));
   const bypassSubscriptionEnforcement = SUBSCRIPTION_EXEMPT_COMPANY_IDS.has(currentCompanyId);
 
-  const userPermissions = isPrivilegedUser
-    ? [{ id: 0, name: '*', group_name: '*', guard_name: 'web', created_at: '', updated_at: '' }]
-    : settings?.data?.permissions ?? [];
+  const userPermissions = settings?.data?.permissions ?? [];
   const permissionsLoading = settings?.loading ?? false;
   const userCreatePermissions = ['all.user.create', 'user.create', 'user.store', 'all.user.add'];
   const subscriptionSafeRoutes = [
@@ -492,8 +463,10 @@ function App() {
             </Route>
 
 
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['requisition.create']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['requisition.view']} loading={permissionsLoading} />}>
               <Route path={routes.requisition} element={<Requisitions user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['requisition.create']} loading={permissionsLoading} />}>
               <Route path={routes.requisition_create} element={<RequisitionForm />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['requisition.comparison']} loading={permissionsLoading} />}>

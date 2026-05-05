@@ -24,8 +24,6 @@ import routes from '../services/appRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
 import DropdownUser from '../Header/DropdownUser';
 
-const PRIVILEGED_ROLE_NAMES = ['super administrator', 'dba'];
-
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -38,7 +36,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const isTopbar = mode === 'topbar';
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
-  const authMe = useSelector((s: any) => s.auth?.me);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
@@ -61,41 +58,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const handleMenuClick = (menuId: string) => {
     setOpenMenu(openMenu === menuId ? null : menuId); // Toggle the clicked menu, close others
   };
-  const extractRoleNames = (value: any): string[] => {
-    if (!value) return [];
-
-    if (Array.isArray(value)) {
-      return value
-        .flatMap((item) => extractRoleNames(typeof item === 'string' ? item : item?.name ?? item))
-        .filter(Boolean);
-    }
-
-    if (typeof value === 'object') {
-      return extractRoleNames(value?.name ?? '');
-    }
-
-    return String(value)
-      .split(',')
-      .map((item) => item.replace(/<[^>]+>/g, '').trim().toLowerCase())
-      .filter(Boolean);
-  };
-
-  const authRoleNames = [
-    ...extractRoleNames(authMe?.role_name),
-    ...extractRoleNames(authMe?.role),
-    ...extractRoleNames(authMe?.roles),
-  ];
-  const isPrivilegedUser =
-    authRoleNames.some((roleName) => PRIVILEGED_ROLE_NAMES.includes(roleName));
-
   useEffect(() => {
-    if (isPrivilegedUser) {
-      setPermissions([{ name: '*' }]);
-      return;
-    }
-
     setPermissions(settings.data.permissions ?? []);
-  }, [isPrivilegedUser, settings.data.permissions]);
+  }, [settings.data.permissions]);
 
   useEffect(() => {
     if (isTopbar) {
@@ -1053,11 +1018,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {/* requisition.create */}
-                          {hasPermission(permissions, 'requisition.create') && (
+                          {hasPermission(permissions, 'requisition.view') && (
                             <li>
                               <NavLink
-                                to="/requisitions"
+                                to={routes.requisition}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
@@ -1067,21 +1031,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {/* <li>
-                          <NavLink
-                            to="/requisition/create"
-                            className={({ isActive }) =>
-                              'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                              (isActive && 'text-gray-900 font-bold dark:text-white')
-                            }
-                          >
-                            Create
-                          </NavLink>
-                        </li> */}
+                          {hasPermission(permissions, 'requisition.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.requisition_create}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Create
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'requisition.comparison') && (
                             <li>
                               <NavLink
-                                to="/requisition/comparison"
+                                to={routes.requisition_comparison}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
