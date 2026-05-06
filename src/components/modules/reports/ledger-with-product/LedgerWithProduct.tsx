@@ -20,6 +20,7 @@ import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 
 const formatAmount = (value: any, precision = 0) => {
   const amount = Number(value || 0);
@@ -379,10 +380,10 @@ const LedgerWithProduct = (user: any) => {
     },
     {
       key: 'truck_no',
-      header: 'Truck No',
+      header: 'Vehicle No',
       headerClass: 'w-[9%]',
       cellClass: 'w-[9%]',
-      render: (row: any) => <div>{row.truck_no || ''}</div>,
+      render: (row: any) => <div>{ formatTransportationNumber(row.truck_no || '')}</div>,
     },
     {
       key: 'purchase_qty',
