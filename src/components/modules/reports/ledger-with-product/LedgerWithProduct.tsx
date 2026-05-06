@@ -73,6 +73,33 @@ const getDisplayedPaymentValue = (row: any) => {
   return paymentValue;
 };
 
+const getApiVoucherType = (row: any) => Number(row?.voucher_type ?? row?.voucher_type_id ?? 0);
+
+const getVoucherSideAmount = (row: any) => {
+  const receivedValue = getDisplayedReceivedValue(row);
+  const paymentValue = getDisplayedPaymentValue(row);
+
+  return paymentValue || receivedValue;
+};
+
+const getDisplayedDebitValue = (row: any) => {
+  const voucherType = getApiVoucherType(row);
+
+  if (voucherType === 2) return getVoucherSideAmount(row);
+  if (voucherType === 1) return 0;
+
+  return getDisplayedReceivedValue(row);
+};
+
+const getDisplayedCreditValue = (row: any) => {
+  const voucherType = getApiVoucherType(row);
+
+  if (voucherType === 1) return getVoucherSideAmount(row);
+  if (voucherType === 2) return 0;
+
+  return getDisplayedPaymentValue(row);
+};
+
 const getBalanceReceivedValue = (row: any) => {
   if (isOpeningRow(row)) return 0;
 
@@ -258,11 +285,11 @@ const LedgerWithProduct = (user: any) => {
     [rawSummary, rows],
   );
   const footerReceivedValue = rows.reduce(
-    (sum: number, row: any) => sum + getDisplayedReceivedValue(row),
+    (sum: number, row: any) => sum + getDisplayedDebitValue(row),
     0,
   );
   const footerPaymentValue = rows.reduce(
-    (sum: number, row: any) => sum + getDisplayedPaymentValue(row),
+    (sum: number, row: any) => sum + getDisplayedCreditValue(row),
     0,
   );
   const footerClosingValue = rows.length
@@ -439,7 +466,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const displayValue = getDisplayedReceivedValue(row);
+        const displayValue = getDisplayedDebitValue(row);
 
         return <div>{displayValue ? thousandSeparator(displayValue) : '-'}</div>;
       },
@@ -450,7 +477,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const displayValue = getDisplayedPaymentValue(row);
+        const displayValue = getDisplayedCreditValue(row);
 
         return <div>{displayValue ? thousandSeparator(displayValue) : '-'}</div>;
       },
@@ -505,7 +532,7 @@ const LedgerWithProduct = (user: any) => {
       {
         label: (
           <div className="text-right w-35">
-            <span className="text-slate-500 dark:text-slate-400">Received:</span>{' '}
+            <span className="text-slate-500 dark:text-slate-400">Debit:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
              {thousandSeparator(footerReceivedValue)}
             </span>
@@ -516,7 +543,7 @@ const LedgerWithProduct = (user: any) => {
       {
         label: (
           <div className="text-right w-35">
-            <span className="text-slate-500 dark:text-slate-400">Payment:</span>{' '}
+            <span className="text-slate-500 dark:text-slate-400">Credit:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
               {thousandSeparator(footerPaymentValue)}
             </span>

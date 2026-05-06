@@ -58,6 +58,33 @@ const getDisplayedPaymentValue = (row: any) => {
   return paymentValue;
 };
 
+const getApiVoucherType = (row: any) => Number(row?.voucher_type ?? row?.voucher_type_id ?? 0);
+
+const getVoucherSideAmount = (row: any) => {
+  const receivedValue = getDisplayedReceivedValue(row);
+  const paymentValue = getDisplayedPaymentValue(row);
+
+  return paymentValue || receivedValue;
+};
+
+const getDisplayedDebitValue = (row: any) => {
+  const voucherType = getApiVoucherType(row);
+
+  if (voucherType === 2) return getVoucherSideAmount(row);
+  if (voucherType === 1) return 0;
+
+  return getDisplayedReceivedValue(row);
+};
+
+const getDisplayedCreditValue = (row: any) => {
+  const voucherType = getApiVoucherType(row);
+
+  if (voucherType === 1) return getVoucherSideAmount(row);
+  if (voucherType === 2) return 0;
+
+  return getDisplayedPaymentValue(row);
+};
+
 const getPurchaseQty = (row: any) => {
   if (isOpeningRow(row)) return 0;
   return getVoucherType(row?.vr_no) === '4' ? Number(row?.quantity || 0) : 0;
@@ -184,8 +211,8 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Sal. Qty.</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Rate</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Total</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Received</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Payment</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Debit</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Credit</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Balance</th>
                 </tr>
               </thead>
@@ -228,19 +255,19 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {Number(row.total || 0) ? formatAmount(row.total) : '-'}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {(() => {
-                        const displayValue = getDisplayedReceivedValue(row);
-
-                        return displayValue ? formatAmount(displayValue) : '-';
-                      })()}
-                    </td>
-                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {(() => {
-                        const displayValue = getDisplayedPaymentValue(row);
-
-                        return displayValue ? formatAmount(displayValue) : '-';
-                      })()}
+	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+	                      {(() => {
+	                        const displayValue = getDisplayedDebitValue(row);
+	
+	                        return displayValue ? formatAmount(displayValue) : '-';
+	                      })()}
+	                    </td>
+	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+	                      {(() => {
+	                        const displayValue = getDisplayedCreditValue(row);
+	
+	                        return displayValue ? formatAmount(displayValue) : '-';
+	                      })()}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {formatAmount(parseAmount(row.balance ?? row.running_balance))}
@@ -253,10 +280,10 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             {pageIndex === pages.length - 1 ? (
               <div className="mt-3 flex justify-end gap-6 text-xs font-bold">
                 <div>Opening: {Number(summary.opening_balance || 0) ? formatAmount(summary.opening_balance) : '-'}</div>
-                <div>Received: {formatAmount(summary.total_received)}</div>
+                <div>Debit: {formatAmount(summary.total_received)}</div>
                 <div>Pur. Qty: {thousandSeparator(Number(summary.purchase_qty))}</div>
                 <div>Sal. Qty: {thousandSeparator(Number(summary.sales_qty))}</div>
-                <div>Payment: {formatAmount(summary.total_payment)}</div>
+                <div>Credit: {formatAmount(summary.total_payment)}</div>
                 <div>Closing: {formatAmount(summary.closing_balance)}</div>
               </div>
             ) : null}
