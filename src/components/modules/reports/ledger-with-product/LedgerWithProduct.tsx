@@ -22,11 +22,21 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 
-const formatAmount = (value: any, precision = 0) => {
-  const amount = Number(value || 0);
-  const formatted = thousandSeparator(Math.abs(amount));
-  return amount < 0 ? `(${formatted})` : formatted;
+
+const parseAmount = (value: any) => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+
+  const normalized = String(value ?? '')
+    .replace(/,/g, '')
+    .trim();
+  const isNegative = normalized.startsWith('(') && normalized.endsWith(')');
+  const amount = Number(normalized.replace(/[()]/g, ''));
+
+  if (!Number.isFinite(amount)) return 0;
+
+  return isNegative ? -amount : amount;
 };
+
 
 const getVoucherType = (vrNo: any) => {
   const prefix = String(vrNo || '').split('-')[0]?.trim();
@@ -256,8 +266,8 @@ const LedgerWithProduct = (user: any) => {
     0,
   );
   const footerClosingValue = rows.length
-    ? Number(rows[rows.length - 1]?.running_balance || 0)
-    : Number(summary?.closing_balance || 0);
+    ? parseAmount(rows[rows.length - 1]?.balance ?? rows[rows.length - 1]?.running_balance)
+    : parseAmount(summary?.closing_balance);
 
   const hasLoaded = !!statementState?.data;
   const hasTransactions = rows.length > 1;
@@ -420,7 +430,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'w-[7.5%] text-right',
       cellClass: 'w-[7.5%] text-right',
       render: (row: any) => (
-        <div>{Number(row.total || 0) ? formatAmount(row.total) : '-'}</div>
+        <div>{Number(row.total || 0) ? thousandSeparator(row.total) : '-'}</div>
       ),
     },
     {
@@ -431,7 +441,7 @@ const LedgerWithProduct = (user: any) => {
       render: (row: any) => {
         const displayValue = getDisplayedReceivedValue(row);
 
-        return <div>{displayValue ? formatAmount(displayValue) : '-'}</div>;
+        return <div>{displayValue ? thousandSeparator(displayValue) : '-'}</div>;
       },
     },
     {
@@ -442,7 +452,7 @@ const LedgerWithProduct = (user: any) => {
       render: (row: any) => {
         const displayValue = getDisplayedPaymentValue(row);
 
-        return <div>{displayValue ? formatAmount(displayValue) : '-'}</div>;
+        return <div>{displayValue ? thousandSeparator(displayValue) : '-'}</div>;
       },
     },
     {
@@ -450,7 +460,7 @@ const LedgerWithProduct = (user: any) => {
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold',
-      render: (row: any) => <div>{formatAmount(row.running_balance ?? row.balance)}</div>,
+      render: (row: any) => <div>{ thousandSeparator(row.balance)}</div>,
     },
   ];
 
@@ -462,7 +472,7 @@ const LedgerWithProduct = (user: any) => {
             <span className="text-slate-500 dark:text-slate-400">Opening:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
               {Number(summary?.opening_balance || 0)
-                ? formatAmount(summary?.opening_balance || 0)
+                ? thousandSeparator(summary?.opening_balance || 0)
                 : '-'}
             </span>
           </div>
@@ -497,7 +507,7 @@ const LedgerWithProduct = (user: any) => {
           <div className="text-right w-35">
             <span className="text-slate-500 dark:text-slate-400">Received:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
-             {formatAmount(footerReceivedValue)}
+             {thousandSeparator(footerReceivedValue)}
             </span>
           </div>
         ),
@@ -508,7 +518,7 @@ const LedgerWithProduct = (user: any) => {
           <div className="text-right w-35">
             <span className="text-slate-500 dark:text-slate-400">Payment:</span>{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {formatAmount(footerPaymentValue)}
+              {thousandSeparator(footerPaymentValue)}
             </span>
           </div>
         ),
@@ -519,7 +529,7 @@ const LedgerWithProduct = (user: any) => {
           <div className="text-right">
             <span className="text-slate-500 dark:text-slate-400">Closing:</span>{' '}
             <span className="font-bold text-slate-900 dark:text-white">
-              {formatAmount(footerClosingValue)}
+              { thousandSeparator(footerClosingValue)}
             </span>
           </div>
         ),

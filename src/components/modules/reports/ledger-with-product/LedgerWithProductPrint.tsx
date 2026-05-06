@@ -9,6 +9,20 @@ const formatAmount = (value: any, precision = 0) => {
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
+const parseAmount = (value: any) => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+
+  const normalized = String(value ?? '')
+    .replace(/,/g, '')
+    .trim();
+  const isNegative = normalized.startsWith('(') && normalized.endsWith(')');
+  const amount = Number(normalized.replace(/[()]/g, ''));
+
+  if (!Number.isFinite(amount)) return 0;
+
+  return isNegative ? -amount : amount;
+};
+
 const getVoucherType = (vrNo: any) => {
   const prefix = String(vrNo || '').split('-')[0]?.trim();
   const parsed = Number.parseInt(prefix, 10);
@@ -229,7 +243,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       })()}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {formatAmount(row.running_balance ?? row.balance)}
+                      {formatAmount(parseAmount(row.balance ?? row.running_balance))}
                     </td>
                   </tr>
                 ))}
