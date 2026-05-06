@@ -524,8 +524,10 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
 
                           <th
                             style={{ fontSize: fs }}
-                            className={`border border-l-0 border-gray-900 px-2 ${cellPy}`}
-                          ></th>
+                            className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
+                          >
+                            {fmtZero(Number(r?.credit || 0))}
+                          </th>
 
                           <td
                             style={{ fontSize: fs }}
@@ -535,9 +537,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                           <td
                             style={{ fontSize: fs }}
                             className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
-                          >
-                            {fmtZero(Number(r?.credit || 0))}
-                          </td>
+                          ></td>
                         </tr>
                       ))}
 
@@ -551,7 +551,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
 
                         <th
                           style={{ fontSize: fs }}
-                          className={`border border-l-0 border-gray-900 px-2 ${cellPy}`}
+                          className={`border border-l-0 border-gray-900 px-2 ${cellPy} border-t-2`}
                         ></th>
 
                         <td

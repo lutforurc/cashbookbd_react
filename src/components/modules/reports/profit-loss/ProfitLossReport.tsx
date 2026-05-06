@@ -266,15 +266,19 @@ const ProfitLossReport = ({
               {report.net.incomes.map((r, idx) => (
                 <tr key={`inc-${idx}`} className="border-b dark:border-gray-700 border-gray-200">
                   <td className="p-2 pl-6">{r.name}</td>
-                  <td className="p-2 text-right"></td>
-                  <td className="p-2 text-right"></td>
                   <td className="p-2 text-right">{fmtZero(toNum(r.credit))}</td>
+                  <td className="p-2 text-right"></td>
+                  <td className="p-2 text-right"></td>
                 </tr>
               ))}
 
               <tr className="border-b dark:border-gray-700 border-gray-200 font-semibold">
                 <td className="p-2">Total Income</td>
-                <td className="p-2 text-right border-t"></td>
+                <td
+                  className={`p-2 text-right ${
+                    report.net.incomes.length > 0 ? "border-t dark:border-gray-100 border-gray-600" : ""
+                  }`}
+                ></td>
                 <td className="p-2 text-right"></td>
                 <td className="p-2 text-right">{fmtZero(report.net.totalIncome)}</td>
               </tr>
