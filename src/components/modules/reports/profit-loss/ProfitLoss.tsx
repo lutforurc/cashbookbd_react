@@ -721,7 +721,7 @@ const ExpenseDetailsModal = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center">
+      <div className="mx-auto flex min-h-full w-full max-w-5xl items-start justify-center mt-25">
         <div
           className="my-2 flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
           onClick={(e) => e.stopPropagation()}
