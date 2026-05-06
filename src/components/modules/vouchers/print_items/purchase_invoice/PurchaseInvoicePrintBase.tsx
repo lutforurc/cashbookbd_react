@@ -239,7 +239,7 @@ const PurchaseInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>(
                       <td className="border border-black px-1 text-center align-top" style={{ fontSize: fs }}>
                         {pageIndex * pageRows + idx + 1}
                       </td>
-                      <td className="border border-black px-1 align-top" style={{ fontSize: isHalf ? fs - 0.5 : fs, lineHeight: 1.2 }}>
+                      <td className="border border-black px-1 py-1 align-middle" style={{ fontSize: isHalf ? fs - 0.5 : fs, lineHeight: 1.2 }}>
                         {isEnabled(settings?.data?.branch?.show_category_in_invoice) && row?.product?.category?.name && (
                           <span className="block">{row.product.category.name}</span>
                         )}
