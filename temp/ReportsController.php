@@ -3601,6 +3601,14 @@ class ReportsController extends Controller
         $branchId = $request->branch_id;
         $user = Auth::user();
 
+        $request->merge([
+            'startdate' => $startdate,
+            'enddate' => $enddate,
+            'branch_id' => $branchId,
+        ]);
+
+        $openingProfitLossDebug = $this->balanceSheetOpeningProfitLossDetails($request, $branchId, $startdate, $user->id);
+
         $this->openingStock($branchId, $startdate, $user->id);
         $this->closingStock($branchId, $enddate, $user->id);
 
@@ -3610,7 +3618,33 @@ class ReportsController extends Controller
         $liabilities = $this->formatBalanceSheetGroups($balances->where('level1_id', 2));
         $equity = $this->formatBalanceSheetGroups($balances->where('level1_id', 5));
 
-        $earnings = $this->balanceSheetEarningsAdjustment($balances);
+        $stockAdjustment = $this->balanceSheetStockAdjustment($branchId, $user->id);
+
+        if (
+            round($stockAdjustment['opening'], 2) !== 0.0
+            || round($stockAdjustment['movement'], 2) !== 0.0
+            || round($stockAdjustment['closing'], 2) !== 0.0
+        ) {
+            $assets[] = [
+                'group_name' => 'Closing Stock',
+                'opening' => round($stockAdjustment['opening'], 2),
+                'movement' => round($stockAdjustment['movement'], 2),
+                'closing' => round($stockAdjustment['closing'], 2),
+                'total' => round($stockAdjustment['closing'], 2),
+                'items' => [[
+                    'coa4_id' => 21,
+                    'name' => 'Closing Stock',
+                    'opening' => round($stockAdjustment['opening'], 2),
+                    'movement' => round($stockAdjustment['movement'], 2),
+                    'closing' => round($stockAdjustment['closing'], 2),
+                    'balance' => round($stockAdjustment['closing'], 2),
+                ]],
+            ];
+        }
+
+        $profitLossData = $this->profitLossData($request);
+        $profitLossDebug = $this->extractNetProfitLossDetails($profitLossData);
+        $earnings = $this->balanceSheetNetProfitLossAdjustment($openingProfitLossDebug, $profitLossDebug);
 
         if (
             round($earnings['opening'], 2) !== 0.0
@@ -3618,14 +3652,14 @@ class ReportsController extends Controller
             || round($earnings['closing'], 2) !== 0.0
         ) {
             $equity[] = [
-                'group_name' => $earnings['closing'] >= 0 ? 'Accumulated Profit' : 'Accumulated Loss',
+                'group_name' => $earnings['closing'] >= 0 ? 'Net Profit' : 'Net Loss',
                 'opening' => round($earnings['opening'], 2),
                 'movement' => round($earnings['movement'], 2),
                 'closing' => round($earnings['closing'], 2),
                 'total' => round($earnings['closing'], 2),
                 'items' => [[
                     'coa4_id' => null,
-                    'name' => $earnings['closing'] >= 0 ? 'Accumulated Profit' : 'Accumulated Loss',
+                    'name' => $earnings['closing'] >= 0 ? 'Net Profit' : 'Net Loss',
                     'opening' => round($earnings['opening'], 2),
                     'movement' => round($earnings['movement'], 2),
                     'closing' => round($earnings['closing'], 2),
@@ -3666,6 +3700,17 @@ class ReportsController extends Controller
                 'as_on_date' => $request->enddate,
             ],
             'branch_id' => $branchId,
+            'debug' => [
+                'filters' => [
+                    'branch_id' => (int) $branchId,
+                    'start_date' => $startdate,
+                    'end_date' => $enddate,
+                ],
+                'stock' => $stockAdjustment,
+                'opening_profit_loss' => $openingProfitLossDebug,
+                'profit_loss' => $profitLossDebug,
+                'net_profit' => $earnings,
+            ],
         ];
 
         $payload['totals']['liabilities_and_equity'] = $liabilitiesAndEquityTotals['closing'];
@@ -3781,15 +3826,104 @@ class ReportsController extends Controller
         ];
     }
 
-    private function balanceSheetEarningsAdjustment(Collection $rows): array
+    private function balanceSheetStockAdjustment($branchId, $userId): array
+    {
+        $companyId = (int) auth()->user()->company_id;
+        $branchId = (int) $branchId;
+        $userId = (int) $userId;
+
+        $stockAmount = function (string $table) use ($companyId, $branchId, $userId): float {
+            return round((float) DB::table($table)
+                ->where('company_id', $companyId)
+                ->where('branch_id', $branchId)
+                ->where('user_id', $userId)
+                ->selectRaw('COALESCE(SUM(ROUND(product_in * rate) - ((ROUND(product_in * rate) * purchase_pct) / 100)), 0) as amount')
+                ->value('amount'), 2);
+        };
+
+        $opening = $stockAmount('product_opening_stock');
+        $closing = $stockAmount('product_closing_stock');
+
+        return [
+            'opening' => $opening,
+            'movement' => round($closing - $opening, 2),
+            'closing' => $closing,
+        ];
+    }
+
+    private function balanceSheetEarningsAdjustment(Collection $rows, array $stockAdjustment = []): array
     {
         $incomeOpening = (float) $rows->where('level1_id', 3)->sum('opening');
         $expenseOpening = (float) $rows->where('level1_id', 4)->sum('opening');
         $incomeMovement = (float) $rows->where('level1_id', 3)->sum('movement');
         $expenseMovement = (float) $rows->where('level1_id', 4)->sum('movement');
 
-        $opening = round($incomeOpening - $expenseOpening, 2);
-        $movement = round($incomeMovement - $expenseMovement, 2);
+        $stockOpening = (float) ($stockAdjustment['opening'] ?? 0);
+        $stockMovement = (float) ($stockAdjustment['movement'] ?? 0);
+
+        $opening = round($incomeOpening - $expenseOpening + $stockOpening, 2);
+        $movement = round($incomeMovement - $expenseMovement + $stockMovement, 2);
+
+        return [
+            'opening' => $opening,
+            'movement' => $movement,
+            'closing' => round($opening + $movement, 2),
+        ];
+    }
+
+    private function balanceSheetOpeningProfitLossDetails(Request $request, $branchId, string $startdate, $userId): array
+    {
+        $periodStart = Carbon::parse($startdate)->startOfYear()->format('Y-m-d');
+        $periodEnd = Carbon::parse($startdate)->subDay()->format('Y-m-d');
+
+        if (Carbon::parse($periodEnd)->lt(Carbon::parse($periodStart))) {
+            return $this->emptyNetProfitLossDetails($periodStart, $periodEnd);
+        }
+
+        $this->openingStock($branchId, $periodStart, $userId);
+        $this->closingStock($branchId, $periodEnd, $userId);
+
+        $periodRequest = clone $request;
+        $periodRequest->merge([
+            'startdate' => $periodStart,
+            'enddate' => $periodEnd,
+            'branch_id' => $branchId,
+        ]);
+
+        $details = $this->extractNetProfitLossDetails($this->profitLossData($periodRequest));
+        $details['period_start'] = $periodStart;
+        $details['period_end'] = $periodEnd;
+
+        return $details;
+    }
+
+    private function emptyNetProfitLossDetails(string $periodStart = '', string $periodEnd = ''): array
+    {
+        return [
+            'period_start' => $periodStart,
+            'period_end' => $periodEnd,
+            'opening_stock' => 0,
+            'closing_stock' => 0,
+            'purchase' => 0,
+            'purchase_return' => 0,
+            'purchase_discount' => 0,
+            'net_purchase' => 0,
+            'sales' => 0,
+            'sales_discount' => 0,
+            'sales_return' => 0,
+            'net_sales' => 0,
+            'gross_profit_loss' => 0,
+            'other_income' => 0,
+            'expense' => 0,
+            'net_profit_loss' => 0,
+            'formula' => '(closing_stock + net_sales + other_income) - (opening_stock + net_purchase + expense)',
+        ];
+    }
+
+    private function balanceSheetNetProfitLossAdjustment(array $openingProfitLossDebug, array $profitLossDebug): array
+    {
+        $opening = round((float) ($openingProfitLossDebug['net_profit_loss'] ?? 0), 2);
+        $movement = round((float) ($profitLossDebug['net_profit_loss'] ?? 0), 2);
 
         return [
             'opening' => $opening,
@@ -3807,21 +3941,48 @@ class ReportsController extends Controller
 
     private function extractNetProfitLossAmount(array $profitLossData): float
     {
+        return (float) $this->extractNetProfitLossDetails($profitLossData)['net_profit_loss'];
+    }
+
+    private function extractNetProfitLossDetails(array $profitLossData): array
+    {
         $trading = collect($profitLossData['trading'] ?? []);
         $netprofit = collect($profitLossData['netprofit'] ?? []);
 
         $openingStock = (float) $trading->where('coal4_id', 18)->sum('debit');
         $closingStock = (float) $trading->where('coal4_id', 21)->sum('credit');
-        $purchaseDebit = (float) $trading->where('coal3_id', 9)->sum('debit');
-        $purchaseCredit = (float) $trading->where('coal3_id', 9)->sum('credit');
-        $salesCredit = (float) $trading->where('coal3_id', 7)->sum('credit');
-        $salesDebit = (float) $trading->where('coal3_id', 7)->sum('debit');
+        $purchaseDebit = (float) $trading->where('coal4_id', 35)->sum('debit');
+        $purchaseReturnCredit = (float) $trading->where('coal4_id', 16)->sum('credit');
+        $purchaseDiscountCredit = (float) $trading->where('coal4_id', 40)->sum('credit');
+        $salesCredit = (float) $trading->where('coal4_id', 15)->sum('credit');
+        $salesDiscountDebit = (float) $trading->where('coal4_id', 23)->sum('debit');
+        $salesReturnDebit = (float) $trading->where('coal4_id', 19)->sum('debit');
 
-        $grossResult = ($closingStock + ($salesCredit - $salesDebit)) - ($openingStock + $purchaseDebit - $purchaseCredit);
+        $netPurchase = max(0, $purchaseDebit - $purchaseReturnCredit - $purchaseDiscountCredit);
+        $netSales = max(0, $salesCredit - $salesDiscountDebit - $salesReturnDebit);
+
+        $grossResult = ($closingStock + $netSales) - ($openingStock + $netPurchase);
         $netExpense = (float) $netprofit->where('debit', '>', 0)->sum('debit');
         $netIncome = (float) $netprofit->where('credit', '>', 0)->sum('credit');
+        $netProfitLoss = round($grossResult + $netIncome - $netExpense, 2);
 
-        return round($grossResult + $netIncome - $netExpense, 2);
+        return [
+            'opening_stock' => round($openingStock, 2),
+            'closing_stock' => round($closingStock, 2),
+            'purchase' => round($purchaseDebit, 2),
+            'purchase_return' => round($purchaseReturnCredit, 2),
+            'purchase_discount' => round($purchaseDiscountCredit, 2),
+            'net_purchase' => round($netPurchase, 2),
+            'sales' => round($salesCredit, 2),
+            'sales_discount' => round($salesDiscountDebit, 2),
+            'sales_return' => round($salesReturnDebit, 2),
+            'net_sales' => round($netSales, 2),
+            'gross_profit_loss' => round($grossResult, 2),
+            'other_income' => round($netIncome, 2),
+            'expense' => round($netExpense, 2),
+            'net_profit_loss' => $netProfitLoss,
+            'formula' => '(closing_stock + net_sales + other_income) - (opening_stock + net_purchase + expense)',
+        ];
     }
 
     public function openingStockOnly(Request $request)
@@ -5384,7 +5545,7 @@ class ReportsController extends Controller
     public function apiProfitLoss(Request $request)
     {
         $user = Auth::user();
-        $branchId = $user->branch_id;
+        $branchId = $request->branch_id ?? $request->branchId ?? $user->branch_id;
         $startDate = bd_to_us_date($request->startDate);
         $endDate = bd_to_us_date($request->endDate);
 
@@ -5409,11 +5570,11 @@ class ReportsController extends Controller
     public function apiBalanceSheet(Request $request)
     {
         $user = Auth::user();
-        $branchId = $request->branchId ?? $user->branch_id;
+        $branchId = $request->branchId ?? $request->branch_id ?? $user->branch_id;
 
         $request->merge([
-            'startdate' => $request->startDate,
-            'enddate'   => $request->endDate,
+            'startdate' => $request->startDate ?? $request->startdate,
+            'enddate'   => $request->endDate ?? $request->enddate,
             'branch_id' => $branchId,
         ]);
 

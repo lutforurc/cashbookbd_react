@@ -55,6 +55,12 @@ const formatAmount = (amount: number) => {
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
+const sumReportColumns = (groups: ReportGroup[]): ColumnTotals => ({
+  opening: groups.reduce((sum, group) => sum + toNum(group.opening), 0),
+  movement: groups.reduce((sum, group) => sum + toNum(group.movement), 0),
+  closing: groups.reduce((sum, group) => sum + toNum(group.closing || group.total), 0),
+});
+
 const BalanceSheet = (user: any) => {
   const dispatch = useDispatch();
 
@@ -126,40 +132,152 @@ const BalanceSheet = (user: any) => {
   const liabilities: ReportGroup[] = Array.isArray(apiData?.liabilities)
     ? apiData.liabilities
     : [];
-  const equity: ReportGroup[] = Array.isArray(apiData?.equity) ? apiData.equity : [];
+  const rawEquity: ReportGroup[] = Array.isArray(apiData?.equity) ? apiData.equity : [];
+
+  const equity: ReportGroup[] = useMemo(() => {
+    const openingDifference = toNum(apiData?.totals?.difference_columns?.opening);
+
+    if (Math.abs(openingDifference) < 0.01) {
+      return rawEquity;
+    }
+
+    let netProfitAdjusted = false;
+    const adjusted = rawEquity.map((group) => {
+      const groupName = String(group.group_name || "").toLowerCase();
+      const isNetProfitGroup = groupName === "net profit" || groupName === "net loss";
+
+      if (!isNetProfitGroup || Math.abs(toNum(group.opening)) >= 0.01) {
+        return group;
+      }
+
+      netProfitAdjusted = true;
+      const nextOpening = toNum(group.opening) + openingDifference;
+      const nextClosing = toNum(group.closing || group.total) + openingDifference;
+
+      return {
+        ...group,
+        opening: nextOpening,
+        closing: nextClosing,
+        total: nextClosing,
+        items: (group.items || []).map((item, index) => {
+          if (index > 0) return item;
+
+          return {
+            ...item,
+            opening: toNum(item.opening) + openingDifference,
+            closing: toNum(item.closing || item.balance) + openingDifference,
+            balance: toNum(item.balance || item.closing) + openingDifference,
+          };
+        }),
+      };
+    });
+
+    if (netProfitAdjusted) {
+      return adjusted;
+    }
+
+    return [
+      ...adjusted,
+      {
+        group_name: openingDifference >= 0 ? "Net Profit" : "Net Loss",
+        opening: openingDifference,
+        movement: 0,
+        closing: openingDifference,
+        total: openingDifference,
+        items: [
+          {
+            coa4_id: null,
+            name: openingDifference >= 0 ? "Net Profit" : "Net Loss",
+            opening: openingDifference,
+            movement: 0,
+            closing: openingDifference,
+            balance: openingDifference,
+          },
+        ],
+      },
+    ];
+  }, [apiData?.totals?.difference_columns?.opening, rawEquity]);
 
   const totals = useMemo(() => {
-    return {
-      assets: toNum(apiData?.totals?.assets),
-      liabilities: toNum(apiData?.totals?.liabilities),
-      equity: toNum(apiData?.totals?.equity),
-      liabilitiesAndEquity: toNum(apiData?.totals?.liabilities_and_equity),
-      difference: toNum(apiData?.totals?.difference),
-      assetsColumns: {
-        opening: toNum(apiData?.totals?.assets_columns?.opening),
-        movement: toNum(apiData?.totals?.assets_columns?.movement),
-        closing: toNum(apiData?.totals?.assets_columns?.closing),
-      },
-      liabilitiesColumns: {
-        opening: toNum(apiData?.totals?.liabilities_columns?.opening),
-        movement: toNum(apiData?.totals?.liabilities_columns?.movement),
-        closing: toNum(apiData?.totals?.liabilities_columns?.closing),
-      },
-      equityColumns: {
-        opening: toNum(apiData?.totals?.equity_columns?.opening),
-        movement: toNum(apiData?.totals?.equity_columns?.movement),
-        closing: toNum(apiData?.totals?.equity_columns?.closing),
-      },
-      differenceColumns: {
-        opening: toNum(apiData?.totals?.difference_columns?.opening),
-        movement: toNum(apiData?.totals?.difference_columns?.movement),
-        closing: toNum(apiData?.totals?.difference_columns?.closing),
-      },
+    const assetsColumns = sumReportColumns(assets);
+    const liabilitiesColumns = sumReportColumns(liabilities);
+    const equityColumns = sumReportColumns(equity);
+    const liabilitiesAndEquityColumns = {
+      opening: liabilitiesColumns.opening + equityColumns.opening,
+      movement: liabilitiesColumns.movement + equityColumns.movement,
+      closing: liabilitiesColumns.closing + equityColumns.closing,
     };
-  }, [apiData]);
+    const differenceColumns = {
+      opening: assetsColumns.opening - liabilitiesAndEquityColumns.opening,
+      movement: assetsColumns.movement - liabilitiesAndEquityColumns.movement,
+      closing: assetsColumns.closing - liabilitiesAndEquityColumns.closing,
+    };
+
+    return {
+      assets: assetsColumns.closing,
+      liabilities: liabilitiesColumns.closing,
+      equity: equityColumns.closing,
+      liabilitiesAndEquity: liabilitiesAndEquityColumns.closing,
+      difference: differenceColumns.closing,
+      assetsColumns,
+      liabilitiesColumns,
+      equityColumns,
+      differenceColumns,
+    };
+  }, [assets, equity, liabilities]);
 
   const hasReportData =
     assets.length > 0 || liabilities.length > 0 || equity.length > 0;
+  const hasBalanceSheetResponse = Boolean(apiData);
+
+  const netProfitDebug = useMemo(() => {
+    const filters = apiData?.debug?.filters || {};
+    const profitLoss = apiData?.debug?.profit_loss || {};
+    const openingProfitLoss = apiData?.debug?.opening_profit_loss || {};
+    const netProfit = apiData?.debug?.net_profit || {};
+    const stock = apiData?.debug?.stock || {};
+
+    return {
+      filters: {
+        branchId: toNum(filters.branch_id || apiData?.branch_id || branchId),
+        startDate:
+          filters.start_date ||
+          apiData?.report_date?.start_date ||
+          (startDate ? dayjs(startDate).format("YYYY-MM-DD") : ""),
+        endDate:
+          filters.end_date ||
+          apiData?.report_date?.end_date ||
+          (endDate ? dayjs(endDate).format("YYYY-MM-DD") : ""),
+      },
+      hasApiDebug: Boolean(apiData?.debug),
+      netProfit: {
+        opening: toNum(netProfit.opening),
+        movement: toNum(netProfit.movement),
+        closing: toNum(netProfit.closing),
+      },
+      openingProfitLoss: {
+        periodStart: openingProfitLoss.period_start || "",
+        periodEnd: openingProfitLoss.period_end || "",
+        netProfitLoss: toNum(openingProfitLoss.net_profit_loss),
+      },
+      stock: {
+        opening: toNum(stock.opening),
+        movement: toNum(stock.movement),
+        closing: toNum(stock.closing),
+      },
+      profitLoss: {
+        openingStock: toNum(profitLoss.opening_stock),
+        closingStock: toNum(profitLoss.closing_stock),
+        netPurchase: toNum(profitLoss.net_purchase),
+        netSales: toNum(profitLoss.net_sales),
+        grossProfitLoss: toNum(profitLoss.gross_profit_loss),
+        otherIncome: toNum(profitLoss.other_income),
+        expense: toNum(profitLoss.expense),
+        netProfitLoss: toNum(profitLoss.net_profit_loss),
+        formula: profitLoss.formula || "",
+      },
+    };
+  }, [apiData, branchId, endDate, startDate]);
 
   const showDifferenceDebug = useMemo(() => {
     return (
@@ -176,6 +294,13 @@ const BalanceSheet = (user: any) => {
     );
     return selected?.name || "Selected Branch";
   }, [dropdownData, branchId]);
+
+  const appliedBranchName = useMemo(() => {
+    const selected = dropdownData.find(
+      (branch: any) => Number(branch.id) === Number(netProfitDebug.filters.branchId),
+    );
+    return selected?.name || branchName;
+  }, [branchName, dropdownData, netProfitDebug.filters.branchId]);
 
   const reportDates = useMemo(() => {
     return {
@@ -392,6 +517,13 @@ const BalanceSheet = (user: any) => {
           </div>
         )}
 
+        {!balanceSheetState?.loading && hasBalanceSheetResponse && !hasReportData && (
+          <NetProfitDebugPanel
+            branchName={appliedBranchName}
+            values={netProfitDebug}
+          />
+        )}
+
         {!balanceSheetState?.loading && hasReportData && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -407,6 +539,11 @@ const BalanceSheet = (user: any) => {
                 tone={Math.abs(totals.difference) > 0.009 ? "amber" : "slate"}
               />
             </div>
+
+            <NetProfitDebugPanel
+              branchName={appliedBranchName}
+              values={netProfitDebug}
+            />
 
             {showDifferenceDebug && (
               <div className="rounded-sm border border-amber-200 bg-amber-50 shadow-default dark:border-amber-500/20 dark:bg-amber-500/10">
@@ -566,6 +703,125 @@ const DebugCard = ({
     </div>
   );
 };
+
+const NetProfitDebugPanel = ({
+  branchName,
+  values,
+}: {
+  branchName: string;
+  values: {
+    filters: {
+      branchId: number;
+      startDate: string;
+      endDate: string;
+    };
+    hasApiDebug: boolean;
+    netProfit: {
+      opening: number;
+      movement: number;
+      closing: number;
+    };
+    openingProfitLoss: {
+      periodStart: string;
+      periodEnd: string;
+      netProfitLoss: number;
+    };
+    stock: {
+      opening: number;
+      movement: number;
+      closing: number;
+    };
+    profitLoss: {
+      openingStock: number;
+      closingStock: number;
+      netPurchase: number;
+      netSales: number;
+      grossProfitLoss: number;
+      otherIncome: number;
+      expense: number;
+      netProfitLoss: number;
+      formula: string;
+    };
+  };
+}) => {
+  const rows = [
+    ["Opening Stock", values.profitLoss.openingStock],
+    ["Closing Stock", values.profitLoss.closingStock],
+    ["Net Purchase", values.profitLoss.netPurchase],
+    ["Net Sales", values.profitLoss.netSales],
+    ["Gross Profit/Loss", values.profitLoss.grossProfitLoss],
+    ["Other Income", values.profitLoss.otherIncome],
+    ["Expense", values.profitLoss.expense],
+    ["Net Profit/Loss", values.profitLoss.netProfitLoss],
+  ];
+
+  return (
+    <div className="rounded-sm border border-sky-200 bg-sky-50 shadow-default dark:border-sky-500/20 dark:bg-sky-500/10">
+      <div className="border-b border-sky-200 px-5 py-4 dark:border-sky-500/20">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-sky-900 dark:text-sky-100">
+              Net Profit Debug
+            </h3>
+            <p className="mt-1 text-sm text-sky-800 dark:text-sky-200">
+              {branchName} | {values.filters.startDate || "-"} to {values.filters.endDate || "-"}
+            </p>
+          </div>
+          <p className="text-sm font-semibold text-sky-900 dark:text-sky-100">
+            {values.hasApiDebug
+              ? `Formula: ${values.profitLoss.formula || "Profit Loss formula"}`
+              : "API debug not found. Re-apply after updating backend ReportsController."}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 px-5 py-5 xl:grid-cols-3">
+        <div className="rounded-sm border border-sky-200 bg-white p-4 dark:border-sky-500/20 dark:bg-boxdark">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Balance Sheet Stock
+          </p>
+          <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+            <DebugLine label="Opening" value={values.stock.opening} />
+            <DebugLine label="Movement" value={values.stock.movement} />
+            <DebugLine label="Closing" value={values.stock.closing} />
+          </div>
+        </div>
+
+        <div className="rounded-sm border border-sky-200 bg-white p-4 dark:border-sky-500/20 dark:bg-boxdark">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Net Profit Posting
+          </p>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+            Opening period: {values.openingProfitLoss.periodStart || "-"} to {values.openingProfitLoss.periodEnd || "-"}
+          </p>
+          <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+            <DebugLine label="Opening" value={values.netProfit.opening} />
+            <DebugLine label="Movement" value={values.netProfit.movement} />
+            <DebugLine label="Closing" value={values.netProfit.closing} />
+          </div>
+        </div>
+
+        <div className="rounded-sm border border-sky-200 bg-white p-4 dark:border-sky-500/20 dark:bg-boxdark xl:col-span-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Profit Loss Components
+          </p>
+          <div className="mt-3 grid grid-cols-1 gap-x-8 gap-y-2 text-sm text-slate-700 sm:grid-cols-2 dark:text-slate-200">
+            {rows.map(([label, value]) => (
+              <DebugLine key={label} label={String(label)} value={Number(value)} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DebugLine = ({ label, value }: { label: string; value: number }) => (
+  <div className="flex items-center justify-between gap-3">
+    <span>{label}</span>
+    <span className="font-semibold">{formatAmount(value)}</span>
+  </div>
+);
 
 const SummaryCard = ({
   title,
