@@ -105,7 +105,7 @@ const ProfitLoss = (user: any) => {
 
   const printRef = useRef<HTMLDivElement>(null);
 
-  // âœ… à¦…à¦¤à¦¿à¦°à¦¿à¦•à§à¦¤: ItemDetailsPrint à¦à¦° à¦œà¦¨à§à¦¯ à¦†à¦²à¦¾à¦¦à¦¾ ref + loading + data
+  // Separate print ref and loading state for closing stock item details.
   const itemPrintRef = useRef<HTMLDivElement>(null);
   const [itemPrintLoading, setItemPrintLoading] = useState(false);
   const closingStockData = profitLossState?.closingStockData;
@@ -156,8 +156,8 @@ const ProfitLoss = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
-    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
@@ -181,7 +181,7 @@ const ProfitLoss = (user: any) => {
     setFilterOpen(false);
   };
 
-  // nested data normalize (à¦†à¦ªà¦¨à¦¾à¦° sample à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€)
+  // Normalize nested API response shapes.
   const apiData = useMemo(() => {
     const raw = profitLossState?.data;
 
@@ -215,13 +215,13 @@ const ProfitLoss = (user: any) => {
     // Purchase: coal3_id=9 coal4_id=35 => debit
     const purchaseDebit = sumByIds(trading, 9, 35).debit;
 
-    // âœ… Purchase Return: coal3_id=9 coal4_id=16 => credit (à¦à¦Ÿà¦¾à¦‡ à¦¬à¦¾à¦¦ à¦¯à¦¾à¦¬à§‡)
+    // Purchase Return: coal3_id=9 coal4_id=16 => credit
     const purchaseReturnCredit = sumByIds(trading, 9, 16).credit;
 
     // Purchase Discount: coal3_id=8 coal4_id=40 => credit
     const purchaseDiscountCredit = sumByIds(trading, 8, 40).credit;
 
-    // âœ… Net Purchase = Purchase - Purchase Return - Purchase Discount
+    // Net Purchase = Purchase - Purchase Return - Purchase Discount
     const netPurchase = Math.max(
       0,
       purchaseDebit - purchaseReturnCredit - purchaseDiscountCredit
@@ -233,10 +233,10 @@ const ProfitLoss = (user: any) => {
     // Sales Discount: coal3_id=7 coal4_id=23 => debit
     const salesDiscountDebit = sumByIds(trading, 7, 23).debit;
 
-    // âœ… Sales Return: coal3_id=7 coal4_id=19 => debit (à¦à¦Ÿà¦¾à¦‡ à¦¬à¦¾à¦¦ à¦¯à¦¾à¦¬à§‡)
+    // Sales Return: coal3_id=7 coal4_id=19 => debit
     const salesReturnDebit = sumByIds(trading, 7, 19).debit;
 
-    // âœ… Net Sales = Sales - Sales Discount - Sales Return
+    // Net Sales = Sales - Sales Discount - Sales Return
     const netSalesCredit = Math.max(
       0,
       salesCredit - salesDiscountDebit - salesReturnDebit
@@ -310,17 +310,17 @@ const ProfitLoss = (user: any) => {
     removeAfterPrint: true,
   });
 
-  // âœ… à¦…à¦¤à¦¿à¦°à¦¿à¦•à§à¦¤: ItemDetailsPrint à¦à¦° à¦œà¦¨à§à¦¯ print handler
+  // Print handler for closing stock item details.
   const handleItemPrint = useReactToPrint({
     content: () => itemPrintRef.current,
     documentTitle: "Stock Details with rate",
     removeAfterPrint: true,
   });
 
-  // âœ… à¦…à¦¤à¦¿à¦°à¦¿à¦•à§à¦¤: à¦¨à¦¤à§à¦¨ à¦¬à¦¾à¦Ÿà¦¨ à¦•à§à¦²à¦¿à¦• -> fetchClosingStockItems -> à¦¤à¦¾à¦°à¦ªà¦° print
+  // Load closing stock item details before printing.
   const handleItemPrintButtonClick = async () => {
-    if (!branchId) return alert("Branch select à¦•à¦°à§à¦¨");
-    if (!startDate || !endDate) return alert("Start/End Date à¦¦à¦¿à¦¨");
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
 
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
@@ -343,7 +343,7 @@ const ProfitLoss = (user: any) => {
       return alert(action?.payload || "Closing stock load failed");
     }
 
-    // store update/render complete à¦¹à¦“à§Ÿà¦¾à¦° à¦œà¦¨à§à¦¯
+    // Wait for the store update/render before printing.
     setTimeout(() => handleItemPrint(), 0);
   };
 
@@ -645,7 +645,7 @@ const ProfitLoss = (user: any) => {
         <div className="rounded border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
           {profitLossState?.loading
             ? "Profit/Loss report loading..."
-            : "Press Run to view the report. Once the data is loaded, the Profit/Loss Report will be displayed here."}
+            : "Click Apply to view the report. Once the data is loaded, the Profit/Loss Report will be displayed here."}
         </div>
       )}
 

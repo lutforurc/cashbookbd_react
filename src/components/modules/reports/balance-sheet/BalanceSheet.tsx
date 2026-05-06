@@ -324,8 +324,8 @@ const BalanceSheet = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select ÃƒÂ Ã‚Â¦Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¦Ã‚Â°ÃƒÂ Ã‚Â§Ã‚ÂÃƒÂ Ã‚Â¦Ã‚Â¨");
-    if (!startDate || !endDate) return alert("Start/End Date ÃƒÂ Ã‚Â¦Ã‚Â¦ÃƒÂ Ã‚Â¦Ã‚Â¿ÃƒÂ Ã‚Â¦Ã‚Â¨");
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
 
     setButtonLoading(true);
 

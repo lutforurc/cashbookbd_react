@@ -12,6 +12,7 @@ function formatDate(dateString: string) {
 }
 
 export { formatDate }
+export default formatDate;
 
 
 function formatBdShortDate(dateString?: string): string {

@@ -247,8 +247,8 @@ const TrialBalanceLevel4 = (user: any) => {
   };
 
   const handleActionButtonClick = async () => {
-    if (!branchId) return alert("Branch select Ã Â¦â€¢Ã Â¦Â°Ã Â§ÂÃ Â¦Â¨");
-    if (!startDate || !endDate) return alert("Start/End Date Ã Â¦Â¦Ã Â¦Â¿Ã Â¦Â¨");
+    if (!branchId) return alert("Branch select করুন");
+    if (!startDate || !endDate) return alert("Start/End Date দিন");
 
     setButtonLoading(true);
 
@@ -594,7 +594,7 @@ const TrialBalanceLevel4 = (user: any) => {
                       Trial Balance Rows
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {branchName}‚ {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
+                      {branchName}, {startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"} to{" "}
                       {endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
                     </p>
                   </div>
