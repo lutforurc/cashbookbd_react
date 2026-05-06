@@ -5,6 +5,8 @@ import { API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL } from '../../../services/ap
 type Params = {
   branchId: number;
   partyId: number;
+  productId?: number | null;
+  itemId?: number | null;
   startDate: string;
   endDate: string;
 };
@@ -23,10 +25,11 @@ const initialState: StatementState = {
 
 export const fetchCustomerSupplierStatement = createAsyncThunk(
   'reports/ledgerWithProduct',
-  async ({ branchId, partyId, startDate, endDate }: Params, { rejectWithValue }) => {
+  async ({ branchId, partyId, productId, itemId, startDate, endDate }: Params, { rejectWithValue }) => {
     try {
+      const selectedItemId = itemId ?? productId ?? '';
       const response = await httpService.get(
-        `${API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL}?branch_id=${branchId}&party_id=${partyId}&start_date=${startDate}&end_date=${endDate}`,
+        `${API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL}?branch_id=${branchId}&party_id=${partyId}&item_id=${selectedItemId}&start_date=${startDate}&end_date=${endDate}`,
       );
 
       const payload = response?.data;

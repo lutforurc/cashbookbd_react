@@ -9,6 +9,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
+import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import Table from '../../../utils/others/Table';
@@ -136,6 +137,8 @@ const LedgerWithProduct = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [partyId, setPartyId] = useState<number | null>(null);
   const [partyLabel, setPartyLabel] = useState<string>('');
+  const [productId, setProductId] = useState<number | null>(null);
+  const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [rowsPerPage, setRowsPerPage] = useState<number>(11);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -281,6 +284,8 @@ const LedgerWithProduct = (user: any) => {
       fetchCustomerSupplierStatement({
         branchId: Number(branchId),
         partyId: Number(partyId),
+        productId,
+        itemId: productId,
         startDate: dayjs(startDate).format('YYYY-MM-DD'),
         endDate: dayjs(endDate).format('YYYY-MM-DD'),
       }) as any,
@@ -295,7 +300,23 @@ const LedgerWithProduct = (user: any) => {
   };
 
   const handleResetFilters = () => {
+    setProductId(null);
+    setSelectedProductOption(null);
     setFilterOpen(false);
+  };
+
+  const selectedProduct = (option: any) => {
+    if (!option) {
+      setProductId(null);
+      setSelectedProductOption(null);
+      return;
+    }
+
+    setProductId(Number(option.value));
+    setSelectedProductOption({
+      value: option.value,
+      label: option.label,
+    });
   };
 
   const handlePrint = useReactToPrint({
@@ -541,7 +562,7 @@ const LedgerWithProduct = (user: any) => {
                     className={
                       useFilterMenuEnabled
                         ? 'space-y-3'
-                        : 'grid grid-cols-4 items-end gap-3'
+                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-5'
                     }
                   >
                     <div>
@@ -563,6 +584,21 @@ const LedgerWithProduct = (user: any) => {
                           setPartyLabel(option?.label || '');
                         }}
                         className="h-10"
+                      />
+                    </div>
+
+                    <div className="relative">
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
+                      <div
+                        onClick={() => selectedProduct(null)}
+                        className="absolute right-2 top-9 z-10 cursor-pointer"
+                        title="Clear selected product"
+                      >
+                      </div>
+                      <ProductDropdown
+                        onSelect={selectedProduct}
+                        value={selectedProductOption}
+                        className="appearance-none h-10"
                       />
                     </div>
 
@@ -626,6 +662,11 @@ const LedgerWithProduct = (user: any) => {
                 {partyLabel ? (
                   <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
                     <span className="truncate" title={partyLabel}>{partyLabel}</span>
+                  </div>
+                ) : null}
+                {selectedProductOption?.label ? (
+                  <div className="flex h-10 min-w-[180px] max-w-[280px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                    <span className="truncate" title={selectedProductOption.label}>{selectedProductOption.label}</span>
                   </div>
                 ) : null}
                 <InputElement
