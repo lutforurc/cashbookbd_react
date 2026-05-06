@@ -435,7 +435,7 @@ const LedgerWithProduct = (user: any) => {
     },
     {
       key: 'received',
-      header: 'Received',
+      header: 'Debit',
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
@@ -446,7 +446,7 @@ const LedgerWithProduct = (user: any) => {
     },
     {
       key: 'payment',
-      header: 'Payment',
+      header: 'Credit',
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
