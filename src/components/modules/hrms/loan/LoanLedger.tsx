@@ -16,6 +16,7 @@ import { employeeLoanLedger } from './employeeLoanSlice';
 import LoanLedgerPrint from './LoanLedgerPrint';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { FiSearch } from 'react-icons/fi';
+import ImagePopup from '../../../utils/others/ImagePopup';
 
 const LoanLedger = (user: any) => {
   const dispatch = useDispatch();
@@ -153,6 +154,27 @@ const LoanLedger = (user: any) => {
         <div className="">{row.payment_amt ?  thousandSeparator( row.payment_amt) : ''}</div>
       ),
     }, 
+    {
+      key: 'voucher_image',
+      header: 'Voucher',
+      headerClass: 'text-center ',
+      cellClass: 'text-center ',
+      render: (row: any) => {
+        const rowBranchPad = row.branch_pad || (row.branch_id ? row.branch_id.toString().padStart(4, '0') : '');
+
+        return rowBranchPad && row.voucher_image ? (
+          <div className="flex justify-center">
+            <ImagePopup
+              branchPad={rowBranchPad}
+              voucher_image={row.voucher_image}
+              title="Voucher Image"
+            />
+          </div>
+        ) : (
+          <span />
+        );
+      },
+    },
   ];
 
 
