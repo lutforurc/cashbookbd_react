@@ -387,7 +387,7 @@ const OrderWithProduct = ({
         const notes = trx?.note || salesMaster?.notes || purchaseMaster?.notes || payload?.notes || '-';
         const detailLines = [
           hasSales || hasPurchase ? payload?.product?.name || '-' : primaryLedgerName,
-          notes && notes !== '-' ? `Notes: ${notes}` : '',
+          notes && notes !== '-' ? `${notes}` : '',
         ].filter(Boolean);
 
         return {

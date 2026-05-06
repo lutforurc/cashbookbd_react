@@ -92,6 +92,7 @@ const getCashVoucherData = (data: any, mode: CashVoucherMode) => {
     address: entry?.coa_l4?.cust_party_infos?.address ?? '',
     mobile: entry?.coa_l4?.cust_party_infos?.mobile ?? '',
     preparedBy: data?.user?.name ?? '',
+    approvedBy: data?.approved_user?.name ?? data?.approved_by ?? '',
   };
 };
 
@@ -236,8 +237,9 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
               {printData.preparedBy && <div className={variant.startsWith('half') ? '' : 'mt-1'}>{printData.preparedBy}</div>}
               {data?.created_at && <div>{chartDateTime(data.created_at)}</div>}
             </div>
-            <div className={variant.startsWith('half') ? '' : 'text-right'}>
-              <div className={`border-t border-black pt-1 text-center ${variant.startsWith('half') ? '' : 'w-40 ml-auto'}`}>Approved By</div>
+            <div className="text-center">
+              <div className={`border-t border-black pt-1 ${variant.startsWith('half') ? '' : 'w-40 mx-auto'}`}>Approved By</div>
+              {printData.approvedBy && <div className={variant.startsWith('half') ? '' : 'mt-1'}>{printData.approvedBy}</div>}
             </div>
           </div>
 
