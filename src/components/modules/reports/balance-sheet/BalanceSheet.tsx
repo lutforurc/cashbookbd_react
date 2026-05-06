@@ -20,6 +20,8 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchBalanceSheet } from "./balanceSheetSlice";
 import BalanceSheetPrint from "./BalanceSheetPrint";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
+import { formatDate } from "../../../utils/utils-functions/formatDate";
+
 
 type ReportItem = {
   coa4_id?: number | null;
@@ -764,7 +766,7 @@ const NetProfitDebugPanel = ({
               Net Profit Debug
             </h3>
             <p className="mt-1 text-sm text-sky-800 dark:text-sky-200">
-              {branchName} | {values.filters.startDate || "-"} to {values.filters.endDate || "-"}
+              {branchName} | { formatDate(values.filters.startDate) || "-"} to {formatDate(values.filters.endDate) || "-"}
             </p>
           </div>
           <p className="text-sm font-semibold text-sky-900 dark:text-sky-100">
