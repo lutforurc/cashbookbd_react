@@ -606,10 +606,10 @@ const PurchaseLedger = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-3 min-[1750px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-12'
                   }
                 >
-                  <div>
+                  <div className={useFilterMenuEnabled ? '' : 'order-1 min-w-0 xl:col-span-4'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
                     {branchDdlData.isLoading == true ? <Loader /> : ''}
                     <BranchDropdown
@@ -620,7 +620,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div>
+                  <div className={useFilterMenuEnabled ? '' : 'order-2 min-w-0 xl:col-span-4'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Account</label>
                     <DdlMultiline
                       acType={''}
@@ -630,7 +630,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className="relative">
+                  <div className={`relative ${useFilterMenuEnabled ? '' : 'order-3 min-w-0 xl:col-span-4'}`}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
                     <div
                       onClick={() => selectedProduct(null)}
@@ -646,7 +646,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className="block xl:hidden min-[1750px]:block">
+                  <div className={useFilterMenuEnabled ? '' : 'order-5 min-w-0 xl:col-span-2'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
                       setCurrentDate={handleStartDate}
@@ -656,7 +656,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className="block md:hidden xl:hidden min-[1750px]:block">
+                  <div className={useFilterMenuEnabled ? '' : 'order-6 min-w-0 xl:col-span-3'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
                       setCurrentDate={handleEndDate}
@@ -666,7 +666,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div >
+                  <div className={useFilterMenuEnabled ? '' : 'order-4 min-w-0 xl:col-span-3'}>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
                       Search
                     </label>
@@ -678,7 +678,7 @@ const PurchaseLedger = (user: any) => {
                   </div>
 
                   {!useFilterMenuEnabled && (
-                    <div className="hidden items-end gap-3 md:col-span-2 md:flex xl:hidden">
+                    <div className="hidden">
                       <div className="min-w-0 flex-[1.1]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                         <InputDatePicker
@@ -733,9 +733,9 @@ const PurchaseLedger = (user: any) => {
                   )}
 
                   <div
-                    className={`flex gap-2 pt-1 ${useFilterMenuEnabled
-                        ? 'justify-end'
-                        : 'hidden xl:hidden min-[1750px]:col-span-1 min-[1750px]:flex'
+                    className={`${useFilterMenuEnabled
+                        ? 'flex flex-wrap justify-end gap-2'
+                        : 'hidden flex-wrap items-end gap-2 md:order-7 md:col-span-3 md:flex xl:col-span-4 xl:flex-nowrap xl:justify-end'
                       }`}
                   >
                     <ButtonLoading
@@ -752,10 +752,38 @@ const PurchaseLedger = (user: any) => {
                       icon={<FiRotateCcw />}
                       className="h-10 px-4"
                     />
+                    {!useFilterMenuEnabled && (
+                      <>
+                        <InputElement
+                          id="perPageInlineLg"
+                          name="perPageInlineLg"
+                          label=""
+                          value={perPage.toString()}
+                          onChange={handlePerPageChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <InputElement
+                          id="fontSizeInlineLg"
+                          name="fontSizeInlineLg"
+                          label=""
+                          value={fontSize.toString()}
+                          onChange={handleFontSizeChange}
+                          type="text"
+                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                        />
+                        <PrintButton
+                          onClick={handlePrint}
+                          label="Print"
+                          className="h-10 px-6"
+                          disabled={!Array.isArray(tableData) || tableData.length === 0}
+                        />
+                      </>
+                    )}
                   </div>
 
                   {!useFilterMenuEnabled && (
-                    <div className="hidden items-end gap-3 xl:col-span-3 xl:flex min-[1750px]:hidden">
+                    <div className="hidden">
                       <div className="min-w-0 flex-[1.15]">
                         <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                         <InputDatePicker
@@ -830,7 +858,7 @@ const PurchaseLedger = (user: any) => {
             Use the filter
           </div>
 
-          <div className={`ml-auto flex w-full flex-wrap items-end justify-end gap-2 ${useFilterMenuEnabled ? 'md:ml-auto md:w-auto' : 'md:hidden xl:hidden min-[1750px]:flex min-[1750px]:w-auto min-[1750px]:flex-nowrap'}`}>
+          <div className={`ml-auto flex w-full flex-wrap items-end justify-end gap-2 ${useFilterMenuEnabled ? 'md:ml-auto md:w-auto' : 'md:hidden xl:hidden'}`}>
             {useFilterMenuEnabled && selectedLedgerOption?.label ? (
               <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
                 <span className="truncate" title={selectedLedgerOption.label}>{selectedLedgerOption.label}</span>
