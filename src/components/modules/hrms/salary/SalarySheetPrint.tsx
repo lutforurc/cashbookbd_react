@@ -12,9 +12,12 @@ type EmployeeHistory = {
   serial_no?: number;
   name?: string;
   designation_name?: string;
+  month_days?: number | string;
+  working_days?: number | string;
 };
 
 type EmployeeRow = {
+  month_days?: number | string;
   basic_salary?: number;
   others_allowance?: number;
   gross_salary?: number;
@@ -208,7 +211,8 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tr>
                     <th style={{ fontSize: fs }}>SL</th>
                     <th className='text-left' style={{ fontSize: fs }}>Employee Name</th>
-                    <th className='text-left' style={{ fontSize: fs, textAlign: 'center' }}>Days</th>
+                    <th className='text-left' style={{ fontSize: fs, textAlign: 'center' }}>Month Days</th>
+                    <th className='text-left' style={{ fontSize: fs, textAlign: 'center' }}>W. Days</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Salary</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Mobile</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Total</th>
@@ -231,6 +235,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                           <span className='block m-0 leading-tight'>{h.name || '-'}</span>
                           <span className='block m-0 leading-tight'>{h.designation_name || '-'}</span>
                         </td>
+                        <td style={{ fontSize: fs, textAlign: 'center' }}>{row.month_days ?? h.month_days ?? ''}</td>
                         <td style={{ fontSize: fs, textAlign: 'center' }}>{h.working_days || ''}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
                           {thousandSeparator(row.basic_salary ?? 0)}
@@ -268,7 +273,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   {/* ===== Totals ===== */}
                   {!isLastPage && (
                     <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
-                      <td colSpan={3}>Subtotal (Page {pageIndex + 1})</td>
+                      <td colSpan={4}>Subtotal (Page {pageIndex + 1})</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
@@ -284,7 +289,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       {/* ✅ Page Total শুধু multiple pages হলে */}
                       {hasMultiplePages && (
                         <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
-                          <td colSpan={3}>Page Total</td>
+                          <td colSpan={4}>Page Total</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
@@ -295,7 +300,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         </tr>
                       )}
                       <tr style={{ fontSize: fs, fontWeight: 700, background: '#e5e5e5' }}>
-                        <td colSpan={3}>Grand Total</td>
+                        <td colSpan={4}>Grand Total</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandBasic)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandAllowance)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandGross)}</td>
