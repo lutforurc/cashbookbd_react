@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiArrowLeft, FiCheckSquare, FiMenu, FiTrash2 } from "react-icons/fi";
+import { FiArrowLeft, FiCheckSquare, FiMenu, FiPlus, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -726,6 +726,7 @@ const SalarySheetUpdate = (user: any) => {
             buttonLoading={addEmployeeLoading}
             disabled={addEmployeeLoading || !selectedEmployeeId}
             label="Add Employee"
+            icon={<FiPlus className="mr-1 dark:text-white font-bold" />}
             className="whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 px-5 py-1 h-9"
           />
           <ButtonLoading
@@ -738,7 +739,7 @@ const SalarySheetUpdate = (user: any) => {
             }
             label="Back"
             className="whitespace-nowrap bg-slate-500 hover:bg-slate-600 px-6 py-1 h-9"
-            icon={<FiArrowLeft className="" />}
+            icon={<FiArrowLeft className="mr-1" />}
           />
           <ButtonLoading
             onClick={handleUpdate}

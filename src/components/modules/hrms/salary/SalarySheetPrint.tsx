@@ -273,7 +273,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tr>
                     <th style={{ fontSize: fs }}>SL</th>
                     <th className='text-left' style={{ fontSize: fs }}>Employee Name</th>
-                    <th style={{ fontSize: fs, textAlign: 'center', width: 80, maxWidth: 80, lineHeight: 1.1 }}>Month Days</th>
+                    <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>M. Days</th>
                     <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>W. Days</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>M. Basic</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Salary</th>
@@ -300,7 +300,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                           <span className='block m-0 leading-tight'>{h.name || '-'}</span>
                           <span className='block m-0 leading-tight'>{h.designation_name || '-'}</span>
                         </td>
-                        <td style={{ fontSize: fs, textAlign: 'center', width: 80, maxWidth: 80 }}>{monthDays}</td>
+                        <td style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60 }}>{monthDays}</td>
                         <td style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60 }}>{h.working_days || ''}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
                           {thousandSeparator(monthlyBasicSalary)}
