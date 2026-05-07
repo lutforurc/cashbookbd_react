@@ -32,6 +32,7 @@ interface TableProps {
   rowClassName?: string | ((row: any, index: number) => string);
   onRowClick?: (row: any, index: number) => void;
   getRowKey?: (row: any, index: number) => React.Key;
+  getRowProps?: (row: any, index: number) => React.HTMLAttributes<HTMLTableRowElement>;
   noDataMessage?: string;
   headerRows?: TableHeaderCell[][];
   footerRows?: TableFooterCell[][];
@@ -48,6 +49,7 @@ const Table: React.FC<TableProps> = ({
   rowClassName,
   onRowClick,
   getRowKey,
+  getRowProps,
   noDataMessage = "",
   headerRows,
   footerRows,
@@ -100,6 +102,7 @@ const Table: React.FC<TableProps> = ({
             data.map((row, rowIndex) => (
               <tr
                 key={getRowKey ? getRowKey(row, rowIndex) : rowIndex}
+                {...(getRowProps ? getRowProps(row, rowIndex) : {})}
                 onClick={() => onRowClick?.(row, rowIndex)}
                 className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
                   onRowClick ? "cursor-pointer " : ""

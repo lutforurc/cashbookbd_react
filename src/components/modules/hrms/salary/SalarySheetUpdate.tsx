@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiArrowLeft, FiCheckSquare, FiTrash2 } from "react-icons/fi";
+import { FiArrowLeft, FiCheckSquare, FiMenu, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -12,27 +12,51 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import routes from "../../../services/appRoutes";
-import { salarySheetPrint, salarySheetRowDelete, salarySheetUpdate } from "./salarySlice";
+import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
+import { salarySheetPrint, salarySheetRowDelete, salarySheetUpdate, salaryView } from "./salarySlice";
 
 type SalaryHistory = {
+  id?: number | string;
+  employee_id?: number | string;
+  serial_no?: number | string;
   name?: string;
   designation_name?: string;
+  month_days?: number | string;
   working_days?: number | string;
+  basic_salary?: number | string;
+  others_allowance?: number | string;
+  monthly_basic_salary?: number | string;
+  monthly_others_allowance?: number | string;
 };
 
 type UpdateRow = {
   id: number;
+  employee_id?: number;
+  is_new?: boolean;
   serial_no?: number;
   monthly_basic_salary: number;
   monthly_others_allowance: number;
   basic_salary: number;
   others_allowance: number;
   loan_deduction: number;
+  month_days?: number;
   net_salary?: number;
   gross_salary?: number;
   payment_amount?: number;
   history?: string | SalaryHistory;
   working_days: number;
+};
+
+type AvailableEmployee = {
+  id: number;
+  serial_no?: number;
+  employee_serial?: number | string;
+  name: string;
+  designation_name?: string;
+  basic_salary?: number | string;
+  others_allowance?: number | string;
+  loan_balance?: number | string;
+  loan_deduction?: number | string;
 };
 
 const getHistory = (history?: string | SalaryHistory): SalaryHistory => {
@@ -62,6 +86,11 @@ const getMonthDaysFromPaymentMonth = (paymentMonth?: string) => {
   return new Date(year, month, 0).getDate();
 };
 
+const getMonthIdFromPaymentMonth = (paymentMonth?: string) => {
+  if (!paymentMonth || !/^\d{6}$/.test(paymentMonth)) return "";
+  return `${paymentMonth.substring(0, 2)}-${paymentMonth.substring(2)}`;
+};
+
 const inferMonthlyAmount = (
   currentAmount: number,
   workingDays: number,
@@ -72,6 +101,35 @@ const inferMonthlyAmount = (
 
   return roundUpToNearestTen((currentAmount / workingDays) * selectedMonthDays);
 };
+
+const pickNumber = (sources: any[], keys: string[], fallback = 0) => {
+  for (const source of sources) {
+    if (!source) continue;
+
+    for (const key of keys) {
+      const value = source[key];
+      if (value === undefined || value === null || value === "") continue;
+
+      const numericValue = Number(value);
+      if (Number.isFinite(numericValue)) return numericValue;
+    }
+  }
+
+  return fallback;
+};
+
+const withSequence = (items: UpdateRow[]) =>
+  items.map((item, index) => {
+    const history = getHistory(item.history);
+    return {
+      ...item,
+      serial_no: index + 1,
+      history: {
+        ...history,
+        serial_no: index + 1,
+      },
+    };
+  });
 
 const SalarySheetUpdate = ( user : any) => {
   const dispatch = useDispatch<any>();
@@ -87,6 +145,19 @@ const SalarySheetUpdate = ( user : any) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedDeleteRow, setSelectedDeleteRow] = useState<UpdateRow | null>(null);
   const [selectedMonthDays, setSelectedMonthDays] = useState<number>(30);
+  const [availableEmployees, setAvailableEmployees] = useState<AvailableEmployee[]>([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
+  const [addEmployeeLoading, setAddEmployeeLoading] = useState(false);
+  const [draggingRowId, setDraggingRowId] = useState<number | null>(null);
+
+  const getSourceBranchId = () =>
+    Number(
+      sourceRow?.branch_id ||
+      sourceRow?.main_trx?.branch_id ||
+      sourceRow?.main_trx?.branch?.id ||
+      user?.branch_id ||
+      0
+    );
 
   useEffect(() => {
     if (!sourceRow) {
@@ -107,6 +178,33 @@ const SalarySheetUpdate = ( user : any) => {
   }, [sourceRow?.payment_month]);
 
   useEffect(() => {
+    if (!sourceRow?.payment_month) return;
+
+    const branchId = getSourceBranchId();
+    const monthId = getMonthIdFromPaymentMonth(sourceRow.payment_month);
+    if (!branchId || !monthId) return;
+
+    setAddEmployeeLoading(true);
+    dispatch(
+      salaryView({
+        branch_id: branchId,
+        level_ids: [],
+        month_id: monthId,
+      })
+    )
+      .unwrap()
+      .then((response: any) => {
+        setAvailableEmployees(response?.data?.data || []);
+      })
+      .catch(() => {
+        setAvailableEmployees([]);
+      })
+      .finally(() => {
+        setAddEmployeeLoading(false);
+      });
+  }, [dispatch, sourceRow?.payment_month, sourceRow?.branch_id, sourceRow?.main_trx?.branch_id]);
+
+  useEffect(() => {
     const data = salary?.salarySheet?.data;
     if (!Array.isArray(data)) return;
 
@@ -115,15 +213,31 @@ const SalarySheetUpdate = ( user : any) => {
       const workingDays = Number(history.working_days ?? row.working_days ?? 0) || 0;
       const basicSalary = Number(row.basic_salary) || 0;
       const othersAllowance = Number(row.others_allowance) || 0;
+      const monthlyBasicSalary = pickNumber(
+        [history, row.employee, row.employee_info, row],
+        ["monthly_basic_salary", "employee_basic_salary", "original_basic_salary", "basic_salary"],
+        inferMonthlyAmount(basicSalary, workingDays, selectedMonthDays)
+      );
+      const monthlyOthersAllowance = pickNumber(
+        [history, row.employee, row.employee_info, row],
+        ["monthly_others_allowance", "employee_others_allowance", "original_others_allowance", "others_allowance"],
+        inferMonthlyAmount(othersAllowance, workingDays, selectedMonthDays)
+      );
 
       return {
         id: Number(row.id),
+        employee_id: pickNumber(
+          [row, history, row.employee, row.employee_info],
+          ["employee_id", "hrms_employee_id", "employee_master_id", "id"],
+          0
+        ),
         serial_no: Number(row.serial_no ?? index + 1),
-        monthly_basic_salary: inferMonthlyAmount(basicSalary, workingDays, selectedMonthDays),
-        monthly_others_allowance: inferMonthlyAmount(othersAllowance, workingDays, selectedMonthDays),
+        monthly_basic_salary: monthlyBasicSalary,
+        monthly_others_allowance: monthlyOthersAllowance,
         basic_salary: basicSalary,
         others_allowance: othersAllowance,
         loan_deduction: Number(row.loan_deduction) || 0,
+        month_days: Number(row.month_days ?? history.month_days ?? selectedMonthDays) || 0,
         payment_amount: Number(row.payment_amount) || 0,
         gross_salary: Number(row.gross_salary) || 0,
         net_salary: Number(row.net_salary) || 0,
@@ -132,8 +246,104 @@ const SalarySheetUpdate = ( user : any) => {
       };
     });
 
-    setRows(mapped);
+    setRows(withSequence(mapped));
   }, [salary?.salarySheet, selectedMonthDays]);
+
+  const existingEmployeeKeys = useMemo(() => {
+    const ids = new Set<number>();
+    const names = new Set<string>();
+
+    rows.forEach((row) => {
+      const history = getHistory(row.history);
+      const employeeId = Number(row.employee_id || history.employee_id || history.id || 0);
+      if (employeeId) ids.add(employeeId);
+      if (history.name) names.add(history.name.trim().toLowerCase());
+    });
+
+    return { ids, names };
+  }, [rows]);
+
+  const employeeOptions = useMemo(() => {
+    const options = availableEmployees
+      .filter((employee) => {
+        const employeeId = Number(employee.id || 0);
+        const employeeName = employee.name?.trim().toLowerCase();
+
+        if (employeeId && existingEmployeeKeys.ids.has(employeeId)) return false;
+        if (employeeName && existingEmployeeKeys.names.has(employeeName)) return false;
+
+        return true;
+      })
+      .map((employee) => ({
+        id: employee.id,
+        name: `${employee.name}${employee.designation_name ? ` - ${employee.designation_name}` : ""}`,
+      }));
+
+    return [{ id: "", name: "Select Employee" }, ...options];
+  }, [availableEmployees, existingEmployeeKeys]);
+
+  const handleAddEmployee = () => {
+    const employee = availableEmployees.find((item) => String(item.id) === String(selectedEmployeeId));
+    if (!employee) {
+      toast.info("Please select employee");
+      return;
+    }
+
+    const basicSalary = Number(employee.basic_salary) || 0;
+    const othersAllowance = Number(employee.others_allowance) || 0;
+    const loanDeduction = Number(employee.loan_balance ?? employee.loan_deduction) || 0;
+
+    setRows((prev) =>
+      withSequence([
+        ...prev,
+        {
+        id: -Date.now(),
+        employee_id: Number(employee.id),
+        is_new: true,
+        serial_no: Number(employee.serial_no ?? employee.employee_serial ?? prev.length + 1) || prev.length + 1,
+        monthly_basic_salary: basicSalary,
+        monthly_others_allowance: othersAllowance,
+        basic_salary: basicSalary,
+        others_allowance: othersAllowance,
+        loan_deduction: loanDeduction,
+        month_days: selectedMonthDays,
+        payment_amount: 0,
+        gross_salary: basicSalary + othersAllowance,
+        net_salary: Math.max(0, basicSalary + othersAllowance - loanDeduction),
+        history: {
+          id: employee.id,
+          employee_id: employee.id,
+          name: employee.name,
+          designation_name: employee.designation_name,
+          month_days: selectedMonthDays,
+          working_days: selectedMonthDays,
+          basic_salary: basicSalary,
+          others_allowance: othersAllowance,
+        },
+        working_days: selectedMonthDays,
+      },
+      ])
+    );
+
+    setSelectedEmployeeId("");
+  };
+
+  const moveRow = (draggedId: number, targetId: number) => {
+    if (draggedId === targetId) return;
+
+    setRows((prev) => {
+      const fromIndex = prev.findIndex((row) => row.id === draggedId);
+      const toIndex = prev.findIndex((row) => row.id === targetId);
+
+      if (fromIndex < 0 || toIndex < 0) return prev;
+
+      const nextRows = [...prev];
+      const [movedRow] = nextRows.splice(fromIndex, 1);
+      nextRows.splice(toIndex, 0, movedRow);
+
+      return withSequence(nextRows);
+    });
+  };
 
   const handleInputChange = (id: number, field: keyof UpdateRow, value: string) => {
     const numericValue = Number(value) || 0;
@@ -153,6 +363,7 @@ const SalarySheetUpdate = ( user : any) => {
   const proratedAmount = (amount: number, days: number) => {
     const monthDays = selectedMonthDays > 0 ? selectedMonthDays : 30;
     if (days <= 0 || monthDays <= 0) return 0;
+    if (days >= monthDays) return amount;
     return roundUpToNearestTen((amount / monthDays) * days);
   };
 
@@ -191,7 +402,20 @@ const SalarySheetUpdate = ( user : any) => {
       const payload = {
         row: sourceRow,
         employees: rows.map((row) => ({
-          id: row.id,
+          id: row.is_new ? row.employee_id : row.id,
+          salary_payment_id: row.is_new ? null : row.id,
+          employee_id: row.employee_id || getHistory(row.history).employee_id || getHistory(row.history).id || row.id,
+          is_new: row.is_new === true,
+          serial_no: Number(row.serial_no || 0),
+          sequence: Number(row.serial_no || 0),
+          sort_order: Number(row.serial_no || 0),
+          history: {
+            ...getHistory(row.history),
+            serial_no: Number(row.serial_no || 0),
+            month_days: Number(row.month_days || selectedMonthDays) || 0,
+            working_days: Number(row.working_days || 0),
+          },
+          month_days: Number(row.month_days || selectedMonthDays) || 0,
           working_days: Number(row.working_days || 0),
           basic_salary: proratedBasicSalary(row),
           others_allowance: proratedOtherAllowance(row),
@@ -214,6 +438,11 @@ const SalarySheetUpdate = ( user : any) => {
   };
 
   const handleDeleteClick = (row: UpdateRow) => {
+    if (row.is_new) {
+      setRows((prev) => withSequence(prev.filter((item) => item.id !== row.id)));
+      return;
+    }
+
     if (Number(row.payment_amount || 0) > 0) {
       toast.info("Paid salary row cannot be deleted");
       return;
@@ -238,7 +467,7 @@ const SalarySheetUpdate = ( user : any) => {
 
       toast.success(response?.message || "Salary row deleted successfully");
 
-      const nextRows = rows.filter((item) => item.id !== selectedDeleteRow.id);
+      const nextRows = withSequence(rows.filter((item) => item.id !== selectedDeleteRow.id));
       setRows(nextRows);
       setShowConfirm(false);
       setSelectedDeleteRow(null);
@@ -263,6 +492,12 @@ const SalarySheetUpdate = ( user : any) => {
       header: "Sl",
       headerClass: "text-center",
       cellClass: "text-center",
+      render: (row: UpdateRow) => (
+        <div className="flex items-center justify-center gap-2">
+          <FiMenu className="h-4 w-4 cursor-grab text-slate-400 active:cursor-grabbing" />
+          <span>{row.serial_no}</span>
+        </div>
+      ),
     },
     {
       key: "employee",
@@ -418,7 +653,24 @@ const SalarySheetUpdate = ( user : any) => {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
+          <div className="min-w-64">
+            <DropdownCommon
+              id="add_employee_id"
+              name="add_employee_id"
+              value={selectedEmployeeId}
+              data={employeeOptions}
+              onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <ButtonLoading
+            onClick={handleAddEmployee}
+            buttonLoading={addEmployeeLoading}
+            disabled={addEmployeeLoading || !selectedEmployeeId}
+            label="Add Employee"
+            className="whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 px-5 py-1 h-9"
+          />
           <ButtonLoading
             onClick={() =>
               navigate(routes.hrms_salary_sheet_list, {
@@ -467,7 +719,34 @@ const SalarySheetUpdate = ( user : any) => {
 
       <div className="relative overflow-x-auto">
         {salary.loading ? <Loader /> : null}
-        <Table columns={columns} data={rows} className="" />
+        <Table
+          columns={columns}
+          data={rows}
+          className=""
+          getRowKey={(row) => row.id}
+          rowClassName={(row) =>
+            draggingRowId === row.id ? " bg-indigo-50 opacity-70 dark:bg-slate-700" : ""
+          }
+          getRowProps={(row) => ({
+            draggable: true,
+            onDragStart: (event) => {
+              setDraggingRowId(row.id);
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/plain", String(row.id));
+            },
+            onDragOver: (event) => {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+            },
+            onDrop: (event) => {
+              event.preventDefault();
+              const draggedId = Number(event.dataTransfer.getData("text/plain"));
+              moveRow(draggedId, row.id);
+              setDraggingRowId(null);
+            },
+            onDragEnd: () => setDraggingRowId(null),
+          })}
+        />
       </div>
 
       <ConfirmModal

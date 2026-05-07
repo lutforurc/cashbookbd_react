@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiSave, FiPrinter, FiTrash2, FiSearch, FiSquare, FiCheck, FiCheckSquare } from "react-icons/fi";
+import { FiSave, FiPrinter, FiTrash2, FiSearch, FiSquare, FiCheck, FiCheckSquare, FiMenu } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -34,6 +34,7 @@ interface SalaryRow {
   loan_deduction: number;
 
   net_deduction: number;
+  month_days: number;
   working_days: number;
 }
 
@@ -62,6 +63,7 @@ const SalarySheetGenerate = ({ user }: any) => {
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [designationLevels, setDesignationLevels] = useState<any[]>([]);
+  const [draggingRowId, setDraggingRowId] = useState<number | null>(null);
   const roundUpToNearestTen = (value: number) => Math.ceil(value / 10) * 10;
   const updateContext = location.state as
     | {
@@ -99,6 +101,12 @@ const SalarySheetGenerate = ({ user }: any) => {
     value: d.id,
     label: d.name,
   }));
+
+  const withSequence = (items: SalaryRow[]) =>
+    items.map((item, index) => ({
+      ...item,
+      serial_no: index + 1,
+    }));
 
   /* ================= FETCH DATA ================= */
   const handleSearchButton = async () => {
@@ -139,10 +147,11 @@ const SalarySheetGenerate = ({ user }: any) => {
         loan_deduction: Number(emp.loan_deduction) || 0,
 
         net_deduction: Number(emp.others_deduction) || 0,
+        month_days: selectedMonthDays,
         working_days: selectedMonthDays,
       }));
 
-      setEmployees(mapped);
+      setEmployees(withSequence(mapped));
 
       if (mapped.length > 0) {
         toast.success(response.message || "Salary data fetched successfully");
@@ -227,12 +236,19 @@ const SalarySheetGenerate = ({ user }: any) => {
     {
       key: "serial_no",
       header: "Sl",
-      headerClass: "text-center",
+      headerClass: "text-center w-20",
       cellClass: "text-center font-semibold",
+      render: (row: SalaryRow) => (
+        <div className="flex items-center justify-center gap-2 w-20">
+          <FiMenu className="h-4 w-4 cursor-grab text-slate-400 active:cursor-grabbing" />
+          <span>{row.serial_no}</span>
+        </div>
+      ),
     },
     {
       key: "name",
       header: "Name of Employee",
+      headerClass: "",
       render: (row: SalaryRow) => (
         <>
           <div className="font-semibold">{row.name}</div>
@@ -243,15 +259,29 @@ const SalarySheetGenerate = ({ user }: any) => {
       ),
     },
     {
+      key: "month_days",
+      header: "Month Days",
+      headerClass: "text-right w-35",
+      cellClass: "text-right",
+      render: (row: SalaryRow) => (
+        <InputElement
+          type="text"
+          value={String(Number(row.month_days) || selectedMonthDays)}
+          className="text-right w-24 !md:w-20"
+          disabled={true} 
+        />
+      ),
+    },
+    {
       key: "days",
       header: "Working Day",
-      headerClass: "text-right w-24",
+      headerClass: "text-right w-35",
       cellClass: "text-right",
       render: (row: SalaryRow) => (
         <InputElement
           type="text"
           value={String(Math.max(0, Number(row.working_days) || 0))}
-          className="text-right w-24 !md:w-20"
+          className="text-right w-40"
           inputMode="numeric"
           pattern="[0-9]*"
           onChange={(e) => {
@@ -275,7 +305,7 @@ const SalarySheetGenerate = ({ user }: any) => {
     {
       key: "basic_salary",
       header: "Basic",
-      headerClass: "text-right w-24",
+      headerClass: "text-right w-30",
       cellClass: "text-right",
       render: (row: SalaryRow) => (
         <InputElement
@@ -291,7 +321,7 @@ const SalarySheetGenerate = ({ user }: any) => {
     {
       key: "others_allowance",
       header: "Mobile Bill",
-      headerClass: "text-right w-24",
+      headerClass: "text-right w-30",
       cellClass: "text-right",
       render: (row: SalaryRow) => (
         <InputElement
@@ -306,8 +336,8 @@ const SalarySheetGenerate = ({ user }: any) => {
     {
       key: "total",
       header: "Total",
-      headerClass: "text-right w-24",
-      cellClass: "text-right font-semibold text-green-700 dark:text-green-400 w-24",
+      headerClass: "text-right w-30",
+      cellClass: "text-right font-semibold text-green-700 dark:text-green-400 w-30",
       render: (row: SalaryRow) =>
         thousandSeparator(totalSalary(row)),
     },
@@ -316,13 +346,13 @@ const SalarySheetGenerate = ({ user }: any) => {
     {
       key: "loan_balance",
       header: "Loan Ded.",
-      headerClass: "text-right w-24",
+      headerClass: "text-right w-30",
       cellClass: "text-right",
       render: (row: SalaryRow) => (
         <InputElement
           type="number"
           value={row.loan_balance}
-          className="text-right w-24 !md:w-20 font-semibold text-red-600 dark:text-red-400"
+          className="text-right w-30 !md:w-30 font-semibold text-red-600 dark:text-red-400"
           onChange={(e) => handleInputChange(row.id, "loan_balance", e.target.value)}
         />
       ),
@@ -332,11 +362,10 @@ const SalarySheetGenerate = ({ user }: any) => {
     {
       key: "net_salary",
       header: "Net Salary",
-      headerClass: "text-right w-28",
+      headerClass: "text-right w-30",
       cellClass: "text-right font-bold text-green-700 dark:text-green-400",
       render: (row: SalaryRow) => thousandSeparator(netSalary(row)),
     },
-
     {
       key: "actions",
       header: "Action",
@@ -344,7 +373,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       cellClass: "text-center",
       render: (row: SalaryRow) => (
         <button
-          onClick={() => setEmployees((prev) => prev.filter((emp) => emp.id !== row.id))}
+          onClick={() => setEmployees((prev) => withSequence(prev.filter((emp) => emp.id !== row.id)))}
           className="text-red-600 hover:text-red-800"
         >
           <FiTrash2 className="block w-4 h-4" />
@@ -364,6 +393,9 @@ const SalarySheetGenerate = ({ user }: any) => {
       // তাহলে loan_balance কে loan_deduction হিসেবে পাঠিয়ে দিন (safe mapping)
       const payloadEmployees = employees.map((e) => ({
         ...e,
+        serial_no: Number(e.serial_no || 0),
+        sequence: Number(e.serial_no || 0),
+        sort_order: Number(e.serial_no || 0),
         basic_salary: proratedBasicSalary(e),
         others_allowance: proratedOtherAllowance(e),
         loan_balance: Number(e.loan_balance) || 0,
@@ -372,6 +404,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         loan_deduction: Number(e.loan_balance) || 0,
 
         net_deduction: Number(e.net_deduction) || 0,
+        month_days: Number(e.month_days || selectedMonthDays) || 0,
         working_days: Number(e.working_days) || 0,
       }));
 
@@ -433,7 +466,30 @@ const SalarySheetGenerate = ({ user }: any) => {
         : fallbackDays;
 
     setSelectedMonthDays(daysInMonth);
-    setEmployees((prev) => prev.map((emp) => ({ ...emp, working_days: daysInMonth })));
+    setEmployees((prev) =>
+      prev.map((emp) => ({
+        ...emp,
+        month_days: daysInMonth,
+        working_days: daysInMonth,
+      }))
+    );
+  };
+
+  const moveRow = (draggedId: number, targetId: number) => {
+    if (draggedId === targetId) return;
+
+    setEmployees((prev) => {
+      const fromIndex = prev.findIndex((row) => row.id === draggedId);
+      const toIndex = prev.findIndex((row) => row.id === targetId);
+
+      if (fromIndex < 0 || toIndex < 0) return prev;
+
+      const nextRows = [...prev];
+      const [movedRow] = nextRows.splice(fromIndex, 1);
+      nextRows.splice(toIndex, 0, movedRow);
+
+      return withSequence(nextRows);
+    });
   };
 
   /* ================= UI ================= */
@@ -505,7 +561,33 @@ const SalarySheetGenerate = ({ user }: any) => {
       {loading && <Loader />}
 
       {/* ===== TABLE ===== */}
-      <Table columns={columns} data={searched ? employees : []} />
+      <Table
+        columns={columns}
+        data={searched ? employees : []}
+        getRowKey={(row) => row.id}
+        rowClassName={(row) =>
+          draggingRowId === row.id ? " bg-indigo-50 opacity-70 dark:bg-slate-700" : ""
+        }
+        getRowProps={(row) => ({
+          draggable: true,
+          onDragStart: (event) => {
+            setDraggingRowId(row.id);
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", String(row.id));
+          },
+          onDragOver: (event) => {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+          },
+          onDrop: (event) => {
+            event.preventDefault();
+            const draggedId = Number(event.dataTransfer.getData("text/plain"));
+            moveRow(draggedId, row.id);
+            setDraggingRowId(null);
+          },
+          onDragEnd: () => setDraggingRowId(null),
+        })}
+      />
 
       {/* ===== FOOTER ===== */}
       <div className="mt-2 p-3 text-sm text-gray-700 dark:text-gray-300 dark:bg-gray-800 rounded-b-sm flex justify-between items-center">
