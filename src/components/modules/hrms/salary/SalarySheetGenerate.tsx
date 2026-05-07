@@ -129,8 +129,8 @@ const SalarySheetGenerate = ({ user }: any) => {
         name: emp.name,
         designation_name: emp.designation_name,
 
-        basic_salary: roundUpToNearestTen(Number(emp.basic_salary) || 0),
-        others_allowance: roundUpToNearestTen(Number(emp.others_allowance) || 0),
+        basic_salary: Number(emp.basic_salary) || 0,
+        others_allowance: Number(emp.others_allowance) || 0,
 
         // ✅ loan_balance sometimes string ("3000") so force Number
         loan_balance: Number(emp.loan_balance) || 0,
@@ -177,6 +177,7 @@ const SalarySheetGenerate = ({ user }: any) => {
   const proratedAmount = (amount: number, days: number) => {
     const monthDays = selectedMonthDays > 0 ? selectedMonthDays : 30;
     if (days <= 0 || monthDays <= 0) return 0;
+    if (days >= monthDays) return amount;
     return roundUpToNearestTen((amount / monthDays) * days);
   };
 
