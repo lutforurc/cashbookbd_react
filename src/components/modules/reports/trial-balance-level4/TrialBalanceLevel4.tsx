@@ -145,8 +145,8 @@ const TrialBalanceLevel4 = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(20);
-  const [fontSize, setFontSize] = useState<number>(12);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(40);
+  const [fontSize, setFontSize] = useState<number>(10);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -290,7 +290,7 @@ const TrialBalanceLevel4 = (user: any) => {
     },
     {
       key: "name",
-      header: "COA L4 Name",
+      header: "Description",
       cellClass: "w-80",
       render: (row: any) => <div className="whitespace-normal">{row.name}</div>,
     },

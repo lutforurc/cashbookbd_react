@@ -44,6 +44,7 @@ const TrialBalanceLevel3Print = ({
   totals,
 }: TrialBalanceLevel3PrintProps) => {
   const fs = Number.isFinite(fontSize) ? Number(fontSize) : 12;
+  const totalFs = Math.max(fs - 1, 8);
 
   return (
     <div className="bg-white p-6 text-slate-900 print-root">
@@ -61,50 +62,60 @@ const TrialBalanceLevel3Print = ({
         </div>
 
         <table
-          className="w-full border-collapse"
+          className="w-full border-collapse leading-tight"
           style={{ fontSize: `${fs}px` }}
         >
+          <colgroup>
+            <col style={{ width: "36px" }} />
+            <col style={{ width: "140px" }} />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+          </colgroup>
           <thead className="bg-gray-100">
             <tr>
               <th
                 rowSpan={2}
-                className="border border-gray-900 px-1 py-2 text-center font-semibold"
+                className="border border-gray-900 px-1 py-1 text-center font-semibold"
               >
                 Serial
               </th>
               <th
                 rowSpan={2}
-                className="border border-gray-900 px-2 py-2 text-left font-semibold"
+                className="border border-gray-900 px-2 py-1 text-left font-semibold whitespace-nowrap"
               >
-                COA L3 Name
+                Description
               </th>
-              <th colSpan={2} className="border border-gray-900 px-2 py-2 text-center font-semibold">
+              <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
                 Opening
               </th>
-              <th colSpan={2} className="border border-gray-900 px-2 py-2 text-center font-semibold">
+              <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
                 Movement
               </th>
-              <th colSpan={2} className="border border-gray-900 px-2 py-2 text-center font-semibold">
+              <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
                 Closing
               </th>
             </tr>
             <tr>
-              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
+              <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
                 Dr
               </th>
-              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
+              <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
                 Cr
               </th>
-              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
+              <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
                 Dr
               </th>
-              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
+              <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
                 Cr
               </th>
-              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
+              <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
                 Dr
               </th>
-              <th className="border border-gray-900 px-1 py-2 text-center font-semibold">
+              <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
                 Cr
               </th>
             </tr>
@@ -112,26 +123,26 @@ const TrialBalanceLevel3Print = ({
           <tbody>
             {rows.map((row, index) => (
               <tr key={row.key}>
-                <td className="border border-gray-900 px-1 py-1 text-center align-middle">
+                <td className="border border-gray-900 px-1 py-0.5 text-center align-middle">
                   {index + 1}
                 </td>
-                <td className="border border-gray-900 px-2 py-1 align-middle">{row.name}</td>
-                <td className="border border-gray-900 px-1 py-1 text-right">
+                <td className="border border-gray-900 px-2 py-0.5 align-middle whitespace-nowrap">{row.name}</td>
+                <td className="border border-gray-900 px-1 py-0.5 text-right">
                   {thousandSeparator(row.openingDebit)}
                 </td>
-                <td className="border border-gray-900 px-1 py-1 text-right">
+                <td className="border border-gray-900 px-1 py-0.5 text-right">
                   {thousandSeparator(row.openingCredit)}
                 </td>
-                <td className="border border-gray-900 px-1 py-1 text-right">
+                <td className="border border-gray-900 px-1 py-0.5 text-right">
                   {thousandSeparator(row.movementDebit)}
                 </td>
-                <td className="border border-gray-900 px-1 py-1 text-right">
+                <td className="border border-gray-900 px-1 py-0.5 text-right">
                   {thousandSeparator(row.movementCredit)}
                 </td>
-                <td className="border border-gray-900 px-1 py-1 text-right">
+                <td className="border border-gray-900 px-1 py-0.5 text-right">
                   {thousandSeparator(row.closingDebit)}
                 </td>
-                <td className="border border-gray-900 px-1 py-1 text-right">
+                <td className="border border-gray-900 px-1 py-0.5 text-right">
                   {thousandSeparator(row.closingCredit)}
                 </td>
               </tr>
@@ -140,27 +151,45 @@ const TrialBalanceLevel3Print = ({
           <tfoot>
             <tr className="bg-gray-100 font-semibold">
               <td colSpan={2}
-                className="border border-gray-900 px-2 py-1 text-right"
+                className="border border-gray-900 px-2 py-0.5 text-right"
               >
                 Grand Total
               </td>
-              {/* <td className="border border-gray-900 px-2 py-1"></td> */}
-              <td className="border border-gray-900 px-2 py-1 text-right">
+              {/* <td className="border border-gray-900 px-2 py-0.5"></td> */}
+              <td
+                style={{ fontSize: `${totalFs}px` }}
+                className="border border-gray-900 px-1 py-0.5 text-right"
+              >
                 {thousandSeparator(totals.openingDebit)}
               </td>
-              <td className="border border-gray-900 px-2 py-1 text-right">
+              <td
+                style={{ fontSize: `${totalFs}px` }}
+                className="border border-gray-900 px-1 py-0.5 text-right"
+              >
                 {thousandSeparator(totals.openingCredit)}
               </td>
-              <td className="border border-gray-900 px-2 py-1 text-right">
+              <td
+                style={{ fontSize: `${totalFs}px` }}
+                className="border border-gray-900 px-1 py-0.5 text-right"
+              >
                 {thousandSeparator(totals.movementDebit)}
               </td>
-              <td className="border border-gray-900 px-2 py-1 text-right">
+              <td
+                style={{ fontSize: `${totalFs}px` }}
+                className="border border-gray-900 px-1 py-0.5 text-right"
+              >
                 {thousandSeparator(totals.movementCredit)}
               </td>
-              <td className="border border-gray-900 px-2 py-1 text-right">
+              <td
+                style={{ fontSize: `${totalFs}px` }}
+                className="border border-gray-900 px-1 py-0.5 text-right"
+              >
                 {thousandSeparator(totals.closingDebit)}
               </td>
-              <td className="border border-gray-900 px-2 py-1 text-right">
+              <td
+                style={{ fontSize: `${totalFs}px` }}
+                className="border border-gray-900 px-1 py-0.5 text-right"
+              >
                 {thousandSeparator(totals.closingCredit)}
               </td>
             </tr>

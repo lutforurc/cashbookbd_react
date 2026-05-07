@@ -196,7 +196,7 @@ const TrialBalanceLevel3 = (user: any) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [perPage, setPerPage] = useState<number>(40);
-  const [fontSize, setFontSize] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(10);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedL3Id, setExpandedL3Id] = useState<number | null>(null);
   const [level4Rows, setLevel4Rows] = useState<TrialBalanceLevel4Row[]>([]);
@@ -483,7 +483,7 @@ const TrialBalanceLevel3 = (user: any) => {
     },
     {
       key: "name",
-      header: "COA L3 Name",
+      header: "Description",
       cellClass: "w-80",
       render: (row: any) => <div className="whitespace-normal">{row.name}</div>,
     },
@@ -534,7 +534,7 @@ const TrialBalanceLevel3 = (user: any) => {
   const headerRows = [
     [
       { label: "Sl. No", rowSpan: 2, className: "text-center" },
-      { label: "COA L3 Name", rowSpan: 2 },
+      { label: "Description", rowSpan: 2 },
       { label: "Opening", colSpan: 2, className: "text-center" },
       { label: "Movement", colSpan: 2, className: "text-center" },
       { label: "Closing", colSpan: 2, className: "text-center" },
@@ -906,7 +906,7 @@ const TrialBalanceLevel3 = (user: any) => {
                       <thead>
                         <tr className="border-b border-amber-200 text-left dark:border-amber-500/20">
                           <th className="px-2 py-2">Code</th>
-                          <th className="px-2 py-2">COA L3 Name</th>
+                          <th className="px-2 py-2">Description</th>
                           <th className="px-2 py-2 text-right">Opening Net</th>
                           <th className="px-2 py-2 text-right">Movement Net</th>
                           <th className="px-2 py-2 text-right">Closing Net</th>
