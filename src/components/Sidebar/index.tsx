@@ -557,6 +557,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/reports/due-installments' ||
                     pathname === '/reports/date-wise-total-data' ||
                     pathname === routes.report_date_wise_in_out ||
+                    pathname === routes.report_closing_stock ||
+                    pathname === routes.somity_stock_details ||
                     pathname === routes.report_imei_stock ||
                     pathname === '/reports/due-list' ||
                     pathname === '/reports/purchase-ledger' ||
@@ -581,6 +583,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname === '/reports/due-installments' ||
                           pathname.includes('/reports/due-list') ||
                           pathname.includes('/reports/product/stock') ||
+                          pathname.includes(routes.report_closing_stock) ||
+                          pathname.includes(routes.somity_stock_details) ||
                           pathname.includes(routes.report_imei_stock) ||
                           pathname.includes(routes.report_date_wise_in_out) ||
                           pathname.includes('/reports/cat-wise/in-out') ||
@@ -887,6 +891,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Product Stock
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.stock.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.somity_stock_details}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Stock Details
                               </NavLink>
                             </li>
                           )}
