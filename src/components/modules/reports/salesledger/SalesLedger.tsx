@@ -34,6 +34,7 @@ import { hasPermission } from '../../../utils/permissionChecker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import {
   buildVoucherAutoEditState,
+  getCombinedVoucherOpenState,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
@@ -189,6 +190,25 @@ const SalesLedger = (user: any) => {
   const handleEditVoucher = (row: any) => {
     const combinedNumber = String(row?.combined_number || '').trim();
     if (combinedNumber) {
+      const combinedOpenState = getCombinedVoucherOpenState(row);
+      if (combinedOpenState.hasApprovedVoucher) {
+        if (!combinedOpenState.editableVoucherNo) {
+          toast.error('Approved voucher cannot be opened.');
+          return;
+        }
+
+        const editTarget = getVoucherEditTarget(combinedOpenState.editableVoucherNo);
+        const editState = buildVoucherAutoEditState(combinedOpenState.editableVoucherNo);
+
+        if (!editTarget || !editState) {
+          toast.error('Edit route not found for this voucher.');
+          return;
+        }
+
+        navigate(editTarget.route, { state: editState });
+        return;
+      }
+
       navigate(routes.inv_trading_combined, {
         state: {
           combinedAutoEdit: true,

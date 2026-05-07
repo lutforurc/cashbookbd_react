@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { toast } from 'react-toastify';
@@ -39,6 +39,11 @@ import {
   handleSelectKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import {
+  buildVoucherAutoEditState,
+  getCombinedVoucherOpenState,
+  getVoucherEditTarget,
+} from '../../../utils/utils-functions/voucherEditNavigation';
 
 dayjs.extend(utc);
 
@@ -108,6 +113,7 @@ const initialFormData = {
 const TradingCombinedEntry = () => {
   const dispatch = useDispatch<any>();
   const location = useLocation();
+  const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [buttonLoading] = useState(false);
@@ -147,6 +153,27 @@ const TradingCombinedEntry = () => {
           return;
         }
 
+        const combinedOpenState = getCombinedVoucherOpenState(editData);
+        if (combinedOpenState.hasApprovedVoucher) {
+          if (!combinedOpenState.editableVoucherNo) {
+            toast.error('Approved voucher cannot be opened.');
+            navigate(-1);
+            return;
+          }
+
+          const editTarget = getVoucherEditTarget(combinedOpenState.editableVoucherNo);
+          const editState = buildVoucherAutoEditState(combinedOpenState.editableVoucherNo);
+
+          if (!editTarget || !editState) {
+            toast.error('Edit route not found for this voucher.');
+            return;
+          }
+
+          toast.info('Approved voucher is locked. Opening the editable voucher.');
+          navigate(editTarget.route, { state: editState, replace: true });
+          return;
+        }
+
         setEditingCombinedNumber(String(editData.combined_number));
         setSelectedSupplierOption({
           value: editData.supplierAccount,
@@ -182,7 +209,7 @@ const TradingCombinedEntry = () => {
     };
 
     void fetchCombinedEntry();
-  }, [location.state]);
+  }, [location.state, navigate]);
 
   useEffect(() => {
     const fetchSuggestions = async (

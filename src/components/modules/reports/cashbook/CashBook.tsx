@@ -34,6 +34,7 @@ import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import {
   buildVoucherAutoEditState,
+  getCombinedVoucherOpenState,
   getVoucherEditTarget,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
@@ -197,6 +198,25 @@ const CashBook = (user: any) => {
   const handleEditVoucher = (row: any) => {
     const combinedNumber = String(row?.combined_number || '').trim();
     if (combinedNumber) {
+      const combinedOpenState = getCombinedVoucherOpenState(row);
+      if (combinedOpenState.hasApprovedVoucher) {
+        if (!combinedOpenState.editableVoucherNo) {
+          toast.error('Approved voucher cannot be opened.');
+          return;
+        }
+
+        const editTarget = getVoucherEditTarget(combinedOpenState.editableVoucherNo);
+        const editState = buildVoucherAutoEditState(combinedOpenState.editableVoucherNo);
+
+        if (!editTarget || !editState) {
+          toast.error('Edit route not found for this voucher.');
+          return;
+        }
+
+        navigate(editTarget.route, { state: editState });
+        return;
+      }
+
       navigate(routes.inv_trading_combined, {
         state: {
           combinedAutoEdit: true,
