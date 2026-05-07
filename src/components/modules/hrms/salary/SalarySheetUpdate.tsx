@@ -131,7 +131,7 @@ const withSequence = (items: UpdateRow[]) =>
     };
   });
 
-const SalarySheetUpdate = ( user : any) => {
+const SalarySheetUpdate = (user: any) => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -213,24 +213,36 @@ const SalarySheetUpdate = ( user : any) => {
       const workingDays = Number(history.working_days ?? row.working_days ?? 0) || 0;
       const basicSalary = Number(row.basic_salary) || 0;
       const othersAllowance = Number(row.others_allowance) || 0;
-      const monthlyBasicSalary = pickNumber(
-        [history, row.employee, row.employee_info, row],
+      const employeeId = pickNumber(
+        [row, history, row.employee, row.employee_info],
+        ["employee_id", "hrms_employee_id", "employee_master_id", "id"],
+        0
+      );
+      const salaryViewEmployee = availableEmployees.find((employee) => Number(employee.id) === Number(employeeId));
+      const savedMonthlyBasicSalary = pickNumber(
+        [row, history],
+        ["monthly_basic_salary", "employee_basic_salary", "original_basic_salary"],
+        0
+      );
+      const savedMonthlyOthersAllowance = pickNumber(
+        [history, row],
+        ["monthly_others_allowance", "employee_others_allowance", "original_others_allowance"],
+        0
+      );
+      const monthlyBasicSalary = savedMonthlyBasicSalary || pickNumber(
+        [salaryViewEmployee, row.employee, row.employee_info],
         ["monthly_basic_salary", "employee_basic_salary", "original_basic_salary", "basic_salary"],
         inferMonthlyAmount(basicSalary, workingDays, selectedMonthDays)
       );
-      const monthlyOthersAllowance = pickNumber(
-        [history, row.employee, row.employee_info, row],
+      const monthlyOthersAllowance = savedMonthlyOthersAllowance || pickNumber(
+        [salaryViewEmployee, row.employee, row.employee_info],
         ["monthly_others_allowance", "employee_others_allowance", "original_others_allowance", "others_allowance"],
         inferMonthlyAmount(othersAllowance, workingDays, selectedMonthDays)
       );
 
       return {
         id: Number(row.id),
-        employee_id: pickNumber(
-          [row, history, row.employee, row.employee_info],
-          ["employee_id", "hrms_employee_id", "employee_master_id", "id"],
-          0
-        ),
+        employee_id: employeeId,
         serial_no: Number(row.serial_no ?? index + 1),
         monthly_basic_salary: monthlyBasicSalary,
         monthly_others_allowance: monthlyOthersAllowance,
@@ -247,7 +259,7 @@ const SalarySheetUpdate = ( user : any) => {
     });
 
     setRows(withSequence(mapped));
-  }, [salary?.salarySheet, selectedMonthDays]);
+  }, [salary?.salarySheet, selectedMonthDays, availableEmployees]);
 
   const existingEmployeeKeys = useMemo(() => {
     const ids = new Set<number>();
@@ -297,31 +309,33 @@ const SalarySheetUpdate = ( user : any) => {
       withSequence([
         ...prev,
         {
-        id: -Date.now(),
-        employee_id: Number(employee.id),
-        is_new: true,
-        serial_no: Number(employee.serial_no ?? employee.employee_serial ?? prev.length + 1) || prev.length + 1,
-        monthly_basic_salary: basicSalary,
-        monthly_others_allowance: othersAllowance,
-        basic_salary: basicSalary,
-        others_allowance: othersAllowance,
-        loan_deduction: loanDeduction,
-        month_days: selectedMonthDays,
-        payment_amount: 0,
-        gross_salary: basicSalary + othersAllowance,
-        net_salary: Math.max(0, basicSalary + othersAllowance - loanDeduction),
-        history: {
-          id: employee.id,
-          employee_id: employee.id,
-          name: employee.name,
-          designation_name: employee.designation_name,
-          month_days: selectedMonthDays,
-          working_days: selectedMonthDays,
+          id: -Date.now(),
+          employee_id: Number(employee.id),
+          is_new: true,
+          serial_no: Number(employee.serial_no ?? employee.employee_serial ?? prev.length + 1) || prev.length + 1,
+          monthly_basic_salary: basicSalary,
+          monthly_others_allowance: othersAllowance,
           basic_salary: basicSalary,
           others_allowance: othersAllowance,
+          loan_deduction: loanDeduction,
+          month_days: selectedMonthDays,
+          payment_amount: 0,
+          gross_salary: basicSalary + othersAllowance,
+          net_salary: Math.max(0, basicSalary + othersAllowance - loanDeduction),
+          history: {
+            id: employee.id,
+            employee_id: employee.id,
+            name: employee.name,
+            designation_name: employee.designation_name,
+            month_days: selectedMonthDays,
+            working_days: selectedMonthDays,
+            monthly_basic_salary: basicSalary,
+            monthly_others_allowance: othersAllowance,
+            basic_salary: basicSalary,
+            others_allowance: othersAllowance,
+          },
+          working_days: selectedMonthDays,
         },
-        working_days: selectedMonthDays,
-      },
       ])
     );
 
@@ -352,9 +366,9 @@ const SalarySheetUpdate = ( user : any) => {
       prev.map((row) =>
         row.id === id
           ? {
-              ...row,
-              [field]: numericValue,
-            }
+            ...row,
+            [field]: numericValue,
+          }
           : row
       )
     );
@@ -414,9 +428,13 @@ const SalarySheetUpdate = ( user : any) => {
             serial_no: Number(row.serial_no || 0),
             month_days: Number(row.month_days || selectedMonthDays) || 0,
             working_days: Number(row.working_days || 0),
+            monthly_basic_salary: Number(row.monthly_basic_salary || 0),
+            monthly_others_allowance: Number(row.monthly_others_allowance || 0),
           },
           month_days: Number(row.month_days || selectedMonthDays) || 0,
           working_days: Number(row.working_days || 0),
+          monthly_basic_salary: Number(row.monthly_basic_salary || 0),
+          monthly_others_allowance: Number(row.monthly_others_allowance || 0),
           basic_salary: proratedBasicSalary(row),
           others_allowance: proratedOtherAllowance(row),
           loan_deduction: Number(row.loan_deduction || 0),
@@ -502,6 +520,7 @@ const SalarySheetUpdate = ( user : any) => {
     {
       key: "employee",
       header: "Employee",
+      headerClass: "",
       render: (row: UpdateRow) => {
         const history = getHistory(row.history);
         return (
@@ -513,81 +532,119 @@ const SalarySheetUpdate = ( user : any) => {
       },
     },
     {
-      key: "working_days",
-      header: "Days",
-      headerClass: "text-right",
+      key: "month_days",
+      header: "Month Days",
+      headerClass: "text-right w-30",
       cellClass: "text-right",
       render: (row: UpdateRow) => (
         <div className="flex justify-end">
-        <InputElement
-          id={`working_days_${row.id}`}
-          name={`working_days_${row.id}`}
-          value={row.working_days}
-          onChange={(e) => {
-            const digitsOnly = e.target.value.replace(/\D/g, "");
-            const inputDays = digitsOnly === "" ? 0 : Number(digitsOnly);
-            const safeDays = Math.max(
-              0,
-              Math.min(selectedMonthDays, Number.isFinite(inputDays) ? inputDays : 0)
-            );
-            handleInputChange(row.id, "working_days", String(safeDays));
-          }}
-          type="text"
-          inputMode="numeric"
-          className="w-20 text-right"
-        />
+          <InputElement
+            id={`month_days_${row.id}`}
+            name={`month_days_${row.id}`}
+            value={Number(row.month_days || selectedMonthDays) || 0}
+            onChange={() => undefined}
+            type="text"
+            className="w-20 text-right"
+            disabled={true}
+          />
+        </div>
+      ),
+    },
+    {
+      key: "working_days",
+      header: "Days",
+      headerClass: "text-right w-30",
+      cellClass: "text-right",
+      render: (row: UpdateRow) => (
+        <div className="flex justify-end">
+          <InputElement
+            id={`working_days_${row.id}`}
+            name={`working_days_${row.id}`}
+            value={row.working_days}
+            onChange={(e) => {
+              const digitsOnly = e.target.value.replace(/\D/g, "");
+              const inputDays = digitsOnly === "" ? 0 : Number(digitsOnly);
+              const safeDays = Math.max(
+                0,
+                Math.min(selectedMonthDays, Number.isFinite(inputDays) ? inputDays : 0)
+              );
+              handleInputChange(row.id, "working_days", String(safeDays));
+            }}
+            type="text"
+            inputMode="numeric"
+            className="w-20 text-right"
+          />
+        </div>
+      ),
+    },
+    {
+      key: "monthly_basic_salary",
+      header: "Monthly Basic",
+      headerClass: "text-right w-40",
+      cellClass: "text-right",
+      render: (row: UpdateRow) => (
+        <div className="flex justify-end">
+          <InputElement
+            id={`monthly_basic_salary_${row.id}`}
+            name={`monthly_basic_salary_${row.id}`}
+            value={row.monthly_basic_salary}
+            onChange={() => undefined}
+            type="number"
+            className="w-28 text-right"
+            disabled={true}
+          />
         </div>
       ),
     },
     {
       key: "basic_salary",
       header: "Salary",
-      headerClass: "text-right",
+      headerClass: "text-right w-45",
       cellClass: "text-right",
       render: (row: UpdateRow) => (
         <div className="flex justify-end">
-        <InputElement
-          id={`basic_salary_${row.id}`}
-          name={`basic_salary_${row.id}`}
-          value={proratedBasicSalary(row)}
-          onChange={() => undefined}
-          type="number"
-          className="w-28 text-right"
-          disabled={true}
-        />
+          <InputElement
+            id={`basic_salary_${row.id}`}
+            name={`basic_salary_${row.id}`}
+            value={proratedBasicSalary(row)}
+            onChange={() => undefined}
+            type="number"
+            className="w-28 text-right"
+            disabled={true}
+          />
         </div>
       ),
     },
     {
       key: "others_allowance",
       header: "Allowance",
-      headerClass: "text-right",
+      headerClass: "text-right w-45",
       cellClass: "text-right",
       render: (row: UpdateRow) => (
         <div className="flex justify-end">
-        <InputElement
-          id={`others_allowance_${row.id}`}
-          name={`others_allowance_${row.id}`}
-          value={proratedOtherAllowance(row)}
-          onChange={() => undefined}
-          type="number"
-          className="w-28 text-right"
-          disabled={true}
-        />
+          <InputElement
+            id={`others_allowance_${row.id}`}
+            name={`others_allowance_${row.id}`}
+            value={proratedOtherAllowance(row)}
+            onChange={() => undefined}
+            type="number"
+            className="w-28 text-right"
+            disabled={true}
+          />
         </div>
       ),
     },
     {
       key: "gross_salary",
       header: "Gross",
-      headerClass: "text-right",
+      headerClass: "text-right w-45",
       cellClass: "text-right",
       render: (row: UpdateRow) => thousandSeparator(calculateGross(row)),
     },
     {
       key: "loan_deduction",
       header: "Loan",
-      headerClass: "text-right",
+      headerClass: "text-right w-45",
       cellClass: "text-right",
       render: (row: UpdateRow) => (
         <div className="flex justify-end">
@@ -605,14 +662,14 @@ const SalarySheetUpdate = ( user : any) => {
     {
       key: "net_salary",
       header: "Net Salary",
-      headerClass: "text-right",
+      headerClass: "text-right w-45",
       cellClass: "text-right font-semibold",
       render: (row: UpdateRow) => thousandSeparator(calculateNet(row)),
     },
     {
       key: "payment_amount",
       header: "Paid",
-      headerClass: "text-right",
+      headerClass: "text-right w-45",
       cellClass: "text-right",
       render: (row: UpdateRow) => thousandSeparator(Number(row.payment_amount || 0)),
     },

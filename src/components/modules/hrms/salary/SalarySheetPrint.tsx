@@ -14,11 +14,13 @@ type EmployeeHistory = {
   designation_name?: string;
   month_days?: number | string;
   working_days?: number | string;
+  monthly_basic_salary?: number | string;
 };
 
 type EmployeeRow = {
   month_days?: number | string;
   payment_month?: string;
+  monthly_basic_salary?: number | string;
   basic_salary?: number;
   others_allowance?: number;
   gross_salary?: number;
@@ -136,6 +138,20 @@ const resolveMonthDays = (row: EmployeeRow, history: EmployeeHistory, fallbackMo
   return getMonthDays(row.payment_month || fallbackMonth);
 };
 
+const resolveMonthlyBasicSalary = (row: EmployeeRow, history: EmployeeHistory, monthDays: number | string) => {
+  const savedMonthlyBasic = Number(row.monthly_basic_salary || history.monthly_basic_salary || 0);
+  if (savedMonthlyBasic > 0) return savedMonthlyBasic;
+
+  const paidBasic = Number(row.basic_salary || history.basic_salary || 0);
+  const workingDays = Number(history.working_days || 0);
+  const totalMonthDays = Number(monthDays || 0);
+
+  if (paidBasic <= 0 || workingDays <= 0 || totalMonthDays <= 0) return paidBasic;
+  if (workingDays >= totalMonthDays) return paidBasic;
+
+  return Math.ceil((paidBasic / workingDays) * totalMonthDays);
+};
+
 /* =======================
    Component
 ======================= */
@@ -159,15 +175,19 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
     const fs = fontSize;
     const lastPageIndex = pages.length - 1;
     const hasMultiplePages = pages.length > 1;
+    const metaInfo = getMeta(meta);
+
     /* Grand totals */
+    const grandMonthlyBasic = sum(safeRows.map((r) => {
+      const history = getHistory(r.history);
+      return resolveMonthlyBasicSalary(r, history, resolveMonthDays(r, history, metaInfo.month_id));
+    }));
     const grandBasic = sum(safeRows.map(r => Number(r.basic_salary || 0)));
     const grandAllowance = sum(safeRows.map(r => Number(r.others_allowance || 0)));
     const grandGross = sum(safeRows.map(r => Number(r.gross_salary || 0)));
     const grandLoan = sum(safeRows.map(r => Number(r.loan_deduction || 0)));
     const grandNet = sum(safeRows.map(r => Number(r.net_salary || 0)));
     const grandPayment = sum(safeRows.map(r => Number(r.payment_amount || 0)));
-
-    const metaInfo = getMeta(meta);
 
     return (
       <div ref={ref} className="print-root text-gray-900">
@@ -209,6 +229,10 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
         {pages.map((pageRows, pageIndex) => {
           const isLastPage = pageIndex === lastPageIndex;
 
+          const pageMonthlyBasic = sum(pageRows.map((r) => {
+            const history = getHistory(r.history);
+            return resolveMonthlyBasicSalary(r, history, resolveMonthDays(r, history, metaInfo.month_id));
+          }));
           const pageBasic = sum(pageRows.map(r => Number(r.basic_salary || 0)));
           const pageAllowance = sum(pageRows.map(r => Number(r.others_allowance || 0)));
           const pageGross = sum(pageRows.map(r => Number(r.gross_salary || 0)));
@@ -250,7 +274,8 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th style={{ fontSize: fs }}>SL</th>
                     <th className='text-left' style={{ fontSize: fs }}>Employee Name</th>
                     <th style={{ fontSize: fs, textAlign: 'center', width: 80, maxWidth: 80, lineHeight: 1.1 }}>Month Days</th>
-                    <th style={{ fontSize: fs, textAlign: 'center', width: 70, maxWidth: 70, lineHeight: 1.1 }}>W. Days</th>
+                    <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>W. Days</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>M. Basic</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Salary</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Mobile</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Total</th>
@@ -265,6 +290,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   {pageRows.map((row, idx) => {
                     const h = getHistory(row.history);
                     const monthDays = resolveMonthDays(row, h, metaInfo.month_id);
+                    const monthlyBasicSalary = resolveMonthlyBasicSalary(row, h, monthDays);
                     return (
                       <tr key={idx}>
                         <td style={{ fontSize: fs, textAlign: 'center' }}>
@@ -274,8 +300,11 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                           <span className='block m-0 leading-tight'>{h.name || '-'}</span>
                           <span className='block m-0 leading-tight'>{h.designation_name || '-'}</span>
                         </td>
-                        <td style={{ fontSize: fs, textAlign: 'center', width: 42, maxWidth: 42 }}>{monthDays}</td>
-                        <td style={{ fontSize: fs, textAlign: 'center', width: 38, maxWidth: 38 }}>{h.working_days || ''}</td>
+                        <td style={{ fontSize: fs, textAlign: 'center', width: 80, maxWidth: 80 }}>{monthDays}</td>
+                        <td style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60 }}>{h.working_days || ''}</td>
+                        <td style={{ fontSize: fs, textAlign: 'right' }}>
+                          {thousandSeparator(monthlyBasicSalary)}
+                        </td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
                           {thousandSeparator(row.basic_salary ?? 0)}
                         </td>
@@ -313,6 +342,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   {!isLastPage && (
                     <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
                       <td colSpan={4}>Subtotal (Page {pageIndex + 1})</td>
+                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageMonthlyBasic)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
@@ -329,6 +359,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       {hasMultiplePages && (
                         <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
                           <td colSpan={4}>Page Total</td>
+                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageMonthlyBasic)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
@@ -340,6 +371,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       )}
                       <tr style={{ fontSize: fs, fontWeight: 700, background: '#e5e5e5' }}>
                         <td colSpan={4}>Grand Total</td>
+                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandMonthlyBasic)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandBasic)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandAllowance)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandGross)}</td>

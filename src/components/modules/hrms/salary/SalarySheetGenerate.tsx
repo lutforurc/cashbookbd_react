@@ -25,7 +25,9 @@ interface SalaryRow {
   designation_name: string;
 
   basic_salary: number;
+  monthly_basic_salary: number;
   others_allowance: number;
+  monthly_others_allowance: number;
 
   // ✅ API ডাটায় আসল টাকাটা এখানে আছে (string/number হতে পারে)
   loan_balance: number;
@@ -138,7 +140,9 @@ const SalarySheetGenerate = ({ user }: any) => {
         designation_name: emp.designation_name,
 
         basic_salary: Number(emp.basic_salary) || 0,
+        monthly_basic_salary: Number(emp.basic_salary) || 0,
         others_allowance: Number(emp.others_allowance) || 0,
+        monthly_others_allowance: Number(emp.others_allowance) || 0,
 
         // ✅ loan_balance sometimes string ("3000") so force Number
         loan_balance: Number(emp.loan_balance) || 0,
@@ -191,10 +195,10 @@ const SalarySheetGenerate = ({ user }: any) => {
   };
 
   const proratedBasicSalary = (emp: SalaryRow) =>
-    proratedAmount(Number(emp.basic_salary) || 0, Number(emp.working_days) || 0);
+    proratedAmount(Number(emp.monthly_basic_salary) || 0, Number(emp.working_days) || 0);
 
   const proratedOtherAllowance = (emp: SalaryRow) =>
-    proratedAmount(Number(emp.others_allowance) || 0, Number(emp.working_days) || 0);
+    proratedAmount(Number(emp.monthly_others_allowance) || 0, Number(emp.working_days) || 0);
 
   const totalSalary = (emp: SalaryRow) => {
     return proratedBasicSalary(emp) + proratedOtherAllowance(emp);
@@ -303,6 +307,21 @@ const SalarySheetGenerate = ({ user }: any) => {
       ),
     },
     {
+      key: "monthly_basic_salary",
+      header: "Monthly Basic",
+      headerClass: "text-right w-35",
+      cellClass: "text-right",
+      render: (row: SalaryRow) => (
+        <InputElement
+          type="number"
+          value={row.monthly_basic_salary}
+          className="text-right w-24 !md:w-20"
+          onChange={(e) => handleInputChange(row.id, "monthly_basic_salary", e.target.value)}
+          disabled={true}
+        />
+      ),
+    },
+    {
       key: "basic_salary",
       header: "Basic",
       headerClass: "text-right w-30",
@@ -396,6 +415,8 @@ const SalarySheetGenerate = ({ user }: any) => {
         serial_no: Number(e.serial_no || 0),
         sequence: Number(e.serial_no || 0),
         sort_order: Number(e.serial_no || 0),
+        monthly_basic_salary: Number(e.monthly_basic_salary) || 0,
+        monthly_others_allowance: Number(e.monthly_others_allowance) || 0,
         basic_salary: proratedBasicSalary(e),
         others_allowance: proratedOtherAllowance(e),
         loan_balance: Number(e.loan_balance) || 0,
