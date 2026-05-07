@@ -18,6 +18,7 @@ type EmployeeHistory = {
 
 type EmployeeRow = {
   month_days?: number | string;
+  payment_month?: string;
   basic_salary?: number;
   others_allowance?: number;
   gross_salary?: number;
@@ -97,6 +98,43 @@ const getMeta = (meta?: string | Meta): Meta => {
 
 const sum = (arr: number[]) =>
   arr.reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
+
+const parseMonthYear = (value?: string | number | null) => {
+  if (!value) return null;
+
+  const raw = String(value).trim();
+  let month: number | undefined;
+  let year: number | undefined;
+
+  if (/^\d{6}$/.test(raw)) {
+    month = Number(raw.substring(0, 2));
+    year = Number(raw.substring(2));
+  } else if (/^\d{2}[-/]\d{4}$/.test(raw)) {
+    const parts = raw.split(/[-/]/);
+    month = Number(parts[0]);
+    year = Number(parts[1]);
+  } else if (/^\d{4}[-/]\d{2}$/.test(raw)) {
+    const parts = raw.split(/[-/]/);
+    year = Number(parts[0]);
+    month = Number(parts[1]);
+  }
+
+  if (!month || !year || month < 1 || month > 12) return null;
+  return { month, year };
+};
+
+const getMonthDays = (value?: string | number | null) => {
+  const parsed = parseMonthYear(value);
+  if (!parsed) return "";
+  return new Date(parsed.year, parsed.month, 0).getDate();
+};
+
+const resolveMonthDays = (row: EmployeeRow, history: EmployeeHistory, fallbackMonth?: string) => {
+  const savedMonthDays = Number(row.month_days || history.month_days || 0);
+  if (savedMonthDays > 0) return savedMonthDays;
+
+  return getMonthDays(row.payment_month || fallbackMonth);
+};
 
 /* =======================
    Component
@@ -211,8 +249,8 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tr>
                     <th style={{ fontSize: fs }}>SL</th>
                     <th className='text-left' style={{ fontSize: fs }}>Employee Name</th>
-                    <th className='text-left' style={{ fontSize: fs, textAlign: 'center' }}>Month Days</th>
-                    <th className='text-left' style={{ fontSize: fs, textAlign: 'center' }}>W. Days</th>
+                    <th style={{ fontSize: fs, textAlign: 'center', width: 80, maxWidth: 80, lineHeight: 1.1 }}>Month Days</th>
+                    <th style={{ fontSize: fs, textAlign: 'center', width: 70, maxWidth: 70, lineHeight: 1.1 }}>W. Days</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Salary</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Mobile</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Total</th>
@@ -226,6 +264,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                 <tbody>
                   {pageRows.map((row, idx) => {
                     const h = getHistory(row.history);
+                    const monthDays = resolveMonthDays(row, h, metaInfo.month_id);
                     return (
                       <tr key={idx}>
                         <td style={{ fontSize: fs, textAlign: 'center' }}>
@@ -235,8 +274,8 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                           <span className='block m-0 leading-tight'>{h.name || '-'}</span>
                           <span className='block m-0 leading-tight'>{h.designation_name || '-'}</span>
                         </td>
-                        <td style={{ fontSize: fs, textAlign: 'center' }}>{row.month_days ?? h.month_days ?? ''}</td>
-                        <td style={{ fontSize: fs, textAlign: 'center' }}>{h.working_days || ''}</td>
+                        <td style={{ fontSize: fs, textAlign: 'center', width: 42, maxWidth: 42 }}>{monthDays}</td>
+                        <td style={{ fontSize: fs, textAlign: 'center', width: 38, maxWidth: 38 }}>{h.working_days || ''}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
                           {thousandSeparator(row.basic_salary ?? 0)}
                         </td>
