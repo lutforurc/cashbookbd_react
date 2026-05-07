@@ -341,7 +341,7 @@ const TrialBalanceLevel4 = (user: any) => {
   const headerRows = [
     [
       { label: "Sl. No", rowSpan: 2, className: "text-center" },
-      { label: "COA L4 Name", rowSpan: 2 },
+      { label: "Description", rowSpan: 2 },
       { label: "Opening", colSpan: 2, className: "text-center" },
       { label: "Movement", colSpan: 2, className: "text-center" },
       { label: "Closing", colSpan: 2, className: "text-center" },
