@@ -495,72 +495,48 @@ const LedgerWithProduct = (user: any) => {
     [
       {
         label: (
-          <div className="text-right">
-            <span className="text-slate-500 dark:text-slate-400">Opening:</span>{' '}
-            <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {Number(summary?.opening_balance || 0)
-                ? thousandSeparator(summary?.opening_balance || 0)
-                : '-'}
-            </span>
+          <div className="flex flex-nowrap items-center justify-end gap-10 whitespace-nowrap">
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Opening:</span>{' '}
+              <span className="font-semibold text-slate-800 dark:text-slate-100">
+                {Number(summary?.opening_balance || 0)
+                  ? thousandSeparator(summary?.opening_balance || 0)
+                  : '-'}
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Pur. Qty:</span>{' '}
+              <span className="font-semibold text-slate-800 dark:text-slate-100">
+                {thousandSeparator(Number(summary?.purchase_qty || 0))}
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Sal. Qty:</span>{' '}
+              <span className="font-semibold text-slate-800 dark:text-slate-100">
+                {thousandSeparator(Number(summary?.sales_qty || 0))}
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Debit:</span>{' '}
+              <span className="font-semibold text-slate-800 dark:text-slate-100">
+                {thousandSeparator(footerReceivedValue)}
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Credit:</span>{' '}
+              <span className="font-semibold text-slate-800 dark:text-slate-100">
+                {thousandSeparator(footerPaymentValue)}
+              </span>
+            </div>
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">Closing:</span>{' '}
+              <span className="font-bold text-slate-900 dark:text-white">
+                {thousandSeparator(footerClosingValue)}
+              </span>
+            </div>
           </div>
         ),
-        colSpan: 5,
-        className: 'text-right',
-      },
-      {
-        label: (
-          <div className="text-right">
-            <span className="text-slate-500 dark:text-slate-400">Pur. Qty:</span>{' '}
-            <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {thousandSeparator(Number(summary?.purchase_qty || 0))}
-            </span>
-          </div>
-        ),
-        className: 'text-right',
-      },
-      {
-        label: (
-          <div className="text-right">
-            <span className="text-slate-500 dark:text-slate-400">Sal. Qty:</span>{' '}
-            <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {thousandSeparator(Number(summary?.sales_qty || 0))}
-            </span>
-          </div>
-        ),
-        className: 'text-right',
-      },
-      {
-        label: (
-          <div className="text-right w-35">
-            <span className="text-slate-500 dark:text-slate-400">Debit:</span>{' '}
-            <span className="font-semibold text-slate-800 dark:text-slate-100">
-             {thousandSeparator(footerReceivedValue)}
-            </span>
-          </div>
-        ),
-        className: 'text-right',
-      },
-      {
-        label: (
-          <div className="text-right w-35">
-            <span className="text-slate-500 dark:text-slate-400">Credit:</span>{' '}
-            <span className="font-semibold text-slate-800 dark:text-slate-100">
-              {thousandSeparator(footerPaymentValue)}
-            </span>
-          </div>
-        ),
-        className: 'text-right',
-      },
-      {
-        label: (
-          <div className="text-right">
-            <span className="text-slate-500 dark:text-slate-400">Closing:</span>{' '}
-            <span className="font-bold text-slate-900 dark:text-white">
-              { thousandSeparator(footerClosingValue)}
-            </span>
-          </div>
-        ),
-        colSpan: 3,
+        colSpan: columns.length,
         className: 'text-right',
       },
     ],
