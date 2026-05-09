@@ -176,9 +176,11 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   <div>
                     <span className="font-semibold">Name:</span> {partyName}
                   </div>
-                  <div>
-                    <span className="font-semibold">Mobile:</span> {mobile || '-'}
-                  </div>
+                  { mobile.length >=5 && (
+                    <div>
+                      <span className="font-semibold">Mobile:</span> {mobile || '-'}
+                    </div>
+                  )}
                   <div>
                     <span className="font-semibold">Address:</span> {address || '-'}
                   </div>
