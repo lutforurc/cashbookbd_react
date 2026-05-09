@@ -41,6 +41,11 @@ const getWarrantyInfo = (warranty: any) => {
 
 const isEnabled = (value: unknown) => value === true || value === 1 || value === '1';
 
+const firstFilled = (...values: unknown[]) =>
+  values
+    .map((value) => String(value ?? '').trim())
+    .find((value) => value.length > 0) || '';
+
 const variantConfig = {
   'a4-portrait': {
     pageSize: 'A4 portrait',
@@ -129,7 +134,14 @@ const getSalesMeta = (data: any) => {
     details,
     customerName: salesMaster?.name || customerInfo?.name || customerDetail?.coa_l4?.name || '-',
     customerMobile: salesMaster?.mobile || customerInfo?.mobile || '',
-    customerAddress: salesMaster?.address || customerInfo?.address || customerInfo?.manual_address || '',
+    customerAddress: firstFilled(
+      customerInfo?.manual_address,
+      customerDetail?.coa_l4?.manual_address,
+      salesMaster?.manual_address,
+      salesMaster?.customer_address,
+      customerInfo?.address,
+      salesMaster?.address,
+    ),
     receivedAmount: received ? Number(received.debit) : 0,
     discountAmount: discount ? Number(discount.debit) : 0,
     tdsName: tds ? tds.coa_l4?.name : '',
