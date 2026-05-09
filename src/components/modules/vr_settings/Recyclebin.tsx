@@ -41,6 +41,33 @@ const getRecyclePrintMtmId = (row: any) =>
     row?.mid,
   ].find((value) => Number.isFinite(Number(value)) && Number(value) > 0);
 
+const getDeletedAtTime = (row: any) => {
+  const rawValue = row?.deleted_at ?? row?.delete_at ?? row?.deletedAt ?? row?.deleteAt;
+  if (!rawValue) return 0;
+
+  if (typeof rawValue === 'number') return rawValue;
+
+  const text = String(rawValue).trim();
+  const dateMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+  if (dateMatch) {
+    const [, day, month, year, hour = '0', minute = '0', second = '0'] = dateMatch;
+    return new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second),
+    ).getTime();
+  }
+
+  const directTime = Date.parse(text);
+  return Number.isNaN(directTime) ? 0 : directTime;
+};
+
+const sortRecycleRowsLatestFirst = (rows: any[]) =>
+  [...rows].sort((a, b) => getDeletedAtTime(b) - getDeletedAtTime(a));
+
 const Recyclebin = () => {
   const dispatch = useDispatch();
   const voucherRegistryRef = useRef<any>(null);
@@ -66,7 +93,7 @@ const Recyclebin = () => {
   // Fetch data
   const fetchData = () => {
     setButtonLoading(true);
-    dispatch(fetchRecycleBin({ page, per_page: perPage, search }))
+    dispatch(fetchRecycleBin({ page, per_page: perPage, search, sort_by: 'deleted_at', sort_order: 'desc' }))
       .unwrap()
       .finally(() => setButtonLoading(false));
   };
@@ -81,7 +108,7 @@ const Recyclebin = () => {
   useEffect(() => {
     const data = voucherSettings?.recycleBinItems?.data?.data?.data || [];
     const total = voucherSettings?.recycleBinItems?.data?.data?.total || 0;
-    setTableData(data);
+    setTableData(sortRecycleRowsLatestFirst(data));
     setTotalPages(Math.ceil(total / perPage));
   }, [voucherSettings, perPage]);
 
@@ -136,7 +163,7 @@ const Recyclebin = () => {
     try {
       const result = await dispatch(removeRecycleBin({ id: selectedRow.id })).unwrap();
       toast.success(result.message || "Voucher deleted successfully");
-      await dispatch(fetchRecycleBin({ page, per_page: perPage, search })).unwrap();
+      await dispatch(fetchRecycleBin({ page, per_page: perPage, search, sort_by: 'deleted_at', sort_order: 'desc' })).unwrap();
     } catch (err) {
       toast.error("Delete failed");
       console.error(err);
@@ -155,7 +182,7 @@ const Recyclebin = () => {
     try {
       const result = await dispatch(restoreRecycleBin({ id: selectedRow.id })).unwrap();
       toast.success(result.message || "Voucher restored successfully");
-      await dispatch(fetchRecycleBin({ page, per_page: perPage, search })).unwrap();
+      await dispatch(fetchRecycleBin({ page, per_page: perPage, search, sort_by: 'deleted_at', sort_order: 'desc' })).unwrap();
     } catch (err) {
       toast.error("Restore failed");
       console.error(err);

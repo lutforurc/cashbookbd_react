@@ -33,6 +33,8 @@ interface RecycleBinParams {
   page?: number;
   per_page?: number;
   search?: string;
+  sort_by?: string;
+  sort_order?: 'asc' | 'desc';
 }
 
 interface RemoveRecycleBinParams {
@@ -68,6 +70,8 @@ export const fetchRecycleBin = createAsyncThunk<RecycleBinResponse,RecycleBinPar
     const response = await httpService.post(API_VOUCHER_RECYCLEBIN_URL, {
       page: params?.page || 1,
       per_page: params?.per_page || 10,
+      sort_by: params?.sort_by || "deleted_at",
+      sort_order: params?.sort_order || "desc",
       ...(params?.search ? { search: params.search } : {}),
     });
     return response.data as RecycleBinResponse;
