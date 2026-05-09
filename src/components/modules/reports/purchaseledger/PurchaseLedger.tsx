@@ -678,7 +678,7 @@ const PurchaseLedger = (user: any) => {
       <HelmetTitle title={'Purchase Ledger'} />
       <div className="px-0 py-6 ">
         <div className="flex flex-wrap items-start gap-3 min-[1750px]:flex-nowrap min-[1750px]:items-end">
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-0 flex-[1_1_820px]'}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'w-full min-w-0'}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -706,10 +706,10 @@ const PurchaseLedger = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-12'
+                      : 'grid grid-cols-1 items-end gap-3 min-[1180px]:grid-cols-12'
                   }
                 >
-                  <div className={useFilterMenuEnabled ? '' : 'order-1 min-w-0 xl:col-span-4'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-1 min-w-0 min-[1180px]:col-span-4'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
                     {branchDdlData.isLoading == true ? <Loader /> : ''}
                     <BranchDropdown
@@ -720,7 +720,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className={useFilterMenuEnabled ? '' : 'order-2 min-w-0 xl:col-span-4'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-2 min-w-0 min-[1180px]:col-span-4'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Account</label>
                     <DdlMultiline
                       acType={''}
@@ -730,7 +730,7 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className={`relative ${useFilterMenuEnabled ? '' : 'order-3 min-w-0 xl:col-span-4'}`}>
+                  <div className={`relative ${useFilterMenuEnabled ? '' : 'order-3 min-w-0 min-[1180px]:col-span-4'}`}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
                     <div
                       onClick={() => selectedProduct(null)}
@@ -746,27 +746,27 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className={useFilterMenuEnabled ? '' : 'order-5 min-w-0 xl:col-span-2'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-5 w-full min-w-0 min-[1180px]:col-span-2 min-[1180px]:w-[120px] min-[1180px]:min-w-[120px]'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
                       setCurrentDate={handleStartDate}
-                      className="w-full font-medium text-sm h-10"
+                      className="w-full font-medium text-sm h-10 min-[1180px]:!w-[120px] min-[1180px]:max-w-[120px]"
                       selectedDate={startDate}
                       setSelectedDate={setStartDate}
                     />
                   </div>
 
-                  <div className={useFilterMenuEnabled ? '' : 'order-6 min-w-0 xl:col-span-3'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-6 w-full min-w-0 min-[1180px]:col-span-2 min-[1180px]:w-[120px] min-[1180px]:min-w-[120px]'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
                       setCurrentDate={handleEndDate}
-                      className="w-full font-medium text-sm h-10"
+                      className="w-full font-medium text-sm h-10 min-[1180px]:!w-[120px] min-[1180px]:max-w-[120px]"
                       selectedDate={endDate}
                       setSelectedDate={setEndDate}
                     />
                   </div>
 
-                  <div className={useFilterMenuEnabled ? '' : 'order-4 min-w-0 xl:col-span-3'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-4 min-w-0 min-[1180px]:col-span-2'}>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
                       Search
                     </label>
@@ -835,7 +835,7 @@ const PurchaseLedger = (user: any) => {
                   <div
                     className={`${useFilterMenuEnabled
                         ? 'flex flex-wrap justify-end gap-2'
-                        : 'hidden flex-wrap items-end gap-2 md:order-7 md:col-span-3 md:flex xl:col-span-4 xl:flex-nowrap xl:justify-end'
+                        : 'order-7 flex w-full flex-wrap items-end gap-2 min-[1180px]:col-span-6 min-[1180px]:min-w-0 min-[1180px]:flex-nowrap min-[1180px]:justify-end min-[1180px]:gap-1'
                       }`}
                   >
                     <ButtonLoading
@@ -843,14 +843,14 @@ const PurchaseLedger = (user: any) => {
                       buttonLoading={buttonLoading}
                       label="Apply"
                       icon={<FiCheckSquare />}
-                      className="h-10 px-6"
+                      className="h-10 px-2"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
                       icon={<FiRotateCcw />}
-                      className="h-10 px-4"
+                      className="h-10 px-2"
                     />
                     {!useFilterMenuEnabled && (
                       <>
@@ -861,7 +861,7 @@ const PurchaseLedger = (user: any) => {
                           value={perPage.toString()}
                           onChange={handlePerPageChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                          className="font-medium text-sm h-10 !w-14 text-center"
                         />
                         <InputElement
                           id="fontSizeInlineLg"
@@ -870,12 +870,12 @@ const PurchaseLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+                          className="font-medium text-sm h-10 !w-14 text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
-                          label="Print"
-                          className="h-10 px-6"
+                          label=""
+                          className="h-10 !w-10 !px-0"
                           disabled={!Array.isArray(tableData) || tableData.length === 0}
                         />
                       </>
@@ -958,60 +958,44 @@ const PurchaseLedger = (user: any) => {
             Use the filter
           </div>
 
-          <div className={`ml-auto flex w-full flex-wrap items-end justify-end gap-2 ${useFilterMenuEnabled ? 'md:ml-auto md:w-auto' : 'md:hidden xl:hidden'}`}>
-            {useFilterMenuEnabled && selectedLedgerOption?.label ? (
-              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-                <span className="truncate" title={selectedLedgerOption.label}>{selectedLedgerOption.label}</span>
-              </div>
-            ) : null}
-            {useFilterMenuEnabled && selectedProductOption?.label ? (
-              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-                <span className="truncate" title={selectedProductOption.label}>{selectedProductOption.label}</span>
-              </div>
-            ) : null}
-            {!useFilterMenuEnabled && (
-              <>
-                <ButtonLoading
-                  onClick={handleActionButtonClick}
-                  buttonLoading={buttonLoading}
-                  label="Apply"
-                  icon={<FiCheckSquare />}
-                  className="h-10 px-6 min-[1750px]:hidden"
-                />
-                <ButtonLoading
-                  onClick={handleResetFilters}
-                  buttonLoading={false}
-                  label="Reset"
-                  icon={<FiRotateCcw />}
-                  className="h-10 px-4 min-[1750px]:hidden"
-                />
-              </>
-            )}
-            <InputElement
-              id="perPage"
-              name="perPage"
-              label=""
-              value={perPage.toString()}
-              onChange={handlePerPageChange}
-              type="text"
-              className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
-            />
-            <InputElement
-              id="fontSize"
-              name="fontSize"
-              label=""
-              value={fontSize.toString()}
-              onChange={handleFontSizeChange}
-              type="text"
-              className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
-            />
-            <PrintButton
-              onClick={handlePrint}
-              label="Print"
-              className="h-10 px-6"
-              disabled={!Array.isArray(tableData) || tableData.length === 0}
-            />
-          </div>
+          {useFilterMenuEnabled && (
+            <div className="ml-auto flex w-full flex-wrap items-end justify-end gap-2 md:ml-auto md:w-auto">
+              {selectedLedgerOption?.label ? (
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <span className="truncate" title={selectedLedgerOption.label}>{selectedLedgerOption.label}</span>
+                </div>
+              ) : null}
+              {selectedProductOption?.label ? (
+                <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                  <span className="truncate" title={selectedProductOption.label}>{selectedProductOption.label}</span>
+                </div>
+              ) : null}
+              <InputElement
+                id="perPage"
+                name="perPage"
+                label=""
+                value={perPage.toString()}
+                onChange={handlePerPageChange}
+                type="text"
+                className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+              />
+              <InputElement
+                id="fontSize"
+                name="fontSize"
+                label=""
+                value={fontSize.toString()}
+                onChange={handleFontSizeChange}
+                type="text"
+                className="font-medium text-sm h-10 !w-20 min-w-[80px] text-center"
+              />
+              <PrintButton
+                onClick={handlePrint}
+                label="Print"
+                className="h-10 px-6"
+                disabled={!Array.isArray(tableData) || tableData.length === 0}
+              />
+            </div>
+          )}
         </div>
       </div>
       <div className="overflow-y-auto">
