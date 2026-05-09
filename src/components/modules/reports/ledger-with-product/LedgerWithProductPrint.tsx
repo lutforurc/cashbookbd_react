@@ -2,6 +2,7 @@ import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 
 const formatAmount = (value: any, precision = 0) => {
   const amount = Number(value || 0);
@@ -246,7 +247,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       {row.order_number ? <div style={{ fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="text-xs">{row.order_number}</div> : null}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1">
-                      {row.truck_no || ''}
+                      {formatTransportationNumber(row.truck_no || '')}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row)) : '-'}
