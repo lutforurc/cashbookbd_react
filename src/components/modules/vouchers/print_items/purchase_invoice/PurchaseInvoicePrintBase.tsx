@@ -42,6 +42,11 @@ const getWarrantyInfo = (warranty: any) => {
 
 const isEnabled = (value: unknown) => value === true || value === 1 || value === '1';
 
+const firstFilled = (...values: unknown[]) =>
+  values
+    .map((value) => String(value ?? '').trim())
+    .find((value) => value.length > 0) || '';
+
 const variantConfig = {
   'a4-portrait': {
     pageSize: 'A4 portrait',
@@ -124,11 +129,13 @@ const getPurchaseMeta = (data: any) => {
     details,
     supplierName: purchaseMaster?.name || supplierFallback?.name || '-',
     supplierMobile: purchaseMaster?.mobile || supplierFallback?.mobile || '',
-    supplierAddress:
-      purchaseMaster?.address ||
-      supplierFallback?.address ||
-      supplierFallback?.manual_address ||
-      '',
+    supplierAddress: firstFilled(
+      supplierFallback?.manual_address,
+      purchaseMaster?.manual_address,
+      purchaseMaster?.supplier_address,
+      supplierFallback?.address,
+      purchaseMaster?.address,
+    ),
     totalAmount,
     discountAmount,
     netAmount,

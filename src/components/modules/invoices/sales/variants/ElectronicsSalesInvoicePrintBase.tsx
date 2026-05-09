@@ -175,6 +175,12 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
     const pageRows = Math.min(rowsPerPage, config.rowsLimit);
     const pages = chunkRows(meta.details, pageRows);
     const isHalf = variant.startsWith('half');
+    const approvedByName = firstFilled(
+      data?.approved_user?.name,
+      meta.salesMaster?.approved_user?.name,
+      data?.approved_by_name,
+      data?.approved_by,
+    );
     const hasInstallments =
       settings?.data?.branch?.show_instalment_list == '1' &&
       data?.installments &&
@@ -398,7 +404,7 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
                 )}
 
                 <div className={isHalf ? 'flex items-end justify-end pt-3' : 'flex items-end justify-end pt-8 pr-8'}>
-                  <div className="text-left" style={{ fontSize: fs }}>
+                  <div className="text-left" style={{ fontSize: fs }} title={approvedByName}>
                     <div className="border-t border-black min-w-[110px] text-center">{data?.user?.name}</div>
                     <div className="text-center leading-none mt-0.5">{chartDateTime(data?.created_at)}</div>
                   </div>

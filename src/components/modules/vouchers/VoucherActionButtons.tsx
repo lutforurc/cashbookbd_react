@@ -64,6 +64,13 @@ const VoucherActionButtons = ({
     callback?.(row);
   };
 
+  const approvedByName = String(
+    row?.approved_user?.name ??
+    row?.approved_by_name ??
+    row?.approved_by ??
+    '',
+  ).trim();
+
   return (
     <>
       {canShowApproveAction ? (
@@ -73,7 +80,7 @@ const VoucherActionButtons = ({
           className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
           title={
             isApproved
-              ? `Approved${row?.approved_by ? ` by ${row.approved_by}` : ''}`
+              ? `Approved${approvedByName ? ` by ${approvedByName}` : ''}`
               : 'Approve voucher'
           }
           disabled={isApproved || approvingId === voucherId}
