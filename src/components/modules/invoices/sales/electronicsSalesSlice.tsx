@@ -102,6 +102,14 @@ interface editData {
   invoiceNo: string;
 }
 
+type PrintData = {
+  mt?: string | number;
+  voucher_no?: string;
+  status?: number;
+  include_deleted?: boolean;
+  recycle_bin?: boolean;
+};
+
  
 // Not ready for electronics sales edit action
 export const electronicsSalesEdit = (data: editData, callback?: (message: string) => void) => (dispatch: any) => {
@@ -139,7 +147,7 @@ export const electronicsSalesEdit = (data: editData, callback?: (message: string
 };
 
 // Not ready for electronics sales print action
-export const electronicsSalesPrint = (data: editData, callback?: (message: string) => void) => (dispatch: any) => {
+export const electronicsSalesPrint = (data: PrintData, callback?: (message: string) => void) => (dispatch: any) => {
   dispatch({ type: SALES_ELECTRONICS_INVOICE_PRINT_PENDING });
   httpService.post(API_ELECTRONICS_SALES_INVOICE_PRINT_URL, data)
     .then((res) => {

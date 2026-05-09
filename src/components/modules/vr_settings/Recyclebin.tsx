@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiPrinter, FiSearch, FiTrash2 } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
@@ -14,10 +13,38 @@ import { fetchRecycleBin, removeRecycleBin, restoreRecycleBin } from './voucherS
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { toast } from 'react-toastify';
 import { FaRecycle } from 'react-icons/fa';
+import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../vouchers';
+
+const getRecyclePrintMtmId = (row: any) =>
+  [
+    row?.mtm_id,
+    row?.smtm_id,
+    row?.main_trx_id,
+    row?.main_transaction_id,
+    row?.main_trx_master_id,
+    row?.main_transaction_master_id,
+    row?.main_trx_master?.id,
+    row?.main_transaction_master?.id,
+    row?.main_transaction?.id,
+    row?.main_transaction?.main_trx_id,
+    row?.transaction?.main_trx_id,
+    row?.transaction?.mtm_id,
+    row?.transaction?.id,
+    row?.voucher_id,
+    row?.trx_id,
+    row?.transaction_id,
+    row?.main_id,
+    row?.mt_id,
+    row?.mtmid,
+    row?.mtmId,
+    row?.mid,
+  ].find((value) => Number.isFinite(Number(value)) && Number(value) > 0);
 
 const Recyclebin = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   // Redux state
   const voucherSettings = useSelector((state: any) => state.voucherSettings);
@@ -85,6 +112,22 @@ const Recyclebin = () => {
     setShowRestoreConfirm(true);
   };
 
+  const handlePrintRecycle = (row: any) => {
+    const mtmId = getRecyclePrintMtmId(row);
+
+    if (!row?.vr_no) {
+      toast.error('Invalid voucher data');
+      return;
+    }
+
+    handleVoucherPrint({
+      ...row,
+      ...(mtmId ? { mtm_id: mtmId } : {}),
+      status: 0,
+      fromRecycleBin: true,
+    });
+  };
+
   // Delete Confirm
   const handleDeleteConfirmed = async () => {
     if (!selectedRow?.id) return;
@@ -126,7 +169,20 @@ const Recyclebin = () => {
   // Table columns
   const columns = [
     { key: 'sl_no', header: 'Sl. No.', headerClass: 'text-center', cellClass: 'text-center' },
-    { key: 'vr_no', header: 'Voucher No', render: (row: any) => <p>{row.vr_no}</p> },
+    {
+      key: 'vr_no',
+      header: 'Voucher No',
+      render: (row: any) => (
+        <button
+          type="button"
+          className="hover:underline"
+          onClick={() => handlePrintRecycle(row)}
+          title="Print Preview"
+        >
+          {row.vr_no}
+        </button>
+      ),
+    },
     { key: 'vr_date', header: 'Voucher Date', render: (row: any) => <p>{row.vr_date}</p> },
     { key: 'coal_name', header: 'Name', render: (row: any) => <p>{row.coal_name}</p> },
     {
@@ -165,8 +221,15 @@ const Recyclebin = () => {
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex justify-center items-center">
+          <button
+            type="button"
+            onClick={() => handlePrintRecycle(row)}
+            title="Print Preview"
+          >
+            <FiPrinter className="text-blue-500 text-lg font-bold" />
+          </button>
           <button onClick={() => handleRestoreRecycle(row)}>
-            <FaRecycle className="text-green-500 text-lg font-bold" />
+            <FaRecycle className="text-green-500 text-lg font-bold ml-2" />
           </button>
           <button onClick={() => handleRemoveRecycle(row)}>
             <FiTrash2 className="text-red-500 ml-2 text-lg" />
@@ -244,6 +307,12 @@ const Recyclebin = () => {
         }}
         onConfirm={handleRestoreConfirmed}
         className="bg-green-600 hover:bg-green-700"
+      />
+
+      <VoucherPrintRegistry
+        ref={voucherRegistryRef}
+        rowsPerPage={10}
+        fontSize={10}
       />
     </div>
   );

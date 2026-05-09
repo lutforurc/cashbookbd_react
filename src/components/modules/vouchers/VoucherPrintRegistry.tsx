@@ -19,6 +19,72 @@ type Props = {
   fontSize: number;
 };
 
+type PrintPayload = {
+  mt?: number;
+  voucher_no?: string;
+  status?: number;
+  include_deleted?: boolean;
+  recycle_bin?: boolean;
+};
+
+const isValidMtmId = (value: any) =>
+  Number.isFinite(Number(value)) && Number(value) > 0;
+
+const getPrintMtmId = (row: any) => {
+  const directId = [
+    row?.mtm_id,
+    row?.smtm_id,
+    row?.main_trx_id,
+    row?.main_transaction_id,
+    row?.main_trx_master_id,
+    row?.main_transaction_master_id,
+    row?.main_trx_master?.id,
+    row?.main_transaction_master?.id,
+    row?.main_transaction?.id,
+    row?.main_transaction?.main_trx_id,
+    row?.transaction?.main_trx_id,
+    row?.transaction?.mtm_id,
+    row?.transaction?.id,
+    row?.voucher_id,
+    row?.trx_id,
+    row?.transaction_id,
+    row?.main_id,
+    row?.mt_id,
+    row?.mtmid,
+    row?.mtmId,
+    row?.mid,
+  ].find(isValidMtmId);
+
+  if (directId) return directId;
+
+  if (Number(row?.status) === 0 || row?.fromRecycleBin) {
+    return null;
+  }
+
+  return isValidMtmId(row?.id) ? row.id : null;
+};
+
+const buildPrintPayload = (mtmId: any, row: any): PrintPayload => {
+  const isRecycleBinVoucher = Number(row?.status) === 0 || row?.fromRecycleBin;
+  const payload: PrintPayload = {};
+
+  if (isValidMtmId(mtmId)) {
+    payload.mt = Number(mtmId);
+  }
+
+  if (isRecycleBinVoucher) {
+    payload.status = 0;
+    payload.include_deleted = true;
+    payload.recycle_bin = true;
+
+    if (row?.vr_no) {
+      payload.voucher_no = String(row.vr_no);
+    }
+  }
+
+  return payload;
+};
+
 export const VoucherPrintRegistry = forwardRef(
   ({ rowsPerPage, fontSize }: Props, ref: any) => {
     const dispatch = useDispatch();
@@ -47,8 +113,15 @@ export const VoucherPrintRegistry = forwardRef(
     /* ================= PUBLIC METHOD ================= */
     useImperativeHandle(ref, () => ({
       printVoucher(row: any) {
-        const mtmId = row?.mtm_id ?? row?.mtmId ?? row?.mid ?? row?.id;
-        if (!mtmId || !row?.vr_no) {
+        const mtmId = getPrintMtmId(row);
+        if (!row?.vr_no) {
+          toast.error('Invalid voucher data');
+          return;
+        }
+
+        const printPayload = buildPrintPayload(mtmId, row);
+
+        if (!printPayload.mt && !printPayload.voucher_no) {
           toast.error('Invalid voucher data');
           return;
         }
@@ -66,7 +139,7 @@ export const VoucherPrintRegistry = forwardRef(
 
             dispatch(
               electronicsSalesPrint(
-                { mt: mtmId },
+                printPayload,
                 (message?: string) => {
                   if (message) {
                     toast.error(message);
@@ -83,7 +156,7 @@ export const VoucherPrintRegistry = forwardRef(
 
             dispatch(
               electronicsSalesPrint(
-                { mt: mtmId },
+                printPayload,
                 (message?: string) => {
                   if (message) {
                     toast.error(message);
@@ -101,7 +174,7 @@ export const VoucherPrintRegistry = forwardRef(
 
             dispatch(
               electronicsSalesPrint(
-                { mt: mtmId },
+                printPayload,
                 (message?: string) => {
                   if (message) {
                     toast.error(message);
@@ -118,7 +191,7 @@ export const VoucherPrintRegistry = forwardRef(
             activePrintRef.current = purchaseRef.current;
             dispatch(
               electronicsSalesPrint(
-                { mt: mtmId },
+                printPayload,
                 (message?: string) => {
                   if (message) {
                     toast.error(message);
