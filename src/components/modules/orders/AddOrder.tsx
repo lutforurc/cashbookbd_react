@@ -61,6 +61,7 @@ const AddOrder = (user: any) => {
         order_date: string | null;
         last_delivery_date: string | null;
         order_rate: string | null;
+        contract_order_qty: string | null;
         total_order: string | null;
         order_type: string;
         notes: string | null;
@@ -82,6 +83,7 @@ const AddOrder = (user: any) => {
         order_date: '',
         last_delivery_date: '',
         order_rate: '',
+        contract_order_qty: '',
         total_order: '',
         order_type: '',
         status: '1',
@@ -142,6 +144,7 @@ const AddOrder = (user: any) => {
             order_date: locationOrder?.order_date ?? prev.order_date,
             last_delivery_date: locationOrder?.last_delivery_date ?? prev.last_delivery_date,
             order_rate: locationOrder?.order_rate?.toString?.() ?? prev.order_rate,
+            contract_order_qty: locationOrder?.contract_order_qty?.toString?.() ?? prev.contract_order_qty,
             total_order: locationOrder?.total_order?.toString?.() ?? prev.total_order,
             order_type: locationOrder?.order_type?.toString?.() ?? prev.order_type,
             status: locationOrder?.status?.toString?.() ?? prev.status,
@@ -197,6 +200,7 @@ const AddOrder = (user: any) => {
             order_date: editData?.order_date ?? '',
             last_delivery_date: editData?.last_delivery_date ?? '',
             order_rate: editData?.order_rate?.toString?.() ?? '',
+            contract_order_qty: editData?.contract_order_qty?.toString?.() ?? '',
             total_order: editData?.total_order?.toString?.() ?? '',
             order_type: editData?.order_type?.toString?.() ?? '',
             status: editData?.status?.toString?.() ?? '1',
@@ -293,6 +297,7 @@ const AddOrder = (user: any) => {
             order_date: '',
             last_delivery_date: '',
             order_rate: '',
+            contract_order_qty: '',
             total_order: '',
             order_type: '',
             notes: '',
@@ -358,6 +363,7 @@ const AddOrder = (user: any) => {
             order_date: formData.order_date,
             last_delivery_date: formData.last_delivery_date,
             order_rate: formData.order_rate,
+            contract_order_qty: formData.contract_order_qty || null,
             total_order: formData.total_order,
             order_type: formData.order_type,
             status: formData.status || '1',
@@ -531,6 +537,7 @@ const AddOrder = (user: any) => {
                         }}
                     />
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                 <InputElement id="order_rate"
                     value={formData.order_rate || ''}
                     name="order_rate"
@@ -540,17 +547,14 @@ const AddOrder = (user: any) => {
                     onChange={handleOrderChange}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                            const nextElement = document.getElementById('total_order');
+                            const nextElement = document.getElementById('contract_order_qty');
                             if (nextElement) {
                                 nextElement.focus();
                             }
                         }
                     }}
                 />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-                    <InputElement id="total_order"
+                <InputElement id="total_order"
                         value={formData.total_order || ""}
                         name="total_order"
                         placeholder={'Total Order Qty'}
@@ -566,6 +570,27 @@ const AddOrder = (user: any) => {
                             }
                         }}
                     />
+            </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+                    <InputElement id="contract_order_qty"
+                        value={formData.contract_order_qty || ""}
+                        name="contract_order_qty"
+                        placeholder={'Contract Order Qty'}
+                        label={'Contract Order Qty'}
+                        className={'py-1.5'}
+                        onChange={handleOrderChange}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const nextElement = document.getElementById('total_order');
+                                if (nextElement) {
+                                    nextElement.focus();
+                                }
+                            }
+                        }}
+                    />
+                    
                     <div>
                         <label className='mb-0 block'>Order Type</label>
                         <OrderTypes

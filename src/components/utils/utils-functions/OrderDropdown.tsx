@@ -18,6 +18,7 @@ interface OptionType {
     label_7?: string;
     label_8?: string | number;
     label_9?: string;
+    contract_order_qty?: string | number;
     order_type?: string;
     [key: string]: any;
 }

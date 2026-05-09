@@ -177,6 +177,9 @@ const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
     total_order:
       pickFirstValue(sources, ['total_order', 'order_qty', 'quantity', 'qty']) ??
       baseOrder?.total_order,
+    contract_order_qty:
+      pickFirstValue(sources, ['contract_order_qty']) ??
+      baseOrder?.contract_order_qty,
     trx_quantity:
       pickFirstValue(sources, ['trx_quantity', 'delivery_qty', 'delivered_qty']) ??
       baseOrder?.trx_quantity,
@@ -792,6 +795,7 @@ const Orders = () => {
       header: (
         <p className="text-right">
           <span className="block">Order Rate</span>
+          <span className="block">Contract Qty</span>
           <span className="block">Order Qty</span>
           <span className="block">Remaining Qty</span>
         </p>
@@ -799,6 +803,11 @@ const Orders = () => {
       render: (data: any) => (
         <p className="text-right">
           <span className="block">{data.order_rate}</span>
+          <span className="block">
+            {data.contract_order_qty != null && data.contract_order_qty !== ''
+              ? thousandSeparator(data.contract_order_qty)
+              : '-'}
+          </span>
           <span className="block">
             {thousandSeparator(data.total_order)}
           </span>

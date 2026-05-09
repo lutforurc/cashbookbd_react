@@ -146,7 +146,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">Order For</th>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">Product / Trx. Qty</th>
                     <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-left">Order No. / Date</th>
-                    <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-right">Order Rate / Qty</th>
+                    <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-right">Order Rate / Contract / Qty</th>
                     <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-right">Reference / Base Qty</th>
                     <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-right">Linked / Remaining</th>
                   </tr>
@@ -173,6 +173,11 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                         </td>
                         <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
                           <span className="block">{thousandSeparator(Number(row?.order_rate || 0))}</span>
+                          <span className="block">
+                            Contract {row?.contract_order_qty != null && row?.contract_order_qty !== ''
+                              ? thousandSeparator(Number(row.contract_order_qty || 0))
+                              : '-'}
+                          </span>
                           <span className="block">
                             {thousandSeparator(Number(row?.total_order || 0))}
                           </span>

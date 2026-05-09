@@ -146,6 +146,7 @@ interface formData {
   order_date: number;
   last_delivery_date: string;
   order_rate: string;
+  contract_order_qty?: string;
   total_order: string;
   order_type: string;
   status: string;
