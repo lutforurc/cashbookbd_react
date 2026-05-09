@@ -41,6 +41,44 @@ import { formatTransportationNumber } from '../../../utils/utils-functions/forma
 import routes from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
 
+const SALES_LEDGER_FILTER_STORAGE_KEY = 'sales-ledger-filter-state';
+
+type SalesLedgerSavedFilters = {
+  branchId?: number | string | null;
+  ledgerId?: number | string | null;
+  productId?: number | string | null;
+  selectedLedgerOption?: any;
+  selectedProductOption?: any;
+  startDate?: string | null;
+  endDate?: string | null;
+  search?: string;
+};
+
+const toNullableNumber = (value: unknown) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
+const parseStoredDate = (value?: string | null) => {
+  if (!value) return null;
+
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  return new Date(year, month - 1, day);
+};
+
+const readSavedSalesLedgerFilters = (): SalesLedgerSavedFilters | null => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(SALES_LEDGER_FILTER_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -83,6 +121,7 @@ const SalesLedger = (user: any) => {
   // Ã¢Å“â€¦ Print
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
+  const restoredFilterRef = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const handlePrint = useReactToPrint({
@@ -93,6 +132,41 @@ const SalesLedger = (user: any) => {
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
+  }, []);
+
+  const saveSalesLedgerFilters = () => {
+    if (typeof window === 'undefined') return;
+
+    const filters: SalesLedgerSavedFilters = {
+      branchId,
+      ledgerId,
+      productId,
+      selectedLedgerOption,
+      selectedProductOption,
+      startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
+      endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
+      search,
+    };
+
+    window.sessionStorage.setItem(
+      SALES_LEDGER_FILTER_STORAGE_KEY,
+      JSON.stringify(filters),
+    );
+  };
+
+  useEffect(() => {
+    const savedFilters = readSavedSalesLedgerFilters();
+    if (!savedFilters) return;
+
+    restoredFilterRef.current = true;
+    setBranchId(toNullableNumber(savedFilters.branchId) ?? user.user.branch_id);
+    setLedgerAccount(toNullableNumber(savedFilters.ledgerId));
+    setProductId(toNullableNumber(savedFilters.productId));
+    setSelectedLedgerOption(savedFilters.selectedLedgerOption || null);
+    setSelectedProductOption(savedFilters.selectedProductOption || null);
+    setStartDate(parseStoredDate(savedFilters.startDate));
+    setEndDate(parseStoredDate(savedFilters.endDate));
+    setSearchValue(savedFilters.search || '');
   }, []);
 
   useEffect(() => {
@@ -121,6 +195,8 @@ const SalesLedger = (user: any) => {
     const startD = dayjs(startDate).format('YYYY-MM-DD');
     const endD = dayjs(endDate).format('YYYY-MM-DD');
 
+    saveSalesLedgerFilters();
+
     dispatch(
       getSalesLedger({
         branchId,
@@ -145,9 +221,11 @@ const SalesLedger = (user: any) => {
         branchDdlData?.protectedData?.transactionDate.split('/');
 
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(parsedDate);
-      setEndDate(parsedDate);
-      setBranchId(user.user.branch_id);
+      if (!restoredFilterRef.current) {
+        setStartDate(parsedDate);
+        setEndDate(parsedDate);
+        setBranchId(user.user.branch_id);
+      }
     }
   }, [branchDdlData?.protectedData]);
 
@@ -188,6 +266,8 @@ const SalesLedger = (user: any) => {
   };
 
   const handleEditVoucher = (row: any) => {
+    saveSalesLedgerFilters();
+
     const combinedNumber = String(row?.combined_number || '').trim();
     if (combinedNumber) {
       const combinedOpenState = getCombinedVoucherOpenState(row);

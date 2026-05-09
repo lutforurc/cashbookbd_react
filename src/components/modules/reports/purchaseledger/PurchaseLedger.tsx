@@ -43,6 +43,44 @@ import { formatTransportationNumber } from '../../../utils/utils-functions/forma
 import routes from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
 
+const PURCHASE_LEDGER_FILTER_STORAGE_KEY = 'purchase-ledger-filter-state';
+
+type PurchaseLedgerSavedFilters = {
+  branchId?: number | string | null;
+  ledgerId?: number | string | null;
+  productId?: number | string | null;
+  selectedLedgerOption?: any;
+  selectedProductOption?: any;
+  startDate?: string | null;
+  endDate?: string | null;
+  search?: string;
+};
+
+const toNullableNumber = (value: unknown) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
+const parseStoredDate = (value?: string | null) => {
+  if (!value) return null;
+
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  return new Date(year, month - 1, day);
+};
+
+const readSavedPurchaseLedgerFilters = (): PurchaseLedgerSavedFilters | null => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(PURCHASE_LEDGER_FILTER_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -66,6 +104,7 @@ const PurchaseLedger = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
+  const restoredFilterRef = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const [perPage, setPerPage] = useState<number>(12);
@@ -91,6 +130,41 @@ const PurchaseLedger = (user: any) => {
     setBranchId(user.user.branch_id);
   }, []);
 
+  const savePurchaseLedgerFilters = () => {
+    if (typeof window === 'undefined') return;
+
+    const filters: PurchaseLedgerSavedFilters = {
+      branchId,
+      ledgerId,
+      productId,
+      selectedLedgerOption,
+      selectedProductOption,
+      startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
+      endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
+      search,
+    };
+
+    window.sessionStorage.setItem(
+      PURCHASE_LEDGER_FILTER_STORAGE_KEY,
+      JSON.stringify(filters),
+    );
+  };
+
+  useEffect(() => {
+    const savedFilters = readSavedPurchaseLedgerFilters();
+    if (!savedFilters) return;
+
+    restoredFilterRef.current = true;
+    setBranchId(toNullableNumber(savedFilters.branchId) ?? user.user.branch_id);
+    setLedgerAccount(toNullableNumber(savedFilters.ledgerId));
+    setProductId(toNullableNumber(savedFilters.productId));
+    setSelectedLedgerOption(savedFilters.selectedLedgerOption || null);
+    setSelectedProductOption(savedFilters.selectedProductOption || null);
+    setStartDate(parseStoredDate(savedFilters.startDate));
+    setEndDate(parseStoredDate(savedFilters.endDate));
+    setSearchValue(savedFilters.search || '');
+  }, []);
+
   useEffect(() => {
     if (!ledgerData.isLoading) {
       setTableData(Array.isArray(ledgerData?.data) ? ledgerData.data : []);
@@ -112,6 +186,8 @@ const PurchaseLedger = (user: any) => {
   const runPurchaseLedger = () => {
     const startD = dayjs(startDate).format('YYYY-MM-DD'); // Adjust format as needed
     const endD = dayjs(endDate).format('YYYY-MM-DD'); // Adjust format as needed
+    savePurchaseLedgerFilters();
+
     dispatch(
       getPurchaseLedger({
         branchId,
@@ -138,9 +214,11 @@ const PurchaseLedger = (user: any) => {
       const [day, month, year] =
         branchDdlData?.protectedData?.transactionDate.split('/');
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(parsedDate);
-      setEndDate(parsedDate);
-      setBranchId(user.user.branch_id);
+      if (!restoredFilterRef.current) {
+        setStartDate(parsedDate);
+        setEndDate(parsedDate);
+        setBranchId(user.user.branch_id);
+      }
     }
   }, [branchDdlData?.protectedData]);
 
@@ -179,6 +257,8 @@ const PurchaseLedger = (user: any) => {
   };
 
   const handleEditVoucher = (row: any) => {
+    savePurchaseLedgerFilters();
+
     const combinedNumber = String(row?.combined_number || '').trim();
     if (combinedNumber) {
       const combinedOpenState = getCombinedVoucherOpenState(row);
