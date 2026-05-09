@@ -97,11 +97,11 @@ const getSalesQty = (row: any) => {
 
 type Props = {
   rows: any[];
-  branchName?: string;
-  partyName?: string;
-  ledgerPage?: string;
-  mobile?: string;
-  address?: string;
+  branchName?: string | null;
+  partyName?: string | null;
+  ledgerPage?: string | null;
+  mobile?: string | null;
+  address?: string | null;
   startDate?: string;
   endDate?: string;
   rowsPerPage?: number;
@@ -145,6 +145,9 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 	    const fs = Number.isFinite(fontSize) ? fontSize : 9;
 	    const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
 	    const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
+	    const printablePartyName = partyName || '-';
+	    const printableMobile = mobile || '';
+	    const printableAddress = address || '-';
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -174,15 +177,15 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <div>
-                    <span className="font-semibold">Name:</span> {partyName}
+                    <span className="font-semibold">Name:</span> {printablePartyName}
                   </div>
-                  { mobile.length >=5 && (
+                  {printableMobile.length >= 5 && (
                     <div>
-                      <span className="font-semibold">Mobile:</span> {mobile || '-'}
+                      <span className="font-semibold">Mobile:</span> {printableMobile}
                     </div>
                   )}
                   <div>
-                    <span className="font-semibold">Address:</span> {address || '-'}
+                    <span className="font-semibold">Address:</span> {printableAddress}
                   </div>
                 </div>
                 <div className="text-right self-end">
