@@ -386,16 +386,16 @@ const AddOrder = (user: any) => {
         }));
     };
 
-      const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
+            ...prevFormData,
+            [name]: value,
         }));
 
-      };
+    };
 
-    useCtrlS(handleSave); 
+    useCtrlS(handleSave);
     return (
         <div>
             <HelmetTitle title={isEditMode ? 'Edit Order' : 'Create Order'} />
@@ -434,8 +434,8 @@ const AddOrder = (user: any) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <div>
                     <label htmlFor="">Select Product</label>
-                    <ProductDropdown onSelect={selectedProductOptionHandler} 
-                    value={selectedProduct} id='product_id' name='product_id'
+                    <ProductDropdown onSelect={selectedProductOptionHandler}
+                        value={selectedProduct} id='product_id' name='product_id'
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 const nextElement = document.getElementById('order_number');
@@ -445,7 +445,7 @@ const AddOrder = (user: any) => {
                             }
                         }}
                         className='h-10'
-                        />
+                    />
 
                 </div>
                 <InputElement id="order_number"
@@ -538,23 +538,7 @@ const AddOrder = (user: any) => {
                     />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-                <InputElement id="order_rate"
-                    value={formData.order_rate || ''}
-                    name="order_rate"
-                    placeholder={'Order Rate'}
-                    label={'Order Rate'}
-                    className={'py-1.5'}
-                    onChange={handleOrderChange}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            const nextElement = document.getElementById('contract_order_qty');
-                            if (nextElement) {
-                                nextElement.focus();
-                            }
-                        }
-                    }}
-                />
-                <InputElement id="total_order"
+                    <InputElement id="total_order"
                         value={formData.total_order || ""}
                         name="total_order"
                         placeholder={'Total Order Qty'}
@@ -570,7 +554,24 @@ const AddOrder = (user: any) => {
                             }
                         }}
                     />
-            </div>
+                    <InputElement id="order_rate"
+                        value={formData.order_rate || ''}
+                        name="order_rate"
+                        placeholder={'Order Rate'}
+                        label={'Order Rate'}
+                        className={'py-1.5'}
+                        onChange={handleOrderChange}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const nextElement = document.getElementById('contract_order_qty');
+                                if (nextElement) {
+                                    nextElement.focus();
+                                }
+                            }
+                        }}
+                    />
+
+                </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
@@ -590,7 +591,7 @@ const AddOrder = (user: any) => {
                             }
                         }}
                     />
-                    
+
                     <div>
                         <label className='mb-0 block'>Order Type</label>
                         <OrderTypes
@@ -651,33 +652,33 @@ const AddOrder = (user: any) => {
                         refDirection="reference"
                         isDisabled={!referenceOrderType}
                         focusTrigger={referenceOrderFocusTrigger}
-                         onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    e.currentTarget.blur();
-                                    const nextElement = document.getElementById('save_btn');
-                                    if (nextElement) {
-                                        window.setTimeout(() => {
-                                            nextElement.focus();
-                                        }, 0);
-                                    }
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.blur();
+                                const nextElement = document.getElementById('save_btn');
+                                if (nextElement) {
+                                    window.setTimeout(() => {
+                                        nextElement.focus();
+                                    }, 0);
                                 }
-                            }}
+                            }
+                        }}
                     />
                 </div>
                 <div>
                     <DropdownCommon
-                      id="status"
-                      name={'status'}
-                      label="Order Status"
-                      onChange={handleOnSelectChange}
-                      className="h-[2.1rem] bg-transparent"
-                      value={formData?.status?.toString() ?? ''}
-                      data={ORDER_STATUS}
+                        id="status"
+                        name={'status'}
+                        label="Order Status"
+                        onChange={handleOnSelectChange}
+                        className="h-[2.1rem] bg-transparent"
+                        value={formData?.status?.toString() ?? ''}
+                        data={ORDER_STATUS}
                     />
-                        
-                    </div>
+
+                </div>
             </div>
             <div className="grid grid-cols-3 gap-x-1 gap-y-1 w-2/4 md:w-2/5 mx-auto">
                 <ButtonLoading
