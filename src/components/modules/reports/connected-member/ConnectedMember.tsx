@@ -153,7 +153,7 @@ const ConnectedMember = (user: any) => {
   return (
     <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[#18212e] dark:text-white">
       <HelmetTitle title="Connected Member" />
-      <div className="mb-3 grid grid-cols-1 items-end gap-3 xl:grid-cols-[minmax(320px,1fr)_minmax(220px,0.45fr)_minmax(220px,0.45fr)_auto]">
+      <div className="mb-3 grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(320px,1fr)_minmax(220px,0.45fr)_minmax(220px,0.45fr)_auto]">
           <div>
             <label className={labelClass}>Select Project</label>
             <select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>

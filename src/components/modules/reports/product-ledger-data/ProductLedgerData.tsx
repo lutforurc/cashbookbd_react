@@ -391,8 +391,8 @@ const ProductLedgerData = (user: any) => {
 
       <div className="">
         <div className="py-3">
-          <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
-            <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
+          <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-wrap items-end'}`}>
+            <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'}>
               {useFilterMenuEnabled && (
                 <button
                   type="button"
@@ -631,3 +631,4 @@ const ProductLedgerData = (user: any) => {
 };
 
 export default ProductLedgerData;
+

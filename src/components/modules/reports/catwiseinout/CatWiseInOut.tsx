@@ -223,8 +223,8 @@ const CatWiseInOut = (user: any) => {
       <HelmetTitle title={"Category Wise In & Out"} />
 
       <div className=" px-0 py-3 ">
-        <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col 2xl:flex-row 2xl:items-end"}`}>
-          <div className={useFilterMenuEnabled ? "relative shrink-0" : "w-full 2xl:min-w-[320px] 2xl:flex-1"}>
+        <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-wrap items-end"}`}>
+          <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none"}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -477,3 +477,4 @@ const CatWiseInOut = (user: any) => {
 };
 
 export default CatWiseInOut;
+

@@ -334,7 +334,7 @@ const CollectionSheet = (user: any) => {
       <HelmetTitle title="Collection Sheet" />
 
       <div className="mb-3 flex flex-wrap items-end gap-3">
-        <div className="grid min-w-[min(100%,680px)] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(150px,1.05fr)_minmax(180px,1.25fr)_minmax(120px,0.7fr)_minmax(110px,0.65fr)]">
+        <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:grid-cols-4 xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none min-[1881px]:grid-cols-[minmax(150px,1.05fr)_minmax(180px,1.25fr)_minmax(120px,0.7fr)_minmax(110px,0.65fr)]">
           <div>
             <label className={labelClass}>Select Branch</label>
             {branchDdlData?.isLoading && <Loader />}
@@ -386,43 +386,43 @@ const CollectionSheet = (user: any) => {
               data={statusOptions}
             />
           </div>
-        </div>
 
-        <div className="grid min-w-max grid-cols-[auto_auto_64px_64px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
-          <button type="button" onClick={handleLoad} className={buttonClass}>
-            <FiCheckSquare size={15} />
-            Apply
-          </button>
-          <button type="button" onClick={handleReset} className={buttonClass}>
-            <FiRefreshCcw size={15} />
-            Reset
-          </button>
+          <div className="grid min-w-max grid-cols-[auto_auto_64px_64px_auto] items-end gap-2 overflow-x-auto md:col-span-2 xl:col-span-3 xl:ml-auto min-[1881px]:col-span-1">
+            <button type="button" onClick={handleLoad} className={buttonClass}>
+              <FiCheckSquare size={15} />
+              Apply
+            </button>
+            <button type="button" onClick={handleReset} className={buttonClass}>
+              <FiRefreshCcw size={15} />
+              Reset
+            </button>
 
-          <label className="block">
-            <span className={labelClass}>Rows</span>
-            <input
-              type="number"
-              min={1}
-              value={rowsPerPage}
-              onChange={(event) => setRowsPerPage(Number(event.target.value) || 16)}
-              className={`${controlClass} text-center`}
-            />
-          </label>
-          <label className="block">
-            <span className={labelClass}>Font</span>
-            <input
-              type="number"
-              min={8}
-              value={fontSize}
-              onChange={(event) => setFontSize(Number(event.target.value) || 11)}
-              className={`${controlClass} text-center`}
-            />
-          </label>
+            <label className="block">
+              <span className={labelClass}>Rows</span>
+              <input
+                type="number"
+                min={1}
+                value={rowsPerPage}
+                onChange={(event) => setRowsPerPage(Number(event.target.value) || 16)}
+                className={`${controlClass} text-center`}
+              />
+            </label>
+            <label className="block">
+              <span className={labelClass}>Font</span>
+              <input
+                type="number"
+                min={8}
+                value={fontSize}
+                onChange={(event) => setFontSize(Number(event.target.value) || 11)}
+                className={`${controlClass} text-center`}
+              />
+            </label>
 
-          <button type="button" onClick={handlePrint} disabled={rows.length === 0} className={buttonClass}>
-            <FiPrinter size={15} />
-            Print
-          </button>
+            <button type="button" onClick={handlePrint} disabled={rows.length === 0} className={buttonClass}>
+              <FiPrinter size={15} />
+              Print
+            </button>
+          </div>
         </div>
       </div>
 

@@ -400,7 +400,7 @@ const ProductStock = ( user : any) => {
 
       <div className="px-0 py-3 ">
         <div className="flex flex-wrap items-end gap-3">
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -429,7 +429,7 @@ const ProductStock = ( user : any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]'
                   }
                 >
                   {useFilterMenuEnabled && (
@@ -518,8 +518,8 @@ const ProductStock = ( user : any) => {
                     className={`flex gap-2 pt-1 ${
                       useFilterMenuEnabled
                         ? 'justify-end'
-                        : 'justify-start self-end md:col-span-2 xl:col-span-1'
-                    }`}
+                        : 'justify-start self-end md:col-span-3 xl:col-span-1'
+                    } ${useFilterMenuEnabled ? '' : 'hidden xl:max-[1880px]:flex min-[1881px]:hidden'}`}
                   >
                     <ButtonLoading
                       onClick={handleActionButtonClick}
@@ -536,6 +536,26 @@ const ProductStock = ( user : any) => {
                       className="h-10 px-4"
                     />
                   </div>
+
+                  {!useFilterMenuEnabled && (
+                    <div className="hidden items-end justify-end gap-2 xl:max-[1880px]:flex">
+                      <InputElement
+                        label="Rows"
+                        value={perPage.toString()}
+                        onChange={handlePerPageChange}
+                        type="text"
+                        className="!w-16 text-sm h-10 text-center sm:!w-20"
+                      />
+                      <InputElement
+                        label="Font"
+                        value={fontSize.toString()}
+                        onChange={handleFontSizeChange}
+                        type="text"
+                        className="!w-16 text-sm h-10 text-center sm:!w-20"
+                      />
+                      <PrintButton onClick={handlePrint} label="" className="h-10 px-4 sm:px-6" />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -547,32 +567,43 @@ const ProductStock = ( user : any) => {
               : 'Use the filter'}
           </div>
 
-          <div className="ml-auto flex items-end gap-2">
-            {useFilterMenuEnabled && selectedBrandName ? (
-              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-                <span className="truncate" title={selectedBrandName}>{selectedBrandName}</span>
-              </div>
-            ) : null}
-            {useFilterMenuEnabled && selectedCategoryName ? (
-              <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-                <span className="truncate" title={selectedCategoryName}>{selectedCategoryName}</span>
-              </div>
-            ) : null}
+          {!useFilterMenuEnabled && <div className="hidden max-md:block max-md:basis-full" />}
+
+          {!useFilterMenuEnabled && (
+            <div className="flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:w-auto xl:max-[1880px]:hidden">
+              <ButtonLoading
+                onClick={handleActionButtonClick}
+                buttonLoading={false}
+                label="Apply"
+                icon={<FiCheckSquare />}
+                className="h-10 px-4 sm:px-6"
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset"
+                icon={<FiRotateCcw />}
+                className="h-10 px-3 sm:px-4"
+              />
+            </div>
+          )}
+
+          <div className={`ml-auto flex shrink-0 flex-nowrap items-end gap-2 md:max-xl:justify-end ${useFilterMenuEnabled ? '' : 'xl:max-[1880px]:hidden'}`}>
             <InputElement
               label="Rows"
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type="text"
-              className="!w-20 text-sm h-10 text-center"
+              className="!w-16 text-sm h-10 text-center sm:!w-20"
             />
             <InputElement
               label="Font"
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type="text"
-              className="!w-20 text-sm h-10 text-center"
+              className="!w-16 text-sm h-10 text-center sm:!w-20"
             />
-            <PrintButton onClick={handlePrint} label="" className="h-10 px-6" />
+            <PrintButton onClick={handlePrint} label="" className="h-10 px-4 sm:px-6" />
           </div>
         </div>
       </div>

@@ -218,8 +218,8 @@ const DateWiseData = (user: any) => {
       <HelmetTitle title={"Datewise Total"} />
 
       <div className="px-0 py-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1"}>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none"}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -248,7 +248,7 @@ const DateWiseData = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? "space-y-3"
-                      : "grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1.4fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]"
+                      : "grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(220px,1.4fr)_minmax(180px,1fr)_minmax(180px,1fr)_auto]"
                   }
                 >
                   <div>
@@ -287,7 +287,7 @@ const DateWiseData = (user: any) => {
                       useFilterMenuEnabled
                         ? "justify-end"
                         : "justify-start self-end"
-                    } ${useFilterMenuEnabled ? "" : "md:col-span-2 xl:col-span-1"}`}
+                    } ${useFilterMenuEnabled ? "" : "hidden"}`}
                   >
                     <ButtonLoading
                       onClick={handleRun}
@@ -319,12 +319,32 @@ const DateWiseData = (user: any) => {
             Use the filter
           </div>
 
-          <div className="ml-auto flex items-end gap-2">
+          {!useFilterMenuEnabled && <div className="hidden max-md:block max-md:basis-full" />}
 
+          {!useFilterMenuEnabled && (
+            <div className="flex shrink-0 flex-nowrap items-end gap-2">
+              <ButtonLoading
+                onClick={handleRun}
+                buttonLoading={buttonLoading}
+                label="Apply"
+                icon={<FiCheckSquare />}
+                className="h-10 px-6"
+              />
+              <ButtonLoading
+                onClick={handleResetFilters}
+                buttonLoading={false}
+                label="Reset"
+                icon={<FiRotateCcw />}
+                className="h-10 px-4"
+              />
+            </div>
+          )}
+
+          <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2">
             <InputElement
               id="perPage"
               name="perPage"
-              label="Per Page"
+              label="Rows"
               value={perPage.toString()}
               onChange={(e) => setPerPage(Number(e.target.value))}
               type="text"
@@ -333,7 +353,7 @@ const DateWiseData = (user: any) => {
             <InputElement
               id="fontSize"
               name="fontSize"
-              label="Font Size"
+              label="Font"
               value={fontSize.toString()}
               onChange={(e) => setFontSize(Number(e.target.value))}
               type="text"
@@ -372,3 +392,4 @@ const DateWiseData = (user: any) => {
 };
 
 export default DateWiseData;
+

@@ -143,8 +143,8 @@ const BankInformation = () => {
   return (
     <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[#18212e] dark:text-white">
       <HelmetTitle title="Bank Information" />
-      <div className="mb-3 flex flex-col gap-3 xl:flex-row xl:items-end">
-        <div className="grid flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3">
+      <div className="mb-3 flex flex-wrap items-end gap-3">
+        <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
           <div>
             <label className={labelClass}>Select Branch</label>
             <select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>

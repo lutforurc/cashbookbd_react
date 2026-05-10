@@ -421,13 +421,13 @@ const CashBook = (user: any) => {
             <p className="font-bold">{selectedOption.label}</p>
           </div>
         )}
-        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
+        <div className="flex flex-wrap items-end gap-3">
           <FilterMenuShell
             enabled={useFilterMenuEnabled}
             isOpen={filterOpen}
             onToggle={() => setFilterOpen((prev) => !prev)}
             menuWidthClassName="w-[min(92vw,320px)]"
-            inlineClassName="grid grid-cols-3 items-end gap-3"
+            inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
           >
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
@@ -532,7 +532,7 @@ const CashBook = (user: any) => {
               />
             </div>
           ) : (
-            <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
+            <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto max-md:ml-0 max-md:w-full xl:ml-auto">
               <ButtonLoading
                 onClick={handleActionButtonClick}
                 buttonLoading={buttonLoading}
@@ -556,7 +556,7 @@ const CashBook = (user: any) => {
                       value={perPage.toString()}
                       onChange={handlePerPageChange}
                       type='text'
-                      className="font-medium text-sm h-10 !w-full text-center"
+                      className="font-medium text-sm h-10 !w-20 text-center"
                     />
               </div>
 
@@ -569,7 +569,7 @@ const CashBook = (user: any) => {
                       value={fontSize.toString()}
                       onChange={handleFontSizeChange}
                       type='text'
-                      className="font-medium text-sm h-10 !w-full text-center"
+                      className="font-medium text-sm h-10 !w-20 text-center"
                     />
               </div>
               <PrintButton

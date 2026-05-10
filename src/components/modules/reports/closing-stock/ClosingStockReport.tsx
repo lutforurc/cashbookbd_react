@@ -192,14 +192,14 @@ const ClosingStockReport = ({ user }: any) => {
       <HelmetTitle title="Stock Details" />
 
       <div className="py-3">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-end">
+        <div className="flex flex-wrap items-end gap-3">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
             {branchDdlData.isLoading ? <Loader /> : null}
             <BranchDropdown
               onChange={(e: any) => setBranchId(e.target.value)}
               value={branchId == null ? "" : String(branchId)}
-              className="w-full font-medium text-sm p-2 h-10 min-w-[260px] xl:min-w-[440px]"
+              className="w-full font-medium text-sm p-2 h-10 min-w-[260px]"
               branchDdl={dropdownData}
             />
           </div>

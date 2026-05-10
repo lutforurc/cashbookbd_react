@@ -362,13 +362,13 @@ const BalanceSheet = (user: any) => {
       <HelmetTitle title="Balance Sheet" />
       <div className="mx-auto space-y-2 ">
         <div className="pl-0 pr-1 py-3">
-          <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-col xl:flex-row xl:items-end"}`}>
+          <div className="flex flex-wrap items-end gap-3">
             <FilterMenuShell
               enabled={useFilterMenuEnabled}
               isOpen={filterOpen}
               onToggle={() => setFilterOpen((prev) => !prev)}
               menuWidthClassName="w-[min(92vw,340px)]"
-              inlineClassName="grid grid-cols-3 items-end gap-3"
+              inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
             >
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -455,7 +455,7 @@ const BalanceSheet = (user: any) => {
                 />
               </div>
             ) : (
-              <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
+              <div className="flex w-full flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto xl:w-auto">
                 <div className="flex flex-nowrap items-end gap-2">
                   <ButtonLoading
                     label="Apply"
@@ -480,7 +480,7 @@ const BalanceSheet = (user: any) => {
                     label=""
                     value={perPage}
                     onChange={(e: any) => setPerPage(Number(e.target.value) || 1)}
-                    className="h-10 !w-28 text-center"
+                    className="h-10 !w-20 text-center"
                   />
                   <InputElement
                     type="number"
@@ -488,7 +488,7 @@ const BalanceSheet = (user: any) => {
                     label=""
                     value={fontSize}
                     onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                    className="h-10 !w-28 text-center"
+                    className="h-10 !w-20 text-center"
                   />
                   <PrintButton
                     label="Print"

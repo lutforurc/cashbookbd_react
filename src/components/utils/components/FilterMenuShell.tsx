@@ -20,11 +20,11 @@ const FilterMenuShell = ({
   summaryText = 'Use the filter',
   menuWidthClassName = 'w-[min(92vw,320px)]',
   containerRef,
-  inlineClassName = 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-4',
+  inlineClassName = 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]',
 }: FilterMenuShellProps) => {
   if (!enabled) {
     return (
-      <div className="min-w-[320px] flex-1">
+      <div className="min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none">
         <div className={inlineClassName}>{children}</div>
       </div>
     );

@@ -139,8 +139,8 @@ const LabourLedger = (user: any) => {
     <div className="">
       <HelmetTitle title={'Labour Ledger'} />
       <div className="py-3">
-        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col xl:flex-row xl:items-end'}`}>
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-wrap items-end'}`}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -169,7 +169,7 @@ const LabourLedger = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-3 items-end gap-3'
+                      : 'grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]'
                   }
                 >
                   <div>
@@ -295,7 +295,7 @@ const LabourLedger = (user: any) => {
             </div>
           ) : (
             <>
-              <div className="flex flex-nowrap items-end gap-3 overflow-x-auto xl:ml-auto">
+              <div className="flex w-full flex-nowrap items-end gap-3 overflow-x-auto xl:ml-auto xl:w-auto">
                 <div className="min-w-[220px]">
                   <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Start Date

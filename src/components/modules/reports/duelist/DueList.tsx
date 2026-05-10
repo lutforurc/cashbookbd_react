@@ -199,8 +199,8 @@ const DueList = (user: any) => {
             <p className="font-bold">{selectedOption.label}</p>
           </div>
         )}
-        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center' : 'flex flex-col 2xl:flex-row 2xl:items-end'}`}>
-          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'w-full 2xl:min-w-[320px] 2xl:flex-1'}>
+        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center' : 'flex flex-wrap items-end'}`}>
+          <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'}>
             {useFilterMenuEnabled && (
               <button
                 type="button"
@@ -309,7 +309,7 @@ const DueList = (user: any) => {
             <InputElement
               id="perPage"
               name="perPage"
-              label="Per page"
+              label="Rows"
               value={perPage.toString()}
               onChange={handlePerPageChange}
               type='text'
@@ -318,7 +318,7 @@ const DueList = (user: any) => {
             <InputElement
               id="fontSize"
               name="fontSize"
-              label="Font Size"
+              label="Font"
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type='text'
@@ -354,3 +354,4 @@ const DueList = (user: any) => {
 };
 
 export default DueList;
+

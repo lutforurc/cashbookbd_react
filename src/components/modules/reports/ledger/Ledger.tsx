@@ -479,13 +479,13 @@ const Ledger = (user: any) => {
     <div className="">
       <HelmetTitle title={'Ledger'} />
       <div className="py-3">
-        <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-col 2xl:flex-row 2xl:items-end'}`}>
+        <div className="flex flex-wrap items-end gap-3">
           <FilterMenuShell
             enabled={useFilterMenuEnabled}
             isOpen={filterOpen}
             onToggle={() => setFilterOpen((prev) => !prev)}
             menuWidthClassName="w-[min(92vw,340px)]"
-            inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-4"
+            inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
           >
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
@@ -545,6 +545,49 @@ const Ledger = (user: any) => {
                 className="h-10 px-4"
               />
             </div>
+
+            {!useFilterMenuEnabled && (
+              <div className="hidden items-end gap-2 xl:max-[1880px]:col-span-3 xl:max-[1880px]:flex xl:max-[1880px]:justify-end min-[1881px]:hidden">
+                <ButtonLoading
+                  onClick={handleActionButtonClick}
+                  buttonLoading={buttonLoading}
+                  label="Apply"
+                  icon={<FiCheckSquare />}
+                  className="h-10 px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon={<FiRotateCcw />}
+                  className="h-10 px-4"
+                />
+                <InputElement
+                  id="perPageInline"
+                  name="perPageInline"
+                  label="Rows"
+                  value={perPage.toString()}
+                  onChange={handlePerPageChange}
+                  type='text'
+                  className="font-medium text-sm h-10 !w-20 text-center"
+                />
+                <InputElement
+                  id="fontSizeInline"
+                  name="fontSizeInline"
+                  label="Font"
+                  value={fontSize.toString()}
+                  onChange={handleFontSizeChange}
+                  type='text'
+                  className="font-medium text-sm h-10 !w-20 text-center"
+                />
+                <PrintButton
+                  onClick={handlePrint}
+                  label="Print"
+                  className="h-10 px-6"
+                  disabled={!Array.isArray(tableData) || tableData.length === 0}
+                />
+              </div>
+            )}
           </FilterMenuShell>
 
           {useFilterMenuEnabled ? (
@@ -580,7 +623,7 @@ const Ledger = (user: any) => {
               />
             </div>
           ) : (
-            <div className="flex flex-wrap items-end justify-between gap-3 2xl:ml-auto 2xl:flex-nowrap">
+            <div className="flex w-full flex-wrap items-end justify-between gap-3 xl:ml-auto xl:w-auto xl:flex-nowrap xl:max-[1880px]:hidden">
               <div className="flex flex-wrap items-end gap-2">
                 <ButtonLoading
                   onClick={handleActionButtonClick}
@@ -597,11 +640,11 @@ const Ledger = (user: any) => {
                   className="h-10 px-4"
                 />
               </div>
-              <div className="flex flex-wrap items-end gap-2 2xl:flex-nowrap">
+              <div className="flex flex-nowrap items-end gap-2">
                 <InputElement
                   id="perPage"
                   name="perPage"
-                  label=""
+                  label="Rows"
                   value={perPage.toString()}
                   onChange={handlePerPageChange}
                   type='text'
@@ -610,7 +653,7 @@ const Ledger = (user: any) => {
                 <InputElement
                   id="fontSize"
                   name="fontSize"
-                  label=""
+                  label="Font"
                   value={fontSize.toString()}
                   onChange={handleFontSizeChange}
                   type='text'
