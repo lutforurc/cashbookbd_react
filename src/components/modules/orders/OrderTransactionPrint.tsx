@@ -15,6 +15,7 @@ type OrderRow = {
   order_number?: string;
   product_name?: string;
   total_order?: number | string;
+  contract_order_qty?: number | string;
   trx_quantity?: number | string;
   order_rate?: number | string;
   order_date?: string;
@@ -170,6 +171,14 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                   <span className="">{order?.product_name || '-'}</span>
                 </div>
 
+                { order?.contract_order_qty && (
+                  <div className="flex flex-wrap leading-4">
+                    <span className="w-24 shrink-0">Contact Qty:</span>
+                    <span className="">{thousandSeparator(toNumber(order?.contract_order_qty || 0))} { order?.unit }</span>
+                  </div>
+                )}
+
+                
                 <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Order Rate:</span>
                   <span className="">{thousandSeparator(toNumber(order?.order_rate))}</span>
