@@ -112,6 +112,8 @@ const normalizeOrderPrintRow = (row: any, index: number, fallbackUnit?: string) 
     pickFirstValue([row], ['rate', 'order_rate', 'unit_rate', 'unit_price', 'price']) ?? 0,
   amount:
     pickFirstValue([row], ['amount', 'line_amount', 'total_amount', 'bill_amount']) ?? 0,
+  receive:
+    pickFirstValue([row], ['receive', 'received', 'received_amount', 'receive_amount', 'payment', 'payment_amount']) ?? 0,
   freight_charge:
     pickFirstValue([row], ['freight_charge', 'freight', 'freight_amount', 'transport_cost', 'carriage']) ?? 0,
   due_amount:

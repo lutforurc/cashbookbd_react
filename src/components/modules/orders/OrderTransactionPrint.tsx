@@ -36,6 +36,7 @@ export type PrintTransactionRow = {
   unit?: string;
   rate?: number | string;
   amount?: number | string;
+  receive?: number | string;
   freight_charge?: number | string;
   due_amount?: number | string;
 };
@@ -106,12 +107,14 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
         const weight = toNumber(row.weight);
         const rate = toNumber(row.rate);
         const freight = toNumber(row.freight_charge);
+        const receive = toNumber(row.receive);
+        const paymentOrReceive = freight > 0 ? freight : receive;
         const amount = toNumber(row.amount) || (weight * rate);
         const due = toNumber(row.due_amount) || (amount - freight);
 
         acc.weight += weight;
         acc.amount += amount;
-        acc.freight += freight;
+        acc.freight += paymentOrReceive;
         acc.due += due;
 
         return acc;
@@ -222,6 +225,8 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                     const weight = toNumber(row.weight);
                     const rate = toNumber(row.rate);
                     const freight = toNumber(row.freight_charge);
+                    const receive = toNumber(row.receive);
+                    const paymentOrReceive = freight > 0 ? freight : receive;
                     const amount = toNumber(row.amount) || (weight * rate);
                     const due = toNumber(row.due_amount) || (amount - freight);
 
@@ -240,7 +245,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                           { formatTransportationNumber (row.vehicle_no) || '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(weight)} {row.unit || order?.unit || ''}
+                          {thousandSeparator(weight)} { Number(weight) > 0 && (row.unit || order?.unit || '') }
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                           {thousandSeparator(rate)}
@@ -249,7 +254,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                           {thousandSeparator(amount)}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {freight > 0 ? thousandSeparator(freight) : '-'}
+                          {paymentOrReceive > 0 ? thousandSeparator(paymentOrReceive) : '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                           {thousandSeparator(due)}
@@ -287,7 +292,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                       {totals.freight > 0 ? thousandSeparator(totals.freight) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                      {thousandSeparator(totals.due)}
+                      {/* {thousandSeparator(totals.due)} */}
                     </td>
                   </tr>
                 ) : null}
