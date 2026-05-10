@@ -440,7 +440,7 @@ const ProductStock = ( user : any) => {
                         value={perPage.toString()}
                         onChange={handlePerPageChange}
                         type="text"
-                        className="w-full text-sm h-10"
+                        className="!w-20 text-sm h-10"
                       />
                     </div>
                   )}
@@ -454,7 +454,7 @@ const ProductStock = ( user : any) => {
                         defaultValue={authUser?.branch_id}
                         value={String(branchId)}
                         onChange={handleBranchChange}
-                        className="w-full text-sm p-2 border h-9.5"
+                        className="!w-20 text-sm p-2 border h-9.5"
                         branchDdl={dropdownData}
                       />
                     )}
