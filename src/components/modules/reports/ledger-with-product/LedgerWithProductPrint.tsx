@@ -284,7 +284,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             </table>
 
             {pageIndex === pages.length - 1 ? (
-              <div className="mt-3 flex justify-end gap-6 text-xs font-bold">
+              <div className="mt-3 flex justify-end gap-6 border border-gray-900 px-2 py-1 text-xs font-bold">
                 <div>Opening: {Number(summary.opening_balance || 0) ? formatAmount(summary.opening_balance) : '-'}</div>
                 <div>Debit: {formatAmount(summary.total_received)}</div>
                 <div>Pur. Qty: {thousandSeparator(Number(summary.purchase_qty))}</div>
