@@ -5,6 +5,7 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import BuildingFloorDropdown from "../../../utils/utils-functions/BuildingFloorDropdown";
 import { flatLayout } from "./flatSlice";
+import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
 
 /* ================= STATUS MAP ================= */
 
@@ -98,7 +99,7 @@ const FlatLayout = () => {
       {/* ===== Header ===== */}
       <div className="mb-4 text-center">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          <span className="italic text-3xl">
+          <span className="italic text-xl">
             {viewLayout?.building ?? "Building Layout"}
           </span>
         </h2>
@@ -109,7 +110,8 @@ const FlatLayout = () => {
 
       {/* ===== Building Selector ===== */}
       <div className="mb-6 max-w-md">
-        <BuildingFloorDropdown onSelect={handleBuildingSelect} />
+        {/* <BuildingFloorDropdown onSelect={handleBuildingSelect} /> */}
+        <BuildingDropdown onSelect={handleBuildingSelect} className="mt-2" />
       </div>
 
       {/* ===== Loader (only layout fetch) ===== */}

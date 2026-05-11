@@ -8,7 +8,7 @@ import { fetchBuildingDdl } from '../../modules/real-estate/buildings/buildingsS
 /* ================= TYPES ================= */
 
 interface OptionType {
-  value: string;
+  value: string | number;
   label: string;
   label_1?: string;
   label_2?: string;
@@ -61,12 +61,13 @@ const BuildingDropdown: React.FC<DropdownProps> = ({
     try {
       const response = await dispatch(fetchBuildingDdl(inputValue)).unwrap();
 
-      // 🔴 IMPORTANT FIX
       const list = Array.isArray(response)
         ? response
+        : Array.isArray(response?.data?.data)
+        ? response.data.data
         : Array.isArray(response?.data)
-          ? response.data
-          : [];
+        ? response.data
+        : [];
 
       const formattedOptions: OptionType[] = list.map((item: any) => ({
         value: item.value,
@@ -187,7 +188,7 @@ const BuildingDropdown: React.FC<DropdownProps> = ({
             )}
           </div>
         )}
-        getOptionValue={(option) => option.value}
+        getOptionValue={(option) => String(option.value)}
         placeholder={placeholder || 'Select a building'}
         styles={customStyles}
         defaultValue={defaultValue}

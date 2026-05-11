@@ -107,7 +107,7 @@ export const fetchBuildingDdl = createAsyncThunk<BuildingDdlItem[],string | unde
     const data = await res.json();
 
     if (data?.success === true) {
-      return data.data;
+      return Array.isArray(data?.data?.data) ? data.data.data : data.data;
     }
 
     return rejectWithValue(data?.message || "Failed to load building ddl");
