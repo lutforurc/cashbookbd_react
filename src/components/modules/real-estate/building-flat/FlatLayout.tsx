@@ -7,6 +7,7 @@ import Loader from "../../../../common/Loader";
 import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
 import { flatLayout } from "./flatSlice";
 import routes from "../../../services/appRoutes";
+import httpService from "../../../services/httpService";
 import {
   FiCheckCircle,
   FiChevronLeft,
@@ -100,6 +101,8 @@ const FlatLayout = () => {
   const [activeFloor, setActiveFloor] = useState<number | null>(null);
   const [viewLayout, setViewLayout] = useState<LayoutType | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<any | null>(null);
+  const [unitPaymentSummary, setUnitPaymentSummary] = useState<any | null>(null);
+  const [unitPaymentLoading, setUnitPaymentLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -113,6 +116,7 @@ const FlatLayout = () => {
     setViewLayout(null);
     setActiveFloor(null);
     setSelectedUnit(null);
+    setUnitPaymentSummary(null);
     setErrorMsg(null);
   };
 
@@ -205,6 +209,7 @@ const FlatLayout = () => {
   const handleUnitClick = (unit: any, e: React.MouseEvent) => {
     e.preventDefault();
     setSelectedUnit(unit);
+    setUnitPaymentSummary(null);
   };
 
   const closeUnitModal = () => setSelectedUnit(null);
@@ -228,6 +233,181 @@ const FlatLayout = () => {
     return null;
   };
 
+  const isParkingUnit = (unit: any) =>
+    String(unit?.unit_type ?? "").toLowerCase() === "parking";
+
+  const getKnownSaleId = (unit: any) =>
+    unit?.booking_id ??
+    unit?.unit_sale_id ??
+    unit?.sale_id ??
+    unit?.booking?.id ??
+    unit?.booking?.booking_id ??
+    null;
+
+  const resolveSaleId = (row: any) =>
+    String(
+      row?.id ??
+        row?.booking_id ??
+        row?.unit_sale_id ??
+        row?.sale_id ??
+        row?.booking?.id ??
+        row?.booking?.booking_id ??
+        "",
+    );
+
+  const resolveUnitId = (row: any) =>
+    String(
+      row?.unit_id ??
+        row?.booking?.unit_id ??
+        row?.booking?.payload?.unit?.value ??
+        row?.unit?.id ??
+        row?.unit?.value ??
+        "",
+    );
+
+  const resolveParkingId = (row: any) =>
+    String(
+      row?.parking_id ??
+        row?.booking?.parking_id ??
+        row?.booking?.payload?.parking?.value ??
+        row?.parking?.id ??
+        row?.parking?.value ??
+        "",
+    );
+
+  const getSaleRowsFromResponse = (res: any) => {
+    const payload = res?.data;
+    const raw = payload?.data ?? payload;
+    const rowsCandidate =
+      raw?.data?.data ??
+      payload?.data?.data?.data ??
+      raw?.data ??
+      raw?.rows ??
+      raw?.list ??
+      raw?.items ??
+      raw?.results ??
+      raw?.options ??
+      raw?.paginator?.data ??
+      payload?.rows ??
+      payload?.list ??
+      payload?.items ??
+      payload?.results ??
+      payload?.options ??
+      payload?.paginator?.data ??
+      raw;
+
+    return Array.isArray(rowsCandidate) ? rowsCandidate : [];
+  };
+
+  const saleRowMatchesUnit = (row: any, unit: any) => {
+    const targetUnitId = String(unit?.id ?? "");
+    const targetUnitNo = String(unit?.unit_no ?? "").toLowerCase();
+    const isParking = isParkingUnit(unit);
+    const rowUnitId = isParking ? resolveParkingId(row) : resolveUnitId(row);
+    const unitText = [
+      row?.unit_label,
+      row?.parking_label,
+      row?.booking?.unit_label,
+      row?.booking?.parking_label,
+      row?.booking?.flat_label,
+      row?.booking?.payload?.unit?.label,
+      row?.booking?.payload?.parking?.label,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (targetUnitId && rowUnitId && rowUnitId === targetUnitId) return true;
+    if (targetUnitNo && unitText.includes(targetUnitNo)) return true;
+
+    return false;
+  };
+
+  const findSaleIdForUnit = async (unit: any) => {
+    const knownSaleId = getKnownSaleId(unit);
+    if (knownSaleId) return String(knownSaleId);
+
+    const searchText =
+      unit?.customer?.mobile ??
+      unit?.customer?.name ??
+      unit?.unit_no ??
+      "";
+
+    if (!searchText) return "";
+
+    const res = await httpService.get("/real-estate/unit-sale/ddl", {
+      params: {
+        q: searchText,
+        page: 1,
+        perPage: 50,
+        per_page: 50,
+      },
+    });
+    const rows = getSaleRowsFromResponse(res);
+    const matchedRow = rows.find((row: any) => saleRowMatchesUnit(row, unit));
+
+    return matchedRow ? resolveSaleId(matchedRow) : "";
+  };
+
+  const loadUnitPaymentSummary = async (unit: any) => {
+    if (!unit || Number(unit.status) !== 4) return;
+
+    try {
+      setUnitPaymentLoading(true);
+      const saleId = await findSaleIdForUnit(unit);
+      if (!saleId) return;
+
+      let res: any;
+      try {
+        res = await httpService.get(`/real-estate/unit-sale/summary/${saleId}`);
+      } catch {
+        res = await httpService.get(`/unit-sale/summary/${saleId}`);
+      }
+
+      const summary = res?.data?.data ?? null;
+      setUnitPaymentSummary(summary ? { ...summary, saleId } : null);
+    } catch {
+      setUnitPaymentSummary(null);
+    } finally {
+      setUnitPaymentLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedUnit) return;
+    loadUnitPaymentSummary(selectedUnit);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedUnit]);
+
+  const getAmountFromSummary = (keys: string[]) => {
+    for (const key of keys) {
+      const value = unitPaymentSummary?.amounts?.[key] ?? unitPaymentSummary?.[key];
+      const numberValue = Number(value);
+      if (Number.isFinite(numberValue)) return numberValue;
+    }
+    return null;
+  };
+
+  const getSelectedUnitPaidAmount = () => {
+    const paidAmount = getAmountFromSummary([
+      "paid_amount",
+      "total_paid",
+      "received_amount",
+      "payment_amount",
+      "paid",
+    ]);
+    if (paidAmount !== null) return paidAmount;
+
+    const totalAmount = getAmountFromSummary(["total_amount", "grand_total", "sale_amount"]);
+    const dueAmount = getAmountFromSummary(["due_amount", "balance_amount", "due"]);
+    if (totalAmount !== null && dueAmount !== null) return Math.max(totalAmount - dueAmount, 0);
+
+    return selectedUnit?.paid_amount;
+  };
+
+  const getSelectedUnitDueAmount = () =>
+    getAmountFromSummary(["due_amount", "balance_amount", "due"]) ?? selectedUnit?.due_amount;
+
   const goToUnitSale = () => {
     if (!selectedUnit) return;
     navigate(routes.real_estate_unit_sales, {
@@ -250,7 +430,7 @@ const FlatLayout = () => {
         customerId: selectedUnit?.customer?.id,
         customerName: selectedUnit?.customer?.name,
         customerMobile: selectedUnit?.customer?.mobile,
-        dueAmount: selectedUnit?.due_amount,
+        dueAmount: getSelectedUnitDueAmount(),
       },
     });
   };
@@ -320,9 +500,6 @@ const FlatLayout = () => {
 
     return counts;
   };
-
-  const isParkingUnit = (unit: any) =>
-    String(unit?.unit_type ?? "").toLowerCase() === "parking";
 
   const getUnitButtonClass = (unit: any) => {
     const statusClass = STATUS_MAP[unit.status] ?? FALLBACK_STATUS_CLASS;
@@ -471,7 +648,7 @@ const FlatLayout = () => {
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
+            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
               Real Estate Layout
             </p>
             <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">
@@ -706,13 +883,17 @@ const FlatLayout = () => {
                     <div className="flex justify-between gap-3">
                       <span>Paid</span>
                       <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {formatNumber(selectedUnit?.paid_amount)}
+                        {unitPaymentLoading
+                          ? "Loading..."
+                          : formatNumber(getSelectedUnitPaidAmount())}
                       </span>
                     </div>
                     <div className="flex justify-between gap-3">
                       <span>Due</span>
                       <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {formatNumber(selectedUnit?.due_amount)}
+                        {unitPaymentLoading
+                          ? "Loading..."
+                          : formatNumber(getSelectedUnitDueAmount())}
                       </span>
                     </div>
                   </div>
