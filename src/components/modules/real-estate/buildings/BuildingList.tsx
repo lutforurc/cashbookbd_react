@@ -10,6 +10,7 @@ import Pagination from '../../../utils/utils-functions/Pagination';
 import { buildingList } from './buildingsSlice';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useNavigate } from 'react-router-dom';
+import { FiPlus } from 'react-icons/fi';
 
 
 const BuildingList = ({ user }: any) => {
@@ -208,7 +209,7 @@ const BuildingList = ({ user }: any) => {
           onClick={handleSearchButton}
           // buttonLoading={buttonLoading}
           label="New Project"
-          icon=""
+          icon={<FiPlus size={18} />}
         />
       </div>
       <div className="relative no-scrollbar">

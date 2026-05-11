@@ -7,6 +7,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useNavigate } from 'react-router-dom';
+import { FiPlus } from 'react-icons/fi';
 
 
 const AreaList = () => {
@@ -79,7 +80,7 @@ const AreaList = () => {
           onClick={handleSearchButton}
           buttonLoading={buttonLoading}
           label="New Location"
-          icon=""
+          icon={<FiPlus size={18} />}
         />
       </div>
       {realEstateArea.isLoading ? <Loader /> : ''}

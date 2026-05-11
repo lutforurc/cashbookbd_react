@@ -13,6 +13,7 @@ import routes from "../../../services/appRoutes";
 import { unitChargeTypeList } from "../units/unitSlice";
 import SearchInput from "../../../utils/fields/SearchInput";
 import ActionButtons from "../../../utils/fields/ActionButton";
+import { FiPlus, FiSearch } from "react-icons/fi";
 
 const ChargeTypeList = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -244,11 +245,12 @@ const ChargeTypeList = ({ user }: any) => {
               buttonLoading={buttonLoading}
               label="Search"
               className="whitespace-nowrap"
+              icon={<FiSearch size={18} />}
             />
           </div>
         </div>
 
-        <ButtonLoading className="h-9" icon="" onClick={handleCreate} label="New Charge Type" />
+        <ButtonLoading className="h-9" icon={<FiPlus size={18} />} onClick={handleCreate} label="New Charge Type" />
       </div>
 
       <div className="relative no-scrollbar">

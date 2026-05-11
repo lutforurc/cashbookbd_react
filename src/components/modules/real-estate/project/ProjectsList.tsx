@@ -10,6 +10,7 @@ import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useNavigate } from 'react-router-dom';
+import { FiPlus } from 'react-icons/fi';
 
 
 const ProjectsList = ({ user }: any) => {
@@ -150,9 +151,9 @@ const ProjectsList = ({ user }: any) => {
         <ButtonLoading
         className='h-9'
           onClick={handleSearchButton}
-          icon=""
           // buttonLoading={buttonLoading}
           label="New Project"
+          icon={<FiPlus size={18} />}
         />
         {/* <link rel="stylesheet" to="/real-estate/project-activities" /> */}
       </div>

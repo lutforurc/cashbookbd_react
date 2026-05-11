@@ -11,6 +11,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 
 import routes from '../../../services/appRoutes';
 import { floorList } from './flatSlice';
+import { FiPlus } from 'react-icons/fi';
 
 const FloorList = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -155,7 +156,7 @@ const FloorList = ({ user }: any) => {
           className="h-9"
           onClick={handleCreateFloor}
           label="New Floor"
-          icon=""
+          icon={<FiPlus size={18} />}
         />
       </div>
 
