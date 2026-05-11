@@ -3,36 +3,35 @@ import { useDispatch, useSelector } from "react-redux";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
-import BuildingFloorDropdown from "../../../utils/utils-functions/BuildingFloorDropdown";
-import { flatLayout } from "./flatSlice";
 import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
-
-/* ================= STATUS MAP ================= */
+import { flatLayout } from "./flatSlice";
 
 const STATUS_MAP: Record<number, string> = {
-  1: "bg-green-600",   // Available
-  2: "bg-yellow-400",  // Under Dev
-  3: "bg-blue-500",    // Completed
-  4: "bg-red-500",     // Sold
+  1: "bg-green-600",
+  2: "bg-yellow-400",
+  3: "bg-blue-500",
+  4: "bg-red-500",
 };
 
-type LayoutType = any; // চাইলে এখানে আপনার proper type বসাতে পারেন
+const STATUS_LABELS: Record<number, string> = {
+  1: "Available",
+  2: "Under Dev",
+  3: "Completed",
+  4: "Sold",
+};
 
-/* ================= COMPONENT ================= */
+type LayoutType = any;
 
 const FlatLayout = () => {
   const dispatch = useDispatch<any>();
-
   const storeLayout = useSelector((state: any) => state.flat?.flatLayout);
 
   const [buildingId, setBuildingId] = useState<number | null>(null);
   const [activeFloor, setActiveFloor] = useState<number | null>(null);
-
   const [viewLayout, setViewLayout] = useState<LayoutType | null>(null);
   const [pageLoading, setPageLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  /* ===== Dropdown handler ===== */
   const handleBuildingSelect = (option: any) => {
     if (!option?.value) return;
 
@@ -45,7 +44,6 @@ const FlatLayout = () => {
     setErrorMsg(null);
   };
 
-  /* ===== Load layout when building selected (only this shows loader) ===== */
   useEffect(() => {
     if (!buildingId) return;
 
@@ -55,10 +53,7 @@ const FlatLayout = () => {
       .unwrap()
       .then((res: any) => {
         const nextLayout = res?.data ?? res ?? null;
-
-        // ✅ না পেলে ফাঁকা
-        setViewLayout(nextLayout && nextLayout.floors ? nextLayout : nextLayout ?? null);
-
+        setViewLayout(nextLayout?.floors ? nextLayout : nextLayout ?? null);
       })
       .catch(() => {
         setViewLayout(null);
@@ -74,83 +69,275 @@ const FlatLayout = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeLayout]);
 
-  /* ===== Set default floor when layout changes ===== */
   useEffect(() => {
-    if (viewLayout?.floors?.length) {
-      setActiveFloor(viewLayout.floors[0].floor_no);
-    } else {
-      setActiveFloor(null);
-    }
+    setActiveFloor(null);
   }, [viewLayout]);
 
-  const currentFloor = useMemo(() => {
-    if (!viewLayout?.floors?.length || activeFloor == null) return null;
-    return viewLayout.floors.find((f: any) => f.floor_no === activeFloor) ?? null;
-  }, [viewLayout, activeFloor]);
+  const floorsToShow = useMemo(() => {
+    if (!viewLayout?.floors?.length) return [];
+    if (activeFloor == null) return viewLayout.floors;
+    return viewLayout.floors.filter((floor: any) => floor.floor_no === activeFloor);
+  }, [activeFloor, viewLayout]);
 
+  const layoutSummary = useMemo(() => {
+    const summary = {
+      floors: viewLayout?.floors?.length ?? 0,
+      units: 0,
+      available: 0,
+      sold: 0,
+      underDev: 0,
+      completed: 0,
+    };
 
-  const handleUnitClick = (e: React.MouseEvent, unit: any) => {
+    viewLayout?.floors?.forEach((floor: any) => {
+      floor.flats?.forEach((flat: any) => {
+        flat.units?.forEach((unit: any) => {
+          summary.units += 1;
+          if (unit.status === 1) summary.available += 1;
+          if (unit.status === 2) summary.underDev += 1;
+          if (unit.status === 3) summary.completed += 1;
+          if (unit.status === 4) summary.sold += 1;
+        });
+      });
+    });
+
+    return summary;
+  }, [viewLayout]);
+
+  const handleUnitClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
+  const getFloorUnitCount = (floor: any) =>
+    floor.flats?.reduce(
+      (total: number, flat: any) => total + (flat.units?.length ?? 0),
+      0,
+    ) ?? 0;
+
+  const renderUnitTooltip = (unit: any) => (
+    <div
+      className="pointer-events-none absolute z-50 hidden group-hover:block
+      bottom-full left-1/2 -translate-x-1/2 mb-2
+      bg-gray-900 text-gray-200 dark:bg-gray-200 dark:text-gray-900
+      text-xs rounded px-3 py-2 shadow-lg min-w-max text-left"
+    >
+      <div className="flex flex-col gap-0.5">
+        {unit.size_sqft && (
+          <span>
+            <span className="font-semibold">Size:</span> {unit.size_sqft} sqft
+          </span>
+        )}
+        {unit?.customer?.name && (
+          <span>
+            <span className="font-semibold">Customer:</span> {unit.customer.name}
+          </span>
+        )}
+        {unit?.customer?.mobile && (
+          <span>
+            <span className="font-semibold">Mobile:</span> {unit.customer.mobile}
+          </span>
+        )}
+        {STATUS_LABELS[unit.status] && (
+          <span>
+            <span className="font-semibold">Status:</span> {STATUS_LABELS[unit.status]}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderFloorCard = (floor: any) => {
+    const floorUnits = getFloorUnitCount(floor);
+
+    return (
+      <div
+        key={floor.floor_no}
+        className="border border-gray-200 dark:border-gray-600 rounded p-4 bg-white dark:bg-gray-800 shadow"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-gray-900 dark:text-white">
+            Floor {floor.floor_no}
+          </h3>
+          <span className="text-xs text-gray-500 dark:text-gray-300">
+            {floorUnits === 0
+              ? "No units"
+              : `${floorUnits} unit${floorUnits > 1 ? "s" : ""}`}
+          </span>
+        </div>
+
+        {floor.flats?.length ? (
+          <div className="space-y-4">
+            {floor.flats.map((flat: any) => (
+              <div key={flat.id ?? `${floor.floor_no}-${flat.flat_name}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                    {flat.flat_name}
+                  </h4>
+                  <span className="text-xs text-gray-500 dark:text-gray-300">
+                    {flat.units?.length === 0
+                      ? "No units"
+                      : `${flat.units.length} unit${flat.units.length > 1 ? "s" : ""}`}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {flat.units?.length ? (
+                    flat.units.map((unit: any) => (
+                      <button
+                        type="button"
+                        key={unit.id}
+                        onClick={handleUnitClick}
+                        className={`relative group text-white text-sm text-center py-2 rounded cursor-pointer ${
+                          STATUS_MAP[unit.status] ?? "bg-gray-400"
+                        }`}
+                      >
+                        <span className="font-semibold">{unit.unit_no}</span>
+                        {renderUnitTooltip(unit)}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="col-span-2 text-center text-gray-400 text-sm">
+                      No units
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 text-sm">No flats found</div>
+        )}
+      </div>
+    );
   };
 
   return (
     <>
-      <HelmetTitle title="Building Floor Layout" />
+      <HelmetTitle title={viewLayout?.building ?? "Building Layout"} />
 
-      {/* ===== Header ===== */}
       <div className="mb-4 text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        {/* <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           <span className="italic text-xl">
             {viewLayout?.building ?? "Building Layout"}
           </span>
-        </h2>
+        </h2> */}
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Building-wise floor & unit availability
         </p>
       </div>
 
-      {/* ===== Building Selector ===== */}
       <div className="mb-6 max-w-md">
-        {/* <BuildingFloorDropdown onSelect={handleBuildingSelect} /> */}
         <BuildingDropdown onSelect={handleBuildingSelect} className="mt-2" />
       </div>
 
-      {/* ===== Loader (only layout fetch) ===== */}
       {pageLoading && <Loader />}
 
-      {/* ===== No building selected ===== */}
       {!buildingId && !pageLoading && (
         <div className="text-center text-gray-500">
           Please select a building to view floors & units.
         </div>
       )}
 
-      {/* ===== Not found / error ===== */}
       {!pageLoading && buildingId && !viewLayout && (
         <div className="text-center text-gray-500">
           {errorMsg ?? "No data found."}
         </div>
       )}
 
-      {/* ===== Render layout only if exists ===== */}
       {!pageLoading && viewLayout && (
         <>
-          {/* ===== Floor Selector ===== */}
           {viewLayout.floors?.length > 0 ? (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {viewLayout.floors.map((floor: any) => (
-                <button
-                  type="button"
-                  key={floor.floor_no}
-                  onClick={() => setActiveFloor(floor.floor_no)}
-                  className={`px-4 py-1 rounded text-sm font-medium border
-                    ${activeFloor === floor.floor_no
-                      ? "bg-cyan-600 text-white"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+            <div className="mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-5">
+                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
+                  <div className="text-xs text-gray-500 dark:text-gray-300">Floors</div>
+                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {layoutSummary.floors}
+                  </div>
+                </div>
+                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
+                  <div className="text-xs text-gray-500 dark:text-gray-300">Total Units</div>
+                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {layoutSummary.units}
+                  </div>
+                </div>
+                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
+                  <div className="text-xs text-gray-500 dark:text-gray-300">Available</div>
+                  <div className="text-xl font-semibold text-green-600">
+                    {layoutSummary.available}
+                  </div>
+                </div>
+                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
+                  <div className="text-xs text-gray-500 dark:text-gray-300">Sold</div>
+                  <div className="text-xl font-semibold text-red-500">
+                    {layoutSummary.sold}
+                  </div>
+                </div>
+                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
+                  <div className="text-xs text-gray-500 dark:text-gray-300">Under Dev</div>
+                  <div className="text-xl font-semibold text-yellow-500">
+                    {layoutSummary.underDev}
+                  </div>
+                </div>
+                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
+                  <div className="text-xs text-gray-500 dark:text-gray-300">Completed</div>
+                  <div className="text-xl font-semibold text-blue-500">
+                    {layoutSummary.completed}
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <div className="inline-flex min-w-full gap-1 rounded border border-gray-200 bg-gray-100 p-1 dark:border-gray-600 dark:bg-gray-900/40">
+                  <button
+                    type="button"
+                    onClick={() => setActiveFloor(null)}
+                    className={`shrink-0 rounded px-4 py-2 text-sm font-medium transition-colors ${
+                      activeFloor == null
+                        ? "bg-cyan-600 text-white shadow-sm"
+                        : "text-gray-700 hover:bg-white hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
                     }`}
-                >
-                  Floor {floor.floor_no}
-                </button>
-              ))}
+                  >
+                    <span className="flex items-center gap-2">
+                      All Floors
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-xs ${
+                          activeFloor == null
+                            ? "bg-white/20 text-white"
+                            : "bg-white text-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                        }`}
+                      >
+                        {layoutSummary.units}
+                      </span>
+                    </span>
+                  </button>
+                  {viewLayout.floors.map((floor: any) => (
+                    <button
+                      type="button"
+                      key={floor.floor_no}
+                      onClick={() => setActiveFloor(floor.floor_no)}
+                      className={`shrink-0 rounded px-4 py-2 text-sm font-medium transition-colors ${
+                        activeFloor === floor.floor_no
+                          ? "bg-cyan-600 text-white shadow-sm"
+                          : "text-gray-700 hover:bg-white hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        Floor {floor.floor_no}
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-xs ${
+                            activeFloor === floor.floor_no
+                              ? "bg-white/20 text-white"
+                              : "bg-white text-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                          }`}
+                        >
+                          {getFloorUnitCount(floor)}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             <div className="text-center text-gray-500 mb-6">
@@ -158,7 +345,6 @@ const FlatLayout = () => {
             </div>
           )}
 
-          {/* ===== Legend ===== */}
           <div className="flex gap-4 text-sm mb-6">
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 bg-green-600 rounded"></span> Available
@@ -174,85 +360,12 @@ const FlatLayout = () => {
             </span>
           </div>
 
-          {/* ===== Flats Grid ===== */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentFloor?.flats?.length ? (
-              currentFloor.flats.map((flat: any) => (
-                <div
-                  key={flat.id}
-                  className="border rounded p-4 bg-white dark:bg-gray-800 shadow"
-                >
-                  {/* Flat Header */}
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {flat.flat_name}
-                    </h3>
-                    <span className="text-xs text-gray-500 dark:text-gray-300"
-
-                    >
-                      {flat.units?.length === 0
-                        ? "No units"
-                        : `${flat.units.length} unit${flat.units.length > 1 ? "s" : ""
-                        }`}
-                    </span>
-                  </div>
-
-                  {/* Units Grid */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {flat.units?.length ? (
-                      flat.units.map((unit: any) => (
-                        <div
-                          key={unit.id}
-                          onClick={(e) => handleUnitClick(e, unit)}
-                          className={`relative group text-white text-sm text-center py-2 rounded cursor-pointer ${STATUS_MAP[unit.status] ?? "bg-gray-400"
-                            }`}
-                        >
-                          <span className="font-semibold">{unit.unit_no}</span>
-
-                          {/* 🔽 Tooltip */}
-                          <div
-                            className="pointer-events-none absolute z-50 hidden group-hover:block
-                     bottom-full left-1/2 -translate-x-1/2 mb-2
-                     bg-gray-900 text-gray-200 dark:bg-gray-200 dark:text-gray-900
-                     text-xs rounded px-3 py-2 shadow-lg min-w-max text-left"
-                          >
-                            <div className="flex flex-col gap-0.5">
-                              {unit.size_sqft && (
-                                <span>
-                                  <span className="font-semibold">Size:</span>{" "}
-                                  {unit.size_sqft} sqft
-                                </span>
-                              )}
-
-                              {unit?.customer?.name && (
-                                <span>
-                                  <span className="font-semibold">Customer:</span>{" "}
-                                  {unit.customer.name}
-                                </span>
-                              )}
-
-                              {unit?.customer?.mobile && (
-                                <span>
-                                  <span className="font-semibold">Mobile:</span>{" "}
-                                  {unit.customer.mobile}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="col-span-2 text-center text-gray-400 text-sm">
-                        No units
-                      </div>
-                    )}
-                  </div>
-
-                </div>
-              ))
+            {floorsToShow.length ? (
+              floorsToShow.map((floor: any) => renderFloorCard(floor))
             ) : (
               <div className="col-span-full text-center text-gray-500">
-                No flats found for this floor
+                No floors found.
               </div>
             )}
           </div>
