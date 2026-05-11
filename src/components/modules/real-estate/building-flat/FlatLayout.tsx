@@ -5,12 +5,36 @@ import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
 import { flatLayout } from "./flatSlice";
+import {
+  FiCheckCircle,
+  FiChevronLeft,
+  FiChevronRight,
+  FiGrid,
+  FiHome,
+  FiLayers,
+  FiTool,
+  FiXCircle,
+} from "react-icons/fi";
 
 const STATUS_MAP: Record<number, string> = {
-  1: "bg-green-600",
-  2: "bg-yellow-400",
-  3: "bg-blue-500",
-  4: "bg-red-500",
+  1: "bg-emerald-500 hover:bg-emerald-400 ring-emerald-300/30",
+  2: "bg-amber-400 hover:bg-amber-300 text-gray-950 ring-amber-200/40",
+  3: "bg-sky-500 hover:bg-sky-400 ring-sky-300/30",
+  4: "bg-rose-500 hover:bg-rose-400 ring-rose-300/30",
+};
+
+const STATUS_TEXT_MAP: Record<number, string> = {
+  1: "text-emerald-500",
+  2: "text-amber-500",
+  3: "text-sky-500",
+  4: "text-rose-500",
+};
+
+const STATUS_DOT_MAP: Record<number, string> = {
+  1: "bg-emerald-500",
+  2: "bg-amber-400",
+  3: "bg-sky-500",
+  4: "bg-rose-500",
 };
 
 const STATUS_LABELS: Record<number, string> = {
@@ -21,6 +45,47 @@ const STATUS_LABELS: Record<number, string> = {
 };
 
 type LayoutType = any;
+
+const summaryCards = [
+  {
+    key: "floors",
+    label: "Floors",
+    icon: FiLayers,
+    className: "text-indigo-500",
+  },
+  {
+    key: "units",
+    label: "Total Units",
+    icon: FiGrid,
+    className: "text-cyan-500",
+  },
+  {
+    key: "available",
+    label: "Available",
+    icon: FiCheckCircle,
+    className: "text-emerald-500",
+  },
+  {
+    key: "sold",
+    label: "Sold",
+    icon: FiXCircle,
+    className: "text-rose-500",
+  },
+  {
+    key: "underDev",
+    label: "Under Dev",
+    icon: FiTool,
+    className: "text-amber-500",
+  },
+  {
+    key: "completed",
+    label: "Completed",
+    icon: FiHome,
+    className: "text-sky-500",
+  },
+] as const;
+
+const statusLegend = [1, 4, 2, 3] as const;
 
 const FlatLayout = () => {
   const dispatch = useDispatch<any>();
@@ -73,11 +138,37 @@ const FlatLayout = () => {
     setActiveFloor(null);
   }, [viewLayout]);
 
-  const floorsToShow = useMemo(() => {
+  const sortedFloors = useMemo(() => {
     if (!viewLayout?.floors?.length) return [];
-    if (activeFloor == null) return viewLayout.floors;
-    return viewLayout.floors.filter((floor: any) => floor.floor_no === activeFloor);
-  }, [activeFloor, viewLayout]);
+    return [...viewLayout.floors].sort(
+      (firstFloor: any, secondFloor: any) =>
+        Number(firstFloor.floor_no) - Number(secondFloor.floor_no),
+    );
+  }, [viewLayout]);
+
+  const floorsToShow = useMemo(() => {
+    if (!sortedFloors.length) return [];
+    if (activeFloor == null) return sortedFloors;
+    return sortedFloors.filter((floor: any) => Number(floor.floor_no) === activeFloor);
+  }, [activeFloor, sortedFloors]);
+
+  const activeTabIndex = useMemo(() => {
+    if (activeFloor == null) return 0;
+    const floorIndex = sortedFloors.findIndex(
+      (floor: any) => Number(floor.floor_no) === activeFloor,
+    );
+    return floorIndex >= 0 ? floorIndex + 1 : 0;
+  }, [activeFloor, sortedFloors]);
+
+  const changeActiveTab = (direction: "previous" | "next") => {
+    const nextIndex =
+      activeTabIndex + (direction === "next" ? 1 : -1);
+
+    if (nextIndex < 0 || nextIndex > sortedFloors.length) return;
+    setActiveFloor(
+      nextIndex === 0 ? null : Number(sortedFloors[nextIndex - 1].floor_no),
+    );
+  };
 
   const layoutSummary = useMemo(() => {
     const summary = {
@@ -114,12 +205,29 @@ const FlatLayout = () => {
       0,
     ) ?? 0;
 
+  const getFloorStatusCounts = (floor: any) => {
+    const counts: Record<number, number> = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+    };
+
+    floor.flats?.forEach((flat: any) => {
+      flat.units?.forEach((unit: any) => {
+        if (counts[unit.status] !== undefined) counts[unit.status] += 1;
+      });
+    });
+
+    return counts;
+  };
+
   const renderUnitTooltip = (unit: any) => (
     <div
-      className="pointer-events-none absolute z-50 hidden group-hover:block
+      className="pointer-events-none absolute z-[9999] hidden group-hover:block
       bottom-full left-1/2 -translate-x-1/2 mb-2
-      bg-gray-900 text-gray-200 dark:bg-gray-200 dark:text-gray-900
-      text-xs rounded px-3 py-2 shadow-lg min-w-max text-left"
+      bg-gray-950 text-gray-100 dark:bg-gray-100 dark:text-gray-900
+      text-xs rounded-md px-3 py-2 shadow-xl ring-1 ring-black/10 min-w-max text-left"
     >
       <div className="flex flex-col gap-0.5">
         {unit.size_sqft && (
@@ -148,50 +256,81 @@ const FlatLayout = () => {
 
   const renderFloorCard = (floor: any) => {
     const floorUnits = getFloorUnitCount(floor);
+    const statusCounts = getFloorStatusCounts(floor);
+    const hasMultipleFlats = (floor.flats?.length ?? 0) > 1;
+    const floorTitle =
+      !hasMultipleFlats && floor.flats?.[0]?.flat_name
+        ? floor.flats[0].flat_name
+        : `Floor ${floor.floor_no}`;
 
     return (
       <div
         key={floor.floor_no}
-        className="border border-gray-200 dark:border-gray-600 rounded p-4 bg-white dark:bg-gray-800 shadow"
+        className="relative rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800/90"
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white">
-            Floor {floor.floor_no}
-          </h3>
-          <span className="text-xs text-gray-500 dark:text-gray-300">
-            {floorUnits === 0
-              ? "No units"
-              : `${floorUnits} unit${floorUnits > 1 ? "s" : ""}`}
-          </span>
+        <div className="border-b border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/35">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                {floorTitle}
+              </h3>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                {floorUnits === 0
+                  ? "No units"
+                  : `${floorUnits} unit${floorUnits > 1 ? "s" : ""}`}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-1.5">
+              {statusLegend.map((status) => (
+                <span
+                  key={status}
+                  className={`inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    statusCounts[status] > 0
+                      ? `${STATUS_DOT_MAP[status]} text-white`
+                      : "bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                  }`}
+                  title={STATUS_LABELS[status]}
+                >
+                  {statusCounts[status]}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
 
         {floor.flats?.length ? (
-          <div className="space-y-4">
+          <div className="space-y-4 p-4">
             {floor.flats.map((flat: any) => (
               <div key={flat.id ?? `${floor.floor_no}-${flat.flat_name}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                    {flat.flat_name}
-                  </h4>
-                  <span className="text-xs text-gray-500 dark:text-gray-300">
-                    {flat.units?.length === 0
-                      ? "No units"
-                      : `${flat.units.length} unit${flat.units.length > 1 ? "s" : ""}`}
-                  </span>
-                </div>
+                {hasMultipleFlats && (
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                      {flat.flat_name}
+                    </h4>
+                    <span className="text-xs text-gray-500 dark:text-gray-300">
+                      {flat.units?.length === 0
+                        ? "No units"
+                        : `${flat.units.length} unit${flat.units.length > 1 ? "s" : ""}`}
+                    </span>
+                  </div>
+                )}
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3">
                   {flat.units?.length ? (
                     flat.units.map((unit: any) => (
                       <button
                         type="button"
                         key={unit.id}
                         onClick={handleUnitClick}
-                        className={`relative group text-white text-sm text-center py-2 rounded cursor-pointer ${
+                        className={`relative group min-h-10 rounded-md px-3 py-2 text-center text-sm font-semibold text-white shadow-sm ring-1 transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 ${
                           STATUS_MAP[unit.status] ?? "bg-gray-400"
                         }`}
                       >
-                        <span className="font-semibold">{unit.unit_no}</span>
+                        <span className="block truncate">{unit.unit_no}</span>
+                        <span className="mt-0.5 block truncate text-[10px] font-medium opacity-80">
+                          {STATUS_LABELS[unit.status] ?? "Unknown"}
+                        </span>
                         {renderUnitTooltip(unit)}
                       </button>
                     ))
@@ -205,7 +344,7 @@ const FlatLayout = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center text-gray-400 text-sm">No flats found</div>
+          <div className="p-6 text-center text-gray-400 text-sm">No flats found</div>
         )}
       </div>
     );
@@ -215,19 +354,24 @@ const FlatLayout = () => {
     <>
       <HelmetTitle title={viewLayout?.building ?? "Building Layout"} />
 
-      <div className="mb-4 text-center">
-        {/* <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          <span className="italic text-xl">
-            {viewLayout?.building ?? "Building Layout"}
-          </span>
-        </h2> */}
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          Building-wise floor & unit availability
-        </p>
-      </div>
+      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
+              Real Estate Layout
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">
+              {viewLayout?.building ?? "Building Layout"}
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Building-wise floor and unit availability overview
+            </p>
+          </div>
 
-      <div className="mb-6 max-w-md">
-        <BuildingDropdown onSelect={handleBuildingSelect} className="mt-2" />
+          <div className="w-full lg:max-w-md">
+            <BuildingDropdown onSelect={handleBuildingSelect} className="mt-2" />
+          </div>
+        </div>
       </div>
 
       {pageLoading && <Loader />}
@@ -248,54 +392,52 @@ const FlatLayout = () => {
         <>
           {viewLayout.floors?.length > 0 ? (
             <div className="mb-6">
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-5">
-                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
-                  <div className="text-xs text-gray-500 dark:text-gray-300">Floors</div>
-                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {layoutSummary.floors}
-                  </div>
-                </div>
-                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
-                  <div className="text-xs text-gray-500 dark:text-gray-300">Total Units</div>
-                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {layoutSummary.units}
-                  </div>
-                </div>
-                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
-                  <div className="text-xs text-gray-500 dark:text-gray-300">Available</div>
-                  <div className="text-xl font-semibold text-green-600">
-                    {layoutSummary.available}
-                  </div>
-                </div>
-                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
-                  <div className="text-xs text-gray-500 dark:text-gray-300">Sold</div>
-                  <div className="text-xl font-semibold text-red-500">
-                    {layoutSummary.sold}
-                  </div>
-                </div>
-                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
-                  <div className="text-xs text-gray-500 dark:text-gray-300">Under Dev</div>
-                  <div className="text-xl font-semibold text-yellow-500">
-                    {layoutSummary.underDev}
-                  </div>
-                </div>
-                <div className="border border-gray-200 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-800">
-                  <div className="text-xs text-gray-500 dark:text-gray-300">Completed</div>
-                  <div className="text-xl font-semibold text-blue-500">
-                    {layoutSummary.completed}
-                  </div>
-                </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6 mb-5">
+                {summaryCards.map((card) => {
+                  const Icon = card.icon;
+                  const value = layoutSummary[card.key];
+
+                  return (
+                    <div
+                      key={card.key}
+                      className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            {card.label}
+                          </div>
+                          <div className={`mt-1 text-2xl font-bold ${card.className}`}>
+                            {value}
+                          </div>
+                        </div>
+                        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-gray-100 text-lg dark:bg-gray-700">
+                          <Icon className={card.className} />
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="overflow-x-auto">
-                <div className="inline-flex min-w-full gap-1 rounded border border-gray-200 bg-gray-100 p-1 dark:border-gray-600 dark:bg-gray-900/40">
+                <div className="inline-flex min-w-full gap-1 rounded-lg border border-gray-200 bg-white p-1.5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                  <button
+                    type="button"
+                    onClick={() => changeActiveTab("previous")}
+                    disabled={activeTabIndex === 0}
+                    className="shrink-0 rounded-md px-2.5 py-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                    title="Previous tab"
+                  >
+                    <FiChevronLeft />
+                  </button>
                   <button
                     type="button"
                     onClick={() => setActiveFloor(null)}
-                    className={`shrink-0 rounded px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                       activeFloor == null
                         ? "bg-cyan-600 text-white shadow-sm"
-                        : "text-gray-700 hover:bg-white hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                     }`}
                   >
                     <span className="flex items-center gap-2">
@@ -304,31 +446,31 @@ const FlatLayout = () => {
                         className={`rounded px-1.5 py-0.5 text-xs ${
                           activeFloor == null
                             ? "bg-white/20 text-white"
-                            : "bg-white text-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                            : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-200"
                         }`}
                       >
                         {layoutSummary.units}
                       </span>
                     </span>
                   </button>
-                  {viewLayout.floors.map((floor: any) => (
+                  {sortedFloors.map((floor: any) => (
                     <button
                       type="button"
                       key={floor.floor_no}
-                      onClick={() => setActiveFloor(floor.floor_no)}
-                      className={`shrink-0 rounded px-4 py-2 text-sm font-medium transition-colors ${
-                        activeFloor === floor.floor_no
+                      onClick={() => setActiveFloor(Number(floor.floor_no))}
+                      className={`shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                        activeFloor === Number(floor.floor_no)
                           ? "bg-cyan-600 text-white shadow-sm"
-                          : "text-gray-700 hover:bg-white hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                       }`}
                     >
                       <span className="flex items-center gap-2">
                         Floor {floor.floor_no}
                         <span
                           className={`rounded px-1.5 py-0.5 text-xs ${
-                            activeFloor === floor.floor_no
+                            activeFloor === Number(floor.floor_no)
                               ? "bg-white/20 text-white"
-                              : "bg-white text-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                              : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-200"
                           }`}
                         >
                           {getFloorUnitCount(floor)}
@@ -336,6 +478,15 @@ const FlatLayout = () => {
                       </span>
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={() => changeActiveTab("next")}
+                    disabled={activeTabIndex === sortedFloors.length}
+                    className="shrink-0 rounded-md px-2.5 py-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                    title="Next tab"
+                  >
+                    <FiChevronRight />
+                  </button>
                 </div>
               </div>
             </div>
@@ -345,22 +496,25 @@ const FlatLayout = () => {
             </div>
           )}
 
-          <div className="flex gap-4 text-sm mb-6">
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-green-600 rounded"></span> Available
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-red-500 rounded"></span> Sold
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-yellow-400 rounded"></span> Under Dev
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 bg-blue-500 rounded"></span> Completed
-            </span>
+          <div className="mb-6 flex flex-wrap gap-2 text-sm">
+            {statusLegend.map((status) => (
+              <span
+                key={status}
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              >
+                <span className={`h-2.5 w-2.5 rounded-full ${STATUS_DOT_MAP[status]}`}></span>
+                <span>{STATUS_LABELS[status]}</span>
+                <span className={`font-semibold ${STATUS_TEXT_MAP[status]}`}>
+                  {status === 1 && layoutSummary.available}
+                  {status === 2 && layoutSummary.underDev}
+                  {status === 3 && layoutSummary.completed}
+                  {status === 4 && layoutSummary.sold}
+                </span>
+              </span>
+            ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {floorsToShow.length ? (
               floorsToShow.map((floor: any) => renderFloorCard(floor))
             ) : (
