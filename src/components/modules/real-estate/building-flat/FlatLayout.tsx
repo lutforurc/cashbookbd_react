@@ -213,10 +213,10 @@ const FlatLayout = () => {
 
     const labels: string[] = [];
     if (counts.unit > 0) {
-      labels.push(`${counts.unit} unit${counts.unit > 1 ? "s" : ""}`);
+      labels.push(`${counts.unit} Unit${counts.unit > 1 ? "s" : ""}`);
     }
     if (counts.parking > 0) {
-      labels.push(`${counts.parking} parking`);
+      labels.push(`${counts.parking} Parking`);
     }
 
     return labels.join(", ");
