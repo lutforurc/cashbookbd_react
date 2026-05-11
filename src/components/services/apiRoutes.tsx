@@ -583,6 +583,9 @@ export const API_UNIT_CHARGE_TYPE_LIST_URL = `${API_BASE_URL}/real-estate/units/
 
 // Unit Sale Routes
 export const API_UNIT_SALE_STORE_URL = `${API_BASE_URL}/real-estate/unit/sales`;
+export const API_UNIT_SALE_DDL_URL = `${API_BASE_URL}/real-estate/unit-sale/ddl`;
+export const API_UNIT_SALE_SUMMARY_URL = `${API_BASE_URL}/real-estate/unit-sale/summary`;
+export const API_UNIT_SALE_INSTALLMENT_CREATE_URL = `${API_BASE_URL}/real-estate/unit-sale/installment-create`;
 
 
 

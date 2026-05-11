@@ -128,6 +128,7 @@ import LoanBalance from './components/modules/hrms/loan/LoanBalance';
 import UnitSalePaymentList from './components/modules/real-estate/checks/UnitSalePaymentList';
 import UnitSalePaymentEdit from './components/modules/real-estate/checks/UnitSalePaymentEdit';
 import UnitSalePaymentEntry from './components/modules/real-estate/checks/UnitSalePaymentEntry';
+import RealEstateInstallmentCreate from './components/modules/real-estate/installments/RealEstateInstallmentCreate';
 import ProductStockIndex from './components/modules/reports/productstock/ProductStockIndex';
 import ClosingStockReport from './components/modules/reports/closing-stock/ClosingStockReport';
 import ImeiStock from './components/modules/reports/imei-stock/ImeiStock';
@@ -549,6 +550,7 @@ function App() {
 
             <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
             <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />
+            <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
 
 
             {/* HRM */}
