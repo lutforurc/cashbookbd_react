@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FiArrowLeft, FiSave } from "react-icons/fi";
+import { FiArrowLeft, FiSave, FiSearch } from "react-icons/fi";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputElement from "../../../utils/fields/InputElement";
@@ -62,6 +62,8 @@ export default function UnitSalePaymentEntry() {
   const unitSalePayments = useSelector((s: any) => s.unitPayments);
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationState = (location.state ?? {}) as any;
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
@@ -69,6 +71,7 @@ export default function UnitSalePaymentEntry() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saleSummary, setSaleSummary] = useState<any>(null);
+  const [prefillApplied, setPrefillApplied] = useState(false);
 
   const errMsg = (e: any, fallback: string) =>
     e?.response?.data?.message || e?.message || fallback;
@@ -92,20 +95,95 @@ export default function UnitSalePaymentEntry() {
     [isCheque, form.cheque_collect_status]
   );
   const saleOptionsLoading = unitSalePayments?.ddlLoading || false;
+
+  const resolveSaleId = (r: any) =>
+    String(
+      r?.id ??
+        r?.booking_id ??
+        r?.unit_sale_id ??
+        r?.sale_id ??
+        r?.booking?.id ??
+        r?.booking?.booking_id ??
+        ""
+    );
+
+  const resolveUnitId = (r: any) =>
+    String(
+      r?.unit_id ??
+        r?.booking?.unit_id ??
+        r?.booking?.payload?.unit?.value ??
+        r?.unit?.id ??
+        r?.unit?.value ??
+        ""
+    );
+
+  const resolveParkingId = (r: any) =>
+    String(
+      r?.parking_id ??
+        r?.booking?.parking_id ??
+        r?.booking?.payload?.parking?.value ??
+        r?.parking?.id ??
+        r?.parking?.value ??
+        ""
+    );
+
+  const rowMatchesNavigationState = (r: any) => {
+    const targetBookingId = String(
+      navigationState?.bookingId ??
+        navigationState?.booking_id ??
+        navigationState?.unitSaleId ??
+        navigationState?.saleId ??
+        ""
+    );
+    if (targetBookingId && resolveSaleId(r) === targetBookingId) return true;
+
+    const targetUnitId = String(navigationState?.unitId ?? "");
+    const targetUnitNo = String(navigationState?.unitNo ?? "").toLowerCase();
+    const targetCustomerId = String(navigationState?.customerId ?? "");
+    const targetMobile = String(navigationState?.customerMobile ?? "").toLowerCase();
+    const isParking = String(navigationState?.unitType ?? "").toLowerCase() === "parking";
+
+    const rowUnitId = isParking ? resolveParkingId(r) : resolveUnitId(r);
+    const unitText = [
+      r?.unit_label,
+      r?.parking_label,
+      r?.booking?.unit_label,
+      r?.booking?.parking_label,
+      r?.booking?.flat_label,
+      r?.booking?.payload?.unit?.label,
+      r?.booking?.payload?.parking?.label,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const rowCustomerId = String(r?.customer_id ?? r?.booking?.customer_id ?? r?.customer?.id ?? "");
+    const rowMobile = String(
+      r?.customer_mobile ??
+        r?.mobile ??
+        r?.customer?.mobile ??
+        r?.booking?.customer_mobile ??
+        r?.booking?.payload?.customer?.label_2 ??
+        ""
+    ).toLowerCase();
+
+    if (targetUnitId && rowUnitId && rowUnitId === targetUnitId) return true;
+    if (targetUnitNo && unitText.includes(targetUnitNo)) return true;
+    if (!targetUnitId && !targetUnitNo && targetCustomerId && rowCustomerId && rowCustomerId === targetCustomerId) {
+      return true;
+    }
+    if (!targetUnitId && !targetUnitNo && targetMobile && rowMobile && rowMobile.includes(targetMobile)) {
+      return true;
+    }
+
+    return false;
+  };
+
   const unitSaleOptions = useMemo(() => {
     const rows = unitSalePayments?.ddlRows ?? [];
     const options: { id: string; name: string }[] = [{ id: "", name: "Select Unit Sale" }];
 
     rows.forEach((r: any) => {
-      const saleId = String(
-        r?.id ??
-          r?.booking_id ??
-          r?.unit_sale_id ??
-          r?.sale_id ??
-          r?.booking?.id ??
-          r?.booking?.booking_id ??
-          ""
-      );
+      const saleId = resolveSaleId(r);
       if (!saleId) return;
       const customer =
         r?.customer_name ||
@@ -130,8 +208,15 @@ export default function UnitSalePaymentEntry() {
       });
     });
 
+    if (form.booking_id && !options.some((option) => option.id === String(form.booking_id))) {
+      options.push({
+        id: String(form.booking_id),
+        name: `Sale #${form.booking_id} - Selected from layout`,
+      });
+    }
+
     return options;
-  }, [unitSalePayments?.ddlRows]);
+  }, [form.booking_id, unitSalePayments?.ddlRows]);
 
   useEffect(() => {
     dispatch(getCoal3ByCoal4(2));
@@ -150,22 +235,50 @@ export default function UnitSalePaymentEntry() {
       ).unwrap();
 
       const rows = Array.isArray(res?.rows) ? res.rows : [];
-      const resolveSaleId = (r: any) =>
-        String(
-          r?.id ??
-            r?.booking_id ??
-            r?.unit_sale_id ??
-            r?.sale_id ??
-            r?.booking?.id ??
-            r?.booking?.booking_id ??
+
+      if (!prefillApplied && Object.keys(navigationState).length > 0) {
+        const matchedRow = rows.find(rowMatchesNavigationState);
+        const id = matchedRow ? resolveSaleId(matchedRow) : String(
+          navigationState?.bookingId ??
+            navigationState?.booking_id ??
+            navigationState?.unitSaleId ??
+            navigationState?.saleId ??
             ""
         );
+
+        if (id) {
+          setField("booking_id", id);
+          setField("payment_type", "INSTALLMENT");
+          if (navigationState?.dueAmount !== undefined && navigationState?.dueAmount !== null) {
+            setField("amount", String(navigationState.dueAmount));
+          }
+          setCustomerSearch(
+            navigationState?.customerMobile ??
+              navigationState?.customerName ??
+              navigationState?.unitNo ??
+              ""
+          );
+          setPrefillApplied(true);
+          loadSaleSummary(id);
+          return;
+        }
+      }
 
       // If only one result is returned, auto-select it and load summary.
       if (rows.length === 1) {
         const id = resolveSaleId(rows[0]);
         if (id) {
           setField("booking_id", id);
+          if (Object.keys(navigationState).length > 0) {
+            setField("payment_type", "INSTALLMENT");
+            setCustomerSearch(
+              navigationState?.customerMobile ??
+                navigationState?.customerName ??
+                navigationState?.unitNo ??
+                ""
+            );
+            setPrefillApplied(true);
+          }
           loadSaleSummary(id);
           return;
         }
@@ -201,6 +314,10 @@ export default function UnitSalePaymentEntry() {
       }
       const summary = res?.data?.data ?? null;
       setSaleSummary(summary);
+      const dueAmount = summary?.amounts?.due_amount;
+      if (dueAmount !== undefined && dueAmount !== null) {
+        setField("amount", String(dueAmount));
+      }
     } catch (e: any) {
       setSaleSummary(null);
       toast.error(errMsg(e, "Failed to load sale summary"));
@@ -210,7 +327,16 @@ export default function UnitSalePaymentEntry() {
   };
 
   useEffect(() => {
-    loadUnitSaleOptions();
+    const initialSearch =
+      navigationState?.bookingId ??
+      navigationState?.booking_id ??
+      navigationState?.unitSaleId ??
+      navigationState?.saleId ??
+      navigationState?.customerMobile ??
+      navigationState?.customerName ??
+      navigationState?.unitNo ??
+      "";
+    loadUnitSaleOptions(String(initialSearch));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -441,6 +567,7 @@ export default function UnitSalePaymentEntry() {
                 buttonLoading={saleOptionsLoading}
                 label="Load Sale Info"
                 className="h-8.5 w-full"
+                icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
               />
             </div>
           </div>

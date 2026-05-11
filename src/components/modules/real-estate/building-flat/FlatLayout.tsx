@@ -25,20 +25,20 @@ import {
 } from "react-icons/fi";
 
 const STATUS_MAP: Record<number, string> = {
-  1: "border-emerald-200/60 bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-700 shadow-emerald-950/25 ring-emerald-200/40 hover:from-emerald-300 hover:via-emerald-400 hover:to-teal-600",
-  2: "border-amber-200/70 bg-gradient-to-br from-amber-300 via-amber-400 to-orange-600 text-gray-950 shadow-amber-950/25 ring-amber-100/50 hover:from-amber-200 hover:via-amber-300 hover:to-orange-500",
-  3: "border-sky-200/60 bg-gradient-to-br from-sky-400 via-cyan-500 to-blue-700 shadow-blue-950/25 ring-sky-200/40 hover:from-sky-300 hover:via-cyan-400 hover:to-blue-600",
-  4: "border-rose-200/60 bg-gradient-to-br from-rose-400 via-pink-500 to-red-700 shadow-rose-950/25 ring-rose-200/40 hover:from-rose-300 hover:via-pink-400 hover:to-red-600",
+  1: "border-teal-200/60 bg-[linear-gradient(135deg,#34d399_0%,#10b981_45%,#0f766e_100%)] shadow-teal-950/30 ring-teal-100/45 hover:bg-[linear-gradient(135deg,#6ee7b7_0%,#10b981_48%,#0d9488_100%)]",
+  2: "border-amber-100/70 bg-[linear-gradient(135deg,#fbbf24_0%,#f59e0b_48%,#b45309_100%)] text-white shadow-amber-950/30 ring-amber-100/45 hover:bg-[linear-gradient(135deg,#fcd34d_0%,#f59e0b_48%,#d97706_100%)]",
+  3: "border-cyan-100/60 bg-[linear-gradient(135deg,#38bdf8_0%,#0ea5e9_45%,#1d4ed8_100%)] shadow-blue-950/30 ring-cyan-100/45 hover:bg-[linear-gradient(135deg,#7dd3fc_0%,#0ea5e9_48%,#2563eb_100%)]",
+  4: "border-violet-100/60 bg-[linear-gradient(135deg,#a78bfa_0%,#7c3aed_44%,#4c1d95_100%)] shadow-violet-950/30 ring-violet-100/45 hover:bg-[linear-gradient(135deg,#c4b5fd_0%,#8b5cf6_48%,#5b21b6_100%)]",
 };
 
 const FALLBACK_STATUS_CLASS =
-  "border-slate-200/50 bg-gradient-to-br from-slate-400 via-slate-500 to-slate-700 shadow-slate-950/25 ring-slate-200/30 hover:from-slate-300 hover:via-slate-400 hover:to-slate-600";
+  "border-slate-100/50 bg-[linear-gradient(135deg,#cbd5e1_0%,#64748b_46%,#334155_100%)] shadow-slate-950/30 ring-slate-100/35 hover:bg-[linear-gradient(135deg,#e2e8f0_0%,#718096_46%,#475569_100%)]";
 
 const STATUS_DOT_MAP: Record<number, string> = {
   1: "bg-emerald-500",
   2: "bg-amber-400",
   3: "bg-sky-500",
-  4: "bg-rose-500",
+  4: "bg-violet-500",
 };
 
 const STATUS_LABELS: Record<number, string> = {
@@ -238,9 +238,19 @@ const FlatLayout = () => {
   const goToPaymentEntry = () => {
     navigate(routes.unit_payment_entry, {
       state: {
+        bookingId:
+          selectedUnit?.booking_id ??
+          selectedUnit?.unit_sale_id ??
+          selectedUnit?.sale_id ??
+          selectedUnit?.booking?.id ??
+          selectedUnit?.booking?.booking_id,
         unitId: selectedUnit?.id,
         unitNo: selectedUnit?.unit_no,
+        unitType: selectedUnit?.unit_type,
         customerId: selectedUnit?.customer?.id,
+        customerName: selectedUnit?.customer?.name,
+        customerMobile: selectedUnit?.customer?.mobile,
+        dueAmount: selectedUnit?.due_amount,
       },
     });
   };
@@ -317,7 +327,7 @@ const FlatLayout = () => {
   const getUnitButtonClass = (unit: any) => {
     const statusClass = STATUS_MAP[unit.status] ?? FALLBACK_STATUS_CLASS;
     const typeClass = isParkingUnit(unit)
-      ? "before:absolute before:inset-0 before:bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.18)_0,rgba(255,255,255,0.18)_6px,transparent_6px,transparent_14px)] before:opacity-40 after:absolute after:inset-x-0 after:bottom-0 after:h-1 after:bg-white/35"
+      ? "before:absolute before:inset-0 before:bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.16)_0,rgba(255,255,255,0.16)_5px,transparent_5px,transparent_16px)] before:opacity-25 after:absolute after:inset-x-0 after:bottom-0 after:h-1 after:bg-white/35"
       : "before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:bg-gradient-to-b before:from-white/20 before:to-transparent";
 
     return `${statusClass} ${typeClass}`;
