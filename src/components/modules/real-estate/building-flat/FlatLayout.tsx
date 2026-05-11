@@ -1,27 +1,38 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import BuildingDropdown from "../../../utils/utils-functions/BuildingDropdown";
 import { flatLayout } from "./flatSlice";
+import routes from "../../../services/appRoutes";
 import {
   FiCheckCircle,
   FiChevronLeft,
   FiChevronRight,
+  FiCreditCard,
+  FiDollarSign,
+  FiEdit2,
   FiGrid,
   FiHome,
   FiLayers,
+  FiList,
   FiTool,
+  FiUser,
+  FiX,
   FiXCircle,
 } from "react-icons/fi";
 
 const STATUS_MAP: Record<number, string> = {
-  1: "bg-emerald-500 hover:bg-emerald-400 ring-emerald-300/30",
-  2: "bg-amber-400 hover:bg-amber-300 text-gray-950 ring-amber-200/40",
-  3: "bg-sky-500 hover:bg-sky-400 ring-sky-300/30",
-  4: "bg-rose-500 hover:bg-rose-400 ring-rose-300/30",
+  1: "border-emerald-200/60 bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-700 shadow-emerald-950/25 ring-emerald-200/40 hover:from-emerald-300 hover:via-emerald-400 hover:to-teal-600",
+  2: "border-amber-200/70 bg-gradient-to-br from-amber-300 via-amber-400 to-orange-600 text-gray-950 shadow-amber-950/25 ring-amber-100/50 hover:from-amber-200 hover:via-amber-300 hover:to-orange-500",
+  3: "border-sky-200/60 bg-gradient-to-br from-sky-400 via-cyan-500 to-blue-700 shadow-blue-950/25 ring-sky-200/40 hover:from-sky-300 hover:via-cyan-400 hover:to-blue-600",
+  4: "border-rose-200/60 bg-gradient-to-br from-rose-400 via-pink-500 to-red-700 shadow-rose-950/25 ring-rose-200/40 hover:from-rose-300 hover:via-pink-400 hover:to-red-600",
 };
+
+const FALLBACK_STATUS_CLASS =
+  "border-slate-200/50 bg-gradient-to-br from-slate-400 via-slate-500 to-slate-700 shadow-slate-950/25 ring-slate-200/30 hover:from-slate-300 hover:via-slate-400 hover:to-slate-600";
 
 const STATUS_DOT_MAP: Record<number, string> = {
   1: "bg-emerald-500",
@@ -82,11 +93,13 @@ const statusLegend = [1, 4, 2, 3] as const;
 
 const FlatLayout = () => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const storeLayout = useSelector((state: any) => state.flat?.flatLayout);
 
   const [buildingId, setBuildingId] = useState<number | null>(null);
   const [activeFloor, setActiveFloor] = useState<number | null>(null);
   const [viewLayout, setViewLayout] = useState<LayoutType | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<any | null>(null);
   const [pageLoading, setPageLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -99,6 +112,7 @@ const FlatLayout = () => {
     setBuildingId(nextId);
     setViewLayout(null);
     setActiveFloor(null);
+    setSelectedUnit(null);
     setErrorMsg(null);
   };
 
@@ -188,9 +202,64 @@ const FlatLayout = () => {
     return summary;
   }, [viewLayout]);
 
-  const handleUnitClick = (e: React.MouseEvent) => {
+  const handleUnitClick = (unit: any, e: React.MouseEvent) => {
     e.preventDefault();
+    setSelectedUnit(unit);
   };
+
+  const closeUnitModal = () => setSelectedUnit(null);
+
+  const formatNumber = (value: any) => {
+    const numberValue = Number(value);
+    if (!Number.isFinite(numberValue)) return "-";
+    return numberValue.toLocaleString("en-US");
+  };
+
+  const getUnitTotalPrice = (unit: any) => {
+    const totalPrice = Number(unit?.total_price ?? unit?.price ?? unit?.amount);
+    if (Number.isFinite(totalPrice) && totalPrice > 0) return totalPrice;
+
+    const size = Number(unit?.size_sqft);
+    const rate = Number(unit?.sale_price ?? unit?.rate ?? unit?.unit_price);
+    if (Number.isFinite(size) && Number.isFinite(rate) && size > 0 && rate > 0) {
+      return size * rate;
+    }
+
+    return null;
+  };
+
+  const goToUnitSale = () => {
+    if (!selectedUnit) return;
+    navigate(routes.real_estate_unit_sales, {
+      state: { unitId: selectedUnit.id, unitNo: selectedUnit.unit_no },
+    });
+  };
+
+  const goToPaymentEntry = () => {
+    navigate(routes.unit_payment_entry, {
+      state: {
+        unitId: selectedUnit?.id,
+        unitNo: selectedUnit?.unit_no,
+        customerId: selectedUnit?.customer?.id,
+      },
+    });
+  };
+
+  const goToUnitEdit = () => {
+    if (!selectedUnit?.id) return;
+    navigate(routes.real_estate_add_floor_unit_edit.replace(":id", String(selectedUnit.id)));
+  };
+
+  const renderDetailValue = (label: string, value: React.ReactNode) => (
+    <div className="rounded-md bg-gray-50 px-3 py-2 dark:bg-gray-900/40">
+      <div className="text-[11px] font-medium uppercase text-gray-500 dark:text-gray-400">
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+        {value || "-"}
+      </div>
+    </div>
+  );
 
   const getFloorUnitCount = (floor: any) =>
     floor.flats?.reduce(
@@ -240,6 +309,18 @@ const FlatLayout = () => {
     });
 
     return counts;
+  };
+
+  const isParkingUnit = (unit: any) =>
+    String(unit?.unit_type ?? "").toLowerCase() === "parking";
+
+  const getUnitButtonClass = (unit: any) => {
+    const statusClass = STATUS_MAP[unit.status] ?? FALLBACK_STATUS_CLASS;
+    const typeClass = isParkingUnit(unit)
+      ? "before:absolute before:inset-0 before:bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.18)_0,rgba(255,255,255,0.18)_6px,transparent_6px,transparent_14px)] before:opacity-40 after:absolute after:inset-x-0 after:bottom-0 after:h-1 after:bg-white/35"
+      : "before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:bg-gradient-to-b before:from-white/20 before:to-transparent";
+
+    return `${statusClass} ${typeClass}`;
   };
 
   const renderUnitTooltip = (unit: any) => (
@@ -338,15 +419,22 @@ const FlatLayout = () => {
                       <button
                         type="button"
                         key={unit.id}
-                        onClick={handleUnitClick}
-                        className={`relative group min-h-10 rounded-md px-3 py-2 text-center text-sm font-semibold text-white shadow-sm ring-1 transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 ${
-                          STATUS_MAP[unit.status] ?? "bg-gray-400"
+                        onClick={(e) => handleUnitClick(unit, e)}
+                        className={`relative group isolate min-h-[3.25rem] overflow-hidden rounded-md border px-3 py-2.5 text-center text-sm font-semibold text-white shadow-lg ring-1 transition-all hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 ${
+                          getUnitButtonClass(unit)
                         }`}
                       >
-                        <span className="block truncate">{unit.unit_no}</span>
-                        <span className="mt-0.5 block truncate text-[10px] font-medium opacity-80">
+                        <span className="relative z-10 block truncate drop-shadow-sm">
+                          {unit.unit_no}
+                        </span>
+                        <span className="relative z-10 mt-0.5 block truncate text-[10px] font-semibold uppercase tracking-wide opacity-85">
                           {STATUS_LABELS[unit.status] ?? "Unknown"}
                         </span>
+                        {isParkingUnit(unit) && (
+                          <span className="relative z-10 mt-1 inline-flex rounded bg-black/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/90 ring-1 ring-white/25">
+                            Parking
+                          </span>
+                        )}
                         {renderUnitTooltip(unit)}
                       </button>
                     ))
@@ -522,6 +610,146 @@ const FlatLayout = () => {
             )}
           </div>
         </>
+      )}
+
+      {selectedUnit && (
+        <div
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/45 px-4 py-6"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 dark:border-gray-700">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-cyan-600 dark:text-cyan-400">
+                  Unit Details
+                </p>
+                <h3 className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                  {selectedUnit.unit_no ?? "Unit"}
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeUnitModal}
+                className="rounded-md p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                title="Close"
+              >
+                <FiX />
+              </button>
+            </div>
+
+            <div className="space-y-5 px-5 py-5">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {renderDetailValue("Status", STATUS_LABELS[selectedUnit.status] ?? "Unknown")}
+                {renderDetailValue("Type", selectedUnit.unit_type ?? "Unit")}
+                {renderDetailValue(
+                  "Size",
+                  selectedUnit.size_sqft ? `${formatNumber(selectedUnit.size_sqft)} sqft` : "-",
+                )}
+                {renderDetailValue(
+                  "Total Price",
+                  getUnitTotalPrice(selectedUnit)
+                    ? formatNumber(getUnitTotalPrice(selectedUnit))
+                    : "-",
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                    <FiUser className="text-cyan-500" />
+                    Customer
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    <div className="flex justify-between gap-3">
+                      <span>Name</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {selectedUnit?.customer?.name ?? "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span>Mobile</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {selectedUnit?.customer?.mobile ?? "-"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                    <FiDollarSign className="text-emerald-500" />
+                    Pricing
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    <div className="flex justify-between gap-3">
+                      <span>Rate</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {formatNumber(
+                          selectedUnit?.sale_price ??
+                            selectedUnit?.rate ??
+                            selectedUnit?.unit_price,
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span>Paid</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {formatNumber(selectedUnit?.paid_amount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span>Due</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {formatNumber(selectedUnit?.due_amount)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap justify-end gap-2 border-t border-gray-100 pt-4 dark:border-gray-700">
+                {Number(selectedUnit.status) === 1 && (
+                  <button
+                    type="button"
+                    onClick={goToUnitSale}
+                    className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                  >
+                    <FiDollarSign />
+                    Sale / Booking
+                  </button>
+                )}
+                {Number(selectedUnit.status) === 4 && (
+                  <button
+                    type="button"
+                    onClick={goToPaymentEntry}
+                    className="inline-flex items-center gap-2 rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-cyan-500"
+                  >
+                    <FiCreditCard />
+                    Payment Entry
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={goToUnitEdit}
+                  className="inline-flex items-center gap-2 rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+                >
+                  <FiEdit2 />
+                  Edit Unit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate(routes.real_estate_floor_unit_list)}
+                  className="inline-flex items-center gap-2 rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 transition hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+                >
+                  <FiList />
+                  Unit List
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
