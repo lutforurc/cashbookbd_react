@@ -198,6 +198,33 @@ const FlatLayout = () => {
       0,
     ) ?? 0;
 
+  const getUnitTypeSummary = (units: any[] = []) => {
+    if (!units.length) return "No units";
+
+    const counts = units.reduce(
+      (summary: Record<"unit" | "parking", number>, unit: any) => {
+        const unitType = String(unit.unit_type ?? "unit").toLowerCase();
+        const key = unitType === "parking" ? "parking" : "unit";
+        summary[key] += 1;
+        return summary;
+      },
+      { unit: 0, parking: 0 },
+    );
+
+    const labels: string[] = [];
+    if (counts.unit > 0) {
+      labels.push(`${counts.unit} unit${counts.unit > 1 ? "s" : ""}`);
+    }
+    if (counts.parking > 0) {
+      labels.push(`${counts.parking} parking`);
+    }
+
+    return labels.join(", ");
+  };
+
+  const getFloorUnits = (floor: any) =>
+    floor.flats?.flatMap((flat: any) => flat.units ?? []) ?? [];
+
   const getFloorStatusCounts = (floor: any) => {
     const counts: Record<number, number> = {
       1: 0,
@@ -248,7 +275,7 @@ const FlatLayout = () => {
   );
 
   const renderFloorCard = (floor: any) => {
-    const floorUnits = getFloorUnitCount(floor);
+    const floorUnitSummary = getUnitTypeSummary(getFloorUnits(floor));
     const statusCounts = getFloorStatusCounts(floor);
     const hasMultipleFlats = (floor.flats?.length ?? 0) > 1;
     const floorTitle =
@@ -267,10 +294,8 @@ const FlatLayout = () => {
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                 {floorTitle}
               </h3>
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                {floorUnits === 0
-                  ? "No units"
-                  : `${floorUnits} unit${floorUnits > 1 ? "s" : ""}`}
+              <p className="mt-1 inline-flex rounded bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700 ring-1 ring-amber-300 dark:bg-amber-400/15 dark:text-amber-300 dark:ring-amber-400/30">
+                {floorUnitSummary}
               </p>
             </div>
 
@@ -302,14 +327,12 @@ const FlatLayout = () => {
                       {flat.flat_name}
                     </h4>
                     <span className="text-xs text-gray-500 dark:text-gray-300">
-                      {flat.units?.length === 0
-                        ? "No units"
-                        : `${flat.units.length} unit${flat.units.length > 1 ? "s" : ""}`}
+                      {getUnitTypeSummary(flat.units)}
                     </span>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3">
+                <div className="grid grid-cols-2 gap-2">
                   {flat.units?.length ? (
                     flat.units.map((unit: any) => (
                       <button
@@ -489,7 +512,7 @@ const FlatLayout = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
             {floorsToShow.length ? (
               floorsToShow.map((floor: any) => renderFloorCard(floor))
             ) : (
