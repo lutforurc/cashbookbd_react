@@ -23,13 +23,6 @@ const STATUS_MAP: Record<number, string> = {
   4: "bg-rose-500 hover:bg-rose-400 ring-rose-300/30",
 };
 
-const STATUS_TEXT_MAP: Record<number, string> = {
-  1: "text-emerald-500",
-  2: "text-amber-500",
-  3: "text-sky-500",
-  4: "text-rose-500",
-};
-
 const STATUS_DOT_MAP: Record<number, string> = {
   1: "bg-emerald-500",
   2: "bg-amber-400",
@@ -495,24 +488,6 @@ const FlatLayout = () => {
               No floors found for this building.
             </div>
           )}
-
-          <div className="mb-6 flex flex-wrap gap-2 text-sm">
-            {statusLegend.map((status) => (
-              <span
-                key={status}
-                className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-              >
-                <span className={`h-2.5 w-2.5 rounded-full ${STATUS_DOT_MAP[status]}`}></span>
-                <span>{STATUS_LABELS[status]}</span>
-                <span className={`font-semibold ${STATUS_TEXT_MAP[status]}`}>
-                  {status === 1 && layoutSummary.available}
-                  {status === 2 && layoutSummary.underDev}
-                  {status === 3 && layoutSummary.completed}
-                  {status === 4 && layoutSummary.sold}
-                </span>
-              </span>
-            ))}
-          </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {floorsToShow.length ? (
