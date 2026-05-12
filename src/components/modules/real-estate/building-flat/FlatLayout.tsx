@@ -149,6 +149,13 @@ const FlatLayout = () => {
     setActiveFloor(null);
   }, [viewLayout]);
 
+
+
+  console.log('====================================');
+  console.log("storeLayout", unitPaymentSummary?.amounts?.total_amount);
+  console.log('====================================');
+
+
   const sortedFloors = useMemo(() => {
     if (!viewLayout?.floors?.length) return [];
     return [...viewLayout.floors].sort(
@@ -394,6 +401,7 @@ const FlatLayout = () => {
       "total_paid",
       "received_amount",
       "payment_amount",
+      'total_amount',
       "paid",
     ]);
     if (paidAmount !== null) return paidAmount;
@@ -405,8 +413,7 @@ const FlatLayout = () => {
     return selectedUnit?.paid_amount;
   };
 
-  const getSelectedUnitDueAmount = () =>
-    getAmountFromSummary(["due_amount", "balance_amount", "due"]) ?? selectedUnit?.due_amount;
+  const getSelectedUnitDueAmount = () => getAmountFromSummary(["due_amount", "balance_amount", "due"]) ?? selectedUnit?.due_amount;
 
   const goToUnitSale = () => {
     if (!selectedUnit) return;
