@@ -19,6 +19,7 @@ const ROUTES = {
 
   // User Routes
   user_list: '/user/user-list',
+  online_users: '/user/online-users',
   company_user_list: '/user/company-users',
   user_add: '/user/add-user',
   user_check: '/user/user-check',
