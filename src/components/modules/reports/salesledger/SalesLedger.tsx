@@ -783,26 +783,28 @@ const SalesLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className={useFilterMenuEnabled ? '' : 'order-5 w-full min-w-0 min-[1180px]:col-span-2 min-[1180px]:w-[120px] min-[1180px]:min-w-[120px]'}>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
-                    <InputDatePicker
-                      setCurrentDate={handleStartDate}
-                      className="w-full font-medium text-sm h-10 min-[1180px]:!w-[120px] min-[1180px]:max-w-[120px]"
-                      selectedDate={startDate}
-                      setSelectedDate={setStartDate}
-                    />
-                  </div>
+                  <div className={useFilterMenuEnabled ? 'space-y-3' : 'order-5 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 min-[1180px]:col-span-4'}>
+                    <div className="min-w-0">
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                      <InputDatePicker
+                        setCurrentDate={handleStartDate}
+                        className="w-full font-medium text-sm h-10"
+                        selectedDate={startDate}
+                        setSelectedDate={setStartDate}
+                      />
+                    </div>
 
-                  <div className={useFilterMenuEnabled ? '' : 'order-6 w-full min-w-0 min-[1180px]:col-span-2 min-[1180px]:w-[120px] min-[1180px]:min-w-[120px]'}>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
-                    <InputDatePicker
-                      setCurrentDate={handleEndDate}
-                      className="w-full font-medium text-sm h-10 min-[1180px]:!w-[120px] min-[1180px]:max-w-[120px]"
-                      selectedDate={endDate}
-                      setSelectedDate={setEndDate}
-                    />
+                    <div className="min-w-0">
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                      <InputDatePicker
+                        setCurrentDate={handleEndDate}
+                        className="w-full font-medium text-sm h-10"
+                        selectedDate={endDate}
+                        setSelectedDate={setEndDate}
+                      />
+                    </div>
                   </div>
-                  <div className={useFilterMenuEnabled ? '' : 'order-4 min-w-0 min-[1180px]:col-span-2'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-4 min-w-0 min-[1180px]:col-span-4'}>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
                       Search
                     </label>
@@ -871,7 +873,7 @@ const SalesLedger = (user: any) => {
                   <div
                     className={`${useFilterMenuEnabled
                       ? 'flex flex-wrap justify-end gap-2'
-                      : 'order-7 flex w-full flex-wrap items-end gap-2 min-[1180px]:col-span-6 min-[1180px]:min-w-0 min-[1180px]:flex-nowrap min-[1180px]:justify-end min-[1180px]:gap-1'
+                      : 'order-7 flex w-full flex-wrap items-end gap-2 min-[1180px]:col-span-4 min-[1180px]:min-w-0 min-[1180px]:flex-nowrap min-[1180px]:justify-end min-[1180px]:gap-1'
                       }`}
                   >
                     <ButtonLoading
