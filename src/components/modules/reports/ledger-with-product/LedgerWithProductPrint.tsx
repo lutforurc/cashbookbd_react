@@ -276,7 +276,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 	                      })()}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {formatAmount(parseAmount(row.balance ?? row.running_balance))}
+                      {formatAmount(parseAmount(row.running_balance ?? row.balance))}
                     </td>
                   </tr>
                 ))}

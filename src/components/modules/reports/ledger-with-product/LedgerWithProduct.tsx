@@ -100,19 +100,19 @@ const getDisplayedCreditValue = (row: any) => {
   return getDisplayedPaymentValue(row);
 };
 
-const getBalanceReceivedValue = (row: any) => {
+const getBalanceDebitValue = (row: any) => {
   if (isOpeningRow(row)) return 0;
 
   const receivedValue = Number(row?.received || 0);
   const totalValue = Number(row?.total || 0);
   const voucherType = getVoucherType(row?.vr_no);
 
-  return voucherType === '4' && receivedValue <= 0 && totalValue > 0
+  return voucherType === '3' && totalValue > 0
     ? totalValue
-    : receivedValue;
+    : getDisplayedDebitValue(row) || receivedValue;
 };
 
-const getBalancePaymentValue = (row: any) => {
+const getBalanceCreditValue = (row: any) => {
   const balanceValue = Math.abs(Number(row?.balance || 0));
   const paymentValue = Number(row?.payment || 0);
   const totalValue = Number(row?.total || 0);
@@ -122,9 +122,9 @@ const getBalancePaymentValue = (row: any) => {
     return balanceValue;
   }
 
-  return voucherType === '3' && paymentValue <= 0 && totalValue > 0
+  return voucherType === '4' && totalValue > 0
     ? totalValue
-    : paymentValue;
+    : getDisplayedCreditValue(row) || paymentValue;
 };
 
 const getCashAmount = (row: any, key: 'debit' | 'credit') => {
@@ -241,7 +241,7 @@ const LedgerWithProduct = (user: any) => {
         };
         const displayedReceived = getDisplayedReceivedValue(normalizedRow);
         const displayedPayment = getDisplayedPaymentValue(normalizedRow);
-        runningBalance += getBalanceReceivedValue(normalizedRow) - getBalancePaymentValue(normalizedRow);
+        runningBalance += getBalanceDebitValue(normalizedRow) - getBalanceCreditValue(normalizedRow);
 
         return {
           ...normalizedRow,
@@ -293,7 +293,7 @@ const LedgerWithProduct = (user: any) => {
     0,
   );
   const footerClosingValue = rows.length
-    ? parseAmount(rows[rows.length - 1]?.balance ?? rows[rows.length - 1]?.running_balance)
+    ? parseAmount(rows[rows.length - 1]?.running_balance ?? rows[rows.length - 1]?.balance)
     : parseAmount(summary?.closing_balance);
 
   const hasLoaded = !!statementState?.data;
@@ -487,7 +487,7 @@ const LedgerWithProduct = (user: any) => {
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold',
-      render: (row: any) => <div>{ thousandSeparator(row.balance)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.running_balance ?? row.balance)}</div>,
     },
   ];
 
@@ -835,5 +835,3 @@ const LedgerWithProduct = (user: any) => {
 };
 
 export default LedgerWithProduct;
-
-
