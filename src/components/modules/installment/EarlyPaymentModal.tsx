@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { FiCheckSquare, FiX } from 'react-icons/fi';
 
 dayjs.extend(customParseFormat);
 
@@ -137,6 +138,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
               buttonLoading={applyLoading}
               disabled={applyLoading}
               className="mt-0 pt-[0.45rem] pb-[0.45rem] w-full"
+              icon={<FiCheckSquare className="ml-2" />}
             />
           ) : null}
           <ButtonLoading
@@ -144,6 +146,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
             label="Close"
             disabled={applyLoading}
             className="mt-0 pt-[0.45rem] pb-[0.45rem] w-full"
+            icon={<FiX className="ml-2" />}
           />
         </div>
       </div>

@@ -72,11 +72,15 @@ type InstallmentRow = {
   due_date: string;
   amount: number;
   invoice_no?: string | null;
+  early_payment_date?: string | null;
+  early_payment_discount?: number;
 };
 
 type EditableInstallmentRow = InstallmentRow & {
   dueDateValue: Date | null;
   amountValue: string;
+  earlyPaymentDateValue: Date | null;
+  earlyDiscountValue: string;
 };
 
 const initialOptions: SaleOption[] = [{ id: '', name: 'Select Unit Sale' }];
@@ -100,6 +104,17 @@ const parseDisplayDate = (value: any) => {
   const fallback = dayjs(value);
   return fallback.isValid() ? fallback.toDate() : null;
 };
+
+const sumInstallmentAmounts = (rows: InstallmentRow[]) =>
+  rows.reduce((total, row) => total + toNumber(row.amount), 0);
+
+const sortInstallmentRows = (rows: InstallmentRow[]) =>
+  [...rows].sort((a, b) => {
+    const aNo = Number(a.installment_no);
+    const bNo = Number(b.installment_no);
+    if (Number.isFinite(aNo) && Number.isFinite(bNo)) return aNo - bNo;
+    return String(a.installment_no).localeCompare(String(b.installment_no));
+  });
 
 export default function RealEstateInstallmentCreate() {
   const [saleOptions, setSaleOptions] = useState<SaleOption[]>(initialOptions);
@@ -271,6 +286,12 @@ export default function RealEstateInstallmentCreate() {
             : row?.due_date ?? row?.installment_date ?? row?.inst_date ?? '',
           amount: toNumber(row?.amount ?? row?.due_amount ?? row?.installment_amount),
           invoice_no: row?.invoice_no ?? row?.sales_invoice ?? row?.receipt_no ?? null,
+          early_payment_date: row?.early_payment_date
+            ? dayjs(row.early_payment_date).isValid()
+              ? dayjs(row.early_payment_date).format('DD/MM/YYYY')
+              : row.early_payment_date
+            : null,
+          early_payment_discount: toNumber(row?.early_payment_discount ?? row?.early_discount),
         }))
       : [];
   };
@@ -286,7 +307,7 @@ export default function RealEstateInstallmentCreate() {
     try {
       setInstallmentsLoading(true);
       const response: any = await httpService.get(
-        `${API_INSTALLMENT_DETAILS_BY_ID_URL}/${customerId}?report=false`,
+        `${API_INSTALLMENT_DETAILS_BY_ID_URL}/${customerId}?report=true`,
       );
       const rows = normalizeInstallmentRows(response);
       const saleOption = saleOptions.find((item) => String(item.id) === String(saleId));
@@ -294,7 +315,7 @@ export default function RealEstateInstallmentCreate() {
       const matchedRows = receiptNo
         ? rows.filter((row) => normalizeMatchValue(row.invoice_no) === normalizeMatchValue(receiptNo))
         : rows;
-      const saleRows = matchedRows.length > 0 ? matchedRows : rows;
+      const saleRows = sortInstallmentRows(matchedRows.length > 0 ? matchedRows : rows);
       setSavedInstallments(saleRows);
       setSavedInstallmentsLoaded(true);
       return saleRows;
@@ -410,12 +431,54 @@ export default function RealEstateInstallmentCreate() {
       ...row,
       dueDateValue: parseDisplayDate(row.due_date),
       amountValue: String(row.amount || ''),
+      earlyPaymentDateValue: parseDisplayDate(row.early_payment_date),
+      earlyDiscountValue: String(row.early_payment_discount || ''),
     });
   };
 
   const cancelEditInstallment = () => {
     setEditingInstallmentId(null);
     setEditingRow(null);
+  };
+
+  const postInstallmentUpdate = (
+    row: InstallmentRow,
+    amount: number,
+    dueDate: Date,
+    earlyPaymentDate?: Date | null,
+    earlyDiscount?: number,
+  ) => {
+    const installmentId = row.installment_id ?? row.id;
+    if (!installmentId) {
+      throw new Error('Installment id not found');
+    }
+
+    const payload: any = {
+      installment_id: installmentId,
+      due_date: dayjs(dueDate).format('YYYY-MM-DD'),
+      amount,
+    };
+
+    if (earlyPaymentDate !== undefined || earlyDiscount !== undefined) {
+      payload.early_payment_date = earlyPaymentDate ? dayjs(earlyPaymentDate).format('YYYY-MM-DD') : null;
+      payload.early_discount = toNumber(earlyDiscount);
+      payload.early_payment_discount = toNumber(earlyDiscount);
+    }
+
+    return httpService.post(API_UNIT_SALE_INSTALLMENT_UPDATE_URL, payload);
+  };
+
+  const createBalancingInstallment = (amount: number, afterRow: InstallmentRow) => {
+    const afterDate = parseDisplayDate(afterRow.due_date) ?? dayjs().toDate();
+    return httpService.post(API_UNIT_SALE_INSTALLMENT_CREATE_URL, {
+      booking_id: Number(selectedSaleId),
+      amount,
+      start_date: dayjs(afterDate).add(1, 'month').format('YYYY-MM-DD'),
+      number_of_installments: 1,
+      early_payment: false,
+      early_discount: 0,
+      early_payment_date: null,
+    });
   };
 
   const saveInstallmentEdit = async () => {
@@ -435,30 +498,83 @@ export default function RealEstateInstallmentCreate() {
       return;
     }
 
+    const editKey = getInstallmentKey(editingRow);
+    const editedAmount = toNumber(editingRow.amountValue);
+    const editedIndex = savedInstallments.findIndex((row) => getInstallmentKey(row) === editKey);
+    if (editedIndex < 0) {
+      toast.error('Installment row not found');
+      return;
+    }
+    const isFirstInstallment = editedIndex === 0;
+    if (isFirstInstallment && toNumber(editingRow.earlyDiscountValue) > 0 && !editingRow.earlyPaymentDateValue) {
+      toast.warning('Early payment date is required');
+      return;
+    }
+
+    const currentAmount = toNumber(savedInstallments[editedIndex]?.amount);
+    const amountChanged = Math.abs(editedAmount - currentAmount) >= 0.01;
+    const rowsWithEditedAmount = savedInstallments.map((row, index) =>
+      index === editedIndex
+        ? {
+            ...row,
+            due_date: dayjs(editingRow.dueDateValue).format('DD/MM/YYYY'),
+            amount: editedAmount,
+            early_payment_date: isFirstInstallment && editingRow.earlyPaymentDateValue
+              ? dayjs(editingRow.earlyPaymentDateValue).format('DD/MM/YYYY')
+              : row.early_payment_date,
+            early_payment_discount: isFirstInstallment
+              ? toNumber(editingRow.earlyDiscountValue)
+              : row.early_payment_discount,
+          }
+        : row,
+    );
+    const balanceAmount = scheduleBaseAmount - sumInstallmentAmounts(rowsWithEditedAmount);
+    const shouldBalance = amountChanged && Math.abs(balanceAmount) >= 0.01;
+    const nextRow = savedInstallments[editedIndex + 1] ?? null;
+    const nextRowDate = nextRow ? parseDisplayDate(nextRow.due_date) : null;
+    const nextAdjustedAmount = nextRow ? toNumber(nextRow.amount) + balanceAmount : 0;
+
+    if (shouldBalance && nextRow) {
+      if (!(nextRow.installment_id ?? nextRow.id)) {
+        toast.error('Next installment id not found');
+        return;
+      }
+      if (!nextRowDate) {
+        toast.warning('Next installment due date is invalid');
+        return;
+      }
+      if (nextAdjustedAmount <= 0) {
+        toast.warning('Next installment amount must remain greater than 0');
+        return;
+      }
+    }
+
+    if (shouldBalance && !nextRow && balanceAmount < 0) {
+      toast.warning('Installment total cannot be greater than Installment Base');
+      return;
+    }
+
     try {
-      const editKey = getInstallmentKey(editingRow);
       setUpdatingInstallmentId(editKey);
-      const payload = {
-        installment_id: installmentId,
-        due_date: dayjs(editingRow.dueDateValue).format('YYYY-MM-DD'),
-        amount: toNumber(editingRow.amountValue),
-      };
-      const response: any = await httpService.post(API_UNIT_SALE_INSTALLMENT_UPDATE_URL, payload);
-      toast.success(response?.data?.message || 'Installment updated successfully');
-      setSavedInstallments((prev) =>
-        prev.map((row) =>
-          getInstallmentKey(row) === editKey
-            ? {
-                ...row,
-                due_date: dayjs(editingRow.dueDateValue).format('DD/MM/YYYY'),
-                amount: toNumber(editingRow.amountValue),
-              }
-            : row,
-        ),
+      const response: any = await postInstallmentUpdate(
+        editingRow,
+        editedAmount,
+        editingRow.dueDateValue,
+        isFirstInstallment ? editingRow.earlyPaymentDateValue : undefined,
+        isFirstInstallment ? toNumber(editingRow.earlyDiscountValue) : undefined,
       );
+
+      if (shouldBalance && nextRow && nextRowDate) {
+        await postInstallmentUpdate(nextRow, nextAdjustedAmount, nextRowDate);
+      } else if (shouldBalance && balanceAmount > 0) {
+        await createBalancingInstallment(balanceAmount, rowsWithEditedAmount[editedIndex]);
+      }
+
+      toast.success(response?.data?.message || 'Installment updated successfully');
       cancelEditInstallment();
+      loadSaleInfo(selectedSaleId, false);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to update installment');
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to update installment');
     } finally {
       setUpdatingInstallmentId(null);
     }
@@ -695,13 +811,15 @@ export default function RealEstateInstallmentCreate() {
                 <th className="p-2 text-center">Inst No</th>
                 <th className="p-2 text-left">Due Date</th>
                 <th className="p-2 text-right">Amount</th>
+                <th className="p-2 text-left">Early Pay Date</th>
+                <th className="p-2 text-right">Early Discount</th>
                 <th className="p-2 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {installmentsLoading ? (
                 <tr>
-                  <td colSpan={4} className="p-3 text-center text-gray-500">
+                  <td colSpan={6} className="p-3 text-center text-gray-500">
                     Loading installment schedule...
                   </td>
                 </tr>
@@ -711,15 +829,18 @@ export default function RealEstateInstallmentCreate() {
                     <td className="p-2 text-center">{row.installment_no}</td>
                     <td className="p-2">{row.due_date}</td>
                     <td className="p-2 text-right">{formatAmount(row.amount)}</td>
+                    <td className="p-2 text-gray-500">-</td>
+                    <td className="p-2 text-right text-gray-500">-</td>
                     <td className="p-2 text-center text-gray-500">-</td>
                   </tr>
                 ))
               ) : savedInstallments.length > 0 ? (
-                savedInstallments.map((row) => {
+                savedInstallments.map((row, index) => {
                   const rowKey = getInstallmentKey(row);
                   const isEditing = editingInstallmentId === rowKey && !!editingRow;
                   const activeEditingRow = isEditing ? editingRow : null;
                   const isUpdating = updatingInstallmentId === rowKey;
+                  const isFirstRow = index === 0;
 
                   return (
                     <tr key={`${rowKey}-${row.due_date}`} className="border-t border-gray-200 dark:border-gray-700">
@@ -754,6 +875,42 @@ export default function RealEstateInstallmentCreate() {
                           />
                         ) : (
                           formatAmount(row.amount)
+                        )}
+                      </td>
+                      <td className="p-2">
+                        {isEditing && isFirstRow ? (
+                          <InputDatePicker
+                            selectedDate={activeEditingRow?.earlyPaymentDateValue ?? null}
+                            setSelectedDate={(date) =>
+                              setEditingRow((prev) => (prev ? { ...prev, earlyPaymentDateValue: date } : prev))
+                            }
+                            setCurrentDate={(date) =>
+                              setEditingRow((prev) => (prev ? { ...prev, earlyPaymentDateValue: date } : prev))
+                            }
+                            className="h-8.5 w-36 text-sm"
+                          />
+                        ) : isFirstRow ? (
+                          row.early_payment_date || '-'
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className="p-2 text-right">
+                        {isEditing && isFirstRow ? (
+                          <input
+                            type="number"
+                            value={activeEditingRow?.earlyDiscountValue ?? ''}
+                            onChange={(e) =>
+                              setEditingRow((prev) =>
+                                prev ? { ...prev, earlyDiscountValue: e.target.value } : prev,
+                              )
+                            }
+                            className="h-8.5 w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
+                          />
+                        ) : isFirstRow && row.early_payment_discount ? (
+                          formatAmount(row.early_payment_discount)
+                        ) : (
+                          '-'
                         )}
                       </td>
                       <td className="p-2 text-center">
@@ -794,7 +951,7 @@ export default function RealEstateInstallmentCreate() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={4} className="p-3 text-center text-gray-500">
+                  <td colSpan={6} className="p-3 text-center text-gray-500">
                     {savedInstallmentsLoaded
                       ? 'No saved installment schedule found for this sale.'
                       : 'Select sale and enter schedule details.'}

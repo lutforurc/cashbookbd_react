@@ -1,5 +1,6 @@
 import React from "react";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
+import { FiCheckSquare, FiX } from "react-icons/fi";
 
 interface InstallmentModalProps {
   open: boolean;
@@ -52,11 +53,13 @@ const InstallmentModal: React.FC<InstallmentModalProps> = ({
             onClick={onSave}
             label="Save"
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
+            icon={<FiCheckSquare size={18} />}
           />
           <ButtonLoading
             onClick={onClose}
             label="Cancel"
             className="mt-0 md:mt-6 pt-[0.45rem] pb-[0.45rem] w-full"
+            icon={<FiX size={18} />}
           />
         </div>
       </div>

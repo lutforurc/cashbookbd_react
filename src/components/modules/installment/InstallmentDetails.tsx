@@ -20,6 +20,7 @@ import PaymentDetailsModal from './PaymentDetailsModal';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { toast } from 'react-toastify'; 
 import EarlyPaymentModal from './EarlyPaymentModal';
+import { FiCheckSquare } from 'react-icons/fi';
 
 dayjs.extend(customParseFormat);
 
@@ -355,6 +356,7 @@ const InstallmentDetails = () => {
               buttonLoading={buttonLoading}
               label="Receive"
               className="mt-0 pt-2 pb-2"
+              icon={<FiCheckSquare size={18} />}
             />
           ) : (
             <div className="text-center">
