@@ -11,6 +11,8 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
 import {
+  API_CHART_OF_ACCOUNTS_DDL_L4_URL,
+  API_INSTALLMENT_DETAILS_BY_ID_URL,
   API_UNIT_SALE_DDL_URL,
   API_UNIT_SALE_INSTALLMENT_CREATE_URL,
   API_UNIT_SALE_SUMMARY_URL,
@@ -19,6 +21,8 @@ import {
 type SaleOption = {
   id: string;
   name: string;
+  customer_id?: number | string | null;
+  receipt_no?: string | null;
 };
 
 type SaleSummary = {
@@ -27,8 +31,18 @@ type SaleSummary = {
   booking?: {
     unit_label?: string | null;
     parking_label?: string | null;
+    payload?: {
+      customer?: {
+        value?: number | string | null;
+        label?: string | null;
+        label_2?: string | null;
+      };
+    };
   };
   customer?: {
+    id?: number | string | null;
+    customer_id?: number | string | null;
+    ledger_id?: number | string | null;
     name?: string | null;
     mobile?: string | null;
   };
@@ -47,6 +61,13 @@ type SaleSummary = {
   };
 };
 
+type InstallmentRow = {
+  installment_no: number | string;
+  due_date: string;
+  amount: number;
+  invoice_no?: string | null;
+};
+
 const initialOptions: SaleOption[] = [{ id: '', name: 'Select Unit Sale' }];
 
 const toNumber = (value: any) => {
@@ -56,6 +77,11 @@ const toNumber = (value: any) => {
 
 const formatAmount = (value: any) => thousandSeparator(toNumber(value));
 
+const normalizeMatchValue = (value: any) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
+
 export default function RealEstateInstallmentCreate() {
   const [saleOptions, setSaleOptions] = useState<SaleOption[]>(initialOptions);
   const [selectedSaleId, setSelectedSaleId] = useState('');
@@ -63,7 +89,10 @@ export default function RealEstateInstallmentCreate() {
   const [summary, setSummary] = useState<SaleSummary | null>(null);
   const [loadingSales, setLoadingSales] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [installmentsLoading, setInstallmentsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savedInstallments, setSavedInstallments] = useState<InstallmentRow[]>([]);
+  const [savedInstallmentsLoaded, setSavedInstallmentsLoaded] = useState(false);
 
   const [installmentAmount, setInstallmentAmount] = useState('');
   const [numberOfInstallments, setNumberOfInstallments] = useState('');
@@ -83,7 +112,7 @@ export default function RealEstateInstallmentCreate() {
   );
   const scheduleBaseAmount = Math.max(totalAmount - bookingAmount - downPaymentAmount, 0);
 
-  const previewRows = useMemo(() => {
+  const previewRows: InstallmentRow[] = useMemo(() => {
     const amount = toNumber(installmentAmount);
     const maxCount = Number(numberOfInstallments);
     if (!summary || !startDate || amount <= 0 || !Number.isFinite(maxCount) || maxCount <= 0) {
@@ -128,6 +157,15 @@ export default function RealEstateInstallmentCreate() {
             name:
               row?.label ??
               `Sale #${row?.id ?? ''} - ${row?.customer_name ?? 'Unknown Customer'}`,
+            customer_id:
+              row?.customer_id ??
+              row?.booking?.customer_id ??
+              row?.customer?.id ??
+              row?.customer?.customer_id ??
+              row?.booking?.payload?.customer?.value ??
+              row?.payload?.customer?.value ??
+              null,
+            receipt_no: row?.receipt_no ?? row?.invoice_no ?? null,
           }))
         : [];
       const filteredOptions = options.filter((option) => option.id);
@@ -135,7 +173,7 @@ export default function RealEstateInstallmentCreate() {
 
       if (filteredOptions.length === 1) {
         setSelectedSaleId(filteredOptions[0].id);
-        loadSaleSummary(filteredOptions[0].id);
+        loadSaleInfo(filteredOptions[0].id, false);
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to load unit sale list');
@@ -144,21 +182,139 @@ export default function RealEstateInstallmentCreate() {
     }
   };
 
+  const getSummaryCustomerId = (saleSummary: SaleSummary | null) =>
+    saleSummary?.customer?.id ??
+    saleSummary?.customer?.customer_id ??
+    saleSummary?.customer?.ledger_id ??
+    saleSummary?.booking?.payload?.customer?.value ??
+    null;
+
+  const getSaleCustomerId = (saleId: string, saleSummary: SaleSummary | null = summary) => {
+    const option = saleOptions.find((item) => String(item.id) === String(saleId));
+    return getSummaryCustomerId(saleSummary) ?? option?.customer_id ?? null;
+  };
+
+  const resolveCustomerLedgerId = async (saleId: string, saleSummary: SaleSummary | null = summary) => {
+    const knownCustomerId = getSaleCustomerId(saleId, saleSummary);
+    if (knownCustomerId) return knownCustomerId;
+
+    const searchValue = saleSummary?.customer?.mobile || saleSummary?.customer?.name || '';
+    if (!searchValue) return null;
+
+    const response: any = await httpService.get(API_CHART_OF_ACCOUNTS_DDL_L4_URL, {
+      params: {
+        searchName: searchValue,
+        acType: '',
+      },
+    });
+    const rows =
+      response?.data?.data?.data ??
+      response?.data?.data ??
+      [];
+
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+
+    const customerName = normalizeMatchValue(saleSummary?.customer?.name);
+    const customerMobile = normalizeMatchValue(saleSummary?.customer?.mobile);
+    const matched =
+      rows.find((row: any) => {
+        const label = normalizeMatchValue(row?.label);
+        const label2 = normalizeMatchValue(row?.label_2);
+        return (
+          (customerMobile && (label.includes(customerMobile) || label2.includes(customerMobile))) ||
+          (customerName && label === customerName)
+        );
+      }) ?? rows[0];
+
+    return matched?.value ?? matched?.id ?? null;
+  };
+
+  const normalizeInstallmentRows = (response: any): InstallmentRow[] => {
+    const rows =
+      response?.data?.data?.data?.data ??
+      response?.data?.data?.data ??
+      response?.data?.data ??
+      response?.data ??
+      [];
+
+    return Array.isArray(rows)
+      ? rows.map((row: any) => ({
+          installment_no: row?.installment_no ?? row?.inst_no ?? '-',
+          due_date: dayjs(row?.due_date ?? row?.installment_date ?? row?.inst_date).isValid()
+            ? dayjs(row?.due_date ?? row?.installment_date ?? row?.inst_date).format('DD/MM/YYYY')
+            : row?.due_date ?? row?.installment_date ?? row?.inst_date ?? '',
+          amount: toNumber(row?.amount ?? row?.due_amount ?? row?.installment_amount),
+          invoice_no: row?.invoice_no ?? row?.sales_invoice ?? row?.receipt_no ?? null,
+        }))
+      : [];
+  };
+
+  const loadSavedInstallments = async (saleId: string, saleSummary: SaleSummary | null = summary) => {
+    const customerId = await resolveCustomerLedgerId(saleId, saleSummary);
+    if (!customerId) {
+      setSavedInstallments([]);
+      setSavedInstallmentsLoaded(true);
+      return [];
+    }
+
+    try {
+      setInstallmentsLoading(true);
+      const response: any = await httpService.get(
+        `${API_INSTALLMENT_DETAILS_BY_ID_URL}/${customerId}?report=false`,
+      );
+      const rows = normalizeInstallmentRows(response);
+      const saleOption = saleOptions.find((item) => String(item.id) === String(saleId));
+      const receiptNo = saleSummary?.receipt_no ?? saleOption?.receipt_no ?? null;
+      const matchedRows = receiptNo
+        ? rows.filter((row) => normalizeMatchValue(row.invoice_no) === normalizeMatchValue(receiptNo))
+        : rows;
+      const saleRows = matchedRows.length > 0 ? matchedRows : rows;
+      setSavedInstallments(saleRows);
+      setSavedInstallmentsLoaded(true);
+      return saleRows;
+    } catch (error: any) {
+      setSavedInstallments([]);
+      setSavedInstallmentsLoaded(true);
+      toast.error(error?.response?.data?.message || 'Failed to load installment schedule');
+      return [];
+    } finally {
+      setInstallmentsLoading(false);
+    }
+  };
+
   const loadSaleSummary = async (saleId: string) => {
     if (!saleId) {
       setSummary(null);
+      setSavedInstallments([]);
+      setSavedInstallmentsLoaded(false);
       return;
     }
 
     try {
       setSummaryLoading(true);
       const response: any = await httpService.get(`${API_UNIT_SALE_SUMMARY_URL}/${saleId}`);
-      setSummary(response?.data?.data ?? null);
+      const saleSummary = response?.data?.data ?? null;
+      setSummary(saleSummary);
+      return saleSummary;
     } catch (error: any) {
       setSummary(null);
       toast.error(error?.response?.data?.message || 'Failed to load sale summary');
+      return null;
     } finally {
       setSummaryLoading(false);
+    }
+  };
+
+  const loadSaleInfo = async (saleId: string, showEmptyMessage = true) => {
+    if (!saleId) {
+      toast.warning('Select unit sale first');
+      return;
+    }
+
+    const saleSummary = await loadSaleSummary(saleId);
+    const rows = await loadSavedInstallments(saleId, saleSummary);
+    if (showEmptyMessage && rows.length === 0) {
+      toast.info('No saved installment schedule found for this sale');
     }
   };
 
@@ -170,6 +326,8 @@ export default function RealEstateInstallmentCreate() {
     setSelectedSaleId('');
     setCustomerSearch('');
     setSummary(null);
+    setSavedInstallments([]);
+    setSavedInstallmentsLoaded(false);
     setInstallmentAmount('');
     setNumberOfInstallments('');
     setStartDate(dayjs().add(1, 'month').toDate());
@@ -232,7 +390,7 @@ export default function RealEstateInstallmentCreate() {
       setEarlyPayment(false);
       setEarlyDiscount('');
       setEarlyPaymentDate(null);
-      loadSaleSummary(selectedSaleId);
+      loadSaleInfo(selectedSaleId, false);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to create installment schedule');
     } finally {
@@ -274,6 +432,8 @@ export default function RealEstateInstallmentCreate() {
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                   const saleId = e.target.value;
                   setSelectedSaleId(saleId);
+                  setSavedInstallments([]);
+                  setSavedInstallmentsLoaded(false);
                   loadSaleSummary(saleId);
                 }}
                 className="h-[2.1rem] bg-transparent"
@@ -295,9 +455,13 @@ export default function RealEstateInstallmentCreate() {
               <ButtonLoading
                 onClick={(e: any) => {
                   e?.preventDefault?.();
-                  loadUnitSaleOptions(customerSearch);
+                  if (selectedSaleId) {
+                    loadSaleInfo(selectedSaleId);
+                  } else {
+                    loadUnitSaleOptions(customerSearch);
+                  }
                 }}
-                buttonLoading={loadingSales}
+                buttonLoading={loadingSales || summaryLoading || installmentsLoading}
                 label="Load"
                 className="h-8.5 w-full"
                 icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
@@ -425,9 +589,15 @@ export default function RealEstateInstallmentCreate() {
               </tr>
             </thead>
             <tbody>
-              {previewRows.length > 0 ? (
-                previewRows.map((row) => (
-                  <tr key={row.installment_no} className="border-t border-gray-200 dark:border-gray-700">
+              {installmentsLoading ? (
+                <tr>
+                  <td colSpan={3} className="p-3 text-center text-gray-500">
+                    Loading installment schedule...
+                  </td>
+                </tr>
+              ) : (previewRows.length > 0 || savedInstallments.length > 0) ? (
+                (previewRows.length > 0 ? previewRows : savedInstallments).map((row) => (
+                  <tr key={`${row.installment_no}-${row.due_date}`} className="border-t border-gray-200 dark:border-gray-700">
                     <td className="p-2 text-center">{row.installment_no}</td>
                     <td className="p-2">{row.due_date}</td>
                     <td className="p-2 text-right">{formatAmount(row.amount)}</td>
@@ -436,7 +606,9 @@ export default function RealEstateInstallmentCreate() {
               ) : (
                 <tr>
                   <td colSpan={3} className="p-3 text-center text-gray-500">
-                    Select sale and enter schedule details.
+                    {savedInstallmentsLoaded
+                      ? 'No saved installment schedule found for this sale.'
+                      : 'Select sale and enter schedule details.'}
                   </td>
                 </tr>
               )}

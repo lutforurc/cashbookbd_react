@@ -301,13 +301,20 @@ const InstallmentDetails = () => {
       render: (row: any) => (
         <>
           {Array.isArray(row?.payments) && row.payments.length > 0 ? (
-            <ButtonLoading
+            <button
+              type="button"
               onClick={() => handleInstallments(row.payments)}
-              label={row.installment_no ?? ""}
-              className="mt-0 pt-1 pb-1 w-7 border border-black dark:border-white rounded-full"
-            />
+              title="View payment details"
+              className="inline-flex min-w-[76px] items-center justify-center gap-1 rounded-full border border-slate-400/60 bg-slate-700/45 px-3 py-1 text-xs font-semibold text-white transition hover:border-blue-400 hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
+            >
+              <span className="text-blue-300">#</span>
+              <span>{row.installment_no ?? ''}</span>
+              <span className="text-[10px] font-medium uppercase text-slate-300">Details</span>
+            </button>
           ) : (
-            <span className="p-4">{row.installment_no}</span>
+            <span className="inline-flex min-w-[38px] justify-center px-3 py-1 text-sm font-semibold text-slate-100">
+              {row.installment_no}
+            </span>
           )}
         </>
       ),
