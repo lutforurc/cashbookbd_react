@@ -1,5 +1,3 @@
-import React from 'react';
-
 import httpService from '../../../services/httpService';
 import { API_DATE_WISE_TOTAL_URL } from '../../../services/apiRoutes';
 import {
@@ -9,7 +7,7 @@ import {
 } from '../../../constant/constant/constant';
 
 interface dateWiseTotalParam {
-  branchId: number;
+  branchId: number | string | null;
   startDate: string;
   endDate: string;
 }
@@ -19,11 +17,14 @@ export const getDateWiseTotal =
   (dispatch: any) => {
     dispatch({ type: DATE_WISE_TOTAL_PENDING });
 
+    const params = new URLSearchParams({
+      branch_id: String(branchId ?? ''),
+      start_date: startDate,
+      end_date: endDate,
+    });
+
     httpService
-      .get(
-        API_DATE_WISE_TOTAL_URL +
-          `?branch_id=${branchId}&start_date=${startDate}&end_date=${endDate}`,
-      )
+      .get(`${API_DATE_WISE_TOTAL_URL}?${params.toString()}`)
       .then((res) => {
         let _data = res.data;
         if (_data.success) {
@@ -38,7 +39,7 @@ export const getDateWiseTotal =
           });
         }
       })
-      .catch((err) => {
+      .catch(() => {
         dispatch({
           type: DATE_WISE_TOTAL_ERROR,
           payload: 'Something went wrongs!',

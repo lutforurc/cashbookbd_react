@@ -49,7 +49,48 @@ const STATUS_LABELS: Record<number, string> = {
   4: "Sold",
 };
 
-type LayoutType = any;
+interface UnitCustomer {
+  id?: number | string;
+  name?: string;
+  mobile?: string;
+}
+
+interface UnitItem {
+  id?: number | string;
+  unit_no?: string;
+  unit_type?: string;
+  size_sqft?: number | string;
+  sale_price?: number | string;
+  rate?: number | string;
+  unit_price?: number | string;
+  total_price?: number | string;
+  price?: number | string;
+  amount?: number | string;
+  status?: number;
+  booking_id?: number | string;
+  unit_sale_id?: number | string;
+  sale_id?: number | string;
+  paid_amount?: number | string;
+  due_amount?: number | string;
+  customer?: UnitCustomer;
+  booking?: any;
+}
+
+interface FlatLayoutFlat {
+  id?: number | string;
+  flat_name?: string;
+  units?: UnitItem[];
+}
+
+interface FlatLayoutFloor {
+  floor_no: number | string;
+  flats?: FlatLayoutFlat[];
+}
+
+interface LayoutType {
+  building?: string;
+  floors?: FlatLayoutFloor[];
+}
 
 const summaryCards = [
   {
@@ -100,7 +141,7 @@ const FlatLayout = () => {
   const [buildingId, setBuildingId] = useState<number | null>(null);
   const [activeFloor, setActiveFloor] = useState<number | null>(null);
   const [viewLayout, setViewLayout] = useState<LayoutType | null>(null);
-  const [selectedUnit, setSelectedUnit] = useState<any | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<UnitItem | null>(null);
   const [unitPaymentSummary, setUnitPaymentSummary] = useState<any | null>(null);
   const [unitPaymentLoading, setUnitPaymentLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
@@ -149,17 +190,10 @@ const FlatLayout = () => {
     setActiveFloor(null);
   }, [viewLayout]);
 
-
-
-  console.log('====================================');
-  console.log("storeLayout", unitPaymentSummary?.amounts?.total_amount);
-  console.log('====================================');
-
-
   const sortedFloors = useMemo(() => {
     if (!viewLayout?.floors?.length) return [];
     return [...viewLayout.floors].sort(
-      (firstFloor: any, secondFloor: any) =>
+      (firstFloor: FlatLayoutFloor, secondFloor: FlatLayoutFloor) =>
         Number(firstFloor.floor_no) - Number(secondFloor.floor_no),
     );
   }, [viewLayout]);
@@ -167,13 +201,13 @@ const FlatLayout = () => {
   const floorsToShow = useMemo(() => {
     if (!sortedFloors.length) return [];
     if (activeFloor == null) return sortedFloors;
-    return sortedFloors.filter((floor: any) => Number(floor.floor_no) === activeFloor);
+    return sortedFloors.filter((floor: FlatLayoutFloor) => Number(floor.floor_no) === activeFloor);
   }, [activeFloor, sortedFloors]);
 
   const activeTabIndex = useMemo(() => {
     if (activeFloor == null) return 0;
     const floorIndex = sortedFloors.findIndex(
-      (floor: any) => Number(floor.floor_no) === activeFloor,
+      (floor: FlatLayoutFloor) => Number(floor.floor_no) === activeFloor,
     );
     return floorIndex >= 0 ? floorIndex + 1 : 0;
   }, [activeFloor, sortedFloors]);
@@ -198,14 +232,15 @@ const FlatLayout = () => {
       completed: 0,
     };
 
-    viewLayout?.floors?.forEach((floor: any) => {
-      floor.flats?.forEach((flat: any) => {
-        flat.units?.forEach((unit: any) => {
+    viewLayout?.floors?.forEach((floor: FlatLayoutFloor) => {
+      floor.flats?.forEach((flat: FlatLayoutFlat) => {
+        flat.units?.forEach((unit: UnitItem) => {
+          const status = Number(unit.status);
           summary.units += 1;
-          if (unit.status === 1) summary.available += 1;
-          if (unit.status === 2) summary.underDev += 1;
-          if (unit.status === 3) summary.completed += 1;
-          if (unit.status === 4) summary.sold += 1;
+          if (status === 1) summary.available += 1;
+          if (status === 2) summary.underDev += 1;
+          if (status === 3) summary.completed += 1;
+          if (status === 4) summary.sold += 1;
         });
       });
     });
@@ -213,13 +248,17 @@ const FlatLayout = () => {
     return summary;
   }, [viewLayout]);
 
-  const handleUnitClick = (unit: any, e: React.MouseEvent) => {
+  const handleUnitClick = (unit: UnitItem, e: React.MouseEvent) => {
     e.preventDefault();
     setSelectedUnit(unit);
     setUnitPaymentSummary(null);
   };
 
-  const closeUnitModal = () => setSelectedUnit(null);
+  const closeUnitModal = () => {
+    setSelectedUnit(null);
+    setUnitPaymentSummary(null);
+    setUnitPaymentLoading(false);
+  };
 
   const formatNumber = (value: any) => {
     const numberValue = Number(value);
@@ -227,7 +266,7 @@ const FlatLayout = () => {
     return numberValue.toLocaleString("en-US");
   };
 
-  const getUnitTotalPrice = (unit: any) => {
+  const getUnitTotalPrice = (unit: UnitItem) => {
     const totalPrice = Number(unit?.total_price ?? unit?.price ?? unit?.amount);
     if (Number.isFinite(totalPrice) && totalPrice > 0) return totalPrice;
 
@@ -240,10 +279,10 @@ const FlatLayout = () => {
     return null;
   };
 
-  const isParkingUnit = (unit: any) =>
+  const isParkingUnit = (unit: UnitItem) =>
     String(unit?.unit_type ?? "").toLowerCase() === "parking";
 
-  const getKnownSaleId = (unit: any) =>
+  const getKnownSaleId = (unit: UnitItem) =>
     unit?.booking_id ??
     unit?.unit_sale_id ??
     unit?.sale_id ??
@@ -306,7 +345,7 @@ const FlatLayout = () => {
     return Array.isArray(rowsCandidate) ? rowsCandidate : [];
   };
 
-  const saleRowMatchesUnit = (row: any, unit: any) => {
+  const saleRowMatchesUnit = (row: any, unit: UnitItem) => {
     const targetUnitId = String(unit?.id ?? "");
     const targetUnitNo = String(unit?.unit_no ?? "").toLowerCase();
     const isParking = isParkingUnit(unit);
@@ -330,7 +369,7 @@ const FlatLayout = () => {
     return false;
   };
 
-  const findSaleIdForUnit = async (unit: any) => {
+  const findSaleIdForUnit = async (unit: UnitItem) => {
     const knownSaleId = getKnownSaleId(unit);
     if (knownSaleId) return String(knownSaleId);
 
@@ -356,7 +395,7 @@ const FlatLayout = () => {
     return matchedRow ? resolveSaleId(matchedRow) : "";
   };
 
-  const loadUnitPaymentSummary = async (unit: any) => {
+  const loadUnitPaymentSummary = async (unit: UnitItem) => {
     if (!unit || Number(unit.status) !== 4) return;
 
     try {
@@ -401,7 +440,6 @@ const FlatLayout = () => {
       "total_paid",
       "received_amount",
       "payment_amount",
-      'total_amount',
       "paid",
     ]);
     if (paidAmount !== null) return paidAmount;
@@ -426,6 +464,7 @@ const FlatLayout = () => {
     navigate(routes.unit_payment_entry, {
       state: {
         bookingId:
+          unitPaymentSummary?.saleId ??
           selectedUnit?.booking_id ??
           selectedUnit?.unit_sale_id ??
           selectedUnit?.sale_id ??
@@ -453,22 +492,22 @@ const FlatLayout = () => {
         {label}
       </div>
       <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-        {value || "-"}
+        {value ?? "-"}
       </div>
     </div>
   );
 
-  const getFloorUnitCount = (floor: any) =>
+  const getFloorUnitCount = (floor: FlatLayoutFloor) =>
     floor.flats?.reduce(
-      (total: number, flat: any) => total + (flat.units?.length ?? 0),
+      (total: number, flat: FlatLayoutFlat) => total + (flat.units?.length ?? 0),
       0,
     ) ?? 0;
 
-  const getUnitTypeSummary = (units: any[] = []) => {
+  const getUnitTypeSummary = (units: UnitItem[] = []) => {
     if (!units.length) return "No units";
 
     const counts = units.reduce(
-      (summary: Record<"unit" | "parking", number>, unit: any) => {
+      (summary: Record<"unit" | "parking", number>, unit: UnitItem) => {
         const unitType = String(unit.unit_type ?? "unit").toLowerCase();
         const key = unitType === "parking" ? "parking" : "unit";
         summary[key] += 1;
@@ -488,10 +527,10 @@ const FlatLayout = () => {
     return labels.join(", ");
   };
 
-  const getFloorUnits = (floor: any) =>
-    floor.flats?.flatMap((flat: any) => flat.units ?? []) ?? [];
+  const getFloorUnits = (floor: FlatLayoutFloor) =>
+    floor.flats?.flatMap((flat: FlatLayoutFlat) => flat.units ?? []) ?? [];
 
-  const getFloorStatusCounts = (floor: any) => {
+  const getFloorStatusCounts = (floor: FlatLayoutFloor) => {
     const counts: Record<number, number> = {
       1: 0,
       2: 0,
@@ -499,17 +538,18 @@ const FlatLayout = () => {
       4: 0,
     };
 
-    floor.flats?.forEach((flat: any) => {
-      flat.units?.forEach((unit: any) => {
-        if (counts[unit.status] !== undefined) counts[unit.status] += 1;
+    floor.flats?.forEach((flat: FlatLayoutFlat) => {
+      flat.units?.forEach((unit: UnitItem) => {
+        const status = Number(unit.status);
+        if (counts[status] !== undefined) counts[status] += 1;
       });
     });
 
     return counts;
   };
 
-  const getUnitButtonClass = (unit: any) => {
-    const statusClass = STATUS_MAP[unit.status] ?? FALLBACK_STATUS_CLASS;
+  const getUnitButtonClass = (unit: UnitItem) => {
+    const statusClass = STATUS_MAP[Number(unit.status)] ?? FALLBACK_STATUS_CLASS;
     const typeClass = isParkingUnit(unit)
       ? "before:absolute before:inset-0 before:bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.16)_0,rgba(255,255,255,0.16)_5px,transparent_5px,transparent_16px)] before:opacity-25 after:absolute after:inset-x-0 after:bottom-0 after:h-1 after:bg-white/35"
       : "before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:bg-gradient-to-b before:from-white/20 before:to-transparent";
@@ -517,7 +557,7 @@ const FlatLayout = () => {
     return `${statusClass} ${typeClass}`;
   };
 
-  const renderUnitTooltip = (unit: any) => (
+  const renderUnitTooltip = (unit: UnitItem) => (
     <div
       className="pointer-events-none absolute z-[9999] hidden group-hover:block
       bottom-full left-1/2 -translate-x-1/2 mb-2
@@ -540,16 +580,16 @@ const FlatLayout = () => {
             <span className="font-semibold">Mobile:</span> {unit.customer.mobile}
           </span>
         )}
-        {STATUS_LABELS[unit.status] && (
+        {STATUS_LABELS[Number(unit.status)] && (
           <span>
-            <span className="font-semibold">Status:</span> {STATUS_LABELS[unit.status]}
+            <span className="font-semibold">Status:</span> {STATUS_LABELS[Number(unit.status)]}
           </span>
         )}
       </div>
     </div>
   );
 
-  const renderFloorCard = (floor: any) => {
+  const renderFloorCard = (floor: FlatLayoutFloor) => {
     const floorUnitSummary = getUnitTypeSummary(getFloorUnits(floor));
     const statusCounts = getFloorStatusCounts(floor);
     const hasMultipleFlats = (floor.flats?.length ?? 0) > 1;
@@ -594,7 +634,7 @@ const FlatLayout = () => {
 
         {floor.flats?.length ? (
           <div className="space-y-4 p-4">
-            {floor.flats.map((flat: any) => (
+            {floor.flats.map((flat: FlatLayoutFlat) => (
               <div key={flat.id ?? `${floor.floor_no}-${flat.flat_name}`}>
                 {hasMultipleFlats && (
                   <div className="flex items-center justify-between mb-2">
@@ -609,10 +649,10 @@ const FlatLayout = () => {
 
                 <div className="grid grid-cols-2 gap-2">
                   {flat.units?.length ? (
-                    flat.units.map((unit: any) => (
+                    flat.units.map((unit: UnitItem) => (
                       <button
                         type="button"
-                        key={unit.id}
+                        key={unit.id ?? `${floor.floor_no}-${flat.flat_name}-${unit.unit_no}`}
                         onClick={(e) => handleUnitClick(unit, e)}
                         className={`relative group isolate min-h-[3.25rem] overflow-hidden rounded-md border px-3 py-2.5 text-center text-sm font-semibold text-white shadow-lg ring-1 transition-all hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 ${
                           getUnitButtonClass(unit)
@@ -622,7 +662,7 @@ const FlatLayout = () => {
                           {unit.unit_no}
                         </span>
                         <span className="relative z-10 mt-0.5 block truncate text-[10px] font-semibold uppercase tracking-wide opacity-85">
-                          {STATUS_LABELS[unit.status] ?? "Unknown"}
+                          {STATUS_LABELS[Number(unit.status)] ?? "Unknown"}
                         </span>
                         {isParkingUnit(unit) && (
                           <span className="relative z-10 mt-1 inline-flex rounded bg-black/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white/90 ring-1 ring-white/25">
@@ -751,7 +791,7 @@ const FlatLayout = () => {
                       </span>
                     </span>
                   </button>
-                  {sortedFloors.map((floor: any) => (
+                  {sortedFloors.map((floor: FlatLayoutFloor) => (
                     <button
                       type="button"
                       key={floor.floor_no}
@@ -796,7 +836,7 @@ const FlatLayout = () => {
 
           <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
             {floorsToShow.length ? (
-              floorsToShow.map((floor: any) => renderFloorCard(floor))
+              floorsToShow.map((floor: FlatLayoutFloor) => renderFloorCard(floor))
             ) : (
               <div className="col-span-full text-center text-gray-500">
                 No floors found.
@@ -835,7 +875,7 @@ const FlatLayout = () => {
 
             <div className="space-y-5 px-5 py-5">
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                {renderDetailValue("Status", STATUS_LABELS[selectedUnit.status] ?? "Unknown")}
+                {renderDetailValue("Status", STATUS_LABELS[Number(selectedUnit.status)] ?? "Unknown")}
                 {renderDetailValue("Type", selectedUnit.unit_type ?? "Unit")}
                 {renderDetailValue(
                   "Size",

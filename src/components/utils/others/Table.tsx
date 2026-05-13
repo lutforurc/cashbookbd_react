@@ -19,7 +19,7 @@ export interface Column {
   header: React.ReactNode;
   headerClass?: string;
   cellClass?: string;
-  render?: (row: any) => JSX.Element;
+  render?: (row: any) => React.ReactNode;
 }
 
 interface TableProps {

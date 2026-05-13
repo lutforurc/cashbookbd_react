@@ -6,11 +6,11 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 type RowType = {
   sl_number?: number;
   vr_date?: string;
-  debit?: number;
-  credit?: number;
-  cumulative_debit?: number;
-  cumulative_credit?: number;
-  balance?: number;
+  debit?: number | string;
+  credit?: number | string;
+  cumulative_debit?: number | string;
+  cumulative_credit?: number | string;
+  balance?: number | string;
 };
 
 type Props = {
@@ -26,6 +26,11 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   const out: T[][] = [];
   for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
   return out;
+};
+
+const toNumber = (value: number | string | undefined) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
 };
 
 const DateWisePrint = React.forwardRef<HTMLDivElement, Props>(
@@ -74,19 +79,19 @@ const DateWisePrint = React.forwardRef<HTMLDivElement, Props>(
                       {row.vr_date}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {row.debit > 0 ? thousandSeparator(row.debit) : "-"}
+                      {toNumber(row.debit) > 0 ? thousandSeparator(toNumber(row.debit)) : "-"}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {row.credit > 0 ? thousandSeparator(row.credit) : "-"}
+                      {toNumber(row.credit) > 0 ? thousandSeparator(toNumber(row.credit)) : "-"}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {row.cumulative_debit ? thousandSeparator(row.cumulative_debit) : "-"}
+                      {toNumber(row.cumulative_debit) ? thousandSeparator(toNumber(row.cumulative_debit)) : "-"}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {row.cumulative_credit ? thousandSeparator(row.cumulative_credit) : "-"}
+                      {toNumber(row.cumulative_credit) ? thousandSeparator(toNumber(row.cumulative_credit)) : "-"}
                     </td>
                     <td style={{ fontSize: fs }} className="border px-2 py-1 text-right align-middle">
-                      {thousandSeparator(row.balance)}
+                      {thousandSeparator(toNumber(row.balance))}
                     </td>
                   </tr>
                 ))}

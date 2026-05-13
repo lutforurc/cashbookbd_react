@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
@@ -22,21 +22,19 @@ import DateWisePrint from "./DateWisePrint";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 
 const DateWiseData = (user: any) => {
-  const dispatch = useDispatch();
-  const branchDdlData = useSelector((state) => state.branchDdl);
-  const dateWiseTotal = useSelector((state) => state.dateWiseTotal);
+  const dispatch = useDispatch<any>();
+  const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const dateWiseTotal = useSelector((state: any) => state.dateWiseTotal);
   const settings = useSelector((state: any) => state.settings);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [branchId, setBranchId] = useState<number | null>(null);
+  const [branchId, setBranchId] = useState<number | string | null>(null);
 
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
   const [tableData, setTableData] = useState<any[]>([]);
-  const [buttonLoading, setButtonLoading] = useState(false);
-
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -76,6 +74,8 @@ const DateWiseData = (user: any) => {
   // Run Button â†’ Load Table Data
   // -----------------------------------------------------
   const handleRun = () => {
+    if (!branchId || !startDate || !endDate) return;
+
     const startD = dayjs(startDate).format("YYYY-MM-DD");
     const endD = dayjs(endDate).format("YYYY-MM-DD");
 
@@ -102,9 +102,30 @@ const DateWiseData = (user: any) => {
     return [];
   };
 
-  const isSummaryRow = (row: any) => {
+  const toNumber = (value: any) => {
+    const numberValue = Number(value);
+    return Number.isFinite(numberValue) ? numberValue : 0;
+  };
+
+  const isOpeningRow = (row: any) => {
     const label = String(row?.vr_date || "").trim().toLowerCase();
-    return label === "opening" || label === "range total";
+    return label === "opening";
+  };
+
+  const isRangeTotalRow = (row: any) => {
+    const label = String(row?.vr_date || "").trim().toLowerCase();
+    return label === "range total";
+  };
+
+  const isSummaryRow = (row: any) => {
+    return isOpeningRow(row) || isRangeTotalRow(row);
+  };
+
+  const getOpeningBalance = (row: any) => {
+    const balance = Number(row?.balance);
+    if (Number.isFinite(balance)) return balance;
+
+    return toNumber(row?.debit) - toNumber(row?.credit);
   };
 
   // -----------------------------------------------------
@@ -120,23 +141,40 @@ const DateWiseData = (user: any) => {
 
     let debit = 0;
     let credit = 0;
+    const openingRow = rows.find((row: any) => isOpeningRow(row));
+    const openingBalance = openingRow ? getOpeningBalance(openingRow) : 0;
+    let runningBalance = openingBalance;
 
     const computed = rows.map((row: any, index: number) => {
-      if (!isSummaryRow(row)) {
-        debit += Number(row.debit) || 0;
-        credit += Number(row.credit) || 0;
+      if (isOpeningRow(row)) {
+        runningBalance = getOpeningBalance(row);
+        return {
+          ...row,
+          balance: runningBalance,
+        };
+      }
+
+      if (isRangeTotalRow(row)) {
+        return {
+          ...row,
+          balance: runningBalance,
+        };
       }
 
       if (isSummaryRow(row)) {
         return row;
       }
 
+      debit += toNumber(row.debit);
+      credit += toNumber(row.credit);
+      runningBalance = openingBalance + debit - credit;
+
       return {
         ...row,
         sl_number: row.sl_number ?? index + 1,
         cumulative_debit: debit,
         cumulative_credit: credit,
-        balance: debit - credit,
+        balance: runningBalance,
       };
     });
 
@@ -291,7 +329,7 @@ const DateWiseData = (user: any) => {
                   >
                     <ButtonLoading
                       onClick={handleRun}
-                      buttonLoading={buttonLoading}
+                      buttonLoading={dateWiseTotal.isLoading}
                       label="Apply"
                       icon={<FiCheckSquare />}
                       className="h-10 px-6"
@@ -325,7 +363,7 @@ const DateWiseData = (user: any) => {
             <div className="flex shrink-0 flex-nowrap items-end gap-2">
               <ButtonLoading
                 onClick={handleRun}
-                buttonLoading={buttonLoading}
+                buttonLoading={dateWiseTotal.isLoading}
                 label="Apply"
                 icon={<FiCheckSquare />}
                 className="h-10 px-6"
