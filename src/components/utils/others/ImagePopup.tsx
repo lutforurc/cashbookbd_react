@@ -14,6 +14,7 @@ interface Props {
   title: string;
   onRemoveImage?: (imageName: string) => void;
   removingImage?: string | null;
+  openPdfInNewTab?: boolean;
 }
 
 const ImagePopup = ({
@@ -22,6 +23,7 @@ const ImagePopup = ({
   title,
   onRemoveImage,
   removingImage,
+  openPdfInNewTab = true,
 }: Props) => {
   const environment = useSelector((state: any) => state.settings?.data?.env);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -90,8 +92,8 @@ const ImagePopup = ({
             <a
               href={`${imageUrl}/voucher/${img}`}
               title={title}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={openPdfInNewTab ? '_blank' : undefined}
+              rel={openPdfInNewTab ? 'noopener noreferrer' : undefined}
               data-pdf="true"
               className="text-xs text-blue-700"
             >

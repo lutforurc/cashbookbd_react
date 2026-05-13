@@ -379,6 +379,7 @@ const CashBook = (user: any) => {
             title={row?.remarks || ''}
             branchPad={row?.branchPad || ''}
             voucher_image={row?.voucher_image || ''}
+            openPdfInNewTab
           />
         );
       },
