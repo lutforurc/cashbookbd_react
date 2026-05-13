@@ -13,9 +13,10 @@ interface DatePickerProps {
   label?: string; // Label for the date picker component
   placeholder?: string; // Placeholder text for the date picker input
   month?: boolean; // Show month/year picker instead of date picker
+  disabled?: boolean;
 }
 
-const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false }) => {
+const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, disabled = false }) => {
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
 
@@ -45,6 +46,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         dropdownMode="select"
         onKeyDown={handleKeyDown}
         shouldCloseOnSelect
+        disabled={disabled}
         className={`dark:placeholder-gray-500 rounded-xs border pl-3 text-black outline-none  dark:border-form-strokedark bg-white dark:bg-transparent dark:text-white focus:outline-none 
         focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}
         showMonthYearPicker={month}

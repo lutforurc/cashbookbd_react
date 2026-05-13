@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { toast } from 'react-toastify';
-import { FiRefreshCcw, FiSave, FiSearch } from 'react-icons/fi';
+import { FiEdit2, FiRefreshCcw, FiSave, FiSearch, FiX } from 'react-icons/fi';
 
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -15,8 +16,11 @@ import {
   API_INSTALLMENT_DETAILS_BY_ID_URL,
   API_UNIT_SALE_DDL_URL,
   API_UNIT_SALE_INSTALLMENT_CREATE_URL,
+  API_UNIT_SALE_INSTALLMENT_UPDATE_URL,
   API_UNIT_SALE_SUMMARY_URL,
 } from '../../../services/apiRoutes';
+
+dayjs.extend(customParseFormat);
 
 type SaleOption = {
   id: string;
@@ -62,10 +66,17 @@ type SaleSummary = {
 };
 
 type InstallmentRow = {
+  id?: number | string | null;
+  installment_id?: number | string | null;
   installment_no: number | string;
   due_date: string;
   amount: number;
   invoice_no?: string | null;
+};
+
+type EditableInstallmentRow = InstallmentRow & {
+  dueDateValue: Date | null;
+  amountValue: string;
 };
 
 const initialOptions: SaleOption[] = [{ id: '', name: 'Select Unit Sale' }];
@@ -82,6 +93,14 @@ const normalizeMatchValue = (value: any) =>
     .trim()
     .toLowerCase();
 
+const parseDisplayDate = (value: any) => {
+  if (!value) return null;
+  const parsed = dayjs(value, ['DD/MM/YYYY', 'YYYY-MM-DD'], true);
+  if (parsed.isValid()) return parsed.toDate();
+  const fallback = dayjs(value);
+  return fallback.isValid() ? fallback.toDate() : null;
+};
+
 export default function RealEstateInstallmentCreate() {
   const [saleOptions, setSaleOptions] = useState<SaleOption[]>(initialOptions);
   const [selectedSaleId, setSelectedSaleId] = useState('');
@@ -91,8 +110,11 @@ export default function RealEstateInstallmentCreate() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [installmentsLoading, setInstallmentsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [updatingInstallmentId, setUpdatingInstallmentId] = useState<string | null>(null);
   const [savedInstallments, setSavedInstallments] = useState<InstallmentRow[]>([]);
   const [savedInstallmentsLoaded, setSavedInstallmentsLoaded] = useState(false);
+  const [editingInstallmentId, setEditingInstallmentId] = useState<string | null>(null);
+  const [editingRow, setEditingRow] = useState<EditableInstallmentRow | null>(null);
 
   const [installmentAmount, setInstallmentAmount] = useState('');
   const [numberOfInstallments, setNumberOfInstallments] = useState('');
@@ -134,6 +156,8 @@ export default function RealEstateInstallmentCreate() {
       };
     }).filter((row) => row.amount > 0);
   }, [installmentAmount, numberOfInstallments, scheduleBaseAmount, startDate, summary]);
+  const hasSavedInstallments = savedInstallments.length > 0;
+  const scheduleLocked = hasSavedInstallments && previewRows.length === 0;
 
   const loadUnitSaleOptions = async (q = '') => {
     try {
@@ -239,6 +263,8 @@ export default function RealEstateInstallmentCreate() {
 
     return Array.isArray(rows)
       ? rows.map((row: any) => ({
+          id: row?.id ?? row?.installment_id ?? null,
+          installment_id: row?.installment_id ?? row?.id ?? null,
           installment_no: row?.installment_no ?? row?.inst_no ?? '-',
           due_date: dayjs(row?.due_date ?? row?.installment_date ?? row?.inst_date).isValid()
             ? dayjs(row?.due_date ?? row?.installment_date ?? row?.inst_date).format('DD/MM/YYYY')
@@ -328,6 +354,8 @@ export default function RealEstateInstallmentCreate() {
     setSummary(null);
     setSavedInstallments([]);
     setSavedInstallmentsLoaded(false);
+    setEditingInstallmentId(null);
+    setEditingRow(null);
     setInstallmentAmount('');
     setNumberOfInstallments('');
     setStartDate(dayjs().add(1, 'month').toDate());
@@ -337,6 +365,10 @@ export default function RealEstateInstallmentCreate() {
   };
 
   const validate = () => {
+    if (hasSavedInstallments) {
+      toast.info('Installment schedule already exists. Edit the list below instead.');
+      return false;
+    }
     if (!selectedSaleId) {
       toast.warning('Select unit sale first');
       return false;
@@ -366,6 +398,70 @@ export default function RealEstateInstallmentCreate() {
       return false;
     }
     return true;
+  };
+
+  const getInstallmentKey = (row: InstallmentRow) =>
+    String(row.installment_id ?? row.id ?? `${row.installment_no}-${row.due_date}`);
+
+  const startEditInstallment = (row: InstallmentRow) => {
+    const key = getInstallmentKey(row);
+    setEditingInstallmentId(key);
+    setEditingRow({
+      ...row,
+      dueDateValue: parseDisplayDate(row.due_date),
+      amountValue: String(row.amount || ''),
+    });
+  };
+
+  const cancelEditInstallment = () => {
+    setEditingInstallmentId(null);
+    setEditingRow(null);
+  };
+
+  const saveInstallmentEdit = async () => {
+    if (!editingRow) return;
+
+    const installmentId = editingRow.installment_id ?? editingRow.id;
+    if (!installmentId) {
+      toast.error('Installment id not found');
+      return;
+    }
+    if (!editingRow.dueDateValue) {
+      toast.warning('Due date is required');
+      return;
+    }
+    if (toNumber(editingRow.amountValue) <= 0) {
+      toast.warning('Amount must be greater than 0');
+      return;
+    }
+
+    try {
+      const editKey = getInstallmentKey(editingRow);
+      setUpdatingInstallmentId(editKey);
+      const payload = {
+        installment_id: installmentId,
+        due_date: dayjs(editingRow.dueDateValue).format('YYYY-MM-DD'),
+        amount: toNumber(editingRow.amountValue),
+      };
+      const response: any = await httpService.post(API_UNIT_SALE_INSTALLMENT_UPDATE_URL, payload);
+      toast.success(response?.data?.message || 'Installment updated successfully');
+      setSavedInstallments((prev) =>
+        prev.map((row) =>
+          getInstallmentKey(row) === editKey
+            ? {
+                ...row,
+                due_date: dayjs(editingRow.dueDateValue).format('DD/MM/YYYY'),
+                amount: toNumber(editingRow.amountValue),
+              }
+            : row,
+        ),
+      );
+      cancelEditInstallment();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to update installment');
+    } finally {
+      setUpdatingInstallmentId(null);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -503,8 +599,15 @@ export default function RealEstateInstallmentCreate() {
             </div>
           </div>
 
-          <div className="rounded border border-gray-300 bg-white p-3 dark:bg-gray-800 lg:col-span-7">
-            <h3 className="mb-2 text-sm font-semibold">Schedule</h3>
+          <div className={`rounded border border-gray-300 bg-white p-3 dark:bg-gray-800 lg:col-span-7 ${scheduleLocked ? 'opacity-70' : ''}`}>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold">Schedule</h3>
+              {scheduleLocked ? (
+                <span className="rounded border border-amber-500/40 px-2 py-0.5 text-xs font-medium text-amber-500">
+                  Already Created
+                </span>
+              ) : null}
+            </div>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <InputElement
                 id="installment_amount"
@@ -512,6 +615,7 @@ export default function RealEstateInstallmentCreate() {
                 label="Installment Amount"
                 type="number"
                 className="h-8.5"
+                disabled={scheduleLocked}
                 value={installmentAmount}
                 onChange={(e: any) => setInstallmentAmount(e.target.value)}
               />
@@ -521,6 +625,7 @@ export default function RealEstateInstallmentCreate() {
                 label="Installments No."
                 type="number"
                 className="h-8.5"
+                disabled={scheduleLocked}
                 value={numberOfInstallments}
                 onChange={(e: any) => setNumberOfInstallments(e.target.value)}
               />
@@ -531,6 +636,7 @@ export default function RealEstateInstallmentCreate() {
                   setSelectedDate={setStartDate}
                   setCurrentDate={setStartDate}
                   className="font-medium text-sm w-full h-8.5"
+                  disabled={scheduleLocked}
                 />
               </div>
             </div>
@@ -540,6 +646,7 @@ export default function RealEstateInstallmentCreate() {
                 <input
                   type="checkbox"
                   checked={earlyPayment}
+                  disabled={scheduleLocked}
                   onChange={(e) => setEarlyPayment(e.target.checked)}
                   className="h-4 w-4"
                 />
@@ -551,7 +658,7 @@ export default function RealEstateInstallmentCreate() {
                 label="Early Discount"
                 type="number"
                 className="h-8.5"
-                disabled={!earlyPayment}
+                disabled={!earlyPayment || scheduleLocked}
                 value={earlyDiscount}
                 onChange={(e: any) => setEarlyDiscount(e.target.value)}
               />
@@ -562,6 +669,7 @@ export default function RealEstateInstallmentCreate() {
                   setSelectedDate={setEarlyPaymentDate}
                   setCurrentDate={setEarlyPaymentDate}
                   className="font-medium text-sm w-full h-8.5"
+                  disabled={scheduleLocked || !earlyPayment}
                 />
               </div>
             </div>
@@ -570,6 +678,7 @@ export default function RealEstateInstallmentCreate() {
               <ButtonLoading
                 type="submit"
                 onClick={() => {}}
+                disabled={scheduleLocked}
                 buttonLoading={saving}
                 label="Create Installments"
                 className="h-9"
@@ -586,26 +695,106 @@ export default function RealEstateInstallmentCreate() {
                 <th className="p-2 text-center">Inst No</th>
                 <th className="p-2 text-left">Due Date</th>
                 <th className="p-2 text-right">Amount</th>
+                <th className="p-2 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {installmentsLoading ? (
                 <tr>
-                  <td colSpan={3} className="p-3 text-center text-gray-500">
+                  <td colSpan={4} className="p-3 text-center text-gray-500">
                     Loading installment schedule...
                   </td>
                 </tr>
-              ) : (previewRows.length > 0 || savedInstallments.length > 0) ? (
-                (previewRows.length > 0 ? previewRows : savedInstallments).map((row) => (
+              ) : previewRows.length > 0 ? (
+                previewRows.map((row) => (
                   <tr key={`${row.installment_no}-${row.due_date}`} className="border-t border-gray-200 dark:border-gray-700">
                     <td className="p-2 text-center">{row.installment_no}</td>
                     <td className="p-2">{row.due_date}</td>
                     <td className="p-2 text-right">{formatAmount(row.amount)}</td>
+                    <td className="p-2 text-center text-gray-500">-</td>
                   </tr>
                 ))
+              ) : savedInstallments.length > 0 ? (
+                savedInstallments.map((row) => {
+                  const rowKey = getInstallmentKey(row);
+                  const isEditing = editingInstallmentId === rowKey && !!editingRow;
+                  const activeEditingRow = isEditing ? editingRow : null;
+                  const isUpdating = updatingInstallmentId === rowKey;
+
+                  return (
+                    <tr key={`${rowKey}-${row.due_date}`} className="border-t border-gray-200 dark:border-gray-700">
+                      <td className="p-2 text-center">{row.installment_no}</td>
+                      <td className="p-2">
+                        {isEditing ? (
+                          <InputDatePicker
+                            selectedDate={activeEditingRow?.dueDateValue ?? null}
+                            setSelectedDate={(date) =>
+                              setEditingRow((prev) => (prev ? { ...prev, dueDateValue: date } : prev))
+                            }
+                            setCurrentDate={(date) =>
+                              setEditingRow((prev) => (prev ? { ...prev, dueDateValue: date } : prev))
+                            }
+                            className="h-8.5 w-36 text-sm"
+                          />
+                        ) : (
+                          row.due_date
+                        )}
+                      </td>
+                      <td className="p-2 text-right">
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            value={activeEditingRow?.amountValue ?? ''}
+                            onChange={(e) =>
+                              setEditingRow((prev) =>
+                                prev ? { ...prev, amountValue: e.target.value } : prev,
+                              )
+                            }
+                            className="h-8.5 w-32 rounded-xs border bg-white px-3 py-1 text-right text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-transparent dark:text-white"
+                          />
+                        ) : (
+                          formatAmount(row.amount)
+                        )}
+                      </td>
+                      <td className="p-2 text-center">
+                        {isEditing ? (
+                          <div className="flex justify-center gap-2">
+                            <button
+                              type="button"
+                              onClick={saveInstallmentEdit}
+                              disabled={isUpdating}
+                              className="inline-flex h-8 items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-60"
+                            >
+                              <FiSave />
+                              {isUpdating ? 'Saving' : 'Save'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelEditInstallment}
+                              disabled={isUpdating}
+                              className="inline-flex h-8 items-center gap-1 border border-gray-500 px-3 text-xs font-semibold text-white hover:bg-gray-700 disabled:opacity-60"
+                            >
+                              <FiX />
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startEditInstallment(row)}
+                            className="inline-flex h-8 items-center gap-1 bg-gray-700 px-3 text-xs font-semibold text-white hover:bg-blue-500"
+                          >
+                            <FiEdit2 />
+                            Edit
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={3} className="p-3 text-center text-gray-500">
+                  <td colSpan={4} className="p-3 text-center text-gray-500">
                     {savedInstallmentsLoaded
                       ? 'No saved installment schedule found for this sale.'
                       : 'Select sale and enter schedule details.'}
