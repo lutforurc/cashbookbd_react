@@ -103,28 +103,26 @@ const getDisplayedCreditValue = (row: any) => {
 const getBalanceDebitValue = (row: any) => {
   if (isOpeningRow(row)) return 0;
 
-  const receivedValue = Number(row?.received || 0);
   const totalValue = Number(row?.total || 0);
   const voucherType = getVoucherType(row?.vr_no);
+  const salesValue = voucherType === '3' && totalValue > 0 ? totalValue : 0;
+  const debitValue = getDisplayedDebitValue(row);
 
-  return voucherType === '3' && totalValue > 0
-    ? totalValue
-    : getDisplayedDebitValue(row) || receivedValue;
+  return salesValue + debitValue;
 };
 
 const getBalanceCreditValue = (row: any) => {
   const balanceValue = Math.abs(Number(row?.balance || 0));
-  const paymentValue = Number(row?.payment || 0);
   const totalValue = Number(row?.total || 0);
   const voucherType = getVoucherType(row?.vr_no);
+  const purchaseValue = voucherType === '4' && totalValue > 0 ? totalValue : 0;
+  const creditValue = getDisplayedCreditValue(row);
 
   if (isOpeningRow(row) && balanceValue > 0) {
     return balanceValue;
   }
 
-  return voucherType === '4' && totalValue > 0
-    ? totalValue
-    : getDisplayedCreditValue(row) || paymentValue;
+  return purchaseValue + creditValue;
 };
 
 const getCashAmount = (row: any, key: 'debit' | 'credit') => {
