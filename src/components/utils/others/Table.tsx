@@ -19,7 +19,7 @@ export interface Column {
   header: React.ReactNode;
   headerClass?: string;
   cellClass?: string;
-  render?: (row: any) => React.ReactNode;
+  render?: (row: any, index: number) => React.ReactNode;
 }
 
 interface TableProps {
@@ -117,7 +117,7 @@ const Table: React.FC<TableProps> = ({
                     key={col.key}
                     className={`truncate px-3 py-2 ${col.cellClass || ""}`}
                   >
-                    {col.render ? col.render(row) : row[col.key]}
+                    {col.render ? col.render(row, rowIndex) : row[col.key]}
                   </td>
                 ))}
               </tr>

@@ -18,6 +18,8 @@ import BranchList from './components/modules/branch/BranchList';
 import UserList from './components/modules/user/UserList';
 import OnlineUsers from './components/modules/user/OnlineUsers';
 import CompanyUsers from './components/modules/user/CompanyUsers';
+import CompanyList from './components/modules/company/CompanyList';
+import EditCompany from './components/modules/company/EditCompany';
 import AddUser from './components/modules/user/AddUser';
 import Product from './components/modules/product/Product';
 import DateWiseData from './components/modules/reports/datewisedata/DateWiseData';
@@ -173,6 +175,7 @@ function App() {
   const currentBranch = useSelector((s: any) => s.branchList);
   const companyName = currentBranch?.currentBranch?.company?.name;
   const settings = useSelector((s: any) => s.settings);
+  const companyLogo = settings?.data?.company?.company_logo;
   const subscription = useSelector((s: any) => s.subscription);
   const currentCompanyId = Number(me?.company_id || 0);
   const bypassSubscriptionEnforcement = SUBSCRIPTION_EXEMPT_COMPANY_IDS.has(currentCompanyId);
@@ -200,7 +203,10 @@ function App() {
         {/* You can show loader if needed: */}
         {/* {currentBranch.loading && <Loader />} */}
         {/* Favicon */}
-        <FaviconUpdater companyName={companyName} />
+        <FaviconUpdater
+          companyName={companyName || settings?.data?.company?.name}
+          companyLogo={companyLogo}
+        />
         <Routes>
           {/* Customer Section */}
           {/* <Route path="/customer" element={<CustomerLayout isLoggedIn={isLoggedIn} isLoading={isLoading} />}> */}
@@ -271,6 +277,8 @@ function App() {
                 <Route path={routes.branch_list} element={<BranchList />} />
                 <Route path={routes.branch_add} element={<AddBranch />} />
                 <Route path={routes.branch_edit} element={<AddBranch />} />
+                <Route path={routes.company_list} element={<CompanyList />} />
+                <Route path={routes.company_edit} element={<EditCompany />} />
               </Route>
 	            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view']} loading={permissionsLoading} />}>
 	              <Route path={routes.user_list} element={<UserList />} />

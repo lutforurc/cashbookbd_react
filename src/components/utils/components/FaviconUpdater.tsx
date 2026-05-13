@@ -3,12 +3,17 @@ import { API_REMOTE_URL } from '../../services/apiRoutes';
 
 interface Props {
   companyName?: string;
+  companyLogo?: string;
 }
 
-const FaviconUpdater = ({ companyName }: Props) => {
-  useEffect(() => {
-    if (!companyName) return;
+const resolveImageUrl = (path?: string) => {
+  if (!path) return '';
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+  return `${API_REMOTE_URL}/${path.replace(/^\/+/, '').replace(/^public\//i, '')}`;
+};
 
+const FaviconUpdater = ({ companyName, companyLogo }: Props) => {
+  useEffect(() => {
     const slugify = (text: string) => {
       return text
         .toLowerCase()
@@ -17,10 +22,12 @@ const FaviconUpdater = ({ companyName }: Props) => {
         .replace(/\s+/g, '-');
     };
 
-    const sluggedName = slugify(companyName);
+    const logoFaviconUrl = resolveImageUrl(companyLogo);
     const api_remote_url =  API_REMOTE_URL  
 
-    const dynamicFaviconUrl = `${api_remote_url}/public/backend/${sluggedName}.png`;
+    const dynamicFaviconUrl = companyName
+      ? `${api_remote_url}/public/backend/${slugify(companyName)}.png`
+      : '';
     const fallbackFaviconUrl = `${api_remote_url}/public/backend/nibir-nirman.png`;
 
     const updateFavicon = (url: string) => {
@@ -36,6 +43,16 @@ const FaviconUpdater = ({ companyName }: Props) => {
       link.href = finalUrl;
     };
 
+    if (logoFaviconUrl) {
+      updateFavicon(logoFaviconUrl);
+      return;
+    }
+
+    if (!dynamicFaviconUrl) {
+      updateFavicon(fallbackFaviconUrl);
+      return;
+    }
+
     const img = new Image();
     img.src = dynamicFaviconUrl;
 
@@ -47,7 +64,7 @@ const FaviconUpdater = ({ companyName }: Props) => {
       console.warn('⚠️ Failed to load dynamic favicon. Falling back.');
       updateFavicon(fallbackFaviconUrl);
     };
-  }, [companyName]);
+  }, [companyName, companyLogo]);
 
   return null; // This component doesn't render anything
 };

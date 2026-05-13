@@ -59,6 +59,7 @@ const ROUTES = {
 
   // Company Routes
   company_list: '/company/company-list',
+  company_edit: '/company/company-edit/:id',
 
   // Branch routes
   branch_list: '/branch/branch-list',

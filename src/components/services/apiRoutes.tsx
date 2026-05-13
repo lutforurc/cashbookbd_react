@@ -178,6 +178,8 @@ export const API_DDL_ROLE_LIST_URL = `${API_BASE_URL}/ddl/role/role-list`;
 
 // Company Routes
 export const API_COMPANY_LIST_URL = `${API_BASE_URL}/company/company-list`;
+export const API_COMPANY_EDIT_URL = `${API_BASE_URL}/company/company-edit/`;
+export const API_COMPANY_UPDATE_URL = `${API_BASE_URL}/company/company-update`;
 
 // Branch Routes
 export const API_USER_CURRENT_BRANCH_URL = `${API_BASE_URL}/user/current-branch`;
