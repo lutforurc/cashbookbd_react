@@ -63,12 +63,7 @@ const getDisplayedPaymentValue = (row: any) => {
     return Number(row.displayed_payment);
   }
 
-  const balanceValue = Math.abs(Number(row?.balance || 0));
   const paymentValue = Number(row?.payment || 0);
-
-  if (isOpeningRow(row) && balanceValue > 0) {
-    return balanceValue;
-  }
 
   return paymentValue;
 };
@@ -83,6 +78,13 @@ const getVoucherSideAmount = (row: any) => {
 };
 
 const getDisplayedDebitValue = (row: any) => {
+  if (isOpeningRow(row)) {
+    const debitValue = Number(row?.debit || 0);
+    const balanceValue = Number(row?.balance || 0);
+
+    return debitValue || (balanceValue > 0 ? balanceValue : 0);
+  }
+
   const voucherType = getApiVoucherType(row);
 
   if (voucherType === 2) return getVoucherSideAmount(row);
@@ -92,6 +94,13 @@ const getDisplayedDebitValue = (row: any) => {
 };
 
 const getDisplayedCreditValue = (row: any) => {
+  if (isOpeningRow(row)) {
+    const creditValue = Number(row?.credit || 0);
+    const balanceValue = Number(row?.balance || 0);
+
+    return creditValue || (balanceValue < 0 ? Math.abs(balanceValue) : 0);
+  }
+
   const voucherType = getApiVoucherType(row);
 
   if (voucherType === 1) return getVoucherSideAmount(row);
@@ -101,7 +110,7 @@ const getDisplayedCreditValue = (row: any) => {
 };
 
 const getBalanceDebitValue = (row: any) => {
-  if (isOpeningRow(row)) return 0;
+  if (isOpeningRow(row)) return getDisplayedDebitValue(row);
 
   const totalValue = Number(row?.total || 0);
   const voucherType = getVoucherType(row?.vr_no);
@@ -112,15 +121,10 @@ const getBalanceDebitValue = (row: any) => {
 };
 
 const getBalanceCreditValue = (row: any) => {
-  const balanceValue = Math.abs(Number(row?.balance || 0));
   const totalValue = Number(row?.total || 0);
   const voucherType = getVoucherType(row?.vr_no);
   const purchaseValue = voucherType === '4' && totalValue > 0 ? totalValue : 0;
   const creditValue = getDisplayedCreditValue(row);
-
-  if (isOpeningRow(row) && balanceValue > 0) {
-    return balanceValue;
-  }
 
   return purchaseValue + creditValue;
 };
