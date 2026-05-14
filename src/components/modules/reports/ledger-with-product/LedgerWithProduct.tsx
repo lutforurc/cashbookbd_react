@@ -180,7 +180,7 @@ const LedgerWithProduct = (user: any) => {
   const [productId, setProductId] = useState<number | null>(null);
   const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [rowsPerPage, setRowsPerPage] = useState<number>(11);
-  const [fontSize, setFontSize] = useState<number>(12);
+  const [fontSize, setFontSize] = useState<number>(10);
   const [filterOpen, setFilterOpen] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('Notice');
