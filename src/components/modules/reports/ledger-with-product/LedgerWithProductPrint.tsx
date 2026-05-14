@@ -10,6 +10,12 @@ const formatAmount = (value: any, precision = 0) => {
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
+const formatSummaryAmount = (value: any) => {
+  const amount = Number(value || 0);
+
+  return Number.isFinite(amount) && amount ? thousandSeparator(amount) : '-';
+};
+
 const parseAmount = (value: any) => {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
 
@@ -293,13 +299,34 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             </table>
 
             {pageIndex === pages.length - 1 ? (
-              <div className="mt-3 flex justify-end gap-6 border border-gray-900 px-2 py-1 text-xs font-bold">
-                <div>Opening: {Number(summary.opening_balance || 0) ? formatAmount(summary.opening_balance) : '-'}</div>
-                <div>Debit: {formatAmount(summary.total_received)}</div>
-                <div>Pur. Qty: {thousandSeparator(Number(summary.purchase_qty))}</div>
-                <div>Sal. Qty: {thousandSeparator(Number(summary.sales_qty))}</div>
-                <div>Credit: {formatAmount(summary.total_payment)}</div>
-                <div>Closing: {formatAmount(summary.closing_balance)}</div>
+              <div
+                className="mt-2 flex flex-nowrap items-center justify-end gap-8 overflow-hidden px-3 py-2 text-xs font-bold text-gray-900"
+                style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+              >
+                <div className="whitespace-nowrap">
+                  <span className="text-gray-600">Opening:</span>{' '}
+                  <span>{formatSummaryAmount(summary.opening_balance)}</span>
+                </div>
+                <div className="whitespace-nowrap">
+                  <span className="text-gray-600">Pur. Qty:</span>{' '}
+                  <span>{formatSummaryAmount(summary.purchase_qty)}</span>
+                </div>
+                <div className="whitespace-nowrap">
+                  <span className="text-gray-600">Sal. Qty:</span>{' '}
+                  <span>{formatSummaryAmount(summary.sales_qty)}</span>
+                </div>
+                <div className="whitespace-nowrap">
+                  <span className="text-gray-600">Debit:</span>{' '}
+                  <span>{formatSummaryAmount(summary.total_received)}</span>
+                </div>
+                <div className="whitespace-nowrap">
+                  <span className="text-gray-600">Credit:</span>{' '}
+                  <span>{formatSummaryAmount(summary.total_payment)}</span>
+                </div>
+                <div className="whitespace-nowrap">
+                  <span className="text-gray-600">Closing:</span>{' '}
+                  <span>{formatSummaryAmount(summary.closing_balance)}</span>
+                </div>
               </div>
             ) : null}
 

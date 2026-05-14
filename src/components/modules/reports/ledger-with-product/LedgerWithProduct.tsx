@@ -212,7 +212,7 @@ const LedgerWithProduct = (user: any) => {
     if (protectedData?.transactionDate) {
       const [day, month, year] = protectedData.transactionDate.split('/');
       const parsedEndDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(new Date(Number(year), 0, 1));
+      setStartDate(new Date(Number(year), Number(month) - 1, 1));
       setEndDate(parsedEndDate);
     }
   }, [branchDdlData?.protectedData]);
@@ -286,14 +286,18 @@ const LedgerWithProduct = (user: any) => {
     }),
     [rawSummary, rows],
   );
-  const footerReceivedValue = rows.reduce(
-    (sum: number, row: any) => sum + getDisplayedDebitValue(row),
-    0,
-  );
-  const footerPaymentValue = rows.reduce(
-    (sum: number, row: any) => sum + getDisplayedCreditValue(row),
-    0,
-  );
+  const footerReceivedValue = Number.isFinite(Number(summary?.debit))
+    ? Number(summary.debit)
+    : rows.reduce(
+      (sum: number, row: any) => sum + getDisplayedDebitValue(row),
+      0,
+    );
+  const footerPaymentValue = Number.isFinite(Number(summary?.credit))
+    ? Number(summary.credit)
+    : rows.reduce(
+      (sum: number, row: any) => sum + getDisplayedCreditValue(row),
+      0,
+    );
   const footerClosingValue = rows.length
     ? parseAmount(rows[rows.length - 1]?.running_balance ?? rows[rows.length - 1]?.balance)
     : parseAmount(summary?.closing_balance);
@@ -472,21 +476,25 @@ const LedgerWithProduct = (user: any) => {
       ),
     },
     {
-      key: 'received',
+      key: 'debit',
       header: 'Debit',
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        return <div>{row.debit ? thousandSeparator(row.debit) : '-'}</div>;
+        const debitValue = getDisplayedDebitValue(row);
+
+        return <div>{debitValue ? thousandSeparator(debitValue) : '-'}</div>;
       },
     },
     {
-      key: 'payment',
+      key: 'credit',
       header: 'Credit',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => { 
-        return <div>{row.credit ? thousandSeparator(row.credit) : '-'}</div>;
+      render: (row: any) => {
+        const creditValue = getDisplayedCreditValue(row);
+
+        return <div>{creditValue ? thousandSeparator(creditValue) : '-'}</div>;
       },
     },
     {
