@@ -239,7 +239,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               </thead>
               <tbody>
                 {pageRows.map((row, index) => (
-                  <tr key={`${pageIndex}-${index}`} className="align-top">
+                  <tr key={`${pageIndex}-${index}`} className="align-middle">
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
                       {row.sl_number}
                     </td>
@@ -248,7 +248,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       className="border border-gray-900 px-2 py-[2px] text-center"
                     >
                       <div style={{fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }}>{row.vr_no || ''}</div>
-                      <div style={{fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="block ">{row.vr_date || ''}</div>
+                      <div style={{fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="block align-middle ">{row.vr_date || ''}</div>
                     </td>
                    
                     <td
