@@ -403,7 +403,7 @@ const LedgerWithProduct = (user: any) => {
       cellClass: 'w-[13%]',
       render: (row: any) => (
         <div>
-          <div className="whitespace-normal">{row.product_name || row.trx_type || '-'}</div>
+          <div className="whitespace-normal">{row.transaction_name}</div>
           {row.remarks ? (
             <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.remarks}</div>
           ) : null}
@@ -450,12 +450,21 @@ const LedgerWithProduct = (user: any) => {
       ),
     },
     {
-      key: 'total',
-      header: 'Total',
+      key: 'purchase_total',
+      header: 'Pur. Total',
       headerClass: 'w-[7.5%] text-right',
       cellClass: 'w-[7.5%] text-right',
       render: (row: any) => (
-        <div>{Number(row.total || 0) ? thousandSeparator(row.total) : '-'}</div>
+        <div>{Number(row.purchase_total || 0) ? thousandSeparator(row.purchase_total) : '-'}</div>
+      ),
+    },
+    {
+      key: 'sales_total',
+      header: 'Sal. Total',
+      headerClass: 'w-[7.5%] text-right',
+      cellClass: 'w-[7.5%] text-right',
+      render: (row: any) => (
+        <div>{Number(row.sales_total || 0) ? thousandSeparator(row.sales_total) : '-'}</div>
       ),
     },
     {
@@ -464,9 +473,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const displayValue = getDisplayedDebitValue(row);
-
-        return <div>{displayValue ? thousandSeparator(displayValue) : '-'}</div>;
+        return <div>{row.debit ? thousandSeparator(row.debit) : '-'}</div>;
       },
     },
     {
@@ -474,10 +481,8 @@ const LedgerWithProduct = (user: any) => {
       header: 'Credit',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => {
-        const displayValue = getDisplayedCreditValue(row);
-
-        return <div>{displayValue ? thousandSeparator(displayValue) : '-'}</div>;
+      render: (row: any) => { 
+        return <div>{row.credit ? thousandSeparator(row.credit) : '-'}</div>;
       },
     },
     {
@@ -485,7 +490,7 @@ const LedgerWithProduct = (user: any) => {
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold',
-      render: (row: any) => <div>{thousandSeparator(row.running_balance ?? row.balance)}</div>,
+      render: (row: any) => <div>{thousandSeparator(row.balance ?? row.balance)}</div>,
     },
   ];
 
