@@ -774,6 +774,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {hasPermission(permissions, 'ledger.customer') && (
+                            <li>
+                              <NavLink
+                                to={routes.customer_supplier_statement}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Ledger Details
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'product.in.out') && (
                             <li>
                               <NavLink
@@ -800,19 +813,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'ledger.customer') && (
-                            <li>
-                              <NavLink
-                                to={routes.customer_supplier_statement}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Ledger with Product
-                              </NavLink>
-                            </li>
-                          )}
+                          
                           {hasPermission(permissions, 'ledger.labour') && (
                             <li>
                               <NavLink
