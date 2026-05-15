@@ -559,7 +559,7 @@ const LedgerWithProduct = (user: any) => {
 
   return (
     <>
-      <HelmetTitle title="Ledger with Product" />
+      <HelmetTitle title="Ledger Details" />
       <div className="mx-auto space-y-2 ">
         <div className="py-3">
           <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-wrap items-end'}`}>
@@ -703,7 +703,7 @@ const LedgerWithProduct = (user: any) => {
                   id="cs-statement-rows"
                   label=""
                   value={rowsPerPage}
-                  onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 16)}
+                  onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 0)}
                   className="font-medium text-sm h-10 !w-20 text-center"
                 />
                 <InputElement
@@ -746,7 +746,7 @@ const LedgerWithProduct = (user: any) => {
                     id="cs-statement-rows"
                     label=""
                     value={rowsPerPage}
-                    onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 16)}
+                    onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 0)}
                     className="font-medium text-sm h-10 !w-20 text-center"
                   />
                   <InputElement

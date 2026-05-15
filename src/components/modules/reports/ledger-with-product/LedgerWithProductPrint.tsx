@@ -187,7 +187,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             <PadPrinting />
             <div className="mb-1">
               <div className="text-center">
-                <h1 className="text-xl font-bold">Ledger with Product</h1>
+                <h1 className="text-xl font-bold">Ledger Details</h1>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
