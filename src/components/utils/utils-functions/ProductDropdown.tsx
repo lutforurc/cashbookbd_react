@@ -51,6 +51,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
 }) => {
   const selectRef = useRef(null); 
   const [isSelected, setIsSelected] = React.useState(false);
+  const [isControlFocused, setIsControlFocused] = React.useState(false);
   const [internalSelectedOption, setInternalSelectedOption] = React.useState<OptionType | null>(
     value ?? defaultValue ?? null,
   );
@@ -95,14 +96,13 @@ const ProductDropdown: React.FC<DropdownProps> = ({
       minHeight: controlHeight || '2.1rem',
       height: controlHeight,
       borderRadius: '0.0rem',
-      borderColor: state.isFocused ? 'rgb(59 130 246)' : darkMode ? '#363843' : '#d2d6dc',
+      borderColor: state.isFocused || isControlFocused ? 'rgb(59 130 246)' : darkMode ? '#363843' : '#d2d6dc',
       backgroundColor: darkMode ? '#1f212a' : '#fcfcfc',
       color: darkMode ? '#fff' : '#000',
-      // boxShadow: state.isFocused ? 'none': '0 0 0 1px rgb(59 130 246)', 
-      boxShadow: state.isFocused ? 'none': '', 
+      boxShadow: state.isFocused || isControlFocused ? '0 0 0 1px rgb(59 130 246)' : '',
       fontSize: '0.9rem',
       '&:hover': {
-        borderColor: state.isFocused ? 'rgb(59 130 246)' : darkMode ? '#363843' : '#d2d6dc',
+        borderColor: state.isFocused || isControlFocused ? 'rgb(59 130 246)' : darkMode ? '#363843' : '#d2d6dc',
       },
     }),
     option: (base, { isFocused, isSelected }) => ({
@@ -211,6 +211,8 @@ const ProductDropdown: React.FC<DropdownProps> = ({
         }}
         onMenuOpen={() => setIsSelected(true)}
         onMenuClose={() => setIsSelected(false)}
+        onFocus={() => setIsControlFocused(true)}
+        onBlur={() => setIsControlFocused(false)}
         onKeyDown={onKeyDown}
         getOptionLabel={(option) => option.label}
         formatOptionLabel={(option) => (

@@ -352,6 +352,12 @@ const AddOrder = (user: any) => {
             return;
         }
 
+        if (!formData.order_type || !String(formData.order_type).trim()) {
+            toast.error('Please select Order Type');
+            focusNextField('order_type');
+            return;
+        }
+
         const payload = {
             ...(isEditMode ? { id } : {}),
             branch_id: formData.branch_id,
@@ -395,6 +401,15 @@ const AddOrder = (user: any) => {
 
     };
 
+    const focusNextField = (nextFieldId: string) => {
+        const nextElement = document.getElementById(nextFieldId);
+        if (nextElement) {
+            window.setTimeout(() => {
+                nextElement.focus();
+            }, 0);
+        }
+    };
+
     useCtrlS(handleSave);
     return (
         <div>
@@ -408,23 +423,27 @@ const AddOrder = (user: any) => {
                     <div className='w-full'>
                         {branchDdlData.isLoading == true ? <Loader /> : ''}
                         <BranchDropdown
+                            id="branch_id"
                             onChange={handleBranchChange}
                             className="w-60 font-medium text-sm p-2 "
                             branchDdl={dropdownData}
                             value={formData.branch_id}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    focusNextField('order_for');
+                                }
+                            }}
                         />
                     </div>
                 </div>
                 <div className=''>
                     <label htmlFor="">Order For</label>
-                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} value={selectedOrderFor}
+                    <DdlMultiline id="order_for" onSelect={selectedLedgerOptionHandler} acType={''} value={selectedOrderFor}
 
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                const nextElement = document.getElementById('product_id');
-                                if (nextElement) {
-                                    nextElement.focus();
-                                }
+                                focusNextField('product_id');
                             }
                         }}
 
@@ -438,10 +457,7 @@ const AddOrder = (user: any) => {
                         value={selectedProduct} id='product_id' name='product_id'
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                const nextElement = document.getElementById('order_number');
-                                if (nextElement) {
-                                    nextElement.focus();
-                                }
+                                focusNextField('order_number');
                             }
                         }}
                         className='h-10'
@@ -458,10 +474,7 @@ const AddOrder = (user: any) => {
 
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                            const nextElement = document.getElementById('delivery_location');
-                            if (nextElement) {
-                                nextElement.focus();
-                            }
+                            focusNextField('delivery_location');
                         }
                     }}
 
@@ -479,10 +492,7 @@ const AddOrder = (user: any) => {
 
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                            const nextElement = document.getElementById('order_date');
-                            if (nextElement) {
-                                nextElement.focus();
-                            }
+                            focusNextField('order_date');
                         }
                     }}
 
@@ -501,12 +511,7 @@ const AddOrder = (user: any) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 e.currentTarget.blur();
-                                const nextElement = document.getElementById('last_delivery_date');
-                                if (nextElement) {
-                                    window.setTimeout(() => {
-                                        nextElement.focus();
-                                    }, 0);
-                                }
+                                focusNextField('last_delivery_date');
                             }
                         }}
                     />
@@ -527,12 +532,7 @@ const AddOrder = (user: any) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 e.currentTarget.blur();
-                                const nextElement = document.getElementById('order_rate');
-                                if (nextElement) {
-                                    window.setTimeout(() => {
-                                        nextElement.focus();
-                                    }, 0);
-                                }
+                                focusNextField('total_order');
                             }
                         }}
                     />
@@ -547,10 +547,7 @@ const AddOrder = (user: any) => {
                         onChange={handleOrderChange}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                const nextElement = document.getElementById('order_type');
-                                if (nextElement) {
-                                    nextElement.focus();
-                                }
+                                focusNextField('order_rate');
                             }
                         }}
                     />
@@ -563,10 +560,7 @@ const AddOrder = (user: any) => {
                         onChange={handleOrderChange}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                const nextElement = document.getElementById('contract_order_qty');
-                                if (nextElement) {
-                                    nextElement.focus();
-                                }
+                                focusNextField('contract_order_qty');
                             }
                         }}
                     />
@@ -584,10 +578,7 @@ const AddOrder = (user: any) => {
                         onChange={handleOrderChange}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                const nextElement = document.getElementById('total_order');
-                                if (nextElement) {
-                                    nextElement.focus();
-                                }
+                                focusNextField('order_type');
                             }
                         }}
                     />
@@ -605,18 +596,14 @@ const AddOrder = (user: any) => {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     e.currentTarget.blur();
-                                    const nextElement = document.getElementById('notes');
-                                    if (nextElement) {
-                                        window.setTimeout(() => {
-                                            nextElement.focus();
-                                        }, 0);
-                                    }
+                                    focusNextField('notes');
                                 }
                             }}
                         />
                     </div>
                 </div>
-                <InputElement id="notes"
+                <InputElement 
+                    id="notes"
                     value={formData.notes || ''}
                     name="notes"
                     placeholder={'Note'}
@@ -628,6 +615,7 @@ const AddOrder = (user: any) => {
                             e.preventDefault();
                             e.stopPropagation();
                             e.currentTarget.blur();
+                            focusNextField('ref_order_id');
                             setReferenceOrderFocusTrigger((prev) => prev + 1);
                         }
                     }}
@@ -657,12 +645,7 @@ const AddOrder = (user: any) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 e.currentTarget.blur();
-                                const nextElement = document.getElementById('save_btn');
-                                if (nextElement) {
-                                    window.setTimeout(() => {
-                                        nextElement.focus();
-                                    }, 0);
-                                }
+                                focusNextField('status');
                             }
                         }}
                     />
@@ -676,6 +659,14 @@ const AddOrder = (user: any) => {
                         className="h-[2.1rem] bg-transparent"
                         value={formData?.status?.toString() ?? ''}
                         data={ORDER_STATUS}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.blur();
+                                focusNextField('save_btn');
+                            }
+                        }}
                     />
 
                 </div>
