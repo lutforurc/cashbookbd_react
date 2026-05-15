@@ -36,7 +36,6 @@ import {
 } from '../../../services/apiRoutes';
 import {
   handleInputKeyDown,
-  handleSelectKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import {
@@ -273,6 +272,32 @@ const TradingCombinedEntry = () => {
     (parseFloat(productData.qty || '0') || 0) *
     (parseFloat(productData.sales_price || '0') || 0);
 
+  const focusField = (fieldId: string, delay = 100) => {
+    window.setTimeout(() => {
+      const nextElement = document.getElementById(fieldId);
+      if (nextElement instanceof HTMLElement) {
+        nextElement.focus();
+
+        if (
+          'select' in nextElement &&
+          typeof (nextElement as HTMLInputElement).select === 'function'
+        ) {
+          (nextElement as HTMLInputElement).select();
+        }
+      }
+    }, delay);
+  };
+
+  const handleEnterFocus = (
+    event: React.KeyboardEvent<HTMLElement>,
+    nextFieldId: string,
+    delay = 100,
+  ) => {
+    if (event.key !== 'Enter') return;
+
+    focusField(nextFieldId, delay);
+  };
+
   const openPartyModal = (target: PartyTarget, typedName = '') => {
     setPartyTarget(target);
     setPartyDraftName(typedName);
@@ -345,9 +370,7 @@ const TradingCombinedEntry = () => {
       }));
     }
 
-    setTimeout(() => {
-      handleSelectKeyDown(e, '#salesOrderNumber');
-    }, 150);
+    focusField('product', 150);
   };
 
   const purchaseOrderHandler = async (option: any) => {
@@ -578,8 +601,19 @@ const TradingCombinedEntry = () => {
     }));
   };
 
-  const resetProductEditor = () => {
-    setProductData(initialProductData);
+  const resetProductEditor = ({ keepProduct = false } = {}) => {
+    setProductData((prev: any) => ({
+      ...initialProductData,
+      ...(keepProduct
+        ? {
+          product: prev.product,
+          product_name: prev.product_name,
+          unit: prev.unit,
+          purchase_price: prev.purchase_price,
+          sales_price: prev.sales_price,
+        }
+        : {}),
+    }));
     setEditingProductId(null);
   };
 
@@ -621,7 +655,7 @@ const TradingCombinedEntry = () => {
         ? prev.products.map((item) => (item.id === editingProductId ? newProduct : item))
         : [...prev.products, newProduct],
     }));
-    resetProductEditor();
+    resetProductEditor({ keepProduct: true });
   };
 
   const handleEdit = (row: CombinedProduct) => {
@@ -650,11 +684,23 @@ const TradingCombinedEntry = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData(initialFormData);
-    setProductData(initialProductData);
-    setSelectedSupplierOption(null);
-    setSelectedCustomerOption(null);
+  const resetForm = ({ keepParties = false, keepProduct = false } = {}) => {
+    setFormData((prev) => ({
+      ...initialFormData,
+      ...(keepParties
+        ? {
+          supplierAccount: prev.supplierAccount,
+          supplierName: prev.supplierName,
+          customerAccount: prev.customerAccount,
+          customerName: prev.customerName,
+        }
+        : {}),
+    }));
+    resetProductEditor({ keepProduct });
+    if (!keepParties) {
+      setSelectedSupplierOption(null);
+      setSelectedCustomerOption(null);
+    }
     setVehicleSuggestions([]);
     setNoteSuggestions([]);
     setEditingCombinedNumber('');
@@ -664,11 +710,13 @@ const TradingCombinedEntry = () => {
     const amount = Number(formData.amount || 0);
 
     if (!formData.supplierAccount) {
-      toast.info('Please select a supplier.');
+      toast.info('Please select Supplier');
+      focusField('supplierAccount');
       return;
     }
     if (!formData.customerAccount) {
-      toast.info('Please select a customer.');
+      toast.info('Please select Customer');
+      focusField('customerAccount');
       return;
     }
     if (!Number.isFinite(amount) || amount < 0) {
@@ -713,7 +761,8 @@ const TradingCombinedEntry = () => {
         const purchaseVr = data?.purchase_vr_no ? `Purchase: ${data.purchase_vr_no}` : '';
         const salesVr = data?.sales_vr_no ? `Sales: ${data.sales_vr_no}` : '';
         toast.success([purchaseVr, salesVr].filter(Boolean).join(' | ') || result?.message || 'Saved successfully.');
-        resetForm();
+        resetForm({ keepParties: true, keepProduct: true });
+        focusField('product');
       } else {
         toast.error(result?.message || 'Failed to save combined trading entry.');
       }
@@ -748,11 +797,7 @@ const TradingCombinedEntry = () => {
                       : null)
                   }
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setTimeout(() => {
-                        handleSelectKeyDown(e, '#vehicleNumber');
-                      }, 150);
-                    }
+                    handleEnterFocus(e, 'customerAccount', 150);
                   }}
                   acType={'3'}
                 />
@@ -760,6 +805,7 @@ const TradingCombinedEntry = () => {
               <div>
                 <label htmlFor="" className='text-black dark:text-white'>Select Customer</label>
                 <DdlMultiline
+                  id="customerAccount"
                   className="h-9.5"
                   onSelect={customerAccountHandler}
                   actionOptionLabel="+ Add New Customer"
@@ -771,11 +817,7 @@ const TradingCombinedEntry = () => {
                       : null)
                   }
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setTimeout(() => {
-                        handleSelectKeyDown(e, '#supplierAccount');
-                      }, 150);
-                    }
+                    handleEnterFocus(e, 'vehicleNumber', 150);
                   }}
                   acType={'3'}
                 />
@@ -953,10 +995,7 @@ const TradingCombinedEntry = () => {
                   }
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      setTimeout(() => {
-                        const input = document.getElementById('warehouse');
-                        input?.focus();
-                      }, 150);
+                      focusField('bag', 150);
                     }
                   }}
                 />
@@ -973,7 +1012,7 @@ const TradingCombinedEntry = () => {
                 label="Bag Number"
                 className="py-1"
                 onChange={handleProductChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'variance')}
+                onKeyDown={(e) => handleInputKeyDown(e, 'qty')}
               />
               <InputElement
                 id="variance"
