@@ -75,11 +75,6 @@ const DueList = (user: any) => {
   };
 
 
-  console.log('====================================');
-  console.log("settings", settings?.data?.branch?.due_list_with_address);
-  console.log('====================================');
-
-
   useEffect(() => {
     if (
       branchDdlData?.protectedData?.data &&
