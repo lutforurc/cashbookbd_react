@@ -19,6 +19,7 @@ import OrderWithProductPrint from './OrderWithProductPrint';
 import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../vouchers';
 import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
+import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
 
 type Primitive = string | number | null | undefined;
 
@@ -509,6 +510,7 @@ const OrderWithProduct = ({
         key: 'vehicleNo',
         header: 'VEHICLE NUMBER',
         cellClass: 'w-44',
+        render: (row: any) => formatTransportationNumber(row.vehicleNo) || '-',
       },
       {
         key: 'quantity',
@@ -540,14 +542,14 @@ const OrderWithProduct = ({
         header: 'DISCOUNT',
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
-        render: (row: any) => <span>{thousandSeparator(row.discount)}</span>,
+        render: (row: any) => <span>{row.discount ? thousandSeparator(row.discount) : '-'}</span>,
       },
       {
         key: 'payment',
         header: paymentColumnLabel,
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
-        render: (row: any) => <span>{thousandSeparator(Math.abs(toNumber(row.payment)))}</span>,
+        render: (row: any) => <span>{row.payment ? thousandSeparator(Math.abs(toNumber(row.payment))) : '-'}</span>,
       },
       {
         key: 'balance',

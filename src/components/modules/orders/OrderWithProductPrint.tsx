@@ -3,6 +3,7 @@ import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatDate } from '../../utils/utils-functions/formatDate';
+import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
 
 type Primitive = string | number | null | undefined;
 
@@ -154,7 +155,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                           : '-'}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1">
-                        {row.vehicleNo || '-'}
+                        {formatTransportationNumber(row.vehicleNo) || '-'}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
                         {row.hasLineDetail
@@ -168,10 +169,10 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                         {row.hasLineDetail ? thousandSeparator(toNumber(row.total)) : '-'}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
-                        {thousandSeparator(toNumber(row.discount))}
+                        { row.discount ? thousandSeparator(toNumber(row.discount)) : '-' }
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
-                        {thousandSeparator(Math.abs(toNumber(row.payment)))}
+                        { row.payment ? thousandSeparator(Math.abs(toNumber(row.payment))) : '-' }
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
                         {formatBalanceAmount(
