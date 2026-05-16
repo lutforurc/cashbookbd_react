@@ -81,6 +81,18 @@ const readSavedPurchaseLedgerFilters = (): PurchaseLedgerSavedFilters | null => 
   }
 };
 
+const isZeroAmount = (value: unknown) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue === 0;
+};
+
+const formatAmountOrZeroMark = (value: unknown) => (
+  isZeroAmount(value) ? '-' : thousandSeparator(value)
+);
+
+const joinedZeroMarkClass =
+  'block -mx-3 border-red-600 px-3 leading-5 text-red-600';
+
 const PurchaseLedger = (user: any) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -503,11 +515,19 @@ const PurchaseLedger = (user: any) => {
       cellClass: 'text-right align-top',
       render: (row: any) => (
         <div>
-          {row?.purchase_master?.details?.map((detail: any, index: number) => (
-            <div key={index}>
-              <span>{thousandSeparator(detail?.purchase_price)}</span>
-            </div>
-          ))}
+          {row?.purchase_master?.details?.map((detail: any, index: number) => {
+            const rate = detail?.purchase_price;
+            const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
+            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+
+            return (
+              <div key={index}>
+                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
+                  {formatAmountOrZeroMark(rate)}
+                </span>
+              </div>
+            );
+          })}
         </div>
       ),
       width: '100px',
@@ -520,14 +540,19 @@ const PurchaseLedger = (user: any) => {
       cellClass: 'text-right align-top',
       render: (row: any) => (
         <div>
-          {row?.purchase_master?.details?.map((detail: any, index: number) => (
-            <div key={index}>
-              <span>
-                {thousandSeparator(
-                  detail?.purchase_price * detail?.quantity)}
-              </span>
-            </div>
-          ))}
+          {row?.purchase_master?.details?.map((detail: any, index: number) => {
+            const rate = detail?.purchase_price;
+            const total = (detail?.purchase_price || 0) * (detail?.quantity || 0);
+            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+
+            return (
+              <div key={index}>
+                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
+                  {formatAmountOrZeroMark(total)}
+                </span>
+              </div>
+            );
+          })}
         </div>
       ),
       width: '100px',
