@@ -37,6 +37,17 @@ const parseAmount = (value: any) => {
   return isNegative ? -amount : amount;
 };
 
+const isZeroAmount = (value: unknown) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue === 0;
+};
+
+const formatAmountOrZeroMark = (value: unknown) => (
+  isZeroAmount(value) ? '-' : thousandSeparator(value)
+);
+
+const joinedZeroMarkClass =
+  'block -mx-3 border-red-600 px-3 leading-5 text-red-600';
 
 const getVoucherType = (vrNo: any) => {
   const prefix = String(vrNo || '').split('-')[0]?.trim();
@@ -451,29 +462,63 @@ const LedgerWithProduct = (user: any) => {
       header: 'Rate',
       headerClass: 'w-[7%] text-right',
       cellClass: 'w-[7%] text-right',
-      render: (row: any) => (
-        <div>
-          {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0)) : '-'}
-        </div>
-      ),
+      render: (row: any) => {
+        const rate = Number(row.rate || 0);
+        const purchaseTotal = Number(row.purchase_total || 0);
+        const salesTotal = Number(row.sales_total || 0);
+        const shouldJoinZeroMark =
+          isZeroAmount(rate) && isZeroAmount(purchaseTotal) && isZeroAmount(salesTotal);
+
+        return (
+          <div>
+            <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
+              {formatAmountOrZeroMark(rate)}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'purchase_total',
       header: 'Pur. Total',
       headerClass: 'w-[7.5%] text-right',
       cellClass: 'w-[7.5%] text-right',
-      render: (row: any) => (
-        <div>{Number(row.purchase_total || 0) ? thousandSeparator(row.purchase_total) : '-'}</div>
-      ),
+      render: (row: any) => {
+        const rate = Number(row.rate || 0);
+        const purchaseTotal = Number(row.purchase_total || 0);
+        const salesTotal = Number(row.sales_total || 0);
+        const shouldJoinZeroMark =
+          isZeroAmount(rate) && isZeroAmount(purchaseTotal) && isZeroAmount(salesTotal);
+
+        return (
+          <div>
+            <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y` : undefined}>
+              {formatAmountOrZeroMark(purchaseTotal)}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'sales_total',
       header: 'Sal. Total',
       headerClass: 'w-[7.5%] text-right',
       cellClass: 'w-[7.5%] text-right',
-      render: (row: any) => (
-        <div>{Number(row.sales_total || 0) ? thousandSeparator(row.sales_total) : '-'}</div>
-      ),
+      render: (row: any) => {
+        const rate = Number(row.rate || 0);
+        const purchaseTotal = Number(row.purchase_total || 0);
+        const salesTotal = Number(row.sales_total || 0);
+        const shouldJoinZeroMark =
+          isZeroAmount(rate) && isZeroAmount(purchaseTotal) && isZeroAmount(salesTotal);
+
+        return (
+          <div>
+            <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
+              {formatAmountOrZeroMark(salesTotal)}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'debit',
