@@ -175,6 +175,22 @@ const getSalesQty = (row: any) => {
   return getVoucherType(row?.vr_no) === '3' ? Number(row?.quantity || 0) : 0;
 };
 
+const shouldShowZeroProductAmountMark = (
+  row: any,
+  rate: number,
+  purchaseTotal: number,
+  salesTotal: number,
+) => {
+  const hasProductQuantity = Boolean(getPurchaseQty(row) || getSalesQty(row));
+
+  return (
+    hasProductQuantity &&
+    isZeroAmount(rate) &&
+    isZeroAmount(purchaseTotal) &&
+    isZeroAmount(salesTotal)
+  );
+};
+
 const LedgerWithProduct = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
@@ -466,8 +482,12 @@ const LedgerWithProduct = (user: any) => {
         const rate = Number(row.rate || 0);
         const purchaseTotal = Number(row.purchase_total || 0);
         const salesTotal = Number(row.sales_total || 0);
-        const shouldJoinZeroMark =
-          isZeroAmount(rate) && isZeroAmount(purchaseTotal) && isZeroAmount(salesTotal);
+        const shouldJoinZeroMark = shouldShowZeroProductAmountMark(
+          row,
+          rate,
+          purchaseTotal,
+          salesTotal,
+        );
 
         return (
           <div>
@@ -487,8 +507,12 @@ const LedgerWithProduct = (user: any) => {
         const rate = Number(row.rate || 0);
         const purchaseTotal = Number(row.purchase_total || 0);
         const salesTotal = Number(row.sales_total || 0);
-        const shouldJoinZeroMark =
-          isZeroAmount(rate) && isZeroAmount(purchaseTotal) && isZeroAmount(salesTotal);
+        const shouldJoinZeroMark = shouldShowZeroProductAmountMark(
+          row,
+          rate,
+          purchaseTotal,
+          salesTotal,
+        );
 
         return (
           <div>
@@ -508,8 +532,12 @@ const LedgerWithProduct = (user: any) => {
         const rate = Number(row.rate || 0);
         const purchaseTotal = Number(row.purchase_total || 0);
         const salesTotal = Number(row.sales_total || 0);
-        const shouldJoinZeroMark =
-          isZeroAmount(rate) && isZeroAmount(purchaseTotal) && isZeroAmount(salesTotal);
+        const shouldJoinZeroMark = shouldShowZeroProductAmountMark(
+          row,
+          rate,
+          purchaseTotal,
+          salesTotal,
+        );
 
         return (
           <div>
