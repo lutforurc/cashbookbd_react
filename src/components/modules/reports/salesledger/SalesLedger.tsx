@@ -79,6 +79,18 @@ const readSavedSalesLedgerFilters = (): SalesLedgerSavedFilters | null => {
   }
 };
 
+const isZeroAmount = (value: unknown) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue === 0;
+};
+
+const formatAmountOrZeroMark = (value: unknown) => (
+  isZeroAmount(value) ? '-' : thousandSeparator(value)
+);
+
+const joinedZeroMarkClass =
+  'block -mx-3 border-red-600 px-3 leading-5 text-red-600';
+
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -508,11 +520,19 @@ const SalesLedger = (user: any) => {
       cellClass: 'text-right align-top',
       render: (row: any) => (
         <>
-          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
-            <div key={detail?.id ?? index}>
-              {thousandSeparator(detail?.sales_price)}
-            </div>
-          ))}
+          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
+            const rate = detail?.sales_price;
+            const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
+            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+
+            return (
+              <div key={detail?.id ?? index}>
+                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
+                  {formatAmountOrZeroMark(rate)}
+                </span>
+              </div>
+            );
+          })}
         </>
       ),
     },
@@ -524,12 +544,19 @@ const SalesLedger = (user: any) => {
       cellClass: 'text-right align-top',
       render: (row: any) => (
         <>
-          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
-            <div key={detail?.id ?? index}>
-              {thousandSeparator(
-                Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0)))}
-            </div>
-          ))}
+          {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
+            const rate = detail?.sales_price;
+            const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
+            const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
+
+            return (
+              <div key={detail?.id ?? index}>
+                <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
+                  {formatAmountOrZeroMark(total)}
+                </span>
+              </div>
+            );
+          })}
         </>
       ),
     },
