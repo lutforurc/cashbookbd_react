@@ -34,6 +34,11 @@ const toNumber = (value: any) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const formatNumberOrDash = (value: any) => {
+  const numericValue = toNumber(value);
+  return numericValue === 0 ? '-' : thousandSeparator(numericValue);
+};
+
 const getOrderRemainingQuantity = (row: any) =>
   toNumber(row?.total_order) - toNumber(row?.trx_quantity);
 
@@ -758,9 +763,9 @@ const Orders = () => {
       render: (data: any) => (
         <p>
           <span className="block">{data.product_name}</span>
-          {data.trx_quantity == 0 ? "-" : (
-            <span className="block text-green-500 dark:text-yellow-300 font-semibold">{thousandSeparator(data.trx_quantity)}</span>
-          )}
+          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+            {formatNumberOrDash(data.trx_quantity)}
+          </span>
         </p>
       ),
     },
@@ -804,17 +809,17 @@ const Orders = () => {
       ),
       render: (data: any) => (
         <p className="text-right">
-          <span className="block">{data.order_rate}</span>
+          <span className="block">{formatNumberOrDash(data.order_rate)}</span>
           <span className="block">
             {data.contract_order_qty != null && data.contract_order_qty !== ''
-              ? thousandSeparator(data.contract_order_qty)
+              ? formatNumberOrDash(data.contract_order_qty)
               : '-'}
           </span>
           <span className="block">
-            {thousandSeparator(data.total_order)}
+            {formatNumberOrDash(data.total_order)}
           </span>
           <span className="block text-green-500 dark:text-yellow-300 font-semibold">
-            {thousandSeparator((Number(data.total_order) - Number(data.trx_quantity)))}
+            {formatNumberOrDash((Number(data.total_order) - Number(data.trx_quantity)))}
           </span>
         </p>
       ),
@@ -834,16 +839,16 @@ const Orders = () => {
         <p className="text-right">
           <span className="block">
             {data.linked_order_count != null || data.linked_orders_count != null
-              ? thousandSeparator(data.linked_order_count ?? data.linked_orders_count ?? 0)
+              ? formatNumberOrDash(data.linked_order_count ?? data.linked_orders_count ?? 0)
               : '-'}
           </span>
           <span className="block">
             {data.linked_quantity != null
-              ? thousandSeparator(data.linked_quantity)
+              ? formatNumberOrDash(data.linked_quantity)
               : '-'}
           </span>
           <span className="block">
-            {thousandSeparator(Number(data.total_order) - Number(data.linked_quantity))}
+            {formatNumberOrDash(Number(data.total_order) - Number(data.linked_quantity))}
           </span>
         </p>
       ),

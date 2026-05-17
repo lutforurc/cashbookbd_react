@@ -10,6 +10,10 @@ type OrderSummary = {
   linkedOrderCount?: number;
   linkedQuantity?: number;
   remainingQuantity?: number;
+  purchaseQuantity?: number;
+  salesQuantity?: number;
+  purchaseTrxQuantity?: number;
+  salesTrxQuantity?: number;
 };
 
 type Props = {
@@ -38,6 +42,11 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 const toNumber = (value: any) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatNumberOrDash = (value: any) => {
+  const numericValue = toNumber(value);
+  return numericValue === 0 ? '-' : thousandSeparator(numericValue);
 };
 
 const getOrderRemainingQuantity = (row: any) =>
@@ -77,6 +86,16 @@ const buildSummary = (rows: any[]): OrderSummary =>
       acc.linkedQuantity = Number(acc.linkedQuantity || 0) + toNumber(row?.linked_quantity);
       acc.remainingQuantity =
         Number(acc.remainingQuantity || 0) + getLinkedRemainingQuantity(row);
+      if (toNumber(row?.order_type) === 1) {
+        acc.purchaseQuantity = Number(acc.purchaseQuantity || 0) + toNumber(row?.total_order);
+        acc.purchaseTrxQuantity =
+          Number(acc.purchaseTrxQuantity || 0) + toNumber(row?.trx_quantity);
+      }
+      if (toNumber(row?.order_type) === 2) {
+        acc.salesQuantity = Number(acc.salesQuantity || 0) + toNumber(row?.total_order);
+        acc.salesTrxQuantity =
+          Number(acc.salesTrxQuantity || 0) + toNumber(row?.trx_quantity);
+      }
 
       return acc;
     },
@@ -87,6 +106,10 @@ const buildSummary = (rows: any[]): OrderSummary =>
       linkedOrderCount: 0,
       linkedQuantity: 0,
       remainingQuantity: 0,
+      purchaseQuantity: 0,
+      salesQuantity: 0,
+      purchaseTrxQuantity: 0,
+      salesTrxQuantity: 0,
     },
   );
 
@@ -108,7 +131,13 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
     const rowsArr = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(rowsArr, rowsPerPage);
     const grandSummary = summary || buildSummary(rowsArr);
+    const purchaseTrxBalance =
+      toNumber(grandSummary.purchaseQuantity) - toNumber(grandSummary.purchaseTrxQuantity);
+    const salesTrxBalance =
+      toNumber(grandSummary.salesQuantity) - toNumber(grandSummary.salesTrxQuantity);
+    const trxDefQuantity = purchaseTrxBalance - salesTrxBalance;
     const fs = Number.isFinite(fontSize) ? fontSize : 12;
+    const printTextStyle = { fontSize: fs, lineHeight: 1.18 };
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -154,23 +183,23 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
               <table className="w-full table-fixed border-collapse">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th style={{ fontSize: fs }} className="w-12 border border-gray-900 px-2 py-2 text-center">Sl. No.</th>
-                    <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left">Description</th>
-                    <th style={{ fontSize: fs }} className="w-30 border border-gray-900 px-2 py-2 text-left">
+                    <th style={printTextStyle} className="w-12 border border-gray-900 px-2 py-1 text-center">Sl. No.</th>
+                    <th style={printTextStyle} className="border border-gray-900 px-2 py-1 text-left">Description</th>
+                    <th style={printTextStyle} className="w-30 border border-gray-900 px-2 py-1 text-left">
                       <span className="block">Product</span>
                       <span className="block">Trx. Qty</span>
                     </th>
-                    <th style={{ fontSize: fs }} className="w-36 border border-gray-900 px-2 py-2 text-left">
+                    <th style={printTextStyle} className="w-36 border border-gray-900 px-2 py-1 text-left">
                       <span className="block">Order Rate</span>
                       <span className="block">Order No.</span>
                       <span className="block">Order Date</span>
                     </th>
-                    <th style={{ fontSize: fs }} className="w-40 border border-gray-900 px-2 py-2 text-right">
+                    <th style={printTextStyle} className="w-40 border border-gray-900 px-2 py-1 text-right">
                       <span className="block">Contract Qty</span>
                       <span className="block">Order Qty</span>
                       <span className="block">Remaining Qty</span>
                     </th>
-                    <th style={{ fontSize: fs }} className="w-40 border border-gray-900 px-2 py-2 text-right">
+                    <th style={printTextStyle} className="w-40 border border-gray-900 px-2 py-1 text-right">
                       <span className="block">Linked Orders</span>
                       <span className="block">Linked Qty</span>
                       <span className="block">Remaining Qty</span>
@@ -181,10 +210,10 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                   {pageRows.length > 0 ? (
                     pageRows.map((row: any, index: number) => (
                       <tr key={row?.id ?? index} className="align-top">
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-center">
+                        <td style={printTextStyle} className="border border-gray-900 px-2 py-1 text-center">
                           {row?.serial ?? index + 1}
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
+                        <td style={printTextStyle} className="border border-gray-900 px-2 py-1">
                           <span className="block">{row?.order_for || '-'}</span>
                           {row?.delivery_location ? (
                             <span className="block">{row.delivery_location}</span>
@@ -193,48 +222,52 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                             <span className="block font-semibold">{row.notes}</span>
                           ) : null}
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
+                        <td style={printTextStyle} className="border border-gray-900 px-2 py-1">
                           <span className="block">{row?.product_name || '-'}</span>
                           <span className="block">
                             {row?.trx_quantity != null && row?.trx_quantity !== ''
-                              ? thousandSeparator(Number(row.trx_quantity || 0))
+                              ? formatNumberOrDash(row.trx_quantity)
                               : '-'}
                           </span>
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2">
-                           <span className="block">{row?.order_rate ?? '-'}</span>
+                        <td style={printTextStyle} className="border border-gray-900 px-2 py-1">
+                           <span className="block">
+                             {row?.order_rate != null && row?.order_rate !== ''
+                               ? formatNumberOrDash(row.order_rate)
+                               : '-'}
+                           </span>
                           <span className={`block ${row?.order_number?.length > 17 ? 'text-[0.6rem]' : ''}`}>
                             {row?.order_number?.length > 0 ? row.order_number : '-'}
                           </span>
                           <span className="block">{row?.order_date || '-'}</span>
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
+                        <td style={printTextStyle} className="border border-gray-900 px-2 py-1 text-right">
                          
                           <span className="block">
                             {row?.contract_order_qty != null && row?.contract_order_qty !== ''
-                              ? thousandSeparator(Number(row.contract_order_qty || 0))
+                              ? formatNumberOrDash(row.contract_order_qty)
                               : '-'}
                           </span>
                           <span className="block">
-                            {thousandSeparator(Number(row?.total_order || 0))}
+                            {formatNumberOrDash(row?.total_order)}
                           </span>
                           <span className="block font-semibold">
-                            {thousandSeparator(getOrderRemainingQuantity(row))}
+                            {formatNumberOrDash(getOrderRemainingQuantity(row))}
                           </span>
                         </td>
-                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right">
+                        <td style={printTextStyle} className="border border-gray-900 px-2 py-1 text-right">
                           <span className="block">
                             {row?.linked_order_count != null || row?.linked_orders_count != null
-                              ? thousandSeparator(getLinkedOrderCount(row))
+                              ? formatNumberOrDash(getLinkedOrderCount(row))
                               : '-'}
                           </span>
                           <span className="block">
                             {row?.linked_quantity != null
-                              ? thousandSeparator(Number(row.linked_quantity || 0))
+                              ? formatNumberOrDash(row.linked_quantity)
                               : '-'}
                           </span>
                           <span className="block">
-                            {thousandSeparator(getLinkedRemainingQuantity(row))}
+                            {formatNumberOrDash(getLinkedRemainingQuantity(row))}
                           </span>
                         </td>
                       </tr>
@@ -243,50 +276,27 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                     <tr>
                       <td
                         colSpan={6}
-                        style={{ fontSize: fs }}
-                        className="border border-gray-900 px-3 py-6 text-center text-gray-500"
+                        style={printTextStyle}
+                        className="border border-gray-900 px-3 py-3 text-center text-gray-500"
                       >
                         No data found
                       </td>
                     </tr>
                   )}
                   {pageIndex === pages.length - 1 ? (
-                    <tr className="bg-gray-100 font-semibold">
-                        <td
-                          style={{ fontSize: fs }}
-                          colSpan={2}
-                          className="border border-gray-900 px-2 py-2 text-right"
-                        >
-                          Grand Total
-                        </td>
-                        <td
-                          style={{ fontSize: fs }}
-                          className="border border-gray-900 px-2 py-2 text-right"
-                        >
-                          Trx Qty {thousandSeparator(Number(grandSummary.totalTrxQuantity || 0))}
-                        </td>
-                        <td
-                          style={{ fontSize: fs }}
-                          className="border border-gray-900 px-2 py-2 text-right"
-                        >
-                          Order Qty {thousandSeparator(Number(grandSummary.totalOrder || 0))}
-                        </td>
-                        <td
-                          style={{ fontSize: fs }}
-                          className="border border-gray-900 px-2 py-2 text-right"
-                        >
-                          Remaining Qty {thousandSeparator(Number(grandSummary.orderRemainingQuantity || 0))}
-                        </td>
-                        <td
-                          style={{ fontSize: fs }}
-                          className="border border-gray-900 px-2 py-2 text-right"
-                        >
-                          Linked Qty {thousandSeparator(Number(grandSummary.linkedQuantity || 0))}
-                          <span className="block">
-                            Remaining Qty {thousandSeparator(Number(grandSummary.remainingQuantity || 0))}
-                          </span>
-                        </td>
-                      </tr>
+                    <tr className="font-semibold">
+                      <td
+                        style={printTextStyle}
+                        colSpan={6}
+                        className="px-2 py-1 text-center"
+                      >
+                        PO Trx. Bal. Qty: {thousandSeparator(purchaseTrxBalance)}
+                        <span className="mx-6">
+                          DO Trx. Bal. Qty: {thousandSeparator(salesTrxBalance)}
+                        </span>
+                        Trx. Def. Qty: {thousandSeparator(trxDefQuantity)}
+                      </td>
+                    </tr>
                   ) : null}
                 </tbody>
               </table>
