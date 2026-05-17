@@ -605,7 +605,7 @@ const Orders = () => {
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: 'Orders List',
+    documentTitle: 'Order List',
     removeAfterPrint: true,
     onAfterPrint: () => {
       clearPendingListPrint();
@@ -775,6 +775,7 @@ const Orders = () => {
       header: (
         <p>
           <span className="block">Order No.</span>
+          <span className="block">Order Rate</span>
           <span className="block">Order Date</span>
         </p>
       ),
@@ -793,6 +794,7 @@ const Orders = () => {
           ) : (
             <span className="block">{data.order_number}</span>
           )}
+          <span className="block">Tk. {formatNumberOrDash(data.order_rate)}</span>
           <span className="block">{data.order_date}</span>
         </p>
       ),
@@ -801,7 +803,6 @@ const Orders = () => {
       key: 'order_rate',
       header: (
         <p className="text-right">
-          <span className="block">Order Rate</span>
           <span className="block">Contract Qty</span>
           <span className="block">Order Qty</span>
           <span className="block">Remaining Qty</span>
@@ -809,7 +810,7 @@ const Orders = () => {
       ),
       render: (data: any) => (
         <p className="text-right">
-          <span className="block">{formatNumberOrDash(data.order_rate)}</span>
+          
           <span className="block">
             {data.contract_order_qty != null && data.contract_order_qty !== ''
               ? formatNumberOrDash(data.contract_order_qty)
@@ -884,7 +885,7 @@ const Orders = () => {
 
   return (
     <div>
-      <HelmetTitle title={'Orders List'} />
+      <HelmetTitle title={'Order List'} />
       <div className="mb-2">
         <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-end gap-2' : 'flex flex-col'}`}>
           <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1'}>
@@ -1176,7 +1177,7 @@ const Orders = () => {
         <OrdersPrint
           ref={printRef}
           rows={printRows.length > 0 ? printRows : tableData}
-          title="Orders List"
+          title="Order List"
           searchText={searchFilter}
           orderTypeLabel={orderTypeLabel}
           startDate={startDate}

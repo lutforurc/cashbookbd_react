@@ -117,7 +117,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
   (
     {
       rows,
-      title = 'Orders List',
+      title = 'Order List',
       searchText,
       orderTypeLabel,
       startDate,
@@ -137,7 +137,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
       toNumber(grandSummary.salesQuantity) - toNumber(grandSummary.salesTrxQuantity);
     const trxDefQuantity = purchaseTrxBalance - salesTrxBalance;
     const fs = Number.isFinite(fontSize) ? fontSize : 12;
-    const printTextStyle = { fontSize: fs, lineHeight: 1.18 };
+    const printTextStyle = { fontSize: fs, lineHeight: 1.28 };
 
     return (
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
@@ -162,22 +162,8 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
             <div key={pageIndex} className="print-page orders-print-page">
               <PadPrinting />
 
-              <div className="mb-4">
+              <div className="mb-2">
                 <h1 className="text-2xl font-bold text-center">{title}</h1>
-                {/* <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="font-semibold">Search:</span> {searchText || '-'}
-                  </div>
-                  <div className="text-right">
-                    <span className="font-semibold">Order Type:</span> {orderTypeLabel || 'All'}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Start Date:</span> {startDate || '-'}
-                  </div>
-                  <div className="text-right">
-                    <span className="font-semibold">End Date:</span> {endDate || '-'}
-                  </div>
-                </div> */}
               </div>
 
               <table className="w-full table-fixed border-collapse">
@@ -210,7 +196,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                   {pageRows.length > 0 ? (
                     pageRows.map((row: any, index: number) => (
                       <tr key={row?.id ?? index} className="align-top">
-                        <td style={printTextStyle} className="border border-gray-900 px-2 py-1 text-center">
+                        <td style={printTextStyle} className="border border-gray-900 px-2 py-1 text-center align-middle">
                           {row?.serial ?? index + 1}
                         </td>
                         <td style={printTextStyle} className="border border-gray-900 px-2 py-1">
