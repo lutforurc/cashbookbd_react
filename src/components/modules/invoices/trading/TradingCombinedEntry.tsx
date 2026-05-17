@@ -62,6 +62,7 @@ interface CombinedProduct {
 
 type SuggestionField = 'vehicle_no' | 'notes';
 type PartyTarget = 'supplier' | 'customer';
+type NotesApplyTo = 'purchase' | 'sales' | 'both';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -106,6 +107,7 @@ const initialFormData = {
   salesDiscountAmt: '',
   vehicleNumber: '',
   notes: '',
+  notesApplyTo: 'purchase' as NotesApplyTo,
   products: [] as CombinedProduct[],
 };
 
@@ -199,6 +201,7 @@ const TradingCombinedEntry = () => {
           salesDiscountAmt: String(editData.salesDiscountAmt ?? ''),
           vehicleNumber: editData.vehicleNumber || '',
           notes: editData.notes || '',
+          notesApplyTo: editData.notesApplyTo || editData.notes_apply_to || 'purchase',
           products: Array.isArray(editData.products) ? editData.products : [],
         });
         resetProductEditor();
@@ -356,6 +359,13 @@ const TradingCombinedEntry = () => {
     setFormData((prev) => ({
       ...prev,
       onlySalesPosting: e.target.checked,
+    }));
+  };
+
+  const handleNotesApplyToChange = (notesApplyTo: NotesApplyTo) => {
+    setFormData((prev) => ({
+      ...prev,
+      notesApplyTo,
     }));
   };
 
@@ -684,7 +694,7 @@ const TradingCombinedEntry = () => {
     }
   };
 
-  const resetForm = ({ keepParties = false, keepProduct = false } = {}) => {
+  const resetForm = ({ keepParties = false, keepProduct = false, keepOrders = false } = {}) => {
     setFormData((prev) => ({
       ...initialFormData,
       ...(keepParties
@@ -693,6 +703,14 @@ const TradingCombinedEntry = () => {
           supplierName: prev.supplierName,
           customerAccount: prev.customerAccount,
           customerName: prev.customerName,
+        }
+        : {}),
+      ...(keepOrders
+        ? {
+          purchaseOrderNumber: prev.purchaseOrderNumber,
+          purchaseOrderText: prev.purchaseOrderText,
+          salesOrderNumber: prev.salesOrderNumber,
+          salesOrderText: prev.salesOrderText,
         }
         : {}),
     }));
@@ -717,6 +735,11 @@ const TradingCombinedEntry = () => {
     if (!formData.customerAccount) {
       toast.info('Please select Customer');
       focusField('customerAccount');
+      return;
+    }
+    if (!formData.salesOrderNumber) {
+      toast.info('Please select Sales Order');
+      focusField('salesOrderNumber');
       return;
     }
     if (!Number.isFinite(amount) || amount < 0) {
@@ -746,6 +769,7 @@ const TradingCombinedEntry = () => {
         salesDiscountAmt: Number(formData.salesDiscountAmt || 0),
         vehicleNumber: formData.vehicleNumber || null,
         notes: formData.notes || null,
+        notesApplyTo: formData.notesApplyTo,
         products: formData.products,
         ...(editingCombinedNumber ? { combined_number: editingCombinedNumber } : {}),
       };
@@ -761,7 +785,7 @@ const TradingCombinedEntry = () => {
         const purchaseVr = data?.purchase_vr_no ? `Purchase: ${data.purchase_vr_no}` : '';
         const salesVr = data?.sales_vr_no ? `Sales: ${data.sales_vr_no}` : '';
         toast.success([purchaseVr, salesVr].filter(Boolean).join(' | ') || result?.message || 'Saved successfully.');
-        resetForm({ keepParties: true, keepProduct: true });
+        resetForm({ keepParties: true, keepProduct: true, keepOrders: true });
         focusField('product');
       } else {
         toast.error(result?.message || 'Failed to save combined trading entry.');
@@ -932,22 +956,48 @@ const TradingCombinedEntry = () => {
                 type="number"
                 placeholder="Discount Amount"
                 label="Discount Amount"
-                className="py-1"
+                className="py-1 mt-1"
                 onChange={handleFormChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
-              <InputElement
-                id="notes"
-                value={formData.notes}
-                name="notes"
-                placeholder="Notes"
-                label="Notes"
-                className="py-1"
-                list="combined-notes-suggestions"
-                autoComplete="off"
-                onChange={handleFormChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'product')}
-              />
+              <div>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <label htmlFor="notes" className="text-black dark:text-white">
+                    Notes
+                  </label>
+                  <div className="inline-flex h-5 overflow-hidden rounded border border-slate-500 bg-slate-100 text-[10px] font-semibold leading-none dark:border-slate-600 dark:bg-slate-800">
+                    {[
+                      { value: 'purchase', label: 'Purchase' },
+                      { value: 'sales', label: 'Sales' },
+                      { value: 'both', label: 'Both' },
+                    ].map((item) => (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => handleNotesApplyToChange(item.value as NotesApplyTo)}
+                        className={`px-2 transition ${
+                          formData.notesApplyTo === item.value
+                            ? 'bg-blue-600 text-white'
+                            : 'text-slate-700 hover:bg-slate-200 dark:text-slate-200 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <input
+                  id="notes"
+                  value={formData.notes}
+                  name="notes"
+                  placeholder="Notes"
+                  list="combined-notes-suggestions"
+                  autoComplete="off"
+                  onChange={handleFormChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'product')}
+                  className="w-full form-input rounded-xs border bg-white px-3 py-1 text-gray-600 outline-none focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-transparent dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+                />
+              </div>
               <datalist id="combined-notes-suggestions">
                 {noteSuggestions.map((item) => (
                   <option key={item} value={item} />

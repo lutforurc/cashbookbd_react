@@ -39,17 +39,17 @@ const getOrderRemainingQuantity = (row: any) =>
 
 const getLinkedRemainingQuantity = (row: any) => {
   const totalOrder = row?.total_order;
-  const trxQuantity = row?.trx_quantity;
+  const linkedQuantity = row?.linked_quantity;
 
   if (
     totalOrder !== undefined &&
     totalOrder !== null &&
     totalOrder !== '' &&
-    trxQuantity !== undefined &&
-    trxQuantity !== null &&
-    trxQuantity !== ''
+    linkedQuantity !== undefined &&
+    linkedQuantity !== null &&
+    linkedQuantity !== ''
   ) {
-    return getOrderRemainingQuantity(row);
+    return toNumber(totalOrder) - toNumber(linkedQuantity);
   }
 
   return toNumber(row?.remaining_quantity);
@@ -1171,7 +1171,7 @@ const Orders = () => {
         <OrdersPrint
           ref={printRef}
           rows={printRows.length > 0 ? printRows : tableData}
-          title="Orders List Print"
+          title="Orders List"
           searchText={searchFilter}
           orderTypeLabel={orderTypeLabel}
           startDate={startDate}

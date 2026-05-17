@@ -81,6 +81,22 @@ const Ledger = (user: any) => {
     'purchase.edit',
   ]);
 
+  const getLedgerRowName = (row: any) => {
+    if (String(row?.name || '').trim().toLowerCase() !== 'balance') {
+      return row?.name;
+    }
+
+    if (Number(row?.debit || 0) > 0) {
+      return 'Balance Receivable';
+    }
+
+    if (Number(row?.credit || 0) > 0) {
+      return 'Balance Payable';
+    }
+
+    return 'Balance';
+  };
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
@@ -316,7 +332,7 @@ const Ledger = (user: any) => {
       header: 'Description',
       render: (row: any) => (
         <>
-          <p>{row.name}</p>
+          <p>{getLedgerRowName(row)}</p>
           <div className="text-sm text-gray-500 lg:max-w-150 break-words whitespace-normal block">
             {row.remarks === '-' ? '' : row.remarks}
           </div>
