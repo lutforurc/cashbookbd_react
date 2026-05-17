@@ -737,11 +737,6 @@ const TradingCombinedEntry = () => {
       focusField('customerAccount');
       return;
     }
-    if (!formData.salesOrderNumber) {
-      toast.info('Please select Sales Order');
-      focusField('salesOrderNumber');
-      return;
-    }
     if (!Number.isFinite(amount) || amount < 0) {
       toast.info('Please enter the trading amount.');
       return;
