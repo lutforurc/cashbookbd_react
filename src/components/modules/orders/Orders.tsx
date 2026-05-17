@@ -539,22 +539,22 @@ const Orders = () => {
           value: thousandSeparator(((summary.purchaseQuantity - summary.purchaseTrxQuantity) - (summary.salesQuantity - summary.salesTrxQuantity))),
           highlight: true,
         },
-        {
-          key: 'po-qty',
-          label: 'PO Qty',
-          value: thousandSeparator(summary.purchaseQuantity),
-        },
-        {
-          key: 'do-qty',
-          label: 'DO Qty',
-          value: thousandSeparator(summary.salesQuantity),
-        },
-        {
-          key: 'po-do-bal-qty',
-          label: 'Order Bal. Qty',
-          value: thousandSeparator(summary.purchaseQuantity - summary.salesQuantity),
-          highlight: true,
-        },
+        // {
+        //   key: 'po-qty',
+        //   label: 'PO Qty',
+        //   value: thousandSeparator(summary.purchaseQuantity),
+        // },
+        // {
+        //   key: 'do-qty',
+        //   label: 'DO Qty',
+        //   value: thousandSeparator(summary.salesQuantity),
+        // },
+        // {
+        //   key: 'po-do-bal-qty',
+        //   label: 'Order Bal. Qty',
+        //   value: thousandSeparator(summary.purchaseQuantity - summary.salesQuantity),
+        //   highlight: true,
+        // },
       );
     }
 
@@ -600,7 +600,7 @@ const Orders = () => {
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: 'Orders List Print',
+    documentTitle: 'Orders List',
     removeAfterPrint: true,
     onAfterPrint: () => {
       clearPendingListPrint();
