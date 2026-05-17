@@ -684,7 +684,7 @@ const TradingCombinedEntry = () => {
     }
   };
 
-  const resetForm = ({ keepParties = false, keepProduct = false } = {}) => {
+  const resetForm = ({ keepParties = false, keepProduct = false, keepOrders = false } = {}) => {
     setFormData((prev) => ({
       ...initialFormData,
       ...(keepParties
@@ -693,6 +693,14 @@ const TradingCombinedEntry = () => {
           supplierName: prev.supplierName,
           customerAccount: prev.customerAccount,
           customerName: prev.customerName,
+        }
+        : {}),
+      ...(keepOrders
+        ? {
+          purchaseOrderNumber: prev.purchaseOrderNumber,
+          purchaseOrderText: prev.purchaseOrderText,
+          salesOrderNumber: prev.salesOrderNumber,
+          salesOrderText: prev.salesOrderText,
         }
         : {}),
     }));
@@ -717,6 +725,11 @@ const TradingCombinedEntry = () => {
     if (!formData.customerAccount) {
       toast.info('Please select Customer');
       focusField('customerAccount');
+      return;
+    }
+    if (!formData.salesOrderNumber) {
+      toast.info('Please select Sales Order');
+      focusField('salesOrderNumber');
       return;
     }
     if (!Number.isFinite(amount) || amount < 0) {
@@ -761,7 +774,7 @@ const TradingCombinedEntry = () => {
         const purchaseVr = data?.purchase_vr_no ? `Purchase: ${data.purchase_vr_no}` : '';
         const salesVr = data?.sales_vr_no ? `Sales: ${data.sales_vr_no}` : '';
         toast.success([purchaseVr, salesVr].filter(Boolean).join(' | ') || result?.message || 'Saved successfully.');
-        resetForm({ keepParties: true, keepProduct: true });
+        resetForm({ keepParties: true, keepProduct: true, keepOrders: true });
         focusField('product');
       } else {
         toast.error(result?.message || 'Failed to save combined trading entry.');
@@ -932,7 +945,7 @@ const TradingCombinedEntry = () => {
                 type="number"
                 placeholder="Discount Amount"
                 label="Discount Amount"
-                className="py-1"
+                className="py-1 mt-1"
                 onChange={handleFormChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
               />
@@ -942,7 +955,7 @@ const TradingCombinedEntry = () => {
                 name="notes"
                 placeholder="Notes"
                 label="Notes"
-                className="py-1"
+                className="py-1 mt-1"
                 list="combined-notes-suggestions"
                 autoComplete="off"
                 onChange={handleFormChange}
