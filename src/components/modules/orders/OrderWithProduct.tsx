@@ -326,8 +326,8 @@ const OrderWithProduct = ({
   }, [transactions]);
 
   const rows = useMemo(
-    () =>
-      uniqueTransactions.map((trx, index) => {
+    () => {
+      const mappedRows = uniqueTransactions.map((trx, index) => {
         const salesMaster = trx?.main_transaction_master?.sales_master;
         const purchaseMaster = trx?.main_transaction_master?.purchase_master;
         const salesDetails = Array.isArray(salesMaster?.details) ? salesMaster.details : [];
@@ -415,7 +415,20 @@ const OrderWithProduct = ({
           voucherType: hasSales ? 'Sales' : hasPurchase ? 'Purchase' : 'Transaction',
           hasLineDetail,
         };
-      }),
+      });
+
+      let cumulativeBalance = 0;
+
+      return mappedRows.map((row) => {
+        cumulativeBalance +=
+          toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
+
+        return {
+          ...row,
+          balance: cumulativeBalance,
+        };
+      });
+    },
     [
       payload?.customer?.name,
       payload?.notes,
@@ -556,11 +569,7 @@ const OrderWithProduct = ({
         header: 'BALANCE',
         headerClass: 'text-right',
         cellClass: 'text-right w-28',
-        render: (row: any) => {
-          const balance =
-            toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
-          return <span>{formatBalanceAmount(balance, 0)}</span>;
-        },
+        render: (row: any) => <span>{formatBalanceAmount(row.balance, 0)}</span>,
       },
     ],
     [handleVoucherPrint, paymentColumnLabel],
@@ -597,14 +606,11 @@ const OrderWithProduct = ({
                 className: 'text-right',
               },
               {
-                label: thousandSeparator(Math.abs(totals.payment)),
+                label: Math.abs(totals.payment) ? thousandSeparator(Math.abs(totals.payment)) : '-',
                 className: 'text-right',
               },
               {
-                label: formatBalanceAmount(
-                  totals.total - totals.discount - Math.abs(totals.payment),
-                  0,
-                ),
+                label: formatBalanceAmount(rows[rows.length - 1]?.balance ?? 0, 0),
                 className: 'text-right',
               },
             ],
@@ -891,6 +897,7 @@ const OrderWithProduct = ({
             rows={rows}
             rowsPerPage={perPage}
             fontSize={fontSize}
+            paymentColumnLabel={paymentColumnLabel === 'RECEIVED' ? 'Received' : 'Payment'}
           />
           <VoucherPrintRegistry
             ref={voucherRegistryRef}

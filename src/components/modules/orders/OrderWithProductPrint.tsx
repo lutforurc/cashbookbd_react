@@ -19,6 +19,7 @@ type PrintRow = {
   total?: Primitive;
   discount?: Primitive;
   payment?: Primitive;
+  balance?: Primitive;
   unitName?: string;
   hasLineDetail?: boolean;
 };
@@ -43,6 +44,7 @@ type Props = {
   rows?: PrintRow[];
   rowsPerPage?: number;
   fontSize?: number;
+  paymentColumnLabel?: string;
 };
 
 const toNumber = (value: Primitive) => {
@@ -76,12 +78,23 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       rows = [],
       rowsPerPage = 12,
       fontSize = 12,
+      paymentColumnLabel = 'PAYMENT',
     },
     ref,
   ) => {
     const fs = Number.isFinite(fontSize) ? fontSize : 12;
-    const pages = chunkRows(rows, Math.max(rowsPerPage, 1));
-    const totals = rows.reduce(
+    let cumulativeBalance = 0;
+    const printableRows = rows.map((row) => {
+      cumulativeBalance +=
+        toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
+
+      return {
+        ...row,
+        balance: row.balance ?? cumulativeBalance,
+      };
+    });
+    const pages = chunkRows(printableRows, Math.max(rowsPerPage, 1));
+    const totals = printableRows.reduce(
       (acc, row) => {
         acc.quantity += toNumber(row.quantity);
         acc.total += toNumber(row.total);
@@ -112,7 +125,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
             <div className="mb-2 text-center text-2xl font-bold">{title}</div>
 
-            <div className="mb-4 grid grid-cols-2 gap-4 text-sm">
+            <div className="mb-2 grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-1">
                 <div>Order for: <span className="font-semibold">{payload?.customer?.name || '-'}</span></div>
                 <div>Order No: <span className="font-semibold">{payload?.order_number || '-'}</span></div>
@@ -126,16 +139,16 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-center">SL. NO</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-left">CHAL. NO. & DATE</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-left">PRODUCT & DETAILS</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-left">VEHICLE NUMBER</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-right">QUANTITY</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-right">RATE</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-right">TOTAL</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-right">DISCOUNT</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-right">PAYMENT</th>
-                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-right">BALANCE</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-center">Sl. No</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-left">Chal. No. & Date</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-left">Product & Details</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-left w-25">Truck Number</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 w-25  text-center">Quantity</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-center">Rate</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-center">Total</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-center">Discount</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-center">{paymentColumnLabel}</th>
+                  <th style={{ fontSize: fs }} className="border border-black px-2 py-1 text-center">Balance</th>
                 </tr>
               </thead>
               <tbody>
@@ -175,10 +188,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                         { row.payment ? thousandSeparator(Math.abs(toNumber(row.payment))) : '-' }
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
-                        {formatBalanceAmount(
-                          toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment)),
-                          0,
-                        )}
+                        {formatBalanceAmount(row.balance, 0)}
                       </td>
                     </tr>
                   ))
@@ -207,22 +217,29 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       {thousandSeparator(totals.quantity)}
                     </td>
                     <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1" />
-                    <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1" />
-                    <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1" />
                     <td
                       style={{ fontSize: fs, lineHeight: 1.2 }}
                       className="border border-black px-2 py-1 text-right font-semibold"
                     >
-                      {thousandSeparator(Math.abs(totals.payment))}
+                      {thousandSeparator(totals.total)}
                     </td>
                     <td
                       style={{ fontSize: fs, lineHeight: 1.2 }}
                       className="border border-black px-2 py-1 text-right font-semibold"
                     >
-                      {formatBalanceAmount(
-                        totals.total - totals.discount - Math.abs(totals.payment),
-                        0,
-                      )}
+                      {totals.discount ? thousandSeparator(totals.discount) : '-'}
+                    </td>
+                    <td
+                      style={{ fontSize: fs, lineHeight: 1.2 }}
+                      className="border border-black px-2 py-1 text-right font-semibold"
+                    >
+                      {Math.abs(totals.payment) ? thousandSeparator(Math.abs(totals.payment)) : '-'}
+                    </td>
+                    <td
+                      style={{ fontSize: fs, lineHeight: 1.2 }}
+                      className="border border-black px-2 py-1 text-right font-semibold"
+                    >
+                      {formatBalanceAmount(printableRows[printableRows.length - 1]?.balance ?? 0, 0)}
                     </td>
                   </tr>
                 ) : null}
