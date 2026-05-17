@@ -107,7 +107,7 @@ const initialFormData = {
   salesDiscountAmt: '',
   vehicleNumber: '',
   notes: '',
-  notesApplyTo: 'both' as NotesApplyTo,
+  notesApplyTo: 'purchase' as NotesApplyTo,
   products: [] as CombinedProduct[],
 };
 
@@ -201,7 +201,7 @@ const TradingCombinedEntry = () => {
           salesDiscountAmt: String(editData.salesDiscountAmt ?? ''),
           vehicleNumber: editData.vehicleNumber || '',
           notes: editData.notes || '',
-          notesApplyTo: editData.notesApplyTo || editData.notes_apply_to || 'both',
+          notesApplyTo: editData.notesApplyTo || editData.notes_apply_to || 'purchase',
           products: Array.isArray(editData.products) ? editData.products : [],
         });
         resetProductEditor();
