@@ -542,6 +542,7 @@ export const API_FESTIVAL_BONUS_VIEW_URL = `${API_BASE_URL}/hrms/festival-bonus-
 export const API_FESTIVAL_BONUS_GENERATE_URL = `${API_BASE_URL}/hrms/festival-bonus-generate`;
 export const API_FESTIVAL_BONUS_SHEET_URL = `${API_BASE_URL}/hrms/festival-bonus-sheet`;
 export const API_FESTIVAL_BONUS_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/festival-bonus-sheet-print`;
+export const API_FESTIVAL_BONUS_SHEET_UPDATE_URL = `${API_BASE_URL}/hrms/festival-bonus-sheet-update`;
 export const API_FESTIVAL_BONUS_PAYMENT_URL = `${API_BASE_URL}/hrms/festival-bonus-payment`;
 
 

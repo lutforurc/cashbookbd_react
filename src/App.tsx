@@ -104,6 +104,7 @@ import SalarySheet from './components/modules/hrms/salary/SalarySheet';
 import SalarySheetUpdate from './components/modules/hrms/salary/SalarySheetUpdate';
 import FestivalBonusGenerate from './components/modules/hrms/bonus/FestivalBonusGenerate';
 import FestivalBonus from './components/modules/hrms/bonus/FestivalBonus';
+import FestivalBonusUpdate from './components/modules/hrms/bonus/FestivalBonusUpdate';
 import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
 import ChangeList from './components/modules/history/ChangeList';
 import AddEditProject from './components/modules/real-estate/project/AddEditProject';
@@ -579,6 +580,7 @@ function App() {
               <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
               <Route path={routes.hrms_festival_bonus_generate} element={<FestivalBonusGenerate user={me} />} />
               <Route path={routes.hrms_festival_bonus_list} element={<FestivalBonus user={me} />} />
+              <Route path={routes.hrms_festival_bonus_update} element={<FestivalBonusUpdate user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.sheet.view']} loading={permissionsLoading} />}>
               <Route path={routes.hrms_salary_sheet_update} element={<SalarySheetUpdate user={me} />} />

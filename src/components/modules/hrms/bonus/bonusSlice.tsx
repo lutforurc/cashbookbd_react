@@ -4,6 +4,7 @@ import {
   API_FESTIVAL_BONUS_GENERATE_URL,
   API_FESTIVAL_BONUS_PAYMENT_URL,
   API_FESTIVAL_BONUS_SHEET_PRINT_URL,
+  API_FESTIVAL_BONUS_SHEET_UPDATE_URL,
   API_FESTIVAL_BONUS_SHEET_URL,
   API_FESTIVAL_BONUS_VIEW_URL,
 } from "../../../services/apiRoutes";
@@ -104,6 +105,21 @@ export const festivalBonusPayment = createAsyncThunk<any, any, { rejectValue: st
   }
 );
 
+export const festivalBonusSheetUpdate = createAsyncThunk<any, any, { rejectValue: string }>(
+  "festivalBonus/festivalBonusSheetUpdate",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await httpService.post(API_FESTIVAL_BONUS_SHEET_UPDATE_URL, payload);
+      if (res.data?.success === true) {
+        return res.data;
+      }
+      return rejectWithValue(res.data?.message || "Bonus sheet update failed");
+    } catch (error: any) {
+      return rejectWithValue(getErrorMessage(error, "Failed to update bonus sheet"));
+    }
+  }
+);
+
 const bonusSlice = createSlice({
   name: "festivalBonus",
   initialState,
@@ -182,6 +198,18 @@ const bonusSlice = createSlice({
       .addCase(festivalBonusPayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to process bonus payment";
+      })
+      .addCase(festivalBonusSheetUpdate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(festivalBonusSheetUpdate.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload?.message || "Festival bonus sheet updated successfully";
+      })
+      .addCase(festivalBonusSheetUpdate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to update festival bonus sheet";
       });
   },
 });

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
-import { FiCheckSquare, FiFilter, FiSearch, FiX } from "react-icons/fi";
+import { FiFilter, FiSearch, FiX } from "react-icons/fi";
 import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -20,9 +21,12 @@ import {
   festivalBonusPayment,
   festivalBonusSheetPrint,
 } from "./bonusSlice";
+import routes from "../../../services/appRoutes";
 
 const FestivalBonus = ({ user }: any) => {
   const dispatch: any = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { loading, bonusSheet, bonusPrintSheet } = useSelector((state: any) => state.festivalBonus);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
@@ -40,10 +44,17 @@ const FestivalBonus = ({ user }: any) => {
   const printRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const restoredYearId = location.state?.yearId ? String(location.state.yearId) : "";
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!restoredYearId) return;
+    setYearId(restoredYearId);
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.pathname, navigate, restoredYearId]);
 
   useEffect(() => {
     if (branchDdlData?.protectedData?.data) {
@@ -142,6 +153,22 @@ const FestivalBonus = ({ user }: any) => {
     }
   };
 
+  const handleActionChange = async (row: any, action: string) => {
+    if (action === "update") {
+      navigate(routes.hrms_festival_bonus_update, {
+        state: {
+          row,
+          yearId,
+        },
+      });
+      return;
+    }
+
+    if (action === "payment") {
+      await handleOpenDetails(row, "payment");
+    }
+  };
+
   const handlePaymentSubmit = async (rows: { id: number; pay_amount: number }[]) => {
     if (!selectedRow) return;
 
@@ -226,10 +253,19 @@ const FestivalBonus = ({ user }: any) => {
         }
 
         return (
-          <div className="flex justify-end gap-2">
-            <PrintButton onClick={() => handleOpenDetails(row, "print")} className="bg-slate-600 px-3 py-1 text-xs hover:bg-slate-700 h-7" />
-            <ButtonLoading onClick={() => handleOpenDetails(row, "payment")} label="Payment" className="px-3 py-1 text-xs h-7" icon={<FiCheckSquare />} />
-          </div>
+          <select
+            defaultValue=""
+            onChange={(e) => {
+              const value = e.target.value;
+              e.target.value = "";
+              void handleActionChange(row, value);
+            }}
+            className="min-w-28 border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          >
+            <option value="">Select</option>
+            <option value="update">Update</option>
+            <option value="payment">Payment</option>
+          </select>
         );
       },
     },
