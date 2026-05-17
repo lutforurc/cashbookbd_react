@@ -32,7 +32,29 @@ type LedgerRowWithBalance = LedgerRow & {
   runningBalance?: number;
 };
 
-const SUMMARY_ROW_NAMES = new Set(['Range Total', 'Total', 'Balance']);
+const SUMMARY_ROW_NAMES = new Set([
+  'Range Total',
+  'Total',
+  'Balance',
+  'Balance Receivable',
+  'Balance Payable',
+]);
+
+const getLedgerRowName = (row: LedgerRow) => {
+  if (String(row?.name || '').trim().toLowerCase() !== 'balance') {
+    return row?.name || '';
+  }
+
+  if (Number(row?.debit || 0) > 0) {
+    return 'Balance Receivable';
+  }
+
+  if (Number(row?.credit || 0) > 0) {
+    return 'Balance Payable';
+  }
+
+  return 'Balance';
+};
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
   if (!Array.isArray(data)) return [[]];
@@ -229,12 +251,12 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                             style={{ fontSize: fs }}
                             className="border border-gray-900 px-2 py-1 align-middle"
                           >
-                            <div className="w-full max-w-4xl leading-normal">
-                              <div className="leading-normal break-words whitespace-normal">
-                                <span className={`text-[${fs}px]`}>
-                                  {row?.name || ''}
-                                </span>
-                              </div>
+	                            <div className="w-full max-w-4xl leading-normal">
+	                              <div className="leading-normal break-words whitespace-normal">
+	                                <span className={`text-[${fs}px]`}>
+	                                  {getLedgerRowName(row)}
+	                                </span>
+	                              </div>
                               {row?.remarks != "-" && (
                                 <div
                                   className={`text-[${fs}px] break-words whitespace-normal text-gray-700`}

@@ -78,6 +78,8 @@ const ImagePopup = ({
 
   const images = voucher_image.split('|').filter(Boolean);
   const isPDF = (img: string) => img.toLowerCase().endsWith('.pdf');
+  const removeButtonClass =
+    'inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-slate-200 bg-white px-1 text-[10px] font-bold leading-none text-slate-500 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:shadow-none dark:hover:border-red-500/40 dark:hover:bg-red-500/10 dark:hover:text-red-300 dark:disabled:border-slate-700 dark:disabled:bg-slate-800/60 dark:disabled:text-slate-500';
 
   let imageUrl = `${API_REMOTE_URL}/public/project_voucher/${branchPad}`;
   if (environment === 'local') {
@@ -85,17 +87,17 @@ const ImagePopup = ({
   }
 
   return (
-    <div ref={rootRef} className="popup-image-group flex flex-wrap gap-1">
+    <div ref={rootRef} className="popup-image-group flex flex-wrap items-center gap-1.5 max-w-30">
       {images.map((img, index) =>
         isPDF(img) ? (
-          <div key={index} className="relative inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1">
+          <div key={index} className="relative inline-flex items-center gap-1">
             <a
               href={`${imageUrl}/voucher/${img}`}
               title={title}
               target={openPdfInNewTab ? '_blank' : undefined}
               rel={openPdfInNewTab ? 'noopener noreferrer' : undefined}
               data-pdf="true"
-              className="text-xs text-blue-700"
+              className="inline-flex h-6 items-center rounded border border-slate-200 bg-white px-2 text-xs font-medium text-primary shadow-sm transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary dark:border-slate-600 dark:bg-slate-800 dark:text-blue-300 dark:shadow-none dark:hover:border-blue-400/50 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
             >
               Doc {index + 1}
             </a>
@@ -104,7 +106,7 @@ const ImagePopup = ({
                 type="button"
                 onClick={() => onRemoveImage(img)}
                 disabled={removingImage === img}
-                className="rounded px-1 text-xs font-bold text-slate-400 transition hover:bg-slate-100 hover:text-red-500 disabled:cursor-not-allowed disabled:text-slate-300"
+                className={removeButtonClass}
                 aria-label={`Remove ${img}`}
               >
                 {removingImage === img ? '...' : 'x'}
@@ -121,7 +123,7 @@ const ImagePopup = ({
                 src={`${imageUrl}/thumbnail/${img}`}
                 alt={`Voucher ${index + 1}`}
                 width={30}
-                className="border rounded-sm shadow-sm hover:shadow-md transition-shadow duration-300"
+                className="h-8 w-8 rounded-sm border border-slate-200 bg-white object-cover p-0.5 shadow-sm transition hover:border-primary/50 hover:shadow-md dark:border-slate-600 dark:bg-slate-800 dark:shadow-none dark:hover:border-blue-400/60"
               />
             </a>
             {onRemoveImage && (
@@ -129,7 +131,7 @@ const ImagePopup = ({
                 type="button"
                 onClick={() => onRemoveImage(img)}
                 disabled={removingImage === img}
-                className="absolute -right-1 -top-1 rounded-full border border-white bg-white px-1 text-[10px] font-bold leading-none text-slate-500 shadow-sm transition hover:text-red-500 disabled:cursor-not-allowed disabled:text-slate-300"
+                className={`absolute -right-1.5 -top-1.5 ${removeButtonClass}`}
                 aria-label={`Remove ${img}`}
               >
                 {removingImage === img ? '...' : 'x'}
