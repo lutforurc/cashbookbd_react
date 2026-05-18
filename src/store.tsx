@@ -4,6 +4,8 @@ import branchReducer from './components/modules/branch/branchSlice';
 import dashboardReducer from './components/modules/dashboard/dashboardSlice';
 import userReducer from './components/modules/user/userSlice';
 import productReducer from './components/modules/product/productSlice';
+import lowStockSlice from './components/modules/product/lowStockSlice';
+import stockAlertSlice from './components/modules/product/stockAlertSlice';
 import dateWiseTotalReducer from './components/modules/reports/datewisedata/dateWiseDataSlice';
 import branchDdlReducer from './components/modules/branch/ddlBranchSlider';
 import categoryReducer from './components/modules/category/categorySlice';
@@ -86,6 +88,8 @@ const store = configureStore({
     branchList: branchReducer,
     dashboard: dashboardReducer,
     product: productReducer,
+    lowStock: lowStockSlice,
+    stockAlert: stockAlertSlice,
     category: categoryReducer,
     dateWiseTotal: dateWiseTotalReducer,
     branchDdl: branchDdlReducer,

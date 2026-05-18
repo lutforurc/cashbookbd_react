@@ -130,6 +130,10 @@ const ROUTES = {
 
   // Products Route
   product_list: '/product/product-list',
+  product_low_stock: '/product/low-stock',
+  product_negative_stock: '/product/negative-stock',
+  product_slow_moving: '/product/slow-moving',
+  product_warehouse_difference: '/product/warehouse-difference',
   product_create: '/product/add-product',
   product_edit: '/product/edit/:id',
   product_store: '/product/store',

@@ -1277,6 +1277,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/category/category-list' ||
                     pathname === '/category/edit' ||
                     pathname === '/product/product-list' ||
+                    pathname === routes.product_low_stock ||
+                    pathname === routes.product_negative_stock ||
+                    pathname === routes.product_slow_moving ||
+                    pathname === routes.product_warehouse_difference ||
                     pathname === '/brand/brand-list' ||
                     pathname === routes.product_unit_list ||
                     pathname === routes.product_unit_create ||
@@ -1295,6 +1299,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 
                           ${(
                             pathname === '/product/product-list' ||
+                            pathname === routes.product_low_stock ||
+                            pathname === routes.product_negative_stock ||
+                            pathname === routes.product_slow_moving ||
+                            pathname === routes.product_warehouse_difference ||
                             pathname === '/brand/brand-list' ||
                             pathname === routes.product_unit_list ||
                             pathname === routes.product_unit_create ||
@@ -1354,6 +1362,58 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Product List
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'products.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_low_stock}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Low Stock
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'products.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_negative_stock}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Negative Stock
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'products.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_slow_moving}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Slow Moving
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'products.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_warehouse_difference}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Warehouse Difference
                               </NavLink>
                             </li>
                           )}

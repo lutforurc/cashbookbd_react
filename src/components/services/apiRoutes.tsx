@@ -337,6 +337,10 @@ export const API_INSTALLMENT_EARLY_PAYMENT_APPLY_URL = `${API_BASE_URL}/accounts
 // Products Route
 export const API_PRODUCT_LIST_URL = `${API_BASE_URL}/product/product-list`;
 export const API_PRODUCT_DDL_LIST_URL = `${API_BASE_URL}/product/ddl/list`;
+export const API_PRODUCT_LOW_STOCK_URL = `${API_BASE_URL}/product/low-stock`;
+export const API_PRODUCT_NEGATIVE_STOCK_URL = `${API_BASE_URL}/product/negative-stock`;
+export const API_PRODUCT_SLOW_MOVING_URL = `${API_BASE_URL}/product/slow-moving`;
+export const API_PRODUCT_WAREHOUSE_DIFFERENCE_URL = `${API_BASE_URL}/product/warehouse-difference`;
 export const API_PRODUCT_ADD_URL = `${API_BASE_URL}/product/add-product`;
 export const API_PRODUCT_STORE_URL = `${API_BASE_URL}/product/store`;
 export const API_PRODUCT_EDIT_URL = `${API_BASE_URL}/product/product-edit/`;

@@ -22,6 +22,10 @@ import CompanyList from './components/modules/company/CompanyList';
 import EditCompany from './components/modules/company/EditCompany';
 import AddUser from './components/modules/user/AddUser';
 import Product from './components/modules/product/Product';
+import LowStockProducts from './components/modules/product/LowStockProducts';
+import NegativeStockProducts from './components/modules/product/NegativeStockProducts';
+import SlowMovingProducts from './components/modules/product/SlowMovingProducts';
+import WarehouseDifferenceProducts from './components/modules/product/WarehouseDifferenceProducts';
 import DateWiseData from './components/modules/reports/datewisedata/DateWiseData';
 import AddProduct from './components/modules/product/AddProduct';
 import Category from './components/modules/category/Category';
@@ -362,6 +366,10 @@ function App() {
             {/* Products */}
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view']} loading={permissionsLoading} />}>
               <Route path={routes.product_list} element={<Product user={me} />} />
+              <Route path={routes.product_low_stock} element={<LowStockProducts />} />
+              <Route path={routes.product_negative_stock} element={<NegativeStockProducts />} />
+              <Route path={routes.product_slow_moving} element={<SlowMovingProducts />} />
+              <Route path={routes.product_warehouse_difference} element={<WarehouseDifferenceProducts />} />
               <Route path={routes.product_create} element={<AddProduct />} />
               <Route path={routes.product_edit} element={<AddProduct />} />
               <Route path={routes.brand_create} element={<AddBranding />} />
