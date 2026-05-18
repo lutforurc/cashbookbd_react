@@ -509,7 +509,6 @@ const AddCustomerSupplier = () => {
                 <div className="text-red-500 text-sm">{mobileDuplicate.error}</div>
               ) : null}
             </div>
-
             <InputElement
               id="ledger_page"
               name="ledger_page"
