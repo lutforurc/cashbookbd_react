@@ -54,6 +54,17 @@ interface OptionType {
   additionalDetails: string;
 }
 
+const EXCEL_FILE_ACCEPT =
+  '.xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv';
+
+const getSelectedFileBadge = (file: File) => {
+  const fileName = file.name.toLowerCase();
+  if (file.type.startsWith('image/')) return 'IMG';
+  if (file.type === 'application/pdf' || fileName.endsWith('.pdf')) return 'PDF';
+  if (/\.(xls|xlsx|csv)$/i.test(file.name)) return 'Excel';
+  return 'File';
+};
+
 export default function VoucherUpload(user: any): JSX.Element {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
@@ -83,12 +94,6 @@ export default function VoucherUpload(user: any): JSX.Element {
     end_date: settings?.data?.trx_dt,
   });
 
-
-console.log('settings permissions:', settings?.data?.permissions);
-console.log(
-  'has voucher.photo.delete:',
-  settings?.data?.permissions?.some((p: any) => p?.name === 'voucher.photo.delete')
-);
 
   const dispatch = useDispatch<any>();
 
@@ -135,7 +140,7 @@ console.log(
 
   const buildPreviewList = async (selectedFiles: File[]) => {
     const previewReaders = selectedFiles.map((file) => {
-      if (file.type === 'application/pdf') {
+      if (!file.type.startsWith('image/')) {
         return Promise.resolve('');
       }
 
@@ -337,7 +342,7 @@ console.log(
                 key={inputResetKeys[voucherId] || 0}
                 type="file"
                 multiple
-                accept="image/*,.pdf"
+                accept={`image/*,.pdf,${EXCEL_FILE_ACCEPT}`}
                 onChange={(e) => handleFileChange(voucherId, e.target.files)}
                 className="block w-full cursor-pointer text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-blue-700"
               />
@@ -393,7 +398,7 @@ console.log(
                       />
                     ) : (
                       <div className="flex h-10 w-10 items-center justify-center rounded border bg-slate-100 text-[10px] font-medium text-slate-500">
-                        PDF
+                        {getSelectedFileBadge(file)}
                       </div>
                     )}
 

@@ -28,6 +28,12 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
     setIsOpen(false);
   };
 
+  const openCalendar = () => {
+    if (disabled) return;
+    setIsOpen(true);
+    datePickerRef.current?.setOpen(true);
+  };
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       const today = new Date();
@@ -50,14 +56,15 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         selected={safeSelectedDate}
         open={isOpen}
         onChange={handleDateChange} // Update state when a new date is selected
-        onFocus={() => setIsOpen(true)}
+        onFocus={openCalendar}
+        onInputClick={openCalendar}
         onClickOutside={() => setIsOpen(false)}
         onCalendarClose={() => setIsOpen(false)}
         dateFormat={month ? 'MMM yyyy' : 'dd/MM/yyyy'} // Format for the date
         peekNextMonth
         placeholderText={placeholder ? placeholder : 'Enter Valid date'}
         wrapperClassName="w-full"
-        popperClassName={month ? 'cashbook-month-picker-popper' : undefined}
+        popperClassName={month ? 'cashbook-month-picker-popper' : 'cashbook-date-picker-popper'}
         calendarClassName={month ? 'cashbook-month-picker' : undefined}
         dropdownMode="select"
         onKeyDown={handleKeyDown}
@@ -69,9 +76,9 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         showMonthDropdown={!month}
         showYearDropdown
       />
-      {month ? (
-        <style>
-          {`
+      <style>
+        {`
+            .cashbook-date-picker-popper,
             .cashbook-month-picker-popper {
               z-index: 9999;
             }
@@ -112,8 +119,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
               border-radius: 4px;
             }
           `}
-        </style>
-      ) : null}
+      </style>
     </div>
   );
 };

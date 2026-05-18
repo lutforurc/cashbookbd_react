@@ -51,7 +51,7 @@ const ImagePopup = ({
       initedRef.current = true;
 
       $root.magnificPopup({
-        delegate: 'a:not([data-pdf])',
+        delegate: 'a[data-preview="image"]',
         type: 'image',
         gallery: { enabled: true },
         image: { verticalFit: true },
@@ -78,6 +78,7 @@ const ImagePopup = ({
 
   const images = voucher_image.split('|').filter(Boolean);
   const isPDF = (img: string) => img.toLowerCase().endsWith('.pdf');
+  const isExcel = (img: string) => /\.(xls|xlsx|csv)$/i.test(img);
   const removeButtonClass =
     'inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-slate-200 bg-white px-1 text-[10px] font-bold leading-none text-slate-500 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:shadow-none dark:hover:border-red-500/40 dark:hover:bg-red-500/10 dark:hover:text-red-300 dark:disabled:border-slate-700 dark:disabled:bg-slate-800/60 dark:disabled:text-slate-500';
 
@@ -113,11 +114,35 @@ const ImagePopup = ({
               </button>
             )}
           </div>
+        ) : isExcel(img) ? (
+          <div key={index} className="relative inline-flex items-center gap-1">
+            <a
+              href={`${imageUrl}/voucher/${img}`}
+              title={title}
+              download
+              data-file="true"
+              className="inline-flex h-6 items-center rounded border border-emerald-200 bg-white px-2 text-xs font-medium text-emerald-700 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-50 dark:border-emerald-700/60 dark:bg-slate-800 dark:text-emerald-300 dark:shadow-none dark:hover:border-emerald-500 dark:hover:bg-emerald-500/10"
+            >
+              Excel {index + 1}
+            </a>
+            {onRemoveImage && (
+              <button
+                type="button"
+                onClick={() => onRemoveImage(img)}
+                disabled={removingImage === img}
+                className={removeButtonClass}
+                aria-label={`Remove ${img}`}
+              >
+                {removingImage === img ? '...' : 'x'}
+              </button>
+            )}
+          </div>
         ) : (
           <div key={index} className="relative inline-flex">
             <a
               href={`${imageUrl}/voucher/${img}`}
               title={`Voucher Image ${index + 1}`}
+              data-preview="image"
             >
               <img
                 src={`${imageUrl}/thumbnail/${img}`}
