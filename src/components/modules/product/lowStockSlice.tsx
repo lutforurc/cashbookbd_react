@@ -56,7 +56,6 @@ const lowStockSlice = createSlice({
       .addCase(fetchLowStockProducts.pending, (state) => {
         state.isLoading = true;
         state.error = null;
-        state.data = null;
       })
       .addCase(fetchLowStockProducts.fulfilled, (state, action) => {
         state.isLoading = false;

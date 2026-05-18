@@ -22,6 +22,16 @@ const toNumber = (value: any) => {
 const getDisplayValue = (value: any) =>
   value === null || value === undefined || value === '' ? '-' : value;
 
+const formatQuantity = (value: any) => {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return '-';
+
+  return numericValue.toLocaleString('en-IN', {
+    maximumFractionDigits: 2,
+    useGrouping: true,
+  });
+};
+
 const getPagination = (payload: any, perPage: number) => {
   const root = payload?.data && !Array.isArray(payload.data) ? payload.data : payload || {};
   const meta = root.meta || {};
@@ -206,7 +216,7 @@ const LowStockProducts = () => {
         header: 'Current Stock',
         headerClass: 'text-right',
         cellClass: 'text-right font-semibold',
-        render: (row: any) => thousandSeparator(row?.current_stock ?? 0),
+        render: (row: any) => formatQuantity(row?.current_stock ?? row?.balance ?? 0),
       },
       {
         key: 'stock_status',
@@ -365,7 +375,7 @@ const LowStockProducts = () => {
                           Current Stock
                         </span>
                         <span className="font-semibold text-gray-900 dark:text-white">
-                          {thousandSeparator(row?.current_stock ?? 0)}
+                          {formatQuantity(row?.current_stock ?? row?.balance ?? 0)}
                         </span>
                       </div>
                     </div>

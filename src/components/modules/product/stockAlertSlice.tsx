@@ -85,7 +85,6 @@ const stockAlertSlice = createSlice({
         const type = action.meta.arg.type;
         state[type].isLoading = true;
         state[type].error = null;
-        state[type].data = null;
       })
       .addCase(fetchStockAlertProducts.fulfilled, (state, action) => {
         const { type, data } = action.payload;
