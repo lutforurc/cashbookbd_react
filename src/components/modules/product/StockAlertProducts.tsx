@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiAlertTriangle, FiRefreshCcw, FiSearch } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -8,12 +9,13 @@ import SearchInput from '../../utils/fields/SearchInput';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import Loader from '../../../common/Loader';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
 import { fetchStockAlertProducts, StockAlertType } from './stockAlertSlice';
-import { formatBdShortDate, formatDateUsdToBd, formatLongDateUsdToBd } from '../../utils/utils-functions/formatDate';
+import { formatBdShortDate } from '../../utils/utils-functions/formatDate';
+import StockAlertPrint from './StockAlertPrint';
 
 type Props = {
   alertType: StockAlertType;
@@ -130,6 +132,8 @@ const StockAlertProducts = ({ alertType }: Props) => {
   const stockAlert = useSelector((state: any) => state.stockAlert?.[alertType]);
   const categoryData = useSelector((state: any) => state.category);
   const brand = useSelector((state: any) => state.brand);
+  const printRef = useRef<HTMLDivElement>(null);
+  const canPrint = alertType === 'negative' || alertType === 'slowMoving';
 
   const [search, setSearchValue] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
@@ -344,6 +348,15 @@ const StockAlertProducts = ({ alertType }: Props) => {
     setDays(90);
   };
 
+  const handlePrint = useReactToPrint({
+    content: () => {
+      if (!printRef.current) return null;
+      return printRef.current;
+    },
+    documentTitle: meta.title,
+    removeAfterPrint: true,
+  });
+
   const isHighlighted = (row: any) => {
     if (alertType === 'negative') return toNumber(row?.current_stock ?? row?.balance) < 0;
     if (alertType === 'warehouseDifference') return toNumber(row?.stock_difference) > 0;
@@ -430,6 +443,14 @@ const StockAlertProducts = ({ alertType }: Props) => {
               onClick={handleReset}
               className="h-9 flex-1"
             />
+            {canPrint ? (
+              <PrintButton
+                label=""
+                onClick={handlePrint}
+                className="h-9 flex-1"
+                disabled={rows.length === 0}
+              />
+            ) : null}
           </div>
         </div>
       </div>
@@ -551,6 +572,20 @@ const StockAlertProducts = ({ alertType }: Props) => {
             totalPages={pagination.lastPage}
             handlePageChange={(nextPage) => setPage(nextPage)}
           />
+        ) : null}
+
+        {canPrint ? (
+          <div className="hidden">
+            <StockAlertPrint
+              ref={printRef}
+              rows={rows}
+              title={meta.title}
+              type={alertType as 'negative' | 'slowMoving'}
+              emptyMessage={meta.empty}
+              startSerial={(page - 1) * perPage + 1}
+              days={days}
+            />
+          </div>
         ) : null}
       </div>
     </div>

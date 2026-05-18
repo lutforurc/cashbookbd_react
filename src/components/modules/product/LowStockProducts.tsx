@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiAlertTriangle, FiRefreshCcw, FiSearch } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -8,11 +9,12 @@ import SearchInput from '../../utils/fields/SearchInput';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import Loader from '../../../common/Loader';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
 import { fetchLowStockProducts } from './lowStockSlice';
+import StockAlertPrint from './StockAlertPrint';
 
 const toNumber = (value: any) => {
   const parsed = Number(value);
@@ -22,9 +24,10 @@ const toNumber = (value: any) => {
 const getDisplayValue = (value: any) =>
   value === null || value === undefined || value === '' ? '-' : value;
 
-const formatQuantity = (value: any) => {
+const formatQuantity = (value: any, zeroAsDash = false) => {
   const numericValue = Number(value);
   if (!Number.isFinite(numericValue)) return '-';
+  if (zeroAsDash && numericValue === 0) return '-';
 
   return numericValue.toLocaleString('en-IN', {
     maximumFractionDigits: 2,
@@ -75,6 +78,7 @@ const LowStockProducts = () => {
   const lowStock = useSelector((state: any) => state.lowStock);
   const categoryData = useSelector((state: any) => state.category);
   const brand = useSelector((state: any) => state.brand);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearchValue] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
@@ -155,6 +159,15 @@ const LowStockProducts = () => {
     setPerPage(10);
   };
 
+  const handlePrint = useReactToPrint({
+    content: () => {
+      if (!printRef.current) return null;
+      return printRef.current;
+    },
+    documentTitle: 'Low Stock Products',
+    removeAfterPrint: true,
+  });
+
   const columns = useMemo(
     () => [
       {
@@ -216,7 +229,7 @@ const LowStockProducts = () => {
         header: 'Current Stock',
         headerClass: 'text-right',
         cellClass: 'text-right font-semibold',
-        render: (row: any) => formatQuantity(row?.current_stock ?? row?.balance ?? 0),
+        render: (row: any) => formatQuantity(row?.current_stock ?? row?.balance ?? 0, true),
       },
       {
         key: 'stock_status',
@@ -294,6 +307,12 @@ const LowStockProducts = () => {
               icon={<FiRefreshCcw className="text-gray-500" />}
               onClick={handleReset}
               className="h-9 flex-1"
+            />
+            <PrintButton
+              label=""
+              onClick={handlePrint}
+              className="h-9 flex-1"
+              disabled={rows.length === 0}
             />
           </div>
         </div>
@@ -375,7 +394,7 @@ const LowStockProducts = () => {
                           Current Stock
                         </span>
                         <span className="font-semibold text-gray-900 dark:text-white">
-                          {formatQuantity(row?.current_stock ?? row?.balance ?? 0)}
+                          {formatQuantity(row?.current_stock ?? row?.balance ?? 0, true)}
                         </span>
                       </div>
                     </div>
@@ -397,6 +416,17 @@ const LowStockProducts = () => {
             handlePageChange={(nextPage) => setPage(nextPage)}
           />
         ) : null}
+
+        <div className="hidden">
+          <StockAlertPrint
+            ref={printRef}
+            rows={rows}
+            title="Low Stock Products"
+            type="lowStock"
+            emptyMessage="No low stock product found"
+            startSerial={(page - 1) * perPage + 1}
+          />
+        </div>
       </div>
     </div>
   );
