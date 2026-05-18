@@ -18,20 +18,20 @@ interface DatePickerProps {
 
 const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, disabled = false }) => {
   const datePickerRef = React.useRef<DatePicker>(null);
-  const [isOpen, setIsOpen] = React.useState(false);
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
 
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
     setCurrentDate(date);
-    setIsOpen(false);
+    datePickerRef.current?.setOpen(false);
   };
 
   const openCalendar = () => {
     if (disabled) return;
-    setIsOpen(true);
-    datePickerRef.current?.setOpen(true);
+    window.setTimeout(() => {
+      datePickerRef.current?.setOpen(true);
+    }, 0);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -39,7 +39,6 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
       const today = new Date();
       setSelectedDate(today);
       setCurrentDate(today);
-      setIsOpen(false);
       datePickerRef.current?.setOpen(false);
     }
 
@@ -54,12 +53,9 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         id={id}
         name={name || id}
         selected={safeSelectedDate}
-        open={isOpen}
         onChange={handleDateChange} // Update state when a new date is selected
         onFocus={openCalendar}
         onInputClick={openCalendar}
-        onClickOutside={() => setIsOpen(false)}
-        onCalendarClose={() => setIsOpen(false)}
         dateFormat={month ? 'MMM yyyy' : 'dd/MM/yyyy'} // Format for the date
         peekNextMonth
         placeholderText={placeholder ? placeholder : 'Enter Valid date'}
