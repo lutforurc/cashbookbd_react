@@ -429,6 +429,7 @@ export const API_DAYCLOSE_STORE_URL = `${API_BASE_URL}/admin/dayclose`;
 // Contact Details Route
 export const API_CONTACT_DETAILS_LIST_URL = `${API_BASE_URL}/contact/details`;
 export const API_STORE_CUSTOMER_URL = `${API_BASE_URL}/contact/store`;
+export const API_CUSTOMER_MOBILE_CHECK_URL = `${API_BASE_URL}/contact/mobile-check`;
 export const API_CONTACT_EDIT_URL = `${API_BASE_URL}/contact/edit/`;
 export const API_CONTACT_UPDATE_URL = `${API_BASE_URL}/contact/update/`;
 

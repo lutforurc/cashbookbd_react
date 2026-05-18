@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { FieldArray, useFormik, FormikProvider } from 'formik';
 import * as Yup from 'yup';
 import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
@@ -15,6 +16,23 @@ import Link from '../../utils/others/Link';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
 import InputDatePicker from '../../utils/fields/DatePicker';
+import httpService from '../../services/httpService';
+import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
+
+type DuplicateWarning = {
+  mobile: string;
+  items: any[];
+  values: any;
+  resetForm: (nextState?: any) => void;
+} | null;
+
+type MobileDuplicateState = {
+  checking: boolean;
+  exists: boolean;
+  mobile: string;
+  items: any[];
+  error: string;
+};
 
 const AddCustomerSupplier = () => {
   const nomineeStatusOptions = [
@@ -24,6 +42,16 @@ const AddCustomerSupplier = () => {
   const area = useSelector((state: any) => state.area);
   const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<DuplicateWarning>(null);
+  const [mobileDuplicate, setMobileDuplicate] = useState<MobileDuplicateState>({
+    checking: false,
+    exists: false,
+    mobile: '',
+    items: [],
+    error: '',
+  });
   const formatPickerDate = (date: Date | null) => {
     if (!date || Number.isNaN(date.getTime())) return '';
 
@@ -109,48 +137,169 @@ const AddCustomerSupplier = () => {
     ),
   });
 
-  const formik = useFormik({
-    initialValues: {
-      name: '',
-      father: '',
-      mother_name: '',
-      contact_person: '',
-      contact_number: '',
-      manual_address: '',
-      mobile: '',
-      ledger_page: '',
-      idfr_code: '',
-      national_id: '',
-      type_id: '',
-      area_id: '',
-      areaName: '',
-      customerLogin: false,
+  const initialCustomerValues = {
+    name: '',
+    father: '',
+    mother_name: '',
+    contact_person: '',
+    contact_number: '',
+    manual_address: '',
+    mobile: '',
+    ledger_page: '',
+    idfr_code: '',
+    national_id: '',
+    type_id: '',
+    area_id: '',
+    areaName: '',
+    customerLogin: false,
+    guarantors: [],
+    nominees: [],
+  };
 
-      /* 🔥 GUARANTORS */
-      guarantors: [],
-      nominees: [],
-    },
+  const saveCustomer = async (values: any, resetForm: (nextState?: any) => void) => {
+    setButtonLoading(true);
+    try {
+      const res = await dispatch(storeCustomer(values) as any).unwrap();
+      toast.success(res?.message || 'Customer saved successfully!');
+
+      setTimeout(() => {
+        resetForm({
+          values: {
+            ...initialCustomerValues,
+            type_id: values.type_id,
+          },
+        });
+        setMobileDuplicate({
+          checking: false,
+          exists: false,
+          mobile: '',
+          items: [],
+          error: '',
+        });
+      }, 2000);
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to save customer');
+    } finally {
+      setButtonLoading(false);
+    }
+  };
+
+  const checkDuplicateMobile = async (mobile: string) => {
+    const response = await httpService.post(API_CUSTOMER_MOBILE_CHECK_URL, { mobile });
+    const payload = response?.data?.data ?? response?.data ?? {};
+
+    return {
+      exists: Boolean(payload?.exists),
+      items: Array.isArray(payload?.items) ? payload.items : [],
+    };
+  };
+
+  const formik = useFormik({
+    initialValues: initialCustomerValues,
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-        const res = await dispatch(storeCustomer(values)).unwrap();
-        toast.success(res?.message || 'Customer saved successfully!');
+        setButtonLoading(true);
+        const duplicate = await checkDuplicateMobile(values.mobile);
+        setButtonLoading(false);
 
-        setTimeout(() => {
-          resetForm({
-            values: {
-              ...formik.initialValues,
-              type_id: values.type_id, // ✅ keep selection
-            },
+        if (duplicate.exists) {
+          setDuplicateWarning({
+            mobile: values.mobile,
+            items: duplicate.items,
+            values,
+            resetForm,
           });
-          // window.location.href = '/customer-supplier/list';
-        }, 2000);
+          return;
+        }
+
+        await saveCustomer(values, resetForm);
       } catch (error: any) {
-        toast.error(error?.message || 'Failed to save customer');
+        setButtonLoading(false);
+        toast.error(error?.response?.data?.message || error?.message || 'Failed to check mobile number');
       }
     },
-
   });
+
+  const handleDuplicateContinue = async () => {
+    if (!duplicateWarning) return;
+
+    const pending = duplicateWarning;
+    setDuplicateWarning(null);
+    await saveCustomer(pending.values, pending.resetForm);
+  };
+
+  const handleDuplicateCancel = () => {
+    setDuplicateWarning(null);
+    formik.setFieldTouched('mobile', true, false);
+    toast.info('Customer entry cancelled. Please change the mobile number if needed.');
+  };
+
+  const handleMobileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    formik.handleChange(event);
+    setMobileDuplicate({
+      checking: false,
+      exists: false,
+      mobile: '',
+      items: [],
+      error: '',
+    });
+  };
+
+  const handleMobileBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
+    formik.handleBlur(event);
+
+    const mobile = event.target.value.trim();
+    if (!mobile) {
+      setMobileDuplicate({
+        checking: false,
+        exists: false,
+        mobile: '',
+        items: [],
+        error: '',
+      });
+      return;
+    }
+
+    setMobileDuplicate({
+      checking: true,
+      exists: false,
+      mobile,
+      items: [],
+      error: '',
+    });
+
+    try {
+      const duplicate = await checkDuplicateMobile(mobile);
+      setMobileDuplicate({
+        checking: false,
+        exists: duplicate.exists,
+        mobile,
+        items: duplicate.items,
+        error: '',
+      });
+    } catch (error: any) {
+      setMobileDuplicate({
+        checking: false,
+        exists: false,
+        mobile,
+        items: [],
+        error: error?.response?.data?.message || error?.message || 'Failed to check mobile number',
+      });
+    }
+  };
+
+  const handleReset = () => {
+    formik.handleReset();
+    setDuplicateWarning(null);
+    setMobileDuplicate({
+      checking: false,
+      exists: false,
+      mobile: '',
+      items: [],
+      error: '',
+    });
+  };
 
   const selectedArea = formattedAreaData.find(
     (opt: any) => opt.value === formik.values.area_id?.toString(),
@@ -330,12 +479,35 @@ const AddCustomerSupplier = () => {
                 placeholder="Enter Mobile Number"
                 label="Mobile Number"
                 value={formik.values.mobile}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
+                onChange={handleMobileChange}
+                onBlur={handleMobileBlur}
               />
               {formik.touched.mobile && formik.errors.mobile && (
                 <div className="text-red-500 text-sm">{formik.errors.mobile}</div>
               )}
+              {mobileDuplicate.checking ? (
+                <div className="text-amber-600 text-sm">Checking mobile number...</div>
+              ) : null}
+              {!mobileDuplicate.checking && mobileDuplicate.exists ? (
+                <div className="mt-1 rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-100">
+                  <div className="font-semibold">This mobile number already exists.</div>
+                  {mobileDuplicate.items.length > 0 ? (
+                    <div className="mt-1 space-y-1">
+                      {mobileDuplicate.items.slice(0, 3).map((item: any) => (
+                        <div
+                          key={item?.id ?? item?.coa4_id ?? `${item?.name}-${item?.manual_address}`}
+                          className="text-xs"
+                        >
+                          {item?.name || '-'}, {item?.manual_address ? `${item.manual_address}` : ''}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+              {!mobileDuplicate.checking && mobileDuplicate.error ? (
+                <div className="text-red-500 text-sm">{mobileDuplicate.error}</div>
+              ) : null}
             </div>
 
             <InputElement
@@ -607,20 +779,21 @@ const AddCustomerSupplier = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
             <ButtonLoading
               onClick={formik.handleSubmit}
-              buttonLoading={false}
-              label="Save"
+              buttonLoading={buttonLoading}
+              label={buttonLoading ? 'Saving...' : 'Save'}
               className="whitespace-nowrap text-center pt-2 pb-2"
               icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+              disabled={buttonLoading}
             />
             <ButtonLoading
-              onClick={formik.handleReset}
+              onClick={handleReset}
               buttonLoading={false}
               label="Reset"
               className="whitespace-nowrap text-center pt-2 pb-2"
               icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
             />
             <ButtonLoading
-              onClick={() => console.log('Back clicked')}
+              onClick={() => navigate('/customer-supplier/list')}
               buttonLoading={false}
               label="Back"
               className="whitespace-nowrap text-center pt-2 pb-2"
@@ -629,6 +802,65 @@ const AddCustomerSupplier = () => {
           </div>
         </form>
       </FormikProvider>
+
+      {duplicateWarning ? (
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6">
+          <div className="w-full max-w-lg rounded-sm bg-white shadow-xl dark:bg-gray-800">
+            <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-900/20">
+              <h3 className="text-base font-semibold text-amber-800 dark:text-amber-100">
+                Mobile Number Already Exists
+              </h3>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-200">
+                This mobile number already exists: {duplicateWarning.mobile}
+              </p>
+            </div>
+
+            <div className="px-4 py-4">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
+                You can continue and save another entry with this mobile number, or cancel and change it.
+              </p>
+
+              {duplicateWarning.items.length > 0 ? (
+                <div className="mt-3 max-h-48 overflow-y-auto rounded-sm border border-gray-200 dark:border-gray-700">
+                  {duplicateWarning.items.map((item: any) => (
+                    <div
+                      key={item?.id ?? item?.coa4_id ?? `${item?.name}-${item?.mobile}`}
+                      className="border-b border-gray-100 px-3 py-2 text-sm last:border-b-0 dark:border-gray-700"
+                    >
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {item?.name || '-'}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {item?.mobile || '-'}
+                        {item?.manual_address ? ` | ${item.manual_address}` : ''}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
+              <button
+                type="button"
+                onClick={handleDuplicateCancel}
+                className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <ButtonLoading
+                type="button"
+                onClick={handleDuplicateContinue}
+                buttonLoading={buttonLoading}
+                label="Continue Save"
+                className="whitespace-nowrap px-4 py-2"
+                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                disabled={buttonLoading}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
