@@ -399,8 +399,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                           ),
                                         }}
                                       >
-                                        {thousandSeparator(
-                                          detail?.sales_price)}
+                                        {detail?.sales_price ? thousandSeparator(detail?.sales_price) : "-"}
                                       </div>
                                     );
                                   })
@@ -425,11 +424,13 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                           ),
                                         }}
                                       >
-                                        {thousandSeparator(
-                                          Math.floor(
-                                            (detail?.quantity || 0) *
-                                              (detail?.sales_price || 0)
-                                          ))}
+                                        {detail?.sales_price 
+                                          ? thousandSeparator(
+                                              Math.floor(
+                                                detail?.quantity * detail?.sales_price
+                                              )
+                                            )
+                                          : "-"}
                                       </div>
                                     );
                                   })
