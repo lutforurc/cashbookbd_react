@@ -59,7 +59,7 @@ const formatDate = (value: any) => {
 };
 
 const getPagination = (payload: any, perPage: number) => {
-  const root = payload || {};
+  const root = payload?.data && !Array.isArray(payload.data) ? payload.data : payload || {};
   const meta = root.meta || {};
   const total = root.total ?? meta.total ?? root?.pagination?.total ?? 0;
   const lastPage =

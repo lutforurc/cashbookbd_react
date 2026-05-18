@@ -29,6 +29,9 @@ export const fetchLowStockProducts = createAsyncThunk<
 >('lowStock/fetchLowStockProducts', async (params, thunkAPI) => {
   try {
     const res = await httpService.get(API_PRODUCT_LOW_STOCK_URL, { params });
+    if (res.data?.success === false) {
+      return res.data?.data ?? { data: [] };
+    }
     return res.data?.data ?? res.data;
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
@@ -53,6 +56,7 @@ const lowStockSlice = createSlice({
       .addCase(fetchLowStockProducts.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.data = null;
       })
       .addCase(fetchLowStockProducts.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -60,6 +64,7 @@ const lowStockSlice = createSlice({
       })
       .addCase(fetchLowStockProducts.rejected, (state, action) => {
         state.isLoading = false;
+        state.data = { data: [] };
         state.error = action.payload || 'Failed to fetch low stock products';
       });
   },

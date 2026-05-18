@@ -55,6 +55,9 @@ export const fetchStockAlertProducts = createAsyncThunk<
 >('stockAlert/fetchStockAlertProducts', async ({ type, params }, thunkAPI) => {
   try {
     const res = await httpService.get(endpoints[type], { params });
+    if (res.data?.success === false) {
+      return { type, data: res.data?.data ?? { data: [] } };
+    }
     return { type, data: res.data?.data ?? res.data };
   } catch (err: any) {
     return thunkAPI.rejectWithValue({
@@ -82,6 +85,7 @@ const stockAlertSlice = createSlice({
         const type = action.meta.arg.type;
         state[type].isLoading = true;
         state[type].error = null;
+        state[type].data = null;
       })
       .addCase(fetchStockAlertProducts.fulfilled, (state, action) => {
         const { type, data } = action.payload;
@@ -91,6 +95,7 @@ const stockAlertSlice = createSlice({
       .addCase(fetchStockAlertProducts.rejected, (state, action) => {
         const type = action.payload?.type ?? action.meta.arg.type;
         state[type].isLoading = false;
+        state[type].data = { data: [] };
         state[type].error = action.payload?.message || 'Failed to fetch stock alert products';
       });
   },
