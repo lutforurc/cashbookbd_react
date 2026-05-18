@@ -71,7 +71,12 @@ const formatCellNumber = (value: any) => {
   if (value === null || value === undefined || value === '') return '-';
   const numericValue = Number(value);
   if (Number.isNaN(numericValue)) return value;
-  return thousandSeparator(numericValue);
+  if (numericValue === 0) return '-';
+
+  return numericValue.toLocaleString('en-IN', {
+    maximumFractionDigits: 2,
+    useGrouping: true,
+  });
 };
 
 const numberOrZero = (value: any) => {

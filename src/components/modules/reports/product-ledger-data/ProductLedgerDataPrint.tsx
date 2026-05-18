@@ -58,7 +58,13 @@ const toNumber = (value: any) => {
 
 const formatQty = (value: any) => {
   if (value === null || value === undefined || value === '') return '-';
-  return thousandSeparator(toNumber(value));
+  const numericValue = toNumber(value);
+  if (numericValue === 0) return '-';
+
+  return numericValue.toLocaleString('en-IN', {
+    maximumFractionDigits: 2,
+    useGrouping: true,
+  });
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
