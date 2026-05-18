@@ -13,6 +13,7 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
 import { fetchStockAlertProducts, StockAlertType } from './stockAlertSlice';
+import { formatBdShortDate, formatDateUsdToBd, formatLongDateUsdToBd } from '../../utils/utils-functions/formatDate';
 
 type Props = {
   alertType: StockAlertType;
@@ -52,6 +53,16 @@ const toNumber = (value: any) => {
 
 const display = (value: any) =>
   value === null || value === undefined || value === '' ? '-' : value;
+
+const formatQuantity = (value: any) => {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return '-';
+
+  return numericValue.toLocaleString('en-IN', {
+    maximumFractionDigits: 2,
+    useGrouping: true,
+  });
+};
 
 const formatDate = (value: any) => {
   if (!value) return '-';
@@ -106,7 +117,7 @@ const WarehouseList = ({ row }: { row: any }) => {
           key={`${item?.warehouse_id ?? index}-${item?.warehouse_name ?? index}`}
           className="rounded-sm bg-gray-100 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-200"
         >
-          {display(item?.warehouse_name)}: {thousandSeparator(item?.current_stock ?? 0)}
+          {display(item?.warehouse_name)}: {formatQuantity(item?.current_stock ?? 0)}
         </span>
       ))}
     </div>
@@ -186,6 +197,16 @@ const StockAlertProducts = ({ alertType }: Props) => {
       render: (_row: any, index: number) => (page - 1) * perPage + index + 1,
     },
     {
+      key: 'brand',
+      header: 'Brand',
+      render: (row: any) => display(row?.brand?.name ?? row?.brand),
+    },
+     {
+      key: 'category',
+      header: 'Category',
+      render: (row: any) => display(row?.category?.name ?? row?.category),
+    },
+    {
       key: 'name',
       header: 'Product',
       render: (row: any) => (
@@ -196,16 +217,8 @@ const StockAlertProducts = ({ alertType }: Props) => {
         </div>
       ),
     },
-    {
-      key: 'category',
-      header: 'Category',
-      render: (row: any) => display(row?.category?.name ?? row?.category),
-    },
-    {
-      key: 'brand',
-      header: 'Brand',
-      render: (row: any) => display(row?.brand?.name ?? row?.brand),
-    },
+   
+    
     {
       key: 'unit',
       header: 'Unit',
@@ -233,7 +246,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
       header: 'Current Stock',
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold',
-      render: (row: any) => thousandSeparator(row?.current_stock ?? 0),
+      render: (row: any) => formatQuantity(row?.current_stock ?? row?.balance ?? 0),
     },
   ];
 
@@ -251,21 +264,21 @@ const StockAlertProducts = ({ alertType }: Props) => {
           header: 'Min',
           headerClass: 'text-right',
           cellClass: 'text-right',
-          render: (row: any) => thousandSeparator(row?.min_stock ?? 0),
+          render: (row: any) => formatQuantity(row?.min_stock ?? 0),
         },
         {
           key: 'max_stock',
           header: 'Max',
           headerClass: 'text-right',
           cellClass: 'text-right',
-          render: (row: any) => thousandSeparator(row?.max_stock ?? 0),
+          render: (row: any) => formatQuantity(row?.max_stock ?? 0),
         },
         {
           key: 'stock_difference',
           header: 'Difference',
           headerClass: 'text-right',
           cellClass: 'text-right font-semibold',
-          render: (row: any) => thousandSeparator(row?.stock_difference ?? 0),
+          render: (row: any) => formatQuantity(row?.stock_difference ?? 0),
         },
         {
           key: 'status',
@@ -284,7 +297,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
         {
           key: 'last_movement_date',
           header: 'Last Movement',
-          render: (row: any) => formatDate(row?.last_movement_date),
+          render: (row: any) => formatBdShortDate(row?.last_movement_date),
         },
         {
           key: 'days_without_movement',
@@ -332,7 +345,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
   };
 
   const isHighlighted = (row: any) => {
-    if (alertType === 'negative') return toNumber(row?.current_stock) < 0;
+    if (alertType === 'negative') return toNumber(row?.current_stock ?? row?.balance) < 0;
     if (alertType === 'warehouseDifference') return toNumber(row?.stock_difference) > 0;
     return true;
   };
@@ -478,7 +491,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
                     <>
                       <div>
                         <span className="text-gray-500">Difference</span>
-                        <div>{thousandSeparator(row?.stock_difference ?? 0)}</div>
+                        <div>{formatQuantity(row?.stock_difference ?? 0)}</div>
                       </div>
                       <div className="col-span-2">
                         <span className="text-gray-500">Warehouses</span>
@@ -516,7 +529,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
                             Current Stock
                           </span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {thousandSeparator(row?.current_stock ?? 0)}
+                            {formatQuantity(row?.current_stock ?? row?.balance ?? 0)}
                           </span>
                         </div>
                       </div>
