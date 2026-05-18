@@ -12,6 +12,7 @@ type Props = {
   startSerial?: number;
   days?: number;
   rowsPerPage?: number;
+  fontSize?: number;
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -65,9 +66,11 @@ const StockAlertPrint = React.forwardRef<HTMLDivElement, Props>(
       startSerial = 1,
       days,
       rowsPerPage = 22,
+      fontSize = 9,
     },
     ref,
   ) => {
+    const fs = Number.isFinite(fontSize) ? fontSize : 9;
     const printableRows = Array.isArray(rows) ? rows : [];
     const pages = useMemo(
       () => chunkRows(printableRows, rowsPerPage),
@@ -89,7 +92,7 @@ const StockAlertPrint = React.forwardRef<HTMLDivElement, Props>(
               }
               .stock-alert-print-table th,
               .stock-alert-print-table td {
-                font-size: 9px;
+                font-size: ${fs}px;
                 line-height: 1.25;
               }
             }
@@ -159,14 +162,14 @@ const StockAlertPrint = React.forwardRef<HTMLDivElement, Props>(
                       </td>
                       {isLowStock ? (
                         <td className="border border-gray-900 px-1.5 py-1 text-right">
-                          {formatQuantity(row?.order_level ?? 0)}
+                          {formatQuantity(row?.order_level ?? 0, true)}
                         </td>
                       ) : null}
                       <td className="border border-gray-900 px-1.5 py-1 text-right">
-                        {formatQuantity(row?.stock_in ?? 0)}
+                        {formatQuantity(row?.stock_in ?? 0, true)}
                       </td>
                       <td className="border border-gray-900 px-1.5 py-1 text-right">
-                        {formatQuantity(row?.stock_out ?? 0)}
+                        {formatQuantity(row?.stock_out ?? 0, true)}
                       </td>
                       <td className="border border-gray-900 px-1.5 py-1 text-right font-semibold">
                         {formatQuantity(row?.current_stock ?? row?.balance ?? 0, isLowStock)}

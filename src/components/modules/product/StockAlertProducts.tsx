@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiAlertTriangle, FiRefreshCcw, FiSearch } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
@@ -6,6 +7,7 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
 import SearchInput from '../../utils/fields/SearchInput';
+import InputElement from '../../utils/fields/InputElement';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import Loader from '../../../common/Loader';
@@ -142,6 +144,8 @@ const StockAlertProducts = ({ alertType }: Props) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [days, setDays] = useState(90);
+  const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
+  const [printFontSize, setPrintFontSize] = useState(12);
 
   useEffect(() => {
     dispatch(getCategoryDdl() as any);
@@ -357,6 +361,16 @@ const StockAlertProducts = ({ alertType }: Props) => {
     removeAfterPrint: true,
   });
 
+  const handlePrintRowsPerPageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value);
+    setPrintRowsPerPage(Number.isFinite(value) && value > 0 ? value : 12);
+  };
+
+  const handlePrintFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value);
+    setPrintFontSize(Number.isFinite(value) && value > 0 ? value : 12);
+  };
+
   const isHighlighted = (row: any) => {
     if (alertType === 'negative') return toNumber(row?.current_stock ?? row?.balance) < 0;
     if (alertType === 'warehouseDifference') return toNumber(row?.stock_difference) > 0;
@@ -377,7 +391,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-7">
           <CategoryDropdown
             key={`${alertType}-category-${categoryId}`}
             onChange={(option: any) => {
@@ -430,7 +444,7 @@ const StockAlertProducts = ({ alertType }: Props) => {
             setSearchValue={setSearchValue}
           />
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 xl:col-span-2 xl:flex-nowrap">
             <ButtonLoading
               label="Search"
               icon={<FiSearch className="text-gray-500" />}
@@ -444,12 +458,34 @@ const StockAlertProducts = ({ alertType }: Props) => {
               className="h-9 flex-1"
             />
             {canPrint ? (
-              <PrintButton
-                label=""
-                onClick={handlePrint}
-                className="h-9 flex-1"
-                disabled={rows.length === 0}
-              />
+              <>
+                <InputElement
+                  id={`${alertType}-print-rows`}
+                  name={`${alertType}-print-rows`}
+                  label=""
+                  title="Print rows per page"
+                  value={printRowsPerPage}
+                  onChange={handlePrintRowsPerPageChange}
+                  type="number"
+                  className="h-9 !w-16 text-center"
+                />
+                <InputElement
+                  id={`${alertType}-print-font`}
+                  name={`${alertType}-print-font`}
+                  label=""
+                  title="Print font size"
+                  value={printFontSize}
+                  onChange={handlePrintFontSizeChange}
+                  type="number"
+                  className="h-9 !w-16 text-center"
+                />
+                <PrintButton
+                  label="Print"
+                  onClick={handlePrint}
+                  className="h-9 flex-1"
+                  disabled={rows.length === 0}
+                />
+              </>
             ) : null}
           </div>
         </div>
@@ -584,6 +620,8 @@ const StockAlertProducts = ({ alertType }: Props) => {
               emptyMessage={meta.empty}
               startSerial={(page - 1) * perPage + 1}
               days={days}
+              rowsPerPage={printRowsPerPage}
+              fontSize={printFontSize}
             />
           </div>
         ) : null}
