@@ -77,6 +77,8 @@ const normalizeLookupText = (value: any) =>
     .toLowerCase()
     .replace(/\s+/g, ' ');
 
+const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
+
 const initialProductData = {
   product: '',
   product_name: '',
@@ -107,7 +109,7 @@ const initialFormData = {
   salesDiscountAmt: '',
   vehicleNumber: '',
   notes: '',
-  notesApplyTo: 'purchase' as NotesApplyTo,
+  notesApplyTo: 'both' as NotesApplyTo,
   products: [] as CombinedProduct[],
 };
 
@@ -129,6 +131,8 @@ const TradingCombinedEntry = () => {
   const [partyTarget, setPartyTarget] = useState<PartyTarget>('supplier');
   const [partyDraftName, setPartyDraftName] = useState('');
   const [editingCombinedNumber, setEditingCombinedNumber] = useState('');
+  const settings = useSelector((state: any) => state.settings);
+  const showCombinedInvoiceNote = toBooleanFlag(settings?.data?.branch?.combined_invoice_note);
 
   useEffect(() => {
     dispatch(userCurrentBranch());
@@ -201,7 +205,7 @@ const TradingCombinedEntry = () => {
           salesDiscountAmt: String(editData.salesDiscountAmt ?? ''),
           vehicleNumber: editData.vehicleNumber || '',
           notes: editData.notes || '',
-          notesApplyTo: editData.notesApplyTo || editData.notes_apply_to || 'purchase',
+          notesApplyTo: editData.notesApplyTo || editData.notes_apply_to || 'both',
           products: Array.isArray(editData.products) ? editData.products : [],
         });
         resetProductEditor();
@@ -694,7 +698,12 @@ const TradingCombinedEntry = () => {
     }
   };
 
-  const resetForm = ({ keepParties = false, keepProduct = false, keepOrders = false } = {}) => {
+  const resetForm = ({
+    keepParties = false,
+    keepProduct = false,
+    keepOrders = false,
+    keepNotesApplyTo = false,
+  } = {}) => {
     setFormData((prev) => ({
       ...initialFormData,
       ...(keepParties
@@ -713,6 +722,7 @@ const TradingCombinedEntry = () => {
           salesOrderText: prev.salesOrderText,
         }
         : {}),
+      ...(keepNotesApplyTo ? { notesApplyTo: prev.notesApplyTo } : {}),
     }));
     resetProductEditor({ keepProduct });
     if (!keepParties) {
@@ -764,7 +774,7 @@ const TradingCombinedEntry = () => {
         salesDiscountAmt: Number(formData.salesDiscountAmt || 0),
         vehicleNumber: formData.vehicleNumber || null,
         notes: formData.notes || null,
-        notesApplyTo: formData.notesApplyTo,
+        notesApplyTo: showCombinedInvoiceNote ? formData.notesApplyTo || 'both' : 'both',
         products: formData.products,
         ...(editingCombinedNumber ? { combined_number: editingCombinedNumber } : {}),
       };
@@ -780,7 +790,12 @@ const TradingCombinedEntry = () => {
         const purchaseVr = data?.purchase_vr_no ? `Purchase: ${data.purchase_vr_no}` : '';
         const salesVr = data?.sales_vr_no ? `Sales: ${data.sales_vr_no}` : '';
         toast.success([purchaseVr, salesVr].filter(Boolean).join(' | ') || result?.message || 'Saved successfully.');
-        resetForm({ keepParties: true, keepProduct: true, keepOrders: true });
+        resetForm({
+          keepParties: true,
+          keepProduct: true,
+          keepOrders: true,
+          keepNotesApplyTo: true,
+        });
         focusField('product');
       } else {
         toast.error(result?.message || 'Failed to save combined trading entry.');
@@ -905,7 +920,7 @@ const TradingCombinedEntry = () => {
                   <label htmlFor="amount" className='text-black dark:text-white'>Amount Tk.</label>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
-                     <span className='font-semibold'> {formData.onlySalesPosting ? 'Sales' : 'Both'}</span>
+                      <span className='font-semibold'> {formData.onlySalesPosting ? 'Sales' : 'Both'}</span>
                     </span>
                     <label
                       htmlFor="onlySalesPosting"
@@ -960,26 +975,28 @@ const TradingCombinedEntry = () => {
                   <label htmlFor="notes" className="text-black dark:text-white">
                     Notes
                   </label>
-                  <div className="inline-flex h-5 overflow-hidden rounded border border-slate-500 bg-slate-100 text-[10px] font-semibold leading-none dark:border-slate-600 dark:bg-slate-800">
-                    {[
-                      { value: 'purchase', label: 'Purchase' },
-                      { value: 'sales', label: 'Sales' },
-                      { value: 'both', label: 'Both' },
-                    ].map((item) => (
-                      <button
-                        key={item.value}
-                        type="button"
-                        onClick={() => handleNotesApplyToChange(item.value as NotesApplyTo)}
-                        className={`px-2 transition ${
-                          formData.notesApplyTo === item.value
-                            ? 'bg-blue-600 text-white'
-                            : 'text-slate-700 hover:bg-slate-200 dark:text-slate-200 dark:hover:bg-slate-700'
-                        }`}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
+
+                  {showCombinedInvoiceNote && (
+                    <div className="inline-flex h-5 overflow-hidden rounded border border-slate-500 bg-slate-100 text-[10px] font-semibold leading-none dark:border-slate-600 dark:bg-slate-800">
+                      {[
+                        { value: 'both', label: 'Both' },
+                        { value: 'purchase', label: 'Purchase' },
+                        { value: 'sales', label: 'Sales' }
+                      ].map((item) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          onClick={() => handleNotesApplyToChange(item.value as NotesApplyTo)}
+                          className={`px-2 transition ${formData.notesApplyTo === item.value
+                              ? 'bg-blue-600 text-white'
+                              : 'text-slate-700 hover:bg-slate-200 dark:text-slate-200 dark:hover:bg-slate-700'
+                            }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <input
                   id="notes"

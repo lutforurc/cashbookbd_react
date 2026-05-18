@@ -40,6 +40,7 @@ interface branchItem {
   print_sizeText?: string; // Add this line
   purchase_note: string;
   sales_note: string;
+  combined_invoice_note: boolean;
   money_format: string;
   phone: string;
   notes: string;
@@ -138,6 +139,7 @@ const AddBranch = () => {
     print_sizeText: '', // Add this line
     purchase_note: '',
     sales_note: '',
+    combined_invoice_note: false,
     money_format: '',
     phone: '',
     notes: '',
@@ -255,6 +257,7 @@ const AddBranch = () => {
         show_brand_in_invoice: toBooleanFlag(b.show_brand_in_invoice),
         show_category_in_invoice: toBooleanFlag(b.show_category_in_invoice),
         show_description_in_invoice: toBooleanFlag(b.show_description_in_invoice),
+        combined_invoice_note: toBooleanFlag(b.combined_invoice_note),
       }));
 
       setPadHeaderFile(null);
@@ -662,10 +665,8 @@ const AddBranch = () => {
                         handleToggleFieldChange('show_description_in_invoice', checked)
                       }
                     />
-                    
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    
                     <FormToggleField
                       label="Show Brand in Invoice?"
                       checked={Boolean(formData.show_brand_in_invoice)}
@@ -678,6 +679,13 @@ const AddBranch = () => {
                       checked={Boolean(formData.show_category_in_invoice)}
                       onChange={(checked) =>
                         handleToggleFieldChange('show_category_in_invoice', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Show combined invoice note?"
+                      checked={Boolean(formData.combined_invoice_note)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('combined_invoice_note', checked)
                       }
                     />
                   </div>
