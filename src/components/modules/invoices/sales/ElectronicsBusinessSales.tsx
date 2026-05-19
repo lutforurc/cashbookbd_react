@@ -128,6 +128,7 @@ const ElectronicsBusinessSales = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
   const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
+  const previousReceivedBeforeCashRef = useRef('');
   const printRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState<number>(12);
   const [fontSize, setFontSize] = useState<number>(12);
@@ -216,6 +217,23 @@ const ElectronicsBusinessSales = () => {
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
+  const getInvoicePayableAmount = (data: FormData = formData) => {
+    const productsTotal = data.products.reduce((acc, product) => {
+      const qty = parseFloat(product.qty?.toString() || '0') || 0;
+      const price = parseFloat(product.price?.toString() || '0') || 0;
+      return acc + qty * price;
+    }, 0);
+
+    return Math.max(
+      0,
+      productsTotal +
+      (Number(data.serviceCharge) || 0) +
+      (Number(data.tdsAmount) || 0) +
+      (Number(data.transportationAmt) || 0) -
+      (Number(data.discountAmt) || 0),
+    ).toFixed(0);
+  };
+
   useEffect(() => {
     const fetchSuggestions = async (
       field: SalesSuggestionField,
@@ -262,13 +280,28 @@ const ElectronicsBusinessSales = () => {
   const customerAccountHandler = (option: any) => {
     const key = 'account';
     const accountName = 'accountName';
-    const isCashCustomer = Number(option?.value) === 17;
+    const previousAccount = Number(formData.account);
+    const nextAccount = Number(option?.value);
+    const isCashCustomer = nextAccount === 17;
+    let receivedAmt = formData.receivedAmt;
+
+    if (isCashCustomer) {
+      if (previousAccount !== 17) {
+        previousReceivedBeforeCashRef.current = formData.receivedAmt;
+      }
+      receivedAmt = getInvoicePayableAmount();
+    } else if (previousAccount === 17) {
+      receivedAmt = previousReceivedBeforeCashRef.current || formData.receivedAmt;
+    } else if (Number(formData.receivedAmt || 0) <= 0) {
+      receivedAmt = '0';
+    }
+
     setIsReceivedAmtManuallyEdited(false);
     setFormData({
       ...formData,
       [key]: option.value,
       [accountName]: option.label,
-      receivedAmt: isCashCustomer ? formData.receivedAmt : '0',
+      receivedAmt,
     });
   };
 
@@ -419,6 +452,7 @@ const ElectronicsBusinessSales = () => {
       };
       setFormData(updatedFormData);
       setEditedInstallments(updatedFormData.editInstallmentData);
+      previousReceivedBeforeCashRef.current = updatedFormData.receivedAmt;
       setIsReceivedAmtManuallyEdited(false);
     }
   }, [sales.data.transaction]);
@@ -486,7 +520,7 @@ const ElectronicsBusinessSales = () => {
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === 'receivedAmt' && Number(formData.account) !== 17) {
+    if (name === 'receivedAmt') {
       setIsReceivedAmtManuallyEdited(true);
     }
     setFormData((prevState) => ({
@@ -798,33 +832,15 @@ const ElectronicsBusinessSales = () => {
   };
 
   useEffect(() => {
-    if (isUpdateButton || sales.data.transaction) {
-      return;
-    }
-
-    const serviceCharge = Number(formData?.serviceCharge) || 0;
-    const tdsAmount = Number(formData?.tdsAmount) || 0;
-    const transportationAmt = Number(formData?.transportationAmt) || 0;
-    const discountAmt = Number(formData?.discountAmt) || 0;
-    const total = formData.products.reduce((acc, product) => {
-      const qty = parseFloat(product.qty?.toString() || '0') || 0;
-      const price = parseFloat(product.price?.toString() || '0') || 0;
-      return acc + qty * price;
-    }, 0);
     const isCashCustomer = Number(formData.account) === 17;
-    const cashReceivedAmt = Math.max(
-      0,
-      total + serviceCharge + tdsAmount + transportationAmt - discountAmt,
-    ).toFixed(0);
-    if (isCashCustomer) {
+    const cashReceivedAmt = getInvoicePayableAmount();
+
+    if (isCashCustomer && !isReceivedAmtManuallyEdited) {
       if (formData.receivedAmt !== cashReceivedAmt) {
         setFormData((prev) => ({
           ...prev,
           receivedAmt: cashReceivedAmt,
         }));
-      }
-      if (isReceivedAmtManuallyEdited) {
-        setIsReceivedAmtManuallyEdited(false);
       }
     }
   }, [
@@ -836,8 +852,6 @@ const ElectronicsBusinessSales = () => {
     formData.products,
     formData.receivedAmt,
     isReceivedAmtManuallyEdited,
-    isUpdateButton,
-    sales.data.transaction,
   ]);
 
 
@@ -1039,7 +1053,6 @@ const ElectronicsBusinessSales = () => {
                 value={formData.receivedAmt ?? ""}
                 name="receivedAmt"
                 placeholder="Received Amount"
-                disabled={Number(formData.account) === 17}
                 label="Received Amount"
                 className="py-1 text-right w-full"
                 onChange={handleOnChange}
@@ -1567,16 +1580,30 @@ const ElectronicsBusinessSales = () => {
         onClose={closeCustomerModal}
         initialName={customerDraftName}
         onCustomerSaved={({ id, name }) => {
-          const isCashCustomer = Number(id) === 17;
-          setIsReceivedAmtManuallyEdited(false);
-          setFormData((prev) => ({
-            ...prev,
-            account: id,
-            accountName: name,
-            receivedAmt: isCashCustomer ? prev.receivedAmt : '0',
-          }));
-        }}
-      />
+            const isCashCustomer = Number(id) === 17;
+            const previousAccount = Number(formData.account);
+            let receivedAmt = formData.receivedAmt;
+
+            if (isCashCustomer) {
+              if (previousAccount !== 17) {
+                previousReceivedBeforeCashRef.current = formData.receivedAmt;
+              }
+              receivedAmt = getInvoicePayableAmount();
+            } else if (previousAccount === 17) {
+              receivedAmt = previousReceivedBeforeCashRef.current || formData.receivedAmt;
+            } else if (Number(formData.receivedAmt || 0) <= 0) {
+              receivedAmt = '0';
+            }
+
+            setIsReceivedAmtManuallyEdited(false);
+            setFormData((prev) => ({
+              ...prev,
+              account: id,
+              accountName: name,
+              receivedAmt,
+            }));
+          }}
+        />
     </>
   );
 };
