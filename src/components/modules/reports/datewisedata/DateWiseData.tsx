@@ -103,7 +103,7 @@ const DateWiseData = (user: any) => {
   };
 
   const toNumber = (value: any) => {
-    const numberValue = Number(value);
+    const numberValue = Number(String(value ?? "").replace(/,/g, ""));
     return Number.isFinite(numberValue) ? numberValue : 0;
   };
 
@@ -122,8 +122,8 @@ const DateWiseData = (user: any) => {
   };
 
   const getOpeningBalance = (row: any) => {
-    const balance = Number(row?.balance);
-    if (Number.isFinite(balance)) return balance;
+    const balance = toNumber(row?.balance);
+    if (balance) return balance;
 
     return toNumber(row?.debit) - toNumber(row?.credit);
   };
@@ -139,17 +139,23 @@ const DateWiseData = (user: any) => {
       return;
     }
 
-    let debit = 0;
-    let credit = 0;
     const openingRow = rows.find((row: any) => isOpeningRow(row));
+    const openingDebit = openingRow ? toNumber(openingRow.debit) : 0;
+    const openingCredit = openingRow ? toNumber(openingRow.credit) : 0;
     const openingBalance = openingRow ? getOpeningBalance(openingRow) : 0;
+    let debit = openingDebit;
+    let credit = openingCredit;
     let runningBalance = openingBalance;
 
     const computed = rows.map((row: any, index: number) => {
       if (isOpeningRow(row)) {
         runningBalance = getOpeningBalance(row);
+        debit = toNumber(row.debit);
+        credit = toNumber(row.credit);
         return {
           ...row,
+          cumulative_debit: debit,
+          cumulative_credit: credit,
           balance: runningBalance,
         };
       }
@@ -157,6 +163,8 @@ const DateWiseData = (user: any) => {
       if (isRangeTotalRow(row)) {
         return {
           ...row,
+          cumulative_debit: debit,
+          cumulative_credit: credit,
           balance: runningBalance,
         };
       }
@@ -167,7 +175,7 @@ const DateWiseData = (user: any) => {
 
       debit += toNumber(row.debit);
       credit += toNumber(row.credit);
-      runningBalance = openingBalance + debit - credit;
+      runningBalance = debit - credit;
 
       return {
         ...row,
@@ -410,7 +418,11 @@ const DateWiseData = (user: any) => {
       {/* TABLE */}
       <div className="overflow-auto">
         {dateWiseTotal.isLoading && <Loader />}
-        <Table columns={columns} data={tableData} />
+        <Table
+          columns={columns}
+          data={tableData}
+          rowClassName={(row: any) => (isRangeTotalRow(row) ? "font-bold text-slate-900 dark:text-white" : "")}
+        />
       </div>
 
       {/* HIDDEN PRINT COMPONENT */}
