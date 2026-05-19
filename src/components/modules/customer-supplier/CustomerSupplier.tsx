@@ -9,10 +9,11 @@ import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
 import Table from "../../utils/others/Table";
 import Link from "../../utils/others/Link";
-import { getCustomer, updateCustomerFromUI } from "./customerSlice";
+import { deleteCustomer, getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import ConfirmModal from "../../utils/components/ConfirmModalProps";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -28,6 +29,8 @@ const CustomerSupplier = () => {
   const [selectedGuarantors, setSelectedGuarantors] = useState<any[]>([]);
   const [showNomineeModal, setShowNomineeModal] = useState(false);
   const [selectedNominees, setSelectedNominees] = useState<any[]>([]);
+  const [deletingCustomerId, setDeletingCustomerId] = useState<number | null>(null);
+  const [deleteConfirmRow, setDeleteConfirmRow] = useState<any | null>(null);
   const navigate = useNavigate();
   const customerPageData = customers?.customer || {};
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
@@ -127,6 +130,30 @@ const CustomerSupplier = () => {
       delete copy[row.id];
       return copy;
     });
+  };
+
+  const handleDeleteRow = (row: any) => {
+    setDeleteConfirmRow(row);
+  };
+
+  const handleDeleteConfirmed = () => {
+    if (!deleteConfirmRow) return;
+
+    setDeletingCustomerId(deleteConfirmRow.id);
+    dispatch(deleteCustomer(deleteConfirmRow.id))
+      .unwrap()
+      .then((res) => {
+        toast.success(res?.message || 'Customer deleted successfully');
+        setDeleteConfirmRow(null);
+        dispatch(getCustomer({ page, per_page: perPage, search }));
+      })
+      .catch((err) => {
+        toast.error(err || 'Customer delete failed');
+        setDeleteConfirmRow(null);
+      })
+      .finally(() => {
+        setDeletingCustomerId(null);
+      });
   };
 
 
@@ -329,14 +356,16 @@ const CustomerSupplier = () => {
           </div>
 
           {/* ===== Delete Slot ===== */}
-          {/* <div className="w-4 flex justify-center">
+          <div className="w-4 flex justify-center">
             <button
               title="Delete"
-              className="text-red-600 hover:text-red-800"
+              className="text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={deletingCustomerId === row.id}
+              onClick={() => handleDeleteRow(row)}
             >
               <FiTrash2 size={15} />
             </button>
-          </div> */}
+          </div>
 
         </div>
       )},
@@ -390,6 +419,25 @@ const CustomerSupplier = () => {
           />
         )}
       </div>
+
+      <ConfirmModal
+        show={Boolean(deleteConfirmRow)}
+        title="Confirm Deletion"
+        message={
+          <div className="text-base leading-7 text-slate-700 dark:text-slate-200">
+            <div>Are you sure you want to delete voucher</div>
+            <div className="font-bold text-slate-800 dark:text-white">
+              {deleteConfirmRow?.name || 'this customer'} ?
+            </div>
+          </div>
+        }
+        cancelLabel="Cancel"
+        confirmLabel="Confirm"
+        className="bg-red-600 hover:bg-red-700 min-w-[128px]"
+        loading={deletingCustomerId === deleteConfirmRow?.id}
+        onCancel={() => setDeleteConfirmRow(null)}
+        onConfirm={handleDeleteConfirmed}
+      />
 
       {showGuarantorModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-40 pt-50">

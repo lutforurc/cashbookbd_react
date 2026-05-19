@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import httpService from '../../services/httpService';
 import {
   API_CONTACT_DETAILS_LIST_URL,
+  API_CONTACT_DELETE_URL,
   API_CONTACT_EDIT_URL,
   API_CONTACT_UPDATE_URL,
   API_CUSTOMER_FROM_UI_URL,
@@ -149,6 +150,26 @@ export const updateCustomerFromUI = createAsyncThunk<{ message: string }, { id: 
         error.response?.data?.message ||
         error.message ||
         "Failed to update employee"
+      );
+    }
+  }
+);
+
+export const deleteCustomer = createAsyncThunk<any, number, { rejectValue: string }>(
+  "customer/deleteCustomer",
+  async (id, thunkAPI) => {
+    try {
+      const response = await httpService.post(`${API_CONTACT_DELETE_URL}${id}`);
+      if (response.data?.success === false) {
+        return thunkAPI.rejectWithValue(response.data?.message || "Customer delete failed");
+      }
+
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Customer delete failed"
       );
     }
   }

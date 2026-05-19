@@ -432,6 +432,7 @@ export const API_STORE_CUSTOMER_URL = `${API_BASE_URL}/contact/store`;
 export const API_CUSTOMER_MOBILE_CHECK_URL = `${API_BASE_URL}/contact/mobile-check`;
 export const API_CONTACT_EDIT_URL = `${API_BASE_URL}/contact/edit/`;
 export const API_CONTACT_UPDATE_URL = `${API_BASE_URL}/contact/update/`;
+export const API_CONTACT_DELETE_URL = `${API_BASE_URL}/contact/delete/`;
 
 
 // Area Route
