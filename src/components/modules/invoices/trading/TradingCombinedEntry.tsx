@@ -78,6 +78,10 @@ const normalizeLookupText = (value: any) =>
     .replace(/\s+/g, ' ');
 
 const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
+const hasPositiveAmount = (value: unknown) => {
+  const amount = Number(value || 0);
+  return Number.isFinite(amount) && amount > 0;
+};
 
 const initialProductData = {
   product: '',
@@ -188,6 +192,7 @@ const TradingCombinedEntry = () => {
           value: editData.customerAccount,
           label: editData.customerName,
         });
+        const editAmount = editData.amount ?? '';
         setFormData({
           supplierAccount: String(editData.supplierAccount || ''),
           supplierName: editData.supplierName || '',
@@ -199,8 +204,8 @@ const TradingCombinedEntry = () => {
           salesOrderText: editData.salesOrderText || '',
           invoice_no: editData.invoice_no || '',
           invoice_date: editData.invoice_date || '',
-          amount: String(editData.amount ?? ''),
-          onlySalesPosting: Boolean(editData.onlySalesPosting),
+          amount: String(editAmount),
+          onlySalesPosting: hasPositiveAmount(editAmount) && toBooleanFlag(editData.onlySalesPosting),
           purchaseDiscountAmt: String(editData.purchaseDiscountAmt ?? ''),
           salesDiscountAmt: String(editData.salesDiscountAmt ?? ''),
           vehicleNumber: editData.vehicleNumber || '',
@@ -356,6 +361,7 @@ const TradingCombinedEntry = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      ...(name === 'amount' && !hasPositiveAmount(value) ? { onlySalesPosting: false } : {}),
     }));
   };
 
@@ -769,7 +775,7 @@ const TradingCombinedEntry = () => {
         invoice_no: formData.invoice_no || null,
         invoice_date: formData.invoice_date || null,
         amount,
-        onlySalesPosting: Boolean(formData.onlySalesPosting),
+        onlySalesPosting: hasPositiveAmount(amount) && Boolean(formData.onlySalesPosting),
         purchaseDiscountAmt: 0,
         salesDiscountAmt: Number(formData.salesDiscountAmt || 0),
         vehicleNumber: formData.vehicleNumber || null,
