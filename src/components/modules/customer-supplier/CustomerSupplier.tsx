@@ -14,6 +14,7 @@ import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import ConfirmModal from "../../utils/components/ConfirmModalProps";
+import { hasPermission } from "../../utils/permissionChecker";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -34,9 +35,11 @@ const CustomerSupplier = () => {
   const navigate = useNavigate();
   const customerPageData = customers?.customer || {};
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
-	  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
-	  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
-	  const isOpeningEnabled = settings?.data?.branch?.is_opening == 1;
+		  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
+		  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
+		  const isOpeningEnabled = settings?.data?.branch?.is_opening == 1;
+  const canEditCustomer = hasPermission(settings?.data?.permissions, 'cs.edit');
+  const canDeleteCustomer = hasPermission(settings?.data?.permissions, 'cs.delete');
 
 
 
@@ -132,7 +135,42 @@ const CustomerSupplier = () => {
     });
   };
 
+  const handleLedgerPageBlur = (row: any) => {
+    const nextLedgerPage = editedRows[row.id]?.ledger_page ?? row.ledger_page ?? "";
+    const currentLedgerPage = row.ledger_page ?? "";
+
+    if (String(nextLedgerPage ?? "") === String(currentLedgerPage ?? "")) return;
+
+    dispatch(
+      updateCustomerFromUI({
+        id: row.id,
+        data: { ledger_page: nextLedgerPage },
+      })
+    )
+      .unwrap()
+      .then((res) => {
+        if (res?.message && res?.success) {
+          setEditedRows((prev) => {
+            const copy = { ...prev };
+            if (copy[row.id]) {
+              delete copy[row.id].ledger_page;
+              if (!Object.keys(copy[row.id]).length) delete copy[row.id];
+            }
+            return copy;
+          });
+          dispatch(getCustomer({ page, per_page: perPage, search }));
+          toast.success(res.message);
+        } else {
+          toast.info(res?.message || "No changes were made.");
+        }
+      })
+      .catch((err) => {
+        toast.error(err?.message || err || "Ledger Page update failed");
+      });
+  };
+
   const handleDeleteRow = (row: any) => {
+    if (!canDeleteCustomer) return;
     setDeleteConfirmRow(row);
   };
 
@@ -240,6 +278,12 @@ const CustomerSupplier = () => {
           onChange={(e) =>
             handleInputChange(row.id, "ledger_page", e.target.value)
           }
+          onBlur={() => handleLedgerPageBlur(row)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.currentTarget.blur();
+            }
+          }}
         />
       ),
     },
@@ -250,39 +294,6 @@ const CustomerSupplier = () => {
       headerClass: 'text-center',
       cellClass: 'text-center',
     },
-    // {
-    //   key: 'mobile',
-    //   header: 'Mobile',
-    //   render: (row: any) => (
-    //     <>
-    //       <InputElement
-    //         type="number"
-    //         placeholder="Mobile Number"
-    //         value={row.mobile ?? ""}
-    //         className="text-center w-35"
-    //         onChange={(e) =>
-    //           handleInputChange(
-    //             row.id,
-    //             "mobile",
-    //             e.target.value
-    //           )
-    //         }
-    //         onBlur={() =>
-    //           handleInputBlur(
-    //             row,
-    //             "mobile"
-    //           )
-    //         }
-    //         onKeyDown={(e) => {
-    //           if (e.key === "Enter") {
-    //             e.currentTarget.blur(); // 🔥 Enter = Save
-    //           }
-    //         }}
-    //       />
-    //     </>
-    //   ),
-    // },
-
     {
       key: "action",
       header: "Action",
@@ -345,27 +356,31 @@ const CustomerSupplier = () => {
           </div>
 
           {/* ===== Edit Slot ===== */}
-          <div className="w-4 flex justify-center">
-            <button
-              title="Edit"
-              className="text-blue-600 hover:text-blue-800"
-              onClick={() => navigate(`/customer-supplier/edit/${row.id}`)}
-            >
-              <FiEdit2 size={15} />
-            </button>
-          </div>
+          {canEditCustomer && (
+            <div className="w-4 flex justify-center">
+              <button
+                title="Edit"
+                className="text-blue-600 hover:text-blue-800"
+                onClick={() => navigate(`/customer-supplier/edit/${row.id}`)}
+              >
+                <FiEdit2 size={15} />
+              </button>
+            </div>
+          )}
 
           {/* ===== Delete Slot ===== */}
-          <div className="w-4 flex justify-center">
-            <button
-              title="Delete"
-              className="text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={deletingCustomerId === row.id}
-              onClick={() => handleDeleteRow(row)}
-            >
-              <FiTrash2 size={15} />
-            </button>
-          </div>
+          {canDeleteCustomer && (
+            <div className="w-4 flex justify-center">
+              <button
+                title="Delete"
+                className="text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={deletingCustomerId === row.id}
+                onClick={() => handleDeleteRow(row)}
+              >
+                <FiTrash2 size={15} />
+              </button>
+            </div>
+          )}
 
         </div>
       )},
