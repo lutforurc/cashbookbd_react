@@ -151,19 +151,19 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       address = '-',
       startDate = '-',
       endDate = '-',
-	      rowsPerPage = 16,
-	      fontSize = 9,
-	      summary = {},
-	    },
-	    ref,
-	  ) => {
-	    const pages = chunkRows(rows, rowsPerPage);
-	    const fs = Number.isFinite(fontSize) ? fontSize : 9;
-	    const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
-	    const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
-	    const printablePartyName = partyName || '-';
-	    const printableMobile = mobile || '';
-	    const printableAddress = address || '-';
+      rowsPerPage = 16,
+      fontSize = 9,
+      summary = {},
+    },
+    ref,
+  ) => {
+    const pages = chunkRows(rows, rowsPerPage);
+    const fs = Number.isFinite(fontSize) ? fontSize : 9;
+    const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
+    const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
+    const printablePartyName = partyName || '-';
+    const printableMobile = mobile || '';
+    const printableAddress = address || '-';
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -219,7 +219,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     style={{ fontSize: fs }}
                     className={`border border-gray-900 px-2 py-2 text-center ${dateWidthClass}`}
                   >
-                     Vr No & Date
+                    Vr No & Date
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-36 text-left">Description</th>
                   <th
@@ -244,13 +244,13 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       {row.sl_number}
                     </td>
                     <td
-                       style={{ fontSize: fs, lineHeight: 0.95 }}
+                      style={{ fontSize: fs, lineHeight: 0.95 }}
                       className="border border-gray-900 px-2 py-[2px] text-center"
                     >
-                      <div style={{fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }}>{row.vr_no || ''}</div>
-                      <div style={{fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="block align-middle ">{row.vr_date || ''}</div>
+                      <div style={{ fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }}>{row.vr_no || ''}</div>
+                      <div style={{ fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="block align-middle ">{row.vr_date || ''}</div>
                     </td>
-                   
+
                     <td
                       style={{ fontSize: fs, lineHeight: 0.95 }}
                       className="border border-gray-900 px-2 py-[2px] align-middle w-36"
@@ -276,19 +276,19 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {Number(row.total || 0) ? formatAmount(row.total) : '-'}
                     </td>
-	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-	                      {(() => {
-	                        const displayValue = getDisplayedDebitValue(row);
-	
-	                        return displayValue ? formatAmount(displayValue) : '-';
-	                      })()}
-	                    </td>
-	                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-	                      {(() => {
-	                        const displayValue = getDisplayedCreditValue(row);
-	
-	                        return displayValue ? formatAmount(displayValue) : '-';
-	                      })()}
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {(() => {
+                        const displayValue = getDisplayedDebitValue(row);
+
+                        return displayValue ? formatAmount(displayValue) : '-';
+                      })()}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {(() => {
+                        const displayValue = getDisplayedCreditValue(row);
+
+                        return displayValue ? formatAmount(displayValue) : '-';
+                      })()}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {formatAmount(parseAmount(row.running_balance ?? row.balance))}
@@ -300,31 +300,43 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
             {pageIndex === pages.length - 1 ? (
               <div
-                className="mt-2 flex flex-nowrap items-center justify-end gap-8 overflow-hidden px-3 py-2 text-xs font-bold text-gray-900"
-                style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+                className="mt-1 flex w-full flex-nowrap items-center justify-center gap-8 overflow-hidden border border-gray-900 px-3 font-bold text-gray-900"
+                style={{ fontSize: fs, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
               >
                 <div className="whitespace-nowrap">
-                  <span className="text-gray-600">Opening:</span>{' '}
+                  <span>Opening :</span>{' '}
                   <span>{formatSummaryAmount(summary.opening_balance)}</span>
                 </div>
+
+                {Number(summary.purchase_qty || 0) !== 0 && (
+                  <div className="whitespace-nowrap">
+                    <span>Pur. Qty :</span>{' '}
+                    <span>{formatSummaryAmount(summary.purchase_qty)}</span>
+                  </div>
+                )}
+
+                {Number(summary.sales_qty || 0) !== 0 && (
+                  <div className="whitespace-nowrap">
+                    <span>Sal. Qty:</span>{' '}
+                    <span>{formatSummaryAmount(summary.sales_qty)}</span>
+                  </div>
+                )}
+
+                {Number(summary.total_received || 0) !== 0 && (
+                  <div className="whitespace-nowrap">
+                    <span>Debit:</span>{' '}
+                    <span>{formatSummaryAmount(summary.total_received)}</span>
+                  </div>
+                )}
+
+                {Number(summary.total_payment || 0) !== 0 && (
+                  <div className="whitespace-nowrap">
+                    <span>Credit:</span>{' '}
+                    <span>{formatSummaryAmount(summary.total_payment)}</span>
+                  </div>
+                )}
                 <div className="whitespace-nowrap">
-                  <span className="text-gray-600">Pur. Qty:</span>{' '}
-                  <span>{formatSummaryAmount(summary.purchase_qty)}</span>
-                </div>
-                <div className="whitespace-nowrap">
-                  <span className="text-gray-600">Sal. Qty:</span>{' '}
-                  <span>{formatSummaryAmount(summary.sales_qty)}</span>
-                </div>
-                <div className="whitespace-nowrap">
-                  <span className="text-gray-600">Debit:</span>{' '}
-                  <span>{formatSummaryAmount(summary.total_received)}</span>
-                </div>
-                <div className="whitespace-nowrap">
-                  <span className="text-gray-600">Credit:</span>{' '}
-                  <span>{formatSummaryAmount(summary.total_payment)}</span>
-                </div>
-                <div className="whitespace-nowrap">
-                  <span className="text-gray-600">Closing:</span>{' '}
+                  <span>Closing:</span>{' '}
                   <span>{formatSummaryAmount(summary.closing_balance)}</span>
                 </div>
               </div>
