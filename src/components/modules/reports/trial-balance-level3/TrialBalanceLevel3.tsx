@@ -492,42 +492,42 @@ const TrialBalanceLevel3 = (user: any) => {
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.openingDebit)}</div>,
+      render: (row: any) => <div>{row.openingDebit ? thousandSeparator(row.openingDebit) : '-'}</div>,
     },
     {
       key: "openingCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.openingCredit)}</div>,
+      render: (row: any) => <div>{row.openingCredit ? thousandSeparator(row.openingCredit) : '-'}</div>,
     },
     {
       key: "movementDebit",
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.movementDebit)}</div>,
+      render: (row: any) => <div>{row.movementDebit ? thousandSeparator(row.movementDebit) : '-'}</div>,
     },
     {
       key: "movementCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.movementCredit)}</div>,
+      render: (row: any) => <div>{row.movementCredit ? thousandSeparator(row.movementCredit) : '-'}</div>,
     },
     {
       key: "closingDebit",
       header: "Dr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.closingDebit)}</div>,
+      render: (row: any) => <div>{row.closingDebit ? thousandSeparator(row.closingDebit) : '-'}</div>,
     },
     {
       key: "closingCredit",
       header: "Cr",
       headerClass: "text-right",
       cellClass: "text-right w-32",
-      render: (row: any) => <div>{thousandSeparator(row.closingCredit)}</div>,
+      render: (row: any) => <div>{row.closingCredit ? thousandSeparator(row.closingCredit) : '-'}</div>,
     },
   ];
 
@@ -552,12 +552,12 @@ const TrialBalanceLevel3 = (user: any) => {
   const footerRows = [
     [
       { label: "Grand Total", colSpan: 2, className: "text-right" },
-      { label: thousandSeparator(totals.openingDebit), className: "text-right" },
-      { label: thousandSeparator(totals.openingCredit), className: "text-right" },
-      { label: thousandSeparator(totals.movementDebit), className: "text-right" },
-      { label: thousandSeparator(totals.movementCredit), className: "text-right" },
-      { label: thousandSeparator(totals.closingDebit), className: "text-right" },
-      { label: thousandSeparator(totals.closingCredit), className: "text-right" },
+      { label: totals.openingDebit ? thousandSeparator(totals.openingDebit) : '-', className: "text-right" },
+      { label: totals.openingCredit ? thousandSeparator(totals.openingCredit) : '-', className: "text-right" },
+      { label: totals.movementDebit ? thousandSeparator(totals.movementDebit) : '-', className: "text-right" },
+      { label: totals.movementCredit ? thousandSeparator(totals.movementCredit) : '-', className: "text-right" },
+      { label: totals.closingDebit ? thousandSeparator(totals.closingDebit) : '-', className: "text-right" },
+      { label: totals.closingCredit ? thousandSeparator(totals.closingCredit) : '-', className: "text-right" },
     ],
   ];
 
