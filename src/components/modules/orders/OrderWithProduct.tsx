@@ -385,10 +385,10 @@ const OrderWithProduct = ({
               toNumber(payload?.order_rate)
             : 0;
         const transactionQty = toNumber(activeDetail?.quantity);
-        const notes = trx?.note || salesMaster?.notes || purchaseMaster?.notes || payload?.notes || '-';
+        const remarks = trx?.acc_transaction_details?.[0]?.remarks ?? '';
         const detailLines = [
           hasSales || hasPurchase ? payload?.product?.name || '-' : primaryLedgerName,
-          notes && notes !== '-' ? `${notes}` : '',
+          remarks,
         ].filter(Boolean);
 
         return {
@@ -404,7 +404,7 @@ const OrderWithProduct = ({
             '-',
           productName: payload?.product?.name || '-',
           detailLines,
-          notes,
+          notes: remarks,
           vehicleNo: salesMaster?.vehicle_no || purchaseMaster?.vehicle_no || '-',
           quantity: hasLineDetail ? transactionQty : null,
           rate: hasLineDetail ? transactionRate : null,
