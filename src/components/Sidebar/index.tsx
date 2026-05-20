@@ -2203,7 +2203,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Customer & Supplier List
+                                Customers
                               </NavLink>
                             </li>
                             {hasPermission(permissions, 'coa.l1.view') && (
