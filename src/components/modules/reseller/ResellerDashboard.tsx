@@ -82,9 +82,9 @@ const ResellerDashboard: React.FC = () => {
                 {companies.map((company: any) => (
                   <tr key={company.id} className="border-t border-stroke text-sm text-slate-600 dark:border-strokedark dark:text-bodydark">
                     <td className="px-4 py-3 font-medium text-black dark:text-white">{company.name}</td>
-                    <td className="px-4 py-3">{company.plan_name || '-'}</td>
-                    <td className="px-4 py-3 capitalize">{company.subscription_status || '-'}</td>
-                    <td className="px-4 py-3 capitalize">{company.access_status || '-'}</td>
+                    <td className="px-4 py-3 text-black dark:text-white">{company.plan_name || '-'}</td>
+                    <td className="px-4 py-3 capitalize text-black dark:text-white">{company.subscription_status || '-'}</td>
+                    <td className="px-4 py-3 capitalize text-black dark:text-white">{company.access_status || '-'}</td>
                   </tr>
                 ))}
                 {companies.length === 0 && (
@@ -117,8 +117,8 @@ const ResellerDashboard: React.FC = () => {
                 {payments.map((payment: any) => (
                   <tr key={payment.id} className="border-t border-stroke text-sm text-slate-600 dark:border-strokedark dark:text-bodydark">
                     <td className="px-4 py-3 font-medium text-black dark:text-white">{payment.company_name || '-'}</td>
-                    <td className="px-4 py-3 capitalize">{payment.payment_status || '-'}</td>
-                    <td className="px-4 py-3">{currency(payment.amount, payment.currency || 'BDT')}</td>
+                    <td className="px-4 py-3 capitalize text-black dark:text-white">{payment.payment_status || '-'}</td>
+                    <td className="px-4 py-3 text-black dark:text-white">{currency(payment.amount, payment.currency || 'BDT')}</td>
                     <td className="px-4 py-3 font-medium text-black dark:text-white">{currency(payment.commission_amount, payment.currency || 'BDT')}</td>
                   </tr>
                 ))}
