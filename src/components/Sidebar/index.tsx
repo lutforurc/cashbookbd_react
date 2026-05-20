@@ -23,14 +23,22 @@ import { hasPermission } from '../utils/permissionChecker';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
+import { API_REMOTE_URL } from '../services/apiRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
 import DropdownUser from '../Header/DropdownUser';
+import Logo from '../../images/logo/logo.svg';
 
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
   mode?: 'sidebar' | 'topbar';
 }
+
+const resolveLogoUrl = (path?: string) => {
+  if (!path) return '';
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+  return `${API_REMOTE_URL}/${path.replace(/^\/+/, '').replace(/^public\//i, '')}`;
+};
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps) => {
   const location = useLocation();
@@ -39,6 +47,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
+  const companyName =
+    settings?.data?.company?.name ||
+    currentBranch?.company?.name ||
+    settings?.data?.branch?.name ||
+    'CashbookBD';
+  const companyLogo =
+    resolveLogoUrl(settings?.data?.company?.company_logo || currentBranch?.company?.company_logo) || Logo;
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
 
@@ -126,15 +141,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       }
     >
       {!isTopbar ? (
-        <div className={`flex items-center justify-between gap-2 px-6 py-3 lg:py-3 ${sidebarCollapsed ? 'lg:px-3' : ''}`}>
-          <NavLink to="/">{/* <img src={Logo} alt="Logo" /> */}</NavLink>
+        <div className={`flex items-center justify-between gap-2 px-6 py-3 lg:py-3 ${sidebarCollapsed ? 'lg:justify-center lg:px-2' : ''}`}>
+          <NavLink to="/" className="flex min-w-0 flex-1 items-center" title={companyName}>
+            <img
+              src={companyLogo}
+              alt={companyName}
+              className={`block h-9 max-w-40 object-contain ${sidebarCollapsed ? 'lg:hidden' : ''}`}
+              onError={(event) => {
+                event.currentTarget.src = Logo;
+              }}
+            />
+          </NavLink>
           <button
             type="button"
             onClick={() => {
               setSidebarCollapsed((current) => !current);
               setOpenMenu(null);
             }}
-            className="hidden h-9 w-9 items-center justify-center rounded-sm border border-stroke bg-white text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-slate-300 dark:hover:bg-meta-4 lg:flex"
+            className={`hidden h-9 w-9 items-center justify-center rounded-sm border border-stroke bg-white text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-slate-300 dark:hover:bg-meta-4 lg:flex ${sidebarCollapsed ? 'lg:h-8 lg:w-8 lg:flex-none' : ''}`}
             title={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
             aria-label={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
           >
