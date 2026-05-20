@@ -53,7 +53,7 @@ const ComputerAccessories = () => {
               </div>
               <div className="p-4">
                 <div className="mb-2 text-sm ">
-                  Trx Date:{' '} days: 
+                  Trx Date:{' '} 
                   <span className="italic font-bold">
                     {' '}
                     {settings?.data?.trx_dt}

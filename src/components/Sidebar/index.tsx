@@ -148,30 +148,31 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
           <div className={isTopbar ? 'flex flex-wrap items-start gap-3' : ''}>
             <ul className={isTopbar ? 'flex min-w-0 flex-1 flex-wrap items-stretch gap-1.5 pb-1' : 'flex flex-col gap-1.5'}>
               {/* Dashboard */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/dashboard' || pathname.includes('dashboard')
-                }
-                menuId="dashboard"
-                open={openMenu === 'dashboard'}
-                handleClick={() => handleMenuClick('dashboard')}
-              >
-                {(handleClick, open) => (
-                  <React.Fragment>
-                    <NavLink
-                      to="/dashboard"
-                      className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/' || pathname.includes('dashboard')) && 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'}`}
-                      onClick={(e) => {
-                        // e.preventDefault();
-                        sidebarExpanded
-                          ? handleClick()
-                          : setSidebarExpanded(true);
-                      }}
-                    >
-                      <FiGrid />
-                      Dashboard
-                    </NavLink>
-                    {/* <div
+              {!isTopbar ? (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/dashboard' || pathname.includes('dashboard')
+                  }
+                  menuId="dashboard"
+                  open={openMenu === 'dashboard'}
+                  handleClick={() => handleMenuClick('dashboard')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="/dashboard"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/' || pathname.includes('dashboard')) && 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'}`}
+                        onClick={(e) => {
+                          // e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiGrid />
+                        Dashboard
+                      </NavLink>
+                      {/* <div
                       className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
                         }`}
                     >
@@ -189,9 +190,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         </li>
                       </ul>
                     </div> */}
-                  </React.Fragment>
-                )}
-              </SidebarLinkGroup>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              ) : null}
               {/* Transaction */}
               {hasMenuPermission(permissions, 'transaction') && (
                 <SidebarLinkGroup
