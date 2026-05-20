@@ -761,25 +761,6 @@ const PurchaseLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className={useFilterMenuEnabled ? '' : 'order-3 min-w-0 min-[1180px]:col-span-1'}>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Transaction Type</label>
-                    <OrderTypes
-                      onChange={handleOrderTypeChange}
-                      className="h-10 w-full"
-                      value={orderType}
-                      id="order_type"
-                      name="order_type"
-                      selectOption="Select Transaction"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          e.currentTarget.blur();
-                        }
-                      }}
-                    />
-                  </div>
-
                   <div className={`relative ${useFilterMenuEnabled ? '' : 'order-4 min-w-0 min-[1180px]:col-span-1'}`}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
                     <div
