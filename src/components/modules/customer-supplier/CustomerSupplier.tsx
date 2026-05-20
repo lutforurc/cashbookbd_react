@@ -12,7 +12,7 @@ import Link from "../../utils/others/Link";
 import { deleteCustomer, getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ConfirmModal from "../../utils/components/ConfirmModalProps";
 import { hasPermission } from "../../utils/permissionChecker";
 
@@ -33,6 +33,7 @@ const CustomerSupplier = () => {
   const [deletingCustomerId, setDeletingCustomerId] = useState<number | null>(null);
   const [deleteConfirmRow, setDeleteConfirmRow] = useState<any | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const customerPageData = customers?.customer || {};
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
 		  const totalRecords = Number(customerPageData?.total || customers?.total || 0);
@@ -40,6 +41,19 @@ const CustomerSupplier = () => {
 		  const isOpeningEnabled = settings?.data?.branch?.is_opening == 1;
   const canEditCustomer = hasPermission(settings?.data?.permissions, 'cs.edit');
   const canDeleteCustomer = hasPermission(settings?.data?.permissions, 'cs.delete');
+
+  useEffect(() => {
+    const state = location.state as any;
+    const customerSearch = String(state?.customerSearch ?? "").trim();
+
+    if (!state?.customerGlobalSearch || !customerSearch) {
+      return;
+    }
+
+    setSearchValue(customerSearch);
+    setPage(1);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
 
 

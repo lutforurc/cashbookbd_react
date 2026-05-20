@@ -1,0 +1,132 @@
+import routes from '../services/appRoutes';
+
+export type GlobalSearchItem = {
+  title: string;
+  path: string;
+  group: string;
+  keywords?: string[];
+  permissions?: string[];
+};
+
+const globalSearchItems: GlobalSearchItem[] = [
+  { title: 'Dashboard', path: routes.dashboard, group: 'Dashboard', keywords: ['home'] },
+  { title: 'Profile', path: routes.profile, group: 'Account' },
+
+  { title: 'Cash Received', path: routes.cash_receive, group: 'Transaction', permissions: ['cash.received.create'] },
+  { title: 'Cash Payment', path: routes.cash_payment, group: 'Transaction', permissions: ['cash.payment.create'] },
+  { title: 'Bank Received', path: routes.bank_receive, group: 'Transaction', permissions: ['bank.received.create'] },
+  { title: 'Bank Payment', path: routes.bank_payment, group: 'Transaction', permissions: ['bank.payment.create'] },
+  { title: 'Employee Loan', path: routes.employee_loan, group: 'Transaction', permissions: ['hrm.loan.create'] },
+  { title: 'Journal', path: routes.journal, group: 'Transaction', permissions: ['journal.create'] },
+  {
+    title: 'Branch Transfer',
+    path: routes.branch_transfer,
+    group: 'Inventory',
+    permissions: ['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create'],
+  },
+  {
+    title: 'Branch Received',
+    path: routes.branch_received,
+    group: 'Inventory',
+    permissions: ['branch.received.create', 'inventory.received.create', 'product.received.create'],
+  },
+
+  { title: 'Trading Combined', path: routes.inv_trading_combined, group: 'Invoice', permissions: ['purchase.create', 'sales.create'] },
+  { title: 'Purchase Invoice', path: routes.inv_purchase, group: 'Invoice', permissions: ['purchase.create'] },
+  { title: 'Purchase Import', path: routes.inv_purchase_import, group: 'Invoice', permissions: ['purchase.create'] },
+  { title: 'Purchase Return', path: routes.inv_purchase_return, group: 'Invoice', permissions: ['purchase.create'] },
+  { title: 'Sales Invoice', path: routes.inv_sales, group: 'Invoice', permissions: ['sales.create'] },
+  { title: 'Sales Import', path: routes.inv_sales_import, group: 'Invoice', permissions: ['sales.create'] },
+  { title: 'Sales Return', path: routes.inv_sales_return, group: 'Invoice', permissions: ['sales.create'] },
+  { title: 'Labour Invoice', path: routes.inv_labour, group: 'Invoice', permissions: ['labour.invoice.create'] },
+
+  { title: 'Product List', path: routes.product_list, group: 'Products', permissions: ['products.view'] },
+  { title: 'Add Product', path: routes.product_create, group: 'Products', permissions: ['products.view'] },
+  { title: 'Low Stock Products', path: routes.product_low_stock, group: 'Products', permissions: ['products.view'] },
+  { title: 'Negative Stock Products', path: routes.product_negative_stock, group: 'Products', permissions: ['products.view'] },
+  { title: 'Slow Moving Products', path: routes.product_slow_moving, group: 'Products', permissions: ['products.view'] },
+  { title: 'Warehouse Difference', path: routes.product_warehouse_difference, group: 'Products', permissions: ['products.view'] },
+  { title: 'Brand List', path: routes.brand_list, group: 'Products', permissions: ['products.view'] },
+  { title: 'Product Units', path: routes.product_unit_list, group: 'Products', permissions: ['products.view'] },
+  { title: 'Category List', path: routes.category_list, group: 'Products', permissions: ['category.view'] },
+
+  { title: 'Customer & Supplier List', path: routes.supplier_customer_list, group: 'Customer & Supplier', permissions: ['cs.view'] },
+  { title: 'Add Customer & Supplier', path: routes.supplier_customer_add, group: 'Customer & Supplier', permissions: ['cs.view'] },
+  { title: 'CoA L1', path: routes.coal1_list, group: 'Chart of Accounts', permissions: ['coa.l1.view'], keywords: ['chart accounts level 1'] },
+  { title: 'CoA L2', path: routes.coal2_list, group: 'Chart of Accounts', permissions: ['coa.l2.view'], keywords: ['chart accounts level 2'] },
+  { title: 'CoA L3', path: routes.coal3_list, group: 'Chart of Accounts', permissions: ['coa.l3.view'], keywords: ['chart accounts level 3'] },
+  { title: 'CoA L4', path: routes.coal4_list, group: 'Chart of Accounts', permissions: ['coa.l4.view'], keywords: ['chart accounts level 4'] },
+
+  { title: 'Date Wise Total', path: routes.report_date_wise_total, group: 'Reports', permissions: ['date.wise.total'] },
+  { title: 'Cashbook', path: routes.report_cashbook, group: 'Reports', permissions: ['cashbook.view'] },
+  { title: 'Profit Loss', path: routes.profit_loss, group: 'Reports', permissions: ['cashbook.view'] },
+  { title: 'Balance Sheet', path: routes.balance_sheet, group: 'Reports', permissions: ['cashbook.view'] },
+  { title: 'Trial Balance Level 3', path: routes.trial_balance_level3, group: 'Reports', permissions: ['cashbook.view'] },
+  { title: 'Trial Balance Level 4', path: routes.trial_balance_level4, group: 'Reports', permissions: ['cashbook.view'] },
+  { title: 'Bank Information', path: routes.bank_information, group: 'Reports', permissions: ['bank.information'] },
+  { title: 'Connected Member', path: routes.connected_member, group: 'Reports', permissions: ['connected.member.view'] },
+  { title: 'Product Profit Loss', path: routes.product_profit_loss, group: 'Reports', permissions: ['productwise.profit'] },
+  { title: 'Customer Supplier Statement', path: routes.customer_supplier_statement, group: 'Reports', permissions: ['ledger.customer'] },
+  { title: 'Due Installments', path: routes.due_installment_list, group: 'Reports', permissions: ['installment.create'] },
+  { title: 'Employee Installments', path: routes.employee_wise_installment, group: 'Reports', permissions: ['installment.create'] },
+  { title: 'Due List', path: routes.report_due_list, group: 'Reports', permissions: ['ledger.due.view'] },
+  { title: 'Ledger', path: routes.report_ledger, group: 'Reports', permissions: ['ledger.view', 'ledger.customer'] },
+  { title: 'Product In Out', path: routes.product_ledger_data, group: 'Reports', permissions: ['ledger.view', 'ledger.customer'] },
+  { title: 'Labour Ledger', path: routes.report_labour_ledger, group: 'Reports', permissions: ['ledger.labour'] },
+  { title: 'Purchase Ledger', path: routes.purchase_ledger, group: 'Reports', permissions: ['purchase.ledger'] },
+  { title: 'Sales Ledger', path: routes.sales_ledger, group: 'Reports', permissions: ['sales.ledger'] },
+  { title: 'Mitch Match', path: routes.mitch_match, group: 'Reports', permissions: ['mitch.match'], keywords: ['mismatch'] },
+  { title: 'Group Report', path: routes.group_report, group: 'Reports', permissions: ['group.report'] },
+  { title: 'Collection Sheet', path: routes.somity_collection_sheet, group: 'Reports', permissions: ['group.report', 'ledger.due.view', 'cashbook.view'] },
+  { title: 'Monthly Report', path: routes.somity_monthly_report, group: 'Reports', permissions: ['group.report', 'ledger.due.view', 'cashbook.view'] },
+  { title: 'Closing Stock', path: routes.report_closing_stock, group: 'Reports', permissions: ['product.stock.view'] },
+  { title: 'Stock Details', path: routes.somity_stock_details, group: 'Reports', permissions: ['product.stock.view'] },
+  { title: 'Product Stock', path: routes.report_product_stock, group: 'Reports', permissions: ['product.stock.view'] },
+  { title: 'IMEI Stock', path: routes.report_imei_stock, group: 'Reports', permissions: ['product.stock.view'] },
+  { title: 'Category Wise In Out', path: routes.cat_wise_in_out, group: 'Reports', permissions: ['product.in.out'] },
+  { title: 'Date Wise In Out', path: routes.report_date_wise_in_out, group: 'Reports', permissions: ['product.in.out'] },
+
+  { title: 'Orders', path: routes.order_list, group: 'Orders', permissions: ['order.view'] },
+  { title: 'Average Price', path: routes.order_avg_price, group: 'Orders', permissions: ['order.avg.price'] },
+  { title: 'Order With Transaction', path: routes.order_with_transaction, group: 'Orders', permissions: ['order.view'] },
+  { title: 'Day Close', path: routes.day_close, group: 'Admin', permissions: ['dayclose.create'] },
+  { title: 'Jump Date', path: routes.day_jump, group: 'Admin', permissions: ['dayclose.jumpdate'] },
+  { title: 'Branch List', path: routes.branch_list, group: 'Admin', permissions: ['branch.view'] },
+  { title: 'Company List', path: routes.company_list, group: 'Admin', permissions: ['branch.view'] },
+  { title: 'Users', path: routes.user_list, group: 'Admin', permissions: ['all.user.view', 'user.view'] },
+  { title: 'Online Users', path: routes.online_users, group: 'Admin', permissions: ['all.user.view', 'user.view'] },
+  { title: 'Check Register', path: routes.unit_payment_list, group: 'Admin', permissions: ['check.register.view'] },
+  { title: 'Voucher Approval', path: routes.admin_voucher_approval, group: 'Admin', permissions: ['voucher.approval'] },
+  { title: 'Remove Approval', path: routes.admin_remove_approval, group: 'Admin', permissions: ['remove.approval'] },
+  { title: 'Change Voucher Type', path: routes.admin_change_voucher_type, group: 'Admin', permissions: ['change.vourcher.type'] },
+  { title: 'Change Voucher Date', path: routes.admin_change_date, group: 'Admin', permissions: ['voucher.date.change'] },
+  { title: 'Image Upload', path: routes.image_upload, group: 'Admin', permissions: ['voucher.photo.upload'] },
+  { title: 'Bulk Upload', path: routes.bulk_upload, group: 'Admin', permissions: ['bulk.photo.upload'] },
+
+  { title: 'Roles', path: routes.roles, group: 'User Management', permissions: ['roles.view', 'roles.create', 'roles.edit', 'roles.delete'] },
+  { title: 'User Management', path: routes.user_management_list, group: 'User Management', permissions: ['roles.view'] },
+  { title: 'Requisitions', path: routes.requisition, group: 'Requisition', permissions: ['requisition.view'] },
+  { title: 'Create Requisition', path: routes.requisition_create, group: 'Requisition', permissions: ['requisition.create'] },
+  { title: 'Requisition Comparison', path: routes.requisition_comparison, group: 'Requisition', permissions: ['requisition.comparison'] },
+
+  { title: 'Voucher Delete', path: routes.voucher_delete, group: 'VR Settings', permissions: ['voucher.delete'] },
+  { title: 'Installment Delete', path: routes.installment_delete, group: 'VR Settings', permissions: ['installment.delete'] },
+  { title: 'Recycle Bin', path: routes.recyclebin, group: 'VR Settings', permissions: ['voucher.recycle'] },
+  { title: 'Voucher History', path: routes.voucher_history, group: 'VR Settings', permissions: ['voucher.history'] },
+  { title: 'Voucher Activity', path: routes.voucher_activity, group: 'VR Settings', permissions: ['voucher.changes'] },
+
+  { title: 'Employees', path: routes.hrms_employee_list, group: 'HRM', permissions: ['employee.view'] },
+  { title: 'Designation Levels', path: routes.hrms_designation_level_list, group: 'HRM', permissions: ['employee.view'] },
+  { title: 'Designations', path: routes.hrms_designation_list, group: 'HRM', permissions: ['employee.view'] },
+  { title: 'Salary Generate', path: routes.hrms_salary_generate, group: 'HRM', permissions: ['salary.generate'] },
+  { title: 'Bonus Generate', path: routes.hrms_festival_bonus_generate, group: 'HRM', permissions: ['salary.generate'] },
+  { title: 'Loan Balance', path: routes.employee_loan_balance, group: 'HRM', permissions: ['hrm.loan.create'] },
+  { title: 'Loan Ledger', path: routes.employee_loan_ledger, group: 'HRM', permissions: ['employee.loan.ledger.view'] },
+  { title: 'Salary Reports', path: routes.hrms_salary_sheet_list, group: 'HRM', permissions: ['salary.sheet.view'] },
+  { title: 'Bonus Reports', path: routes.hrms_festival_bonus_list, group: 'HRM', permissions: ['salary.sheet.view'] },
+
+  { title: 'Comparison', path: routes.item_chart, group: 'Analytics', permissions: ['analytics.comparison'] },
+  { title: 'Customer Dashboard', path: routes.customer_dashboard, group: 'Customer', permissions: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'] },
+];
+
+export default globalSearchItems;

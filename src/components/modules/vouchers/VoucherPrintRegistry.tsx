@@ -20,7 +20,7 @@ type Props = {
 };
 
 type PrintPayload = {
-  mt?: number;
+  mt?: number | null;
   voucher_no?: string;
   status?: number;
   include_deleted?: boolean;
@@ -66,7 +66,7 @@ const getPrintMtmId = (row: any) => {
 
 const buildPrintPayload = (mtmId: any, row: any): PrintPayload => {
   const isRecycleBinVoucher = Number(row?.status) === 0 || row?.fromRecycleBin;
-  const payload: PrintPayload = {};
+  const payload: PrintPayload = { mt: null };
 
   if (isValidMtmId(mtmId)) {
     payload.mt = Number(mtmId);
@@ -76,10 +76,10 @@ const buildPrintPayload = (mtmId: any, row: any): PrintPayload => {
     payload.status = 0;
     payload.include_deleted = true;
     payload.recycle_bin = true;
+  }
 
-    if (row?.vr_no) {
-      payload.voucher_no = String(row.vr_no);
-    }
+  if (row?.vr_no && !payload.mt) {
+    payload.voucher_no = String(row.vr_no);
   }
 
   return payload;
