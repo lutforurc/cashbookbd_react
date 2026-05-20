@@ -18,6 +18,10 @@ interface InputElementProps {
   pattern?: string;
   list?: string;
   autoComplete?: string;
+  required?: boolean;
+  min?: string | number;
+  max?: string | number;
+  step?: string | number;
 }
 
 const InputElement: React.FC<InputElementProps> = ({
@@ -38,6 +42,10 @@ const InputElement: React.FC<InputElementProps> = ({
   pattern,
   list,
   autoComplete,
+  required,
+  min,
+  max,
+  step,
 }) => {
   return (
     <div className="text-left flex flex-col">
@@ -61,6 +69,10 @@ const InputElement: React.FC<InputElementProps> = ({
           pattern={pattern}
           list={list}
           autoComplete={autoComplete}
+          required={required}
+          min={min}
+          max={max}
+          step={step}
           className={`w-full form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
           dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none 
           focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}

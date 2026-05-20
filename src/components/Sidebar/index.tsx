@@ -262,6 +262,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                   )}
                 </SidebarLinkGroup>
               ) : null}
+              {hasMenuPermission(permissions, 'reseller') && (
+                <li>
+                  <NavLink
+                    to={routes.reseller_dashboard}
+                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${pathname === routes.reseller_dashboard &&
+                      'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                      }`}
+                  >
+                    <FiUsers />
+                    Resellers
+                  </NavLink>
+                </li>
+              )}
               {/* Transaction */}
               {hasMenuPermission(permissions, 'transaction') && (
                 <SidebarLinkGroup
@@ -1515,6 +1528,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 	                    pathname === '/user/user-list' ||
 	                    pathname === routes.online_users ||
 	                    pathname === routes.company_user_list ||
+                      pathname === routes.reseller_admin ||
                       pathname === routes.roles ||
                       pathname === routes.add_role ||
 	                    pathname === '/admin/dayclose' ||
@@ -1539,6 +1553,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 	                          pathname === '/user/user-list' ||
 	                          pathname === routes.online_users ||
 	                          pathname === routes.company_user_list ||
+                            pathname === routes.reseller_admin ||
                             pathname === routes.roles ||
                             pathname === routes.add_role ||
 	                          pathname === '/admin/dayclose' ||
@@ -1641,6 +1656,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 	                              </NavLink>
 	                            </li>
 	                          )}
+                          {(hasPermission(permissions, 'reseller.view') ||
+                            hasPermission(permissions, 'subscription.view') ||
+                            hasPermission(permissions, 'all.user.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.reseller_admin}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Resellers
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'roles.view') && (
                             <li>
                               <NavLink
@@ -2158,7 +2188,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }}
                         >
                           <FiUsers />
-                          Customer & Supplier
+                          Customers
                         </NavLink>
                         <div
                           className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'

@@ -77,6 +77,7 @@ import smsSlice from './components/modules/sms/smsSlice';
 import journalSlice from './components/modules/transactions/journal/journalSlice';
 import subscriptionSlice from './components/modules/subscription/subscriptionSlice';
 import companySlice from './components/modules/company/companySlice';
+import resellerSlice from './components/modules/reseller/resellerSlice';
 
 
 const store = configureStore({
@@ -159,6 +160,7 @@ const store = configureStore({
     journal: journalSlice,
     subscription: subscriptionSlice,
     company: companySlice,
+    reseller: resellerSlice,
   },
 });
 

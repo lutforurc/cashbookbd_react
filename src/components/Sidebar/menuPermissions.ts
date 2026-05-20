@@ -48,6 +48,7 @@ export const MENU_PERMISSIONS = {
     'roles.create',
     'roles.edit',
     'roles.delete',
+    'reseller.view',
   ],
   voucher_settings: [
     'voucher.delete',
@@ -88,6 +89,7 @@ export const MENU_PERMISSIONS = {
     'coa.l4.view',
   ],
   analytics: ['analytics.comparison'],
+  reseller: ['reseller.view'],
   subscription_history: ['subscription.view', 'subscription.history'],
   // customer_dashboard: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'],
 };

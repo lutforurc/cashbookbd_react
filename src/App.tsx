@@ -167,6 +167,8 @@ import SubscriptionAdmin from './components/modules/subscription/SubscriptionAdm
 import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
 import RequireUserQuota from './components/auth/RequireUserQuota';
+import ResellerAdmin from './components/modules/reseller/ResellerAdmin';
+import ResellerDashboard from './components/modules/reseller/ResellerDashboard';
 
 const SUBSCRIPTION_EXEMPT_COMPANY_IDS = new Set([1]);
 
@@ -245,6 +247,10 @@ function App() {
               <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
               <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
               <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
+              <Route path={routes.reseller_admin} element={<ResellerAdmin />} />
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.view', 'all.user.view', 'subscription.view']} loading={permissionsLoading} />}>
+                <Route path={routes.reseller_dashboard} element={<ResellerDashboard />} />
+              </Route>
               <Route path={routes.calendar} element={<Calendar />} />
               <Route path={routes.formElements} element={<FormElements />} />
               <Route path={routes.formLayout} element={<FormLayout />} />
