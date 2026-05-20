@@ -22,6 +22,17 @@
     padding-left: 0.75rem !important;
   }
 
+  .app-sidebar-menu.app-sidebar-collapsed {
+    overflow: visible !important;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed > div,
+  .app-sidebar-menu.app-sidebar-collapsed nav,
+  .app-sidebar-menu.app-sidebar-collapsed nav > div,
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul {
+    overflow: visible !important;
+  }
+
   .app-sidebar-menu.app-sidebar-collapsed nav > div > ul {
     align-items: center;
   }
@@ -50,20 +61,17 @@
   }
 
   .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div {
-    position: fixed;
-    left: 5rem;
+    position: absolute;
+    left: calc(100% + 0.75rem);
     top: 0;
-    bottom: 0;
     z-index: 10000;
     display: block;
-    width: min(320px, calc(100vw - 5rem));
-    max-height: none !important;
+    width: 240px;
+    max-height: min(560px, calc(100vh - 1rem)) !important;
+    overflow-x: hidden !important;
     overflow-y: auto !important;
     border: 1px solid rgb(226 232 240);
-    border-top-width: 0;
-    border-bottom-width: 0;
-    border-left-width: 0;
-    border-radius: 0;
+    border-radius: 0.5rem;
     background: white;
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
   }
@@ -78,7 +86,7 @@
 
   .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul {
     margin: 0 !important;
-    padding: 0.5rem !important;
+    padding: 0.5rem 0 !important;
     background: white;
   }
 
@@ -86,11 +94,12 @@
     display: flex;
     width: 100%;
     align-items: center;
-    border-radius: 0.375rem;
-    padding: 0.625rem 0.875rem !important;
+    border-radius: 0;
+    padding: 0.45rem 1rem !important;
     background: white;
     font-size: 0.875rem;
     line-height: 1.35;
+    white-space: nowrap;
   }
 
   .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li > a:hover {
