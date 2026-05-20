@@ -40,6 +40,7 @@ import {
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import routes from '../../../services/appRoutes';
 import SearchInput from '../../../utils/fields/SearchInput';
+import OrderTypes from '../../../utils/utils-functions/OrderTypes';
 
 const SALES_LEDGER_FILTER_STORAGE_KEY = 'sales-ledger-filter-state';
 
@@ -109,6 +110,7 @@ const SalesLedger = (user: any) => {
   const [productId, setProductId] = useState<number | null>(null);
   const [selectedLedgerOption, setSelectedLedgerOption] = useState<any>(null);
   const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
+  const [orderType, setOrderType] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -193,6 +195,10 @@ const SalesLedger = (user: any) => {
 
   const handleBranchChange = (e: any) => {
     setBranchId(e.target.value);
+  };
+
+  const handleOrderTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setOrderType(event.target.value);
   };
 
   const handleStartDate = (e: any) => {
@@ -770,10 +776,10 @@ const SalesLedger = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? 'space-y-3'
-                      : 'grid grid-cols-1 items-end gap-3 min-[1180px]:grid-cols-12'
+                      : 'grid grid-cols-1 items-end gap-3 min-[1180px]:grid-cols-4'
                   }
                 >
-                  <div className={useFilterMenuEnabled ? '' : 'order-1 min-w-0 min-[1180px]:col-span-4'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-1 min-w-0 min-[1180px]:col-span-1'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
                     {branchDdlData.isLoading == true ? <Loader /> : ''}
                     <BranchDropdown
@@ -784,7 +790,7 @@ const SalesLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className={useFilterMenuEnabled ? '' : 'order-2 min-w-0 min-[1180px]:col-span-4'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-2 min-w-0 min-[1180px]:col-span-1'}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Account</label>
                     <DdlMultiline
                       acType={''}
@@ -794,7 +800,7 @@ const SalesLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className={`relative ${useFilterMenuEnabled ? '' : 'order-3 min-w-0 min-[1180px]:col-span-4'}`}>
+                  <div className={`relative ${useFilterMenuEnabled ? '' : 'order-4 min-w-0 min-[1180px]:col-span-1'}`}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
                     <div
                       onClick={() => selectedProduct(null)}
@@ -810,7 +816,7 @@ const SalesLedger = (user: any) => {
                     />
                   </div>
 
-                  <div className={useFilterMenuEnabled ? 'space-y-3' : 'order-5 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 min-[1180px]:col-span-4'}>
+                  <div className={useFilterMenuEnabled ? 'space-y-3' : 'order-6 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 min-[1180px]:col-span-2'}>
                     <div className="min-w-0">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                       <InputDatePicker
@@ -831,7 +837,7 @@ const SalesLedger = (user: any) => {
                       />
                     </div>
                   </div>
-                  <div className={useFilterMenuEnabled ? '' : 'order-4 min-w-0 min-[1180px]:col-span-4'}>
+                  <div className={useFilterMenuEnabled ? '' : 'order-5 min-w-0 min-[1180px]:col-span-1'}>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
                       Search
                     </label>
@@ -859,14 +865,14 @@ const SalesLedger = (user: any) => {
                           buttonLoading={buttonLoading}
                           label="Apply"
                           icon={<FiCheckSquare />}
-                          className="h-10 px-6"
+                          className="h-9 px-6"
                         />
                         <ButtonLoading
                           onClick={handleResetFilters}
                           buttonLoading={false}
                           label="Reset"
                           icon={<FiRotateCcw />}
-                          className="h-10 px-4"
+                          className="h-9 px-4"
                         />
                         <InputElement
                           id="perPageInlineMd"
@@ -875,7 +881,7 @@ const SalesLedger = (user: any) => {
                           value={rowsPerPage.toString()}
                           onChange={handleRowsPerPageChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-20 text-center"
+                          className="font-medium text-sm h-9 !w-20 text-center"
                         />
                         <InputElement
                           id="fontSizeInlineMd"
@@ -884,12 +890,12 @@ const SalesLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-20 text-center"
+                          className="font-medium text-sm h-9 !w-20 text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
                           label="Print"
-                          className="h-10 px-6"
+                          className="h-9 px-6"
                           disabled={!Array.isArray(tableData) || tableData.length === 0}
                         />
                       </div>
@@ -900,7 +906,7 @@ const SalesLedger = (user: any) => {
                   <div
                     className={`${useFilterMenuEnabled
                       ? 'flex flex-wrap justify-end gap-2'
-                      : 'order-7 flex w-full flex-wrap items-end gap-2 min-[1180px]:col-span-4 min-[1180px]:min-w-0 min-[1180px]:flex-nowrap min-[1180px]:justify-end min-[1180px]:gap-1'
+                      : 'order-7 flex w-full flex-wrap items-end gap-2 min-[1180px]:col-span-1 min-[1180px]:min-w-0 min-[1180px]:flex-nowrap min-[1180px]:justify-start min-[1180px]:gap-1'
                       }`}
                   >
                     <ButtonLoading
@@ -908,14 +914,14 @@ const SalesLedger = (user: any) => {
                       buttonLoading={buttonLoading}
                       label="Apply"
                       icon={<FiCheckSquare />}
-                      className="h-10 px-2"
+                      className="h-9 px-2"
                     />
                     <ButtonLoading
                       onClick={handleResetFilters}
                       buttonLoading={false}
                       label="Reset"
                       icon={<FiRotateCcw />}
-                      className="h-10 px-2"
+                      className="h-9 px-2"
                     />
                     {!useFilterMenuEnabled && (
                       <>
@@ -926,7 +932,7 @@ const SalesLedger = (user: any) => {
                           value={rowsPerPage.toString()}
                           onChange={handleRowsPerPageChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-14 text-center"
+                          className="font-medium text-sm h-9 !w-14 text-center"
                         />
                         <InputElement
                           id="fontSizeInline"
@@ -935,12 +941,12 @@ const SalesLedger = (user: any) => {
                           value={fontSize.toString()}
                           onChange={handleFontSizeChange}
                           type="text"
-                          className="font-medium text-sm h-10 !w-14 text-center"
+                          className="font-medium text-sm h-9 !w-14 text-center"
                         />
                         <PrintButton
                           onClick={handlePrint}
                           label=""
-                          className="h-10 !w-10 !px-0"
+                          className="h-9 !w-9 !px-0"
                           disabled={!Array.isArray(tableData) || tableData.length === 0}
                         />
                       </>

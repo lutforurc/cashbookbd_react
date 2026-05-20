@@ -7,6 +7,7 @@ interface OrderProps {
   className?: string;
   id?: string;
   value?: string;
+  selectOption?: string;
 }
 
 const OrderTypes: React.FC<OrderProps> = ({
@@ -16,6 +17,7 @@ const OrderTypes: React.FC<OrderProps> = ({
   className,
   id,
   value,
+  selectOption = 'Select Order Type',
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>("");
 
@@ -40,7 +42,7 @@ const OrderTypes: React.FC<OrderProps> = ({
       className={`block p-2 text-sm text-gray-900 border border-gray-300 rounded-xs bg-gray-50 outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
     >
       <option disabled value="">
-        Select Order Type
+        {selectOption}
       </option>
       <option value="1">Purchase</option>
       <option value="2">Sales</option>
