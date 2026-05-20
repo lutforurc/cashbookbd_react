@@ -305,6 +305,39 @@ const AddCustomerSupplier = () => {
     (opt: any) => opt.value === formik.values.area_id?.toString(),
   );
 
+  const enterNavigationOrder = [
+    'type_id',
+    'name',
+    'manual_address',
+    'contact_person',
+    'contact_number',
+    'mobile',
+    'ledger_page',
+    'national_id',
+    'customer_supplier_save_button',
+  ];
+
+  const focusNextField = (currentId: string) => {
+    const currentIndex = enterNavigationOrder.indexOf(currentId);
+
+    for (let i = currentIndex + 1; i < enterNavigationOrder.length; i += 1) {
+      const nextElement = document.getElementById(enterNavigationOrder[i]);
+      if (nextElement instanceof HTMLElement) {
+        nextElement.focus();
+        return;
+      }
+    }
+  };
+
+  const handleEnterNavigation =
+    (currentId: string) =>
+      (event: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+        if (event.key !== 'Enter') return;
+
+        event.preventDefault();
+        focusNextField(currentId);
+      };
+
   return (
     <div>
       <HelmetTitle title={'Add Customers'} />
@@ -343,6 +376,7 @@ const AddCustomerSupplier = () => {
                 name="type_id"
                 label="Select Type"
                 onChange={formik.handleChange}
+                onKeyDown={handleEnterNavigation('type_id')}
                 defaultValue={formik.values.type_id}
                 className="h-[2.4rem] bg-transparent"
                 data={ClientType}
@@ -365,6 +399,7 @@ const AddCustomerSupplier = () => {
                 value={formik.values.name}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                onKeyDown={handleEnterNavigation('name')}
               />
               {formik.touched.name && formik.errors.name && (
                 <div className="text-red-500 text-sm">{formik.errors.name}</div>
@@ -379,6 +414,7 @@ const AddCustomerSupplier = () => {
                 value={formik.values.manual_address}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                onKeyDown={handleEnterNavigation('manual_address')}
               />
               {formik.touched.manual_address && formik.errors.manual_address && (
                 <div className="text-red-500 text-sm">
@@ -449,6 +485,7 @@ const AddCustomerSupplier = () => {
                   value={formik.values.contact_person}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  onKeyDown={handleEnterNavigation('contact_person')}
                 />
                 {formik.touched.contact_person && formik.errors.contact_person && (
                   <div className="text-red-500 text-sm">{formik.errors.contact_person}</div>
@@ -464,6 +501,7 @@ const AddCustomerSupplier = () => {
                   value={formik.values.contact_number}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  onKeyDown={handleEnterNavigation('contact_number')}
                 />
                 {formik.touched.contact_number && formik.errors.contact_number && (
                   <div className="text-red-500 text-sm">{formik.errors.contact_number}</div>
@@ -481,6 +519,7 @@ const AddCustomerSupplier = () => {
                 value={formik.values.mobile}
                 onChange={handleMobileChange}
                 onBlur={handleMobileBlur}
+                onKeyDown={handleEnterNavigation('mobile')}
               />
               {formik.touched.mobile && formik.errors.mobile && (
                 <div className="text-red-500 text-sm">{formik.errors.mobile}</div>
@@ -516,6 +555,7 @@ const AddCustomerSupplier = () => {
               placeholder="Enter Ledger Page"
               label="Ledger Page"
               onChange={formik.handleChange}
+              onKeyDown={handleEnterNavigation('ledger_page')}
             />
           </div>
 
@@ -531,6 +571,7 @@ const AddCustomerSupplier = () => {
                 placeholder="Enter National ID"
                 label="National ID"
                 onChange={formik.handleChange}
+                onKeyDown={handleEnterNavigation('national_id')}
               />
 
               {settings?.data?.branch?.have_customer_sl === 1 && (
@@ -777,6 +818,7 @@ const AddCustomerSupplier = () => {
           )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
             <ButtonLoading
+              id="customer_supplier_save_button"
               onClick={formik.handleSubmit}
               buttonLoading={buttonLoading}
               label={buttonLoading ? 'Saving...' : 'Save'}
