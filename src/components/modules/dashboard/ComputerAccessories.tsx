@@ -14,6 +14,22 @@ const ComputerAccessories = () => {
   const settings = useSelector((s: any) => s.settings);
   const { purchaseSales, loading } = useSelector((state) => state.charts);
   const dispatch = useDispatch();
+  const topProductsSales = purchaseSales?.data?.data?.topProductsSales || [];
+  const topProductsPurchase = purchaseSales?.data?.data?.topProductsPurchase || [];
+  const topProductsSalesTotal = topProductsSales.reduce(
+    (sum, item) => sum + Number(item?.qty || 0),
+    0,
+  );
+  const topProductsPurchaseTotal = topProductsPurchase.reduce(
+    (sum, item) => sum + Number(item?.qty || 0),
+    0,
+  );
+
+
+  console.log('====================================');
+  console.log("settings", settings?.data?.branch?.dashboard_top_sales_days);
+  console.log('====================================');
+
 
   useEffect(() => {
     dispatch(getDashboard());
@@ -84,19 +100,19 @@ const ComputerAccessories = () => {
               </div>
             </div>
 
-            {purchaseSales?.data?.data?.topProductsSales?.length > 0 && (
+            {topProductsSales?.length > 0 && (
               <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
                 {/* Header */}
                 <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
                   <span className="text-sm font-bold">
-                    Top Sold Products (Last 7 Days)
+                    Top Sales Products ({settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today Day' : `${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`})
                   </span>
                 </div>
                 {/* Body */}
                 <div className={`p-4 max-h-72 overflow-y-auto`}>
-                  {purchaseSales?.data?.data?.topProductsSales?.length > 0 ? (
+                  {topProductsSales?.length > 0 ? (
                     <ul className="space-y-2">
-                      {purchaseSales?.data?.data?.topProductsSales.map(
+                      {topProductsSales.map(
                         (item, index) => {
                           const nameLength = item.name?.length || 0;
                           const fontClass =
@@ -126,6 +142,12 @@ const ComputerAccessories = () => {
                           );
                         },
                       )}
+                      <li className="flex items-center justify-between border-t border-slate-300 dark:border-gray-500 pt-2 font-bold">
+                        <span className="text-[12px]">Total</span>
+                        <span className="text-[12px]">
+                          {thousandSeparator(topProductsSalesTotal)}
+                        </span>
+                      </li>
                     </ul>
                   ) : (
                     <p className="text-sm italic text-gray-500 dark:text-gray-300">
@@ -135,19 +157,19 @@ const ComputerAccessories = () => {
                 </div>
               </div>
             )}
-            {purchaseSales?.data?.data?.topProductsPurchase?.length > 0 && (
+            {topProductsPurchase?.length > 0 && (
               <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
                 {/* Header */}
                 <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
                   <span className="text-sm font-bold">
-                    Top Purchase Products (Last 7 Days)
+                    Top Purchase Products ({settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today Day' : `${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`})
                   </span>
                 </div>
                 {/* Body */}
                 <div className={`p-4 max-h-72 overflow-y-auto`}>
-                  {purchaseSales?.data?.data?.topProductsPurchase?.length > 0 ? (
+                  {topProductsPurchase?.length > 0 ? (
                     <ul className="space-y-2">
-                      {purchaseSales?.data?.data?.topProductsPurchase.map(
+                      {topProductsPurchase.map(
                         (item, index) => {
                           const nameLength = item.name?.length || 0;
                           const fontClass =
@@ -177,6 +199,12 @@ const ComputerAccessories = () => {
                           );
                         },
                       )}
+                      <li className="flex items-center justify-between border-t border-slate-300 dark:border-gray-500 pt-2 font-bold">
+                        <span className="text-[12px]">Total</span>
+                        <span className="text-[12px]">
+                          {thousandSeparator(topProductsPurchaseTotal)}
+                        </span>
+                      </li>
                     </ul>
                   ) : (
                     <p className="text-sm italic text-gray-500 dark:text-gray-300">

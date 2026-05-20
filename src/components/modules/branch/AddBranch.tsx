@@ -46,6 +46,7 @@ interface branchItem {
   notes: string;
   invoice_label: string;
   decimal_places: number;
+  dashboard_top_sales_days: number;
   device_identifier_text?: string;
   status: string;
   warranty_controll: boolean;
@@ -145,6 +146,7 @@ const AddBranch = () => {
     notes: '',
     invoice_label: '',
     decimal_places: 0,
+    dashboard_top_sales_days: 0,
     device_identifier_text: '',
     status: '',
     warranty_controll: false,
@@ -227,6 +229,7 @@ const AddBranch = () => {
           b.device_identifier_text === '0'
             ? ''
             : String(b.device_identifier_text),
+        dashboard_top_sales_days: b.dashboard_top_sales_days != null ? b.dashboard_top_sales_days : 0,
 
         // 🔑 CHECKBOX FIX
         is_opening: toBooleanFlag(b.is_opening),
@@ -642,6 +645,18 @@ const AddBranch = () => {
                       className={''}
                       onChange={handleOnChange}
                     />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <InputElement
+                      id="dashboard_top_sales_days"
+                      value={formData.dashboard_top_sales_days || ''}
+                      name="dashboard_top_sales_days"
+                      placeholder={'Dashboard Top Sales Days'}
+                      label={'Dashboard Top Sales Days'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
