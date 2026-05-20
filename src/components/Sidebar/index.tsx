@@ -5,6 +5,8 @@ import {
   FiActivity,
   FiBarChart2,
   FiBook,
+  FiChevronLeft,
+  FiChevronRight,
   FiClipboard,
   FiGrid,
   FiHome,
@@ -43,6 +45,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const storedSidebarExpanded = localStorage.getItem('sidebar-expanded');
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true',
+  );
+  const storedSidebarCollapsed = localStorage.getItem('sidebar-collapsed');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    storedSidebarCollapsed === null ? false : storedSidebarCollapsed === 'true',
   );
 
   // State to track which menu is open (null means no menu is open)
@@ -105,18 +111,35 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
     }
   }, [isTopbar, sidebarExpanded]);
 
+  useEffect(() => {
+    if (isTopbar) return;
+    localStorage.setItem('sidebar-collapsed', sidebarCollapsed.toString());
+  }, [isTopbar, sidebarCollapsed]);
+
   return (
     <aside
       ref={sidebar}
       className={
         isTopbar
           ? 'topbar-menu sticky top-0 isolate z-[9998] w-full border-b border-stroke bg-white dark:border-strokedark dark:bg-boxdark'
-          : `app-sidebar-menu absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden duration-300 ease-linear bg-white dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+          : `app-sidebar-menu w-72.5 ${sidebarCollapsed ? 'app-sidebar-collapsed lg:w-20' : ''} absolute left-0 top-0 z-9999 flex h-screen flex-col overflow-y-hidden duration-300 ease-linear bg-white dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
       }
     >
       {!isTopbar ? (
-        <div className="flex items-center justify-between gap-2 px-6 py-3 lg:py-3">
+        <div className={`flex items-center justify-between gap-2 px-6 py-3 lg:py-3 ${sidebarCollapsed ? 'lg:px-3' : ''}`}>
           <NavLink to="/">{/* <img src={Logo} alt="Logo" /> */}</NavLink>
+          <button
+            type="button"
+            onClick={() => {
+              setSidebarCollapsed((current) => !current);
+              setOpenMenu(null);
+            }}
+            className="hidden h-9 w-9 items-center justify-center rounded-sm border border-stroke bg-white text-slate-600 shadow-sm transition hover:bg-gray-100 hover:text-slate-900 dark:border-strokedark dark:bg-boxdark dark:text-slate-300 dark:hover:bg-meta-4 lg:flex"
+            title={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
+            aria-label={sidebarCollapsed ? 'Show menu labels' : 'Show icons only'}
+          >
+            {sidebarCollapsed ? <FiChevronRight size={18} /> : <FiChevronLeft size={18} />}
+          </button>
           <button
             ref={trigger}
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -144,6 +167,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       <div className={isTopbar ? 'no-scrollbar overflow-visible' : 'no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear'}>
         <nav
           className={isTopbar ? 'overflow-visible px-2 py-2 md:px-4' : 'py-2 px-4 lg:mt-1 lg:px-6'}
+          onClick={(event) => {
+            if (isTopbar || !sidebarCollapsed) return;
+            const target = event.target as HTMLElement;
+            const submenuLink = target.closest('li > div a');
+            if (submenuLink) {
+              setOpenMenu(null);
+            }
+          }}
         >
           <div className={isTopbar ? 'flex flex-wrap items-start gap-3' : ''}>
             <ul className={isTopbar ? 'flex min-w-0 flex-1 flex-wrap items-stretch gap-1.5 pb-1' : 'flex flex-col gap-1.5'}>

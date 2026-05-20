@@ -16,6 +16,99 @@
   max-height: none !important;
 }
 
+@media (min-width: 1024px) {
+  .app-sidebar-menu.app-sidebar-collapsed nav {
+    padding-right: 0.75rem !important;
+    padding-left: 0.75rem !important;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul {
+    align-items: center;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li,
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > a {
+    width: 100%;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li {
+    position: relative;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > a {
+    justify-content: center;
+    gap: 0;
+    border-left-width: 0 !important;
+    padding: 0.7rem 0.5rem !important;
+    font-size: 0;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > a svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div {
+    position: fixed;
+    left: 5rem;
+    top: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: block;
+    width: min(320px, calc(100vw - 5rem));
+    max-height: none !important;
+    overflow-y: auto !important;
+    border: 1px solid rgb(226 232 240);
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    border-radius: 0;
+    background: white;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div[class*='max-h-0'] {
+    display: none !important;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div[class*='max-h-180'] {
+    display: block !important;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul {
+    margin: 0 !important;
+    padding: 0.5rem !important;
+    background: white;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li > a {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    border-radius: 0.375rem;
+    padding: 0.625rem 0.875rem !important;
+    background: white;
+    font-size: 0.875rem;
+    line-height: 1.35;
+  }
+
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li > a:hover {
+    background: rgb(241 245 249);
+  }
+
+  .dark .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div,
+  .dark .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul,
+  .dark .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li > a {
+    border-color: rgb(51 65 85);
+    background: rgb(30 41 59);
+  }
+
+  .dark .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li > a:hover {
+    background: rgb(51 65 85);
+  }
+}
+
 .topbar-menu nav > div > ul > li {
   position: relative;
   flex: 0 0 auto;
