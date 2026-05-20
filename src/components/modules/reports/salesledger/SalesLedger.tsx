@@ -458,8 +458,7 @@ const SalesLedger = (user: any) => {
         const details = row?.sales_master?.details ?? [];
         const notes = row?.sales_master?.notes ?? row?.notes ?? '';
         const remarks =
-          row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]
-            ?.remarks ?? '';
+          row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]?.remarks ?? '';
         const detailText = notes || remarks;
 
         return (
