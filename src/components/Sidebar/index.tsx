@@ -142,7 +142,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
     >
       {!isTopbar ? (
         <div className={`flex items-center justify-between gap-2 px-6 py-3 lg:py-3 ${sidebarCollapsed ? 'lg:justify-center lg:px-2' : ''}`}>
-          <NavLink to="/" className="flex min-w-0 flex-1 items-center" title={companyName}>
+          <NavLink
+            to="/"
+            className={`flex min-w-0 flex-1 items-center ${sidebarCollapsed ? 'lg:hidden' : ''}`}
+            title={companyName}
+          >
             <img
               src={companyLogo}
               alt={companyName}
@@ -197,6 +201,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
             const submenuLink = target.closest('li > div a');
             if (submenuLink) {
               setOpenMenu(null);
+              return;
+            }
+
+            const topLevelLink = target.closest('nav > div > ul > li > a') as HTMLElement | null;
+            if (topLevelLink && sidebar.current) {
+              const rect = topLevelLink.getBoundingClientRect();
+              const flyoutTop = Math.max(8, Math.min(rect.top, window.innerHeight - 96));
+              sidebar.current.style.setProperty('--sidebar-flyout-left', `${rect.right + 12}px`);
+              sidebar.current.style.setProperty('--sidebar-flyout-top', `${flyoutTop}px`);
             }
           }}
         >
