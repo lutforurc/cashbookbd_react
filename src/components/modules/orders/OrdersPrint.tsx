@@ -269,12 +269,16 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                       </td>
                     </tr>
                   )}
-                  {pageIndex === pages.length - 1 ? (
+                </tbody>
+              </table>
+
+              {pageIndex === pages.length - 1 ? (
+                <table className="mt-2 w-full table-fixed border-collapse">
+                  <tbody>
                     <tr className="font-semibold">
                       <td
                         style={printTextStyle}
-                        colSpan={6}
-                        className="px-2 py-1 text-center"
+                        className="border border-gray-900 px-2 py-1 text-center"
                       >
                         PO Trx. Bal. Qty: {thousandSeparator(purchaseTrxBalance)}
                         <span className="mx-6">
@@ -283,9 +287,9 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                         Trx. Def. Qty: {thousandSeparator(trxDefQuantity)}
                       </td>
                     </tr>
-                  ) : null}
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              ) : null}
 
               <div style={{ fontSize: fs }} className="mt-3 flex items-center justify-between text-xs text-gray-900">
                 <span>* This document is system generated.</span>
