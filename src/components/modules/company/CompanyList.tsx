@@ -140,18 +140,20 @@ const CompanyList = () => {
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <SelectOption onChange={handleSelectChange} />
-          <SearchInput
+          <div className='flex'>
+            <SearchInput
             search={search}
             setSearchValue={setSearchValue}
-            className="text-nowrap"
+            className="text-nowrap h-9"
           />
           <ButtonLoading
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}
             label="Search"
             icon={<FiSearch />}
-            className="whitespace-nowrap"
+            className="whitespace-nowrap h-9 -ml-1"
           />
+          </div>
         </div>
       </div>
 
