@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiCreditCard, FiRefreshCw, FiSave, FiUsers } from 'react-icons/fi';
+import { FiCreditCard, FiRefreshCw, FiSave, FiUserX, FiUsers } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -7,6 +7,8 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../utils/fields/InputElement';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import Table from '../../utils/others/Table';
+import Pagination from '../../utils/utils-functions/Pagination';
 import {
   assignCompanyToReseller,
   clearResellerFeedback,
@@ -47,13 +49,116 @@ const currency = (value: number | string | null | undefined, code = 'BDT') => {
 
 const ResellerAdmin: React.FC = () => {
   const dispatch = useDispatch<any>();
-  const { overview, resellers, companies, payments, commissionLedgers, loading, saving, error, successMessage } = useSelector(
+  const { overview, resellers, companies, payments, commissionLedgers, commissionLedgerPagination, loading, saving, error, successMessage } = useSelector(
     (state: any) => state.reseller,
   );
   const [form, setForm] = useState(emptyForm);
   const [paymentForm, setPaymentForm] = useState(emptyPaymentForm);
   const [selectedResellerId, setSelectedResellerId] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const resellerColumns = [
+    {
+      key: 'name',
+      header: 'Name',
+      render: (reseller: Reseller) => (
+        <>
+          <p className="font-medium text-black dark:text-white">{reseller.name}</p>
+          <p className="text-xs text-slate-500 dark:text-bodydark2">{reseller.business_name || '-'}</p>
+        </>
+      ),
+    },
+    {
+      key: 'contact',
+      header: 'Contact',
+      render: (reseller: Reseller) => (
+        <>
+          <p>{reseller.phone || '-'}</p>
+          <p className="text-xs">{reseller.email || '-'}</p>
+        </>
+      ),
+    },
+    { key: 'company_count', header: 'Companies' },
+    { key: 'approved_commission', header: 'Commission' },
+    { key: 'status_label', header: 'Status' },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (reseller: Reseller) => (
+        <button type="button" className="text-primary hover:underline" onClick={() => editReseller(reseller)}>
+          Edit
+        </button>
+      ),
+    },
+  ];
+  const resellerTableData = resellers.map((reseller) => ({
+    ...reseller,
+    company_count: reseller.company_count || 0,
+    approved_commission: currency(reseller.approved_commission),
+    status_label: Number(reseller.status) === 1 ? 'Active' : 'Inactive',
+  }));
+  const tableClassNames = {
+    className: 'shadow-none',
+    theadClassName: 'bg-gray-2 text-slate-500 dark:bg-meta-4 dark:text-bodydark2',
+    tbodyClassName: 'dark:bg-boxdark',
+  };
+  const assignedCompanyColumns = [
+    { key: 'company', header: 'Company' },
+    { key: 'reseller', header: 'Reseller' },
+    { key: 'plan', header: 'Plan' },
+    { key: 'status', header: 'Status' },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (company: any) => (
+        <button
+          type="button"
+          onClick={() => unassignCompany(Number(company.id), Number(company.reseller_id))}
+          disabled={saving}
+          className="inline-flex items-center gap-1 rounded-sm bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <FiUserX />
+          Cancel
+        </button>
+      ),
+    },
+  ];
+  const assignedCompanyTableData = companies.filter((company) => company.reseller_id).map((company) => ({
+    ...company,
+    company: company.name,
+    reseller: company.reseller_name || '-',
+    plan: company.plan_name || '-',
+    status: company.subscription_status || '-',
+  }));
+  const paymentCommissionColumns = [
+    { key: 'company', header: 'Company' },
+    { key: 'payment', header: 'Payment' },
+    { key: 'amount', header: 'Amount' },
+    { key: 'commission', header: 'Commission' },
+  ];
+  const paymentCommissionTableData = payments.map((payment) => ({
+    ...payment,
+    company: payment.company_name || '-',
+    payment: payment.payment_status || '-',
+    amount: currency(payment.amount, payment.currency || 'BDT'),
+    commission: currency(payment.commission_amount, payment.currency || 'BDT'),
+  }));
+  const commissionPaymentColumns = [
+    { key: 'date', header: 'Date' },
+    { key: 'reseller', header: 'Reseller' },
+    { key: 'method', header: 'Method' },
+    { key: 'account', header: 'Account' },
+    { key: 'reference', header: 'Reference' },
+    { key: 'amount', header: 'Amount' },
+  ];
+  const commissionPaymentTableData = commissionLedgers.filter((ledger: any) => ledger.ledger_type === 'paid').map((ledger: any) => ({
+    ...ledger,
+    date: formatDate(ledger.ledger_date || ledger.paid_at),
+    reseller: ledger.reseller_name || '-',
+    method: paymentMethodLabel(ledger.payment_method),
+    account: ledger.paid_to_account || '-',
+    reference: ledger.payment_reference || ledger.reference_no || '-',
+    amount: currency(ledger.amount, ledger.currency || 'BDT'),
+  }));
 
   const resellerOptions = useMemo(
     () => resellers.map((reseller) => ({ id: String(reseller.id), name: reseller.name })),
@@ -71,7 +176,7 @@ const ResellerAdmin: React.FC = () => {
   );
 
   useEffect(() => {
-    dispatch(fetchResellerAdminData());
+    dispatch(fetchResellerAdminData({ commissionLedgerPage: 1, commissionLedgerPerPage: 10 }));
 
     return () => {
       dispatch(clearResellerFeedback());
@@ -85,8 +190,11 @@ const ResellerAdmin: React.FC = () => {
   useEffect(() => {
     if (!successMessage) return;
     toast.success(successMessage);
-    dispatch(fetchResellerAdminData());
-  }, [dispatch, successMessage]);
+    dispatch(fetchResellerAdminData({
+      commissionLedgerPage: commissionLedgerPagination?.current_page || 1,
+      commissionLedgerPerPage: commissionLedgerPagination?.per_page || 10,
+    }));
+  }, [commissionLedgerPagination?.current_page, commissionLedgerPagination?.per_page, dispatch, successMessage]);
 
   const handleFormChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -160,6 +268,27 @@ const ResellerAdmin: React.FC = () => {
     } catch (error: any) {
       toast.error(error || 'Failed to assign company.');
     }
+  };
+
+  const unassignCompany = async (companyId: number, resellerId: number) => {
+    if (!window.confirm('Cancel this company assignment?')) return;
+
+    try {
+      await dispatch(assignCompanyToReseller({
+        reseller_id: resellerId,
+        company_id: companyId,
+        status: 0,
+      })).unwrap();
+    } catch (error: any) {
+      toast.error(error || 'Failed to cancel company assignment.');
+    }
+  };
+
+  const handleCommissionPaymentPageChange = (page: number) => {
+    dispatch(fetchResellerAdminData({
+      commissionLedgerPage: page,
+      commissionLedgerPerPage: commissionLedgerPagination?.per_page || 10,
+    }));
   };
 
   const handlePayCommission = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -293,49 +422,13 @@ const ResellerAdmin: React.FC = () => {
           <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
             <h2 className="text-base font-semibold text-black dark:text-white">Reseller List</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-2 text-left text-xs uppercase text-slate-500 dark:bg-meta-4 dark:text-bodydark2">
-                <tr>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Contact</th>
-                  <th className="px-4 py-3">Companies</th>
-                  <th className="px-4 py-3">Commission</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resellers.map((reseller) => (
-                  <tr key={reseller.id} className="border-t border-stroke text-sm text-slate-600 dark:border-strokedark dark:text-bodydark">
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-black dark:text-white">{reseller.name}</p>
-                      <p className="text-xs text-slate-500 dark:text-bodydark2">{reseller.business_name || '-'}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p>{reseller.phone || '-'}</p>
-                      <p className="text-xs">{reseller.email || '-'}</p>
-                    </td>
-                    <td className="px-4 py-3">{reseller.company_count || 0}</td>
-                    <td className="px-4 py-3">{currency(reseller.approved_commission)}</td>
-                    <td className="px-4 py-3">{Number(reseller.status) === 1 ? 'Active' : 'Inactive'}</td>
-                    <td className="px-4 py-3">
-                      <button type="button" className="text-primary hover:underline" onClick={() => editReseller(reseller)}>
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {resellers.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
-                      No reseller found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <Table
+            columns={resellerColumns}
+            data={resellerTableData || []}
+            perPage={10}
+            noDataMessage="No reseller found."
+            {...tableClassNames}
+          />
         </section>
       </div>
 
@@ -423,41 +516,48 @@ const ResellerAdmin: React.FC = () => {
       </section>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <DataTable
-          title="Assigned Companies"
-          headers={['Company', 'Reseller', 'Plan', 'Status']}
-          empty="No company assignment found."
-          rows={companies.filter((company) => company.reseller_id).map((company) => [
-            company.name,
-            company.reseller_name || '-',
-            company.plan_name || '-',
-            company.subscription_status || '-',
-          ])}
-        />
-        <DataTable
-          title="Payment Commissions"
-          headers={['Company', 'Payment', 'Amount', 'Commission']}
-          empty="No payment commission found."
-          rows={payments.map((payment) => [
-            payment.company_name || '-',
-            payment.payment_status || '-',
-            currency(payment.amount, payment.currency || 'BDT'),
-            currency(payment.commission_amount, payment.currency || 'BDT'),
-          ])}
-        />
-        <DataTable
-          title="Commission Payments"
-          headers={['Date', 'Reseller', 'Method', 'Account', 'Reference', 'Amount']}
-          empty="No reseller payment found."
-          rows={commissionLedgers.filter((ledger: any) => ledger.ledger_type === 'paid').map((ledger: any) => [
-            formatDate(ledger.ledger_date || ledger.paid_at),
-            ledger.reseller_name || '-',
-            paymentMethodLabel(ledger.payment_method),
-            ledger.paid_to_account || '-',
-            ledger.payment_reference || ledger.reference_no || '-',
-            currency(ledger.amount, ledger.currency || 'BDT'),
-          ])}
-        />
+        <TableSection title="Assigned Companies">
+          <Table
+            columns={assignedCompanyColumns}
+            data={assignedCompanyTableData || []}
+            perPage={10}
+            noDataMessage="No company assignment found."
+            {...tableClassNames}
+          />
+        </TableSection>
+        <TableSection title="Payment Commissions">
+          <Table
+            columns={paymentCommissionColumns}
+            data={paymentCommissionTableData || []}
+            perPage={10}
+            noDataMessage="No payment commission found."
+            {...tableClassNames}
+          />
+        </TableSection>
+        <TableSection title="Commission Payments">
+          <Table
+            columns={commissionPaymentColumns}
+            data={commissionPaymentTableData || []}
+            noDataMessage="No reseller payment found."
+            {...tableClassNames}
+          />
+          {(commissionLedgerPagination?.last_page || 1) > 1 ? (
+            <div className="border-t border-gray-200 bg-white px-3 py-3 text-sm text-gray-600 dark:border-gray-700 dark:bg-boxdark dark:text-gray-300">
+              {/* <span>
+                Showing {(((commissionLedgerPagination?.current_page || 1) - 1) * (commissionLedgerPagination?.per_page || 10)) + 1}
+                -{Math.min((commissionLedgerPagination?.current_page || 1) * (commissionLedgerPagination?.per_page || 10), commissionLedgerPagination?.total || 0)}
+                {' '}of {commissionLedgerPagination?.total || 0}
+              </span> */}
+              <Pagination
+                currentPage={commissionLedgerPagination?.current_page || 1}
+                totalPages={commissionLedgerPagination?.last_page || 1}
+                handlePageChange={handleCommissionPaymentPageChange}
+              />
+            </div>
+          ) : (
+            ''
+          )}
+        </TableSection>
       </div>
     </div>
   );
@@ -511,52 +611,12 @@ const SelectField = ({ label, options, ...props }: any) => (
   />
 );
 
-const DataTable = ({
-  title,
-  headers,
-  rows,
-  empty,
-}: {
-  title: string;
-  headers: string[];
-  rows: Array<Array<string | number>>;
-  empty: string;
-}) => (
+const TableSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
     <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
       <h2 className="text-base font-semibold text-black dark:text-white">{title}</h2>
     </div>
-    <div className="overflow-x-auto">
-      <table className="min-w-full">
-        <thead className="bg-gray-2 text-left text-xs uppercase text-slate-500 dark:bg-meta-4 dark:text-bodydark2">
-          <tr>
-            {headers.map((header) => (
-              <th key={header} className="px-4 py-3">
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className="border-t border-stroke text-sm text-slate-600 dark:border-strokedark dark:text-bodydark">
-              {row.map((cell, cellIndex) => (
-                <td key={`${rowIndex}-${cellIndex}`} className="px-4 py-3">
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
-          {rows.length === 0 && (
-            <tr>
-              <td colSpan={headers.length} className="px-4 py-8 text-center text-sm text-gray-500">
-                {empty}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    {children}
   </section>
 );
 

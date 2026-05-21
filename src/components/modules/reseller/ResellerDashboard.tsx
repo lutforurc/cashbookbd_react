@@ -9,15 +9,65 @@ import {
   fetchResellerDashboardData,
 } from './resellerSlice';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import Table from '../../utils/others/Table';
 
-const currency = (value: number | string | null | undefined, code = 'BDT') => {
+const currency = (value: number | string | null | undefined, code = '') => {
   const formatted = thousandSeparator(Number(value || 0));
   return formatted === '-' ? '-' : `${code} ${formatted}`;
+};
+
+const statNumber = (value: number | string | null | undefined) => {
+  const numericValue = Number(value || 0);
+  return numericValue > 0 ? thousandSeparator(numericValue) : '-';
 };
 
 const ResellerDashboard: React.FC = () => {
   const dispatch = useDispatch<any>();
   const { overview, companies, payments, commissionLedgers, loading, error } = useSelector((state: any) => state.reseller);
+  const clientColumns = [
+    { key: 'company', header: 'Company' },
+    { key: 'plan', header: 'Plan' },
+    { key: 'subscription', header: 'Subscription' },
+    { key: 'access', header: 'Access' },
+  ];
+  const clientTableData = companies.map((company: any) => ({
+    id: company.id,
+    company: company.name,
+    plan: company.plan_name || '-',
+    subscription: company.subscription_status || '-',
+    access: company.access_status || '-',
+  }));
+  const commissionColumns = [
+    { key: 'company', header: 'Company' },
+    { key: 'payment', header: 'Payment' },
+    { key: 'amount', header: 'Amount' },
+    { key: 'commission', header: 'Commission' },
+  ];
+  const commissionTableData = payments.map((payment: any) => ({
+    id: payment.id,
+    company: payment.company_name || '-',
+    payment: payment.payment_status || '-',
+    amount: currency(payment.amount, payment.currency || 'BDT'),
+    commission: currency(payment.commission_amount, payment.currency || 'BDT'),
+  }));
+  const paymentDetails = commissionLedgers.filter((ledger: any) => ledger.ledger_type === 'paid');
+  const paymentColumns = [
+    { key: 'date', header: 'Date' },
+    { key: 'method', header: 'Method' },
+    { key: 'account', header: 'Account' },
+    { key: 'reference', header: 'Reference' },
+    { key: 'amount', header: 'Amount' },
+    { key: 'notes', header: 'Notes' },
+  ];
+  const paymentTableData = paymentDetails.map((ledger: any) => ({
+    id: ledger.id,
+    date: formatDate(ledger.ledger_date || ledger.paid_at),
+    method: paymentMethodLabel(ledger.payment_method),
+    account: ledger.paid_to_account || '-',
+    reference: ledger.payment_reference || ledger.reference_no || '-',
+    amount: currency(ledger.amount, ledger.currency || ''),
+    notes: ledger.notes || '-',
+  }));
 
   useEffect(() => {
     dispatch(fetchResellerDashboardData());
@@ -55,8 +105,8 @@ const ResellerDashboard: React.FC = () => {
       </section>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <StatCard label="Clients" value={overview?.assigned_companies ?? 0} />
-        <StatCard label="Approved Payments" value={(overview?.approved_payments ?? 0)} />
+        <StatCard label="Clients" value={statNumber(overview?.assigned_companies)} />
+        <StatCard label="Approved Payments" value={statNumber(overview?.approved_payments)} />
         <StatCard label="Approved Amount" value={thousandSeparator(overview?.approved_amount)} />
         <StatCard label="Commission" value={currency(overview?.approved_commission)} />
         <StatCard label="Paid" value={currency(overview?.paid_commission)} />
@@ -68,70 +118,30 @@ const ResellerDashboard: React.FC = () => {
           <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
             <h2 className="text-base font-semibold text-black dark:text-white">My Clients</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-2 text-left text-xs uppercase text-slate-500 dark:bg-meta-4 dark:text-bodydark2">
-                <tr>
-                  <th className="px-4 py-3">Company</th>
-                  <th className="px-4 py-3">Plan</th>
-                  <th className="px-4 py-3">Subscription</th>
-                  <th className="px-4 py-3">Access</th>
-                </tr>
-              </thead>
-              <tbody>
-                {companies.map((company: any) => (
-                  <tr key={company.id} className="border-t border-stroke text-sm text-slate-600 dark:border-strokedark dark:text-bodydark">
-                    <td className="px-4 py-3 font-medium text-black dark:text-white">{company.name}</td>
-                    <td className="px-4 py-3 text-black dark:text-white">{company.plan_name || '-'}</td>
-                    <td className="px-4 py-3 capitalize text-black dark:text-white">{company.subscription_status || '-'}</td>
-                    <td className="px-4 py-3 capitalize text-black dark:text-white">{company.access_status || '-'}</td>
-                  </tr>
-                ))}
-                {companies.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
-                      No client assigned yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <Table
+            columns={clientColumns}
+            data={clientTableData || []}
+            perPage={10}
+            noDataMessage="No client assigned yet."
+            className="shadow-none"
+            theadClassName="bg-gray-2 text-slate-500 dark:bg-meta-4 dark:text-bodydark2"
+            tbodyClassName="dark:bg-boxdark"
+          />
         </section>
 
         <section className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
             <h2 className="text-base font-semibold text-black dark:text-white">Commission History</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-2 text-left text-xs uppercase text-slate-500 dark:bg-meta-4 dark:text-bodydark2">
-                <tr>
-                  <th className="px-4 py-3">Company</th>
-                  <th className="px-4 py-3">Payment</th>
-                  <th className="px-4 py-3">Amount</th>
-                  <th className="px-4 py-3">Commission</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.map((payment: any) => (
-                  <tr key={payment.id} className="border-t border-stroke text-sm text-slate-600 dark:border-strokedark dark:text-bodydark">
-                    <td className="px-4 py-3 font-medium text-black dark:text-white">{payment.company_name || '-'}</td>
-                    <td className="px-4 py-3 capitalize text-black dark:text-white">{payment.payment_status || '-'}</td>
-                    <td className="px-4 py-3 text-black dark:text-white">{currency(payment.amount, payment.currency || 'BDT')}</td>
-                    <td className="px-4 py-3 font-medium text-black dark:text-white">{currency(payment.commission_amount, payment.currency || 'BDT')}</td>
-                  </tr>
-                ))}
-                {payments.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
-                      No payment commission found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <Table
+            columns={commissionColumns}
+            data={commissionTableData || []}
+            perPage={10}
+            noDataMessage="No payment commission found."
+            className="shadow-none"
+            theadClassName="bg-gray-2 text-slate-500 dark:bg-meta-4 dark:text-bodydark2"
+            tbodyClassName="dark:bg-boxdark"
+          />
         </section>
       </div>
 
@@ -139,39 +149,15 @@ const ResellerDashboard: React.FC = () => {
         <div className="border-b border-stroke px-5 py-4 dark:border-strokedark">
           <h2 className="text-base font-semibold text-black dark:text-white">Payment Details</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-gray-2 text-left text-xs uppercase text-slate-500 dark:bg-meta-4 dark:text-bodydark2">
-              <tr>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Method</th>
-                <th className="px-4 py-3">Account</th>
-                <th className="px-4 py-3">Reference</th>
-                <th className="px-4 py-3">Amount</th>
-                <th className="px-4 py-3">Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {commissionLedgers.filter((ledger: any) => ledger.ledger_type === 'paid').map((ledger: any) => (
-                <tr key={ledger.id} className="border-t border-stroke text-sm text-slate-600 dark:border-strokedark dark:text-bodydark">
-                  <td className="px-4 py-3">{formatDate(ledger.ledger_date || ledger.paid_at)}</td>
-                  <td className="px-4 py-3">{paymentMethodLabel(ledger.payment_method)}</td>
-                  <td className="px-4 py-3">{ledger.paid_to_account || '-'}</td>
-                  <td className="px-4 py-3">{ledger.payment_reference || ledger.reference_no || '-'}</td>
-                  <td className="px-4 py-3 font-medium text-black dark:text-white">{currency(ledger.amount, ledger.currency || 'BDT')}</td>
-                  <td className="px-4 py-3">{ledger.notes || '-'}</td>
-                </tr>
-              ))}
-              {commissionLedgers.filter((ledger: any) => ledger.ledger_type === 'paid').length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
-                    No reseller payment found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table
+          columns={paymentColumns}
+          data={paymentTableData || []}
+          perPage={10}
+          noDataMessage="No reseller payment found."
+          className="shadow-none"
+          theadClassName="bg-gray-2 text-slate-500 dark:bg-meta-4 dark:text-bodydark2"
+          tbodyClassName="dark:bg-boxdark"
+        />
       </section>
     </div>
   );

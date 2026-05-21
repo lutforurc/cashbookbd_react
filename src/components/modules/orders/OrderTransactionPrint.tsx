@@ -92,6 +92,26 @@ const buildFallbackTransactions = (order: OrderRow | null): PrintTransactionRow[
   ];
 };
 
+const calculateTransactionTotals = (rows: PrintTransactionRow[]) => rows.reduce(
+  (acc, row) => {
+    const weight = toNumber(row.weight);
+    const rate = toNumber(row.rate);
+    const freight = toNumber(row.freight_charge);
+    const receive = toNumber(row.receive);
+    const paymentOrReceive = freight > 0 ? freight : receive;
+    const amount = toNumber(row.amount) || (weight * rate);
+    const due = toNumber(row.due_amount) || (amount - freight);
+
+    acc.weight += weight;
+    acc.amount += amount;
+    acc.freight += paymentOrReceive;
+    acc.due += due;
+
+    return acc;
+  },
+  { weight: 0, amount: 0, freight: 0, due: 0 },
+);
+
 const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ order, title, rowsPerPage = 20, fontSize = 11 }, ref) => {
     const fs = Number.isFinite(fontSize) ? fontSize : 11;
@@ -102,29 +122,11 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
       : buildFallbackTransactions(order);
     const pages = chunkRows(transactionRows, rowsPerPage);
 
-    const totals = transactionRows.reduce(
-      (acc, row) => {
-        const weight = toNumber(row.weight);
-        const rate = toNumber(row.rate);
-        const freight = toNumber(row.freight_charge);
-        const receive = toNumber(row.receive);
-        const paymentOrReceive = freight > 0 ? freight : receive;
-        const amount = toNumber(row.amount) || (weight * rate);
-        const due = toNumber(row.due_amount) || (amount - freight);
-
-        acc.weight += weight;
-        acc.amount += amount;
-        acc.freight += paymentOrReceive;
-        acc.due += due;
-
-        return acc;
-      },
-      { weight: 0, amount: 0, freight: 0, due: 0 },
-    );
+    const totals = calculateTransactionTotals(transactionRows);
     const computedOrderAmount = toNumber(order?.order_amount) || (toNumber(order?.total_order) * toNumber(order?.order_rate));
     const orderDetailsText =
       order?.order_details_text ||
-      `Order Qty: ${thousandSeparator(toNumber(order?.total_order))} ${order?.unit || ''}, Rate: ${thousandSeparator(toNumber(order?.order_rate))}`;
+      `Order Qty: ${thousandSeparator(toNumber(order?.total_order))} , Rate: ${thousandSeparator(toNumber(order?.order_rate))}`;
 
 
       const receivedOrPaymentText = orderTypeLabel === 'Purchase' ? 'Payment' : 'Received';
@@ -134,7 +136,11 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
         <PrintStyles />
 
-        {(pages.length > 0 ? pages : [[]]).map((pageRows, pageIndex) => (
+	        {(pages.length > 0 ? pages : [[]]).map((pageRows, pageIndex) => {
+	          const pageTotals = calculateTransactionTotals(pageRows);
+	          const isLastPage = pageIndex === pages.length - 1;
+
+          return (
           <div key={pageIndex} className="print-page">
             <PadPrinting />
 
@@ -177,7 +183,8 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                 { order?.contract_order_qty && (
                   <div className="flex flex-wrap leading-4">
                     <span className="w-24 shrink-0">Contact Qty:</span>
-                    <span className="">{thousandSeparator(toNumber(order?.contract_order_qty || 0))} { order?.unit }</span>
+                    <span className="">{thousandSeparator(toNumber(order?.contract_order_qty || 0))} </span>
+                    {/* <span className="">{thousandSeparator(toNumber(order?.contract_order_qty || 0))} { order?.unit }</span> */}
                   </div>
                 )}
 
@@ -245,7 +252,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                           { formatTransportationNumber (row.vehicle_no) || '-'}
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                          {thousandSeparator(weight)} { Number(weight) > 0 && (row.unit || order?.unit || '') }
+                          {thousandSeparator(weight)} 
                         </td>
                         <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                           {thousandSeparator(rate)}
@@ -275,14 +282,34 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                 )}
               </tbody>
 
-              <tfoot>
-                {pageIndex === pages.length - 1 ? (
-                  <tr className="bg-gray-100 font-semibold">
-                    <td style={{ fontSize: fs }} colSpan={4} className="border border-black px-2 py-2 text-right">
-                      Grand Total
-                    </td>
+		              <tfoot>
+		                {!isLastPage ? (
+		                  <tr className="bg-gray-100 font-semibold">
+		                    <td style={{ fontSize: fs }} colSpan={4} className="border border-black px-2 py-2 text-right">
+		                      Page Total
+		                    </td>
+		                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+		                      {thousandSeparator(pageTotals.weight)} 
+		                    </td>
+		                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right"></td>
+		                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+		                      {thousandSeparator(pageTotals.amount)}
+		                    </td>
+		                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+		                      {pageTotals.freight > 0 ? thousandSeparator(pageTotals.freight) : '-'}
+		                    </td>
+		                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+		                      {thousandSeparator(pageTotals.due)}
+		                    </td>
+		                  </tr>
+		                ) : null}
+		                {isLastPage ? (
+		                  <tr className="bg-gray-200 font-bold">
+	                    <td style={{ fontSize: fs }} colSpan={4} className="border border-black px-2 py-2 text-right">
+	                      Grand Total
+	                    </td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                      {thousandSeparator(totals.weight)} {order?.unit || ''}
+                      {thousandSeparator(totals.weight)}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right"></td>
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
@@ -291,11 +318,11 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                     <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
                       {totals.freight > 0 ? thousandSeparator(totals.freight) : '-'}
                     </td>
-                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-                      {thousandSeparator(Number(totals.amount) - Number(totals.freight))}
-                    </td>
-                  </tr>
-                ) : null}
+	                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
+	                      {thousandSeparator(totals.due)}
+	                    </td>
+	                  </tr>
+	                ) : null}
               </tfoot>
             </table>
 
@@ -309,9 +336,10 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
               Page {pageIndex + 1} of {pages.length || 1}
             </div>
 
-            {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
-          </div>
-        ))}
+	            {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
+	          </div>
+	          );
+	        })}
       </div>
     );
   },

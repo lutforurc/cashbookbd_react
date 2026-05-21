@@ -106,12 +106,20 @@ export interface ResellerPayload {
   notes?: string | null;
 }
 
+interface PaginationMeta {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
 interface ResellerState {
   overview: ResellerOverview | null;
   resellers: Reseller[];
   companies: ResellerCompany[];
   payments: ResellerPayment[];
   commissionLedgers: ResellerCommissionLedger[];
+  commissionLedgerPagination: PaginationMeta;
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -124,6 +132,12 @@ const initialState: ResellerState = {
   companies: [],
   payments: [],
   commissionLedgers: [],
+  commissionLedgerPagination: {
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+  },
   loading: false,
   saving: false,
   error: null,
@@ -149,6 +163,16 @@ const extractObject = <T,>(payload: any): T | null => {
   return null;
 };
 
+const extractPagination = (payload: any, fallbackPerPage = 10): PaginationMeta => {
+  const root = payload?.data || payload || {};
+  return {
+    current_page: Number(root.current_page || 1),
+    last_page: Number(root.last_page || 1),
+    per_page: Number(root.per_page || fallbackPerPage),
+    total: Number(root.total || 0),
+  };
+};
+
 export const fetchResellerAdminData = createAsyncThunk<
   {
     overview: ResellerOverview | null;
@@ -156,17 +180,22 @@ export const fetchResellerAdminData = createAsyncThunk<
     companies: ResellerCompany[];
     payments: ResellerPayment[];
     commissionLedgers: ResellerCommissionLedger[];
+    commissionLedgerPagination: PaginationMeta;
   },
-  void,
+  { commissionLedgerPage?: number; commissionLedgerPerPage?: number } | void,
   { rejectValue: string }
->('reseller/fetchAdminData', async (_, thunkAPI) => {
+>('reseller/fetchAdminData', async (params, thunkAPI) => {
   try {
+    const queryParams = (params || {}) as { commissionLedgerPage?: number; commissionLedgerPerPage?: number };
+    const ledgerPage = queryParams.commissionLedgerPage || 1;
+    const ledgerPerPage = queryParams.commissionLedgerPerPage || 10;
+    const ledgerUrl = `${API_RESELLER_ADMIN_COMMISSION_LEDGERS_URL}?ledger_type=paid&page=${ledgerPage}&per_page=${ledgerPerPage}`;
     const [overviewRes, resellerRes, companyRes, paymentRes, ledgerRes] = await Promise.all([
       httpService.get(API_RESELLER_ADMIN_OVERVIEW_URL),
       httpService.get(API_RESELLER_ADMIN_BASE_URL),
       httpService.get(API_RESELLER_ADMIN_COMPANIES_URL),
       httpService.get(API_RESELLER_ADMIN_PAYMENTS_URL),
-      httpService.get(API_RESELLER_ADMIN_COMMISSION_LEDGERS_URL),
+      httpService.get(ledgerUrl),
     ]);
 
     return {
@@ -175,6 +204,7 @@ export const fetchResellerAdminData = createAsyncThunk<
       companies: extractArray<ResellerCompany>(companyRes.data),
       payments: extractArray<ResellerPayment>(paymentRes.data),
       commissionLedgers: extractArray<ResellerCommissionLedger>(ledgerRes.data),
+      commissionLedgerPagination: extractPagination(ledgerRes.data, ledgerPerPage),
     };
   } catch (error: any) {
     return thunkAPI.rejectWithValue(getErrorMessage(error, 'Failed to load reseller data.'));
@@ -236,9 +266,20 @@ export const assignCompanyToReseller = createAsyncThunk<
       status: 1,
       ...payload,
     });
-    return { message: res?.data?.message || 'Company assigned successfully.' };
+    return {
+      message: res?.data?.message || (
+        Number(payload.status ?? 1) === 1
+          ? 'Company assigned successfully.'
+          : 'Company assignment cancelled successfully.'
+      ),
+    };
   } catch (error: any) {
-    return thunkAPI.rejectWithValue(getErrorMessage(error, 'Failed to assign company.'));
+    return thunkAPI.rejectWithValue(getErrorMessage(
+      error,
+      Number(payload.status ?? 1) === 1
+        ? 'Failed to assign company.'
+        : 'Failed to cancel company assignment.',
+    ));
   }
 });
 
@@ -289,6 +330,7 @@ const resellerSlice = createSlice({
         state.companies = action.payload.companies;
         state.payments = action.payload.payments;
         state.commissionLedgers = action.payload.commissionLedgers;
+        state.commissionLedgerPagination = action.payload.commissionLedgerPagination;
       })
       .addCase(fetchResellerAdminData.rejected, (state, action) => {
         state.loading = false;
@@ -305,6 +347,7 @@ const resellerSlice = createSlice({
         state.companies = action.payload.companies;
         state.payments = action.payload.payments;
         state.commissionLedgers = action.payload.commissionLedgers;
+        state.commissionLedgerPagination = initialState.commissionLedgerPagination;
       })
       .addCase(fetchResellerDashboardData.rejected, (state, action) => {
         state.loading = false;

@@ -1,4 +1,5 @@
 import React from "react";
+import Pagination from "../utils-functions/Pagination";
 
 export interface TableHeaderCell {
   label: React.ReactNode;
@@ -25,6 +26,7 @@ export interface Column {
 interface TableProps {
   columns: Column[];
   data: any[];
+  perPage?: number;
   className?: string;
   tableClassName?: string;
   theadClassName?: string;
@@ -42,6 +44,7 @@ interface TableProps {
 const Table: React.FC<TableProps> = ({
   columns,
   data,
+  perPage,
   className,
   tableClassName,
   theadClassName,
@@ -55,17 +58,40 @@ const Table: React.FC<TableProps> = ({
   footerRows,
   tableStyle,
 }) => {
+  const [page, setPage] = React.useState(1);
+  const rows = Array.isArray(data) ? data : [];
+  const totalRows = rows.length;
+  const pageSize = Number(perPage || 0);
+  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(totalRows / pageSize)) : 1;
+  const startIndex = pageSize > 0 ? (page - 1) * pageSize : 0;
+  const visibleData = pageSize > 0
+    ? rows.slice(startIndex, page * pageSize)
+    : rows;
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [totalRows, pageSize]);
+
+  React.useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const handlePageChange = (nextPage: number) => {
+    setPage(Math.min(Math.max(nextPage, 1), totalPages));
+  };
+
   return (
-    <div className={`overflow-x-auto rounded-sm shadow-sm ${className || ""}`}>
-      <table
-        className={`min-w-full table-fixed text-left text-sm text-gray-700 dark:text-gray-300 ${tableClassName || ""}`}
-        style={tableStyle}
-      >
-        <colgroup>
-          {columns.map((col) => (
-            <col key={col.key} className={col.cellClass} />
-          ))}
-        </colgroup>
+    <div className={`rounded-sm shadow-sm ${className || ""}`}>
+      <div className="overflow-x-auto">
+        <table
+          className={`min-w-full table-fixed text-left text-sm text-gray-700 dark:text-gray-300 ${tableClassName || ""}`}
+          style={tableStyle}
+        >
+          <colgroup>
+            {columns.map((col) => (
+              <col key={col.key} className={col.cellClass} />
+            ))}
+          </colgroup>
 
         <thead className={`bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300 ${theadClassName || ""}`}>
           {headerRows && headerRows.length > 0 ? (
@@ -98,30 +124,34 @@ const Table: React.FC<TableProps> = ({
         </thead>
 
         <tbody className={`divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800 ${tbodyClassName || ""}`}>
-          {Array.isArray(data) && data.length > 0 ? (
-            data.map((row, rowIndex) => (
-              <tr
-                key={getRowKey ? getRowKey(row, rowIndex) : rowIndex}
-                {...(getRowProps ? getRowProps(row, rowIndex) : {})}
-                onClick={() => onRowClick?.(row, rowIndex)}
-                className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
-                  onRowClick ? "cursor-pointer " : ""
-                }${
-                  typeof rowClassName === 'function'
-                    ? rowClassName(row, rowIndex)
-                    : rowClassName || ''
-                }`}
-              >
-                {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className={`truncate px-3 py-2 ${col.cellClass || ""}`}
-                  >
-                    {col.render ? col.render(row, rowIndex) : row[col.key]}
-                  </td>
-                ))}
-              </tr>
-            ))
+          {Array.isArray(visibleData) && visibleData.length > 0 ? (
+            visibleData.map((row, rowIndex) => {
+              const absoluteIndex = startIndex + rowIndex;
+
+              return (
+                <tr
+                  key={getRowKey ? getRowKey(row, absoluteIndex) : absoluteIndex}
+                  {...(getRowProps ? getRowProps(row, absoluteIndex) : {})}
+                  onClick={() => onRowClick?.(row, absoluteIndex)}
+                  className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
+                    onRowClick ? "cursor-pointer " : ""
+                  }${
+                    typeof rowClassName === 'function'
+                      ? rowClassName(row, absoluteIndex)
+                      : rowClassName || ''
+                  }`}
+                >
+                  {columns.map((col) => (
+                    <td
+                      key={col.key}
+                      className={`truncate px-3 py-2 ${col.cellClass || ""}`}
+                    >
+                      {col.render ? col.render(row, absoluteIndex) : row[col.key]}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
           ) : (
             <tr>
               <td
@@ -152,7 +182,20 @@ const Table: React.FC<TableProps> = ({
             ))}
           </tfoot>
         ) : null}
-      </table>
+        </table>
+      </div>
+      {pageSize > 0 && totalRows > pageSize ? (
+        <div className="border-t border-gray-200 bg-white px-3 py-3 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          {/* <span>
+            Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRows)} of {totalRows}
+          </span> */}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            handlePageChange={handlePageChange}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };
