@@ -162,15 +162,14 @@ const toNumber = (value: Primitive) => {
 
 const formatBalanceAmount = (value: Primitive, decimal = 0) => {
   const amount = toNumber(value);
+  if (amount === 0) {
+    return decimal > 0 ? amount.toFixed(decimal) : '0.00';
+  }
+
   return amount < 0
     ? `(-) ${thousandSeparator(Math.abs(amount))}`
     : thousandSeparator(amount);
 };
-
-const getOrderAmount = (payload?: OrderPayload | null) => (
-  toNumber(payload?.order_amount) ||
-  (toNumber(payload?.total_order) * toNumber(payload?.order_rate))
-);
 
 const OrderWithProduct = ({
   orderId,
@@ -425,16 +424,13 @@ const OrderWithProduct = ({
 
       const rowTotalAmount = mappedRows.reduce((sum, row) => sum + toNumber(row.total), 0);
       const rowPaymentAmount = mappedRows.reduce((sum, row) => sum + Math.abs(toNumber(row.payment)), 0);
-      const orderAmount = getOrderAmount(payload);
-      const shouldStartFromOrderAmount =
-        orderAmount > 0 &&
-        rowTotalAmount === 0 &&
-        rowPaymentAmount > 0;
-      let cumulativeBalance = shouldStartFromOrderAmount ? orderAmount : 0;
+      const shouldUseReceivedBalance = rowTotalAmount === 0 && rowPaymentAmount > 0;
+      let cumulativeBalance = 0;
 
       return mappedRows.map((row) => {
-        cumulativeBalance +=
-          toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
+        cumulativeBalance += shouldUseReceivedBalance
+          ? Math.abs(toNumber(row.payment))
+          : toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
 
         return {
           ...row,
@@ -445,7 +441,6 @@ const OrderWithProduct = ({
     [
       payload?.customer?.name,
       payload?.notes,
-      payload?.order_amount,
       payload?.order_rate,
       payload?.total_order,
       payload?.product?.name,

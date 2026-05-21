@@ -71,6 +71,10 @@ const toNumber = (value: Primitive) => {
 
 const formatBalanceAmount = (value: Primitive, decimal = 0) => {
   const amount = toNumber(value);
+  if (amount === 0) {
+    return decimal > 0 ? amount.toFixed(decimal) : '0.00';
+  }
+
   return amount < 0
     ? `(-) ${thousandSeparator(Math.abs(amount))}`
     : thousandSeparator(amount);
@@ -123,14 +127,12 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       toNumber(payload?.order_amount) || (toNumber(payload?.total_order) * toNumber(payload?.order_rate));
     const rowTotalAmount = rows.reduce((sum, row) => sum + toNumber(row.total), 0);
     const rowPaymentAmount = rows.reduce((sum, row) => sum + Math.abs(toNumber(row.payment)), 0);
-    const shouldStartFromOrderAmount =
-      computedOrderAmount > 0 &&
-      rowTotalAmount === 0 &&
-      rowPaymentAmount > 0;
-    let cumulativeBalance = shouldStartFromOrderAmount ? computedOrderAmount : 0;
+    const shouldUseReceivedBalance = rowTotalAmount === 0 && rowPaymentAmount > 0;
+    let cumulativeBalance = 0;
     const printableRows = rows.map((row) => {
-      cumulativeBalance +=
-        toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
+      cumulativeBalance += shouldUseReceivedBalance
+        ? Math.abs(toNumber(row.payment))
+        : toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
 
       return {
         ...row,
