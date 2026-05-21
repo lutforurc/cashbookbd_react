@@ -26,11 +26,11 @@ type PrintRow = {
 
 type PrintPayload = {
   order_number?: string;
-  order_date?: string;
-  last_delivery_date?: string;
+  order_date?: unknown;
+  last_delivery_date?: unknown;
   order_for?: string | null;
   address?: string | null;
-  duration?: string | null;
+  duration?: unknown;
   delivery_location?: string | null;
   order_rate?: Primitive;
   total_order?: Primitive;
@@ -86,11 +86,83 @@ const formatNumberOrDash = (value: Primitive) => (
     : '-'
 );
 
-const formatDateText = (value: unknown) => (
-  typeof value === 'string' || typeof value === 'number'
-    ? formatDate(String(value))
-    : ''
-);
+const toDateParts = (value: unknown): string => {
+  if (value === null || value === undefined || value === '') return '';
+
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return '';
+    const day = String(value.getDate()).padStart(2, '0');
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const year = String(value.getFullYear());
+    return `${day}/${month}/${year}`;
+  }
+
+  if (typeof value === 'number') {
+    return toDateParts(new Date(value));
+  }
+
+  if (typeof value === 'string') {
+    const text = value.trim();
+    if (!text) return '';
+
+    const bdMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+    if (bdMatch) {
+      const [, day, month, year] = bdMatch;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+
+    const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+
+    const date = new Date(text);
+    return Number.isNaN(date.getTime()) ? text : toDateParts(date);
+  }
+
+  if (typeof value === 'object') {
+    const dateLike = value as {
+      date?: unknown;
+      value?: unknown;
+      label?: unknown;
+      $d?: unknown;
+      toDate?: () => Date;
+      format?: (format: string) => string;
+    };
+
+    if (typeof dateLike.format === 'function') {
+      const formatted = dateLike.format('DD/MM/YYYY');
+      if (formatted && formatted !== 'Invalid Date') return formatted;
+    }
+
+    if (typeof dateLike.toDate === 'function') {
+      return toDateParts(dateLike.toDate());
+    }
+
+    return toDateParts(dateLike.date ?? dateLike.value ?? dateLike.label ?? dateLike.$d);
+  }
+
+  return '';
+};
+
+const formatDurationText = (value: unknown): string => {
+  if (typeof value === 'object' && value !== null && !(value instanceof Date)) {
+    const range = value as {
+      from?: unknown;
+      to?: unknown;
+      start?: unknown;
+      end?: unknown;
+      startDate?: unknown;
+      endDate?: unknown;
+    };
+    const start = toDateParts(range.from ?? range.start ?? range.startDate);
+    const end = toDateParts(range.to ?? range.end ?? range.endDate);
+    if (start || end) return [start, end].filter(Boolean).join(' to ');
+  }
+
+  return toDateParts(value);
+};
 
 const getOrderTypeLabel = (value: Primitive) => {
   if (String(value) === '1') return 'Purchase';
@@ -145,9 +217,12 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     const partyName = payload?.order_for || payload?.customer?.name || payload?.supplier?.name || '-';
     const productName = payload?.product?.name || payload?.product_name || '-';
     const unitName = payload?.product?.unit?.name || payload?.product?.unit?.full_name || '';
+    const explicitDurationText = formatDurationText(payload?.duration);
+    const orderStartDate = toDateParts(payload?.order_date);
+    const orderEndDate = toDateParts(payload?.last_delivery_date);
     const durationText =
-      payload?.duration ||
-      `${formatDateText(payload?.order_date)}${payload?.last_delivery_date ? ` to ${formatDateText(payload.last_delivery_date)}` : ''}`;
+      explicitDurationText ||
+      `${orderStartDate}${orderEndDate ? ` to ${orderEndDate}` : ''}`;
     const totals = printableRows.reduce(
       (acc, row) => {
         acc.quantity += toNumber(row.quantity);
