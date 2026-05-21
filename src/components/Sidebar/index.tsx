@@ -271,7 +271,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       }`}
                   >
                     <FiUsers />
-                    Resellers
+                    Reseller
                   </NavLink>
                 </li>
               )}

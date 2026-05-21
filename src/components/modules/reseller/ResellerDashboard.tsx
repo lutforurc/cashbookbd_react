@@ -33,7 +33,7 @@ const ResellerDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <HelmetTitle title="Reseller Dashboard" />
+      <HelmetTitle title="Reseller" />
 
       <section className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
