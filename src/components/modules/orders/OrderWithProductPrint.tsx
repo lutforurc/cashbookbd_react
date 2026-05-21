@@ -28,12 +28,29 @@ type PrintPayload = {
   order_number?: string;
   order_date?: string;
   last_delivery_date?: string;
+  order_for?: string | null;
+  address?: string | null;
+  duration?: string | null;
+  delivery_location?: string | null;
+  order_rate?: Primitive;
+  total_order?: Primitive;
+  contract_order_qty?: Primitive;
+  order_amount?: Primitive;
+  order_type?: Primitive;
   customer?: {
+    name?: string;
+  } | null;
+  supplier?: {
     name?: string;
   } | null;
   product?: {
     name?: string;
+    unit?: {
+      name?: string;
+      full_name?: string;
+    } | null;
   } | null;
+  product_name?: string | null;
 };
 
 type Props = {
@@ -57,6 +74,25 @@ const formatBalanceAmount = (value: Primitive, decimal = 0) => {
   return amount < 0
     ? `(-) ${thousandSeparator(Math.abs(amount))}`
     : thousandSeparator(amount);
+};
+
+const formatNumberOrDash = (value: Primitive) => (
+  value !== null && value !== undefined && value !== ''
+    ? thousandSeparator(toNumber(value))
+    : '-'
+);
+
+const formatDateText = (value: unknown) => (
+  typeof value === 'string' || typeof value === 'number'
+    ? formatDate(String(value))
+    : ''
+);
+
+const getOrderTypeLabel = (value: Primitive) => {
+  if (String(value) === '1') return 'Purchase';
+  if (String(value) === '2') return 'Sales';
+  if (String(value) === '3') return 'Stock';
+  return 'Order';
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -94,6 +130,16 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       };
     });
     const pages = chunkRows(printableRows, Math.max(rowsPerPage, 1));
+    const orderTypeLabel = getOrderTypeLabel(payload?.order_type);
+    const partyLabel = orderTypeLabel === 'Purchase' ? 'Supplier Name' : 'Customer Name';
+    const partyName = payload?.order_for || payload?.customer?.name || payload?.supplier?.name || '-';
+    const productName = payload?.product?.name || payload?.product_name || '-';
+    const unitName = payload?.product?.unit?.name || payload?.product?.unit?.full_name || '';
+    const durationText =
+      payload?.duration ||
+      `${formatDateText(payload?.order_date)}${payload?.last_delivery_date ? ` to ${formatDateText(payload.last_delivery_date)}` : ''}`;
+    const computedOrderAmount =
+      toNumber(payload?.order_amount) || (toNumber(payload?.total_order) * toNumber(payload?.order_rate));
     const totals = printableRows.reduce(
       (acc, row) => {
         acc.quantity += toNumber(row.quantity);
@@ -125,14 +171,50 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
             <div className="mb-2 text-center text-2xl font-bold">{title}</div>
 
-            <div className="mb-2 grid grid-cols-2 gap-4 text-sm">
+            <div className="mb-2 grid grid-cols-[1fr_220px] items-start justify-between gap-6 text-xs leading-4">
               <div className="space-y-1">
-                <div>Order for: <span className="font-semibold">{payload?.customer?.name || '-'}</span></div>
-                <div>Order No: <span className="font-semibold">{payload?.order_number || '-'}</span></div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span>{partyLabel}:</span>
+                  <span>{partyName}</span>
+                </div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span>Address:</span>
+                  <span>{payload?.address || '-'}</span>
+                </div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span>Duration:</span>
+                  <span>{durationText || '-'}</span>
+                </div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span className="whitespace-nowrap">Delivery Location:</span>
+                  <span>{payload?.delivery_location || '-'}</span>
+                </div>
+                <div className="grid grid-cols-[110px_1fr] gap-2">
+                  <span>Order No.</span>
+                  <span>{payload?.order_number || '-'}</span>
+                </div>
               </div>
-              <div className="space-y-1 text-right">
-                <div>Order Date: {formatDate(payload?.order_date || '')}</div>
-                <div>Product: {payload?.product?.name || '-'}</div>
+              <div className="space-y-1 text-left">
+                <div className="grid grid-cols-[86px_1fr] gap-2">
+                  <span>Product Name:</span>
+                  <span>{productName}</span>
+                </div>
+                <div className="grid grid-cols-[86px_1fr] gap-2">
+                  <span>Contact Qty:</span>
+                  <span>{formatNumberOrDash(payload?.contract_order_qty)}</span>
+                </div>
+                <div className="grid grid-cols-[86px_1fr] gap-2">
+                  <span>Order Rate:</span>
+                  <span>{formatNumberOrDash(payload?.order_rate)}</span>
+                </div>
+                <div className="grid grid-cols-[86px_1fr] gap-2">
+                  <span>Order Qty:</span>
+                  <span>{formatNumberOrDash(payload?.total_order)} {unitName}</span>
+                </div>
+                <div className="grid grid-cols-[86px_1fr] gap-2">
+                  <span>Amount:</span>
+                  <span>Tk. {thousandSeparator(computedOrderAmount)}</span>
+                </div>
               </div>
             </div>
 
@@ -172,7 +254,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">
                         {row.hasLineDetail
-                          ? `${thousandSeparator(toNumber(row.quantity))} ${row.unitName || ''}`
+                          ? `${thousandSeparator(toNumber(row.quantity))}`
                           : '-'}
                       </td>
                       <td style={{ fontSize: fs, lineHeight: 1.2 }} className="border border-black px-2 py-1 text-right">

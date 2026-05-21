@@ -444,10 +444,10 @@ const OrderWithProduct = ({
     () =>
       rows.reduce(
         (acc, row) => {
-          acc.quantity += row.quantity;
-          acc.total += row.total;
-          acc.discount += row.discount;
-          acc.payment += row.payment;
+          acc.quantity += Number(row.quantity);
+          acc.total += Number(row.total);
+          acc.discount += Number(row.discount);
+          acc.payment += Number(row.payment);
           return acc;
         },
         { quantity: 0, total: 0, discount: 0, payment: 0 },
@@ -532,7 +532,7 @@ const OrderWithProduct = ({
         cellClass: 'text-right w-36',
         render: (row: any) => (
           <span>
-            {row.hasLineDetail ? `${thousandSeparator(row.quantity)} ${row.unitName}` : '-'}
+            {row.hasLineDetail ? `${thousandSeparator(row.quantity)} ` : '-'}
           </span>
         ),
       },
@@ -588,7 +588,7 @@ const OrderWithProduct = ({
               {
                 label: (
                   <span>
-                    {thousandSeparator(totals.quantity)} {unitName}
+                    {thousandSeparator(totals.quantity)}
                   </span>
                 ),
                 className: 'text-right',
