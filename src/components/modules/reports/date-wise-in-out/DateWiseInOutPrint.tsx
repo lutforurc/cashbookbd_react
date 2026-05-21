@@ -163,10 +163,10 @@ export const DateWiseInOutDetailPrint = React.forwardRef<HTMLDivElement, DateWis
       return {
         totalOutQty,
         totalDamage,
-        totalSales: totalDamage < 0 ? totalOutQty + totalDamage : totalOutQty - totalDamage,
+        totalSales: detailRows.sales.reduce((sum, row) => sum + adjustedSalesTotal(row), 0),
         totalInQty,
         totalOver,
-        totalPurchase: totalInQty + totalOver,
+        totalPurchase: detailRows.purchase.reduce((sum, row) => sum + adjustedPurchaseTotal(row), 0),
       };
     }, [detailRows]);
 
