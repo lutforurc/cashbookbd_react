@@ -8,8 +8,9 @@ const thousandSeparator = (value: number) => {
 
   if (!Number.isFinite(numericValue)) return "-";
 
-  // When decimal places is 0, treat any positive fractional value < 1 as empty ('-')
-  if (decimalPlaces === 0 && numericValue < 1) return "-";
+  const roundedValue = Number(numericValue.toFixed(decimalPlaces));
+
+  if (roundedValue === 0) return "-";
 
   return numericValue.toLocaleString("en-IN", {
     minimumFractionDigits: decimalPlaces,
