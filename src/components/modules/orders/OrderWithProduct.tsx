@@ -127,6 +127,7 @@ type OrderPayload = {
   product_id?: number;
   order_rate?: Primitive;
   total_order?: Primitive;
+  order_amount?: Primitive;
   notes?: string | null;
   product?: OrderProduct | null;
   customer?: OrderCustomer | null;
@@ -165,6 +166,11 @@ const formatBalanceAmount = (value: Primitive, decimal = 0) => {
     ? `(-) ${thousandSeparator(Math.abs(amount))}`
     : thousandSeparator(amount);
 };
+
+const getOrderAmount = (payload?: OrderPayload | null) => (
+  toNumber(payload?.order_amount) ||
+  (toNumber(payload?.total_order) * toNumber(payload?.order_rate))
+);
 
 const OrderWithProduct = ({
   orderId,
@@ -417,7 +423,14 @@ const OrderWithProduct = ({
         };
       });
 
-      let cumulativeBalance = 0;
+      const rowTotalAmount = mappedRows.reduce((sum, row) => sum + toNumber(row.total), 0);
+      const rowPaymentAmount = mappedRows.reduce((sum, row) => sum + Math.abs(toNumber(row.payment)), 0);
+      const orderAmount = getOrderAmount(payload);
+      const shouldStartFromOrderAmount =
+        orderAmount > 0 &&
+        rowTotalAmount === 0 &&
+        rowPaymentAmount > 0;
+      let cumulativeBalance = shouldStartFromOrderAmount ? orderAmount : 0;
 
       return mappedRows.map((row) => {
         cumulativeBalance +=
@@ -432,7 +445,9 @@ const OrderWithProduct = ({
     [
       payload?.customer?.name,
       payload?.notes,
+      payload?.order_amount,
       payload?.order_rate,
+      payload?.total_order,
       payload?.product?.name,
       payload?.product?.unit?.full_name,
       payload?.product?.unit?.name,

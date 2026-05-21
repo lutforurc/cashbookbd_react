@@ -119,7 +119,15 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     ref,
   ) => {
     const fs = Number.isFinite(fontSize) ? fontSize : 12;
-    let cumulativeBalance = 0;
+    const computedOrderAmount =
+      toNumber(payload?.order_amount) || (toNumber(payload?.total_order) * toNumber(payload?.order_rate));
+    const rowTotalAmount = rows.reduce((sum, row) => sum + toNumber(row.total), 0);
+    const rowPaymentAmount = rows.reduce((sum, row) => sum + Math.abs(toNumber(row.payment)), 0);
+    const shouldStartFromOrderAmount =
+      computedOrderAmount > 0 &&
+      rowTotalAmount === 0 &&
+      rowPaymentAmount > 0;
+    let cumulativeBalance = shouldStartFromOrderAmount ? computedOrderAmount : 0;
     const printableRows = rows.map((row) => {
       cumulativeBalance +=
         toNumber(row.total) - toNumber(row.discount) - Math.abs(toNumber(row.payment));
@@ -138,8 +146,6 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     const durationText =
       payload?.duration ||
       `${formatDateText(payload?.order_date)}${payload?.last_delivery_date ? ` to ${formatDateText(payload.last_delivery_date)}` : ''}`;
-    const computedOrderAmount =
-      toNumber(payload?.order_amount) || (toNumber(payload?.total_order) * toNumber(payload?.order_rate));
     const totals = printableRows.reduce(
       (acc, row) => {
         acc.quantity += toNumber(row.quantity);

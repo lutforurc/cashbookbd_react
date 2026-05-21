@@ -217,18 +217,18 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                           </span>
                         </td>
                         <td style={printTextStyle} className="border border-gray-900 px-2 py-1">
-                           <span className="block">
-                             {row?.order_rate != null && row?.order_rate !== ''
-                               ? formatNumberOrDash(row.order_rate)
-                               : '-'}
-                           </span>
+                          <span className="block">
+                            {row?.order_rate != null && row?.order_rate !== ''
+                              ? formatNumberOrDash(row.order_rate)
+                              : '-'}
+                          </span>
                           <span className={`block ${row?.order_number?.length > 17 ? 'text-[0.6rem]' : ''}`}>
                             {row?.order_number?.length > 0 ? row.order_number : '-'}
                           </span>
                           <span className="block">{row?.order_date || '-'}</span>
                         </td>
                         <td style={printTextStyle} className="border border-gray-900 px-2 py-1 text-right">
-                         
+
                           <span className="block">
                             {row?.contract_order_qty != null && row?.contract_order_qty !== ''
                               ? formatNumberOrDash(row.contract_order_qty)

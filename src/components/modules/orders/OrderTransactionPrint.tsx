@@ -319,7 +319,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                       {totals.freight > 0 ? thousandSeparator(totals.freight) : '-'}
                     </td>
 	                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-	                      {thousandSeparator(totals.due)}
+	                      {/* {thousandSeparator(totals.due)} */}
 	                    </td>
 	                  </tr>
 	                ) : null}
