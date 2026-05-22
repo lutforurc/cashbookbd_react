@@ -78,6 +78,7 @@ import journalSlice from './components/modules/transactions/journal/journalSlice
 import subscriptionSlice from './components/modules/subscription/subscriptionSlice';
 import companySlice from './components/modules/company/companySlice';
 import resellerSlice from './components/modules/reseller/resellerSlice';
+import attendanceSlice from './components/modules/hrms/attendance/attendanceSlice';
 
 
 const store = configureStore({
@@ -161,6 +162,7 @@ const store = configureStore({
     subscription: subscriptionSlice,
     company: companySlice,
     reseller: resellerSlice,
+    attendance: attendanceSlice,
   },
 });
 

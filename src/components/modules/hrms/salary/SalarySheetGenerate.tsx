@@ -16,6 +16,11 @@ import { toast } from "react-toastify";
 import { fetchEmployeeSettings } from "../employee/employeeSlice";
 import ConfirmModal from "../../../utils/components/ConfirmModalProps";
 import MultiSelectDropdown from "../../../utils/utils-functions/MultiSelectDropdown";
+import httpService from "../../../services/httpService";
+import {
+  API_ATTENDANCE_ENTRY_REPORT_URL,
+  API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL,
+} from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
 interface SalaryRow {
@@ -39,6 +44,108 @@ interface SalaryRow {
   month_days: number;
   working_days: number;
 }
+
+const pad = (value: number) => String(value).padStart(2, "0");
+const toDateString = (year: number, monthIndex: number, day: number) => `${year}-${pad(monthIndex + 1)}-${pad(day)}`;
+
+const parseMonthId = (monthId: string) => {
+  const [monthPart, yearPart] = String(monthId || "").split("-");
+  const month = Number(monthPart);
+  const year = Number(yearPart);
+
+  if (!Number.isFinite(month) || month < 1 || month > 12 || !Number.isFinite(year)) {
+    return null;
+  }
+
+  const monthIndex = month - 1;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+  return {
+    monthIndex,
+    year,
+    daysInMonth,
+    date_from: toDateString(year, monthIndex, 1),
+    date_to: toDateString(year, monthIndex, daysInMonth),
+  };
+};
+
+const toList = (value: any) => {
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.data)) return value.data;
+  if (Array.isArray(value?.data?.data)) return value.data.data;
+  return [];
+};
+
+const attendanceRowsFromResponse = (response: any) => {
+  const payload = response?.data?.data?.data || response?.data?.data || response?.data || {};
+  return Array.isArray(payload?.rows) ? payload.rows : [];
+};
+
+const leaveRowsFromResponse = (response: any) =>
+  toList(response?.data?.data?.data ?? response?.data?.data ?? response?.data);
+
+const attendancePayableValue = (status?: string, approvalStatus?: string) => {
+  if (approvalStatus === "rejected" || status === "rejected" || status === "absent") return 0;
+  if (status === "half_day") return 0.5;
+  if (["present", "late", "early_out", "pending", "holiday", "weekly_holiday", "leave"].includes(String(status || ""))) return 1;
+  return 0;
+};
+
+const parseLocalDate = (value?: string | null) => {
+  if (!value) return null;
+  const [year, month, day] = String(value).slice(0, 10).split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
+const buildAttendanceWorkingDayMap = (attendanceRows: any[], leaveRows: any[], monthInfo: NonNullable<ReturnType<typeof parseMonthId>>) => {
+  const byEmployeeDate = new Map<string, Record<string, number>>();
+  const monthStart = new Date(monthInfo.year, monthInfo.monthIndex, 1);
+  const monthEnd = new Date(monthInfo.year, monthInfo.monthIndex, monthInfo.daysInMonth);
+
+  const ensureEmployee = (employeeId: string) => {
+    if (!byEmployeeDate.has(employeeId)) byEmployeeDate.set(employeeId, {});
+    return byEmployeeDate.get(employeeId)!;
+  };
+
+  attendanceRows.forEach((row: any) => {
+    const employeeId = String(row.employee_id || "");
+    const attendanceDate = String(row.attendance_date || "").slice(0, 10);
+    if (!employeeId || !attendanceDate) return;
+
+    ensureEmployee(employeeId)[attendanceDate] = attendancePayableValue(row.status, row.approval_status);
+  });
+
+  leaveRows.forEach((leave: any) => {
+    if (leave.approval_status !== "approved") return;
+
+    const employeeId = String(leave.employee_id || "");
+    if (!employeeId) return;
+
+    const fromDate = parseLocalDate(leave.from_date);
+    const toDate = parseLocalDate(leave.to_date);
+    if (!fromDate || !toDate) return;
+
+    const current = new Date(Math.max(fromDate.getTime(), monthStart.getTime()));
+    const last = new Date(Math.min(toDate.getTime(), monthEnd.getTime()));
+    const employeeDates = ensureEmployee(employeeId);
+
+    while (current <= last) {
+      employeeDates[toDateString(current.getFullYear(), current.getMonth(), current.getDate())] = 1;
+      current.setDate(current.getDate() + 1);
+    }
+  });
+
+  const totals = new Map<string, number>();
+  byEmployeeDate.forEach((dates, employeeId) => {
+    totals.set(
+      employeeId,
+      Object.values(dates).reduce((total, value) => total + Number(value || 0), 0),
+    );
+  });
+
+  return totals;
+};
 
 /* ================= COMPONENT ================= */
 const SalarySheetGenerate = ({ user }: any) => {
@@ -110,6 +217,38 @@ const SalarySheetGenerate = ({ user }: any) => {
       serial_no: index + 1,
     }));
 
+  const fetchAttendanceWorkingDays = async () => {
+    const monthInfo = parseMonthId(monthId);
+    if (!monthInfo) return new Map<string, number>();
+
+    const attendanceParams = {
+      branch_id: branchId,
+      date_from: monthInfo.date_from,
+      date_to: monthInfo.date_to,
+      approval_status: "",
+      status: "",
+      per_page: 1000,
+    };
+
+    const leaveParams = {
+      branch_id: branchId,
+      date_from: monthInfo.date_from,
+      date_to: monthInfo.date_to,
+      per_page: 1000,
+    };
+
+    const [attendanceResponse, leaveResponse] = await Promise.all([
+      httpService.get(API_ATTENDANCE_ENTRY_REPORT_URL, { params: attendanceParams }),
+      httpService.get(API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL, { params: leaveParams }),
+    ]);
+
+    return buildAttendanceWorkingDayMap(
+      attendanceRowsFromResponse(attendanceResponse),
+      leaveRowsFromResponse(leaveResponse),
+      monthInfo,
+    );
+  };
+
   /* ================= FETCH DATA ================= */
   const handleSearchButton = async () => {
     if (!monthId) {
@@ -131,6 +270,13 @@ const SalarySheetGenerate = ({ user }: any) => {
       ).unwrap();
 
       const list = response?.data?.data ?? [];
+      let attendanceWorkingDays = new Map<string, number>();
+
+      try {
+        attendanceWorkingDays = await fetchAttendanceWorkingDays();
+      } catch (attendanceError: any) {
+        toast.info(attendanceError?.response?.data?.message || "Attendance working day not found, month days used.");
+      }
 
       // ✅ IMPORTANT: API shape -> SalaryRow shape
       const mapped: SalaryRow[] = list.map((emp: any) => ({
@@ -152,7 +298,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
         net_deduction: Number(emp.others_deduction) || 0,
         month_days: selectedMonthDays,
-        working_days: selectedMonthDays,
+        working_days: attendanceWorkingDays.get(String(emp.id)) ?? selectedMonthDays,
       }));
 
       setEmployees(withSequence(mapped));

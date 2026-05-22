@@ -464,6 +464,23 @@ Attendance Management System development তিনটি ধাপে করা 
 9. Basic Attendance Report
 
 এই phase শেষ হলে user manual attendance দিতে পারবে, leave application করতে পারবে, authorized user approve/reject করতে পারবে এবং basic report দেখতে পারবে।
+### Phase 1: Core Attendance Setup
+
+এই phase-এ attendance system-এর basic setup এবং entry/approval flow তৈরি হবে।
+
+কাজের তালিকা:
+
+1. Shift Setup
+2. Weekly Holiday Setup
+3. Holiday Calendar
+4. Leave Type Setup
+5. Manual Attendance Entry
+6. Attendance Approval
+7. Leave Application
+8. Leave Approval
+9. Basic Attendance Report
+
+এই phase শেষ হলে user manual attendance দিতে পারবে, leave application করতে পারবে, authorized user approve/reject করতে পারবে এবং basic report দেখতে পারবে।
 
 ### Phase 2: Attendance Calculation And Summary
 
@@ -500,3 +517,49 @@ Attendance Management System development তিনটি ধাপে করা 
 9. PDF/Excel export finalize করা
 
 এই phase শেষ হলে salary sheet attendance data-এর ভিত্তিতে generate করা যাবে।
+
+
+
+Attendance Workflow
+
+Setup আগে করতে হবে
+Attendance Setup এ গিয়ে Shift তৈরি করবেন।
+Weekly Holiday সেট করবেন, যেমন Head Office হলে শুক্রবার/শনিবার ইত্যাদি।
+Holiday Calendar এ বাৎসরিক/কোম্পানি/প্রজেক্ট holiday দিবেন।
+Leave Type তৈরি করবেন, যেমন Casual, Sick, Annual; quota কর্তৃপক্ষ নির্ধারণ করবে।
+Manual Attendance Entry
+Manual Attendance menu তে যাবেন।
+Employee search করে select করবেন।
+Branch, Shift, Attendance Date দিবেন।
+In Time ও Out Time দিবেন।
+Status select করবেন: Present, Absent, Half Day, Late ইত্যাদি।
+Save করলে attendance pending approval হিসেবে থাকবে।
+Manual Attendance Approval
+একই Manual Attendance list থেকে pending attendance দেখা যাবে।
+যার permission আছে সে Approve/Reject করবে।
+Approve হলে salary calculation-এ count হবে।
+Reject হলে policy অনুযায়ী absent/rejected হিসেবে ধরা হবে।
+Leave Application
+Leave Applications menu তে employee select করে leave type, from date, to date, reason দিয়ে Apply করবেন।
+Leave application প্রথমে pending থাকবে।
+যার permission আছে সে approve/reject করবে।
+Leave Approval Logic
+Approve হলে leave dates save হবে।
+Leave balance থাকলে paid leave হবে।
+Balance শেষ হলে unpaid leave হবে।
+Reject হলে ওই দিনগুলো absent হিসেবে গণ্য হবে।
+Sandwich leave rule অনুযায়ী leave-এর মাঝে holiday/weekly holiday থাকলে সেগুলোও leave হিসেবে ধরা হবে।
+Monthly Salary
+মাস শেষে attendance, approved leave, unpaid leave, absent, late/early out rule দেখে salary sheet generate হবে।
+Salary period হবে ১ তারিখ থেকে মাসের শেষ দিন।
+Absent deduction হবে gross salary / 30 হিসাবে।
+Holiday-তে কাজ করলে আপাতত extra payment হবে না।
+Recommended কাজের order
+
+Setup data entry
+Daily/manual attendance entry
+Attendance approval
+Leave application
+Leave approval
+Monthly attendance summary/report
+Salary sheet integration

@@ -61,6 +61,13 @@ export const MENU_PERMISSIONS = {
   ],
   hrm: [
     'employee.view',
+    'attendance.view',
+    'attendance.create',
+    'attendance.approve',
+    'leave.view',
+    'leave.approve',
+    'holiday.view',
+    'shift.view',
     'salary.generate',
     'salary.sheet.view',
     'employee.loan.ledger.view',
