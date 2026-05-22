@@ -8,10 +8,9 @@ import { PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import PadPrinting from '../../../utils/utils-functions/PadPrinting';
-import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice';
+import AttendanceMonthlyMatrixPrint from './AttendanceMonthlyMatrixPrint';
 
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
@@ -39,14 +38,25 @@ const parseLocalDate = (value?: string | null) => {
   return new Date(year, month - 1, day);
 };
 
+const parseTimeMinutes = (value?: string | null) => {
+  if (!value) return null;
+  const match = String(value).match(/(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  return hours * 60 + minutes;
+};
+
 const statusCode = (status?: string, approvalStatus?: string) => {
   if (approvalStatus === 'rejected' || status === 'rejected') return '✕';
 
   switch (status) {
     case 'present':
-    case 'late':
     case 'early_out':
       return '✓';
+    case 'late':
+      return '!';
     case 'absent':
       return '✕';
     case 'leave':
@@ -63,8 +73,27 @@ const statusCode = (status?: string, approvalStatus?: string) => {
   }
 };
 
+const attendanceStatusCode = (row: any) => {
+  if (row?.approval_status === 'rejected' || row?.status === 'rejected') {
+    return statusCode(row?.status, row?.approval_status);
+  }
+
+  const inMinutes = parseTimeMinutes(row?.in_time);
+  const shiftStartMinutes = parseTimeMinutes(row?.shift_start_time || row?.start_time);
+  const graceMinutes = Number(row?.grace_minutes || 0);
+  const isLate = row?.status === 'late' || (
+    row?.status === 'present'
+    && inMinutes !== null
+    && shiftStartMinutes !== null
+    && inMinutes > shiftStartMinutes + graceMinutes
+  );
+
+  if (isLate) return '!';
+  return statusCode(row?.status, row?.approval_status);
+};
+
 const statusTotalValue = (code?: string) => {
-  if (code === '✓' || code === '○' || code === 'L') return 1;
+  if (code === '✓' || code === '!' || code === '○' || code === 'L') return 1;
   if (code === '½') return 0.5;
   return 0;
 };
@@ -75,6 +104,8 @@ const statusClassName = (code?: string) => {
   switch (code) {
     case '✓':
       return 'status-cell status-present';
+    case '!':
+      return 'status-cell status-late';
     case '✕':
       return 'status-cell status-absent';
     case '○':
@@ -137,7 +168,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       }
 
       const attendanceDate = String(row.attendance_date || '').slice(0, 10);
-      employeeMap.get(employeeId).dates[attendanceDate] = statusCode(row.status, row.approval_status);
+      employeeMap.get(employeeId).dates[attendanceDate] = attendanceStatusCode(row);
     });
 
     leaveApplications.forEach((leave: any) => {
@@ -255,8 +286,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         </div>
       </div>
 
-      <div ref={printRef} className="attendance-monthly-print overflow-x-auto bg-white dark:bg-boxdark">
-        <PrintStyles />
+      <div className="attendance-monthly-print overflow-x-auto bg-white dark:bg-boxdark">
         <style>
           {`
             .attendance-monthly-print .matrix-header-cell {
@@ -271,6 +301,12 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             .attendance-monthly-print .status-present {
               background: #e9f8ee;
               color: #137333;
+            }
+
+            .attendance-monthly-print .status-late {
+              background: #fff3d6;
+              color: #b45309;
+              box-shadow: inset 0 0 0 1px #f59e0b;
             }
 
             .attendance-monthly-print .status-absent {
@@ -399,6 +435,12 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
                 color: #000000 !important;
               }
 
+              .attendance-monthly-print .status-late {
+                background: #fff0bf !important;
+                color: #000000 !important;
+                box-shadow: inset 0 0 0 1px #000000 !important;
+              }
+
               .attendance-monthly-print .status-absent {
                 background: #ffdede !important;
                 color: #000000 !important;
@@ -445,9 +487,6 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
           `}
         </style>
-        <div className="attendance-print-pad hidden">
-          <PadPrinting />
-        </div>
         <div className="report-heading mb-1 flex w-full items-center justify-center gap-3 text-center text-sm text-slate-950 dark:text-white">
           <div>Attendance for the Month of <span>{monthNames[monthIndex]} {year}</span></div>
         </div>
@@ -513,12 +552,27 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
 
         <div className="print-legend mt-2 text-xs text-slate-600 dark:text-slate-300">
           <span className="legend-chip"><span className="legend-mark status-present">✓</span> Present</span>
+          <span className="legend-chip"><span className="legend-mark status-late">!</span> Late</span>
           <span className="legend-chip"><span className="legend-mark status-holiday">○</span> Holiday</span>
           <span className="legend-chip"><span className="legend-mark status-absent">✕</span> Absent</span>
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
           <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>
           <span className="legend-chip"><span className="legend-mark total-cell">T</span> Present days</span>
         </div>
+      </div>
+
+      <div className="fixed left-[-10000px] top-0">
+        <AttendanceMonthlyMatrixPrint
+          ref={printRef}
+          monthName={monthNames[monthIndex]}
+          year={year}
+          monthIndex={monthIndex}
+          days={days}
+          daysInMonth={daysInMonth}
+          reportRows={reportRows}
+          dayTotals={dayTotals}
+          grandTotal={grandTotal}
+        />
       </div>
     </div>
   );

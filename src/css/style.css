@@ -69,6 +69,68 @@
   .sutonny-text {
     font-family: 'SutonnyMJ', serif;
   }
+
+  input[type='date'],
+  input[type='time'],
+  input[type='datetime-local'],
+  input[type='month'],
+  .native-date-time-input {
+    color-scheme: light !important;
+  }
+
+  .dark input[type='date'],
+  .dark input[type='time'],
+  .dark input[type='datetime-local'],
+  .dark input[type='month'],
+  .dark .native-date-time-input {
+    color-scheme: dark !important;
+  }
+
+  input[type='date']::-webkit-calendar-picker-indicator,
+  input[type='time']::-webkit-calendar-picker-indicator,
+  input[type='datetime-local']::-webkit-calendar-picker-indicator,
+  input[type='month']::-webkit-calendar-picker-indicator,
+  .native-date-time-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.75;
+  }
+
+  .dark input[type='date']::-webkit-calendar-picker-indicator,
+  .dark input[type='time']::-webkit-calendar-picker-indicator,
+  .dark input[type='datetime-local']::-webkit-calendar-picker-indicator,
+  .dark input[type='month']::-webkit-calendar-picker-indicator,
+  .dark .native-date-time-input::-webkit-calendar-picker-indicator {
+    filter: invert(1) grayscale(1) brightness(2.4) !important;
+    opacity: 1 !important;
+  }
+}
+
+html.dark input[type='date']::-webkit-calendar-picker-indicator,
+html.dark input[type='time']::-webkit-calendar-picker-indicator,
+html.dark input[type='datetime-local']::-webkit-calendar-picker-indicator,
+html.dark input[type='month']::-webkit-calendar-picker-indicator,
+html.dark .native-date-time-input::-webkit-calendar-picker-indicator,
+.dark input[type='date']::-webkit-calendar-picker-indicator,
+.dark input[type='time']::-webkit-calendar-picker-indicator,
+.dark input[type='datetime-local']::-webkit-calendar-picker-indicator,
+.dark input[type='month']::-webkit-calendar-picker-indicator,
+.dark .native-date-time-input::-webkit-calendar-picker-indicator {
+  opacity: 1 !important;
+  filter: none !important;
+  background-color: transparent !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 16px 16px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") !important;
+}
+
+html:not(.dark) input[type='date']::-webkit-calendar-picker-indicator,
+html:not(.dark) input[type='time']::-webkit-calendar-picker-indicator,
+html:not(.dark) input[type='datetime-local']::-webkit-calendar-picker-indicator,
+html:not(.dark) input[type='month']::-webkit-calendar-picker-indicator,
+html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
+  opacity: 0.75;
+  filter: none;
 }
 
 @layer utilities {

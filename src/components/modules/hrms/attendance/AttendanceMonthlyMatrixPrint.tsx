@@ -18,8 +18,8 @@ const pad = (value: number) => String(value).padStart(2, '0');
 const toDateString = (year: number, monthIndex: number, day: number) => `${year}-${pad(monthIndex + 1)}-${pad(day)}`;
 
 const statusTotalValue = (code?: string) => {
-  if (code === 'âœ“' || code === 'â—‹' || code === 'L') return 1;
-  if (code === 'Â½') return 0.5;
+  if (code === '✓' || code === '!' || code === '○' || code === 'L') return 1;
+  if (code === '½') return 0.5;
   return 0;
 };
 
@@ -27,15 +27,17 @@ const formatTotal = (value: number) => (Number.isInteger(value) ? String(value) 
 
 const statusClassName = (code?: string) => {
   switch (code) {
-    case 'âœ“':
+    case '✓':
       return 'status-cell status-present';
-    case 'âœ•':
+    case '!':
+      return 'status-cell status-late';
+    case '✕':
       return 'status-cell status-absent';
-    case 'â—‹':
+    case '○':
       return 'status-cell status-holiday';
     case 'L':
       return 'status-cell status-leave';
-    case 'Â½':
+    case '½':
       return 'status-cell status-half-day';
     default:
       return 'status-cell status-empty';
@@ -60,6 +62,12 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
           .attendance-monthly-print .status-present {
             background: #e9f8ee;
             color: #137333;
+          }
+
+          .attendance-monthly-print .status-late {
+            background: #fff3d6;
+            color: #b45309;
+            box-shadow: inset 0 0 0 1px #f59e0b;
           }
 
           .attendance-monthly-print .status-absent {
@@ -184,6 +192,12 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
               color: #000000 !important;
             }
 
+            .attendance-monthly-print .status-late {
+              background: #fff0bf !important;
+              color: #000000 !important;
+              box-shadow: inset 0 0 0 1px #000000 !important;
+            }
+
             .attendance-monthly-print .status-absent {
               background: #ffdede !important;
               color: #000000 !important;
@@ -296,11 +310,12 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
         </table>
 
         <div className="print-legend mt-2 text-xs text-slate-600">
-          <span className="legend-chip"><span className="legend-mark status-present">âœ“</span> Present</span>
-          <span className="legend-chip"><span className="legend-mark status-holiday">â—‹</span> Holiday</span>
-          <span className="legend-chip"><span className="legend-mark status-absent">âœ•</span> Absent</span>
+          <span className="legend-chip"><span className="legend-mark status-present">✓</span> Present</span>
+          <span className="legend-chip"><span className="legend-mark status-late">!</span> Late</span>
+          <span className="legend-chip"><span className="legend-mark status-holiday">○</span> Holiday</span>
+          <span className="legend-chip"><span className="legend-mark status-absent">✕</span> Absent</span>
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
-          <span className="legend-chip"><span className="legend-mark status-half-day">Â½</span> Half Day</span>
+          <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>
           <span className="legend-chip"><span className="legend-mark total-cell">T</span> Present days</span>
         </div>
       </div>

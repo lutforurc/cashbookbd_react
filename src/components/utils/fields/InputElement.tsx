@@ -47,6 +47,10 @@ const InputElement: React.FC<InputElementProps> = ({
   max,
   step,
 }) => {
+  const nativeDateTimeClass = ['date', 'time', 'datetime-local', 'month'].includes(type)
+    ? 'native-date-time-input'
+    : '';
+
   return (
     <div className="text-left flex flex-col">
       <label htmlFor={id || name} className="text-black dark:text-white">
@@ -73,13 +77,16 @@ const InputElement: React.FC<InputElementProps> = ({
           min={min}
           max={max}
           step={step}
-          className={`w-full form-input px-3 py-1 text-gray-600 outline-none border rounded-xs bg-white dark:bg-transparent 
+          className={`w-full form-input px-3 py-1 text-gray-700 outline-none border rounded-xs bg-white placeholder-gray-400 dark:bg-boxdark 
           dark:border-gray-600 dark:text-white dark:placeholder-gray-500 focus:outline-none 
-          focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${className}`}
+          focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 ${nativeDateTimeClass} ${className}`}
           style={{
-            appearance: 'textfield',
-            MozAppearance: 'textfield',
-            WebkitAppearance: 'none',
+            ...(type === 'number'
+              ? {
+                  appearance: 'textfield',
+                  MozAppearance: 'textfield',
+                }
+              : {}),
           }}
         />
 

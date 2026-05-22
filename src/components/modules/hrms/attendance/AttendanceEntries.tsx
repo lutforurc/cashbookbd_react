@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FiCheck, FiEdit2, FiRefreshCcw, FiSave, FiUsers, FiX } from 'react-icons/fi';
+import { FiCheck, FiEdit2, FiRefreshCcw, FiSave, FiSearch, FiUsers, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -66,7 +66,36 @@ const initialForm = {
   remarks: '',
 };
 
-const timeOnly = (value: any) => (value ? String(value).slice(11, 16) : '');
+const timeOnly = (value: any) => {
+  if (!value) return '';
+  const match = String(value).match(/(\d{1,2}:\d{2})/);
+  return match ? match[1] : '';
+};
+
+const parseTimeMinutes = (value?: string | null) => {
+  if (!value) return null;
+  const match = String(value).match(/(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+  return hours * 60 + minutes;
+};
+
+const isLateAttendance = (row: any) => {
+  const inMinutes = parseTimeMinutes(row?.in_time);
+  const shiftStartMinutes = parseTimeMinutes(row?.shift_start_time || row?.start_time);
+  const graceMinutes = Number(row?.grace_minutes || 0);
+
+  return row?.status === 'late' || (
+    row?.status === 'present'
+    && inMinutes !== null
+    && shiftStartMinutes !== null
+    && inMinutes > shiftStartMinutes + graceMinutes
+  );
+};
+
+const displayStatus = (row: any) => (isLateAttendance(row) ? 'late' : row?.status);
 
 const AttendanceEntries = ({ user }: any) => {
   const dispatch = useDispatch<any>();
@@ -80,6 +109,7 @@ const AttendanceEntries = ({ user }: any) => {
   const [filters, setFilters] = useState<any>({ date_from: today, date_to: today, branch_id: '' });
   const [buttonLoading, setButtonLoading] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkLoadedKey, setBulkLoadedKey] = useState('');
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -92,6 +122,11 @@ const AttendanceEntries = ({ user }: any) => {
     setter((prev: any) => ({ ...prev, [name]: value }));
   };
 
+  const bulkLoadKey = (data = form) => [
+    data.attendance_date || '',
+    data.branch_id || '',
+  ].join('|');
+
   const normalizePayload = (data: any) =>
     Object.fromEntries(
       Object.entries(data)
@@ -103,7 +138,35 @@ const AttendanceEntries = ({ user }: any) => {
     dispatch(fetchAttendanceEntries(params));
   };
 
-  const reset = () => setForm(initialForm);
+  const loadedListParams = (data = form) => ({
+    branch_id: data.branch_id,
+    shift_id: data.shift_id,
+    date_from: data.attendance_date,
+    date_to: data.attendance_date,
+    in_time: data.in_time,
+    out_time: data.out_time,
+    status: data.status,
+    remarks: data.remarks,
+    include_employee_list: 1,
+  });
+
+  const reset = () => {
+    setForm(initialForm);
+    setBulkLoadedKey('');
+  };
+
+  const handleBulkLoad = () => {
+    if (!form.attendance_date) {
+      toast.error('Please select attendance date');
+      return;
+    }
+
+    const params = loadedListParams();
+
+    setFilters((prev: any) => ({ ...prev, ...params }));
+    setBulkLoadedKey(bulkLoadKey());
+    loadEntries(params);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,10 +176,25 @@ const AttendanceEntries = ({ user }: any) => {
     }
     setButtonLoading(true);
     try {
+      const params = filters.include_employee_list ? filters : {
+        branch_id: form.branch_id || filters.branch_id,
+        date_from: form.attendance_date || filters.date_from,
+        date_to: form.attendance_date || filters.date_to,
+      };
       const response = await dispatch(saveAttendanceEntry(normalizePayload(form))).unwrap();
       toast.success(response?.message || 'Attendance saved successfully');
-      reset();
-      loadEntries();
+      setForm((prev: any) => ({
+        ...initialForm,
+        branch_id: prev.branch_id,
+        shift_id: prev.shift_id,
+        attendance_date: prev.attendance_date,
+        in_time: prev.in_time,
+        out_time: prev.out_time,
+        status: prev.status,
+        remarks: prev.remarks,
+      }));
+      setFilters((prev: any) => ({ ...prev, ...params }));
+      loadEntries(params);
     } catch (error: any) {
       toast.error(error || 'Failed to save attendance');
     } finally {
@@ -127,6 +205,10 @@ const AttendanceEntries = ({ user }: any) => {
   const handleBulkSubmit = async () => {
     if (!form.attendance_date) {
       toast.error('Please select attendance date');
+      return;
+    }
+    if (bulkLoadedKey !== bulkLoadKey()) {
+      toast.error('Please load attendance list before Bulk Entry');
       return;
     }
 
@@ -149,12 +231,7 @@ const AttendanceEntries = ({ user }: any) => {
         date_from: form.attendance_date,
         date_to: form.attendance_date,
       }));
-      loadEntries({
-        ...filters,
-        branch_id: form.branch_id || filters.branch_id,
-        date_from: form.attendance_date,
-        date_to: form.attendance_date,
-      });
+      loadEntries(loadedListParams());
     } catch (error: any) {
       toast.error(error || 'Bulk attendance failed');
     } finally {
@@ -162,13 +239,13 @@ const AttendanceEntries = ({ user }: any) => {
     }
   };
 
-  const handleApproval = async (row: any, approval_status: 'approved' | 'rejected') => {
+  const handleApproval = async (row: any, approval_status: 'approved' | 'rejected', remarks?: string) => {
     try {
       const response = await dispatch(
         approveAttendanceEntry({
           id: row.id,
           approval_status,
-          remarks: approval_status === 'approved' ? 'Approved from attendance list' : 'Rejected from attendance list',
+          remarks: remarks || (approval_status === 'approved' ? 'Approved from attendance list' : 'Rejected from attendance list'),
         }),
       ).unwrap();
       toast.success(response?.message || 'Approval updated');
@@ -184,7 +261,7 @@ const AttendanceEntries = ({ user }: any) => {
     { key: 'shift_name', header: 'Shift', render: (row: any) => row.shift_name || '-' },
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) || '-' },
     { key: 'out_time', header: 'Out', render: (row: any) => timeOnly(row.out_time) || '-' },
-    { key: 'status', header: 'Status' },
+    { key: 'status', header: 'Status', render: (row: any) => displayStatus(row) },
     { key: 'approval_status', header: 'Approval' },
     {
       key: 'action',
@@ -207,12 +284,17 @@ const AttendanceEntries = ({ user }: any) => {
           >
             <FiEdit2 />
           </button>
-          {row.approval_status !== 'approved' && (
+          {row.id && row.status === 'rejected' && (
+            <button type="button" title="Cancel rejected" onClick={() => handleApproval(row, 'approved', 'Rejected attendance restored')} className={iconButtonClass}>
+              <FiRefreshCcw />
+            </button>
+          )}
+          {row.id && row.approval_status !== 'approved' && row.status !== 'rejected' && (
             <button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconButtonClass}>
               <FiCheck />
             </button>
           )}
-          {row.approval_status !== 'rejected' && (
+          {row.id && row.approval_status !== 'rejected' && (
             <button type="button" title="Reject" onClick={() => handleApproval(row, 'rejected')} className={iconButtonClass}>
               <FiX />
             </button>
@@ -271,7 +353,7 @@ const AttendanceEntries = ({ user }: any) => {
           <InputElement name="remarks" label="Remarks" value={form.remarks || ''} onChange={handleChange(setForm)} />
         </div>
         <div className="mt-3 flex gap-2">
-          <ButtonLoading type="submit" buttonLoading={buttonLoading} label={form.id ? 'Update Single' : 'Save Single'} className={commandButtonClass} icon={<FiSave className="mr-2" />} />
+          <ButtonLoading type="submit" buttonLoading={buttonLoading} label={form.employee_id ? 'Update Single' : 'Save Single'} className={commandButtonClass} icon={<FiSave className="mr-2" />} />
           <ButtonLoading
             type="button"
             onClick={handleBulkSubmit}
@@ -283,6 +365,10 @@ const AttendanceEntries = ({ user }: any) => {
           <button type="button" onClick={reset} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />
             Reset
+          </button>
+          <button type="button" onClick={handleBulkLoad} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+            <FiSearch className="mr-2" />
+            Load
           </button>
         </div>
       </form>
