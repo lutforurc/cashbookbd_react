@@ -98,6 +98,11 @@ const isLateAttendance = (row: any) => {
 
 const displayStatus = (row: any) => (isLateAttendance(row) ? 'late' : row?.status);
 
+const attendanceRowKey = (row: any) => {
+  if (row?.id) return `id:${row.id}`;
+  return `employee:${row?.employee_id || ''}:date:${String(row?.attendance_date || '').slice(0, 10)}`;
+};
+
 const AttendanceEntries = ({ user }: any) => {
   const dispatch = useDispatch<any>();
   const location = useLocation();
@@ -106,20 +111,39 @@ const AttendanceEntries = ({ user }: any) => {
   const branches = branchDdlData?.protectedData?.data || [];
   const shifts = Array.isArray(attendance.shifts) ? attendance.shifts : [];
   const entries = Array.isArray(attendance.entries) ? attendance.entries : [];
+  const userBranchId = user?.branch_id ? String(user.branch_id) : '';
 
-  const [form, setForm] = useState<any>(initialForm);
-  const [filters, setFilters] = useState<any>({ date_from: today, date_to: today, branch_id: '' });
+  const [form, setForm] = useState<any>({ ...initialForm, branch_id: userBranchId });
+  const [filters, setFilters] = useState<any>({ date_from: today, date_to: today, branch_id: userBranchId });
   const [buttonLoading, setButtonLoading] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkApproveLoading, setBulkApproveLoading] = useState(false);
   const [bulkLoadedKey, setBulkLoadedKey] = useState('');
+  const [pendingRows, setPendingRows] = useState<Record<string, any>>({});
   const manualAttendanceEdit = (location.state as any)?.manualAttendanceEdit;
+  const displayEntries = entries.map((row: any) => {
+    const pendingRow = pendingRows[attendanceRowKey(row)];
+    return pendingRow ? { ...row, ...pendingRow, __pending: true } : row;
+  });
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(fetchAttendanceShifts());
-    dispatch(fetchAttendanceEntries(filters));
   }, [dispatch]);
+
+  useEffect(() => {
+    const nextFilters = { date_from: today, date_to: today, branch_id: userBranchId };
+
+    setForm((prev: any) => ({
+      ...prev,
+      branch_id: prev.branch_id || userBranchId,
+    }));
+    setFilters((prev: any) => ({
+      ...prev,
+      branch_id: prev.branch_id || userBranchId,
+    }));
+    dispatch(fetchAttendanceEntries(nextFilters));
+  }, [dispatch, userBranchId]);
 
   useEffect(() => {
     if (!manualAttendanceEdit) return;
@@ -162,12 +186,29 @@ const AttendanceEntries = ({ user }: any) => {
   const normalizePayload = (data: any) =>
     Object.fromEntries(
       Object.entries(data)
-        .filter(([key]) => !['employee_name', 'approval_status'].includes(key))
+        .filter(([key]) => !['employee_name', 'approval_status', '__pending', 'shift_name'].includes(key))
         .map(([key, value]) => [key, value === '' ? null : value]),
     );
 
   const loadEntries = (params = filters) => {
+    setPendingRows({});
     dispatch(fetchAttendanceEntries(params));
+  };
+
+  const pendingRowsList = () => Object.values(pendingRows);
+
+  const commitPendingRows = async () => {
+    const drafts = pendingRowsList();
+    if (drafts.length === 0) return { saved: 0, failed: 0 };
+
+    const results = await Promise.allSettled(
+      drafts.map((row: any) => dispatch(saveAttendanceEntry(normalizePayload(row))).unwrap()),
+    );
+
+    return {
+      saved: results.filter((result) => result.status === 'fulfilled').length,
+      failed: results.filter((result) => result.status === 'rejected').length,
+    };
   };
 
   const loadedListParams = (data = form) => ({
@@ -183,8 +224,9 @@ const AttendanceEntries = ({ user }: any) => {
   });
 
   const reset = () => {
-    setForm(initialForm);
+    setForm({ ...initialForm, branch_id: userBranchId });
     setBulkLoadedKey('');
+    setPendingRows({});
   };
 
   const handleBulkLoad = () => {
@@ -212,13 +254,18 @@ const AttendanceEntries = ({ user }: any) => {
     }
     setButtonLoading(true);
     try {
-      const params = filters.include_employee_list ? filters : {
-        branch_id: form.branch_id || filters.branch_id,
-        date_from: form.attendance_date || filters.date_from,
-        date_to: form.attendance_date || filters.date_to,
-      };
-      const response = await dispatch(saveAttendanceEntry(normalizePayload(form))).unwrap();
-      toast.success(response?.message || 'Attendance saved successfully');
+      const draftKey = attendanceRowKey(form);
+      setPendingRows((prev) => ({
+        ...prev,
+        [draftKey]: {
+          ...form,
+          attendance_date: String(form.attendance_date || today).slice(0, 10),
+          in_time: form.in_time,
+          out_time: form.out_time,
+          __pending: true,
+        },
+      }));
+      toast.success('Attendance updated in list. Click Bulk Entry or Bulk Approve to save.');
       setForm((prev: any) => ({
         ...initialForm,
         branch_id: prev.branch_id,
@@ -229,10 +276,8 @@ const AttendanceEntries = ({ user }: any) => {
         status: prev.status,
         remarks: prev.remarks,
       }));
-      setFilters((prev: any) => ({ ...prev, ...params }));
-      loadEntries(params);
     } catch (error: any) {
-      toast.error(error || 'Failed to save attendance');
+      toast.error(error || 'Failed to update attendance list');
     } finally {
       setButtonLoading(false);
     }
@@ -250,6 +295,19 @@ const AttendanceEntries = ({ user }: any) => {
 
     setBulkLoading(true);
     try {
+      const drafts = pendingRowsList();
+      if (drafts.length > 0) {
+        const result = await commitPendingRows();
+        if (result.saved > 0) {
+          toast.success(`Pending attendance saved. Updated: ${result.saved}${result.failed ? `, Failed: ${result.failed}` : ''}`);
+          setPendingRows({});
+          loadEntries(filters.include_employee_list ? filters : loadedListParams());
+        } else {
+          toast.error('Pending attendance save failed');
+        }
+        return;
+      }
+
       const response = await dispatch(bulkSaveAttendanceEntries(normalizePayload({
         branch_id: form.branch_id,
         shift_id: form.shift_id,
@@ -258,9 +316,10 @@ const AttendanceEntries = ({ user }: any) => {
         out_time: form.out_time,
         status: form.status,
         remarks: form.remarks,
+        update_existing: true,
       }))).unwrap();
       const result = response?.data?.data || response?.data || {};
-      toast.success(response?.message || `Bulk attendance saved. Created: ${result.created || 0}, Skipped: ${result.skipped || 0}`);
+      toast.success(response?.message || `Bulk attendance saved. Created: ${result.created || 0}, Updated: ${result.updated || 0}, Skipped: ${result.skipped || 0}`);
       setFilters((prev: any) => ({
         ...prev,
         branch_id: form.branch_id || prev.branch_id,
@@ -276,6 +335,11 @@ const AttendanceEntries = ({ user }: any) => {
   };
 
   const handleApproval = async (row: any, approval_status: 'approved' | 'rejected', remarks?: string) => {
+    if (row.__pending) {
+      toast.info('Please click Bulk Entry or Bulk Approve to save pending changes first');
+      return;
+    }
+
     try {
       const response = await dispatch(
         approveAttendanceEntry({
@@ -292,15 +356,21 @@ const AttendanceEntries = ({ user }: any) => {
   };
 
   const handleBulkApprove = async () => {
-    const approvableEntries = entries.filter((row: any) => row?.id && row?.approval_status !== 'approved');
+    const approvableEntries = displayEntries.filter((row: any) => row?.id && row?.approval_status !== 'approved');
 
-    if (approvableEntries.length === 0) {
+    if (approvableEntries.length === 0 && pendingRowsList().length === 0) {
       toast.info('No pending attendance found for approval');
       return;
     }
 
     setBulkApproveLoading(true);
     try {
+      const pendingResult = await commitPendingRows();
+      if (pendingResult.failed > 0) {
+        toast.error(`Pending attendance save failed. Failed: ${pendingResult.failed}`);
+        return;
+      }
+
       const results = await Promise.allSettled(
         approvableEntries.map((row: any) =>
           dispatch(
@@ -315,13 +385,17 @@ const AttendanceEntries = ({ user }: any) => {
 
       const approvedCount = results.filter((result) => result.status === 'fulfilled').length;
       const failedCount = results.length - approvedCount;
+      const savedText = pendingResult.saved ? ` Saved: ${pendingResult.saved}.` : '';
 
       if (approvedCount > 0) {
-        toast.success(`Bulk approval completed. Approved: ${approvedCount}${failedCount ? `, Failed: ${failedCount}` : ''}`);
+        toast.success(`Bulk approval completed.${savedText} Approved: ${approvedCount}${failedCount ? `, Failed: ${failedCount}` : ''}`);
+      } else if (pendingResult.saved > 0) {
+        toast.success(`Pending attendance saved. Saved: ${pendingResult.saved}`);
       } else {
         toast.error('Bulk approval failed');
       }
 
+      setPendingRows({});
       loadEntries();
     } finally {
       setBulkApproveLoading(false);
@@ -335,7 +409,7 @@ const AttendanceEntries = ({ user }: any) => {
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) || '-' },
     { key: 'out_time', header: 'Out', render: (row: any) => timeOnly(row.out_time) || '-' },
     { key: 'status', header: 'Status', render: (row: any) => displayStatus(row) },
-    { key: 'approval_status', header: 'Approval' },
+    { key: 'approval_status', header: 'Approval', render: (row: any) => (row.__pending ? 'pending save' : row.approval_status) },
     {
       key: 'action',
       header: 'Action',
@@ -410,7 +484,8 @@ const AttendanceEntries = ({ user }: any) => {
             <label className="text-black dark:text-white">Branch</label>
             <BranchDropdown
               name="branch_id"
-              branchDdl={[{ id: '', name: 'Select Branch' }, ...branches]}
+              defaultValue={userBranchId}
+              branchDdl={branches}
               value={form.branch_id?.toString() ?? ''}
               onChange={handleChange(setForm)}
               className="h-9 w-full font-medium text-sm p-1.5"
@@ -482,7 +557,8 @@ const AttendanceEntries = ({ user }: any) => {
           <label className="text-black dark:text-white">Branch</label>
           <BranchDropdown
             name="branch_id"
-            branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
+            defaultValue={userBranchId}
+            branchDdl={branches}
             value={filters.branch_id?.toString() ?? ''}
             onChange={handleChange(setFilters)}
             className="h-9 w-full font-medium text-sm p-1.5"
@@ -498,7 +574,7 @@ const AttendanceEntries = ({ user }: any) => {
             type="button"
             onClick={handleBulkApprove}
             buttonLoading={bulkApproveLoading}
-            disabled={bulkApproveLoading || entries.every((row: any) => row?.approval_status === 'approved')}
+            disabled={bulkApproveLoading || (pendingRowsList().length === 0 && entries.every((row: any) => row?.approval_status === 'approved'))}
             label="Bulk Approve"
             className={commandButtonClass}
             icon={<FiCheck className="mr-2" />}
@@ -506,7 +582,7 @@ const AttendanceEntries = ({ user }: any) => {
         </div>
       </div>
 
-      <Table columns={columns} data={entries} />
+      <Table columns={columns} data={displayEntries} />
     </div>
   );
 };
