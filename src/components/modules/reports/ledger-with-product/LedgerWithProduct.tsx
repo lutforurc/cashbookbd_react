@@ -22,6 +22,7 @@ import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import OrderTypes from '../../../utils/utils-functions/OrderTypes';
+import TransactionTypes from '../../../utils/utils-functions/TransactionTypes';
 
 
 const parseAmount = (value: any) => {
@@ -699,7 +700,7 @@ const LedgerWithProduct = (user: any) => {
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                         Transaction Type
                       </label>
-                      <OrderTypes onChange={handleOrderChange} className="h-10 w-full" />
+                      <TransactionTypes onChange={handleOrderChange} className="h-10 w-full" />
                     </div>
                     <div className="relative">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
