@@ -10,6 +10,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchAttendanceReport } from './attendanceSlice';
+import { chartDate } from '../../../utils/utils-functions/formatDate';
 
 const today = new Date().toISOString().slice(0, 10);
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
@@ -59,19 +60,35 @@ const AttendanceReport = ({ user }: any) => {
   const report = attendance.report || {};
   const summary = report.summary || {};
   const rows = Array.isArray(report.rows) ? report.rows : [];
+  const userBranchId = user?.branch_id ? String(user.branch_id) : '';
 
   const [filters, setFilters] = useState<any>({
     date_from: today,
     date_to: today,
-    branch_id: '',
+    branch_id: userBranchId,
     status: '',
     approval_status: '',
   });
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    dispatch(fetchAttendanceReport(filters));
   }, [dispatch]);
+
+  useEffect(() => {
+    const nextFilters = {
+      date_from: today,
+      date_to: today,
+      branch_id: userBranchId,
+      status: '',
+      approval_status: '',
+    };
+
+    setFilters((prev: any) => ({
+      ...prev,
+      branch_id: prev.branch_id || userBranchId,
+    }));
+    dispatch(fetchAttendanceReport(nextFilters));
+  }, [dispatch, userBranchId]);
 
   const handleChange = (setter: any) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -97,7 +114,14 @@ const AttendanceReport = ({ user }: any) => {
   ];
 
   const columns = [
-    { key: 'attendance_date', header: 'Date' },
+    {
+      key: 'serial_no',
+      header: 'Sl. No.',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (_row: any, index: number) => index + 1,
+    },
+    { key: 'attendance_date', header: 'Date', render: (row: any) => chartDate(row.attendance_date) },
     { key: 'employee_serial', header: 'ID' },
     { key: 'employee_name', header: 'Employee' },
     { key: 'branch_name', header: 'Branch', render: (row: any) => row.branch_name || '-' },
@@ -137,7 +161,8 @@ const AttendanceReport = ({ user }: any) => {
           <label className="text-black dark:text-white">Branch</label>
           <BranchDropdown
             name="branch_id"
-            branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
+            defaultValue={userBranchId}
+            branchDdl={branches}
             value={filters.branch_id?.toString() ?? ''}
             onChange={handleChange(setFilters)}
             className="h-9 w-full font-medium text-sm p-1.5"

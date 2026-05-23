@@ -403,6 +403,13 @@ const AttendanceEntries = ({ user }: any) => {
   };
 
   const columns = [
+    {
+      key: 'serial_no',
+      header: 'Sl. No.',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (_row: any, index: number) => index + 1,
+    },
     { key: 'attendance_date', header: 'Date' },
     { key: 'employee_name', header: 'Employee' },
     { key: 'shift_name', header: 'Shift', render: (row: any) => row.shift_name || '-' },
