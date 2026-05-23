@@ -21,6 +21,7 @@ import {
   fetchAttendanceShifts,
   saveAttendanceEntry,
 } from './attendanceSlice';
+import { chartDate, formatDateUsdToBd, formatLongDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 
 const today = new Date().toISOString().slice(0, 10);
 
@@ -410,7 +411,7 @@ const AttendanceEntries = ({ user }: any) => {
       cellClass: 'text-center',
       render: (_row: any, index: number) => index + 1,
     },
-    { key: 'attendance_date', header: 'Date' },
+    { key: 'attendance_date', header: 'Date', render: (row: any) => chartDate(row.attendance_date) },
     { key: 'employee_name', header: 'Employee' },
     { key: 'shift_name', header: 'Shift', render: (row: any) => row.shift_name || '-' },
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) || '-' },

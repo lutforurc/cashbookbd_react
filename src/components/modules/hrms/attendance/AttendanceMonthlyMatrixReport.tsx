@@ -129,10 +129,11 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
   const branches = branchDdlData?.protectedData?.data || [];
   const rows = Array.isArray(attendance.report?.rows) ? attendance.report.rows : [];
   const leaveApplications = Array.isArray(attendance.leaveApplications) ? attendance.leaveApplications : [];
+  const userBranchId = user?.branch_id ? String(user.branch_id) : '';
 
   const now = new Date();
   const [filters, setFilters] = useState({
-    branch_id: '',
+    branch_id: userBranchId,
     month: String(now.getMonth() + 1),
     year: String(now.getFullYear()),
   });
@@ -147,9 +148,6 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
     const optionYear = now.getFullYear() - index;
     return { id: String(optionYear), name: String(optionYear) };
   });
-
-  const selectedBranch = branches.find((branch: any) => String(branch.id) === String(filters.branch_id));
-  const projectName = selectedBranch?.name || 'All Projects';
 
   const reportRows = useMemo(() => {
     const employeeMap = new Map<string, any>();
@@ -248,8 +246,21 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-    loadReport();
   }, [dispatch]);
+
+  useEffect(() => {
+    const nextFilters = {
+      branch_id: userBranchId,
+      month: String(now.getMonth() + 1),
+      year: String(now.getFullYear()),
+    };
+
+    setFilters((prev) => ({
+      ...prev,
+      branch_id: prev.branch_id || userBranchId,
+    }));
+    loadReport(nextFilters);
+  }, [dispatch, userBranchId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -296,11 +307,12 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       <div className="py-3">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Project</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
           <BranchDropdown
             name="branch_id"
-            branchDdl={[{ id: '', name: 'All Projects' }, ...branches]}
-            value={filters.branch_id}
+            defaultValue={userBranchId}
+            branchDdl={branches}
+            value={filters.branch_id?.toString() ?? ''}
             onChange={handleChange}
             className="h-10 min-w-60 font-medium text-sm p-2"
           />
