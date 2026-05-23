@@ -6,6 +6,7 @@ type Params = {
   branchId: number;
   partyId: number;
   productId?: number | null;
+  transactionType?: string;
   itemId?: number | null;
   startDate: string;
   endDate: string;
@@ -25,11 +26,11 @@ const initialState: StatementState = {
 
 export const fetchCustomerSupplierStatement = createAsyncThunk(
   'reports/ledgerWithProduct',
-  async ({ branchId, partyId, productId, itemId, startDate, endDate }: Params, { rejectWithValue }) => {
+  async ({ branchId, partyId, productId, transactionType, itemId, startDate, endDate }: Params, { rejectWithValue }) => {
     try {
       const selectedItemId = itemId ?? productId ?? '';
       const response = await httpService.get(
-        `${API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL}?branch_id=${branchId}&party_id=${partyId}&item_id=${selectedItemId}&start_date=${startDate}&end_date=${endDate}`,
+        `${API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL}?branch_id=${branchId}&party_id=${partyId}&item_id=${selectedItemId}&transaction_type=${transactionType}&start_date=${startDate}&end_date=${endDate}`,
       );
 
       const payload = response?.data;

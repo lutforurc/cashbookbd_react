@@ -21,6 +21,7 @@ import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
+import OrderTypes from '../../../utils/utils-functions/OrderTypes';
 
 
 const parseAmount = (value: any) => {
@@ -212,6 +213,7 @@ const LedgerWithProduct = (user: any) => {
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('Notice');
   const [modalMessage, setModalMessage] = useState<React.ReactNode>('');
+  const [orderType, setOrderType] = useState('');
 
   const printRef = useRef<HTMLDivElement>(null);
   const voucherRegistryRef = useRef<any>(null);
@@ -356,6 +358,7 @@ const LedgerWithProduct = (user: any) => {
         branchId: Number(branchId),
         partyId: Number(partyId),
         productId,
+        transactionType: orderType,
         itemId: productId,
         startDate: dayjs(startDate).format('YYYY-MM-DD'),
         endDate: dayjs(endDate).format('YYYY-MM-DD'),
@@ -442,7 +445,7 @@ const LedgerWithProduct = (user: any) => {
           {row.remarks ? (
             <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.remarks}</div>
           ) : null}
-          { row.order_number && (
+          {row.order_number && (
             <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.order_number}</div>
           )}
         </div>
@@ -453,7 +456,7 @@ const LedgerWithProduct = (user: any) => {
       header: 'Vehicle No',
       headerClass: 'w-[9%]',
       cellClass: 'w-[9%]',
-      render: (row: any) => <div>{ formatTransportationNumber(row.truck_no || '')}</div>,
+      render: (row: any) => <div>{formatTransportationNumber(row.truck_no || '')}</div>,
     },
     {
       key: 'purchase_qty',
@@ -630,6 +633,10 @@ const LedgerWithProduct = (user: any) => {
     ],
   ];
 
+  const handleOrderChange = (e: any) => {
+    setOrderType(e.target.value);
+  };
+
   return (
     <>
       <HelmetTitle title="Ledger Details" />
@@ -642,8 +649,8 @@ const LedgerWithProduct = (user: any) => {
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
                   className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
-                      ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
-                      : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
+                    : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
                     }`}
                   title="Open filters"
                   aria-label="Open filters"
@@ -664,7 +671,7 @@ const LedgerWithProduct = (user: any) => {
                     className={
                       useFilterMenuEnabled
                         ? 'space-y-3'
-                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-5'
+                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-6'
                     }
                   >
                     <div>
@@ -688,7 +695,12 @@ const LedgerWithProduct = (user: any) => {
                         className="h-10"
                       />
                     </div>
-
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Transaction Type
+                      </label>
+                      <OrderTypes onChange={handleOrderChange} className="h-10 w-full" />
+                    </div>
                     <div className="relative">
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
                       <div
@@ -703,6 +715,7 @@ const LedgerWithProduct = (user: any) => {
                         className="appearance-none h-10"
                       />
                     </div>
+
 
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
@@ -726,8 +739,8 @@ const LedgerWithProduct = (user: any) => {
 
                     <div
                       className={`flex gap-2 pt-1 ${useFilterMenuEnabled
-                          ? 'justify-end'
-                          : 'hidden'
+                        ? 'justify-end'
+                        : 'hidden'
                         } ${useFilterMenuEnabled ? '' : 'md:col-span-2 xl:col-span-1'}`}
                     >
                       <ButtonLoading
@@ -752,8 +765,8 @@ const LedgerWithProduct = (user: any) => {
 
             <div
               className={`${useFilterMenuEnabled
-                  ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300'
-                  : 'hidden'
+                ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300'
+                : 'hidden'
                 }`}
             >
               Use the filter
