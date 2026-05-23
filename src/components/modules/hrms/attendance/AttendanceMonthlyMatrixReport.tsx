@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FiRefreshCcw } from 'react-icons/fi';
+import { FiCheckSquare } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
+import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
-import { PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import routes from '../../../services/appRoutes';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice';
 import AttendanceMonthlyMatrixPrint from './AttendanceMonthlyMatrixPrint';
-
-const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
 const monthNames = [
   'January',
@@ -121,6 +122,7 @@ const statusClassName = (code?: string) => {
 
 const AttendanceMonthlyMatrixReport = ({ user }: any) => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const printRef = useRef<HTMLDivElement>(null);
   const attendance = useSelector((state: any) => state.attendance);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -164,11 +166,13 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           employee_serial: row.employee_serial,
           employee_name: row.employee_name,
           dates: {},
+          dateRows: {},
         });
       }
 
       const attendanceDate = String(row.attendance_date || '').slice(0, 10);
       employeeMap.get(employeeId).dates[attendanceDate] = attendanceStatusCode(row);
+      employeeMap.get(employeeId).dateRows[attendanceDate] = row;
     });
 
     leaveApplications.forEach((leave: any) => {
@@ -183,6 +187,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           employee_serial: leave.employee_serial,
           employee_name: leave.employee_name,
           dates: {},
+          dateRows: {},
         });
       }
 
@@ -257,41 +262,74 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
     removeAfterPrint: true,
   });
 
+  const openManualAttendance = (employee: any, dateKey: string, code: string) => {
+    if (!code) return;
+
+    const entry = employee?.dateRows?.[dateKey];
+    if (!entry) {
+      toast.info('Manual attendance entry not found for this cell');
+      return;
+    }
+
+    if (entry.approval_status === 'approved') {
+      toast.error('Approved attendance cannot be changed');
+      return;
+    }
+
+    navigate(routes.hrms_attendance_entries, {
+      state: {
+        manualAttendanceEdit: {
+          ...entry,
+          employee_id: entry.employee_id || employee.employee_id,
+          employee_name: entry.employee_name || employee.employee_name,
+          attendance_date: dateKey,
+        },
+      },
+    });
+  };
+
   return (
     <div>
       <HelmetTitle title="Monthly Attendance Report" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-5">
+      <div className="py-3">
+      <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="text-black dark:text-white">Project</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Project</label>
           <BranchDropdown
             name="branch_id"
             branchDdl={[{ id: '', name: 'All Projects' }, ...branches]}
             value={filters.branch_id}
             onChange={handleChange}
-            className="h-9 w-full font-medium text-sm p-1.5"
+            className="h-10 min-w-60 font-medium text-sm p-2"
           />
         </div>
-        <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="h-9" />
-        <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="h-9" />
-        <div className="flex items-end">
-          <button type="button" onClick={() => loadReport()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
-            <FiRefreshCcw className="mr-2" />
-            Load
-          </button>
+        <div className="min-w-60">
+          <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="h-10 font-medium" />
         </div>
-        <div className="flex items-end">
-          <PrintButton label="Print A4" onClick={handlePrint} className="h-10 rounded-none" disabled={attendance.loading} />
+        <div className="min-w-60">
+          <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="h-10 font-medium" />
+        </div>
+        <div className="ml-auto flex items-end gap-2 max-md:ml-0">
+          <ButtonLoading
+            onClick={() => loadReport()}
+            buttonLoading={attendance.loading}
+            label="Load"
+            icon={<FiCheckSquare />}
+            className="h-10 px-6"
+          />
+          <PrintButton label="Print A4" onClick={handlePrint} className="h-10 px-6" disabled={attendance.loading} />
         </div>
       </div>
+      </div>
 
-      <div className="attendance-monthly-print overflow-x-auto bg-white dark:bg-boxdark">
+      <div className="attendance-monthly-print rounded-sm bg-white shadow-sm dark:bg-boxdark">
         <style>
           {`
             .attendance-monthly-print .matrix-header-cell {
-              background: #e8eef6;
-              color: #0f172a;
+              background: #d1d5db;
+              color: #1f2937;
             }
 
             .attendance-monthly-print .status-cell {
@@ -299,20 +337,18 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
 
             .attendance-monthly-print .status-present {
-              background: #e9f8ee;
+              background: #eefbf3;
               color: #137333;
             }
 
             .attendance-monthly-print .status-late {
-              background: #fff3d6;
+              background: #fff7df;
               color: #b45309;
-              box-shadow: inset 0 0 0 1px #f59e0b;
             }
 
             .attendance-monthly-print .status-absent {
-              background: #ffe8e8;
+              background: #fff0f0;
               color: #b91c1c;
-              box-shadow: inset 0 0 0 1px #ef4444;
             }
 
             .attendance-monthly-print .status-holiday {
@@ -336,8 +372,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
 
             .attendance-monthly-print tfoot td {
-              background: #eef2f7;
-              color: #0f172a;
+              background: #f8fafc;
+              color: #1f2937;
             }
 
             .attendance-monthly-print .legend-chip {
@@ -487,23 +523,24 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
           `}
         </style>
-        <div className="report-heading mb-1 flex w-full items-center justify-center gap-3 text-center text-sm text-slate-950 dark:text-white">
+        <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-gray-200 px-3 py-2 text-center text-sm font-medium text-slate-800 dark:border-gray-700 dark:text-slate-100">
           <div>Attendance for the Month of <span>{monthNames[monthIndex]} {year}</span></div>
         </div>
-        <table className="min-w-full border-collapse border border-slate-900 text-xs text-slate-950 dark:border-slate-500 dark:text-white">
+        <div className="overflow-x-auto">
+        <table className="min-w-full table-fixed text-left text-sm text-gray-700 dark:text-gray-300">
           <thead>
-            <tr>
-              <th className="serial-cell matrix-header-cell w-10 border border-slate-900 px-1 py-1 text-center font-semibold dark:border-slate-500">Sl. No.</th>
-              <th className="name-cell matrix-header-cell min-w-45 border border-slate-900 px-1 py-1 text-left font-semibold dark:border-slate-500">Name</th>
+            <tr className="text-xs uppercase">
+              <th className="serial-cell matrix-header-cell w-16 px-3 py-3 text-center font-semibold">Sl. No.</th>
+              <th className="name-cell matrix-header-cell w-64 px-3 py-3 text-left font-semibold">Name</th>
               {days.map((day) => (
-                <th key={day} className="day-cell matrix-header-cell w-6 border border-slate-900 px-1 py-1 text-center font-semibold dark:border-slate-500">
+                <th key={day} className="day-cell matrix-header-cell w-8 px-2 py-3 text-center font-semibold">
                   {day}
                 </th>
               ))}
-              <th className="total-cell matrix-header-cell w-8 border border-slate-900 px-1 py-1 text-center font-semibold dark:border-slate-500">Total</th>
+              <th className="total-cell matrix-header-cell w-16 px-3 py-3 text-center font-semibold">Total</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
             {reportRows.map((employee, index) => {
               const employeeTotal = days.reduce((total, day) => {
                 const dateKey = toDateString(year, monthIndex, day);
@@ -511,25 +548,32 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               }, 0);
 
               return (
-                <tr key={employee.employee_id || employee.employee_name}>
-                  <td className="serial-cell border border-slate-900 px-1 py-1 text-center dark:border-slate-500">{index + 1}</td>
-                  <td className="name-cell border border-slate-900 px-1 py-1 text-left dark:border-slate-500">{employee.employee_name || '-'}</td>
+                <tr key={employee.employee_id || employee.employee_name} className="transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700">
+                  <td className="serial-cell px-3 py-2 text-center">{index + 1}</td>
+                  <td className="name-cell truncate px-3 py-2 text-left">{employee.employee_name || '-'}</td>
                   {days.map((day) => {
                     const dateKey = toDateString(year, monthIndex, day);
                     const code = employee.dates[dateKey] || '';
+                    const entry = employee.dateRows?.[dateKey];
+                    const isEditable = !!entry && entry.approval_status !== 'approved';
                     return (
-                      <td key={dateKey} className={`day-cell border border-slate-900 px-1 py-1 text-center dark:border-slate-500 ${statusClassName(code)}`}>
+                      <td
+                        key={dateKey}
+                        title={entry?.approval_status === 'approved' ? 'Approved attendance cannot be changed' : code ? 'Click to update manual attendance' : ''}
+                        onClick={() => openManualAttendance(employee, dateKey, code)}
+                        className={`day-cell px-2 py-2 text-center ${statusClassName(code)} ${isEditable ? 'cursor-pointer hover:ring-1 hover:ring-slate-500' : ''}`}
+                      >
                         {code}
                       </td>
                     );
                   })}
-                  <td className="total-cell border border-slate-900 px-1 py-1 text-center font-semibold dark:border-slate-500">{formatTotal(employeeTotal)}</td>
+                  <td className="total-cell px-3 py-2 text-center font-semibold">{formatTotal(employeeTotal)}</td>
                 </tr>
               );
             })}
             {reportRows.length === 0 && (
               <tr>
-                <td colSpan={daysInMonth + 3} className="border border-slate-900 px-2 py-4 text-center dark:border-slate-500">
+                <td colSpan={daysInMonth + 3} className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
                   No attendance data found
                 </td>
               </tr>
@@ -538,19 +582,20 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           {reportRows.length > 0 && (
             <tfoot>
               <tr>
-                <td colSpan={2} className="border border-slate-900 px-1 py-1 text-center font-semibold dark:border-slate-500">Total</td>
+                <td colSpan={2} className="px-3 py-3 text-center font-semibold">Total</td>
                 {dayTotals.map((dayTotal, index) => (
-                  <td key={`day-total-${index}`} className="day-cell border border-slate-900 px-1 py-1 text-center font-semibold dark:border-slate-500">
+                  <td key={`day-total-${index}`} className="day-cell px-2 py-3 text-center font-semibold">
                     {formatTotal(dayTotal)}
                   </td>
                 ))}
-                <td className="total-cell border border-slate-900 px-1 py-1 text-center font-semibold dark:border-slate-500">{formatTotal(grandTotal)}</td>
+                <td className="total-cell px-3 py-3 text-center font-semibold">{formatTotal(grandTotal)}</td>
               </tr>
             </tfoot>
           )}
         </table>
+        </div>
 
-        <div className="print-legend mt-2 text-xs text-slate-600 dark:text-slate-300">
+        <div className="print-legend border-t border-gray-200 px-3 py-2 text-xs text-slate-600 dark:border-gray-700 dark:text-slate-300">
           <span className="legend-chip"><span className="legend-mark status-present">✓</span> Present</span>
           <span className="legend-chip"><span className="legend-mark status-late">!</span> Late</span>
           <span className="legend-chip"><span className="legend-mark status-holiday">○</span> Holiday</span>

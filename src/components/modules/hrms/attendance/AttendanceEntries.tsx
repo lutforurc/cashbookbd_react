@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FiCheck, FiEdit2, FiRefreshCcw, FiSave, FiSearch, FiUsers, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../../common/Loader';
@@ -99,6 +100,7 @@ const displayStatus = (row: any) => (isLateAttendance(row) ? 'late' : row?.statu
 
 const AttendanceEntries = ({ user }: any) => {
   const dispatch = useDispatch<any>();
+  const location = useLocation();
   const attendance = useSelector((state: any) => state.attendance);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const branches = branchDdlData?.protectedData?.data || [];
@@ -109,13 +111,43 @@ const AttendanceEntries = ({ user }: any) => {
   const [filters, setFilters] = useState<any>({ date_from: today, date_to: today, branch_id: '' });
   const [buttonLoading, setButtonLoading] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkApproveLoading, setBulkApproveLoading] = useState(false);
   const [bulkLoadedKey, setBulkLoadedKey] = useState('');
+  const manualAttendanceEdit = (location.state as any)?.manualAttendanceEdit;
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(fetchAttendanceShifts());
     dispatch(fetchAttendanceEntries(filters));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!manualAttendanceEdit) return;
+
+    const editDate = String(manualAttendanceEdit.attendance_date || today).slice(0, 10);
+    const nextFilters = {
+      date_from: editDate,
+      date_to: editDate,
+      branch_id: manualAttendanceEdit.branch_id || '',
+    };
+
+    setFilters(nextFilters);
+    dispatch(fetchAttendanceEntries(nextFilters));
+
+    if (manualAttendanceEdit.approval_status === 'approved') {
+      toast.error('Approved attendance cannot be changed');
+      return;
+    }
+
+    setForm({
+      ...initialForm,
+      ...manualAttendanceEdit,
+      attendance_date: editDate,
+      employee_name: manualAttendanceEdit.employee_name,
+      in_time: timeOnly(manualAttendanceEdit.in_time),
+      out_time: timeOnly(manualAttendanceEdit.out_time),
+    });
+  }, [dispatch, manualAttendanceEdit]);
 
   const handleChange = (setter: any) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -130,7 +162,7 @@ const AttendanceEntries = ({ user }: any) => {
   const normalizePayload = (data: any) =>
     Object.fromEntries(
       Object.entries(data)
-        .filter(([key]) => key !== 'employee_name')
+        .filter(([key]) => !['employee_name', 'approval_status'].includes(key))
         .map(([key, value]) => [key, value === '' ? null : value]),
     );
 
@@ -170,6 +202,10 @@ const AttendanceEntries = ({ user }: any) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.id && form.approval_status === 'approved') {
+      toast.error('Approved attendance cannot be changed');
+      return;
+    }
     if (!form.employee_id) {
       toast.error('Single entry করতে employee select করুন; সব employee হলে Bulk Entry ব্যবহার করুন');
       return;
@@ -255,6 +291,43 @@ const AttendanceEntries = ({ user }: any) => {
     }
   };
 
+  const handleBulkApprove = async () => {
+    const approvableEntries = entries.filter((row: any) => row?.id && row?.approval_status !== 'approved');
+
+    if (approvableEntries.length === 0) {
+      toast.info('No pending attendance found for approval');
+      return;
+    }
+
+    setBulkApproveLoading(true);
+    try {
+      const results = await Promise.allSettled(
+        approvableEntries.map((row: any) =>
+          dispatch(
+            approveAttendanceEntry({
+              id: row.id,
+              approval_status: 'approved',
+              remarks: 'Bulk approved from attendance list',
+            }),
+          ).unwrap(),
+        ),
+      );
+
+      const approvedCount = results.filter((result) => result.status === 'fulfilled').length;
+      const failedCount = results.length - approvedCount;
+
+      if (approvedCount > 0) {
+        toast.success(`Bulk approval completed. Approved: ${approvedCount}${failedCount ? `, Failed: ${failedCount}` : ''}`);
+      } else {
+        toast.error('Bulk approval failed');
+      }
+
+      loadEntries();
+    } finally {
+      setBulkApproveLoading(false);
+    }
+  };
+
   const columns = [
     { key: 'attendance_date', header: 'Date' },
     { key: 'employee_name', header: 'Employee' },
@@ -270,17 +343,23 @@ const AttendanceEntries = ({ user }: any) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            title="Edit"
-            onClick={() =>
+            title={row.approval_status === 'approved' ? 'Approved attendance cannot be changed' : 'Edit'}
+            disabled={row.approval_status === 'approved'}
+            onClick={() => {
+              if (row.approval_status === 'approved') {
+                toast.error('Approved attendance cannot be changed');
+                return;
+              }
+
               setForm({
                 ...initialForm,
                 ...row,
                 employee_name: row.employee_name,
                 in_time: timeOnly(row.in_time),
                 out_time: timeOnly(row.out_time),
-              })
-            }
-            className={iconButtonClass}
+              });
+            }}
+            className={`${iconButtonClass} disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700 dark:disabled:text-slate-400`}
           >
             <FiEdit2 />
           </button>
@@ -353,7 +432,14 @@ const AttendanceEntries = ({ user }: any) => {
           <InputElement name="remarks" label="Remarks" value={form.remarks || ''} onChange={handleChange(setForm)} />
         </div>
         <div className="mt-3 flex gap-2">
-          <ButtonLoading type="submit" buttonLoading={buttonLoading} label={form.employee_id ? 'Update Single' : 'Save Single'} className={commandButtonClass} icon={<FiSave className="mr-2" />} />
+          <ButtonLoading
+            type="submit"
+            buttonLoading={buttonLoading}
+            disabled={form.id && form.approval_status === 'approved'}
+            label={form.employee_id ? 'Update Single' : 'Save Single'}
+            className={commandButtonClass}
+            icon={<FiSave className="mr-2" />}
+          />
           <ButtonLoading
             type="button"
             onClick={handleBulkSubmit}
@@ -406,6 +492,17 @@ const AttendanceEntries = ({ user }: any) => {
           <button type="button" onClick={() => loadEntries()} className={commandButtonClass}>
             Load
           </button>
+        </div>
+        <div className="flex items-end">
+          <ButtonLoading
+            type="button"
+            onClick={handleBulkApprove}
+            buttonLoading={bulkApproveLoading}
+            disabled={bulkApproveLoading || entries.every((row: any) => row?.approval_status === 'approved')}
+            label="Bulk Approve"
+            className={commandButtonClass}
+            icon={<FiCheck className="mr-2" />}
+          />
         </div>
       </div>
 
