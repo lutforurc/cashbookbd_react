@@ -1007,7 +1007,7 @@ const Orders = () => {
                       name={'status'}
                       label="Order Status"
                       onChange={handleOrderStatus}
-                      className="h-[2.1rem] bg-transparent"
+                      className="h-9 bg-transparent"
                       // value={formData?.status?.toString() ?? ''}
                       data={ORDER_STATUS}
                     />

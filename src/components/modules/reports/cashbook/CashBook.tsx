@@ -336,10 +336,21 @@ const CashBook = (user: any) => {
                   <p className="text-sm text-gray-500">{row?.somity?.mobile}</p>
                 </>
               )}
+
+              
+
             </a>
           </div>
           <div className="text-sm text-gray-500 break-words whitespace-normal">
             {row?.remarks}
+         
+              {row?.order_number ? (
+	                <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.order_number}</p>
+	              ) : (
+	                ''
+	              )}
+           
+
           </div>
         </div>
       ),
