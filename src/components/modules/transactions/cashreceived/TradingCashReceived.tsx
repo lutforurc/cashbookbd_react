@@ -8,7 +8,6 @@ import {
   FiEdit2,
   FiHome,
   FiPlus,
-  FiRefreshCcw,
   FiSave,
   FiSearch,
   FiTrash2,
@@ -77,7 +76,6 @@ const TradingCashReceived = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [isUpdateButton, setIsUpdateButton] = useState(false);
-  const [isResetOrder, setIsResetOrder] = useState(true); // State to store the search value
   const [remarkSuggestions, setRemarkSuggestions] = useState<string[]>([]);
   const navigate = useNavigate();
   const totalAmount = tableData.reduce(
@@ -232,12 +230,11 @@ const TradingCashReceived = () => {
     setTableData(tableData.filter((row) => row.id !== id));
   };
   const selectedOrderOptionHandler = (option: any) => {
-    const key = 'purchaseOrderNumber'; // Set the desired key dynamically
-    setFormData({
-      ...formData,
-      [key]: option.value,
-      purchaseOrderText: option.label,
-    });
+    setFormData((prevState) => ({
+      ...prevState,
+      purchaseOrderNumber: option?.value || '',
+      purchaseOrderText: option?.label || '',
+    }));
   };
 
   const receivedEditItem = (productId: number) => {
@@ -266,8 +263,6 @@ const TradingCashReceived = () => {
         ? { ...product, index: productIndex }
         : prevState.currentProduct || null,
     }));
-    setIsResetOrder(true);
-
     setIsUpdating(true);
     setIsUpdating(true);
     setUpdateId(productIndex);
@@ -361,14 +356,6 @@ const TradingCashReceived = () => {
     }
   }, [cashReceived.isEdit]);
 
-  const handleOrderReset = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      purchaseOrderNumber: '',
-      purchaseOrderText: '',
-    }));
-    setIsResetOrder(false);
-  };
   useCtrlS(handleCashReceivedSave);
   return (
     <>
@@ -432,13 +419,6 @@ const TradingCashReceived = () => {
                   }
                 />
               </div>
-              <ButtonLoading
-                onClick={handleOrderReset}
-                buttonLoading={buttonLoading}
-                label=" "
-                className="whitespace-nowrap text-center mr-0 w-15 absolute right-0 top-6 h-9.5"
-                icon={<FiRefreshCcw className="text-white text-lg" />}
-              />
             </div>
 
             <div className="">

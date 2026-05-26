@@ -18,6 +18,7 @@ export type CashRow = {
   pay_branch_name?: string;
   somity?: Somity | null;
   remarks?: string;
+  order_number?: string | number | null;
   credit?: number; // Received
   debit?: number; // Payment
   branchPad?: string;
@@ -172,6 +173,13 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                                 className={`break-words whitespace-normal`}
                               >
                                 {row.remarks}
+                              </div>
+                            )}
+                            {row?.order_number && (
+                              <div
+                                className={`break-words whitespace-normal`}
+                              >
+                                {row.order_number}
                               </div>
                             )}
                           </div>

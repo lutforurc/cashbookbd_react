@@ -9,7 +9,6 @@ import {
   FiEdit2,
   FiHome,
   FiPlus,
-  FiRefreshCcw,
   FiSave,
   FiSearch,
   FiTrash2,
@@ -76,7 +75,6 @@ const TradingCashPayment = () => {
   const [updateId, setUpdateId] = useState<any>(null);
   const [search, setSearch] = useState(''); // State to store the search value
   const [isUpdateButton, setIsUpdateButton] = useState(false);
-  const [isResetOrder, setIsResetOrder] = useState(true);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [remarkSuggestions, setRemarkSuggestions] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -233,12 +231,11 @@ const TradingCashPayment = () => {
   };
 
   const selectedOrderOptionHandler = (option: any) => {
-    const key = 'purchaseOrderNumber'; // Set the desired key dynamically
-    setFormData({
-      ...formData,
-      [key]: option.value,
-      purchaseOrderText: option.label,
-    });
+    setFormData((prevState) => ({
+      ...prevState,
+      purchaseOrderNumber: option?.value || '',
+      purchaseOrderText: option?.label || '',
+    }));
   };
 
   const paymentEditItem = (productId: number) => {
@@ -266,8 +263,6 @@ const TradingCashPayment = () => {
         ? { ...product, index: productIndex }
         : prevState.currentProduct || null,
     }));
-    setIsResetOrder(true);
-
     setIsUpdating(true);
     setIsUpdating(true);
     setUpdateId(productIndex);
@@ -381,15 +376,6 @@ const TradingCashPayment = () => {
     }
   }, [cashPayment.isEdit]);
 
-  const handleOrderReset = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      purchaseOrderNumber: '', // Clear this field
-      purchaseOrderText: '', // Clear this field
-    }));
-    setIsResetOrder(false);
-  };
-
   const handleHome = () => {
     navigate('/dashboard');
   }
@@ -461,15 +447,6 @@ const TradingCashPayment = () => {
                   }
                 />
               </div>
-              {isResetOrder && (
-                <ButtonLoading
-                  onClick={handleOrderReset}
-                  buttonLoading={buttonLoading}
-                  label=""
-                  className="whitespace-nowrap text-center mr-0 w-15 absolute right-0 top-6 h-9.5"
-                  icon={<FiRefreshCcw className="text-white text-lg" />}
-                />
-              )}
             </div>
             <div className="">
               <label htmlFor="">Select Account</label>

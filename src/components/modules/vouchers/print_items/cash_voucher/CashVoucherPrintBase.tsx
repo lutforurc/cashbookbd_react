@@ -91,6 +91,7 @@ const getCashVoucherData = (data: any, mode: CashVoucherMode) => {
     remarks: entry?.remarks ?? '',
     address: entry?.coa_l4?.cust_party_infos?.address ?? '',
     mobile: entry?.coa_l4?.cust_party_infos?.mobile ?? '',
+    orderNumber: data?.order_number ?? trxMaster?.order_number ?? trxMaster?.order_no ?? '',
     preparedBy: data?.user?.name ?? '',
     approvedBy: data?.approved_user?.name ?? data?.approved_by ?? '',
   };
@@ -204,9 +205,21 @@ const CashVoucherPrintBase = React.forwardRef<HTMLDivElement, Props>(
                 <td className={`border border-black px-2 ${variant.startsWith('half') ? 'align-top' : 'align-middle'}`}>
                   <div className={variant.startsWith('half') ? 'pt-1' : 'ml-3'}>
                     {printData.headOfAccount}
-                    {printData.address && <><br />{variant.startsWith('half') ? printData.address : <span className="text-gray-700">{printData.address}</span>}</>}
-                    {String(printData.mobile).length > 5 && <><br />{variant.startsWith('half') ? printData.mobile : <span className="text-gray-700">{printData.mobile}</span>}</>}
-                    {printData.remarks && <><br />{variant.startsWith('half') ? printData.remarks : <span className="text-gray-700">{printData.remarks}</span>}</>}
+                    {printData.address && <><br />{variant.startsWith('half') ? printData.address : <span className="">{printData.address}</span>}</>}
+                    {String(printData.mobile).length > 5 && <><br />{variant.startsWith('half') ? printData.mobile : <span className="">{printData.mobile}</span>}</>}
+                    {printData.remarks && <><br />{variant.startsWith('half') ? printData.remarks : <span className="">{printData.remarks}</span>}</>}
+                    {printData.orderNumber && (
+                      <>
+                        <br />
+                        {variant.startsWith('half') ? (
+                          <>Order No: {printData.orderNumber}</>
+                        ) : (
+                          <span className="">
+                            {printData.orderNumber}
+                          </span>
+                        )}
+                      </>
+                    )}
                   </div>
                 </td>
                 <td className="border border-black px-2 text-right align-middle">
