@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "CashBookBD",
+    "slug": "cashbookbd-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f766e"
+      },
+      "package": "com.lutforurc.cashbookbdmobile"
+    },
+    "extra": {
+      "apiUrl": "https://aft.cashbookbd.com"
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}

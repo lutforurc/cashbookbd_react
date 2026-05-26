@@ -110,6 +110,11 @@ import FestivalBonusGenerate from './components/modules/hrms/bonus/FestivalBonus
 import FestivalBonus from './components/modules/hrms/bonus/FestivalBonus';
 import FestivalBonusUpdate from './components/modules/hrms/bonus/FestivalBonusUpdate';
 import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
+import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
+import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
+import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
+import AttendanceMonthlyMatrixReport from './components/modules/hrms/attendance/AttendanceMonthlyMatrixReport';
+import LeaveApplications from './components/modules/hrms/attendance/LeaveApplications';
 import ChangeList from './components/modules/history/ChangeList';
 import AddEditProject from './components/modules/real-estate/project/AddEditProject';
 import FlatLayout from './components/modules/real-estate/building-flat/FlatLayout';
@@ -589,6 +594,13 @@ function App() {
               <Route path={routes.hrms_designation_create} element={<AddHrmDesignation />} />
               <Route path={routes.hrms_designation_edit} element={<AddHrmDesignation />} />
               <Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['attendance.view', 'employee.view']} loading={permissionsLoading} />}>
+              <Route path={routes.hrms_attendance_entries} element={<AttendanceEntries user={me} />} />
+              <Route path={routes.hrms_attendance_report} element={<AttendanceReport user={me} />} />
+              <Route path={routes.hrms_attendance_monthly_report} element={<AttendanceMonthlyMatrixReport user={me} />} />
+              <Route path={routes.hrms_leave_applications} element={<LeaveApplications user={me} />} />
+              <Route path={routes.hrms_attendance_setup} element={<AttendanceSetup user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.generate']} loading={permissionsLoading} />}>
               <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />

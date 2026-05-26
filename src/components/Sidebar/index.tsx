@@ -1987,6 +1987,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/hrms/employees' ||
                     pathname.includes('/hrms/designation-levels') ||
                     pathname.includes('/hrms/designations') ||
+                    pathname.includes('/hrms/attendance') ||
                     pathname === '/hrms/salary/salary-generate' ||
                     pathname === routes.employee_loan_balance ||
                     pathname.includes('/hrms/salary-sheet') ||
@@ -2005,6 +2006,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname === '/hrms/employees' ||
                           pathname.includes('/hrms/designation-levels') ||
                           pathname.includes('/hrms/designations') ||
+                          pathname.includes('/hrms/attendance') ||
                           pathname === '/hrms/salary/salary-generate' ||
                           pathname === routes.employee_loan_balance ||
                           pathname === routes.employee_loan_ledger ||
@@ -2063,6 +2065,71 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Designations
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_attendance_entries}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Manual Attendance
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_attendance_report}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Attendance Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_attendance_monthly_report}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Monthly Attendance
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'leave.view') || hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_leave_applications}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Leave Applications
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_attendance_setup}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Attendance Setup
                               </NavLink>
                             </li>
                           )}

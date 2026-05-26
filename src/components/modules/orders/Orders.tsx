@@ -125,6 +125,65 @@ const normalizeOrderPrintRow = (row: any, index: number, fallbackUnit?: string) 
     pickFirstValue([row], ['due_amount', 'due', 'net_due', 'balance_amount']) ?? 0,
 });
 
+const toPrintNumber = (value: any) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+};
+
+const hasPrintableLineDetail = (row: any) =>
+  toPrintNumber(row?.weight) !== 0 ||
+  toPrintNumber(row?.rate) !== 0 ||
+  toPrintNumber(row?.amount) !== 0 ||
+  Boolean(String(row?.vehicle_no ?? '').trim().replace(/^-$/, ''));
+
+const getOrderPrintRowKey = (row: any) =>
+  [row?.vr_no, row?.date]
+    .map((value) => String(value ?? '').trim().toLowerCase())
+    .join('|');
+
+const mergeDuplicateOrderPrintRows = (rows: any[]) => {
+  const lineRowsByInvoice = new Map<string, any>();
+
+  rows.forEach((row) => {
+    if (!hasPrintableLineDetail(row)) return;
+
+    const key = getOrderPrintRowKey(row);
+    if (!key || key === '-|-' || lineRowsByInvoice.has(key)) return;
+
+    lineRowsByInvoice.set(key, row);
+  });
+
+  return rows.reduce((mergedRows: any[], row) => {
+    const key = getOrderPrintRowKey(row);
+    const lineRow = lineRowsByInvoice.get(key);
+
+    if (!lineRow || lineRow === row || hasPrintableLineDetail(row)) {
+      mergedRows.push(row);
+      return mergedRows;
+    }
+
+    const paymentValue =
+      toPrintNumber(row?.freight_charge) || toPrintNumber(row?.receive);
+
+    if (
+      paymentValue !== 0 &&
+      toPrintNumber(lineRow?.freight_charge) === 0 &&
+      toPrintNumber(lineRow?.receive) === 0
+    ) {
+      lineRow.receive = paymentValue;
+    }
+
+    if (
+      toPrintNumber(lineRow?.due_amount) === 0 &&
+      toPrintNumber(row?.due_amount) !== 0
+    ) {
+      lineRow.due_amount = row.due_amount;
+    }
+
+    return mergedRows;
+  }, []);
+};
+
 const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
   const root = payload?.data ?? payload ?? {};
   const orderForSource =
@@ -156,8 +215,11 @@ const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
     [];
 
   const normalizedTransactions = Array.isArray(transactionSource)
-    ? transactionSource.map((row: any, index: number) => normalizeOrderPrintRow(row, index, fallbackUnit))
+    ? transactionSource.map((row: any, index: number) =>
+        normalizeOrderPrintRow(row, index, fallbackUnit),
+      )
     : [];
+  const transactionRows = mergeDuplicateOrderPrintRows(normalizedTransactions);
 
   return {
     ...baseOrder,
@@ -212,7 +274,7 @@ const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
       pickFirstValue(sources, ['notes', 'note', 'remark', 'remarks']) ??
       baseOrder?.notes,
     unit: fallbackUnit || baseOrder?.unit || '',
-    transaction_rows: normalizedTransactions,
+    transaction_rows: transactionRows,
   };
 };
 

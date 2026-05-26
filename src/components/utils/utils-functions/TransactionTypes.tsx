@@ -45,12 +45,9 @@ const TransactionTypes: React.FC<OrderProps> = ({
         {selectOption}
       </option>
       <option value="2">Purchase</option>
-      <option value="1">Sales</option> 
+      <option value="1">Sales</option>
     </select>
   );
 };
 
-
 export default TransactionTypes;
-
-

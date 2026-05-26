@@ -562,6 +562,29 @@ export const API_FESTIVAL_BONUS_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/festival
 export const API_FESTIVAL_BONUS_SHEET_UPDATE_URL = `${API_BASE_URL}/hrms/festival-bonus-sheet-update`;
 export const API_FESTIVAL_BONUS_PAYMENT_URL = `${API_BASE_URL}/hrms/festival-bonus-payment`;
 
+// Attendance Management Routes
+export const API_ATTENDANCE_SHIFT_LIST_URL = `${API_BASE_URL}/hrms/attendance/shifts`;
+export const API_ATTENDANCE_SHIFT_STORE_URL = `${API_BASE_URL}/hrms/attendance/shifts/store`;
+export const API_ATTENDANCE_SHIFT_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/shifts/update`;
+export const API_ATTENDANCE_WEEKLY_HOLIDAY_LIST_URL = `${API_BASE_URL}/hrms/attendance/weekly-holidays`;
+export const API_ATTENDANCE_WEEKLY_HOLIDAY_STORE_URL = `${API_BASE_URL}/hrms/attendance/weekly-holidays/store`;
+export const API_ATTENDANCE_WEEKLY_HOLIDAY_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/weekly-holidays/update`;
+export const API_ATTENDANCE_HOLIDAY_LIST_URL = `${API_BASE_URL}/hrms/attendance/holidays`;
+export const API_ATTENDANCE_HOLIDAY_STORE_URL = `${API_BASE_URL}/hrms/attendance/holidays/store`;
+export const API_ATTENDANCE_HOLIDAY_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/holidays/update`;
+export const API_ATTENDANCE_LEAVE_TYPE_LIST_URL = `${API_BASE_URL}/hrms/attendance/leave-types`;
+export const API_ATTENDANCE_LEAVE_TYPE_STORE_URL = `${API_BASE_URL}/hrms/attendance/leave-types/store`;
+export const API_ATTENDANCE_LEAVE_TYPE_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/leave-types/update`;
+export const API_ATTENDANCE_ENTRY_LIST_URL = `${API_BASE_URL}/hrms/attendance/entries`;
+export const API_ATTENDANCE_ENTRY_REPORT_URL = `${API_BASE_URL}/hrms/attendance/entries/report`;
+export const API_ATTENDANCE_ENTRY_STORE_URL = `${API_BASE_URL}/hrms/attendance/entries/store`;
+export const API_ATTENDANCE_ENTRY_BULK_STORE_URL = `${API_BASE_URL}/hrms/attendance/entries/bulk-store`;
+export const API_ATTENDANCE_ENTRY_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/entries/update`;
+export const API_ATTENDANCE_ENTRY_APPROVE_URL = `${API_BASE_URL}/hrms/attendance/entries/approve`;
+export const API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL = `${API_BASE_URL}/hrms/attendance/leave-applications`;
+export const API_ATTENDANCE_LEAVE_APPLICATION_STORE_URL = `${API_BASE_URL}/hrms/attendance/leave-applications/store`;
+export const API_ATTENDANCE_LEAVE_APPLICATION_APPROVE_URL = `${API_BASE_URL}/hrms/attendance/leave-applications/approve`;
+
 
 // Real Estate Area url
 export const API_PROJECT_STORE_URL = `${API_BASE_URL}/real-estate/projects`;

@@ -258,6 +258,11 @@ const ROUTES = {
   hrms_designation_create: '/hrms/designations/create',
   hrms_designation_edit: '/hrms/designations/edit/:id',
   hrms_designation_edit_base: '/hrms/designations/edit',
+  hrms_attendance_entries: '/hrms/attendance/entries',
+  hrms_attendance_report: '/hrms/attendance/report',
+  hrms_attendance_monthly_report: '/hrms/attendance/monthly-report',
+  hrms_leave_applications: '/hrms/attendance/leaves',
+  hrms_attendance_setup: '/hrms/attendance/setup',
   
   hrms_salary_sheet_list: '/hrms/salary-sheet',
   hrms_salary_generate: '/hrms/salary/salary-generate',
