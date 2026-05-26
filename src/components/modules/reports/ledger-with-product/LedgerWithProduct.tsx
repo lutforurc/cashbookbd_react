@@ -2,7 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
-import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import {
+  ButtonLoading,
+  PrintButton,
+} from '../../../../pages/UiElements/CustomButtons';
 import Loader from '../../../../common/Loader';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
@@ -21,7 +24,7 @@ import { useVoucherPrint } from '../../vouchers';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
-
+import TransactionTypes from '../../../utils/utils-functions/TransactionTypes';
 
 const parseAmount = (value: any) => {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
@@ -42,15 +45,16 @@ const isZeroAmount = (value: unknown) => {
   return Number.isFinite(numberValue) && numberValue === 0;
 };
 
-const formatAmountOrZeroMark = (value: unknown) => (
-  isZeroAmount(value) ? '-' : thousandSeparator(value)
-);
+const formatAmountOrZeroMark = (value: unknown) =>
+  isZeroAmount(value) ? '-' : thousandSeparator(value);
 
 const joinedZeroMarkClass =
   'block -mx-3 border-red-600 px-3 leading-5 text-red-600';
 
 const getVoucherType = (vrNo: any) => {
-  const prefix = String(vrNo || '').split('-')[0]?.trim();
+  const prefix = String(vrNo || '')
+    .split('-')[0]
+    ?.trim();
   const parsed = Number.parseInt(prefix, 10);
   return Number.isNaN(parsed) ? prefix : String(parsed);
 };
@@ -79,7 +83,8 @@ const getDisplayedPaymentValue = (row: any) => {
   return paymentValue;
 };
 
-const getApiVoucherType = (row: any) => Number(row?.voucher_type ?? row?.voucher_type_id ?? 0);
+const getApiVoucherType = (row: any) =>
+  Number(row?.voucher_type ?? row?.voucher_type_id ?? 0);
 
 const getVoucherSideAmount = (row: any) => {
   const receivedValue = getDisplayedReceivedValue(row);
@@ -194,9 +199,14 @@ const shouldShowZeroProductAmountMark = (
 const LedgerWithProduct = (user: any) => {
   const dispatch = useDispatch();
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
-  const statementState: any = useSelector((state: any) => state.customerSupplierStatement);
+  const statementState: any = useSelector(
+    (state: any) => state.customerSupplierStatement,
+  );
   const settings = useSelector((state: any) => state.settings);
-  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
+  const useFilterMenuEnabled = isUserFeatureEnabled(
+    settings,
+    'use_filter_parameter',
+  );
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -206,6 +216,7 @@ const LedgerWithProduct = (user: any) => {
   const [partyLabel, setPartyLabel] = useState<string>('');
   const [productId, setProductId] = useState<number | null>(null);
   const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
+  const [transactionType, setTransactionType] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState<number>(11);
   const [fontSize, setFontSize] = useState<number>(10);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -223,6 +234,18 @@ const LedgerWithProduct = (user: any) => {
     setShowMessageModal(true);
   };
 
+  const focusNextField = (nextFieldId: string) => {
+    setTimeout(() => {
+      document.getElementById(nextFieldId)?.focus();
+    }, 0);
+  };
+
+  const handleSelectChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setTransactionType(event.target.value);
+  };
+
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
     setBranchId(Number(user?.user?.branch_id) || null);
@@ -238,7 +261,11 @@ const LedgerWithProduct = (user: any) => {
 
     if (protectedData?.transactionDate) {
       const [day, month, year] = protectedData.transactionDate.split('/');
-      const parsedEndDate = new Date(Number(year), Number(month) - 1, Number(day));
+      const parsedEndDate = new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+      );
       setStartDate(new Date(Number(year), Number(month) - 1, 1));
       setEndDate(parsedEndDate);
     }
@@ -249,39 +276,38 @@ const LedgerWithProduct = (user: any) => {
   const rawSummary = reportData?.summary || {};
   const party = reportData?.party || {};
 
-  const rows = useMemo(
-    () => {
-      let runningBalance = 0;
+  const rows = useMemo(() => {
+    let runningBalance = 0;
 
-      return rawRows.map((row: any) => {
-        const voucherType = getVoucherType(row?.vr_no);
-        const total = Number(row?.total || 0);
-        const rawReceived = Number(row?.received || 0);
-        const rawPayment = Number(row?.payment || 0);
-        const cashReceived = getCashAmount(row, 'debit');
-        const cashPayment = getCashAmount(row, 'credit');
-        const received = cashReceived > 0 ? cashReceived : rawReceived;
-        const payment = cashPayment > 0 ? cashPayment : rawPayment;
+    return rawRows.map((row: any) => {
+      const voucherType = getVoucherType(row?.vr_no);
+      const total = Number(row?.total || 0);
+      const rawReceived = Number(row?.received || 0);
+      const rawPayment = Number(row?.payment || 0);
+      const cashReceived = getCashAmount(row, 'debit');
+      const cashPayment = getCashAmount(row, 'credit');
+      const received = cashReceived > 0 ? cashReceived : rawReceived;
+      const payment = cashPayment > 0 ? cashPayment : rawPayment;
 
-        const normalizedRow = {
-          ...row,
-          received: voucherType === '4' && received === total ? 0 : received,
-          payment: voucherType === '3' && payment === total ? 0 : payment,
-        };
-        const displayedReceived = getDisplayedReceivedValue(normalizedRow);
-        const displayedPayment = getDisplayedPaymentValue(normalizedRow);
-        runningBalance += getBalanceDebitValue(normalizedRow) - getBalanceCreditValue(normalizedRow);
+      const normalizedRow = {
+        ...row,
+        received: voucherType === '4' && received === total ? 0 : received,
+        payment: voucherType === '3' && payment === total ? 0 : payment,
+      };
+      const displayedReceived = getDisplayedReceivedValue(normalizedRow);
+      const displayedPayment = getDisplayedPaymentValue(normalizedRow);
+      runningBalance +=
+        getBalanceDebitValue(normalizedRow) -
+        getBalanceCreditValue(normalizedRow);
 
-        return {
-          ...normalizedRow,
-          displayed_received: displayedReceived,
-          displayed_payment: displayedPayment,
-          running_balance: runningBalance,
-        };
-      });
-    },
-    [rawRows],
-  );
+      return {
+        ...normalizedRow,
+        displayed_received: displayedReceived,
+        displayed_payment: displayedPayment,
+        running_balance: runningBalance,
+      };
+    });
+  }, [rawRows]);
 
   const summary = useMemo(
     () => ({
@@ -316,24 +342,29 @@ const LedgerWithProduct = (user: any) => {
   const footerReceivedValue = Number.isFinite(Number(summary?.debit))
     ? Number(summary.debit)
     : rows.reduce(
-      (sum: number, row: any) => sum + getDisplayedDebitValue(row),
-      0,
-    );
+        (sum: number, row: any) => sum + getDisplayedDebitValue(row),
+        0,
+      );
   const footerPaymentValue = Number.isFinite(Number(summary?.credit))
     ? Number(summary.credit)
     : rows.reduce(
-      (sum: number, row: any) => sum + getDisplayedCreditValue(row),
-      0,
-    );
+        (sum: number, row: any) => sum + getDisplayedCreditValue(row),
+        0,
+      );
   const footerClosingValue = rows.length
-    ? parseAmount(rows[rows.length - 1]?.running_balance ?? rows[rows.length - 1]?.balance)
+    ? parseAmount(
+        rows[rows.length - 1]?.running_balance ??
+          rows[rows.length - 1]?.balance,
+      )
     : parseAmount(summary?.closing_balance);
 
   const hasLoaded = !!statementState?.data;
   const hasTransactions = rows.length > 1;
 
   const branchName = useMemo(() => {
-    const selected = dropdownData.find((branch: any) => Number(branch.id) === Number(branchId));
+    const selected = dropdownData.find(
+      (branch: any) => Number(branch.id) === Number(branchId),
+    );
     return selected?.name || 'Selected Branch';
   }, [dropdownData, branchId]);
 
@@ -357,13 +388,17 @@ const LedgerWithProduct = (user: any) => {
         partyId: Number(partyId),
         productId,
         itemId: productId,
+        transactionType,
         startDate: dayjs(startDate).format('YYYY-MM-DD'),
         endDate: dayjs(endDate).format('YYYY-MM-DD'),
       }) as any,
     );
 
     if (action?.meta?.requestStatus !== 'fulfilled') {
-      openMessageModal('Report Load Failed', action?.payload || 'Statement load failed');
+      openMessageModal(
+        'Report Load Failed',
+        action?.payload || 'Statement load failed',
+      );
       return;
     }
 
@@ -373,6 +408,7 @@ const LedgerWithProduct = (user: any) => {
   const handleResetFilters = () => {
     setProductId(null);
     setSelectedProductOption(null);
+    setTransactionType('');
     setFilterOpen(false);
   };
 
@@ -420,7 +456,12 @@ const LedgerWithProduct = (user: any) => {
                 if (isOpening) return;
                 handleVoucherPrint({
                   ...row,
-                  mtm_id: row?.mtm_id ?? row?.mtmid ?? row?.mtmId ?? row?.mid ?? row?.id,
+                  mtm_id:
+                    row?.mtm_id ??
+                    row?.mtmid ??
+                    row?.mtmId ??
+                    row?.mid ??
+                    row?.id,
                 });
               }}
             >
@@ -440,10 +481,14 @@ const LedgerWithProduct = (user: any) => {
         <div>
           <div className="whitespace-normal">{row.transaction_name}</div>
           {row.remarks ? (
-            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.remarks}</div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">
+              {row.remarks}
+            </div>
           ) : null}
-          { row.order_number && (
-            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">{row.order_number}</div>
+          {row.order_number && (
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">
+              {row.order_number}
+            </div>
           )}
         </div>
       ),
@@ -453,7 +498,9 @@ const LedgerWithProduct = (user: any) => {
       header: 'Vehicle No',
       headerClass: 'w-[9%]',
       cellClass: 'w-[9%]',
-      render: (row: any) => <div>{ formatTransportationNumber(row.truck_no || '')}</div>,
+      render: (row: any) => (
+        <div>{formatTransportationNumber(row.truck_no || '')}</div>
+      ),
     },
     {
       key: 'purchase_qty',
@@ -461,7 +508,9 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'w-[10.5%] text-right',
       cellClass: 'w-[10.5%] text-right',
       render: (row: any) => (
-        <div>{getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row)) : '-'}</div>
+        <div>
+          {getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row)) : '-'}
+        </div>
       ),
     },
     {
@@ -470,7 +519,9 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'w-[10.5%] text-right',
       cellClass: 'w-[10.5%] text-right',
       render: (row: any) => (
-        <div>{getSalesQty(row) ? thousandSeparator(getSalesQty(row)) : '-'}</div>
+        <div>
+          {getSalesQty(row) ? thousandSeparator(getSalesQty(row)) : '-'}
+        </div>
       ),
     },
     {
@@ -491,7 +542,13 @@ const LedgerWithProduct = (user: any) => {
 
         return (
           <div>
-            <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
+            <span
+              className={
+                shouldJoinZeroMark
+                  ? `${joinedZeroMarkClass} border-y border-l`
+                  : undefined
+              }
+            >
               {formatAmountOrZeroMark(rate)}
             </span>
           </div>
@@ -516,7 +573,13 @@ const LedgerWithProduct = (user: any) => {
 
         return (
           <div>
-            <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y` : undefined}>
+            <span
+              className={
+                shouldJoinZeroMark
+                  ? `${joinedZeroMarkClass} border-y`
+                  : undefined
+              }
+            >
               {formatAmountOrZeroMark(purchaseTotal)}
             </span>
           </div>
@@ -541,7 +604,13 @@ const LedgerWithProduct = (user: any) => {
 
         return (
           <div>
-            <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
+            <span
+              className={
+                shouldJoinZeroMark
+                  ? `${joinedZeroMarkClass} border-y border-r`
+                  : undefined
+              }
+            >
               {formatAmountOrZeroMark(salesTotal)}
             </span>
           </div>
@@ -575,7 +644,9 @@ const LedgerWithProduct = (user: any) => {
       header: 'Balance',
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold',
-      render: (row: any) => <div>{thousandSeparator(row.balance ?? row.balance)}</div>,
+      render: (row: any) => (
+        <div>{thousandSeparator(row.balance ?? row.balance)}</div>
+      ),
     },
   ];
 
@@ -585,7 +656,9 @@ const LedgerWithProduct = (user: any) => {
         label: (
           <div className="flex flex-nowrap items-center justify-end gap-10 whitespace-nowrap">
             <div>
-              <span className="text-slate-500 dark:text-slate-400">Opening:</span>{' '}
+              <span className="text-slate-500 dark:text-slate-400">
+                Opening:
+              </span>{' '}
               <span className="font-semibold text-slate-800 dark:text-slate-100">
                 {Number(summary?.opening_balance || 0)
                   ? thousandSeparator(summary?.opening_balance || 0)
@@ -593,13 +666,17 @@ const LedgerWithProduct = (user: any) => {
               </span>
             </div>
             <div>
-              <span className="text-slate-500 dark:text-slate-400">Pur. Qty:</span>{' '}
+              <span className="text-slate-500 dark:text-slate-400">
+                Pur. Qty:
+              </span>{' '}
               <span className="font-semibold text-slate-800 dark:text-slate-100">
                 {thousandSeparator(Number(summary?.purchase_qty || 0))}
               </span>
             </div>
             <div>
-              <span className="text-slate-500 dark:text-slate-400">Sal. Qty:</span>{' '}
+              <span className="text-slate-500 dark:text-slate-400">
+                Sal. Qty:
+              </span>{' '}
               <span className="font-semibold text-slate-800 dark:text-slate-100">
                 {thousandSeparator(Number(summary?.sales_qty || 0))}
               </span>
@@ -611,13 +688,17 @@ const LedgerWithProduct = (user: any) => {
               </span>
             </div>
             <div>
-              <span className="text-slate-500 dark:text-slate-400">Credit:</span>{' '}
+              <span className="text-slate-500 dark:text-slate-400">
+                Credit:
+              </span>{' '}
               <span className="font-semibold text-slate-800 dark:text-slate-100">
                 {thousandSeparator(footerPaymentValue)}
               </span>
             </div>
             <div>
-              <span className="text-slate-500 dark:text-slate-400">Closing:</span>{' '}
+              <span className="text-slate-500 dark:text-slate-400">
+                Closing:
+              </span>{' '}
               <span className="font-bold text-slate-900 dark:text-white">
                 {thousandSeparator(footerClosingValue)}
               </span>
@@ -635,16 +716,25 @@ const LedgerWithProduct = (user: any) => {
       <HelmetTitle title="Ledger Details" />
       <div className="mx-auto space-y-2 ">
         <div className="py-3">
-          <div className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-wrap items-end'}`}>
-            <div className={useFilterMenuEnabled ? 'relative shrink-0' : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'}>
+          <div
+            className={`gap-3 ${useFilterMenuEnabled ? 'flex flex-wrap items-center gap-3' : 'flex flex-wrap items-end'}`}
+          >
+            <div
+              className={
+                useFilterMenuEnabled
+                  ? 'relative shrink-0'
+                  : 'min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none'
+              }
+            >
               {useFilterMenuEnabled && (
                 <button
                   type="button"
                   onClick={() => setFilterOpen((prev) => !prev)}
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${filterOpen
+                  className={`inline-flex h-10 w-10 items-center justify-center rounded border text-sm transition ${
+                    filterOpen
                       ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300'
                       : 'border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700'
-                    }`}
+                  }`}
                   title="Open filters"
                   aria-label="Open filters"
                 >
@@ -664,14 +754,18 @@ const LedgerWithProduct = (user: any) => {
                     className={
                       useFilterMenuEnabled
                         ? 'space-y-3'
-                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-5'
+                        : 'grid grid-cols-1 items-end gap-3 md:grid-cols-2 min-[1180px]:grid-cols-6'
                     }
                   >
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Select Branch
+                      </label>
                       <BranchDropdown
                         branchDdl={dropdownData}
-                        onChange={(e: any) => setBranchId(Number(e.target.value) || null)}
+                        onChange={(e: any) =>
+                          setBranchId(Number(e.target.value) || null)
+                        }
                         value={branchId ? String(branchId) : ''}
                         defaultValue={branchId ? String(branchId) : ''}
                         className="w-full font-medium text-sm h-10 pl-1"
@@ -679,25 +773,53 @@ const LedgerWithProduct = (user: any) => {
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Ledger</label>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Select Ledger
+                      </label>
                       <DdlMultiline
                         onSelect={(option: any) => {
-                          setPartyId(option?.value ? Number(option.value) : null);
+                          setPartyId(
+                            option?.value ? Number(option.value) : null,
+                          );
                           setPartyLabel(option?.label || '');
                         }}
                         className="h-10"
                       />
                     </div>
 
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Order Type
+                      </label>
+                      <TransactionTypes
+                        onChange={handleSelectChange}
+                        className="h-10 w-full"
+                        value={transactionType}
+                        id="transaction_type"
+                        name="transaction_type"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.currentTarget.blur();
+                            focusNextField('product');
+                          }
+                        }}
+                      />
+                    </div>
+
                     <div className="relative">
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Product</label>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Select Product
+                      </label>
                       <div
                         onClick={() => selectedProduct(null)}
                         className="absolute right-2 top-9 z-10 cursor-pointer"
                         title="Clear selected product"
-                      >
-                      </div>
+                      ></div>
                       <ProductDropdown
+                        id="product"
+                        name="product"
                         onSelect={selectedProduct}
                         value={selectedProductOption}
                         className="appearance-none h-10"
@@ -705,7 +827,9 @@ const LedgerWithProduct = (user: any) => {
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Start Date
+                      </label>
                       <InputDatePicker
                         selectedDate={startDate}
                         setSelectedDate={setStartDate}
@@ -715,7 +839,9 @@ const LedgerWithProduct = (user: any) => {
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                        End Date
+                      </label>
                       <InputDatePicker
                         selectedDate={endDate}
                         setSelectedDate={setEndDate}
@@ -725,10 +851,9 @@ const LedgerWithProduct = (user: any) => {
                     </div>
 
                     <div
-                      className={`flex gap-2 pt-1 ${useFilterMenuEnabled
-                          ? 'justify-end'
-                          : 'hidden'
-                        } ${useFilterMenuEnabled ? '' : 'md:col-span-2 xl:col-span-1'}`}
+                      className={`flex gap-2 pt-1 ${
+                        useFilterMenuEnabled ? 'justify-end' : 'hidden'
+                      } ${useFilterMenuEnabled ? '' : 'md:col-span-2 xl:col-span-1'}`}
                     >
                       <ButtonLoading
                         label="Apply"
@@ -751,10 +876,11 @@ const LedgerWithProduct = (user: any) => {
             </div>
 
             <div
-              className={`${useFilterMenuEnabled
+              className={`${
+                useFilterMenuEnabled
                   ? 'hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300'
                   : 'hidden'
-                }`}
+              }`}
             >
               Use the filter
             </div>
@@ -763,12 +889,19 @@ const LedgerWithProduct = (user: any) => {
               <div className="ml-auto flex items-end gap-2">
                 {partyLabel ? (
                   <div className="flex h-10 min-w-[220px] max-w-[320px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-                    <span className="truncate" title={partyLabel}>{partyLabel}</span>
+                    <span className="truncate" title={partyLabel}>
+                      {partyLabel}
+                    </span>
                   </div>
                 ) : null}
                 {selectedProductOption?.label ? (
                   <div className="flex h-10 min-w-[180px] max-w-[280px] items-center rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-                    <span className="truncate" title={selectedProductOption.label}>{selectedProductOption.label}</span>
+                    <span
+                      className="truncate"
+                      title={selectedProductOption.label}
+                    >
+                      {selectedProductOption.label}
+                    </span>
                   </div>
                 ) : null}
                 <InputElement
@@ -776,7 +909,9 @@ const LedgerWithProduct = (user: any) => {
                   id="cs-statement-rows"
                   label=""
                   value={rowsPerPage}
-                  onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 0)}
+                  onChange={(e: any) =>
+                    setRowsPerPage(Number(e.target.value) || 0)
+                  }
                   className="font-medium text-sm h-10 !w-20 text-center"
                 />
                 <InputElement
@@ -784,7 +919,9 @@ const LedgerWithProduct = (user: any) => {
                   id="cs-statement-font"
                   label=""
                   value={fontSize}
-                  onChange={(e: any) => setFontSize(Number(e.target.value) || 10)}
+                  onChange={(e: any) =>
+                    setFontSize(Number(e.target.value) || 10)
+                  }
                   className="font-medium text-sm h-10 !w-20 text-center"
                 />
                 <PrintButton
@@ -795,7 +932,7 @@ const LedgerWithProduct = (user: any) => {
                 />
               </div>
             ) : (
-              <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
+              <div className="flex w-full flex-nowrap items-end justify-end gap-3 overflow-x-auto">
                 <div className="flex flex-nowrap items-end gap-2">
                   <ButtonLoading
                     label="Apply"
@@ -819,7 +956,9 @@ const LedgerWithProduct = (user: any) => {
                     id="cs-statement-rows"
                     label=""
                     value={rowsPerPage}
-                    onChange={(e: any) => setRowsPerPage(Number(e.target.value) || 0)}
+                    onChange={(e: any) =>
+                      setRowsPerPage(Number(e.target.value) || 0)
+                    }
                     className="font-medium text-sm h-10 !w-20 text-center"
                   />
                   <InputElement
@@ -827,7 +966,9 @@ const LedgerWithProduct = (user: any) => {
                     id="cs-statement-font"
                     label=""
                     value={fontSize}
-                    onChange={(e: any) => setFontSize(Number(e.target.value) || 10)}
+                    onChange={(e: any) =>
+                      setFontSize(Number(e.target.value) || 10)
+                    }
                     className="font-medium text-sm h-10 !w-20 text-center"
                   />
                   <PrintButton
@@ -854,7 +995,8 @@ const LedgerWithProduct = (user: any) => {
               No statement loaded yet
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Select branch, customer/supplier and date range, then click Load Report.
+              Select branch, customer/supplier and date range, then click Load
+              Report.
             </p>
           </div>
         ) : null}
@@ -864,12 +1006,18 @@ const LedgerWithProduct = (user: any) => {
             <Table
               columns={columns}
               data={rows}
-              noDataMessage={hasTransactions ? 'No statement rows found' : 'No transactions found'}
+              noDataMessage={
+                hasTransactions
+                  ? 'No statement rows found'
+                  : 'No transactions found'
+              }
               // tableClassName="min-w-full table-fixed text-sm text-slate-700 dark:text-slate-100"
               // theadClassName="bg-slate-100 text-xs uppercase text-slate-700 dark:bg-[#3a475c] dark:text-slate-100"
               // tbodyClassName="divide-y-0 bg-transparent dark:bg-transparent"
               // rowClassName="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-[#243040]"
-              getRowKey={(row: any, index: number) => `${row?.vr_no || 'row'}-${index}`}
+              getRowKey={(row: any, index: number) =>
+                `${row?.vr_no || 'row'}-${index}`
+              }
               tableStyle={{ fontSize: `${fontSize}px` }}
               footerRows={footerRows}
               className="[&_table]:shadow-none [&_tbody_tr:hover]:bg-slate-50 dark:[&_tbody_tr:hover]:bg-[#2b394b]"
