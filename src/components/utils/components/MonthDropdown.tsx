@@ -15,8 +15,8 @@ const getLast12MonthsData = () => {
   const months: { id: string; name: string }[] = [];
   const now = new Date();
 
-  for (let i = 0; i < 12; i++) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+  for (let i = 0; i < 13; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() + 1 - i, 2);
 
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
