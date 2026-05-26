@@ -423,42 +423,48 @@ const AttendanceEntries = ({ user }: any) => {
       header: 'Action',
       render: (row: any) => (
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            title={row.approval_status === 'approved' ? 'Approved attendance cannot be changed' : 'Edit'}
-            disabled={row.approval_status === 'approved'}
-            onClick={() => {
-              if (row.approval_status === 'approved') {
-                toast.error('Approved attendance cannot be changed');
-                return;
-              }
+          {row.is_leave_day ? (
+            <span className="text-xs text-slate-500 dark:text-slate-300">{row.remarks || 'Approved leave'}</span>
+          ) : (
+            <>
+              <button
+                type="button"
+                title={row.approval_status === 'approved' ? 'Approved attendance cannot be changed' : 'Edit'}
+                disabled={row.approval_status === 'approved'}
+                onClick={() => {
+                  if (row.approval_status === 'approved') {
+                    toast.error('Approved attendance cannot be changed');
+                    return;
+                  }
 
-              setForm({
-                ...initialForm,
-                ...row,
-                employee_name: row.employee_name,
-                in_time: timeOnly(row.in_time),
-                out_time: timeOnly(row.out_time),
-              });
-            }}
-            className={`${iconButtonClass} disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700 dark:disabled:text-slate-400`}
-          >
-            <FiEdit2 />
-          </button>
-          {row.id && row.status === 'rejected' && (
-            <button type="button" title="Cancel rejected" onClick={() => handleApproval(row, 'approved', 'Rejected attendance restored')} className={iconButtonClass}>
-              <FiRefreshCcw />
-            </button>
-          )}
-          {row.id && row.approval_status !== 'approved' && row.status !== 'rejected' && (
-            <button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconButtonClass}>
-              <FiCheck />
-            </button>
-          )}
-          {row.id && row.approval_status !== 'rejected' && (
-            <button type="button" title="Reject" onClick={() => handleApproval(row, 'rejected')} className={iconButtonClass}>
-              <FiX />
-            </button>
+                  setForm({
+                    ...initialForm,
+                    ...row,
+                    employee_name: row.employee_name,
+                    in_time: timeOnly(row.in_time),
+                    out_time: timeOnly(row.out_time),
+                  });
+                }}
+                className={`${iconButtonClass} disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700 dark:disabled:text-slate-400`}
+              >
+                <FiEdit2 />
+              </button>
+              {row.id && row.status === 'rejected' && (
+                <button type="button" title="Cancel rejected" onClick={() => handleApproval(row, 'approved', 'Rejected attendance restored')} className={iconButtonClass}>
+                  <FiRefreshCcw />
+                </button>
+              )}
+              {row.id && row.approval_status !== 'approved' && row.status !== 'rejected' && (
+                <button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconButtonClass}>
+                  <FiCheck />
+                </button>
+              )}
+              {row.id && row.approval_status !== 'rejected' && (
+                <button type="button" title="Reject" onClick={() => handleApproval(row, 'rejected')} className={iconButtonClass}>
+                  <FiX />
+                </button>
+              )}
+            </>
           )}
         </div>
       ),

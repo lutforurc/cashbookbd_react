@@ -127,6 +127,8 @@ const LeaveApplications = ({ user }: any) => {
     { key: 'employee_name', header: 'Employee' },
     { key: 'leave_type_name', header: 'Leave Type' },
     { key: 'requested_days', header: 'Days' },
+    { key: 'approved_paid_days', header: 'Paid' },
+    { key: 'approved_unpaid_days', header: 'Unpaid' },
     { key: 'approval_status', header: 'Approval' },
     { key: 'reason', header: 'Reason' },
     {

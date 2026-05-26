@@ -12,7 +12,7 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice';
+import { fetchAttendanceReport, fetchLeaveApplications, fetchMonthlyAttendanceSummary } from './attendanceSlice';
 import AttendanceMonthlyMatrixPrint from './AttendanceMonthlyMatrixPrint';
 
 const monthNames = [
@@ -100,6 +100,10 @@ const statusTotalValue = (code?: string) => {
 };
 
 const formatTotal = (value: number) => (Number.isInteger(value) ? String(value) : value.toFixed(1));
+const summaryNumber = (value: any) => {
+  const numericValue = Number(value || 0);
+  return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(1);
+};
 
 const statusClassName = (code?: string) => {
   switch (code) {
@@ -128,6 +132,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const branches = branchDdlData?.protectedData?.data || [];
   const rows = Array.isArray(attendance.report?.rows) ? attendance.report.rows : [];
+  const summaryRows = Array.isArray(attendance.monthlySummary?.rows) ? attendance.monthlySummary.rows : [];
+  const summaryTotals = attendance.monthlySummary?.totals || {};
   const leaveApplications = Array.isArray(attendance.leaveApplications) ? attendance.leaveApplications : [];
   const userBranchId = user?.branch_id ? String(user.branch_id) : '';
 
@@ -242,6 +248,11 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       per_page: 100,
     }));
     dispatch(fetchLeaveApplications(params));
+    dispatch(fetchMonthlyAttendanceSummary({
+      branch_id: currentFilters.branch_id,
+      month: currentFilters.month,
+      year: currentFilters.year,
+    }));
   };
 
   useEffect(() => {
@@ -334,6 +345,69 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           <PrintButton label="Print A4" onClick={handlePrint} className="h-10 px-6" disabled={attendance.loading} />
         </div>
       </div>
+      </div>
+
+      <div className="mb-3 overflow-x-auto rounded-sm bg-white shadow-sm dark:bg-boxdark">
+        <div className="border-b border-gray-200 px-3 py-2 text-sm font-semibold text-slate-800 dark:border-gray-700 dark:text-slate-100">
+          Monthly Attendance Summary
+        </div>
+        <table className="min-w-full table-fixed text-left text-xs text-gray-700 dark:text-gray-300">
+          <thead>
+            <tr className="bg-gray-200 uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+              <th className="w-12 px-3 py-2 text-center">Sl.</th>
+              <th className="w-56 px-3 py-2">Employee</th>
+              <th className="w-24 px-3 py-2 text-center">Present</th>
+              <th className="w-24 px-3 py-2 text-center">Paid Leave</th>
+              <th className="w-24 px-3 py-2 text-center">Unpaid Leave</th>
+              <th className="w-24 px-3 py-2 text-center">Absent</th>
+              <th className="w-20 px-3 py-2 text-center">Late</th>
+              <th className="w-24 px-3 py-2 text-center">Early Out</th>
+              <th className="w-24 px-3 py-2 text-center">Half Day</th>
+              <th className="w-24 px-3 py-2 text-center">Payable</th>
+              <th className="w-24 px-3 py-2 text-center">Deduction</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+            {summaryRows.map((row: any, index: number) => (
+              <tr key={row.employee_id || row.employee_name} className="hover:bg-indigo-50 dark:hover:bg-gray-700">
+                <td className="px-3 py-2 text-center">{index + 1}</td>
+                <td className="truncate px-3 py-2">{row.employee_name || '-'}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(row.present_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(row.paid_leave_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(row.unpaid_leave_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(row.absent_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(row.late_count)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(row.early_out_count)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(row.half_days)}</td>
+                <td className="px-3 py-2 text-center font-semibold">{summaryNumber(row.payable_days)}</td>
+                <td className="px-3 py-2 text-center font-semibold text-red-700">{summaryNumber(row.deduction_days)}</td>
+              </tr>
+            ))}
+            {summaryRows.length === 0 && (
+              <tr>
+                <td colSpan={11} className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
+                  No summary data found
+                </td>
+              </tr>
+            )}
+          </tbody>
+          {summaryRows.length > 0 && (
+            <tfoot>
+              <tr className="bg-gray-100 font-semibold dark:bg-gray-700">
+                <td colSpan={2} className="px-3 py-2 text-center">Total</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.present_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.paid_leave_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.unpaid_leave_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.absent_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.late_count)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.early_out_count)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.half_days)}</td>
+                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.payable_days)}</td>
+                <td className="px-3 py-2 text-center text-red-700">{summaryNumber(summaryTotals.deduction_days)}</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
       </div>
 
       <div className="attendance-monthly-print rounded-sm bg-white shadow-sm dark:bg-boxdark">

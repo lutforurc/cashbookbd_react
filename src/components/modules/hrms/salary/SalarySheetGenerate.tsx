@@ -129,9 +129,12 @@ const buildAttendanceWorkingDayMap = (attendanceRows: any[], leaveRows: any[], m
     const current = new Date(Math.max(fromDate.getTime(), monthStart.getTime()));
     const last = new Date(Math.min(toDate.getTime(), monthEnd.getTime()));
     const employeeDates = ensureEmployee(employeeId);
+    let paidDaysLeft = Number(leave.approved_paid_days ?? leave.requested_days ?? 0) || 0;
 
     while (current <= last) {
-      employeeDates[toDateString(current.getFullYear(), current.getMonth(), current.getDate())] = 1;
+      const dayKey = toDateString(current.getFullYear(), current.getMonth(), current.getDate());
+      employeeDates[dayKey] = paidDaysLeft > 0 ? 1 : 0;
+      paidDaysLeft = Math.max(0, paidDaysLeft - 1);
       current.setDate(current.getDate() + 1);
     }
   });

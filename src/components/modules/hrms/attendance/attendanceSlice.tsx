@@ -16,6 +16,7 @@ import {
   API_ATTENDANCE_LEAVE_TYPE_LIST_URL,
   API_ATTENDANCE_LEAVE_TYPE_STORE_URL,
   API_ATTENDANCE_LEAVE_TYPE_UPDATE_URL,
+  API_ATTENDANCE_MONTHLY_SUMMARY_URL,
   API_ATTENDANCE_SHIFT_LIST_URL,
   API_ATTENDANCE_SHIFT_STORE_URL,
   API_ATTENDANCE_SHIFT_UPDATE_URL,
@@ -160,6 +161,18 @@ export const fetchAttendanceReport = createAsyncThunk<any, any | undefined, { re
   },
 );
 
+export const fetchMonthlyAttendanceSummary = createAsyncThunk<any, any | undefined, { rejectValue: string }>(
+  'attendance/fetchMonthlyAttendanceSummary',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await httpService.get(API_ATTENDANCE_MONTHLY_SUMMARY_URL, { params });
+      return response?.data?.data?.data || response?.data?.data || {};
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to fetch monthly attendance summary'));
+    }
+  },
+);
+
 export const saveAttendanceEntry = createAsyncThunk<any, any, { rejectValue: string }>(
   'attendance/saveAttendanceEntry',
   async (payload, { rejectWithValue }) => {
@@ -240,6 +253,7 @@ interface AttendanceState {
   leaveTypes: any[];
   entries: any[];
   report: any;
+  monthlySummary: any;
   leaveApplications: any[];
   loading: boolean;
   error: string | null;
@@ -252,6 +266,7 @@ const initialState: AttendanceState = {
   leaveTypes: [],
   entries: [],
   report: null,
+  monthlySummary: null,
   leaveApplications: [],
   loading: false,
   error: null,
@@ -308,6 +323,12 @@ const attendanceSlice = createSlice({
         state.report = action.payload;
       })
       .addCase(fetchAttendanceReport.rejected, rejected)
+      .addCase(fetchMonthlyAttendanceSummary.pending, pending)
+      .addCase(fetchMonthlyAttendanceSummary.fulfilled, (state, action) => {
+        state.loading = false;
+        state.monthlySummary = action.payload;
+      })
+      .addCase(fetchMonthlyAttendanceSummary.rejected, rejected)
       .addCase(fetchLeaveApplications.pending, pending)
       .addCase(fetchLeaveApplications.fulfilled, (state, action) => {
         state.loading = false;

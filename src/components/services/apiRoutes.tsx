@@ -577,6 +577,7 @@ export const API_ATTENDANCE_LEAVE_TYPE_STORE_URL = `${API_BASE_URL}/hrms/attenda
 export const API_ATTENDANCE_LEAVE_TYPE_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/leave-types/update`;
 export const API_ATTENDANCE_ENTRY_LIST_URL = `${API_BASE_URL}/hrms/attendance/entries`;
 export const API_ATTENDANCE_ENTRY_REPORT_URL = `${API_BASE_URL}/hrms/attendance/entries/report`;
+export const API_ATTENDANCE_MONTHLY_SUMMARY_URL = `${API_BASE_URL}/hrms/attendance/monthly-summary`;
 export const API_ATTENDANCE_ENTRY_STORE_URL = `${API_BASE_URL}/hrms/attendance/entries/store`;
 export const API_ATTENDANCE_ENTRY_BULK_STORE_URL = `${API_BASE_URL}/hrms/attendance/entries/bulk-store`;
 export const API_ATTENDANCE_ENTRY_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/entries/update`;
