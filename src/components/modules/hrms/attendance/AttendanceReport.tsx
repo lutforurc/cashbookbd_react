@@ -97,7 +97,19 @@ const isActiveEmployee = (row: any) => {
 };
 const branchNameFromId = (branches: any[], branchId: any) => branches.find((branch) => String(branch.id) === String(branchId))?.name || '-';
 
-const AttendanceReport = ({ user }: any) => {
+type AttendanceReportProps = {
+  user: any;
+  reportTitle?: string;
+  defaultStatus?: string;
+  reportType?: 'daily' | 'absent' | 'late' | 'early_out';
+};
+
+const AttendanceReport = ({
+  user,
+  reportTitle = 'Daily Attendance Report',
+  defaultStatus = '',
+  reportType = 'daily',
+}: AttendanceReportProps) => {
   const dispatch = useDispatch<any>();
   const attendance = useSelector((state: any) => state.attendance);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -113,7 +125,7 @@ const AttendanceReport = ({ user }: any) => {
     date_from: today,
     date_to: today,
     branch_id: userBranchId,
-    status: '',
+    status: defaultStatus,
     approval_status: '',
   });
 
@@ -140,7 +152,7 @@ const AttendanceReport = ({ user }: any) => {
       date_from: today,
       date_to: today,
       branch_id: userBranchId,
-      status: '',
+      status: defaultStatus,
       approval_status: '',
     };
 
@@ -150,7 +162,7 @@ const AttendanceReport = ({ user }: any) => {
     }));
     dispatch(fetchAttendanceReport(nextFilters));
     fetchSupportingData(nextFilters);
-  }, [dispatch, userBranchId]);
+  }, [defaultStatus, dispatch, userBranchId]);
 
   const handleChange = (setter: any) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -245,6 +257,13 @@ const AttendanceReport = ({ user }: any) => {
     { label: 'Half Day', value: summary.half_day || 0 },
     { label: 'Leave', value: summary.leave || 0 },
     { label: 'Late', value: summary.late || 0 },
+    ...(reportType === 'late'
+      ? [{ label: 'Late Deduction Days', value: Math.floor(Number(summary.late || 0) / 3) }]
+      : []),
+    { label: 'Early Out', value: summary.early_out || 0 },
+    ...(reportType === 'early_out'
+      ? [{ label: 'Early Out Deduction Days', value: Math.floor(Number(summary.early_out || 0) / 3) }]
+      : []),
     { label: 'Pending Approval', value: summary.pending_approval || 0 },
     { label: 'Approved', value: summary.approved || 0 },
     { label: 'Rejected', value: summary.rejected || 0 },
@@ -272,7 +291,7 @@ const AttendanceReport = ({ user }: any) => {
 
   return (
     <div>
-      <HelmetTitle title="Daily Attendance Report" />
+      <HelmetTitle title={reportTitle} />
       {(attendance.loading || employeeState.loading) && <Loader />}
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-6">

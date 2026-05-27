@@ -2110,6 +2110,45 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
                             <li>
                               <NavLink
+                                to={routes.hrms_absent_report}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Absent Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_late_report}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Late Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_early_out_report}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Early Out Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
                                 to={routes.hrms_employee_attendance_report}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
@@ -2117,6 +2156,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Employee Attendance
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_branch_attendance_summary}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch Attendance
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.hrms_holiday_calendar_report}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Holiday Calendar
                               </NavLink>
                             </li>
                           )}

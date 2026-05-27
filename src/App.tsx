@@ -114,6 +114,8 @@ import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetu
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
 import EmployeeAttendanceReport from './components/modules/hrms/attendance/EmployeeAttendanceReport';
+import BranchAttendanceSummaryReport from './components/modules/hrms/attendance/BranchAttendanceSummaryReport';
+import HolidayCalendarReport from './components/modules/hrms/attendance/HolidayCalendarReport';
 import AttendanceMonthlyMatrixReport from './components/modules/hrms/attendance/AttendanceMonthlyMatrixReport';
 import LeaveApplications from './components/modules/hrms/attendance/LeaveApplications';
 import ChangeList from './components/modules/history/ChangeList';
@@ -599,7 +601,12 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['attendance.view', 'employee.view']} loading={permissionsLoading} />}>
               <Route path={routes.hrms_attendance_entries} element={<AttendanceEntries user={me} />} />
               <Route path={routes.hrms_attendance_report} element={<AttendanceReport user={me} />} />
+              <Route path={routes.hrms_absent_report} element={<AttendanceReport user={me} reportTitle="Absent Report" defaultStatus="absent" reportType="absent" />} />
+              <Route path={routes.hrms_late_report} element={<AttendanceReport user={me} reportTitle="Late Report" defaultStatus="late" reportType="late" />} />
+              <Route path={routes.hrms_early_out_report} element={<AttendanceReport user={me} reportTitle="Early Out Report" defaultStatus="early_out" reportType="early_out" />} />
               <Route path={routes.hrms_employee_attendance_report} element={<EmployeeAttendanceReport user={me} />} />
+              <Route path={routes.hrms_branch_attendance_summary} element={<BranchAttendanceSummaryReport user={me} />} />
+              <Route path={routes.hrms_holiday_calendar_report} element={<HolidayCalendarReport user={me} />} />
               <Route path={routes.hrms_attendance_monthly_report} element={<AttendanceMonthlyMatrixReport user={me} />} />
               <Route path={routes.hrms_leave_applications} element={<LeaveApplications user={me} />} />
               <Route path={routes.hrms_attendance_setup} element={<AttendanceSetup user={me} />} />
