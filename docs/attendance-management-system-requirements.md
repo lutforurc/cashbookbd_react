@@ -464,6 +464,8 @@ Attendance Management System development তিনটি ধাপে করা 
 9. Basic Attendance Report
 
 এই phase শেষ হলে user manual attendance দিতে পারবে, leave application করতে পারবে, authorized user approve/reject করতে পারবে এবং basic report দেখতে পারবে।
+
+
 ### Phase 1: Core Attendance Setup
 
 এই phase-এ attendance system-এর basic setup এবং entry/approval flow তৈরি হবে।
