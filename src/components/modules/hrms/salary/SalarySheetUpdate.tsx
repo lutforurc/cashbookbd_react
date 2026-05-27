@@ -43,6 +43,14 @@ type UpdateRow = {
   net_salary?: number;
   gross_salary?: number;
   payment_amount?: number;
+  attendance_deduction_amount?: number;
+  attendance_absent_days?: number;
+  attendance_unpaid_leave_days?: number;
+  attendance_half_days?: number;
+  attendance_late_count?: number;
+  attendance_late_deduction_days?: number;
+  attendance_early_out_count?: number;
+  attendance_early_out_deduction_days?: number;
   history?: string | SalaryHistory;
   working_days: number;
 };
@@ -249,6 +257,14 @@ const SalarySheetUpdate = (user: any) => {
         basic_salary: basicSalary,
         others_allowance: othersAllowance,
         loan_deduction: Number(row.loan_deduction) || 0,
+        attendance_deduction_amount: Number(row.attendance_deduction_amount) || 0,
+        attendance_absent_days: Number(row.attendance_absent_days) || 0,
+        attendance_unpaid_leave_days: Number(row.attendance_unpaid_leave_days) || 0,
+        attendance_half_days: Number(row.attendance_half_days) || 0,
+        attendance_late_count: Number(row.attendance_late_count) || 0,
+        attendance_late_deduction_days: Number(row.attendance_late_deduction_days) || 0,
+        attendance_early_out_count: Number(row.attendance_early_out_count) || 0,
+        attendance_early_out_deduction_days: Number(row.attendance_early_out_deduction_days) || 0,
         month_days: Number(row.month_days ?? history.month_days ?? selectedMonthDays) || 0,
         payment_amount: Number(row.payment_amount) || 0,
         gross_salary: Number(row.gross_salary) || 0,
@@ -318,6 +334,14 @@ const SalarySheetUpdate = (user: any) => {
           basic_salary: basicSalary,
           others_allowance: othersAllowance,
           loan_deduction: loanDeduction,
+          attendance_deduction_amount: 0,
+          attendance_absent_days: 0,
+          attendance_unpaid_leave_days: 0,
+          attendance_half_days: 0,
+          attendance_late_count: 0,
+          attendance_late_deduction_days: 0,
+          attendance_early_out_count: 0,
+          attendance_early_out_deduction_days: 0,
           month_days: selectedMonthDays,
           payment_amount: 0,
           gross_salary: basicSalary + othersAllowance,
@@ -391,7 +415,7 @@ const SalarySheetUpdate = (user: any) => {
     proratedBasicSalary(row) + proratedOtherAllowance(row);
 
   const calculateNet = (row: UpdateRow) =>
-    calculateGross(row) - Number(row.loan_deduction || 0);
+    calculateGross(row) - Number(row.loan_deduction || 0) - Number(row.attendance_deduction_amount || 0);
 
   const totals = useMemo(() => {
     return rows.reduce(
@@ -400,10 +424,11 @@ const SalarySheetUpdate = (user: any) => {
         acc.allowance += proratedOtherAllowance(row);
         acc.gross += calculateGross(row);
         acc.loan += Number(row.loan_deduction || 0);
+        acc.attendance += Number(row.attendance_deduction_amount || 0);
         acc.net += calculateNet(row);
         return acc;
       },
-      { basic: 0, allowance: 0, gross: 0, loan: 0, net: 0 }
+      { basic: 0, allowance: 0, gross: 0, loan: 0, attendance: 0, net: 0 }
     );
   }, [rows, selectedMonthDays]);
 
@@ -438,6 +463,14 @@ const SalarySheetUpdate = (user: any) => {
           basic_salary: proratedBasicSalary(row),
           others_allowance: proratedOtherAllowance(row),
           loan_deduction: Number(row.loan_deduction || 0),
+          attendance_deduction_amount: Number(row.attendance_deduction_amount || 0),
+          attendance_absent_days: Number(row.attendance_absent_days || 0),
+          attendance_unpaid_leave_days: Number(row.attendance_unpaid_leave_days || 0),
+          attendance_half_days: Number(row.attendance_half_days || 0),
+          attendance_late_count: Number(row.attendance_late_count || 0),
+          attendance_late_deduction_days: Number(row.attendance_late_deduction_days || 0),
+          attendance_early_out_count: Number(row.attendance_early_out_count || 0),
+          attendance_early_out_deduction_days: Number(row.attendance_early_out_deduction_days || 0),
         })),
       };
 
@@ -660,6 +693,17 @@ const SalarySheetUpdate = (user: any) => {
       ),
     },
     {
+      key: "attendance_deduction_amount",
+      header: "Att. Ded",
+      headerClass: "text-right w-45",
+      cellClass: "text-right",
+      render: (row: UpdateRow) => (
+        <span title={`Absent: ${row.attendance_absent_days || 0}, Unpaid: ${row.attendance_unpaid_leave_days || 0}, Half: ${row.attendance_half_days || 0}, Late: ${row.attendance_late_deduction_days || 0}, Early: ${row.attendance_early_out_deduction_days || 0}`}>
+          {thousandSeparator(Number(row.attendance_deduction_amount || 0))}
+        </span>
+      ),
+    },
+    {
       key: "net_salary",
       header: "Net Salary",
       headerClass: "text-right w-45",
@@ -752,7 +796,7 @@ const SalarySheetUpdate = (user: any) => {
         </div>
       </div>
 
-      <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-5">
+      <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-6">
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Basic</div>
           <div className="font-semibold">{thousandSeparator(totals.basic)}</div>
@@ -768,6 +812,10 @@ const SalarySheetUpdate = (user: any) => {
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Loan</div>
           <div className="font-semibold">{thousandSeparator(totals.loan)}</div>
+        </div>
+        <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+          <div className="text-xs dark:text-slate-300 text-slate-700">Att. Ded</div>
+          <div className="font-semibold">{thousandSeparator(totals.attendance)}</div>
         </div>
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Net</div>

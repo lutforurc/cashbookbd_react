@@ -25,6 +25,12 @@ type EmployeeRow = {
   others_allowance?: number;
   gross_salary?: number;
   loan_deduction?: number;
+  attendance_deduction_amount?: number;
+  attendance_absent_days?: number;
+  attendance_unpaid_leave_days?: number;
+  attendance_half_days?: number;
+  attendance_late_deduction_days?: number;
+  attendance_early_out_deduction_days?: number;
   net_salary?: number;
   history?: string | EmployeeHistory;
 
@@ -186,6 +192,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
     const grandAllowance = sum(safeRows.map(r => Number(r.others_allowance || 0)));
     const grandGross = sum(safeRows.map(r => Number(r.gross_salary || 0)));
     const grandLoan = sum(safeRows.map(r => Number(r.loan_deduction || 0)));
+    const grandAttendanceDeduction = sum(safeRows.map(r => Number(r.attendance_deduction_amount || 0)));
     const grandNet = sum(safeRows.map(r => Number(r.net_salary || 0)));
     const grandPayment = sum(safeRows.map(r => Number(r.payment_amount || 0)));
 
@@ -237,6 +244,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
           const pageAllowance = sum(pageRows.map(r => Number(r.others_allowance || 0)));
           const pageGross = sum(pageRows.map(r => Number(r.gross_salary || 0)));
           const pageLoan = sum(pageRows.map(r => Number(r.loan_deduction || 0)));
+          const pageAttendanceDeduction = sum(pageRows.map(r => Number(r.attendance_deduction_amount || 0)));
           const pageNet = sum(pageRows.map(r => Number(r.net_salary || 0)));
           const pagePayment = sum(pageRows.map(r => Number(r.payment_amount || 0)));
           return (
@@ -280,6 +288,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Mobile</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Total</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Loan</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>Att. Ded</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Net Salary</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Payment</th>
                     <th style={{ fontSize: fs }}>Signature</th>
@@ -317,6 +326,12 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs, textAlign: 'right' }}>
                           {thousandSeparator(row.loan_deduction ?? 0)}
                         </td>
+                        <td
+                          style={{ fontSize: fs, textAlign: 'right' }}
+                          title={`Absent: ${row.attendance_absent_days || 0}, Unpaid: ${row.attendance_unpaid_leave_days || 0}, Half: ${row.attendance_half_days || 0}, Late: ${row.attendance_late_deduction_days || 0}, Early: ${row.attendance_early_out_deduction_days || 0}`}
+                        >
+                          {thousandSeparator(row.attendance_deduction_amount ?? 0)}
+                        </td>
                         <td style={{ fontSize: fs, textAlign: 'right', fontWeight: 600 }}>
                           {thousandSeparator(row.net_salary ?? 0)}
                         </td>
@@ -347,6 +362,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan)}</td>
+                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAttendanceDeduction)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageNet)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment)}</td>
                       <td />
@@ -364,6 +380,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan)}</td>
+                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAttendanceDeduction)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageNet)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment)}</td>
                           <td></td>
@@ -376,6 +393,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandAllowance)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandGross)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandLoan)}</td>
+                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandAttendanceDeduction)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandNet)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandPayment)}</td>
                         <td></td>
