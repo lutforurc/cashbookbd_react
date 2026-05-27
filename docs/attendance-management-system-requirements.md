@@ -565,3 +565,57 @@ Leave application
 Leave approval
 Monthly attendance summary/report
 Salary sheet integration
+
+
+
+
+
+
+
+
+
+
+
+
+Ekhon attendance module-er jonno report gula dorkar hobe:
+
+Daily Attendance Report
+Date-wise employee present/absent/leave/late status.
+
+Monthly Attendance Summary
+Employee-wise month total: working day, present, absent, leave, late, early out, half day, payable day.
+
+Employee-wise Attendance Report
+Specific employee-er full attendance history.
+
+Branch/Project-wise Attendance Report
+Branch/project/team wise attendance summary.
+
+Absent Report
+Date range diye absent employee list.
+
+Late Report
+Late count, late minutes, late deduction calculation.
+
+Early Out Report
+Early out count/minutes/deduction.
+
+Half Day Report
+Half day status and deduction info.
+
+Leave Report
+Approved/rejected/pending leave list.
+
+Leave Balance Report
+Leave type-wise yearly quota, used, remaining, unpaid leave.
+
+Holiday Calendar Report
+Company/branch/project-wise holiday and weekly holiday list.
+
+Salary Attendance Summary Report
+Salary generate-er agey present, absent, unpaid leave, late deduction, payable days dekhar jonno.
+
+Overtime Report
+Eta future use, karon requirements-e bola ache apatoto overtime thakbe na.
+
+Phase-wise korte chaile: Phase 1-e Daily Attendance, Leave Report, Absent/Late basic report enough. Phase 2-e Monthly Summary + Branch/Project Summary. Phase 3-e Salary Attendance Summary লাগবে.

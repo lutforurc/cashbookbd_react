@@ -20,6 +20,7 @@ import httpService from "../../../services/httpService";
 import {
   API_ATTENDANCE_ENTRY_REPORT_URL,
   API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL,
+  API_ATTENDANCE_MONTHLY_SUMMARY_URL,
 } from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
@@ -41,9 +42,29 @@ interface SalaryRow {
   loan_deduction: number;
 
   net_deduction: number;
+  attendance_deduction_amount: number;
+  attendance_absent_days: number;
+  attendance_unpaid_leave_days: number;
+  attendance_half_days: number;
+  attendance_late_count: number;
+  attendance_late_deduction_days: number;
+  attendance_early_out_count: number;
+  attendance_early_out_deduction_days: number;
   month_days: number;
   working_days: number;
 }
+
+type AttendanceSalarySummary = {
+  working_days: number;
+  attendance_deduction_amount: number;
+  attendance_absent_days: number;
+  attendance_unpaid_leave_days: number;
+  attendance_half_days: number;
+  attendance_late_count: number;
+  attendance_late_deduction_days: number;
+  attendance_early_out_count: number;
+  attendance_early_out_deduction_days: number;
+};
 
 const pad = (value: number) => String(value).padStart(2, "0");
 const toDateString = (year: number, monthIndex: number, day: number) => `${year}-${pad(monthIndex + 1)}-${pad(day)}`;
@@ -83,6 +104,16 @@ const attendanceRowsFromResponse = (response: any) => {
 
 const leaveRowsFromResponse = (response: any) =>
   toList(response?.data?.data?.data ?? response?.data?.data ?? response?.data);
+
+const monthlySummaryRowsFromResponse = (response: any) => {
+  const payload = response?.data?.data?.data || response?.data?.data || response?.data || {};
+  return Array.isArray(payload?.rows) ? payload.rows : [];
+};
+
+const toNumber = (value: any, fallback = 0) => {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : fallback;
+};
 
 const attendancePayableValue = (status?: string, approvalStatus?: string) => {
   if (approvalStatus === "rejected" || status === "rejected" || status === "absent") return 0;
@@ -148,6 +179,34 @@ const buildAttendanceWorkingDayMap = (attendanceRows: any[], leaveRows: any[], m
   });
 
   return totals;
+};
+
+const buildAttendanceSummaryMapFromMonthlyRows = (rows: any[], monthInfo: NonNullable<ReturnType<typeof parseMonthId>>) => {
+  const summaries = new Map<string, AttendanceSalarySummary>();
+
+  rows.forEach((row: any) => {
+    const employeeId = String(row.employee_id || row.id || "");
+    if (!employeeId) return;
+
+    const deductionDays = toNumber(row.deduction_days);
+    const payableDays = row.payable_days !== undefined && row.payable_days !== null
+      ? toNumber(row.payable_days)
+      : Math.max(0, monthInfo.daysInMonth - deductionDays);
+
+    summaries.set(employeeId, {
+      working_days: Math.min(monthInfo.daysInMonth, Math.max(0, payableDays)),
+      attendance_deduction_amount: toNumber(row.attendance_deduction_amount),
+      attendance_absent_days: toNumber(row.absent_days),
+      attendance_unpaid_leave_days: toNumber(row.unpaid_leave_days),
+      attendance_half_days: toNumber(row.half_days),
+      attendance_late_count: toNumber(row.late_count),
+      attendance_late_deduction_days: toNumber(row.late_deduction_days),
+      attendance_early_out_count: toNumber(row.early_out_count),
+      attendance_early_out_deduction_days: toNumber(row.early_out_deduction_days),
+    });
+  });
+
+  return summaries;
 };
 
 /* ================= COMPONENT ================= */
@@ -220,9 +279,9 @@ const SalarySheetGenerate = ({ user }: any) => {
       serial_no: index + 1,
     }));
 
-  const fetchAttendanceWorkingDays = async () => {
+  const fetchAttendanceSalarySummary = async () => {
     const monthInfo = parseMonthId(monthId);
-    if (!monthInfo) return new Map<string, number>();
+    if (!monthInfo) return new Map<string, AttendanceSalarySummary>();
 
     const attendanceParams = {
       branch_id: branchId,
@@ -240,16 +299,51 @@ const SalarySheetGenerate = ({ user }: any) => {
       per_page: 1000,
     };
 
-    const [attendanceResponse, leaveResponse] = await Promise.all([
+    const monthlySummaryParams = {
+      branch_id: branchId,
+      month: String(monthInfo.monthIndex + 1),
+      year: String(monthInfo.year),
+    };
+
+    const [monthlySummaryResult, attendanceResult, leaveResult] = await Promise.allSettled([
+      httpService.get(API_ATTENDANCE_MONTHLY_SUMMARY_URL, { params: monthlySummaryParams }),
       httpService.get(API_ATTENDANCE_ENTRY_REPORT_URL, { params: attendanceParams }),
       httpService.get(API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL, { params: leaveParams }),
     ]);
 
-    return buildAttendanceWorkingDayMap(
-      attendanceRowsFromResponse(attendanceResponse),
-      leaveRowsFromResponse(leaveResponse),
+    const monthlySummaryMap = buildAttendanceSummaryMapFromMonthlyRows(
+      monthlySummaryResult.status === "fulfilled" ? monthlySummaryRowsFromResponse(monthlySummaryResult.value) : [],
       monthInfo,
     );
+
+    if (monthlySummaryMap.size > 0) return monthlySummaryMap;
+
+    if (attendanceResult.status === "rejected" || leaveResult.status === "rejected") {
+      throw attendanceResult.status === "rejected" ? attendanceResult.reason : leaveResult.reason;
+    }
+
+    const workingDays = buildAttendanceWorkingDayMap(
+      attendanceRowsFromResponse(attendanceResult.value),
+      leaveRowsFromResponse(leaveResult.value),
+      monthInfo,
+    );
+
+    const summaries = new Map<string, AttendanceSalarySummary>();
+    workingDays.forEach((days, employeeId) => {
+      summaries.set(employeeId, {
+        working_days: days,
+        attendance_deduction_amount: 0,
+        attendance_absent_days: 0,
+        attendance_unpaid_leave_days: 0,
+        attendance_half_days: 0,
+        attendance_late_count: 0,
+        attendance_late_deduction_days: 0,
+        attendance_early_out_count: 0,
+        attendance_early_out_deduction_days: 0,
+      });
+    });
+
+    return summaries;
   };
 
   /* ================= FETCH DATA ================= */
@@ -273,36 +367,48 @@ const SalarySheetGenerate = ({ user }: any) => {
       ).unwrap();
 
       const list = response?.data?.data ?? [];
-      let attendanceWorkingDays = new Map<string, number>();
+      let attendanceSummary = new Map<string, AttendanceSalarySummary>();
 
       try {
-        attendanceWorkingDays = await fetchAttendanceWorkingDays();
+        attendanceSummary = await fetchAttendanceSalarySummary();
       } catch (attendanceError: any) {
         toast.info(attendanceError?.response?.data?.message || "Attendance working day not found, month days used.");
       }
 
       // ✅ IMPORTANT: API shape -> SalaryRow shape
-      const mapped: SalaryRow[] = list.map((emp: any) => ({
-        id: emp.id,
-        serial_no: Number(emp.serial_no ?? emp.employee_serial) || 0,
-        name: emp.name,
-        designation_name: emp.designation_name,
+      const mapped: SalaryRow[] = list.map((emp: any) => {
+        const summary = attendanceSummary.get(String(emp.id));
 
-        basic_salary: Number(emp.basic_salary) || 0,
-        monthly_basic_salary: Number(emp.basic_salary) || 0,
-        others_allowance: Number(emp.others_allowance) || 0,
-        monthly_others_allowance: Number(emp.others_allowance) || 0,
+        return {
+          id: emp.id,
+          serial_no: Number(emp.serial_no ?? emp.employee_serial) || 0,
+          name: emp.name,
+          designation_name: emp.designation_name,
 
-        // ✅ loan_balance sometimes string ("3000") so force Number
-        loan_balance: Number(emp.loan_balance) || 0,
+          basic_salary: Number(emp.basic_salary) || 0,
+          monthly_basic_salary: Number(emp.basic_salary) || 0,
+          others_allowance: Number(emp.others_allowance) || 0,
+          monthly_others_allowance: Number(emp.others_allowance) || 0,
 
-        // keep it (API has it but is 0 now)
-        loan_deduction: Number(emp.loan_deduction) || 0,
+          // ✅ loan_balance sometimes string ("3000") so force Number
+          loan_balance: Number(emp.loan_balance) || 0,
 
-        net_deduction: Number(emp.others_deduction) || 0,
-        month_days: selectedMonthDays,
-        working_days: attendanceWorkingDays.get(String(emp.id)) ?? selectedMonthDays,
-      }));
+          // keep it (API has it but is 0 now)
+          loan_deduction: Number(emp.loan_deduction) || 0,
+
+          net_deduction: Number(emp.others_deduction) || 0,
+          attendance_deduction_amount: Number(summary?.attendance_deduction_amount) || 0,
+          attendance_absent_days: Number(summary?.attendance_absent_days) || 0,
+          attendance_unpaid_leave_days: Number(summary?.attendance_unpaid_leave_days) || 0,
+          attendance_half_days: Number(summary?.attendance_half_days) || 0,
+          attendance_late_count: Number(summary?.attendance_late_count) || 0,
+          attendance_late_deduction_days: Number(summary?.attendance_late_deduction_days) || 0,
+          attendance_early_out_count: Number(summary?.attendance_early_out_count) || 0,
+          attendance_early_out_deduction_days: Number(summary?.attendance_early_out_deduction_days) || 0,
+          month_days: selectedMonthDays,
+          working_days: summary?.working_days ?? selectedMonthDays,
+        };
+      });
 
       setEmployees(withSequence(mapped));
 
@@ -359,7 +465,8 @@ const SalarySheetGenerate = ({ user }: any) => {
     if (days <= 0 || monthDays <= 0) return 0;
     const roundedGross = totalSalary(emp);
     const loanDed = Number(emp.loan_balance) || 0;
-    return Math.max(0, roundedGross - loanDed);
+    const attendanceDed = Number(emp.attendance_deduction_amount) || 0;
+    return Math.max(0, roundedGross - loanDed - attendanceDed);
   };
 
   const grandTotals = useMemo(() => {
@@ -369,6 +476,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         acc.others_allowance += proratedOtherAllowance(emp);
         acc.total_salary += totalSalary(emp);
         acc.loan_deduction += Number(emp.loan_balance) || 0; // ✅ total loan ded = sum loan_balance
+        acc.attendance_deduction += Number(emp.attendance_deduction_amount) || 0;
         acc.net_deduction += Number(emp.net_deduction) || 0;
         acc.net_salary += netSalary(emp);
         return acc;
@@ -378,6 +486,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         others_allowance: 0,
         total_salary: 0,
         loan_deduction: 0,
+        attendance_deduction: 0,
         net_deduction: 0,
         net_salary: 0,
       }
@@ -526,7 +635,19 @@ const SalarySheetGenerate = ({ user }: any) => {
       ),
     },
 
-    // ✅ Net Salary = Total - loan_balance
+    {
+      key: "attendance_deduction_amount",
+      header: "Att. Ded",
+      headerClass: "text-right w-30",
+      cellClass: "text-right font-semibold text-red-700 dark:text-red-400",
+      render: (row: SalaryRow) => (
+        <span title={`Absent: ${row.attendance_absent_days || 0}, Unpaid: ${row.attendance_unpaid_leave_days || 0}, Half: ${row.attendance_half_days || 0}, Late: ${row.attendance_late_deduction_days || 0}, Early: ${row.attendance_early_out_deduction_days || 0}`}>
+          {thousandSeparator(Number(row.attendance_deduction_amount || 0))}
+        </span>
+      ),
+    },
+
+    // ✅ Net Salary = Total - loan_balance - attendance deduction
     {
       key: "net_salary",
       header: "Net Salary",
@@ -573,6 +694,14 @@ const SalarySheetGenerate = ({ user }: any) => {
         // ✅ IMPORTANT: save loan_deduction = loan_balance
         loan_deduction: Number(e.loan_balance) || 0,
 
+        attendance_deduction_amount: Number(e.attendance_deduction_amount) || 0,
+        attendance_absent_days: Number(e.attendance_absent_days) || 0,
+        attendance_unpaid_leave_days: Number(e.attendance_unpaid_leave_days) || 0,
+        attendance_half_days: Number(e.attendance_half_days) || 0,
+        attendance_late_count: Number(e.attendance_late_count) || 0,
+        attendance_late_deduction_days: Number(e.attendance_late_deduction_days) || 0,
+        attendance_early_out_count: Number(e.attendance_early_out_count) || 0,
+        attendance_early_out_deduction_days: Number(e.attendance_early_out_deduction_days) || 0,
         net_deduction: Number(e.net_deduction) || 0,
         month_days: Number(e.month_days || selectedMonthDays) || 0,
         working_days: Number(e.working_days) || 0,
@@ -765,14 +894,18 @@ const SalarySheetGenerate = ({ user }: any) => {
           Total Employees: <span className="font-semibold">{employees.length}</span>
         </div>
 
-        <div className="flex gap-6">
+        <div className="flex flex-wrap justify-end gap-6">
           <div>
             Total Salary:{" "}
             <span className="font-semibold">{thousandSeparator(grandTotals.total_salary)}</span>
           </div>
           <div>
-            Total Deduction:{" "}
+            Loan Deduction:{" "}
             <span className="font-semibold">{thousandSeparator(grandTotals?.loan_deduction)}</span>
+          </div>
+          <div>
+            Att. Deduction:{" "}
+            <span className="font-semibold">{thousandSeparator(grandTotals.attendance_deduction)}</span>
           </div>
           <div className="font-bold text-green-700 dark:text-green-400">
             Net Total: {thousandSeparator(grandTotals.net_salary)}

@@ -120,6 +120,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Designations', path: routes.hrms_designation_list, group: 'HRM', permissions: ['employee.view'] },
   { title: 'Manual Attendance', path: routes.hrms_attendance_entries, group: 'HRM', permissions: ['attendance.view', 'employee.view'], keywords: ['attendance entry in out'] },
   { title: 'Attendance Report', path: routes.hrms_attendance_report, group: 'HRM', permissions: ['attendance.view', 'employee.view'], keywords: ['present absent attendance summary'] },
+  { title: 'Employee Attendance', path: routes.hrms_employee_attendance_report, group: 'HRM', permissions: ['attendance.view', 'employee.view'], keywords: ['employee attendance history present absent leave late'] },
   { title: 'Monthly Attendance', path: routes.hrms_attendance_monthly_report, group: 'HRM', permissions: ['attendance.view', 'employee.view'], keywords: ['attendance matrix monthly project'] },
   { title: 'Leave Applications', path: routes.hrms_leave_applications, group: 'HRM', permissions: ['leave.view', 'attendance.view', 'employee.view'], keywords: ['leave approval application'] },
   { title: 'Attendance Setup', path: routes.hrms_attendance_setup, group: 'HRM', permissions: ['attendance.view', 'employee.view'], keywords: ['shift holiday leave'] },

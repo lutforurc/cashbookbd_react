@@ -19,6 +19,18 @@ import SalaryPaymentSelectionModal from "./SalaryPaymentSelectionModal";
 import { salarySheetPrint } from "./salarySlice";
 import routes from "../../../services/appRoutes";
 import { FiSearch } from "react-icons/fi";
+import * as XLSX from "xlsx";
+
+const getSalaryHistory = (history?: string | Record<string, any>) => {
+  if (!history) return {};
+  if (typeof history !== "string") return history;
+
+  try {
+    return JSON.parse(history);
+  } catch {
+    return {};
+  }
+};
 
 const SalarySheet = ({ user }: any) => {
   const employees = useSelector((state: any) => state.employees);
@@ -126,6 +138,11 @@ const SalarySheet = ({ user }: any) => {
       return;
     }
 
+    if (action === "excel") {
+      await handleExcelExport(row);
+      return;
+    }
+
     if (action === "update") {
       navigate(routes.hrms_salary_sheet_update, {
         state: {
@@ -133,6 +150,55 @@ const SalarySheet = ({ user }: any) => {
           yearId,
         },
       });
+    }
+  };
+
+  const handleExcelExport = async (row: any) => {
+    try {
+      const response = await dispatch(salarySheetPrint(row)).unwrap();
+      const rows = Array.isArray(response?.data) ? response.data : [];
+
+      if (rows.length === 0) {
+        toast.info("No salary data found for export");
+        return;
+      }
+
+      const exportRows = rows.map((item: any, index: number) => {
+        const history = getSalaryHistory(item.history);
+        const attendanceDeduction = Number(item.attendance_deduction_amount || 0);
+
+        return {
+          SL: item.serial_no || index + 1,
+          Employee: history.name || item.employee_name || item.name || "",
+          Designation: history.designation_name || item.designation_name || "",
+          "Month Days": item.month_days || history.month_days || "",
+          "Working Days": item.working_days || history.working_days || "",
+          "Monthly Basic": history.monthly_basic_salary || item.monthly_basic_salary || "",
+          Salary: Number(item.basic_salary || 0),
+          Mobile: Number(item.others_allowance || 0),
+          Total: Number(item.gross_salary || 0),
+          Loan: Number(item.loan_deduction || 0),
+          "Att. Ded": attendanceDeduction,
+          "Absent Days": Number(item.attendance_absent_days || 0),
+          "Unpaid Leave": Number(item.attendance_unpaid_leave_days || 0),
+          "Half Days": Number(item.attendance_half_days || 0),
+          "Late Count": Number(item.attendance_late_count || 0),
+          "Late Ded. Days": Number(item.attendance_late_deduction_days || 0),
+          "Early Out Count": Number(item.attendance_early_out_count || 0),
+          "Early Out Ded. Days": Number(item.attendance_early_out_deduction_days || 0),
+          "Net Salary": Number(item.net_salary || 0),
+          Payment: Number(item.payment_amount || 0),
+          Due: Number(item.net_salary || 0) - Number(item.payment_amount || 0),
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(exportRows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Salary Sheet");
+      XLSX.writeFile(workbook, `salary-sheet-${row.payment_month || "export"}.xlsx`);
+    } catch (error: any) {
+      console.error("Excel export error:", error);
+      toast.error(typeof error === "string" ? error : error?.message || "Salary sheet export failed");
     }
   };
 
@@ -223,6 +289,7 @@ const SalarySheet = ({ user }: any) => {
               >
                 <option value="">Select</option>
                 <option value="update">Update</option>
+                <option value="excel">Excel</option>
                 <option value="payment">Payment</option>
               </select>
             )}

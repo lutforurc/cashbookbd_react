@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FiRefreshCcw } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -9,7 +9,8 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { fetchAttendanceReport } from './attendanceSlice';
+import { fetchEmployees } from '../employee/employeeSlice';
+import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice';
 import { chartDate } from '../../../utils/utils-functions/formatDate';
 
 const today = new Date().toISOString().slice(0, 10);
@@ -51,15 +52,61 @@ const approvalOptions = [
 ];
 
 const timeOnly = (value: any) => (value ? String(value).slice(11, 16) : '-');
+const normalizeStatus = (value?: string) => String(value || '').replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) || '-';
+const safeRows = (value: any) => {
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.data)) return value.data;
+  if (Array.isArray(value?.data?.data)) return value.data.data;
+  if (Array.isArray(value?.data?.data?.data)) return value.data.data.data;
+  return [];
+};
+
+const parseLocalDate = (value?: string | null) => {
+  if (!value) return null;
+  const [year, month, day] = String(value).slice(0, 10).split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
+const formatLocalDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const dateRange = (from?: string, to?: string) => {
+  const start = parseLocalDate(from);
+  const end = parseLocalDate(to);
+  if (!start || !end || start > end) return [];
+
+  const dates = [];
+  const current = new Date(start);
+  while (current <= end && dates.length < 62) {
+    dates.push(formatLocalDate(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+};
+
+const getEmployeeId = (row: any) => String(row?.employee_id || row?.id || row?.employee_serial || row?.employee_name || row?.name || '');
+const isActiveEmployee = (row: any) => {
+  const status = String(row?.status ?? row?.employee_status ?? row?.status_name ?? '').toLowerCase();
+  return status === '' || status === '1' || status === 'active';
+};
+const branchNameFromId = (branches: any[], branchId: any) => branches.find((branch) => String(branch.id) === String(branchId))?.name || '-';
 
 const AttendanceReport = ({ user }: any) => {
   const dispatch = useDispatch<any>();
   const attendance = useSelector((state: any) => state.attendance);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const employeeState = useSelector((state: any) => state.employees);
   const branches = branchDdlData?.protectedData?.data || [];
   const report = attendance.report || {};
-  const summary = report.summary || {};
   const rows = Array.isArray(report.rows) ? report.rows : [];
+  const leaveApplications = Array.isArray(attendance.leaveApplications) ? attendance.leaveApplications : [];
+  const employees = safeRows(employeeState?.employees?.data || employeeState?.employees);
   const userBranchId = user?.branch_id ? String(user.branch_id) : '';
 
   const [filters, setFilters] = useState<any>({
@@ -73,6 +120,20 @@ const AttendanceReport = ({ user }: any) => {
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
   }, [dispatch]);
+
+  const fetchSupportingData = (currentFilters: any) => {
+    dispatch(fetchEmployees({
+      page: 1,
+      per_page: 1000,
+      branch_id: currentFilters.branch_id ? Number(currentFilters.branch_id) : undefined,
+    }));
+    dispatch(fetchLeaveApplications({
+      branch_id: currentFilters.branch_id,
+      date_from: currentFilters.date_from,
+      date_to: currentFilters.date_to,
+      approval_status: 'approved',
+    }));
+  };
 
   useEffect(() => {
     const nextFilters = {
@@ -88,6 +149,7 @@ const AttendanceReport = ({ user }: any) => {
       branch_id: prev.branch_id || userBranchId,
     }));
     dispatch(fetchAttendanceReport(nextFilters));
+    fetchSupportingData(nextFilters);
   }, [dispatch, userBranchId]);
 
   const handleChange = (setter: any) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -97,14 +159,89 @@ const AttendanceReport = ({ user }: any) => {
 
   const loadReport = () => {
     dispatch(fetchAttendanceReport(filters));
+    fetchSupportingData(filters);
   };
+
+  const displayRows = useMemo(() => {
+    const dates = dateRange(filters.date_from, filters.date_to);
+    const attendanceKeySet = new Set(
+      rows.map((row: any) => `${getEmployeeId(row)}-${String(row.attendance_date || '').slice(0, 10)}`),
+    );
+
+    const approvedLeaves = leaveApplications.filter((leave: any) => leave.approval_status === 'approved');
+    const generatedRows = employees
+      .filter(isActiveEmployee)
+      .filter((employee: any) => !filters.branch_id || String(employee.branch_id) === String(filters.branch_id))
+      .flatMap((employee: any) => dates.map((attendanceDate) => {
+        const employeeId = getEmployeeId(employee);
+        if (!employeeId || attendanceKeySet.has(`${employeeId}-${attendanceDate}`)) return null;
+
+        const leave = approvedLeaves.find((item: any) => {
+          const leaveEmployeeId = getEmployeeId(item);
+          const fromDate = String(item.from_date || '').slice(0, 10);
+          const toDate = String(item.to_date || '').slice(0, 10);
+          return leaveEmployeeId === employeeId && fromDate <= attendanceDate && toDate >= attendanceDate;
+        });
+
+        return {
+          id: `generated-${employeeId}-${attendanceDate}`,
+          attendance_date: attendanceDate,
+          employee_id: employee.id || employee.employee_id,
+          employee_serial: employee.employee_serial || employee.serial_no || employee.id,
+          employee_name: employee.employee_name || employee.name,
+          branch_id: employee.branch_id,
+          branch_name: employee.branch_name || branchNameFromId(branches, employee.branch_id),
+          shift_name: employee.shift_name || '-',
+          in_time: null,
+          out_time: null,
+          work_minutes: '-',
+          status: leave ? 'leave' : 'absent',
+          approval_status: leave ? 'approved' : '-',
+          remarks: leave?.reason || '',
+          generated_status: true,
+        };
+      }))
+      .filter(Boolean);
+
+    return [...rows, ...generatedRows]
+      .filter((row: any) => !filters.status || row.status === filters.status)
+      .filter((row: any) => !filters.approval_status || row.approval_status === filters.approval_status)
+      .sort((a: any, b: any) => {
+        const dateCompare = String(a.attendance_date || '').localeCompare(String(b.attendance_date || ''));
+        if (dateCompare !== 0) return dateCompare;
+        const serialA = Number(a.employee_serial);
+        const serialB = Number(b.employee_serial);
+        if (!Number.isNaN(serialA) && !Number.isNaN(serialB)) return serialA - serialB;
+        return String(a.employee_name || '').localeCompare(String(b.employee_name || ''));
+      });
+  }, [branches, employees, filters.approval_status, filters.branch_id, filters.date_from, filters.date_to, filters.status, leaveApplications, rows]);
+
+  const summary = useMemo(() => displayRows.reduce((total: any, row: any) => {
+    const status = row.status || 'unknown';
+    total.total_entries += row.generated_status ? 0 : 1;
+    total[status] = (total[status] || 0) + 1;
+    if (row.approval_status === 'pending') total.pending_approval += 1;
+    if (row.approval_status === 'approved') total.approved += 1;
+    if (row.approval_status === 'rejected') total.rejected += 1;
+    return total;
+  }, {
+    active_employees: employees.filter(isActiveEmployee).length || report.summary?.active_employees || 0,
+    total_entries: 0,
+    present: 0,
+    absent: 0,
+    half_day: 0,
+    leave: 0,
+    late: 0,
+    pending_approval: 0,
+    approved: 0,
+    rejected: 0,
+  }), [displayRows, employees, report.summary?.active_employees]);
 
   const cards = [
     { label: 'Active Employee', value: summary.active_employees || 0 },
     { label: 'Attendance Entry', value: summary.total_entries || 0 },
-    { label: 'Missing', value: summary.missing_employees || 0 },
+    { label: 'Absent/Missing', value: summary.absent || 0 },
     { label: 'Present', value: summary.present || 0 },
-    { label: 'Absent', value: summary.absent || 0 },
     { label: 'Half Day', value: summary.half_day || 0 },
     { label: 'Leave', value: summary.leave || 0 },
     { label: 'Late', value: summary.late || 0 },
@@ -128,15 +265,15 @@ const AttendanceReport = ({ user }: any) => {
     { key: 'shift_name', header: 'Shift', render: (row: any) => row.shift_name || '-' },
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) },
     { key: 'out_time', header: 'Out', render: (row: any) => timeOnly(row.out_time) },
-    { key: 'work_minutes', header: 'Minutes' },
-    { key: 'status', header: 'Status' },
-    { key: 'approval_status', header: 'Approval' },
+    { key: 'work_minutes', header: 'Minutes', render: (row: any) => row.work_minutes || '-' },
+    { key: 'status', header: 'Status', render: (row: any) => normalizeStatus(row.status) },
+    { key: 'approval_status', header: 'Approval', render: (row: any) => normalizeStatus(row.approval_status) },
   ];
 
   return (
     <div>
-      <HelmetTitle title="Attendance Report" />
-      {attendance.loading && <Loader />}
+      <HelmetTitle title="Daily Attendance Report" />
+      {(attendance.loading || employeeState.loading) && <Loader />}
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-6">
         <InputDatePicker
@@ -187,7 +324,7 @@ const AttendanceReport = ({ user }: any) => {
         ))}
       </div>
 
-      <Table columns={columns} data={rows} />
+      <Table columns={columns} data={displayRows} />
     </div>
   );
 };
