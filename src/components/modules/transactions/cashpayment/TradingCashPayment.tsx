@@ -385,14 +385,14 @@ const TradingCashPayment = () => {
   return (
     <>
       <HelmetTitle title="Cash Payment" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-2">
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
             <div className="w-full">
-              <div className="relative w-full flex items-center">
+              <div className="flex w-full items-end gap-2">
                 {hasPermission(settings?.data?.permissions, 'cash.payment.edit') && (
                   <>
-                    <div className="w-full">
+                    <div className="min-w-0 flex-1">
                       <label htmlFor="search">Search Payment</label>
                       <InputOnly
                         id="search"
@@ -411,7 +411,7 @@ const TradingCashPayment = () => {
                         onClick={searchTransaction}
                         buttonLoading={buttonLoading}
                         label=" "
-                        className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
+                        className="h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
                         icon={<FiSearch className="text-white text-lg ml-2" />}
                       />
                     </div>
@@ -511,7 +511,7 @@ const TradingCashPayment = () => {
               onChange={handleOnChange}
               onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
             />
-            <div className="grid grid-cols-3 gap-x-1 gap-y-1">
+            <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editPaymentVoucher}
@@ -572,10 +572,10 @@ const TradingCashPayment = () => {
             </div>
           </div>
         </div>
-        <div className="mt-6 col-span-2 overflow-x-auto ">
+        <div className="col-span-2 overflow-x-auto lg:mt-6">
           {cashPayment.isLoading ? <Loader /> : null}
           <table
-            className={`w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400`}
+            className={`min-w-[680px] w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400`}
           >
             <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-200">
               <tr className="bg-black-700">
@@ -603,12 +603,12 @@ const TradingCashPayment = () => {
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
+                    className={`px-2 py-2 font-medium text-gray-900 dark:text-white `}
                   >
                     {row.accountName}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
+                    className={`px-2 py-2 font-medium text-gray-900 dark:text-white `}
                   >
                     {row.remarks}
                   </td>
