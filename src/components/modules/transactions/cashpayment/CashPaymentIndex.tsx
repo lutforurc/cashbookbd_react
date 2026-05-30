@@ -12,6 +12,7 @@ const CashPaymentIndex = () => {
     settings?.data?.branch?.branch_types_id ?? currentBranch?.branch_types_id;
   const branchTypeId =
     settings?.data?.branch?.business_type_id ?? currentBranch?.business_type_id;
+  const normalizedBranchTypeId = Number(branchTypeId);
 
   if (Number(branchTypesId) === 1) {
     return <HeadOfficeCashPayment />;
@@ -22,7 +23,7 @@ const CashPaymentIndex = () => {
     8: <TradingCashPayment />,
   };
 
-  return components[branchTypeId] || <GeneralCashPayment />;
+  return components[normalizedBranchTypeId] || <GeneralCashPayment />;
 };
 
 export default CashPaymentIndex;
