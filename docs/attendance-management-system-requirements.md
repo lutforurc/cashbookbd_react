@@ -619,3 +619,130 @@ Overtime Report
 Eta future use, karon requirements-e bola ache apatoto overtime thakbe na.
 
 Phase-wise korte chaile: Phase 1-e Daily Attendance, Leave Report, Absent/Late basic report enough. Phase 2-e Monthly Summary + Branch/Project Summary. Phase 3-e Salary Attendance Summary লাগবে.
+
+## 28. Future Useful Modules / Business Automation Backlog
+
+নিচের module/feature-গুলো attendance module শেষ হওয়ার পরে future phase-এ ready করা যেতে পারে। এগুলো CashBookBD-এর daily operation, cash flow, accounting control এবং business decision support উন্নত করবে।
+
+### 28.1 Daily Cash Summary
+
+Purpose:
+
+- প্রতিদিন cash in, cash out এবং closing cash এক জায়গায় দেখা।
+- system cash balance এবং physical cash balance মিলানো।
+- cashier-wise বা branch-wise daily cash position দেখা।
+
+Expected benefit:
+
+- cash mismatch দ্রুত ধরা যাবে।
+- cashier accountability বাড়বে।
+- owner প্রতিদিন business cash position বুঝতে পারবে।
+
+Database note:
+
+- basic report existing transaction/ledger data থেকে করা যাবে।
+- physical cash closing, mismatch reason, cashier note বা day closing lock দরকার হলে future table লাগতে পারে, যেমন `daily_cash_closings`।
+
+### 28.2 Due Collection Reminder
+
+Purpose:
+
+- customer-wise due amount, overdue days এবং follow-up reminder দেখা।
+- next follow-up date, promise date, collection note এবং assigned user রাখা।
+
+Expected benefit:
+
+- due collection improve হবে।
+- customer follow-up miss হবে না।
+- cash flow ভালো হবে।
+
+Database note:
+
+- basic due report existing sales/customer/payment data থেকে করা যাবে।
+- reminder/follow-up workflow দরকার হলে future table লাগতে পারে, যেমন `customer_due_followups` বা `due_collection_reminders`।
+
+### 28.3 Profit Snapshot
+
+Purpose:
+
+- daily, weekly এবং monthly sales, purchase, expense, gross profit এবং net profit summary দেখা।
+- owner dashboard-এ quick business health দেখা।
+
+Expected benefit:
+
+- business লাভে না ক্ষতিতে আছে দ্রুত বোঝা যাবে।
+- কোন expense category বেশি বাড়ছে সেটা দেখা যাবে।
+- management দ্রুত decision নিতে পারবে।
+
+Database note:
+
+- সাধারণত existing sales, purchase, expense এবং ledger data থেকে report করা যাবে।
+- snapshot history save করতে চাইলে future table লাগতে পারে, যেমন `profit_snapshots`।
+
+### 28.4 Bank Reconciliation
+
+Purpose:
+
+- software bank ledger এবং bank statement মিলিয়ে দেখা।
+- missing, duplicate, pending cheque/payment/deposit এবং mismatch transaction identify করা।
+
+Expected benefit:
+
+- bank balance accurate থাকবে।
+- accounting mistake কমবে।
+- audit এবং month-end closing সহজ হবে।
+
+Database note:
+
+- proper module করতে database change লাগবে।
+- possible future tables: `bank_statement_imports`, `bank_statement_lines`, `bank_reconciliation_matches`।
+
+### 28.5 Expense Approval
+
+Purpose:
+
+- expense entry approval-based করা।
+- approved, rejected, pending status রাখা।
+- approved by, approved at এবং reject reason রাখা।
+
+Expected benefit:
+
+- unauthorized expense কমবে।
+- internal control শক্ত হবে।
+- management approval history দেখতে পারবে।
+
+Database note:
+
+- expense/voucher table-এ approval fields যোগ করা যেতে পারে, যেমন `approval_status`, `approved_by`, `approved_at`।
+- অথবা আলাদা approval table করা যেতে পারে, যেমন `expense_approvals`।
+
+### 28.6 AI / Smart Automation Ideas
+
+Purpose:
+
+- auto narration suggestion।
+- duplicate transaction warning।
+- abnormal expense alert।
+- smart search।
+- customer late payment pattern এবং expense trend analysis।
+
+Expected benefit:
+
+- data entry দ্রুত হবে।
+- ভুল entry এবং duplicate transaction কমবে।
+- owner abnormal transaction বা expense দ্রুত ধরতে পারবে।
+- user সাধারণ ভাষায় transaction/report search করতে পারবে।
+
+Implementation note:
+
+- প্রথম phase-এ rule-based logic দিয়ে শুরু করা যাবে।
+- পরে দরকার হলে AI model বা smart search engine integrate করা যাবে।
+
+Recommended future order:
+
+1. Daily Cash Summary
+2. Due Collection Reminder
+3. Profit Snapshot
+4. Bank Reconciliation
+5. Expense Approval
+6. AI / Smart Automation
