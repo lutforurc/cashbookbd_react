@@ -31,9 +31,9 @@ type RenderRow =
   | { type: "brand"; brand: string }
   | { type: "category"; brand: string; category: string }
   | { type: "item"; brand: string; category: string; idx: number; row: RowAny }
-  | { type: "catTotal"; brand: string; category: string; total: number }
-  | { type: "brandTotal"; brand: string; total: number }
-  | { type: "grandTotal"; total: number };
+  | { type: "catTotal"; brand: string; category: string; stock: number; unit: string; total: number }
+  | { type: "brandTotal"; brand: string; stock: number; unit: string; total: number }
+  | { type: "grandTotal"; stock: number; unit: string; total: number };
 
 const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
   (
@@ -113,6 +113,10 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
 
     const getQty = (r: RowAny) => r?.stock ?? r?.qty ?? 0;
     const getRate = (r: RowAny) => r?.rate ?? r?.avg_rate ?? 0;
+    const getTotalUnit = (rows: RowAny[]) => {
+      const units = Array.from(new Set(rows.map((row) => getUnit(row)).filter(Boolean)));
+      return units.length === 1 ? units[0] : "";
+    };
 
     const getTotal = (r: RowAny) => {
       const direct = r?.total_stock ?? r?.amount ?? r?.total;
@@ -147,11 +151,15 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
     const renderRows: RenderRow[] = useMemo(() => {
       const out: RenderRow[] = [];
       let grand = 0;
+      let grandStock = 0;
+      const grandRows: RowAny[] = [];
 
       grouped.forEach((g) => {
         out.push({ type: "brand", brand: g.brand });
 
         let brandTotal = 0;
+        let brandStock = 0;
+        const brandRows: RowAny[] = [];
 
         g.categories.forEach((c) => {
           out.push({ type: "category", brand: g.brand, category: c.category });
@@ -167,22 +175,40 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
           });
 
           const catTotal = c.rows.reduce((acc, r) => acc + getTotal(r), 0);
+          const catStock = c.rows.reduce((acc, r) => acc + toNum(getQty(r)), 0);
           brandTotal += catTotal;
+          brandStock += catStock;
+          brandRows.push(...c.rows);
 
           out.push({
             type: "catTotal",
             brand: g.brand,
             category: c.category,
+            stock: catStock,
+            unit: getTotalUnit(c.rows),
             total: catTotal,
           });
         });
 
         // âœ… Brand Total after all Category Totals
-        out.push({ type: "brandTotal", brand: g.brand, total: brandTotal });
+        out.push({
+          type: "brandTotal",
+          brand: g.brand,
+          stock: brandStock,
+          unit: getTotalUnit(brandRows),
+          total: brandTotal,
+        });
         grand += brandTotal;
+        grandStock += brandStock;
+        grandRows.push(...brandRows);
       });
 
-      out.push({ type: "grandTotal", total: grand });
+      out.push({
+        type: "grandTotal",
+        stock: grandStock,
+        unit: getTotalUnit(grandRows),
+        total: grand,
+      });
       return out;
     }, [grouped]);
 
@@ -351,12 +377,22 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         return (
           <tr className="avoid-break font-bold bg-gray-50">
             <td
-              colSpan={4}
+              colSpan={2}
               style={{ fontSize: fs }}
               className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
             >
               { r.category } Total
             </td>
+            <td
+              style={{ fontSize: fs }}
+              className={`border border-gray-900 px-2 ${cellPy} text-right`}
+            >
+              {fmtStock(r.stock, r.unit)}
+            </td>
+            <td
+              style={{ fontSize: fs }}
+              className={`border border-gray-900 px-2 ${cellPy} text-right`}
+            />
             <td
               style={{ fontSize: fs }}
               className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
@@ -371,12 +407,22 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
         return (
           <tr className="avoid-break font-bold">
             <td
-              colSpan={4}
+              colSpan={2}
               style={{ fontSize: fs }}
               className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
             >
               { firstLetterCapitalize(r.brand)} Total
             </td>
+            <td
+              style={{ fontSize: fs }}
+              className={`border border-gray-900 px-2 ${cellPy} text-right`}
+            >
+              {fmtStock(r.stock, r.unit)}
+            </td>
+            <td
+              style={{ fontSize: fs }}
+              className={`border border-gray-900 px-2 ${cellPy} text-right`}
+            />
             <td
               style={{ fontSize: fs }}
               className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
@@ -391,12 +437,22 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
       return (
         <tr className="avoid-break font-bold">
           <td
-            colSpan={4}
+            colSpan={2}
             style={{ fontSize: fs }}
             className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-right`}
           >
             Grand Total
           </td>
+          <td
+            style={{ fontSize: fs }}
+            className={`border border-gray-900 px-2 ${cellPy} text-right`}
+          >
+            {fmtStock(r.stock, r.unit)}
+          </td>
+          <td
+            style={{ fontSize: fs }}
+            className={`border border-gray-900 px-2 ${cellPy} text-right`}
+          />
           <td
             style={{ fontSize: fs }}
             className={`border border-r-0 border-gray-900 px-2 ${cellPy} text-right`}
