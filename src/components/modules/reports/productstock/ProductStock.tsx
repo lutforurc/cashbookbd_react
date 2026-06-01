@@ -16,7 +16,7 @@ import StockBookPrint from './StockBookPrint';
 import { useReactToPrint } from 'react-to-print';
 import InputElement from '../../../utils/fields/InputElement';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { FiArrowRight, FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { fetchBrandDdl } from '../../product/brand/brandSlice'; 
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 
@@ -278,9 +278,9 @@ const ProductStock = ( user : any) => {
         }
         if (isCatRow(row)) {
           return (
-            <div className="font-semibold py-1">
+            <div className="inline-flex items-center gap-1 whitespace-nowrap py-1 font-semibold">
               <span className="font-semibold">{row.brand_name}</span>
-              <span className="mx-1 text-gray-800 dark:text-gray-100">â†’</span>
+              <FiArrowRight className="shrink-0 text-gray-900 dark:text-gray-100" />
               <span>{row.cat_name}</span>
             </div>
           );

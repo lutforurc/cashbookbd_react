@@ -3,6 +3,7 @@ import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { humanizeEnumText } from '../../../utils/hooks/humanizeEnumText';
+import { FiActivity } from 'react-icons/fi';
 
 type StockRow = {
   sl_number?: number | string;
@@ -235,9 +236,11 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                         return (
                           <tr key={idx} className="avoid-break">
                             <td colSpan={6} style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 font-semibold bg-white">
-                              <span className="font-semibold">{(row.brand_name)}</span>
-                              <span className="mx-1 text-gray-900">'-'</span>
-                              <span>{(row.cat_name)}</span>
+                              <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                                <span className="font-semibold">{row.brand_name}</span>
+                                <FiActivity className="shrink-0 text-gray-900" />
+                                <span>{row.cat_name}</span>
+                              </span>
                             </td>
                           </tr>
                         );
