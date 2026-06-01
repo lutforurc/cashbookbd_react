@@ -236,7 +236,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
                           <tr key={idx} className="avoid-break">
                             <td colSpan={6} style={{ fontSize: fs, borderWidth: '0.5px' }} className="border border-gray-500 px-2 py-0 font-semibold bg-white">
                               <span className="font-semibold">{(row.brand_name)}</span>
-                              <span className="mx-1 text-gray-900">â†’</span>
+                              <span className="mx-1 text-gray-900">'-'</span>
                               <span>{(row.cat_name)}</span>
                             </td>
                           </tr>
