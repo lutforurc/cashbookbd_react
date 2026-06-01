@@ -3,6 +3,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import { firstLetterCapitalize } from "../../../utils/utils-functions/formatRoleName";
+import { FiArrowRight } from "react-icons/fi";
 
 const fmtNum = (n: any, dec = 0) => thousandSeparator(Number(n || 0));
 const toNum = (v: any) => {
@@ -289,7 +290,11 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
               style={{ fontSize: fs }}
               className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} font-semibold`}
             >
-              { firstLetterCapitalize(r.brand)} â†’ { r.category }
+              <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                {firstLetterCapitalize(r.brand)}
+                <FiArrowRight className="shrink-0" />
+                {r.category}
+              </span>
             </td>
           </tr>
         );
