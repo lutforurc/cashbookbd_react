@@ -39,9 +39,11 @@ type PrintPayload = {
   order_type?: Primitive;
   customer?: {
     name?: string;
+    address?: string | null;
   } | null;
   supplier?: {
     name?: string;
+    address?: string | null;
   } | null;
   product?: {
     name?: string;
@@ -214,7 +216,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     const pages = chunkRows(printableRows, Math.max(rowsPerPage, 1));
     const orderTypeLabel = getOrderTypeLabel(payload?.order_type);
     const partyLabel = orderTypeLabel === 'Purchase' ? 'Supplier Name' : 'Customer Name';
-    const partyName = payload?.order_for || payload?.customer?.name || payload?.supplier?.name || '-';
+    const partyName = payload?.customer?.name || payload?.supplier?.name || '-';
     const productName = payload?.product?.name || payload?.product_name || '-';
     const unitName = payload?.product?.unit?.name || payload?.product?.unit?.full_name || '';
     const explicitDurationText = formatDurationText(payload?.duration);
@@ -233,6 +235,9 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       },
       { quantity: 0, total: 0, discount: 0, payment: 0 },
     );
+
+  console.log('Printable Rows:', payload?.customer?.address);
+
 
     return (
       <div ref={ref} className="p-6 text-sm text-gray-900 print-root">
@@ -262,7 +267,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div>
                 <div className="grid grid-cols-[110px_1fr] gap-2">
                   <span>Address:</span>
-                  <span>{payload?.address || '-'}</span>
+                  <span>{payload?.customer?.address || '-'}</span>
                 </div>
                 <div className="grid grid-cols-[110px_1fr] gap-2">
                   <span>Duration:</span>
