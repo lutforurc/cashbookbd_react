@@ -207,7 +207,7 @@ const allPayments = paymentList.map((pay: any) => ({
         return (
           <>
             <div className="text-right">
-              Ã Â§Â³ {thousandSeparator(row.amount)}
+              Tk. {thousandSeparator(row.amount)}
             </div>
           </>
         );
@@ -297,7 +297,7 @@ const allPayments = paymentList.map((pay: any) => ({
                           Total Purchase
                         </span>
                         <span className="text-green-600 text-sm dark:text-green-400 mt-0">
-                          Ã Â§Â³{' '}
+                          Tk. {' '}
                           {thousandSeparator(summary.total[0]?.total_debit) || 0}
                         </span>
                       </div>
@@ -306,7 +306,7 @@ const allPayments = paymentList.map((pay: any) => ({
                           Total Payment
                         </span>
                         <span className="text-cyan-700 text-sm dark:text-cyan-400">
-                          Ã Â§Â³{' '}
+                          Tk. {' '}
                           {thousandSeparator(summary.total[0]?.total_credit) || 0}
                         </span>
                       </div>
@@ -317,19 +317,19 @@ const allPayments = paymentList.map((pay: any) => ({
                           Balance (Due)
                         </span>
                         <span className="text-green-600 text-sm dark:text-green-400 mt-0">
-                          Ã Â§Â³{' '}
+                          Tk. {' '}
                           {thousandSeparator(
                             summary.total[0]?.total_debit -
                               summary.total[0]?.total_credit)}
                         </span>
                       </div>
                     </div>
-                    {earlyDiscountEligible && (
+                  </div>
+                  {earlyDiscountEligible && (
                       <p className="mt-2 text-yellow-700 dark:text-yellow-300">
                         {summary.earlyPaymentMessage}
                       </p>
                     )}
-                  </div>
                 </div>
 
                 {/* Summary */}
