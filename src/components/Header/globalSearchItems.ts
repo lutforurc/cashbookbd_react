@@ -11,6 +11,7 @@ export type GlobalSearchItem = {
 const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Dashboard', path: routes.dashboard, group: 'Dashboard', keywords: ['home'] },
   { title: 'Profile', path: routes.profile, group: 'Account' },
+  { title: 'Reseller Dashboard', path: routes.reseller_dashboard, group: 'Reseller', permissions: ['reseller.dashboard.view'] },
 
   { title: 'Cash Received', path: routes.cash_receive, group: 'Transaction', permissions: ['cash.received.create'] },
   { title: 'Cash Payment', path: routes.cash_payment, group: 'Transaction', permissions: ['cash.payment.create'] },

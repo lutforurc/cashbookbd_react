@@ -256,7 +256,7 @@ function App() {
               <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
               <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
               <Route path={routes.reseller_admin} element={<ResellerAdmin />} />
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.view', 'all.user.view', 'subscription.view']} loading={permissionsLoading} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.dashboard.view']} loading={permissionsLoading} />}>
                 <Route path={routes.reseller_dashboard} element={<ResellerDashboard />} />
               </Route>
               <Route path={routes.calendar} element={<Calendar />} />
