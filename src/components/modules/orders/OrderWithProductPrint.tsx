@@ -39,6 +39,7 @@ type PrintPayload = {
   order_type?: Primitive;
   customer?: {
     name?: string;
+    manual_address?: string | null;
     address?: string | null;
   } | null;
   supplier?: {
@@ -267,7 +268,7 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div>
                 <div className="grid grid-cols-[110px_1fr] gap-2">
                   <span>Address:</span>
-                  <span>{payload?.customer?.address || '-'}</span>
+                  <span>{payload?.customer?.manual_address || payload?.customer?.address || '-'}</span>
                 </div>
                 <div className="grid grid-cols-[110px_1fr] gap-2">
                   <span>Duration:</span>
