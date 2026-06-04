@@ -10,8 +10,10 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import InputDatePicker from '../../../utils/fields/DatePicker';
+import Table from '../../../utils/others/Table';
 import httpService from '../../../services/httpService';
 import { API_REPORT_GROUP_DATA_URL } from '../../../services/apiRoutes';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 
 type ReportEntry = {
   year?: string;
@@ -91,8 +93,70 @@ const amountForMonth = (entries: ReportEntry[], month: string, sectionTitle: str
   return (Number(entry.debit) || 0) - (Number(entry.credit) || 0);
 };
 
-const formatAmount = (value: number) =>
-  new Intl.NumberFormat('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+
+const GroupReportTable = ({ section, months }: { section: ReportSection; months: string[] }) => {
+  const rowEntries = Object.entries(section.rows);
+  const tableData = rowEntries.map(([name, entries]) => {
+    const row: Record<string, string | number> = { groupName: name };
+    let total = 0;
+
+    months.forEach((month) => {
+      const amount = amountForMonth(entries, month, section.title);
+      row[month] = amount;
+      total += amount;
+    });
+
+    row.total = total;
+    return row;
+  });
+
+  const monthTotals = months.map((month) =>
+    tableData.reduce((sum, row) => sum + Number(row[month] || 0), 0),
+  );
+  const columns = [
+    {
+      key: 'groupName',
+      header: 'Group Name',
+      headerClass: 'text-left',
+      cellClass: 'font-medium',
+    },
+    ...months.map((month) => ({
+      key: month,
+      header: month,
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: Record<string, string | number>) => thousandSeparator(Number(row[month] || 0)),
+    })),
+    {
+      key: 'total',
+      header: 'Total',
+      headerClass: 'text-right',
+      cellClass: 'text-right font-semibold',
+      render: (row: Record<string, string | number>) => thousandSeparator(Number(row.total || 0)),
+    },
+  ];
+  const footerRows = [[
+    { label: 'Grand Total' },
+    ...monthTotals.map((total) => ({ label: thousandSeparator(total), className: 'text-right' })),
+    {
+      label: thousandSeparator(monthTotals.reduce((sum, total) => sum + total, 0)),
+      className: 'text-right',
+    },
+  ]];
+
+  return (
+    <div className="mb-6">
+      <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-white">{section.title}</h3>
+      <Table
+        columns={columns}
+        data={tableData || []}
+        footerRows={footerRows}
+        tableClassName="border-collapse"
+        noDataMessage={`No ${section.title.toLowerCase()} data found`}
+      />
+    </div>
+  );
+};
 
 const GroupPurchaseSales = () => {
   const dispatch = useDispatch();
@@ -239,7 +303,7 @@ const GroupPurchaseSales = () => {
       <div ref={printRef} className={hasReport ? 'mt-4' : 'hidden'}>
         <div className="mb-4 text-center">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Group Report</h2>
-          <p className="text-sm">{selectedBranch?.name || ''}</p>
+          {/* <p className="text-sm">{selectedBranch?.name || ''}</p> */}
           <p className="text-sm">
             Date Range: {startDate ? dayjs(startDate).format('DD/MM/YYYY') : ''} to {endDate ? dayjs(endDate).format('DD/MM/YYYY') : ''}
           </p>
@@ -247,46 +311,9 @@ const GroupPurchaseSales = () => {
 
         {report.html ? <div className="overflow-x-auto" dangerouslySetInnerHTML={{ __html: report.html }} /> : null}
 
-        {report.sections.map((section) => {
-          const rowEntries = Object.entries(section.rows);
-          const monthTotals = report.months.map((month) =>
-            rowEntries.reduce((sum, [, entries]) => sum + amountForMonth(entries, month, section.title), 0),
-          );
-
-          return (
-            <div key={section.title} className="mb-6 overflow-x-auto">
-              <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-white">{section.title}</h3>
-              <table className="min-w-full border-collapse text-sm">
-                <thead className="bg-gray-200 text-gray-900">
-                  <tr>
-                    <th className="border border-gray-400 px-3 py-2 text-left">Group Name</th>
-                    {report.months.map((month) => <th key={month} className="border border-gray-400 px-3 py-2 text-right">{month}</th>)}
-                    <th className="border border-gray-400 px-3 py-2 text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rowEntries.map(([name, entries]) => {
-                    const values = report.months.map((month) => amountForMonth(entries, month, section.title));
-                    return (
-                      <tr key={name}>
-                        <td className="border border-gray-300 px-3 py-2 font-medium">{name}</td>
-                        {values.map((value, index) => <td key={`${name}-${report.months[index]}`} className="border border-gray-300 px-3 py-2 text-right">{formatAmount(value)}</td>)}
-                        <td className="border border-gray-300 px-3 py-2 text-right font-semibold">{formatAmount(values.reduce((sum, value) => sum + value, 0))}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot className="bg-gray-100 font-semibold">
-                  <tr>
-                    <td className="border border-gray-400 px-3 py-2">Grand Total</td>
-                    {monthTotals.map((total, index) => <td key={report.months[index]} className="border border-gray-400 px-3 py-2 text-right">{formatAmount(total)}</td>)}
-                    <td className="border border-gray-400 px-3 py-2 text-right">{formatAmount(monthTotals.reduce((sum, total) => sum + total, 0))}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          );
-        })}
+        {report.sections.map((section) => (
+          <GroupReportTable key={section.title} section={section} months={report.months} />
+        ))}
       </div>
     </div>
   );

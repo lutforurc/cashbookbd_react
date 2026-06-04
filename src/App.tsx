@@ -85,6 +85,7 @@ import RemoveApproval from './components/modules/voucher_approval/RemoveApproval
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
+import GroupReportSetup from './components/modules/reports/group-report/GroupReportSetup';
 import RequisitionForm from './components/modules/Requisition/RequisitionForm';
 import VoucherDelete from './components/modules/vr_settings/VoucherDelete';
 import Comparison from './components/modules/Requisition/Comparison';
@@ -443,6 +444,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report']} loading={permissionsLoading} />}>
               <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
+              <Route path={routes.group_report_setup} element={<GroupReportSetup />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report', 'ledger.due.view', 'cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.somity_collection_sheet} element={<CollectionSheet user={me} />} />
