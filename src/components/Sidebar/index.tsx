@@ -677,7 +677,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname.includes('/reports/cat-wise/in-out') ||
                           pathname.includes('/reports/purchase-ledger') ||
                           pathname.includes('/reports/sales-ledger') ||
-                          pathname.includes('/reports/group-report') ||
+                          pathname === routes.group_report ||
                           pathname.includes(routes.somity_collection_sheet) ||
                           pathname.includes(routes.somity_monthly_report) ||
                           pathname.includes('/reports/labour/ledger') ||
@@ -1049,31 +1049,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'group.report') && (
-                            <>
-                              <li>
-                                <NavLink
-                                  to="/reports/group-report"
-                                  end
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-white')
-                                  }
-                                >
-                                  Group Report
-                                </NavLink>
-                              </li>
-                              <li>
-                                <NavLink
-                                  to="/reports/group-report/setup"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-white')
-                                  }
-                                >
-                                  Add Group Report
-                                </NavLink>
-                              </li>
-                            </>
+                            <li>
+                              <NavLink
+                                to="/reports/group-report"
+                                end
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Group Report
+                              </NavLink>
+                            </li>
                           )}
 
                           {hasPermission(permissions, 'mitch.match') && (
@@ -1545,6 +1532,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname === routes.reseller_admin ||
                       pathname === routes.roles ||
                       pathname === routes.add_role ||
+                      pathname === routes.group_report_setup ||
 	                    pathname === '/admin/dayclose' ||
 	                    pathname === '/order/order-list' ||
                     pathname === routes.sms_send ||
@@ -1570,6 +1558,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             pathname === routes.reseller_admin ||
                             pathname === routes.roles ||
                             pathname === routes.add_role ||
+                            pathname === routes.group_report_setup ||
 	                          pathname === '/admin/dayclose' ||
 	                          pathname === '/order/order-list' ||
                           pathname === '/admin/voucher-approval' ||
@@ -1721,6 +1710,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Day Close
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'group.report') && (
+                            <li>
+                              <NavLink
+                                to={routes.group_report_setup}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Add Group Report
                               </NavLink>
                             </li>
                           )}
@@ -2536,6 +2538,4 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 };
 
 export default Sidebar;
-
-
 

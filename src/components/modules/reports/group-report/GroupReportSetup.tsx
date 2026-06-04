@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaHouse, FaTrash } from 'react-icons/fa6';
+import { FiCheckSquare } from 'react-icons/fi';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
+import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import Table from '../../../utils/others/Table';
 import httpService from '../../../services/httpService';
 import { API_REPORT_GROUP_SETUP_URL } from '../../../services/apiRoutes';
 
@@ -105,87 +108,102 @@ const GroupReportSetup = () => {
   const availableOptions = options.filter(
     (option) => !selectedItems.some((selected) => Number(selected.id) === Number(option.id)),
   );
+  const tableData = selectedItems.map((item, index) => ({
+    ...item,
+    sl_number: index + 1,
+  }));
+  const columns = [
+    {
+      key: 'sl_number',
+      header: 'Sl. No',
+      headerClass: 'w-24 text-center',
+      cellClass: 'text-center',
+    },
+    {
+      key: 'name',
+      header: 'Group Item',
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'w-32 text-center',
+      cellClass: 'text-center',
+      render: (item: GroupItem) => (
+        <button
+          type="button"
+          onClick={() => handleDelete(item.id)}
+          disabled={deletingId === item.id}
+          className="inline-flex items-center justify-center p-2 text-red-500 transition-colors hover:text-red-300 disabled:opacity-50"
+          aria-label={`Remove ${item.name}`}
+        >
+          <FaTrash />
+        </button>
+      ),
+    },
+  ];
 
   return (
-    <div>
+    <div className="">
       <HelmetTitle title="Add Group Report" />
-      <div className="mt-3 border border-stroke bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
-        <div className="mb-4 text-center">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Add Group</h1>
-        </div>
+      <div className="py-3">
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <h2 className="mb-2 text-base font-medium text-gray-900 dark:text-white">Group Information</h2>
-            <div className="space-y-4">
-              <select
-                value={groupId}
-                onChange={(event) => setGroupId(event.target.value)}
-                className="h-10 w-full rounded-sm border border-stroke bg-transparent px-3 text-sm outline-none dark:border-strokedark dark:bg-form-input"
-              >
-                <option value="">Select your group</option>
-                {reportGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
-              </select>
-
-              <select
-                value={itemId}
-                onChange={(event) => setItemId(event.target.value)}
-                disabled={!groupId || loading}
-                className="h-10 w-full rounded-sm border border-stroke bg-transparent px-3 text-sm outline-none disabled:opacity-60 dark:border-strokedark dark:bg-form-input"
-              >
-                <option value="">{loading ? 'Loading items...' : 'Select group item'}</option>
-                {availableOptions.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
-              </select>
-
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={handleAdd}
-                  disabled={saving || loading}
-                  className="h-10 rounded-sm bg-slate-700 px-4 text-sm font-medium uppercase text-white hover:bg-slate-800 disabled:opacity-60"
-                >
-                  {saving ? 'Adding...' : 'Add'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/dashboard')}
-                  className="flex h-10 items-center justify-center gap-2 rounded-sm bg-primary px-4 text-sm font-medium uppercase text-white"
-                >
-                  <FaHouse /> Home
-                </button>
-              </div>
-            </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[240px] flex-1">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Select Group
+            </label>
+            <select
+              value={groupId}
+              onChange={(event) => setGroupId(event.target.value)}
+              className="h-10 w-full border border-stroke bg-transparent px-3 text-sm font-medium outline-none dark:border-strokedark dark:bg-form-input dark:text-white"
+            >
+              <option value="">Select your group</option>
+              {reportGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
+            </select>
           </div>
 
-          <div className="lg:col-span-7">
-            <h2 className="mb-2 text-base font-medium text-gray-900 dark:text-white">
-              Already added for details reports
-            </h2>
-            {loading ? <Loader /> : null}
-            {!loading && !groupId ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Select a group to view added items.</p>
-            ) : null}
-            {!loading && groupId && selectedItems.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No items added yet.</p>
-            ) : null}
-            <ul className="divide-y divide-stroke border-y border-stroke dark:divide-strokedark dark:border-strokedark">
-              {selectedItems.map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-3 px-2 py-2 text-sm">
-                  <span>{item.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(item.id)}
-                    disabled={deletingId === item.id}
-                    className="p-2 text-red-600 hover:text-red-800 disabled:opacity-50"
-                    aria-label={`Remove ${item.name}`}
-                  >
-                    <FaTrash />
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <div className="min-w-[280px] flex-[1.4]">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Select Group Item
+            </label>
+            <select
+              value={itemId}
+              onChange={(event) => setItemId(event.target.value)}
+              disabled={!groupId || loading}
+              className="h-10 w-full border border-stroke bg-transparent px-3 text-sm font-medium outline-none disabled:opacity-60 dark:border-strokedark dark:bg-form-input dark:text-white"
+            >
+              <option value="">{loading ? 'Loading items...' : 'Select group item'}</option>
+              {availableOptions.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+            </select>
+          </div>
+
+          <div className="ml-auto flex gap-2">
+            <ButtonLoading
+              onClick={handleAdd}
+              disabled={saving || loading}
+              buttonLoading={saving}
+              label="Add"
+              icon={<FiCheckSquare />}
+              className="h-10 px-6"
+            />
+            <ButtonLoading
+              onClick={() => navigate('/dashboard')}
+              buttonLoading={false}
+              label="Home"
+              icon={<FaHouse />}
+              className="h-10 px-5"
+            />
           </div>
         </div>
+      </div>
+
+      <div className="overflow-y-auto">
+        {loading ? <Loader /> : null}
+        <Table
+          columns={columns}
+          data={tableData || []}
+          noDataMessage={groupId ? 'No group items added yet.' : 'Select a group to view added items.'}
+        />
       </div>
     </div>
   );
