@@ -11,6 +11,7 @@ import routes from '../../../services/appRoutes';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
+import Table, { Column, TableFooterCell } from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchAttendanceReport, fetchLeaveApplications, fetchMonthlyAttendanceSummary } from './attendanceSlice';
 import AttendanceMonthlyMatrixPrint from './AttendanceMonthlyMatrixPrint';
@@ -230,6 +231,86 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
     [dayTotals],
   );
 
+  const summaryColumns: Column[] = useMemo(() => [
+    { key: 'sl', header: 'Sl.', headerClass: 'w-12 text-center', cellClass: 'w-12 text-center', render: (_row, index) => index + 1 },
+    { key: 'employee_name', header: 'Employee', headerClass: 'w-56', cellClass: 'w-56', render: (row) => row.employee_name || '-' },
+    { key: 'present_days', header: 'Present', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center', render: (row) => summaryNumber(row.present_days) },
+    { key: 'paid_leave_days', header: 'Paid Leave', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center', render: (row) => summaryNumber(row.paid_leave_days) },
+    { key: 'unpaid_leave_days', header: 'Unpaid Leave', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center', render: (row) => summaryNumber(row.unpaid_leave_days) },
+    { key: 'absent_days', header: 'Absent', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center', render: (row) => summaryNumber(row.absent_days) },
+    { key: 'late_count', header: 'Late', headerClass: 'w-20 text-center', cellClass: 'w-20 text-center', render: (row) => summaryNumber(row.late_count) },
+    { key: 'early_out_count', header: 'Early Out', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center', render: (row) => summaryNumber(row.early_out_count) },
+    { key: 'half_days', header: 'Half Day', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center', render: (row) => summaryNumber(row.half_days) },
+    { key: 'payable_days', header: 'Payable', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center font-semibold', render: (row) => summaryNumber(row.payable_days) },
+    { key: 'deduction_days', header: 'Deduction', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center font-semibold text-red-700 dark:text-red-400', render: (row) => summaryNumber(row.deduction_days) },
+  ], []);
+
+  const summaryFooterRows: TableFooterCell[][] = useMemo(() => (
+    summaryRows.length > 0
+      ? [[
+        { label: 'Total', colSpan: 2, className: 'text-center' },
+        { label: summaryNumber(summaryTotals.present_days), className: 'text-center' },
+        { label: summaryNumber(summaryTotals.paid_leave_days), className: 'text-center' },
+        { label: summaryNumber(summaryTotals.unpaid_leave_days), className: 'text-center' },
+        { label: summaryNumber(summaryTotals.absent_days), className: 'text-center' },
+        { label: summaryNumber(summaryTotals.late_count), className: 'text-center' },
+        { label: summaryNumber(summaryTotals.early_out_count), className: 'text-center' },
+        { label: summaryNumber(summaryTotals.half_days), className: 'text-center' },
+        { label: summaryNumber(summaryTotals.payable_days), className: 'text-center' },
+        { label: summaryNumber(summaryTotals.deduction_days), className: 'text-center text-red-700 dark:text-red-400' },
+      ]]
+      : []
+  ), [summaryRows.length, summaryTotals]);
+
+  const matrixColumns: Column[] = useMemo(() => [
+    { key: 'sl', header: 'Sl. No.', headerClass: 'serial-cell w-16 text-center', cellClass: 'serial-cell w-16 text-center', render: (_row, index) => index + 1 },
+    { key: 'employee_name', header: 'Name', headerClass: 'name-cell w-64 text-left', cellClass: 'name-cell w-64 text-left', render: (employee) => employee.employee_name || '-' },
+    ...days.map((day) => ({
+      key: `day_${day}`,
+      header: day,
+      headerClass: 'day-cell w-8 text-center',
+      cellClass: 'day-cell w-8 !px-0 !py-0 text-center',
+      render: (employee: any) => {
+        const dateKey = toDateString(year, monthIndex, day);
+        const code = employee.dates[dateKey] || '';
+        const entry = employee.dateRows?.[dateKey];
+        const isEditable = !!entry && entry.approval_status !== 'approved';
+
+        return (
+          <button
+            type="button"
+            title={entry?.approval_status === 'approved' ? 'Approved attendance cannot be changed' : code ? 'Click to update manual attendance' : ''}
+            onClick={() => openManualAttendance(employee, dateKey, code)}
+            disabled={!code}
+            className={`block h-full min-h-9 w-full px-2 py-2 text-center ${statusClassName(code)} ${isEditable ? 'cursor-pointer hover:ring-1 hover:ring-slate-500' : 'cursor-default'}`}
+          >
+            {code}
+          </button>
+        );
+      },
+    })),
+    {
+      key: 'total',
+      header: 'Total',
+      headerClass: 'w-16 text-center',
+      cellClass: 'w-16 text-center font-semibold text-slate-800 dark:text-slate-100',
+      render: (employee) => formatTotal(days.reduce((total, day) => {
+        const dateKey = toDateString(year, monthIndex, day);
+        return total + statusTotalValue(employee.dates[dateKey]);
+      }, 0)),
+    },
+  ], [days, monthIndex, year]);
+
+  const matrixFooterRows: TableFooterCell[][] = useMemo(() => (
+    reportRows.length > 0
+      ? [[
+        { label: 'Total', colSpan: 2, className: 'text-center font-semibold' },
+        ...dayTotals.map((dayTotal) => ({ label: formatTotal(dayTotal), className: 'day-cell text-center font-semibold' })),
+        { label: formatTotal(grandTotal), className: 'text-center font-semibold' },
+      ]]
+      : []
+  ), [dayTotals, grandTotal, reportRows.length]);
+
   const loadReport = (currentFilters = filters) => {
     const currentMonthIndex = Math.max(0, Number(currentFilters.month || 1) - 1);
     const currentYear = Number(currentFilters.year || now.getFullYear());
@@ -347,122 +428,59 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       </div>
       </div>
 
-      <div className="mb-3 overflow-x-auto rounded-sm bg-white shadow-sm dark:bg-boxdark">
+      <div className="mb-3 rounded-sm bg-white shadow-sm dark:bg-boxdark">
         <div className="border-b border-gray-200 px-3 py-2 text-sm font-semibold text-slate-800 dark:border-gray-700 dark:text-slate-100">
           Monthly Attendance Summary
         </div>
-        <table className="min-w-full table-fixed text-left text-xs text-gray-700 dark:text-gray-300">
-          <thead>
-            <tr className="bg-gray-200 uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-              <th className="w-12 px-3 py-2 text-center">Sl.</th>
-              <th className="w-56 px-3 py-2">Employee</th>
-              <th className="w-24 px-3 py-2 text-center">Present</th>
-              <th className="w-24 px-3 py-2 text-center">Paid Leave</th>
-              <th className="w-24 px-3 py-2 text-center">Unpaid Leave</th>
-              <th className="w-24 px-3 py-2 text-center">Absent</th>
-              <th className="w-20 px-3 py-2 text-center">Late</th>
-              <th className="w-24 px-3 py-2 text-center">Early Out</th>
-              <th className="w-24 px-3 py-2 text-center">Half Day</th>
-              <th className="w-24 px-3 py-2 text-center">Payable</th>
-              <th className="w-24 px-3 py-2 text-center">Deduction</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-            {summaryRows.map((row: any, index: number) => (
-              <tr key={row.employee_id || row.employee_name} className="hover:bg-indigo-50 dark:hover:bg-gray-700">
-                <td className="px-3 py-2 text-center">{index + 1}</td>
-                <td className="truncate px-3 py-2">{row.employee_name || '-'}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(row.present_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(row.paid_leave_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(row.unpaid_leave_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(row.absent_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(row.late_count)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(row.early_out_count)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(row.half_days)}</td>
-                <td className="px-3 py-2 text-center font-semibold">{summaryNumber(row.payable_days)}</td>
-                <td className="px-3 py-2 text-center font-semibold text-red-700">{summaryNumber(row.deduction_days)}</td>
-              </tr>
-            ))}
-            {summaryRows.length === 0 && (
-              <tr>
-                <td colSpan={11} className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
-                  No summary data found
-                </td>
-              </tr>
-            )}
-          </tbody>
-          {summaryRows.length > 0 && (
-            <tfoot>
-              <tr className="bg-gray-100 font-semibold dark:bg-gray-700">
-                <td colSpan={2} className="px-3 py-2 text-center">Total</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.present_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.paid_leave_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.unpaid_leave_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.absent_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.late_count)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.early_out_count)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.half_days)}</td>
-                <td className="px-3 py-2 text-center">{summaryNumber(summaryTotals.payable_days)}</td>
-                <td className="px-3 py-2 text-center text-red-700">{summaryNumber(summaryTotals.deduction_days)}</td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
+        <Table
+          columns={summaryColumns}
+          data={summaryRows}
+          noDataMessage="No summary data found"
+          footerRows={summaryFooterRows}
+          getRowKey={(row: any) => row.employee_id || row.employee_name}
+          className="shadow-none"
+          tableClassName="text-xs"
+        />
       </div>
 
-      <div className="attendance-monthly-print rounded-sm bg-white shadow-sm dark:bg-boxdark">
+      <div className="attendance-monthly-screen rounded-sm bg-white shadow-sm dark:bg-boxdark">
         <style>
           {`
-            .attendance-monthly-print .matrix-header-cell {
-              background: #d1d5db;
-              color: #1f2937;
-            }
-
-            .attendance-monthly-print .status-cell {
+            .attendance-monthly-screen .status-cell {
               font-weight: 700;
             }
 
-            .attendance-monthly-print .status-present {
+            .attendance-monthly-screen .status-present {
               background: #eefbf3;
               color: #137333;
             }
 
-            .attendance-monthly-print .status-late {
+            .attendance-monthly-screen .status-late {
               background: #fff7df;
               color: #b45309;
             }
 
-            .attendance-monthly-print .status-absent {
+            .attendance-monthly-screen .status-absent {
               background: #fff0f0;
               color: #b91c1c;
             }
 
-            .attendance-monthly-print .status-holiday {
+            .attendance-monthly-screen .status-holiday {
               background: #eef4ff;
               color: #1d4ed8;
             }
 
-            .attendance-monthly-print .status-leave {
+            .attendance-monthly-screen .status-leave {
               background: #fff6db;
               color: #92400e;
             }
 
-            .attendance-monthly-print .status-half-day {
+            .attendance-monthly-screen .status-half-day {
               background: #f3e8ff;
               color: #6b21a8;
             }
 
-            .attendance-monthly-print .total-cell {
-              background: #f8fafc;
-              color: #0f172a;
-            }
-
-            .attendance-monthly-print tfoot td {
-              background: #f8fafc;
-              color: #1f2937;
-            }
-
-            .attendance-monthly-print .legend-chip {
+            .attendance-monthly-screen .legend-chip {
               display: inline-flex;
               align-items: center;
               gap: 4px;
@@ -471,7 +489,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               color: #334155;
             }
 
-            .attendance-monthly-print .legend-mark {
+            .attendance-monthly-screen .legend-mark {
               display: inline-flex;
               min-width: 18px;
               height: 18px;
@@ -480,6 +498,11 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               border: 1px solid #cbd5e1;
               font-size: 11px;
               font-weight: 700;
+            }
+
+            .attendance-monthly-screen .legend-total {
+              background: #f8fafc;
+              color: #0f172a;
             }
 
             @media print {
@@ -612,74 +635,15 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-gray-200 px-3 py-2 text-center text-sm font-medium text-slate-800 dark:border-gray-700 dark:text-slate-100">
           <div>Attendance for the Month of <span>{monthNames[monthIndex]} {year}</span></div>
         </div>
-        <div className="overflow-x-auto">
-        <table className="min-w-full table-fixed text-left text-sm text-gray-700 dark:text-gray-300">
-          <thead>
-            <tr className="text-xs uppercase">
-              <th className="serial-cell matrix-header-cell w-16 px-3 py-3 text-center font-semibold">Sl. No.</th>
-              <th className="name-cell matrix-header-cell w-64 px-3 py-3 text-left font-semibold">Name</th>
-              {days.map((day) => (
-                <th key={day} className="day-cell matrix-header-cell w-8 px-2 py-3 text-center font-semibold">
-                  {day}
-                </th>
-              ))}
-              <th className="total-cell matrix-header-cell w-16 px-3 py-3 text-center font-semibold">Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-            {reportRows.map((employee, index) => {
-              const employeeTotal = days.reduce((total, day) => {
-                const dateKey = toDateString(year, monthIndex, day);
-                return total + statusTotalValue(employee.dates[dateKey]);
-              }, 0);
-
-              return (
-                <tr key={employee.employee_id || employee.employee_name} className="transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700">
-                  <td className="serial-cell px-3 py-2 text-center">{index + 1}</td>
-                  <td className="name-cell truncate px-3 py-2 text-left">{employee.employee_name || '-'}</td>
-                  {days.map((day) => {
-                    const dateKey = toDateString(year, monthIndex, day);
-                    const code = employee.dates[dateKey] || '';
-                    const entry = employee.dateRows?.[dateKey];
-                    const isEditable = !!entry && entry.approval_status !== 'approved';
-                    return (
-                      <td
-                        key={dateKey}
-                        title={entry?.approval_status === 'approved' ? 'Approved attendance cannot be changed' : code ? 'Click to update manual attendance' : ''}
-                        onClick={() => openManualAttendance(employee, dateKey, code)}
-                        className={`day-cell px-2 py-2 text-center ${statusClassName(code)} ${isEditable ? 'cursor-pointer hover:ring-1 hover:ring-slate-500' : ''}`}
-                      >
-                        {code}
-                      </td>
-                    );
-                  })}
-                  <td className="total-cell px-3 py-2 text-center font-semibold">{formatTotal(employeeTotal)}</td>
-                </tr>
-              );
-            })}
-            {reportRows.length === 0 && (
-              <tr>
-                <td colSpan={daysInMonth + 3} className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
-                  No attendance data found
-                </td>
-              </tr>
-            )}
-          </tbody>
-          {reportRows.length > 0 && (
-            <tfoot>
-              <tr>
-                <td colSpan={2} className="px-3 py-3 text-center font-semibold">Total</td>
-                {dayTotals.map((dayTotal, index) => (
-                  <td key={`day-total-${index}`} className="day-cell px-2 py-3 text-center font-semibold">
-                    {formatTotal(dayTotal)}
-                  </td>
-                ))}
-                <td className="total-cell px-3 py-3 text-center font-semibold">{formatTotal(grandTotal)}</td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
-        </div>
+        <Table
+          columns={matrixColumns}
+          data={reportRows}
+          noDataMessage="No attendance data found"
+          footerRows={matrixFooterRows}
+          getRowKey={(row: any) => row.employee_id || row.employee_name}
+          className="shadow-none"
+          tableClassName="text-sm"
+        />
 
         <div className="print-legend border-t border-gray-200 px-3 py-2 text-xs text-slate-600 dark:border-gray-700 dark:text-slate-300">
           <span className="legend-chip"><span className="legend-mark status-present">✓</span> Present</span>
@@ -688,7 +652,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           <span className="legend-chip"><span className="legend-mark status-absent">✕</span> Absent</span>
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
           <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>
-          <span className="legend-chip"><span className="legend-mark total-cell">T</span> Present days</span>
+          <span className="legend-chip"><span className="legend-mark legend-total">T</span> Present days</span>
         </div>
       </div>
 
