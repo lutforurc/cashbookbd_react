@@ -31,6 +31,12 @@ const normalizeSuggestionItems = (items: any) =>
             .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
         : [];
 
+const getOrderSuggestionValue = (row: any, field: 'order_number' | 'delivery_location' | 'notes') => {
+    if (field === 'order_number') return row?.order_number || row?.label || '';
+    if (field === 'delivery_location') return row?.delivery_location || row?.label_6 || '';
+    return row?.notes || row?.label_9 || '';
+};
+
 const AddOrder = (user: any) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -47,6 +53,11 @@ const AddOrder = (user: any) => {
     const [buttonLoading, setButtonLoading] = useState(false);
     const [referenceOrderFocusTrigger, setReferenceOrderFocusTrigger] = useState(0);
     const [orderFieldSuggestions, setOrderFieldSuggestions] = useState<Record<string, string[]>>({
+        order_number: [],
+        delivery_location: [],
+        notes: [],
+    });
+    const [orderSuggestionRows, setOrderSuggestionRows] = useState<Record<string, any[]>>({
         order_number: [],
         delivery_location: [],
         notes: [],
@@ -183,10 +194,38 @@ const AddOrder = (user: any) => {
         }
     }, [branchDdlData?.protectedData?.data]);
 
+    const applyMatchedOrderSuggestion = (
+        field: 'order_number' | 'delivery_location' | 'notes',
+        value: string | null,
+        rows: any[],
+    ) => {
+        const normalizedValue = String(value ?? '').trim().toLowerCase();
+        if (!normalizedValue) return;
+
+        const matchedRow = rows.find((row) =>
+            String(getOrderSuggestionValue(row, field)).trim().toLowerCase() === normalizedValue,
+        );
+
+        if (!matchedRow) return;
+
+        const matchedNote = getOrderSuggestionValue(matchedRow, 'notes');
+        const matchedDeliveryLocation = getOrderSuggestionValue(matchedRow, 'delivery_location');
+
+        setFormData((prev) => ({
+            ...prev,
+            notes: matchedNote || prev.notes,
+            delivery_location:
+                field === 'order_number' && matchedDeliveryLocation
+                    ? matchedDeliveryLocation
+                    : prev.delivery_location,
+        }));
+    };
+
     const loadOrderFieldSuggestions = async (field: 'order_number' | 'delivery_location' | 'notes', value: string | null) => {
         const query = String(value ?? '').trim();
         if (!query) {
             setOrderFieldSuggestions((prev) => ({ ...prev, [field]: [] }));
+            setOrderSuggestionRows((prev) => ({ ...prev, [field]: [] }));
             return;
         }
 
@@ -199,18 +238,20 @@ const AddOrder = (user: any) => {
             const rows = Array.isArray(response?.data?.data?.data)
                 ? response.data.data.data
                 : [];
-            const suggestionItems = rows.map((row: any) => {
-                if (field === 'order_number') return row?.order_number || row?.label;
-                if (field === 'delivery_location') return row?.delivery_location || row?.label_6;
-                return row?.notes || row?.label_9;
-            });
+            const suggestionItems = rows.map((row: any) => getOrderSuggestionValue(row, field));
 
             setOrderFieldSuggestions((prev) => ({
                 ...prev,
                 [field]: normalizeSuggestionItems(suggestionItems),
             }));
+            setOrderSuggestionRows((prev) => ({
+                ...prev,
+                [field]: rows,
+            }));
+            applyMatchedOrderSuggestion(field, query, rows);
         } catch (error) {
             setOrderFieldSuggestions((prev) => ({ ...prev, [field]: [] }));
+            setOrderSuggestionRows((prev) => ({ ...prev, [field]: [] }));
         }
     };
 
@@ -338,6 +379,10 @@ const AddOrder = (user: any) => {
             ...prevState,
             [name]: value,
         }));
+
+        if (name === 'order_number' || name === 'delivery_location' || name === 'notes') {
+            applyMatchedOrderSuggestion(name, value, orderSuggestionRows[name] || []);
+        }
     };
 
     const handleOrderDate = (e: any) => {
