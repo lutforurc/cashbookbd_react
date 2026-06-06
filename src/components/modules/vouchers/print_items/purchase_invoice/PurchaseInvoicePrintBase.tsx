@@ -337,7 +337,7 @@ const PurchaseInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>(
 
                 {settings?.data?.branch?.show_spelling_of_money == '1' && (
                   <div className={isHalf ? 'pt-2' : 'w-full pt-4 text-left leading-snug'} style={{ fontSize: fs - 0.25 }}>
-                    <span className="tracking-wide">{meta.purchaseInWord}</span>
+                    <span className="tracking-wide"><span className="font-semibold">In Word: </span> {meta.purchaseInWord}</span>
                   </div>
                 )}
 

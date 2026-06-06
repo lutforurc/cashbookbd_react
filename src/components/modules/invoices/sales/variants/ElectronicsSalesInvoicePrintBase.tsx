@@ -399,7 +399,7 @@ const ElectronicsSalesInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>
 
                 {!hasInstallments && settings?.data?.branch?.show_spelling_of_money == '1' && (
                   <div className={isHalf ? 'pt-2' : 'w-full pt-4 text-left leading-snug'} style={{ fontSize: fs - 0.25 }}>
-                    <span className="tracking-wide">{data?.inword}</span>
+                    <span className="tracking-wide"><span className="font-semibold">In Word: </span> {data?.inword}</span>
                   </div>
                 )}
 
