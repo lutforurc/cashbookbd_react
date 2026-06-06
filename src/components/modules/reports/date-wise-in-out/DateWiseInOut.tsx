@@ -24,6 +24,8 @@ export type DateWiseInOutRow = {
   sl_no: string;
   vr_date: string;
   date_link?: string;
+  product_id?: string;
+  product_name: string;
   in_qty: string;
   out_qty: string;
   damage: string;
@@ -37,6 +39,7 @@ export type InOutDetailRow = {
   mid?: number;
   vr_date?: string;
   vehicle_no?: string;
+  product_id?: number | string;
   product_name?: string;
   in_qty?: number;
   out_qty?: number;
@@ -82,6 +85,8 @@ const mapDateWiseInOutRows = (payload: any): DateWiseInOutRow[] => {
       sl_no: String(item?.sl_no || index + 1),
       vr_date: formatReportDate(item?.vr_date || item?.date),
       date_link: item?.date_link,
+      product_id: String(item?.product_id || item?.item_id || item?.ledger_id || '').trim(),
+      product_name: String(item?.product_name || item?.item_name || item?.product || '').trim(),
       in_qty: inQty,
       out_qty: outQty,
       damage,
@@ -109,6 +114,7 @@ const DateWiseInOut = ({ user }: any) => {
   const [detailLoadingDate, setDetailLoadingDate] = useState('');
   const [detailPrintReady, setDetailPrintReady] = useState(false);
   const [detailDate, setDetailDate] = useState('');
+  const [detailProductName, setDetailProductName] = useState('');
   const [detailRows, setDetailRows] = useState<{ sales: InOutDetailRow[]; purchase: InOutDetailRow[] }>({
     sales: [],
     purchase: [],
@@ -163,14 +169,19 @@ const DateWiseInOut = ({ user }: any) => {
     setError('');
 
     try {
+      const params: Record<string, any> = {
+        branch_id: branchId || null,
+        startdate: dayjs(startDate).format('DD/MM/YYYY'),
+        enddate: dayjs(endDate).format('DD/MM/YYYY'),
+        response_type: 'json',
+      };
+
+      if (productId) {
+        params.ledger_id = productId;
+      }
+
       const response = await httpService.get(API_REPORT_DATE_WISE_IN_OUT_URL, {
-        params: {
-          branch_id: branchId || null,
-          ledger_id: productId || null,
-          startdate: dayjs(startDate).format('DD/MM/YYYY'),
-          enddate: dayjs(endDate).format('DD/MM/YYYY'),
-          response_type: 'json',
-        },
+        params,
         headers: {
           Accept: 'application/json',
         },
@@ -218,25 +229,31 @@ const DateWiseInOut = ({ user }: any) => {
   }, [detailPrintReady, handleDetailPrint]);
 
   const handleDatePrint = async (row: DateWiseInOutRow) => {
-    if (!branchId || !productId) {
-      setError('Please select branch and item / product before opening date details.');
-      return;
-    }
-
     setDetailLoadingDate(row.vr_date);
     setError('');
 
     try {
+      const params: Record<string, any> = {
+        vr_date: row.vr_date,
+      };
+
+      if (branchId) {
+        params.branch_id = branchId;
+      }
+
+      if (productId) {
+        params.ledger_id = productId;
+        params.item_id = productId;
+        params.product_id = productId;
+      }
+
       const response = await httpService.get(API_REPORT_DATE_WISE_IN_OUT_DETAILS_URL, {
-        params: {
-          branch_id: branchId,
-          ledger_id: productId,
-          vr_date: row.vr_date,
-        },
+        params,
       });
 
       const data = response?.data?.data || {};
       setDetailDate(row.vr_date);
+      setDetailProductName(selectedProductOption?.label || 'All Products');
       setDetailRows({
         sales: Array.isArray(data?.sales) ? data.sales : [],
         purchase: Array.isArray(data?.purchase) ? data.purchase : [],
@@ -251,7 +268,8 @@ const DateWiseInOut = ({ user }: any) => {
   };
 
   const columns = useMemo(
-    () => [
+    () => {
+      const baseColumns = [
       {
         key: 'sl_no',
         header: 'Sl. No.',
@@ -264,21 +282,26 @@ const DateWiseInOut = ({ user }: any) => {
         headerClass: 'text-center',
         cellClass: 'text-center',
         render: (row: DateWiseInOutRow) => (
-          branchId && productId ? (
-            <button
-              type="button"
-              onClick={() => handleDatePrint(row)}
-              className="font-medium text-emerald-600 hover:underline disabled:cursor-wait disabled:opacity-70"
-              disabled={detailLoadingDate === row.vr_date}
-              title="Open React print"
-            >
-              {row.vr_date}
-            </button>
-          ) : (
-            <span className="text-emerald-600">{row.vr_date}</span>
-          )
+          <button
+            type="button"
+            onClick={() => handleDatePrint(row)}
+            className="font-medium text-emerald-600 hover:underline disabled:cursor-wait disabled:opacity-70"
+            disabled={detailLoadingDate === row.vr_date}
+            title="Open React print"
+          >
+            {row.vr_date}
+          </button>
         ),
       },
+      !productId
+        ? {
+          key: 'product_name',
+          header: 'Product',
+          headerClass: 'text-left',
+          cellClass: 'text-left',
+          render: (row: DateWiseInOutRow) => row.product_name || '-',
+        }
+        : null,
       {
         key: 'in_qty',
         header: 'In Qty',
@@ -314,7 +337,10 @@ const DateWiseInOut = ({ user }: any) => {
           </span>
         ),
       },
-    ],
+      ].filter(Boolean);
+
+      return baseColumns;
+    },
     [branchId, detailLoadingDate, productId],
   );
 
@@ -442,6 +468,7 @@ const DateWiseInOut = ({ user }: any) => {
         <DateWiseInOutPrint
           ref={printRef}
           rows={rows}
+          showProductColumn={!productId}
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
         />
@@ -452,7 +479,8 @@ const DateWiseInOut = ({ user }: any) => {
           ref={detailPrintRef}
           detailDate={detailDate}
           detailRows={detailRows}
-          productName={selectedProductOption?.label}
+          productName={detailProductName || selectedProductOption?.label || 'All Products'}
+          showProductColumn={!productId}
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
         />
