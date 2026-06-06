@@ -965,7 +965,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Datewise Total
+                                Datewise Cash Total
                               </NavLink>
                             </li>
                           )}
