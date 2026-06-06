@@ -20,7 +20,16 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import useCtrlS from '../../utils/hooks/useCtrlS'
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon'
 import { ORDER_STATUS } from '../../constant/constant/variables'
+import httpService from '../../services/httpService'
+import { API_ORDERS_DDL_URL } from '../../services/apiRoutes'
 // import Link from '../../../utils/others/Link';
+
+const normalizeSuggestionItems = (items: any) =>
+    Array.isArray(items)
+        ? items
+            .map((item: any) => String(item ?? '').trim())
+            .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
+        : [];
 
 const AddOrder = (user: any) => {
     const dispatch = useDispatch();
@@ -37,6 +46,11 @@ const AddOrder = (user: any) => {
     const [lastDeliveryDate, setLastDeliveryDate] = useState<Date | null>(null); // Define state with type
     const [buttonLoading, setButtonLoading] = useState(false);
     const [referenceOrderFocusTrigger, setReferenceOrderFocusTrigger] = useState(0);
+    const [orderFieldSuggestions, setOrderFieldSuggestions] = useState<Record<string, string[]>>({
+        order_number: [],
+        delivery_location: [],
+        notes: [],
+    });
 
     const toValidDate = (value: string | null | undefined) => {
         if (!value || !String(value).trim()) {
@@ -168,6 +182,61 @@ const AddOrder = (user: any) => {
         } else {
         }
     }, [branchDdlData?.protectedData?.data]);
+
+    const loadOrderFieldSuggestions = async (field: 'order_number' | 'delivery_location' | 'notes', value: string | null) => {
+        const query = String(value ?? '').trim();
+        if (!query) {
+            setOrderFieldSuggestions((prev) => ({ ...prev, [field]: [] }));
+            return;
+        }
+
+        try {
+            const response = await httpService.get(API_ORDERS_DDL_URL, {
+                params: {
+                    q: query,
+                },
+            });
+            const rows = Array.isArray(response?.data?.data?.data)
+                ? response.data.data.data
+                : [];
+            const suggestionItems = rows.map((row: any) => {
+                if (field === 'order_number') return row?.order_number || row?.label;
+                if (field === 'delivery_location') return row?.delivery_location || row?.label_6;
+                return row?.notes || row?.label_9;
+            });
+
+            setOrderFieldSuggestions((prev) => ({
+                ...prev,
+                [field]: normalizeSuggestionItems(suggestionItems),
+            }));
+        } catch (error) {
+            setOrderFieldSuggestions((prev) => ({ ...prev, [field]: [] }));
+        }
+    };
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            void loadOrderFieldSuggestions('order_number', formData.order_number);
+        }, 250);
+
+        return () => window.clearTimeout(timer);
+    }, [formData.branch_id, formData.order_number]);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            void loadOrderFieldSuggestions('delivery_location', formData.delivery_location);
+        }, 250);
+
+        return () => window.clearTimeout(timer);
+    }, [formData.branch_id, formData.delivery_location]);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            void loadOrderFieldSuggestions('notes', formData.notes);
+        }, 250);
+
+        return () => window.clearTimeout(timer);
+    }, [formData.branch_id, formData.notes]);
 
     useEffect(() => {
         const editData = ordersState?.editData;
@@ -470,6 +539,8 @@ const AddOrder = (user: any) => {
                     placeholder={'Enter Order Number'}
                     label={'Enter Order Number'}
                     className={'py-1.5'}
+                    list="order-number-suggestions"
+                    autoComplete="off"
                     onChange={handleOrderChange}
 
                     onKeyDown={(e) => {
@@ -479,6 +550,11 @@ const AddOrder = (user: any) => {
                     }}
 
                 />
+                <datalist id="order-number-suggestions">
+                    {orderFieldSuggestions.order_number.map((item) => (
+                        <option key={item} value={item} />
+                    ))}
+                </datalist>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <InputElement id="delivery_location"
@@ -488,6 +564,8 @@ const AddOrder = (user: any) => {
                     placeholder={'Delivery Location'}
                     label={'Delivery Location'}
                     className={'py-1.5'}
+                    list="order-delivery-location-suggestions"
+                    autoComplete="off"
                     onChange={handleOrderChange}
 
                     onKeyDown={(e) => {
@@ -497,6 +575,11 @@ const AddOrder = (user: any) => {
                     }}
 
                 />
+                <datalist id="order-delivery-location-suggestions">
+                    {orderFieldSuggestions.delivery_location.map((item) => (
+                        <option key={item} value={item} />
+                    ))}
+                </datalist>
                 <div className='w-full'>
                     <label htmlFor="">Order Date</label>
                     <InputDatePicker
@@ -609,6 +692,8 @@ const AddOrder = (user: any) => {
                     placeholder={'Note'}
                     label={'Note'}
                     className={'py-1.5'}
+                    list="order-note-suggestions"
+                    autoComplete="off"
                     onChange={handleOrderChange}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -620,6 +705,11 @@ const AddOrder = (user: any) => {
                         }
                     }}
                 />
+                <datalist id="order-note-suggestions">
+                    {orderFieldSuggestions.notes.map((item) => (
+                        <option key={item} value={item} />
+                    ))}
+                </datalist>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
                 <div>
