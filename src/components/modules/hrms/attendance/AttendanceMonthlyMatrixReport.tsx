@@ -282,9 +282,9 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             title={entry?.approval_status === 'approved' ? 'Approved attendance cannot be changed' : code ? 'Click to update manual attendance' : ''}
             onClick={() => openManualAttendance(employee, dateKey, code)}
             disabled={!code}
-            className={`block h-full min-h-9 w-full px-2 py-2 text-center ${statusClassName(code)} ${isEditable ? 'cursor-pointer hover:ring-1 hover:ring-slate-500' : 'cursor-default'}`}
+            className={`group flex min-h-9 w-full items-center justify-center px-1 py-1 text-center ${isEditable ? 'cursor-pointer hover:bg-indigo-50 dark:hover:bg-slate-700' : 'cursor-default'}`}
           >
-            {code}
+            {code ? <span className={`attendance-mark ${statusClassName(code)}`}>{code}</span> : null}
           </button>
         );
       },
@@ -450,34 +450,84 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               font-weight: 700;
             }
 
+            .attendance-monthly-screen .attendance-mark {
+              display: inline-flex;
+              min-width: 24px;
+              height: 24px;
+              align-items: center;
+              justify-content: center;
+              border-radius: 6px;
+              border: 1px solid currentColor;
+              font-size: 13px;
+              font-weight: 800;
+              line-height: 1;
+              box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+            }
+
             .attendance-monthly-screen .status-present {
-              background: #eefbf3;
-              color: #137333;
+              background: #dcfce7;
+              color: #15803d;
             }
 
             .attendance-monthly-screen .status-late {
-              background: #fff7df;
+              background: #fef3c7;
               color: #b45309;
             }
 
             .attendance-monthly-screen .status-absent {
-              background: #fff0f0;
+              background: #fee2e2;
               color: #b91c1c;
             }
 
             .attendance-monthly-screen .status-holiday {
-              background: #eef4ff;
+              background: #dbeafe;
               color: #1d4ed8;
             }
 
             .attendance-monthly-screen .status-leave {
-              background: #fff6db;
-              color: #92400e;
+              background: #fef9c3;
+              color: #a16207;
             }
 
             .attendance-monthly-screen .status-half-day {
               background: #f3e8ff;
-              color: #6b21a8;
+              color: #7e22ce;
+            }
+
+            .dark .attendance-monthly-screen .status-present {
+              background: rgba(22, 163, 74, 0.28);
+              color: #bbf7d0;
+              box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25), 0 0 14px rgba(34, 197, 94, 0.18);
+            }
+
+            .dark .attendance-monthly-screen .status-late {
+              background: rgba(217, 119, 6, 0.3);
+              color: #fde68a;
+              box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25), 0 0 14px rgba(245, 158, 11, 0.18);
+            }
+
+            .dark .attendance-monthly-screen .status-absent {
+              background: rgba(220, 38, 38, 0.3);
+              color: #fecaca;
+              box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25), 0 0 14px rgba(239, 68, 68, 0.18);
+            }
+
+            .dark .attendance-monthly-screen .status-holiday {
+              background: rgba(37, 99, 235, 0.3);
+              color: #bfdbfe;
+              box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.22), 0 0 14px rgba(96, 165, 250, 0.16);
+            }
+
+            .dark .attendance-monthly-screen .status-leave {
+              background: rgba(202, 138, 4, 0.32);
+              color: #fef3c7;
+              box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.24), 0 0 14px rgba(234, 179, 8, 0.16);
+            }
+
+            .dark .attendance-monthly-screen .status-half-day {
+              background: rgba(147, 51, 234, 0.32);
+              color: #e9d5ff;
+              box-shadow: 0 0 0 1px rgba(192, 132, 252, 0.24), 0 0 14px rgba(192, 132, 252, 0.16);
             }
 
             .attendance-monthly-screen .legend-chip {

@@ -261,6 +261,7 @@ const ROUTES = {
   hrms_designation_edit_base: '/hrms/designations/edit',
   hrms_attendance_entries: '/hrms/attendance/entries',
   hrms_attendance_report: '/hrms/attendance/report',
+  hrms_attendance_exception_reports: '/hrms/attendance/exception-reports',
   hrms_absent_report: '/hrms/attendance/absent-report',
   hrms_late_report: '/hrms/attendance/late-report',
   hrms_early_out_report: '/hrms/attendance/early-out-report',

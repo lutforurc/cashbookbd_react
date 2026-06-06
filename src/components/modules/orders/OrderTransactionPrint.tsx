@@ -100,7 +100,7 @@ const calculateTransactionTotals = (rows: PrintTransactionRow[]) => rows.reduce(
     const receive = toNumber(row.receive);
     const paymentOrReceive = freight > 0 ? freight : receive;
     const amount = toNumber(row.amount) || (weight * rate);
-    const due = toNumber(row.due_amount) || (amount - freight);
+    const due = amount - paymentOrReceive;
 
     acc.weight += weight;
     acc.amount += amount;
@@ -112,6 +112,28 @@ const calculateTransactionTotals = (rows: PrintTransactionRow[]) => rows.reduce(
   { weight: 0, amount: 0, freight: 0, due: 0 },
 );
 
+const calculateCumulativeDueAmounts = (rows: PrintTransactionRow[]) => {
+  let runningDue = 0;
+
+  return rows.map((row) => {
+    const weight = toNumber(row.weight);
+    const rate = toNumber(row.rate);
+    const freight = toNumber(row.freight_charge);
+    const receive = toNumber(row.receive);
+    const paymentOrReceive = freight > 0 ? freight : receive;
+    const amount = toNumber(row.amount) || (weight * rate);
+
+    runningDue += amount - paymentOrReceive;
+    return runningDue;
+  });
+};
+
+const getPageEndDue = (cumulativeDueAmounts: number[], pageIndex: number, rowsPerPage: number) => {
+  const endIndex = Math.min((pageIndex + 1) * rowsPerPage, cumulativeDueAmounts.length) - 1;
+
+  return endIndex >= 0 ? cumulativeDueAmounts[endIndex] : 0;
+};
+
 const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ order, title, rowsPerPage = 20, fontSize = 11 }, ref) => {
     const fs = Number.isFinite(fontSize) ? fontSize : 11;
@@ -121,6 +143,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
       ? order.transaction_rows
       : buildFallbackTransactions(order);
     const pages = chunkRows(transactionRows, rowsPerPage);
+    const cumulativeDueAmounts = calculateCumulativeDueAmounts(transactionRows);
 
     const totals = calculateTransactionTotals(transactionRows);
     const computedOrderAmount = toNumber(order?.order_amount) || (toNumber(order?.total_order) * toNumber(order?.order_rate));
@@ -138,6 +161,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 
 	        {(pages.length > 0 ? pages : [[]]).map((pageRows, pageIndex) => {
 	          const pageTotals = calculateTransactionTotals(pageRows);
+	          const pageEndDue = getPageEndDue(cumulativeDueAmounts, pageIndex, rowsPerPage);
 	          const isLastPage = pageIndex === pages.length - 1;
 
           return (
@@ -235,7 +259,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                     const receive = toNumber(row.receive);
                     const paymentOrReceive = freight > 0 ? freight : receive;
                     const amount = toNumber(row.amount) || (weight * rate);
-                    const due = toNumber(row.due_amount) || (amount - freight);
+                    const due = cumulativeDueAmounts[pageIndex * rowsPerPage + index] ?? 0;
 
                     return (
                       <tr key={row.id}>
@@ -299,7 +323,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 		                      {pageTotals.freight > 0 ? thousandSeparator(pageTotals.freight) : '-'}
 		                    </td>
 		                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-		                      {thousandSeparator(pageTotals.due)}
+		                      {thousandSeparator(pageEndDue)}
 		                    </td>
 		                  </tr>
 		                ) : null}
@@ -319,7 +343,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                       {totals.freight > 0 ? thousandSeparator(totals.freight) : '-'}
                     </td>
 	                    <td style={{ fontSize: fs }} className="border border-black px-2 py-2 text-right">
-	                      {/* {thousandSeparator(totals.due)} */}
+	                      {thousandSeparator(totals.due)}
 	                    </td>
 	                  </tr>
 	                ) : null}
