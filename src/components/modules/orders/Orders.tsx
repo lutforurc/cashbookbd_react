@@ -995,7 +995,11 @@ const Orders = () => {
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                       Order Type
                     </label>
-                    <OrderTypes onChange={handleOrderChange} className="h-9 w-full" />
+                    <OrderTypes
+                      onChange={handleOrderChange}
+                      value={orderType}
+                      className="h-9 w-full"
+                    />
                   </div>
                   <div>
                     {/* <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
