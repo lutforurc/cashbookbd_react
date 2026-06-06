@@ -489,7 +489,20 @@ const AttendanceEntries = ({ user }: any) => {
                 </button>
               )}
               {row.id && row.approval_status !== 'rejected' && (
-                <button type="button" title="Reject" onClick={() => handleApproval(row, 'rejected')} className={iconButtonClass}>
+                <button
+                  type="button"
+                  title={row.approval_status === 'approved' ? 'Cancel approval' : 'Reject'}
+                  onClick={() =>
+                    handleApproval(
+                      row,
+                      'rejected',
+                      row.approval_status === 'approved'
+                        ? 'Attendance approval cancelled'
+                        : 'Attendance rejected from list',
+                    )
+                  }
+                  className={iconButtonClass}
+                >
                   <FiX />
                 </button>
               )}
