@@ -6,6 +6,7 @@ import {
   API_ATTENDANCE_HOLIDAY_UPDATE_URL,
   API_ATTENDANCE_ENTRY_APPROVE_URL,
   API_ATTENDANCE_ENTRY_BULK_STORE_URL,
+  API_ATTENDANCE_ENTRY_DELETE_URL,
   API_ATTENDANCE_ENTRY_LIST_URL,
   API_ATTENDANCE_ENTRY_REPORT_URL,
   API_ATTENDANCE_ENTRY_STORE_URL,
@@ -206,6 +207,18 @@ export const approveAttendanceEntry = createAsyncThunk<any, any, { rejectValue: 
       return response.data;
     } catch (error: any) {
       return rejectWithValue(rejectMessage(error, 'Failed to update attendance approval'));
+    }
+  },
+);
+
+export const deleteAttendanceEntry = createAsyncThunk<any, any, { rejectValue: string }>(
+  'attendance/deleteAttendanceEntry',
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const response = await httpService.post(`${API_ATTENDANCE_ENTRY_DELETE_URL}/${id}`);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to delete attendance entry'));
     }
   },
 );

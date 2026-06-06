@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FiCheck, FiEdit2, FiRefreshCcw, FiSave, FiSearch, FiUsers, FiX } from 'react-icons/fi';
+import { FiCheck, FiEdit2, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiUsers, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -17,6 +17,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   approveAttendanceEntry,
   bulkSaveAttendanceEntries,
+  deleteAttendanceEntry,
   fetchAttendanceEntries,
   fetchAttendanceShifts,
   saveAttendanceEntry,
@@ -356,6 +357,34 @@ const AttendanceEntries = ({ user }: any) => {
     }
   };
 
+  const handleDelete = async (row: any) => {
+    if (row.__pending) {
+      toast.info('Pending attendance can be removed before save by resetting the list');
+      return;
+    }
+
+    if (!row?.id) {
+      toast.error('Attendance row not found');
+      return;
+    }
+
+    if (row.approval_status === 'approved') {
+      toast.error('Please cancel approval before deleting attendance');
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete attendance for ${row.employee_name || 'this employee'} on ${chartDate(row.attendance_date)}?`);
+    if (!confirmed) return;
+
+    try {
+      const response = await dispatch(deleteAttendanceEntry({ id: row.id })).unwrap();
+      toast.success(response?.message || 'Attendance deleted successfully');
+      loadEntries();
+    } catch (error: any) {
+      toast.error(error || 'Attendance delete failed');
+    }
+  };
+
   const handleBulkApprove = async () => {
     const approvableEntries = displayEntries.filter((row: any) => row?.id && row?.approval_status !== 'approved');
 
@@ -462,6 +491,11 @@ const AttendanceEntries = ({ user }: any) => {
               {row.id && row.approval_status !== 'rejected' && (
                 <button type="button" title="Reject" onClick={() => handleApproval(row, 'rejected')} className={iconButtonClass}>
                   <FiX />
+                </button>
+              )}
+              {row.id && row.approval_status === 'rejected' && (
+                <button type="button" title="Delete attendance" onClick={() => handleDelete(row)} className={iconButtonClass}>
+                  <FiTrash2 />
                 </button>
               )}
             </>

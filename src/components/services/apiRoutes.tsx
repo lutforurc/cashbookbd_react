@@ -584,6 +584,7 @@ export const API_ATTENDANCE_ENTRY_STORE_URL = `${API_BASE_URL}/hrms/attendance/e
 export const API_ATTENDANCE_ENTRY_BULK_STORE_URL = `${API_BASE_URL}/hrms/attendance/entries/bulk-store`;
 export const API_ATTENDANCE_ENTRY_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/entries/update`;
 export const API_ATTENDANCE_ENTRY_APPROVE_URL = `${API_BASE_URL}/hrms/attendance/entries/approve`;
+export const API_ATTENDANCE_ENTRY_DELETE_URL = `${API_BASE_URL}/hrms/attendance/entries/delete`;
 export const API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL = `${API_BASE_URL}/hrms/attendance/leave-applications`;
 export const API_ATTENDANCE_LEAVE_APPLICATION_STORE_URL = `${API_BASE_URL}/hrms/attendance/leave-applications/store`;
 export const API_ATTENDANCE_LEAVE_APPLICATION_APPROVE_URL = `${API_BASE_URL}/hrms/attendance/leave-applications/approve`;
