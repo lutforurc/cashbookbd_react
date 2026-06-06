@@ -293,15 +293,6 @@ const DateWiseInOut = ({ user }: any) => {
           </button>
         ),
       },
-      !productId
-        ? {
-          key: 'product_name',
-          header: 'Product',
-          headerClass: 'text-left',
-          cellClass: 'text-left',
-          render: (row: DateWiseInOutRow) => row.product_name || '-',
-        }
-        : null,
       {
         key: 'in_qty',
         header: 'In Qty',
@@ -468,7 +459,6 @@ const DateWiseInOut = ({ user }: any) => {
         <DateWiseInOutPrint
           ref={printRef}
           rows={rows}
-          showProductColumn={!productId}
           rowsPerPage={rowsPerPage}
           fontSize={fontSize}
         />
