@@ -73,6 +73,11 @@ const buildTotals = (
   return { monthTotals, grandLeft, grandRight };
 };
 
+const valueColumnWidth = (hasValue: boolean, fontSize: number) => {
+  if (!hasValue) return `${Math.max(18, fontSize * 2.4)}px`;
+  return `${Math.max(44, fontSize * 6.2)}px`;
+};
+
 const GroupReportPrint = React.forwardRef<HTMLDivElement, Props>(
   (
     {
@@ -121,13 +126,22 @@ const GroupReportPrint = React.forwardRef<HTMLDivElement, Props>(
           const sectionTotals = buildTotals(sectionRows, months, isPurchase);
           const isLastSectionPage = pageIndex === pageCount - 1;
           const footerTotals = isLastSectionPage ? sectionTotals : pageTotals;
+          const monthColumnWidths = months.reduce<Record<string, { left: string; right: string }>>((widths, month) => {
+            widths[month] = {
+              left: valueColumnWidth(sectionTotals.monthTotals[month].left > 0, fs),
+              right: valueColumnWidth(sectionTotals.monthTotals[month].right > 0, fs),
+            };
+            return widths;
+          }, {});
+          const lineTotalLeftWidth = valueColumnWidth(sectionTotals.grandLeft > 0, fs);
+          const lineTotalRightWidth = valueColumnWidth(sectionTotals.grandRight > 0, fs);
 
           return (
             <div key={`${section.title}-${pageNumber}`} className="print-page group-report-print-page">
               <PadPrinting />
-              <div className="mb-2">
+              <div className="">
                 <h1 className="text-center text-2xl font-bold">{title}</h1>
-                <div className="mt-1 flex items-center justify-between gap-4 text-xs">
+                <div className="flex items-center justify-between gap-4 text-xs">
                   <div className="text-sm font-semibold">{section.title}</div>
                   <div className="text-right">
                     <span className="font-semibold">Report Date:</span> {startDate || '-'} to {endDate || '-'}
@@ -137,11 +151,22 @@ const GroupReportPrint = React.forwardRef<HTMLDivElement, Props>(
 
               <div className="w-full overflow-hidden">
                 <table className="w-full table-fixed border-collapse">
+                  <colgroup>
+                    <col style={{ width: '180px' }} />
+                    {months.map((month) => (
+                      <React.Fragment key={`${month}-cols`}>
+                        <col style={{ width: monthColumnWidths[month].left }} />
+                        <col style={{ width: monthColumnWidths[month].right }} />
+                      </React.Fragment>
+                    ))}
+                    <col style={{ width: lineTotalLeftWidth }} />
+                    <col style={{ width: lineTotalRightWidth }} />
+                  </colgroup>
                   <thead className="bg-gray-100">
                     <tr>
                       <th
                         rowSpan={2}
-                        style={{ fontSize: fs, width: '180px' }}
+                        style={{ fontSize: fs }}
                         className="border border-gray-900 px-1 py-1 text-left align-middle"
                       >
                         Description

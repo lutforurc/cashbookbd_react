@@ -5,6 +5,8 @@ import { useReactToPrint } from 'react-to-print';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import { FaHouse, FaPrint } from 'react-icons/fa6';
+import { FiCheckSquare } from 'react-icons/fi';
+import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
@@ -204,8 +206,8 @@ const GroupPurchaseSales = () => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [report, setReport] = useState<NormalizedReport>({ months: [], sections: [], html: '' });
   const [loading, setLoading] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(12);
-  const [fontSize, setFontSize] = useState(12);
+  const [rowsPerPage, setRowsPerPage] = useState(14);
+  const [fontSize, setFontSize] = useState(9);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
@@ -268,6 +270,10 @@ const GroupPurchaseSales = () => {
     documentTitle: 'Group Report',
     removeAfterPrint: true,
   });
+
+  const handleActionButtonClick = () => {
+    runReport();
+  };
 
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value, 10);
@@ -336,9 +342,13 @@ const GroupPurchaseSales = () => {
         </div>
 
         <div className="mt-3 grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap sm:justify-end">
-          <button type="button" onClick={runReport} disabled={loading} className="inline-flex h-10 w-full items-center justify-center bg-gray-700 px-6 text-center text-sm font-medium text-white hover:bg-blue-400 focus:bg-blue-400 focus:outline-none disabled:opacity-60 sm:w-auto">
-            {loading ? 'Loading...' : 'OK'}
-          </button>
+          <ButtonLoading
+            onClick={handleActionButtonClick}
+            buttonLoading={loading}
+            label="Apply"
+            icon={<FiCheckSquare />}
+            className="h-10 w-full px-6 sm:w-auto"
+          />
           <InputElement
             id="groupReportRowsPerPage"
             name="groupReportRowsPerPage"
