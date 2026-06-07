@@ -766,7 +766,7 @@ Suggested values:
 ```text
 monthly
 daily
-security_guard
+shifting
 ```
 
 ### 29.2 Required Update In `hrm_employees`
@@ -808,7 +808,7 @@ Example:
 | --- | --- | --- | --- |
 | Monthly Employee | `monthly` | General 08-05 Shift | No |
 | Daily Labour | `daily` | General 08-05 Shift | Yes |
-| Security Guard | `security_guard` | Optional | Depends on roster/policy |
+| Security Guard / Shift Based | `shifting` | Optional | Depends on roster/policy |
 
 ### 29.3 Attendance Policy Table
 
@@ -839,7 +839,7 @@ Example policies:
 | --- | --- | --- |
 | Monthly Staff Policy | monthly | Fixed salary, late/early out deduction, no overtime |
 | Daily Labour Policy | daily | Daily wage, overtime after standard duty |
-| Security Guard Policy | security_guard | Roster based shift, night shift support |
+| Shifting Duty Policy | shifting | Roster based shift, night shift support |
 
 ### 29.4 Monthly Employee Rule
 
