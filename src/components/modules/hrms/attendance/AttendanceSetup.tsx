@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FiCalendar, FiCheck, FiClock, FiEdit2, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -11,7 +11,6 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
-import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   fetchAttendanceShifts,
   fetchHolidays,
@@ -22,6 +21,7 @@ import {
   saveLeaveType,
   saveWeeklyHoliday,
 } from './attendanceSlice';
+import { chartDate, formatDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 
 const tabs = [
   { key: 'shift', label: 'Shift', icon: FiClock },
@@ -141,18 +141,32 @@ const AttendanceSetup = ({ user }: any) => {
   const [leaveTypeForm, setLeaveTypeForm] = useState<any>(initialLeaveType);
 
   const branches = branchDdlData?.protectedData?.data || [];
+  const branchDropdownData = [{ id: '', name: 'All Branch' }, ...branches];
   const shifts = Array.isArray(attendance.shifts) ? attendance.shifts : [];
   const weeklyHolidays = Array.isArray(attendance.weeklyHolidays) ? attendance.weeklyHolidays : [];
   const holidays = Array.isArray(attendance.holidays) ? attendance.holidays : [];
   const leaveTypes = Array.isArray(attendance.leaveTypes) ? attendance.leaveTypes : [];
 
-  useEffect(() => {
-    dispatch(getDdlProtectedBranch());
-    dispatch(fetchAttendanceShifts());
-    dispatch(fetchWeeklyHolidays());
-    dispatch(fetchHolidays());
-    dispatch(fetchLeaveTypes());
-  }, [dispatch]);
+  const fetchTabData = (tabKey: string) => {
+    if (tabKey === 'shift') {
+      dispatch(fetchAttendanceShifts());
+      return;
+    }
+
+    if (tabKey === 'weekly') {
+      dispatch(fetchWeeklyHolidays(weeklyForm.branch_id ? { branch_id: weeklyForm.branch_id } : {}));
+      return;
+    }
+
+    if (tabKey === 'holiday') {
+      dispatch(fetchHolidays(holidayForm.branch_id ? { branch_id: holidayForm.branch_id } : {}));
+      return;
+    }
+
+    if (tabKey === 'leave') {
+      dispatch(fetchLeaveTypes());
+    }
+  };
 
   const handleChange = (setter: any) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -164,12 +178,7 @@ const AttendanceSetup = ({ user }: any) => {
       Object.entries(form).map(([key, value]) => [key, value === '' ? null : value]),
     );
 
-  const refresh = () => {
-    dispatch(fetchAttendanceShifts());
-    dispatch(fetchWeeklyHolidays());
-    dispatch(fetchHolidays());
-    dispatch(fetchLeaveTypes());
-  };
+  const refresh = () => fetchTabData(activeTab);
 
   const saveAndRefresh = async (action: any, data: any, reset: () => void, success: string) => {
     setButtonLoading(true);
@@ -189,11 +198,27 @@ const AttendanceSetup = ({ user }: any) => {
     <div>
       <label className="text-black dark:text-white">Branch</label>
       <BranchDropdown
-        name={name}
-        branchDdl={[{ id: '', name: 'All Branches' }, ...branches]}
-        value={value?.toString() ?? ''}
-        onChange={onChange}
+        defaultValue={value?.toString()}
+        onChange={(e: any) => {
+          const branchValue = e.target.value;
+          const nextValue = branchValue === '' ? '' : Number(branchValue);
+          onChange({
+            target: {
+              name,
+              value: nextValue,
+            },
+          });
+
+          if (activeTab === 'weekly') {
+            dispatch(fetchWeeklyHolidays(nextValue ? { branch_id: nextValue } : {}));
+          }
+
+          if (activeTab === 'holiday') {
+            dispatch(fetchHolidays(nextValue ? { branch_id: nextValue } : {}));
+          }
+        }}
         className="h-9 w-full font-medium text-sm p-1.5"
+        branchDdl={branchDropdownData}
       />
     </div>
   );
@@ -252,7 +277,12 @@ const AttendanceSetup = ({ user }: any) => {
   ];
 
   const holidayColumns = [
-    { key: 'holiday_date', header: 'Date' },
+    { key: 'holiday_date', header: 'Date', 
+      render: (row: any) => {
+        const date = chartDate(row.holiday_date); 
+        return date;
+      }
+     },
     { key: 'holiday_name', header: 'Holiday' },
     { key: 'holiday_type', header: 'Type' },
     { key: 'branch_id', header: 'Branch', render: (row: any) => branches.find((b: any) => String(b.id) === String(row.branch_id))?.name || 'All Branches' },
@@ -295,7 +325,10 @@ const AttendanceSetup = ({ user }: any) => {
           return (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => {
+                setActiveTab(tab.key);
+                fetchTabData(tab.key);
+              }}
               className={`inline-flex h-10 items-center border-b-2 px-3 text-sm ${
                 active
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
