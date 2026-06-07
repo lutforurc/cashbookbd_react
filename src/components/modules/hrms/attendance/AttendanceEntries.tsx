@@ -58,6 +58,12 @@ const statusOptions = [
   { id: 'pending', name: 'Pending' },
 ];
 
+const employmentTypeOptions = [
+  { id: 'monthly', name: 'Monthly Employee' },
+  { id: 'daily', name: 'Daily Labour' },
+  { id: 'shifting', name: 'Shift Based Employee' },
+];
+
 const initialForm = {
   id: '',
   employee_id: '',
@@ -135,6 +141,20 @@ const attendanceOvertimeMinutes = (data: any, shifts: any[]) => {
 const attendanceRowKey = (row: any) => {
   if (row?.id) return `id:${row.id}`;
   return `employee:${row?.employee_id || ''}:date:${String(row?.attendance_date || '').slice(0, 10)}`;
+};
+
+const selectedShift = (shiftId: any, shifts: any[]) =>
+  shifts.find((shift: any) => String(shift.id) === String(shiftId));
+
+const selectedShiftNightFlag = (shiftId: any, shifts: any[]) => {
+  const shift = selectedShift(shiftId, shifts);
+  if (!shift || shift.is_night_shift === undefined || shift.is_night_shift === null) return null;
+  return Number(shift.is_night_shift) ? 1 : 0;
+};
+
+const attendanceShiftFilterParams = (shiftId: any, shifts: any[]) => {
+  const isNightShift = selectedShiftNightFlag(shiftId, shifts);
+  return isNightShift === null ? {} : { is_night_shift: isNightShift };
 };
 
 const AttendanceEntries = ({ user }: any) => {
@@ -219,6 +239,36 @@ const AttendanceEntries = ({ user }: any) => {
     setter((prev: any) => ({ ...prev, [name]: value }));
   };
 
+  const handleShiftChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { value } = e.target;
+    setForm((prev: any) => ({
+      ...prev,
+      shift_id: value,
+      employee_id: '',
+      employee_name: '',
+    }));
+    setEmployeeMeta(null);
+    setRosterMessage('');
+  };
+
+  const handleEmploymentTypeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { value } = e.target;
+    setForm((prev: any) => ({
+      ...prev,
+      employment_type: value,
+      employee_id: '',
+      employee_name: '',
+      attendance_policy_id: '',
+      default_shift_id: '',
+      overtime_eligible: '0',
+      daily_wage: '',
+      ot_rate: '',
+      standard_work_minutes: '',
+    }));
+    setEmployeeMeta(null);
+    setRosterMessage('');
+  };
+
   const applyEmployeeAttendanceDefaults = (employee: any) => {
     const defaultShiftId = employee?.default_shift_id || employee?.attendance_shift_id || employee?.shift_id || '';
     setForm((prev: any) => ({
@@ -287,6 +337,9 @@ const AttendanceEntries = ({ user }: any) => {
   const bulkLoadKey = (data = form) => [
     data.attendance_date || '',
     data.branch_id || '',
+    data.employment_type || '',
+    data.shift_id || '',
+    selectedShiftNightFlag(data.shift_id, shifts) ?? '',
   ].join('|');
 
   const normalizePayload = (data: any) =>
@@ -301,7 +354,11 @@ const AttendanceEntries = ({ user }: any) => {
 
   const loadEntries = (params = filters) => {
     setPendingRows({});
-    dispatch(fetchAttendanceEntries(params));
+    dispatch(fetchAttendanceEntries({
+      ...params,
+      employment_type: params.employment_type || form.employment_type,
+      ...attendanceShiftFilterParams(params.shift_id, shifts),
+    }));
   };
 
   const pendingRowsList = () => Object.values(pendingRows);
@@ -323,6 +380,8 @@ const AttendanceEntries = ({ user }: any) => {
   const loadedListParams = (data = form) => ({
     branch_id: data.branch_id,
     shift_id: data.shift_id,
+    employment_type: data.employment_type,
+    ...attendanceShiftFilterParams(data.shift_id, shifts),
     date_from: data.attendance_date,
     date_to: data.attendance_date,
     in_time: data.in_time,
@@ -426,6 +485,8 @@ const AttendanceEntries = ({ user }: any) => {
       const response = await dispatch(bulkSaveAttendanceEntries(normalizePayload({
         branch_id: form.branch_id,
         shift_id: form.shift_id,
+        employment_type: form.employment_type,
+        ...attendanceShiftFilterParams(form.shift_id, shifts),
         attendance_date: form.attendance_date,
         in_time: form.in_time,
         out_time: form.out_time,
@@ -650,6 +711,13 @@ const AttendanceEntries = ({ user }: any) => {
               placeholder="Search Employee"
               value={form.employee_id ? { value: form.employee_id, label: form.employee_name || `Employee #${form.employee_id}` } : null}
               onSelect={handleEmployeeSelect}
+              searchParams={{
+                branch_id: form.branch_id,
+                shift_id: form.shift_id,
+                employment_type: form.employment_type,
+                attendance_date: form.attendance_date,
+                is_night_shift: selectedShiftNightFlag(form.shift_id, shifts),
+              }}
             />
           </div>
           <div>
@@ -663,7 +731,7 @@ const AttendanceEntries = ({ user }: any) => {
               className="h-9 w-full font-medium text-sm p-1.5"
             />
           </div>
-          <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={form.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleChange(setForm)} className="h-9" />
+          <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={form.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleShiftChange} className="h-9" />
           <InputDatePicker
             id="attendance_date"
             name="attendance_date"
@@ -675,7 +743,7 @@ const AttendanceEntries = ({ user }: any) => {
           />
           <InputElement name="in_time" label="In Time" type="time" value={form.in_time || ''} onChange={handleChange(setForm)} />
           <InputElement name="out_time" label="Out Time" type="time" value={form.out_time || ''} onChange={handleChange(setForm)} />
-          <InputElement name="employment_type" label="Attendance Type" value={form.employment_type || ''} onChange={handleChange(setForm)} disabled />
+          <DropdownCommon id="employment_type" name="employment_type" label="Attendance Type" value={form.employment_type} data={employmentTypeOptions} onChange={handleEmploymentTypeChange} className="h-9" />
           <InputElement name="overtime_minutes" label="Overtime Minutes" type="number" value={overtimeMinutes} onChange={() => {}} disabled />
           <DropdownCommon id="status" name="status" label="Status" value={form.status} data={statusOptions} onChange={handleChange(setForm)} className="h-9" />
           <InputElement name="remarks" label="Remarks" value={form.remarks || ''} onChange={handleChange(setForm)} />

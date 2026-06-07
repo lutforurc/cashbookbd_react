@@ -264,4 +264,4 @@ Recommended implementation order:
 4. Add daily labour overtime calculation
 5. Create security guard shift roster table
 6. Update Manual Attendance screen to auto-load policy/shift/roster
-7. Update monthly attendance summary and salary integration
+7. Update monthly attendance summary and salary integrationattendance-management-update.md

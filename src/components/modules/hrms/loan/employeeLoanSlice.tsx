@@ -15,6 +15,9 @@ export type Coal4Item = {
   name?: string;
   l3_name?: string;
   l2_name?: string;
+  employment_type?: string;
+  shift_id?: string | number;
+  is_night_shift?: string | number;
 };
 
 // Loan Disbursement Types
@@ -112,12 +115,17 @@ const initialState: Coal4State = {
 // ===== Thunk: Employee DDL Search (আগেরটাই) =====
 export const employeeLoan = createAsyncThunk<
   Coal4Item[],
-  { searchName: string },
+  { searchName: string; [key: string]: any },
   { rejectValue: string }
->('employeeLoan/employeeLoan', async ({ searchName }, thunkAPI) => {
+>('employeeLoan/employeeLoan', async ({ searchName, ...filters }, thunkAPI) => {
   try {
     const response = await httpService.get(API_EMPLOYEE_DDL_SEARCH_URL, {
-      params: { searchName },
+      params: {
+        searchName,
+        ...Object.fromEntries(
+          Object.entries(filters).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+        ),
+      },
     });
 
     const raw = response.data;

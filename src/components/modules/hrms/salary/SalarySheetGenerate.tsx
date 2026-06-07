@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import Loader from "../../../../common/Loader";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { salaryGenerate, salaryView } from "./salarySlice";
@@ -50,6 +51,8 @@ interface SalaryRow {
   attendance_late_deduction_days: number;
   attendance_early_out_count: number;
   attendance_early_out_deduction_days: number;
+  overtime_minutes: number;
+  overtime_amount: number;
   month_days: number;
   working_days: number;
 }
@@ -64,7 +67,16 @@ type AttendanceSalarySummary = {
   attendance_late_deduction_days: number;
   attendance_early_out_count: number;
   attendance_early_out_deduction_days: number;
+  overtime_minutes: number;
+  overtime_amount: number;
 };
+
+const employmentTypeOptions = [
+  { id: "", name: "All Type" },
+  { id: "monthly", name: "Monthly Employee" },
+  { id: "daily", name: "Daily Labour" },
+  { id: "shifting", name: "Shift Based Employee" },
+];
 
 const pad = (value: number) => String(value).padStart(2, "0");
 const toDateString = (year: number, monthIndex: number, day: number) => `${year}-${pad(monthIndex + 1)}-${pad(day)}`;
@@ -203,6 +215,8 @@ const buildAttendanceSummaryMapFromMonthlyRows = (rows: any[], monthInfo: NonNul
       attendance_late_deduction_days: toNumber(row.late_deduction_days),
       attendance_early_out_count: toNumber(row.early_out_count),
       attendance_early_out_deduction_days: toNumber(row.early_out_deduction_days),
+      overtime_minutes: toNumber(row.overtime_minutes),
+      overtime_amount: toNumber(row.overtime_amount),
     });
   });
 
@@ -221,6 +235,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   const [employees, setEmployees] = useState<SalaryRow[]>([]);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
+  const [employmentType, setEmploymentType] = useState<string>("");
   const [designationLevel, setDesignationLevel] = useState<any[]>([]);
   const [monthId, setMonthId] = useState<string>("");
   const [monthText, setMonthText] = useState<string>("");
@@ -289,11 +304,13 @@ const SalarySheetGenerate = ({ user }: any) => {
       date_to: monthInfo.date_to,
       approval_status: "",
       status: "",
+      employment_type: employmentType,
       per_page: 1000,
     };
 
     const leaveParams = {
       branch_id: branchId,
+      employment_type: employmentType,
       date_from: monthInfo.date_from,
       date_to: monthInfo.date_to,
       per_page: 1000,
@@ -301,6 +318,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
     const monthlySummaryParams = {
       branch_id: branchId,
+      employment_type: employmentType,
       month: String(monthInfo.monthIndex + 1),
       year: String(monthInfo.year),
     };
@@ -340,6 +358,12 @@ const SalarySheetGenerate = ({ user }: any) => {
         attendance_late_deduction_days: 0,
         attendance_early_out_count: 0,
         attendance_early_out_deduction_days: 0,
+        overtime_minutes: attendanceRows
+          .filter((row: any) => String(row.employee_id || "") === employeeId)
+          .reduce((total: number, row: any) => total + toNumber(row.overtime_minutes), 0),
+        overtime_amount: attendanceRows
+          .filter((row: any) => String(row.employee_id || "") === employeeId)
+          .reduce((total: number, row: any) => total + toNumber(row.overtime_amount), 0),
       });
     });
 
@@ -363,6 +387,7 @@ const SalarySheetGenerate = ({ user }: any) => {
           branch_id: Number(branchId),
           level_ids: designationLevels.map((l: any) => l.value),
           month_id: monthId,
+          employment_type: employmentType,
         })
       ).unwrap();
 
@@ -405,6 +430,8 @@ const SalarySheetGenerate = ({ user }: any) => {
           attendance_late_deduction_days: Number(summary?.attendance_late_deduction_days) || 0,
           attendance_early_out_count: Number(summary?.attendance_early_out_count) || 0,
           attendance_early_out_deduction_days: Number(summary?.attendance_early_out_deduction_days) || 0,
+          overtime_minutes: Number(summary?.overtime_minutes) || 0,
+          overtime_amount: Number(summary?.overtime_amount) || 0,
           month_days: selectedMonthDays,
           working_days: summary?.working_days ?? selectedMonthDays,
         };
@@ -456,7 +483,7 @@ const SalarySheetGenerate = ({ user }: any) => {
     proratedAmount(Number(emp.monthly_others_allowance) || 0, Number(emp.working_days) || 0);
 
   const totalSalary = (emp: SalaryRow) => {
-    return proratedBasicSalary(emp) + proratedOtherAllowance(emp);
+    return proratedBasicSalary(emp) + proratedOtherAllowance(emp) + (Number(emp.overtime_amount) || 0);
   };
 
   const netSalary = (emp: SalaryRow) => {
@@ -475,6 +502,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         acc.basic_salary += proratedBasicSalary(emp);
         acc.others_allowance += proratedOtherAllowance(emp);
         acc.total_salary += totalSalary(emp);
+        acc.overtime_amount += Number(emp.overtime_amount) || 0;
         acc.loan_deduction += Number(emp.loan_balance) || 0; // ✅ total loan ded = sum loan_balance
         acc.attendance_deduction += Number(emp.attendance_deduction_amount) || 0;
         acc.net_deduction += Number(emp.net_deduction) || 0;
@@ -485,6 +513,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         basic_salary: 0,
         others_allowance: 0,
         total_salary: 0,
+        overtime_amount: 0,
         loan_deduction: 0,
         attendance_deduction: 0,
         net_deduction: 0,
@@ -611,6 +640,17 @@ const SalarySheetGenerate = ({ user }: any) => {
       ),
     },
     {
+      key: "overtime_amount",
+      header: "OT",
+      headerClass: "text-right w-28",
+      cellClass: "text-right font-semibold text-cyan-700 dark:text-cyan-300",
+      render: (row: SalaryRow) => (
+        <span title={`OT Min: ${row.overtime_minutes || 0}`}>
+          {thousandSeparator(Number(row.overtime_amount || 0))}
+        </span>
+      ),
+    },
+    {
       key: "total",
       header: "Total",
       headerClass: "text-right w-30",
@@ -702,6 +742,8 @@ const SalarySheetGenerate = ({ user }: any) => {
         attendance_late_deduction_days: Number(e.attendance_late_deduction_days) || 0,
         attendance_early_out_count: Number(e.attendance_early_out_count) || 0,
         attendance_early_out_deduction_days: Number(e.attendance_early_out_deduction_days) || 0,
+        overtime_minutes: Number(e.overtime_minutes) || 0,
+        overtime_amount: Number(e.overtime_amount) || 0,
         net_deduction: Number(e.net_deduction) || 0,
         month_days: Number(e.month_days || selectedMonthDays) || 0,
         working_days: Number(e.working_days) || 0,
@@ -819,6 +861,21 @@ const SalarySheetGenerate = ({ user }: any) => {
           </div>
 
           <div className="mr-2">
+            <DropdownCommon
+              id="employment_type"
+              name="employment_type"
+              value={employmentType}
+              data={employmentTypeOptions}
+              onChange={(e) => {
+                setEmploymentType(e.target.value);
+                setEmployees([]);
+                setSearched(false);
+              }}
+              className="h-[2.3rem] min-w-40 bg-transparent"
+            />
+          </div>
+
+          <div className="mr-2">
             <MonthDropdown
               id="month_id"
               name="month_id"
@@ -898,6 +955,10 @@ const SalarySheetGenerate = ({ user }: any) => {
           <div>
             Total Salary:{" "}
             <span className="font-semibold">{thousandSeparator(grandTotals.total_salary)}</span>
+          </div>
+          <div>
+            OT:{" "}
+            <span className="font-semibold">{thousandSeparator(grandTotals.overtime_amount)}</span>
           </div>
           <div>
             Loan Deduction:{" "}

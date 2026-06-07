@@ -36,12 +36,15 @@ interface SalaryRow {
   others_allowance: number;
   loan_deduction: number;
   net_deduction: number;
+  overtime_minutes?: number;
+  overtime_amount?: number;
 }
 
 interface SalaryViewRequest {
   branch_id: number;
   level_ids?: number[]
   month_id: string; // "YYYY-MM"
+  employment_type?: string;
 }
 
 interface SalaryState {

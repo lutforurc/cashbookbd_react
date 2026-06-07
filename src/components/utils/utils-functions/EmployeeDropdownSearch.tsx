@@ -13,6 +13,9 @@ interface OptionType {
   label_3?: string;
   label_4?: string;
   label_5?: string;
+  employment_type?: string;
+  shift_id?: string | number;
+  is_night_shift?: string | number;
 }
 
 interface DropdownProps {
@@ -25,6 +28,7 @@ interface DropdownProps {
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
   placeholder?: string;
+  searchParams?: Record<string, any>;
 }
 
 const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
@@ -37,9 +41,11 @@ const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
   onKeyDown,
   className,
   placeholder,
+  searchParams = {},
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
   const dispatch = useDispatch();
+  const searchParamsKey = React.useMemo(() => JSON.stringify(searchParams || {}), [searchParams]);
 
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
@@ -51,10 +57,15 @@ const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
   ) => {
     if (inputValue.length >= 3) {
       try {
-        const response: any = await dispatch(employeeLoan({ searchName: inputValue }));
+        const response: any = await dispatch(employeeLoan({ searchName: inputValue, ...searchParams }));
 
         if (Array.isArray(response.payload)) {
-          const formattedOptions: OptionType[] = response.payload.map(
+          const expectedEmploymentType = searchParams?.employment_type ? String(searchParams.employment_type) : '';
+          const filteredPayload = expectedEmploymentType
+            ? response.payload.filter((item: any) => !item?.employment_type || String(item.employment_type) === expectedEmploymentType)
+            : response.payload;
+
+          const formattedOptions: OptionType[] = filteredPayload.map(
             (item: any) => ({
               value: item.value,
               label: item.label,
@@ -62,6 +73,9 @@ const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
               label_3: item.label_3,
               label_4: item.label_4,
               label_5: item.label_5,
+              employment_type: item.employment_type,
+              shift_id: item.shift_id,
+              is_night_shift: item.is_night_shift,
             }),
           );
           callback(formattedOptions);
@@ -135,6 +149,7 @@ const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
   return (
     <div className="dark:bg-black focus:border-blue-500">
       <AsyncSelect<OptionType>
+        key={searchParamsKey}
         inputId={id}
         name={name}
         className={`cash-react-select-container w-full dark:bg-black focus:border-blue-500 ${className}`}
