@@ -18,6 +18,12 @@ import {
   API_ATTENDANCE_LEAVE_TYPE_STORE_URL,
   API_ATTENDANCE_LEAVE_TYPE_UPDATE_URL,
   API_ATTENDANCE_MONTHLY_SUMMARY_URL,
+  API_ATTENDANCE_POLICY_LIST_URL,
+  API_ATTENDANCE_POLICY_STORE_URL,
+  API_ATTENDANCE_POLICY_UPDATE_URL,
+  API_ATTENDANCE_SHIFT_ROSTER_LIST_URL,
+  API_ATTENDANCE_SHIFT_ROSTER_STORE_URL,
+  API_ATTENDANCE_SHIFT_ROSTER_UPDATE_URL,
   API_ATTENDANCE_SHIFT_LIST_URL,
   API_ATTENDANCE_SHIFT_STORE_URL,
   API_ATTENDANCE_SHIFT_UPDATE_URL,
@@ -59,6 +65,56 @@ export const saveAttendanceShift = createAsyncThunk<any, any, { rejectValue: str
       return response.data;
     } catch (error: any) {
       return rejectWithValue(rejectMessage(error, 'Failed to save shift'));
+    }
+  },
+);
+
+export const fetchAttendancePolicies = createAsyncThunk<any, any | undefined, { rejectValue: string }>(
+  'attendance/fetchAttendancePolicies',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await httpService.get(API_ATTENDANCE_POLICY_LIST_URL, { params });
+      return extractData(response);
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to fetch attendance policies'));
+    }
+  },
+);
+
+export const saveAttendancePolicy = createAsyncThunk<any, any, { rejectValue: string }>(
+  'attendance/saveAttendancePolicy',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const url = payload?.id ? `${API_ATTENDANCE_POLICY_UPDATE_URL}/${payload.id}` : API_ATTENDANCE_POLICY_STORE_URL;
+      const response = await httpService.post(url, payload);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to save attendance policy'));
+    }
+  },
+);
+
+export const fetchShiftRosters = createAsyncThunk<any, any | undefined, { rejectValue: string }>(
+  'attendance/fetchShiftRosters',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await httpService.get(API_ATTENDANCE_SHIFT_ROSTER_LIST_URL, { params });
+      return extractData(response);
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to fetch shift rosters'));
+    }
+  },
+);
+
+export const saveShiftRoster = createAsyncThunk<any, any, { rejectValue: string }>(
+  'attendance/saveShiftRoster',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const url = payload?.id ? `${API_ATTENDANCE_SHIFT_ROSTER_UPDATE_URL}/${payload.id}` : API_ATTENDANCE_SHIFT_ROSTER_STORE_URL;
+      const response = await httpService.post(url, payload);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to save shift roster'));
     }
   },
 );
@@ -261,6 +317,8 @@ export const approveLeaveApplication = createAsyncThunk<any, any, { rejectValue:
 
 interface AttendanceState {
   shifts: any[];
+  policies: any[];
+  rosters: any[];
   weeklyHolidays: any[];
   holidays: any[];
   leaveTypes: any[];
@@ -274,6 +332,8 @@ interface AttendanceState {
 
 const initialState: AttendanceState = {
   shifts: [],
+  policies: [],
+  rosters: [],
   weeklyHolidays: [],
   holidays: [],
   leaveTypes: [],
@@ -306,6 +366,18 @@ const attendanceSlice = createSlice({
         state.shifts = action.payload;
       })
       .addCase(fetchAttendanceShifts.rejected, rejected)
+      .addCase(fetchAttendancePolicies.pending, pending)
+      .addCase(fetchAttendancePolicies.fulfilled, (state, action) => {
+        state.loading = false;
+        state.policies = action.payload;
+      })
+      .addCase(fetchAttendancePolicies.rejected, rejected)
+      .addCase(fetchShiftRosters.pending, pending)
+      .addCase(fetchShiftRosters.fulfilled, (state, action) => {
+        state.loading = false;
+        state.rosters = action.payload;
+      })
+      .addCase(fetchShiftRosters.rejected, rejected)
       .addCase(fetchWeeklyHolidays.pending, pending)
       .addCase(fetchWeeklyHolidays.fulfilled, (state, action) => {
         state.loading = false;

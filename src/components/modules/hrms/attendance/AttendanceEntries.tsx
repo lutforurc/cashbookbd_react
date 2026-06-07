@@ -19,9 +19,11 @@ import {
   bulkSaveAttendanceEntries,
   deleteAttendanceEntry,
   fetchAttendanceEntries,
+  fetchShiftRosters,
   fetchAttendanceShifts,
   saveAttendanceEntry,
 } from './attendanceSlice';
+import { fetchEmployeeById } from '../employee/employeeSlice';
 import { chartDate, formatDateUsdToBd, formatLongDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 
 const today = new Date().toISOString().slice(0, 10);
@@ -67,6 +69,13 @@ const initialForm = {
   out_time: '',
   status: 'present',
   remarks: '',
+  employment_type: 'monthly',
+  attendance_policy_id: '',
+  default_shift_id: '',
+  overtime_eligible: '0',
+  daily_wage: '',
+  ot_rate: '',
+  standard_work_minutes: '',
 };
 
 const timeOnly = (value: any) => {
@@ -100,6 +109,29 @@ const isLateAttendance = (row: any) => {
 
 const displayStatus = (row: any) => (isLateAttendance(row) ? 'late' : row?.status);
 
+const shiftWorkMinutes = (shift: any) => {
+  const startMinutes = parseTimeMinutes(shift?.start_time || shift?.shift_start_time);
+  const endMinutes = parseTimeMinutes(shift?.end_time || shift?.shift_end_time);
+  if (startMinutes === null || endMinutes === null) return 0;
+  return endMinutes >= startMinutes ? endMinutes - startMinutes : (24 * 60 - startMinutes) + endMinutes;
+};
+
+const workedMinutes = (data: any) => {
+  const inMinutes = parseTimeMinutes(data?.in_time);
+  const outMinutes = parseTimeMinutes(data?.out_time);
+  if (inMinutes === null || outMinutes === null) return 0;
+  return outMinutes >= inMinutes ? outMinutes - inMinutes : (24 * 60 - inMinutes) + outMinutes;
+};
+
+const attendanceOvertimeMinutes = (data: any, shifts: any[]) => {
+  if (data?.employment_type === 'monthly' && !Number(data?.overtime_eligible || 0)) return 0;
+  const shift = shifts.find((item: any) => String(item.id) === String(data?.shift_id || data?.default_shift_id));
+  const standardMinutes = Number(data?.standard_work_minutes || shiftWorkMinutes(shift) || 0);
+  const minutes = workedMinutes(data);
+  if (!minutes || !standardMinutes) return 0;
+  return Math.max(0, minutes - standardMinutes);
+};
+
 const attendanceRowKey = (row: any) => {
   if (row?.id) return `id:${row.id}`;
   return `employee:${row?.employee_id || ''}:date:${String(row?.attendance_date || '').slice(0, 10)}`;
@@ -122,6 +154,8 @@ const AttendanceEntries = ({ user }: any) => {
   const [bulkApproveLoading, setBulkApproveLoading] = useState(false);
   const [bulkLoadedKey, setBulkLoadedKey] = useState('');
   const [pendingRows, setPendingRows] = useState<Record<string, any>>({});
+  const [employeeMeta, setEmployeeMeta] = useState<any>(null);
+  const [rosterMessage, setRosterMessage] = useState('');
   const manualAttendanceEdit = (location.state as any)?.manualAttendanceEdit;
   const displayEntries = entries.map((row: any) => {
     const pendingRow = pendingRows[attendanceRowKey(row)];
@@ -175,9 +209,79 @@ const AttendanceEntries = ({ user }: any) => {
     });
   }, [dispatch, manualAttendanceEdit]);
 
+  useEffect(() => {
+    if (!form.employee_id || !form.attendance_date || employeeMeta?.employment_type !== 'shifting') return;
+    loadRosterShift(form.employee_id, form.attendance_date, employeeMeta);
+  }, [form.employee_id, form.attendance_date, employeeMeta?.employment_type]);
+
   const handleChange = (setter: any) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setter((prev: any) => ({ ...prev, [name]: value }));
+  };
+
+  const applyEmployeeAttendanceDefaults = (employee: any) => {
+    const defaultShiftId = employee?.default_shift_id || employee?.attendance_shift_id || employee?.shift_id || '';
+    setForm((prev: any) => ({
+      ...prev,
+      employment_type: employee?.employment_type || 'monthly',
+      attendance_policy_id: employee?.attendance_policy_id || '',
+      default_shift_id: defaultShiftId,
+      shift_id: prev.shift_id || defaultShiftId,
+      overtime_eligible: String(employee?.overtime_eligible ?? 0),
+      daily_wage: employee?.daily_wage || '',
+      ot_rate: employee?.ot_rate || '',
+      standard_work_minutes: employee?.standard_work_minutes || '',
+    }));
+  };
+
+  const loadRosterShift = async (employeeId: any, attendanceDate: any, employee: any = employeeMeta) => {
+    if (!employeeId || !attendanceDate) return;
+    if ((employee?.employment_type || '') !== 'shifting') {
+      setRosterMessage('');
+      return;
+    }
+
+    try {
+      const rosters = await dispatch(fetchShiftRosters({ employee_id: employeeId, duty_date: attendanceDate })).unwrap();
+      const roster = Array.isArray(rosters) ? rosters[0] : null;
+      if (roster?.shift_id) {
+        setForm((prev: any) => ({
+          ...prev,
+          shift_id: roster.shift_id,
+          branch_id: roster.branch_id || prev.branch_id,
+        }));
+        setRosterMessage(`Roster shift loaded${roster.shift_name ? `: ${roster.shift_name}` : ''}`);
+        return;
+      }
+
+      setRosterMessage('No roster found for this shifting employee on selected date');
+    } catch (error: any) {
+      setRosterMessage(error || 'Roster lookup failed');
+    }
+  };
+
+  const handleEmployeeSelect = async (option: any) => {
+    const employeeId = option?.value || '';
+    setForm((prev: any) => ({
+      ...prev,
+      employee_id: employeeId,
+      employee_name: option?.label || '',
+    }));
+    setRosterMessage('');
+
+    if (!employeeId) {
+      setEmployeeMeta(null);
+      return;
+    }
+
+    try {
+      const employee = await dispatch(fetchEmployeeById(Number(employeeId))).unwrap();
+      setEmployeeMeta(employee);
+      applyEmployeeAttendanceDefaults(employee);
+      await loadRosterShift(employeeId, form.attendance_date, employee);
+    } catch {
+      setEmployeeMeta(null);
+    }
   };
 
   const bulkLoadKey = (data = form) => [
@@ -187,8 +291,11 @@ const AttendanceEntries = ({ user }: any) => {
 
   const normalizePayload = (data: any) =>
     Object.fromEntries(
-      Object.entries(data)
-        .filter(([key]) => !['employee_name', 'approval_status', '__pending', 'shift_name'].includes(key))
+      Object.entries({
+        ...data,
+        overtime_minutes: attendanceOvertimeMinutes(data, shifts),
+      })
+        .filter(([key]) => !['employee_name', 'approval_status', '__pending', 'shift_name', 'default_shift_id'].includes(key))
         .map(([key, value]) => [key, value === '' ? null : value]),
     );
 
@@ -229,6 +336,8 @@ const AttendanceEntries = ({ user }: any) => {
     setForm({ ...initialForm, branch_id: userBranchId });
     setBulkLoadedKey('');
     setPendingRows({});
+    setEmployeeMeta(null);
+    setRosterMessage('');
   };
 
   const handleBulkLoad = () => {
@@ -252,6 +361,10 @@ const AttendanceEntries = ({ user }: any) => {
     }
     if (!form.employee_id) {
       toast.error('Single entry করতে employee select করুন; সব employee হলে Bulk Entry ব্যবহার করুন');
+      return;
+    }
+    if (form.employment_type === 'shifting' && !form.shift_id) {
+      toast.error('Shift based employee attendance save করতে roster/default shift লাগবে');
       return;
     }
     setButtonLoading(true);
@@ -442,9 +555,11 @@ const AttendanceEntries = ({ user }: any) => {
     },
     { key: 'attendance_date', header: 'Date', render: (row: any) => chartDate(row.attendance_date) },
     { key: 'employee_name', header: 'Employee' },
+    { key: 'employment_type', header: 'Type', render: (row: any) => row.employment_type || '-' },
     { key: 'shift_name', header: 'Shift', render: (row: any) => row.shift_name || '-' },
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) || '-' },
     { key: 'out_time', header: 'Out', render: (row: any) => timeOnly(row.out_time) || '-' },
+    { key: 'overtime_minutes', header: 'OT Min', render: (row: any) => row.overtime_minutes || attendanceOvertimeMinutes(row, shifts) || 0 },
     { key: 'status', header: 'Status', render: (row: any) => displayStatus(row) },
     { key: 'approval_status', header: 'Approval', render: (row: any) => (row.__pending ? 'pending save' : row.approval_status) },
     {
@@ -518,6 +633,8 @@ const AttendanceEntries = ({ user }: any) => {
     },
   ];
 
+  const overtimeMinutes = attendanceOvertimeMinutes(form, shifts);
+
   return (
     <div>
       <HelmetTitle title="Manual Attendance" />
@@ -532,13 +649,7 @@ const AttendanceEntries = ({ user }: any) => {
               name="employee_id"
               placeholder="Search Employee"
               value={form.employee_id ? { value: form.employee_id, label: form.employee_name || `Employee #${form.employee_id}` } : null}
-              onSelect={(option: any) =>
-                setForm((prev: any) => ({
-                  ...prev,
-                  employee_id: option?.value || '',
-                  employee_name: option?.label || '',
-                }))
-              }
+              onSelect={handleEmployeeSelect}
             />
           </div>
           <div>
@@ -564,9 +675,16 @@ const AttendanceEntries = ({ user }: any) => {
           />
           <InputElement name="in_time" label="In Time" type="time" value={form.in_time || ''} onChange={handleChange(setForm)} />
           <InputElement name="out_time" label="Out Time" type="time" value={form.out_time || ''} onChange={handleChange(setForm)} />
+          <InputElement name="employment_type" label="Attendance Type" value={form.employment_type || ''} onChange={handleChange(setForm)} disabled />
+          <InputElement name="overtime_minutes" label="Overtime Minutes" type="number" value={overtimeMinutes} onChange={() => {}} disabled />
           <DropdownCommon id="status" name="status" label="Status" value={form.status} data={statusOptions} onChange={handleChange(setForm)} className="h-9" />
           <InputElement name="remarks" label="Remarks" value={form.remarks || ''} onChange={handleChange(setForm)} />
         </div>
+        {rosterMessage && (
+          <div className={`mt-2 text-sm ${rosterMessage.startsWith('Roster shift loaded') ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {rosterMessage}
+          </div>
+        )}
         <div className="mt-3 flex gap-2">
           <ButtonLoading
             type="submit"

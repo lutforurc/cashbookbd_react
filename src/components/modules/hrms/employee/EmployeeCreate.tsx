@@ -12,8 +12,20 @@ import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchEmployeeSettings, storeEmployee } from './employeeSlice';
+import { fetchAttendancePolicies, fetchAttendanceShifts } from '../attendance/attendanceSlice';
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+
+const employmentTypes = [
+  { id: 'monthly', name: 'Monthly Employee' },
+  { id: 'daily', name: 'Daily Labour' },
+  { id: 'shifting', name: 'Shift Based Employee' },
+];
+
+const yesNo = [
+  { id: 1, name: 'Yes' },
+  { id: 0, name: 'No' },
+];
 
 class EmployeeFormModel {
   static create() {
@@ -38,6 +50,13 @@ class EmployeeFormModel {
       loan_deduction: '',
       others_deduction: '',
       salary_payable: '',
+      employment_type: 'monthly',
+      attendance_policy_id: '',
+      default_shift_id: '',
+      overtime_eligible: '0',
+      daily_wage: '',
+      ot_rate: '',
+      standard_work_minutes: '480',
       
       employee_serial: '',
     };
@@ -47,6 +66,7 @@ class EmployeeFormModel {
 const EmployeeCreate = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const employeeSettings = useSelector((state: any) => state.employees);
+  const attendance = useSelector((state: any) => state.attendance);
   const dispatch = useDispatch<any>();
 
   // Blade-like: dob + joining date
@@ -61,11 +81,15 @@ const EmployeeCreate = ({ user }: any) => {
   const [saveLoading, setSaveLoading] = useState(false);
 
   const [formData, setFormData] = useState<any>(EmployeeFormModel.create());
+  const shifts = Array.isArray(attendance?.shifts) ? attendance.shifts : [];
+  const policies = Array.isArray(attendance?.policies) ? attendance.policies : [];
 
   /* ================= INIT ================= */
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(fetchEmployeeSettings());
+    dispatch(fetchAttendanceShifts());
+    dispatch(fetchAttendancePolicies());
 
     const bId = user?.branch_id ?? user?.user?.branch_id ?? null;
 
@@ -180,6 +204,14 @@ const EmployeeCreate = ({ user }: any) => {
       loan_deduction: formData.loan_deduction || '0',
       others_deduction: formData.others_deduction || '0',
       salary_payable: formData.salary_payable || '1',
+      employment_type: formData.employment_type || 'monthly',
+      attendance_policy_id: formData.attendance_policy_id || null,
+      default_shift_id: formData.default_shift_id || null,
+      attendance_shift_id: formData.default_shift_id || null,
+      overtime_eligible: Number(formData.overtime_eligible || 0),
+      daily_wage: formData.daily_wage || '0',
+      ot_rate: formData.ot_rate || '0',
+      standard_work_minutes: formData.standard_work_minutes || '480',
       employee_serial: formData.employee_serial || '0',
     };
 
@@ -384,6 +416,66 @@ const EmployeeCreate = ({ user }: any) => {
             className="h-[2.1rem] bg-transparent"
             defaultValue={formData?.salary_payable?.toString() ?? ''}
             data={isPayable}
+          />
+          <DropdownCommon
+            id="employment_type"
+            name="employment_type"
+            label="Attendance Type"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            value={formData.employment_type}
+            data={employmentTypes}
+          />
+          <DropdownCommon
+            id="attendance_policy_id"
+            name="attendance_policy_id"
+            label="Attendance Policy"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            value={formData.attendance_policy_id?.toString() ?? ''}
+            data={[{ id: '', name: 'Select Policy' }, ...policies]}
+          />
+          <DropdownCommon
+            id="default_shift_id"
+            name="default_shift_id"
+            label="Default Shift"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            value={formData.default_shift_id?.toString() ?? ''}
+            data={[{ id: '', name: 'Select Shift' }, ...shifts]}
+          />
+          <DropdownCommon
+            id="overtime_eligible"
+            name="overtime_eligible"
+            label="Overtime Eligible"
+            onChange={handleOnSelectChange}
+            className="h-[2.1rem] bg-transparent"
+            value={formData.overtime_eligible?.toString() ?? '0'}
+            data={yesNo}
+          />
+          <InputElement
+            id="daily_wage"
+            label="Daily Wage"
+            name="daily_wage"
+            type="number"
+            value={formData.daily_wage}
+            onChange={handleChange}
+          />
+          <InputElement
+            id="ot_rate"
+            label="OT Rate"
+            name="ot_rate"
+            type="number"
+            value={formData.ot_rate}
+            onChange={handleChange}
+          />
+          <InputElement
+            id="standard_work_minutes"
+            label="Standard Work Minutes"
+            name="standard_work_minutes"
+            type="number"
+            value={formData.standard_work_minutes}
+            onChange={handleChange}
           />
 
 

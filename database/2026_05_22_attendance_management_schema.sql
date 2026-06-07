@@ -41,12 +41,17 @@ CREATE TABLE IF NOT EXISTS `hrm_attendance_policies` (
     `branch_id` INT UNSIGNED NULL DEFAULT NULL,
     `branch_type_id` INT UNSIGNED NULL DEFAULT NULL,
     `name` VARCHAR(150) NOT NULL,
+    `employment_type` ENUM('monthly','daily','shifting') NOT NULL DEFAULT 'monthly',
     `shift_id` INT UNSIGNED NULL DEFAULT NULL,
+    `default_shift_id` INT UNSIGNED NULL DEFAULT NULL,
+    `standard_work_minutes` SMALLINT UNSIGNED NOT NULL DEFAULT 480,
+    `minimum_work_minutes` SMALLINT UNSIGNED NOT NULL DEFAULT 240,
     `grace_minutes` SMALLINT UNSIGNED NOT NULL DEFAULT 15,
     `late_deduction_after_count` SMALLINT UNSIGNED NOT NULL DEFAULT 3,
     `early_out_minutes` SMALLINT UNSIGNED NOT NULL DEFAULT 60,
     `early_out_deduction_after_count` SMALLINT UNSIGNED NOT NULL DEFAULT 3,
     `half_day_minutes` SMALLINT UNSIGNED NOT NULL DEFAULT 240,
+    `overtime_after_minutes` SMALLINT UNSIGNED NOT NULL DEFAULT 480,
     `absent_deduction_basis` ENUM('gross_salary_30','basic_salary_30','working_days') NOT NULL DEFAULT 'gross_salary_30',
     `sandwich_leave_enabled` TINYINT(1) NOT NULL DEFAULT 1,
     `overtime_enabled` TINYINT(1) NOT NULL DEFAULT 0,
@@ -64,7 +69,30 @@ CREATE TABLE IF NOT EXISTS `hrm_attendance_policies` (
     KEY `idx_hrm_attendance_policies_branch` (`branch_id`),
     KEY `idx_hrm_attendance_policies_branch_type` (`branch_type_id`),
     KEY `idx_hrm_attendance_policies_shift` (`shift_id`),
+    KEY `idx_hrm_attendance_policies_default_shift` (`default_shift_id`),
+    KEY `idx_hrm_attendance_policies_type` (`employment_type`),
     KEY `idx_hrm_attendance_policies_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `hrm_employee_shift_rosters` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `company_id` INT UNSIGNED NOT NULL,
+    `employee_id` INT UNSIGNED NOT NULL,
+    `branch_id` INT UNSIGNED NULL DEFAULT NULL,
+    `shift_id` INT UNSIGNED NOT NULL,
+    `duty_date` DATE NOT NULL,
+    `status` ENUM('scheduled','completed','cancelled') NOT NULL DEFAULT 'scheduled',
+    `remarks` VARCHAR(255) NULL DEFAULT NULL,
+    `created_by` INT UNSIGNED NULL DEFAULT NULL,
+    `updated_by` INT UNSIGNED NULL DEFAULT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_hrm_shift_roster_employee_date` (`employee_id`, `duty_date`),
+    KEY `idx_hrm_shift_rosters_company_date` (`company_id`, `duty_date`),
+    KEY `idx_hrm_shift_rosters_branch_date` (`branch_id`, `duty_date`),
+    KEY `idx_hrm_shift_rosters_shift` (`shift_id`),
+    KEY `idx_hrm_shift_rosters_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `hrm_weekly_holiday_policies` (
@@ -226,6 +254,8 @@ CREATE TABLE IF NOT EXISTS `hrm_attendance_entries` (
     `in_time` DATETIME NULL DEFAULT NULL,
     `out_time` DATETIME NULL DEFAULT NULL,
     `work_minutes` INT UNSIGNED NOT NULL DEFAULT 0,
+    `overtime_minutes` INT UNSIGNED NOT NULL DEFAULT 0,
+    `overtime_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     `attendance_source` ENUM('manual','biometric','mobile','web','gps') NOT NULL DEFAULT 'manual',
     `device_id` INT UNSIGNED NULL DEFAULT NULL,
     `device_employee_code` VARCHAR(80) NULL DEFAULT NULL,
@@ -302,6 +332,8 @@ CREATE TABLE IF NOT EXISTS `hrm_attendance_monthly_summaries` (
     `late_deduction_days` DECIMAL(6,2) NOT NULL DEFAULT 0.00,
     `early_out_count` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     `early_out_deduction_days` DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+    `overtime_minutes` INT UNSIGNED NOT NULL DEFAULT 0,
+    `overtime_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     `payable_days` DECIMAL(6,2) NOT NULL DEFAULT 0.00,
     `deduction_days` DECIMAL(6,2) NOT NULL DEFAULT 0.00,
     `gross_salary` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
@@ -407,10 +439,18 @@ CREATE TABLE IF NOT EXISTS `hrm_attendance_audit_logs` (
 -- Run this update section once. If any column/index already exists, skip that specific ALTER statement.
 
 ALTER TABLE `hrm_employees`
+    ADD COLUMN `employment_type` ENUM('monthly','daily','shifting') NOT NULL DEFAULT 'monthly',
     ADD COLUMN `attendance_shift_id` INT UNSIGNED NULL DEFAULT NULL,
+    ADD COLUMN `default_shift_id` INT UNSIGNED NULL DEFAULT NULL,
     ADD COLUMN `device_employee_code` VARCHAR(80) NULL DEFAULT NULL,
     ADD COLUMN `attendance_policy_id` INT UNSIGNED NULL DEFAULT NULL,
+    ADD COLUMN `overtime_eligible` TINYINT(1) NOT NULL DEFAULT 0,
+    ADD COLUMN `daily_wage` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    ADD COLUMN `ot_rate` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    ADD COLUMN `standard_work_minutes` SMALLINT UNSIGNED NULL DEFAULT NULL,
+    ADD INDEX `idx_hrm_employees_employment_type` (`employment_type`),
     ADD INDEX `idx_hrm_employees_attendance_shift_id` (`attendance_shift_id`),
+    ADD INDEX `idx_hrm_employees_default_shift_id` (`default_shift_id`),
     ADD INDEX `idx_hrm_employees_attendance_policy_id` (`attendance_policy_id`),
     ADD INDEX `idx_hrm_employees_device_employee_code` (`device_employee_code`);
 

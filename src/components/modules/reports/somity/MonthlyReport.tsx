@@ -117,7 +117,7 @@ const MonthlyReport = (user: any) => {
   return (
     <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[#18212e] dark:text-white">
       <HelmetTitle title="Monthly Report" />
-      <div className="mb-3 grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[minmax(320px,1fr)_minmax(220px,0.45fr)_minmax(220px,0.45fr)_auto]">
+      <div className="mb-3 grid grid-cols-1 items-end gap-2 md:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_minmax(150px,170px)_minmax(150px,170px)_minmax(390px,auto)]">
         <div>
           <label className={labelClass}>Select Project</label>
           <select value={branchId} onChange={(event) => setBranchId(event.target.value)} className={controlClass}>
@@ -148,9 +148,9 @@ const MonthlyReport = (user: any) => {
           />
         </div>
 
-        <div className="grid min-w-max grid-cols-[auto_auto_72px_72px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
-          <ButtonLoading onClick={handleLoad} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="h-9 px-5" />
-          <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-9 px-4" />
+        <div className="grid w-full grid-cols-2 items-end gap-2 md:col-span-2 lg:col-span-1 lg:grid-cols-[minmax(78px,1fr)_minmax(78px,1fr)_64px_64px_minmax(78px,1fr)]">
+          <ButtonLoading onClick={handleLoad} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="h-9 w-full px-2" />
+          <ButtonLoading onClick={handleReset} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-9 w-full px-2" />
           <div>
             <label htmlFor="monthly-report-rows" className={labelClass}>Rows</label>
             <InputElement
@@ -175,7 +175,7 @@ const MonthlyReport = (user: any) => {
               className="h-9 !w-full rounded-none text-center text-sm font-bold"
             />
           </div>
-          <PrintButton onClick={handlePrint} label="Print" className="h-9 px-6" disabled={rows.length === 0} />
+          <PrintButton onClick={handlePrint} label="Print" className="h-9 w-full px-2" disabled={rows.length === 0} />
         </div>
       </div>
 

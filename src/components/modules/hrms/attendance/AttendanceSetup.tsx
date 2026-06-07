@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiCalendar, FiCheck, FiClock, FiEdit2, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { FiCalendar, FiCheck, FiClock, FiEdit2, FiRefreshCcw, FiSave, FiShield, FiUserCheck } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -7,16 +7,21 @@ import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
 import {
   fetchAttendanceShifts,
+  fetchAttendancePolicies,
+  fetchShiftRosters,
   fetchHolidays,
   fetchLeaveTypes,
   fetchWeeklyHolidays,
+  saveAttendancePolicy,
   saveAttendanceShift,
+  saveShiftRoster,
   saveHoliday,
   saveLeaveType,
   saveWeeklyHoliday,
@@ -25,6 +30,8 @@ import { chartDate, formatDateUsdToBd } from '../../../utils/utils-functions/for
 
 const tabs = [
   { key: 'shift', label: 'Shift', icon: FiClock },
+  { key: 'policy', label: 'Policy', icon: FiShield },
+  { key: 'roster', label: 'Roster', icon: FiUserCheck },
   { key: 'weekly', label: 'Weekly Holiday', icon: FiCheck },
   { key: 'holiday', label: 'Holiday', icon: FiCalendar },
   { key: 'leave', label: 'Leave Type', icon: FiCalendar },
@@ -54,6 +61,18 @@ const holidayTypes = [
 const yesNo = [
   { id: 1, name: 'Yes' },
   { id: 0, name: 'No' },
+];
+
+const employmentTypes = [
+  { id: 'monthly', name: 'Monthly Employee' },
+  { id: 'daily', name: 'Daily Labour' },
+  { id: 'shifting', name: 'Shift Based Employee' },
+];
+
+const rosterStatuses = [
+  { id: 'scheduled', name: 'Scheduled' },
+  { id: 'completed', name: 'Completed' },
+  { id: 'cancelled', name: 'Cancelled' },
 ];
 
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
@@ -102,6 +121,35 @@ const initialWeekly = {
   remarks: '',
 };
 
+const initialPolicy = {
+  id: '',
+  name: '',
+  employment_type: 'monthly',
+  branch_id: '',
+  default_shift_id: '',
+  standard_work_minutes: '480',
+  minimum_work_minutes: '240',
+  half_day_minutes: '240',
+  grace_minutes: '15',
+  early_out_minutes: '60',
+  overtime_enabled: '0',
+  overtime_after_minutes: '480',
+  late_deduction_after_count: '3',
+  early_out_deduction_after_count: '3',
+  status: '1',
+};
+
+const initialRoster = {
+  id: '',
+  employee_id: '',
+  employee_name: '',
+  branch_id: '',
+  shift_id: '',
+  duty_date: '',
+  status: 'scheduled',
+  remarks: '',
+};
+
 const initialHoliday = {
   id: '',
   branch_id: '',
@@ -136,6 +184,8 @@ const AttendanceSetup = ({ user }: any) => {
   const [activeTab, setActiveTab] = useState('shift');
   const [buttonLoading, setButtonLoading] = useState(false);
   const [shiftForm, setShiftForm] = useState<any>(initialShift);
+  const [policyForm, setPolicyForm] = useState<any>(initialPolicy);
+  const [rosterForm, setRosterForm] = useState<any>(initialRoster);
   const [weeklyForm, setWeeklyForm] = useState<any>(initialWeekly);
   const [holidayForm, setHolidayForm] = useState<any>(initialHoliday);
   const [leaveTypeForm, setLeaveTypeForm] = useState<any>(initialLeaveType);
@@ -143,6 +193,8 @@ const AttendanceSetup = ({ user }: any) => {
   const branches = branchDdlData?.protectedData?.data || [];
   const branchDropdownData = [{ id: '', name: 'All Branch' }, ...branches];
   const shifts = Array.isArray(attendance.shifts) ? attendance.shifts : [];
+  const policies = Array.isArray(attendance.policies) ? attendance.policies : [];
+  const rosters = Array.isArray(attendance.rosters) ? attendance.rosters : [];
   const weeklyHolidays = Array.isArray(attendance.weeklyHolidays) ? attendance.weeklyHolidays : [];
   const holidays = Array.isArray(attendance.holidays) ? attendance.holidays : [];
   const leaveTypes = Array.isArray(attendance.leaveTypes) ? attendance.leaveTypes : [];
@@ -155,6 +207,18 @@ const AttendanceSetup = ({ user }: any) => {
 
     if (tabKey === 'weekly') {
       dispatch(fetchWeeklyHolidays(weeklyForm.branch_id ? { branch_id: weeklyForm.branch_id } : {}));
+      return;
+    }
+
+    if (tabKey === 'policy') {
+      dispatch(fetchAttendanceShifts());
+      dispatch(fetchAttendancePolicies());
+      return;
+    }
+
+    if (tabKey === 'roster') {
+      dispatch(fetchAttendanceShifts());
+      dispatch(fetchShiftRosters(rosterForm.duty_date ? { duty_date: rosterForm.duty_date } : {}));
       return;
     }
 
@@ -254,6 +318,49 @@ const AttendanceSetup = ({ user }: any) => {
       header: 'Action',
       render: (row: any) => (
         <button type="button" onClick={() => setShiftForm({ ...initialShift, ...row })} className={iconButtonClass}>
+          <FiEdit2 />
+        </button>
+      ),
+    },
+  ];
+
+  const policyColumns = [
+    { key: 'name', header: 'Policy' },
+    { key: 'employment_type', header: 'Type', render: (row: any) => employmentTypes.find((item) => item.id === row.employment_type)?.name || row.employment_type || '-' },
+    { key: 'default_shift_id', header: 'Default Shift', render: (row: any) => shifts.find((shift: any) => String(shift.id) === String(row.default_shift_id || row.shift_id))?.name || '-' },
+    { key: 'standard_work_minutes', header: 'Standard Min' },
+    { key: 'overtime_enabled', header: 'OT', render: (row: any) => (Number(row.overtime_enabled) ? 'Yes' : 'No') },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (row: any) => (
+        <button type="button" onClick={() => setPolicyForm({ ...initialPolicy, ...row, default_shift_id: row.default_shift_id || row.shift_id || '' })} className={iconButtonClass}>
+          <FiEdit2 />
+        </button>
+      ),
+    },
+  ];
+
+  const rosterColumns = [
+    { key: 'duty_date', header: 'Duty Date', render: (row: any) => chartDate(row.duty_date) },
+    { key: 'employee_name', header: 'Employee', render: (row: any) => row.employee_name || row.employee?.name || '-' },
+    { key: 'branch_id', header: 'Branch', render: (row: any) => branches.find((b: any) => String(b.id) === String(row.branch_id))?.name || '-' },
+    { key: 'shift_id', header: 'Shift', render: (row: any) => row.shift_name || shifts.find((shift: any) => String(shift.id) === String(row.shift_id))?.name || '-' },
+    { key: 'status', header: 'Status' },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (row: any) => (
+        <button
+          type="button"
+          onClick={() => setRosterForm({
+            ...initialRoster,
+            ...row,
+            employee_name: row.employee_name || row.employee?.name || '',
+            duty_date: String(row.duty_date || '').slice(0, 10),
+          })}
+          className={iconButtonClass}
+        >
           <FiEdit2 />
         </button>
       ),
@@ -362,6 +469,86 @@ const AttendanceSetup = ({ user }: any) => {
           {renderActions(Boolean(shiftForm.id), () => setShiftForm(initialShift))}
           <div className="mt-3">
             <Table columns={shiftColumns} data={shifts} />
+          </div>
+        </form>
+      )}
+
+      {activeTab === 'policy' && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveAndRefresh(saveAttendancePolicy, policyForm, () => setPolicyForm(initialPolicy), 'Attendance policy saved successfully');
+          }}
+        >
+          <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-4">
+            <InputElement name="name" label="Policy Name" value={policyForm.name} onChange={handleChange(setPolicyForm)} />
+            <DropdownCommon id="employment_type" name="employment_type" label="Employee Type" value={policyForm.employment_type} data={employmentTypes} onChange={handleChange(setPolicyForm)} className="h-9" />
+            {branchField('branch_id', policyForm.branch_id, handleChange(setPolicyForm))}
+            <DropdownCommon id="default_shift_id" name="default_shift_id" label="Default Shift" value={policyForm.default_shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleChange(setPolicyForm)} className="h-9" />
+            <InputElement name="standard_work_minutes" label="Standard Work Minutes" type="number" value={policyForm.standard_work_minutes} onChange={handleChange(setPolicyForm)} />
+            <InputElement name="minimum_work_minutes" label="Minimum Work Minutes" type="number" value={policyForm.minimum_work_minutes} onChange={handleChange(setPolicyForm)} />
+            <InputElement name="half_day_minutes" label="Half Day Minutes" type="number" value={policyForm.half_day_minutes} onChange={handleChange(setPolicyForm)} />
+            <InputElement name="grace_minutes" label="Grace Minutes" type="number" value={policyForm.grace_minutes} onChange={handleChange(setPolicyForm)} />
+            <InputElement name="early_out_minutes" label="Early Out Minutes" type="number" value={policyForm.early_out_minutes} onChange={handleChange(setPolicyForm)} />
+            <DropdownCommon id="overtime_enabled" name="overtime_enabled" label="Overtime" value={policyForm.overtime_enabled?.toString()} data={yesNo} onChange={handleChange(setPolicyForm)} className="h-9" />
+            <InputElement name="overtime_after_minutes" label="OT After Minutes" type="number" value={policyForm.overtime_after_minutes} onChange={handleChange(setPolicyForm)} />
+            <InputElement name="late_deduction_after_count" label="Late Deduction Count" type="number" value={policyForm.late_deduction_after_count} onChange={handleChange(setPolicyForm)} />
+            <InputElement name="early_out_deduction_after_count" label="Early Out Deduction Count" type="number" value={policyForm.early_out_deduction_after_count} onChange={handleChange(setPolicyForm)} />
+            <DropdownCommon id="status" name="status" label="Status" value={policyForm.status?.toString()} data={yesNo} onChange={handleChange(setPolicyForm)} className="h-9" />
+          </div>
+          {renderActions(Boolean(policyForm.id), () => setPolicyForm(initialPolicy))}
+          <div className="mt-3">
+            <Table columns={policyColumns} data={policies} />
+          </div>
+        </form>
+      )}
+
+      {activeTab === 'roster' && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveAndRefresh(saveShiftRoster, rosterForm, () => setRosterForm(initialRoster), 'Shift roster saved successfully');
+          }}
+        >
+          <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-4">
+            <div>
+              <label className="text-black dark:text-white">Employee</label>
+              <EmployeeDropdownSearch
+                id="roster_employee_id"
+                name="employee_id"
+                placeholder="Search Employee"
+                value={rosterForm.employee_id ? { value: rosterForm.employee_id, label: rosterForm.employee_name || `Employee #${rosterForm.employee_id}` } : null}
+                onSelect={(option: any) =>
+                  setRosterForm((prev: any) => ({
+                    ...prev,
+                    employee_id: option?.value || '',
+                    employee_name: option?.label || '',
+                  }))
+                }
+              />
+            </div>
+            {branchField('branch_id', rosterForm.branch_id, handleChange(setRosterForm))}
+            <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={rosterForm.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleChange(setRosterForm)} className="h-9" />
+            <InputDatePicker
+              id="duty_date"
+              name="duty_date"
+              label="Duty Date"
+              selectedDate={dateFromString(rosterForm.duty_date)}
+              setSelectedDate={(date) => setRosterForm((prev: any) => ({ ...prev, duty_date: dateToString(date) }))}
+              setCurrentDate={(date) => setRosterForm((prev: any) => ({ ...prev, duty_date: dateToString(date) }))}
+              className="h-9 w-full"
+            />
+            <DropdownCommon id="roster_status" name="status" label="Status" value={rosterForm.status} data={rosterStatuses} onChange={handleChange(setRosterForm)} className="h-9" />
+            <InputElement name="remarks" label="Remarks" value={rosterForm.remarks || ''} onChange={handleChange(setRosterForm)} />
+          </div>
+          {renderActions(Boolean(rosterForm.id), () => setRosterForm(initialRoster))}
+          <div className="mt-3 flex justify-end">
+            <button type="button" onClick={() => dispatch(fetchShiftRosters(rosterForm.duty_date ? { duty_date: rosterForm.duty_date } : {}))} className={commandButtonClass}>
+              Load Roster
+            </button>
+          </div>
+          <div className="mt-3">
+            <Table columns={rosterColumns} data={rosters} />
           </div>
         </form>
       )}

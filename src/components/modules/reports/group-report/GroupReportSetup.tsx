@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import Select from 'react-select';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaHouse, FaTrash } from 'react-icons/fa6';
@@ -13,6 +14,11 @@ import { API_REPORT_GROUP_SETUP_URL } from '../../../services/apiRoutes';
 type GroupItem = {
   id: number;
   name: string;
+};
+
+type SelectOption = {
+  value: number;
+  label: string;
 };
 
 const reportGroups = [
@@ -108,6 +114,11 @@ const GroupReportSetup = () => {
   const availableOptions = options.filter(
     (option) => !selectedItems.some((selected) => Number(selected.id) === Number(option.id)),
   );
+  const searchableOptions = useMemo<SelectOption[]>(
+    () => availableOptions.map((option) => ({ value: Number(option.id), label: option.name })),
+    [availableOptions],
+  );
+  const selectedOption = searchableOptions.find((option) => String(option.value) === String(itemId)) || null;
   const tableData = selectedItems.map((item, index) => ({
     ...item,
     sl_number: index + 1,
@@ -166,15 +177,33 @@ const GroupReportSetup = () => {
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Select Group Item
             </label>
-            <select
-              value={itemId}
-              onChange={(event) => setItemId(event.target.value)}
-              disabled={!groupId || loading}
-              className="h-10 w-full border border-stroke bg-transparent px-3 text-sm font-medium outline-none disabled:opacity-60 dark:border-strokedark dark:bg-form-input dark:text-white"
-            >
-              <option value="">{loading ? 'Loading items...' : 'Select group item'}</option>
-              {availableOptions.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
-            </select>
+            <Select<SelectOption>
+              value={selectedOption}
+              onChange={(option) => setItemId(option ? String(option.value) : '')}
+              options={searchableOptions}
+              isClearable
+              isSearchable
+              isDisabled={!groupId || loading}
+              placeholder={loading ? 'Loading items...' : 'Select group item'}
+              noOptionsMessage={() => (groupId ? 'No group item found' : 'Select a group first')}
+              className="cash-react-select-container w-full"
+              classNamePrefix="cash-react-select"
+              classNames={{
+                control: (state) =>
+                  `!min-h-10 !rounded-none !border-stroke !bg-transparent !text-sm !shadow-none dark:!border-strokedark dark:!bg-form-input ${
+                    state.isFocused ? '!border-blue-500 dark:!border-blue-400' : ''
+                  }`,
+                valueContainer: () => '!px-3 !py-0',
+                input: () => '!text-slate-900 dark:!text-white',
+                singleValue: () => '!text-slate-900 dark:!text-white',
+                placeholder: () => '!text-slate-500 dark:!text-slate-300',
+                menu: () => '!z-50 !rounded-none !border !border-stroke !bg-white dark:!border-strokedark dark:!bg-boxdark',
+                option: (state) =>
+                  `!cursor-pointer !text-sm ${
+                    state.isFocused ? '!bg-slate-100 dark:!bg-slate-700' : '!bg-white dark:!bg-boxdark'
+                  } ${state.isSelected ? '!bg-slate-200 dark:!bg-slate-600' : ''} !text-slate-900 dark:!text-white`,
+              }}
+            />
           </div>
 
           <div className="ml-auto flex gap-2">
