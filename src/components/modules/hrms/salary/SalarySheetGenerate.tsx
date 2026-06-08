@@ -71,11 +71,9 @@ type AttendanceSalarySummary = {
   overtime_amount: number;
 };
 
-const employmentTypeOptions = [
-  { id: "", name: "All Type" },
-  { id: "monthly", name: "Monthly Employee" },
-  { id: "daily", name: "Daily Labour" },
-  { id: "shifting", name: "Shift Based Employee" },
+const salarySheetTypeOptions = [
+  { id: "monthly", name: "Monthly Salary" },
+  { id: "overtime", name: "Overtime Salary" },
 ];
 
 const pad = (value: number) => String(value).padStart(2, "0");
@@ -223,6 +221,40 @@ const buildAttendanceSummaryMapFromMonthlyRows = (rows: any[], monthInfo: NonNul
   return summaries;
 };
 
+const buildAttendanceSummaryMapFromAttendanceRows = (attendanceRows: any[], leaveRows: any[], monthInfo: NonNullable<ReturnType<typeof parseMonthId>>) => {
+  const workingDays = buildAttendanceWorkingDayMap(attendanceRows, leaveRows, monthInfo);
+  const summaries = new Map<string, AttendanceSalarySummary>();
+
+  workingDays.forEach((days, employeeId) => {
+    const employeeRows = attendanceRows.filter((row: any) => String(row.employee_id || "") === employeeId);
+    const overtimeMinutes = employeeRows.reduce((total: number, row: any) => total + toNumber(row.overtime_minutes), 0);
+    const overtimeAmount = employeeRows.reduce((total: number, row: any) => {
+      const savedAmount = toNumber(row.overtime_amount);
+      if (savedAmount > 0) return total + savedAmount;
+
+      const minutes = toNumber(row.overtime_minutes);
+      const rate = toNumber(row.ot_rate);
+      return total + ((minutes / 60) * rate);
+    }, 0);
+
+    summaries.set(employeeId, {
+      working_days: days,
+      attendance_deduction_amount: 0,
+      attendance_absent_days: 0,
+      attendance_unpaid_leave_days: 0,
+      attendance_half_days: 0,
+      attendance_late_count: 0,
+      attendance_late_deduction_days: 0,
+      attendance_early_out_count: 0,
+      attendance_early_out_deduction_days: 0,
+      overtime_minutes: overtimeMinutes,
+      overtime_amount: overtimeAmount,
+    });
+  });
+
+  return summaries;
+};
+
 /* ================= COMPONENT ================= */
 const SalarySheetGenerate = ({ user }: any) => {
   const dispatch = useDispatch<any>();
@@ -235,7 +267,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
   const [employees, setEmployees] = useState<SalaryRow[]>([]);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
-  const [employmentType, setEmploymentType] = useState<string>("");
+  const [salarySheetType, setSalarySheetType] = useState<string>("monthly");
   const [designationLevel, setDesignationLevel] = useState<any[]>([]);
   const [monthId, setMonthId] = useState<string>("");
   const [monthText, setMonthText] = useState<string>("");
@@ -304,13 +336,13 @@ const SalarySheetGenerate = ({ user }: any) => {
       date_to: monthInfo.date_to,
       approval_status: "",
       status: "",
-      employment_type: employmentType,
+      ...(salarySheetType === "overtime" ? { overtime_eligible: 1 } : { employment_type: "monthly" }),
       per_page: 1000,
     };
 
     const leaveParams = {
       branch_id: branchId,
-      employment_type: employmentType,
+      ...(salarySheetType === "monthly" ? { employment_type: "monthly" } : {}),
       date_from: monthInfo.date_from,
       date_to: monthInfo.date_to,
       per_page: 1000,
@@ -318,7 +350,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
     const monthlySummaryParams = {
       branch_id: branchId,
-      employment_type: employmentType,
+      ...(salarySheetType === "monthly" ? { employment_type: "monthly" } : {}),
       month: String(monthInfo.monthIndex + 1),
       year: String(monthInfo.year),
     };
@@ -334,40 +366,16 @@ const SalarySheetGenerate = ({ user }: any) => {
       monthInfo,
     );
 
-    if (monthlySummaryMap.size > 0) return monthlySummaryMap;
-
     if (attendanceResult.status === "rejected" || leaveResult.status === "rejected") {
       throw attendanceResult.status === "rejected" ? attendanceResult.reason : leaveResult.reason;
     }
 
-    const workingDays = buildAttendanceWorkingDayMap(
-      attendanceRowsFromResponse(attendanceResult.value),
-      leaveRowsFromResponse(leaveResult.value),
-      monthInfo,
-    );
+    const attendanceRows = attendanceRowsFromResponse(attendanceResult.value);
+    const leaveRows = leaveRowsFromResponse(leaveResult.value);
 
-    const summaries = new Map<string, AttendanceSalarySummary>();
-    workingDays.forEach((days, employeeId) => {
-      summaries.set(employeeId, {
-        working_days: days,
-        attendance_deduction_amount: 0,
-        attendance_absent_days: 0,
-        attendance_unpaid_leave_days: 0,
-        attendance_half_days: 0,
-        attendance_late_count: 0,
-        attendance_late_deduction_days: 0,
-        attendance_early_out_count: 0,
-        attendance_early_out_deduction_days: 0,
-        overtime_minutes: attendanceRows
-          .filter((row: any) => String(row.employee_id || "") === employeeId)
-          .reduce((total: number, row: any) => total + toNumber(row.overtime_minutes), 0),
-        overtime_amount: attendanceRows
-          .filter((row: any) => String(row.employee_id || "") === employeeId)
-          .reduce((total: number, row: any) => total + toNumber(row.overtime_amount), 0),
-      });
-    });
+    if (salarySheetType === "monthly" && monthlySummaryMap.size > 0) return monthlySummaryMap;
 
-    return summaries;
+    return buildAttendanceSummaryMapFromAttendanceRows(attendanceRows, leaveRows, monthInfo);
   };
 
   /* ================= FETCH DATA ================= */
@@ -387,7 +395,8 @@ const SalarySheetGenerate = ({ user }: any) => {
           branch_id: Number(branchId),
           level_ids: designationLevels.map((l: any) => l.value),
           month_id: monthId,
-          employment_type: employmentType,
+          salary_sheet_type: salarySheetType,
+          ...(salarySheetType === "monthly" ? { employment_type: "monthly" } : { overtime_eligible: 1 }),
         })
       ).unwrap();
 
@@ -412,7 +421,7 @@ const SalarySheetGenerate = ({ user }: any) => {
 
           basic_salary: Number(emp.basic_salary) || 0,
           monthly_basic_salary: Number(emp.basic_salary) || 0,
-          others_allowance: Number(emp.others_allowance) || 0,
+          others_allowance: salarySheetType === "monthly" ? Number(emp.others_allowance) || 0 : 0,
           monthly_others_allowance: Number(emp.others_allowance) || 0,
 
           // ✅ loan_balance sometimes string ("3000") so force Number
@@ -430,16 +439,20 @@ const SalarySheetGenerate = ({ user }: any) => {
           attendance_late_deduction_days: Number(summary?.attendance_late_deduction_days) || 0,
           attendance_early_out_count: Number(summary?.attendance_early_out_count) || 0,
           attendance_early_out_deduction_days: Number(summary?.attendance_early_out_deduction_days) || 0,
-          overtime_minutes: Number(summary?.overtime_minutes) || 0,
-          overtime_amount: Number(summary?.overtime_amount) || 0,
+          overtime_minutes: salarySheetType === "overtime" ? Number(summary?.overtime_minutes) || 0 : 0,
+          overtime_amount: salarySheetType === "overtime" ? Number(summary?.overtime_amount) || 0 : 0,
           month_days: selectedMonthDays,
           working_days: summary?.working_days ?? selectedMonthDays,
         };
       });
 
-      setEmployees(withSequence(mapped));
+      const sheetRows = salarySheetType === "overtime"
+        ? mapped.filter((row) => Number(row.overtime_minutes || 0) > 0 || Number(row.overtime_amount || 0) > 0)
+        : mapped;
 
-      if (mapped.length > 0) {
+      setEmployees(withSequence(sheetRows));
+
+      if (sheetRows.length > 0) {
         toast.success(response.message || "Salary data fetched successfully");
       } else {
         toast.info("No salary data found");
@@ -482,9 +495,13 @@ const SalarySheetGenerate = ({ user }: any) => {
   const proratedOtherAllowance = (emp: SalaryRow) =>
     proratedAmount(Number(emp.monthly_others_allowance) || 0, Number(emp.working_days) || 0);
 
-  const totalSalary = (emp: SalaryRow) => {
-    return proratedBasicSalary(emp) + proratedOtherAllowance(emp) + (Number(emp.overtime_amount) || 0);
-  };
+  const includeOvertime = salarySheetType === "overtime";
+  const includeMobileBill = salarySheetType === "monthly";
+
+  const totalSalary = (emp: SalaryRow) =>
+    proratedBasicSalary(emp)
+    + (includeMobileBill ? proratedOtherAllowance(emp) : 0)
+    + (includeOvertime ? Number(emp.overtime_amount || 0) : 0);
 
   const netSalary = (emp: SalaryRow) => {
     const days = Number(emp.working_days) || 0;
@@ -500,9 +517,9 @@ const SalarySheetGenerate = ({ user }: any) => {
     return employees.reduce(
       (acc, emp) => {
         acc.basic_salary += proratedBasicSalary(emp);
-        acc.others_allowance += proratedOtherAllowance(emp);
+        acc.others_allowance += includeMobileBill ? proratedOtherAllowance(emp) : 0;
         acc.total_salary += totalSalary(emp);
-        acc.overtime_amount += Number(emp.overtime_amount) || 0;
+        acc.overtime_amount += includeOvertime ? Number(emp.overtime_amount) || 0 : 0;
         acc.loan_deduction += Number(emp.loan_balance) || 0; // ✅ total loan ded = sum loan_balance
         acc.attendance_deduction += Number(emp.attendance_deduction_amount) || 0;
         acc.net_deduction += Number(emp.net_deduction) || 0;
@@ -520,7 +537,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         net_salary: 0,
       }
     );
-  }, [employees, selectedMonthDays]);
+  }, [employees, includeMobileBill, includeOvertime, selectedMonthDays]);
 
   /* ================= TABLE COLUMNS ================= */
   const columns = [
@@ -624,32 +641,37 @@ const SalarySheetGenerate = ({ user }: any) => {
       ),
     },
 
-    {
-      key: "others_allowance",
-      header: "Mobile Bill",
-      headerClass: "text-right w-30",
-      cellClass: "text-right",
-      render: (row: SalaryRow) => (
-        <InputElement
-          type="number"
-          value={proratedOtherAllowance(row)}
-          className="text-right w-24 !md:w-20"
-          onChange={(e) => handleInputChange(row.id, "others_allowance", e.target.value)}
-          disabled={true} 
-        />
-      ),
-    },
-    {
-      key: "overtime_amount",
-      header: "OT",
-      headerClass: "text-right w-28",
-      cellClass: "text-right font-semibold text-cyan-700 dark:text-cyan-300",
-      render: (row: SalaryRow) => (
-        <span title={`OT Min: ${row.overtime_minutes || 0}`}>
-          {thousandSeparator(Number(row.overtime_amount || 0))}
-        </span>
-      ),
-    },
+    ...(includeMobileBill
+      ? [{
+          key: "others_allowance",
+          header: "Mobile Bill",
+          headerClass: "text-right w-30",
+          cellClass: "text-right",
+          render: (row: SalaryRow) => (
+            <InputElement
+              type="number"
+              value={proratedOtherAllowance(row)}
+              className="text-right w-24 !md:w-20"
+              onChange={(e) => handleInputChange(row.id, "others_allowance", e.target.value)}
+              disabled={true}
+            />
+          ),
+        }]
+      : []),
+    ...(includeOvertime
+      ? [{
+          key: "overtime_amount",
+          header: "OT",
+          headerClass: "text-right w-28",
+          cellClass: "text-right font-semibold text-cyan-700 dark:text-cyan-300",
+          render: (row: SalaryRow) => (
+            <div title={`OT Min: ${row.overtime_minutes || 0}`}>
+              <div>{thousandSeparator(Number(row.overtime_amount || 0))}</div>
+              <div className="text-[11px] font-normal text-slate-400">{row.overtime_minutes || 0} min</div>
+            </div>
+          ),
+        }]
+      : []),
     {
       key: "total",
       header: "Total",
@@ -728,7 +750,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         monthly_basic_salary: Number(e.monthly_basic_salary) || 0,
         monthly_others_allowance: Number(e.monthly_others_allowance) || 0,
         basic_salary: proratedBasicSalary(e),
-        others_allowance: proratedOtherAllowance(e),
+        others_allowance: includeMobileBill ? proratedOtherAllowance(e) : 0,
         loan_balance: Number(e.loan_balance) || 0,
 
         // ✅ IMPORTANT: save loan_deduction = loan_balance
@@ -742,8 +764,8 @@ const SalarySheetGenerate = ({ user }: any) => {
         attendance_late_deduction_days: Number(e.attendance_late_deduction_days) || 0,
         attendance_early_out_count: Number(e.attendance_early_out_count) || 0,
         attendance_early_out_deduction_days: Number(e.attendance_early_out_deduction_days) || 0,
-        overtime_minutes: Number(e.overtime_minutes) || 0,
-        overtime_amount: Number(e.overtime_amount) || 0,
+        overtime_minutes: includeOvertime ? Number(e.overtime_minutes) || 0 : 0,
+        overtime_amount: includeOvertime ? Number(e.overtime_amount) || 0 : 0,
         net_deduction: Number(e.net_deduction) || 0,
         month_days: Number(e.month_days || selectedMonthDays) || 0,
         working_days: Number(e.working_days) || 0,
@@ -754,6 +776,7 @@ const SalarySheetGenerate = ({ user }: any) => {
           branch_id: Number(branchId),
           level_ids: designationLevels.map((l: any) => Number(l.value)),
           month_id: monthId,
+          salary_sheet_type: salarySheetType,
           employees: payloadEmployees,
         })
       ).unwrap();
@@ -862,12 +885,12 @@ const SalarySheetGenerate = ({ user }: any) => {
 
           <div className="mr-2">
             <DropdownCommon
-              id="employment_type"
-              name="employment_type"
-              value={employmentType}
-              data={employmentTypeOptions}
+              id="salary_sheet_type"
+              name="salary_sheet_type"
+              value={salarySheetType}
+              data={salarySheetTypeOptions}
               onChange={(e) => {
-                setEmploymentType(e.target.value);
+                setSalarySheetType(e.target.value);
                 setEmployees([]);
                 setSearched(false);
               }}
@@ -956,10 +979,12 @@ const SalarySheetGenerate = ({ user }: any) => {
             Total Salary:{" "}
             <span className="font-semibold">{thousandSeparator(grandTotals.total_salary)}</span>
           </div>
-          <div>
-            OT:{" "}
-            <span className="font-semibold">{thousandSeparator(grandTotals.overtime_amount)}</span>
-          </div>
+          {includeOvertime && (
+            <div>
+              OT:{" "}
+              <span className="font-semibold">{thousandSeparator(grandTotals.overtime_amount)}</span>
+            </div>
+          )}
           <div>
             Loan Deduction:{" "}
             <span className="font-semibold">{thousandSeparator(grandTotals?.loan_deduction)}</span>

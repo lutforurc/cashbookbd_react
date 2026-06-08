@@ -101,7 +101,7 @@ type AttendanceReportProps = {
   user: any;
   reportTitle?: string;
   defaultStatus?: string;
-  reportType?: 'daily' | 'absent' | 'late' | 'early_out';
+  reportType?: 'daily' | 'absent' | 'late' | 'early_out' | 'overtime';
 };
 
 const AttendanceReport = ({
@@ -160,7 +160,10 @@ const AttendanceReport = ({
       ...prev,
       branch_id: prev.branch_id || userBranchId,
     }));
-    dispatch(fetchAttendanceReport(nextFilters));
+    dispatch(fetchAttendanceReport({
+      ...nextFilters,
+      ...(reportType === 'overtime' ? { overtime_eligible: 1, overtime_only: 1 } : {}),
+    }));
     fetchSupportingData(nextFilters);
   }, [defaultStatus, dispatch, userBranchId]);
 
@@ -170,7 +173,10 @@ const AttendanceReport = ({
   };
 
   const loadReport = () => {
-    dispatch(fetchAttendanceReport(filters));
+    dispatch(fetchAttendanceReport({
+      ...filters,
+      ...(reportType === 'overtime' ? { overtime_eligible: 1, overtime_only: 1 } : {}),
+    }));
     fetchSupportingData(filters);
   };
 
@@ -215,7 +221,7 @@ const AttendanceReport = ({
       }))
       .filter(Boolean);
 
-    return [...rows, ...generatedRows]
+    return [...rows, ...(reportType === 'overtime' ? [] : generatedRows)]
       .filter((row: any) => !filters.status || row.status === filters.status)
       .filter((row: any) => !filters.approval_status || row.approval_status === filters.approval_status)
       .sort((a: any, b: any) => {
@@ -226,7 +232,7 @@ const AttendanceReport = ({
         if (!Number.isNaN(serialA) && !Number.isNaN(serialB)) return serialA - serialB;
         return String(a.employee_name || '').localeCompare(String(b.employee_name || ''));
       });
-  }, [branches, employees, filters.approval_status, filters.branch_id, filters.date_from, filters.date_to, filters.status, leaveApplications, rows]);
+  }, [branches, employees, filters.approval_status, filters.branch_id, filters.date_from, filters.date_to, filters.status, leaveApplications, reportType, rows]);
 
   const summary = useMemo(() => displayRows.reduce((total: any, row: any) => {
     const status = row.status || 'unknown';
@@ -235,6 +241,8 @@ const AttendanceReport = ({
     if (row.approval_status === 'pending') total.pending_approval += 1;
     if (row.approval_status === 'approved') total.approved += 1;
     if (row.approval_status === 'rejected') total.rejected += 1;
+    total.overtime_minutes += Number(row.overtime_minutes || 0);
+    total.overtime_amount += Number(row.overtime_amount || 0);
     return total;
   }, {
     active_employees: employees.filter(isActiveEmployee).length || report.summary?.active_employees || 0,
@@ -247,6 +255,8 @@ const AttendanceReport = ({
     pending_approval: 0,
     approved: 0,
     rejected: 0,
+    overtime_minutes: 0,
+    overtime_amount: 0,
   }), [displayRows, employees, report.summary?.active_employees]);
 
   const cards = [
@@ -263,6 +273,12 @@ const AttendanceReport = ({
     { label: 'Early Out', value: summary.early_out || 0 },
     ...(reportType === 'early_out'
       ? [{ label: 'Early Out Deduction Days', value: Math.floor(Number(summary.early_out || 0) / 3) }]
+      : []),
+    ...(reportType === 'overtime'
+      ? [
+          { label: 'OT Minutes', value: summary.overtime_minutes || 0 },
+          { label: 'OT Amount', value: Number(summary.overtime_amount || 0).toLocaleString() },
+        ]
       : []),
     { label: 'Pending Approval', value: summary.pending_approval || 0 },
     { label: 'Approved', value: summary.approved || 0 },
@@ -285,6 +301,12 @@ const AttendanceReport = ({
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) },
     { key: 'out_time', header: 'Out', render: (row: any) => timeOnly(row.out_time) },
     { key: 'work_minutes', header: 'Minutes', render: (row: any) => row.work_minutes || '-' },
+    ...(reportType === 'overtime'
+      ? [
+          { key: 'overtime_minutes', header: 'OT Min', render: (row: any) => row.overtime_minutes || 0 },
+          { key: 'overtime_amount', header: 'OT Amount', render: (row: any) => Number(row.overtime_amount || 0).toLocaleString() },
+        ]
+      : []),
     { key: 'status', header: 'Status', render: (row: any) => normalizeStatus(row.status) },
     { key: 'approval_status', header: 'Approval', render: (row: any) => normalizeStatus(row.approval_status) },
   ];

@@ -604,6 +604,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['attendance.view', 'employee.view']} loading={permissionsLoading} />}>
               <Route path={routes.hrms_attendance_entries} element={<AttendanceEntries user={me} />} />
               <Route path={routes.hrms_attendance_report} element={<AttendanceReport user={me} />} />
+              <Route path={routes.hrms_overtime_report} element={<AttendanceReport user={me} reportTitle="Overtime Report" reportType="overtime" />} />
               <Route path={routes.hrms_attendance_exception_reports} element={<AttendanceExceptionReports user={me} />} />
               <Route path={routes.hrms_absent_report} element={<AttendanceExceptionReports user={me} />} />
               <Route path={routes.hrms_late_report} element={<AttendanceExceptionReports user={me} />} />
