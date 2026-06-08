@@ -52,6 +52,7 @@ interface SalaryRow {
   attendance_late_deduction_days: number;
   attendance_early_out_count: number;
   attendance_early_out_deduction_days: number;
+  ot_rate: number;
   overtime_minutes: number;
   overtime_amount: number;
   month_days: number;
@@ -68,6 +69,7 @@ type AttendanceSalarySummary = {
   attendance_late_deduction_days: number;
   attendance_early_out_count: number;
   attendance_early_out_deduction_days: number;
+  ot_rate: number;
   overtime_minutes: number;
   overtime_amount: number;
 };
@@ -79,6 +81,7 @@ const salarySheetTypeOptions = [
 
 const pad = (value: number) => String(value).padStart(2, "0");
 const toDateString = (year: number, monthIndex: number, day: number) => `${year}-${pad(monthIndex + 1)}-${pad(day)}`;
+const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
 
 const parseMonthId = (monthId: string) => {
   const [monthPart, yearPart] = String(monthId || "").split("-");
@@ -232,6 +235,7 @@ const buildAttendanceSummaryMapFromAttendanceRows = (attendanceRows: any[], leav
   workingDays.forEach((days, employeeId) => {
     const employeeRows = attendanceRows.filter((row: any) => String(row.employee_id || "") === employeeId);
     const overtimeMinutes = employeeRows.reduce((total: number, row: any) => total + toNumber(row.overtime_minutes), 0);
+    const otRate = employeeRows.reduce((rate: number, row: any) => rate || toNumber(row.ot_rate), 0);
     const overtimeAmount = employeeRows.reduce((total: number, row: any) => {
       const savedAmount = toNumber(row.overtime_amount);
       if (savedAmount > 0) return total + savedAmount;
@@ -251,6 +255,7 @@ const buildAttendanceSummaryMapFromAttendanceRows = (attendanceRows: any[], leav
       attendance_late_deduction_days: 0,
       attendance_early_out_count: 0,
       attendance_early_out_deduction_days: 0,
+      ot_rate: otRate,
       overtime_minutes: overtimeMinutes,
       overtime_amount: overtimeAmount,
     });
@@ -444,6 +449,7 @@ const SalarySheetGenerate = ({ user }: any) => {
           attendance_late_deduction_days: Number(summary?.attendance_late_deduction_days) || 0,
           attendance_early_out_count: Number(summary?.attendance_early_out_count) || 0,
           attendance_early_out_deduction_days: Number(summary?.attendance_early_out_deduction_days) || 0,
+          ot_rate: salarySheetType === "overtime" ? Number(summary?.ot_rate || emp.ot_rate) || 0 : 0,
           overtime_minutes: salarySheetType === "overtime" ? Number(summary?.overtime_minutes) || 0 : 0,
           overtime_amount: salarySheetType === "overtime" ? Number(summary?.overtime_amount) || 0 : 0,
           month_days: selectedMonthDays,
@@ -480,9 +486,20 @@ const SalarySheetGenerate = ({ user }: any) => {
   const handleInputChange = (id: number, field: keyof SalaryRow, value: string) => {
     const num = Number(value);
     setEmployees((prev) =>
-      prev.map((emp) =>
-        String(emp.id) === String(id) ? { ...emp, [field]: isNaN(num) ? 0 : num } : emp
-      )
+      prev.map((emp) => {
+        if (String(emp.id) !== String(id)) return emp;
+
+        const nextValue = isNaN(num) ? 0 : num;
+        if (field === "ot_rate") {
+          return {
+            ...emp,
+            ot_rate: nextValue,
+            overtime_amount: (Number(emp.overtime_minutes || 0) / 60) * nextValue,
+          };
+        }
+
+        return { ...emp, [field]: nextValue };
+      })
     );
   };
 
@@ -595,23 +612,8 @@ const SalarySheetGenerate = ({ user }: any) => {
           type="text"
           value={String(Math.max(0, Number(row.working_days) || 0))}
           className="text-right w-40"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          onChange={(e) => {
-            const rawValue = e.target.value;
-            const digitsOnly = rawValue.replace(/\D/g, "");
-            const normalizedValue = digitsOnly.replace(/^0+(?=\d)/, "");
-            const inputDays = normalizedValue === "" ? 0 : Number(normalizedValue);
-            const safeDays = Math.max(
-              0,
-              Math.min(selectedMonthDays, Number.isFinite(inputDays) ? inputDays : 0)
-            );
-            setEmployees((prev) =>
-              prev.map((emp) =>
-                String(emp.id) === String(row.id) ? { ...emp, working_days: safeDays } : emp
-              )
-            );
-          }}
+          onChange={() => undefined}
+          disabled={true}
         />
       ),
     },
@@ -664,15 +666,31 @@ const SalarySheetGenerate = ({ user }: any) => {
         }]
       : []),
     ...(includeOvertime
-      ? [{
+      ? [
+        {
+          key: "ot_rate",
+          header: "OT Rate",
+          headerClass: "text-right w-28",
+          cellClass: "text-right",
+          render: (row: SalaryRow) => (
+            <InputElement
+              type="text"
+              value={String(Number(row.ot_rate || 0))}
+              className="text-right w-24 !md:w-20"
+              onChange={() => undefined}
+              disabled={true}
+            />
+          ),
+        },
+        {
           key: "overtime_amount",
           header: "OT",
           headerClass: "text-right w-28",
           cellClass: "text-right font-semibold text-cyan-700 dark:text-cyan-300",
           render: (row: SalaryRow) => (
-            <div title={`OT Min: ${row.overtime_minutes || 0}`}>
+            <div title={`OT Hr.: ${formatOtHours(row.overtime_minutes || 0)}`}>
               <div>{thousandSeparator(Number(row.overtime_amount || 0))}</div>
-              <div className="text-[11px] font-normal text-slate-400">{row.overtime_minutes || 0} min</div>
+              <div className="text-[11px] font-normal text-slate-400">{formatOtHours(row.overtime_minutes || 0)} hr</div>
             </div>
           ),
         }]
@@ -770,6 +788,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         attendance_early_out_count: Number(e.attendance_early_out_count) || 0,
         attendance_early_out_deduction_days: Number(e.attendance_early_out_deduction_days) || 0,
         overtime_minutes: includeOvertime ? Number(e.overtime_minutes) || 0 : 0,
+        ot_rate: includeOvertime ? Number(e.ot_rate) || 0 : 0,
         overtime_amount: includeOvertime ? Number(e.overtime_amount) || 0 : 0,
         net_deduction: Number(e.net_deduction) || 0,
         month_days: Number(e.month_days || selectedMonthDays) || 0,

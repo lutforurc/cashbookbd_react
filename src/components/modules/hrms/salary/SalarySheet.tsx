@@ -41,6 +41,8 @@ const getSalarySheetType = (rows: any[]) =>
       || history.salary_sheet_type === "overtime";
   }) ? "overtime" : "monthly";
 
+const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
+
 const SalarySheet = ({ user }: any) => {
   const employees = useSelector((state: any) => state.employees);
   const salary = useSelector((state: any) => state.salary);
@@ -192,7 +194,8 @@ const SalarySheet = ({ user }: any) => {
           ...baseRow,
           ...(isOvertimeSheet
             ? {
-                "OT Min": Number(item.overtime_minutes || history.overtime_minutes || 0),
+                "OT Hr.": formatOtHours(item.overtime_minutes || history.overtime_minutes || 0),
+                "OT Rate": Number(item.ot_rate || history.ot_rate || 0),
                 "OT Amount": Number(item.overtime_amount || history.overtime_amount || 0),
               }
             : {

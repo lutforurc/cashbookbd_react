@@ -138,6 +138,8 @@ const attendanceOvertimeMinutes = (data: any, shifts: any[]) => {
   return Math.max(0, minutes - standardMinutes);
 };
 
+const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
+
 const attendanceRowKey = (row: any) => {
   if (row?.id) return `id:${row.id}`;
   return `employee:${row?.employee_id || ''}:date:${String(row?.attendance_date || '').slice(0, 10)}`;
@@ -620,7 +622,11 @@ const AttendanceEntries = ({ user }: any) => {
     { key: 'shift_name', header: 'Shift', render: (row: any) => row.shift_name || '-' },
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) || '-' },
     { key: 'out_time', header: 'Out', render: (row: any) => timeOnly(row.out_time) || '-' },
-    { key: 'overtime_minutes', header: 'OT Min', render: (row: any) => row.overtime_minutes || attendanceOvertimeMinutes(row, shifts) || 0 },
+    {
+      key: 'overtime_minutes',
+      header: 'OT Hr.',
+      render: (row: any) => formatOtHours(row.overtime_minutes || attendanceOvertimeMinutes(row, shifts) || 0),
+    },
     { key: 'status', header: 'Status', render: (row: any) => displayStatus(row) },
     { key: 'approval_status', header: 'Approval', render: (row: any) => (row.__pending ? 'pending save' : row.approval_status) },
     {
@@ -744,7 +750,7 @@ const AttendanceEntries = ({ user }: any) => {
           <InputElement name="in_time" label="In Time" type="time" value={form.in_time || ''} onChange={handleChange(setForm)} />
           <InputElement name="out_time" label="Out Time" type="time" value={form.out_time || ''} onChange={handleChange(setForm)} />
           <DropdownCommon id="employment_type" name="employment_type" label="Attendance Type" value={form.employment_type} data={employmentTypeOptions} onChange={handleEmploymentTypeChange} className="h-9" />
-          <InputElement name="overtime_minutes" label="Overtime Minutes" type="number" value={overtimeMinutes} onChange={() => {}} disabled />
+          <InputElement name="overtime_minutes" label="OT Hr." type="number" value={formatOtHours(overtimeMinutes)} onChange={() => {}} disabled />
           <DropdownCommon id="status" name="status" label="Status" value={form.status} data={statusOptions} onChange={handleChange(setForm)} className="h-9" />
           <InputElement name="remarks" label="Remarks" value={form.remarks || ''} onChange={handleChange(setForm)} />
         </div>

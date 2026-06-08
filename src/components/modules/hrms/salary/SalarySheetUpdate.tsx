@@ -92,6 +92,7 @@ const getHistory = (history?: string | SalaryHistory): SalaryHistory => {
 };
 
 const roundUpToNearestTen = (value: number) => Math.ceil(value / 10) * 10;
+const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
 
 const getMonthDaysFromPaymentMonth = (paymentMonth?: string) => {
   if (!paymentMonth || !/^\d{6}$/.test(paymentMonth)) return 30;
@@ -651,18 +652,10 @@ const SalarySheetUpdate = (user: any) => {
             id={`working_days_${row.id}`}
             name={`working_days_${row.id}`}
             value={row.working_days}
-            onChange={(e) => {
-              const digitsOnly = e.target.value.replace(/\D/g, "");
-              const inputDays = digitsOnly === "" ? 0 : Number(digitsOnly);
-              const safeDays = Math.max(
-                0,
-                Math.min(selectedMonthDays, Number.isFinite(inputDays) ? inputDays : 0)
-              );
-              handleInputChange(row.id, "working_days", String(safeDays));
-            }}
+            onChange={() => undefined}
             type="text"
-            inputMode="numeric"
             className="w-20 text-right"
+            disabled={true}
           />
         </div>
       ),
@@ -722,7 +715,7 @@ const SalarySheetUpdate = (user: any) => {
                 type="number"
                 className="w-28 text-right"
               />
-              <span className="mt-1 text-xs text-slate-500">{Number(row.overtime_minutes || 0)} min</span>
+              <span className="mt-1 text-xs text-slate-500">OT Hr. {formatOtHours(row.overtime_minutes || 0)}</span>
             </div>
           ),
         },
@@ -889,7 +882,7 @@ const SalarySheetUpdate = (user: any) => {
           <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
             <div className="text-xs dark:text-slate-300 text-slate-700">OT Amount</div>
             <div className="font-semibold">{thousandSeparator(totals.overtime)}</div>
-            <div className="text-xs text-slate-500">{thousandSeparator(totals.overtimeMinutes)} min</div>
+            <div className="text-xs text-slate-500">OT Hr. {formatOtHours(totals.overtimeMinutes)}</div>
           </div>
         ) : (
           <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">

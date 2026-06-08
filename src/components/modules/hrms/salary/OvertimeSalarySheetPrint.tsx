@@ -12,6 +12,7 @@ type EmployeeHistory = {
   working_days?: number | string;
   monthly_basic_salary?: number | string;
   basic_salary?: number | string;
+  ot_rate?: number | string;
   overtime_minutes?: number | string;
   overtime_amount?: number | string;
 };
@@ -23,6 +24,7 @@ type EmployeeRow = {
   basic_salary?: number;
   gross_salary?: number;
   loan_deduction?: number;
+  ot_rate?: number | string;
   overtime_minutes?: number | string;
   overtime_amount?: number | string;
   net_salary?: number;
@@ -127,7 +129,9 @@ const resolveMonthlyBasicSalary = (row: EmployeeRow, history: EmployeeHistory, m
 };
 
 const otMinutes = (row: EmployeeRow) => Number(row.overtime_minutes || getHistory(row.history).overtime_minutes || 0);
+const otRate = (row: EmployeeRow) => Number(row.ot_rate || getHistory(row.history).ot_rate || 0);
 const otAmount = (row: EmployeeRow) => Number(row.overtime_amount || getHistory(row.history).overtime_amount || 0);
+const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
 
 const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ rows, meta, rowsPerPage = 5, fontSize = 10, vr_no, vr_date }, ref) => {
@@ -207,7 +211,8 @@ const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>W. Days</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>M. Basic</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Salary</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>OT Min</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>OT Hr.</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>OT Rate</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>OT Amount</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Total</th>
                     <th style={{ fontSize: fs, textAlign: 'center' }}>Loan</th>
@@ -232,7 +237,8 @@ const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60 }}>{h.working_days || ''}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>{thousandSeparator(monthlyBasicSalary)}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>{thousandSeparator(row.basic_salary ?? 0)}</td>
-                        <td style={{ fontSize: fs, textAlign: 'right' }}>{thousandSeparator(otMinutes(row))}</td>
+                        <td style={{ fontSize: fs, textAlign: 'right' }}>{formatOtHours(otMinutes(row))}</td>
+                        <td style={{ fontSize: fs, textAlign: 'right' }}>{thousandSeparator(otRate(row))}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>{thousandSeparator(otAmount(row))}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>{thousandSeparator(row.gross_salary ?? 0)}</td>
                         <td style={{ fontSize: fs, textAlign: 'right' }}>{thousandSeparator(row.loan_deduction ?? 0)}</td>
@@ -256,7 +262,8 @@ const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td colSpan={4}>Subtotal (Page {pageIndex + 1})</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageMonthlyBasic)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
-                      <td style={{ textAlign: 'right' }}>{thousandSeparator(pageOtMinutes)}</td>
+                      <td style={{ textAlign: 'right' }}>{formatOtHours(pageOtMinutes)}</td>
+                      <td />
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageOtAmount)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan)}</td>
@@ -273,7 +280,8 @@ const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                           <td colSpan={4}>Page Total</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageMonthlyBasic)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
-                          <td style={{ textAlign: 'right' }}>{thousandSeparator(pageOtMinutes)}</td>
+                          <td style={{ textAlign: 'right' }}>{formatOtHours(pageOtMinutes)}</td>
+                          <td />
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageOtAmount)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageGross)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan)}</td>
@@ -286,7 +294,8 @@ const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         <td colSpan={4}>Grand Total</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandMonthlyBasic)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandBasic)}</td>
-                        <td style={{ textAlign: 'right' }}>{thousandSeparator(grandOtMinutes)}</td>
+                        <td style={{ textAlign: 'right' }}>{formatOtHours(grandOtMinutes)}</td>
+                        <td />
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandOtAmount)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandGross)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandLoan)}</td>

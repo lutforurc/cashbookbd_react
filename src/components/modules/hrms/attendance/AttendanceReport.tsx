@@ -15,6 +15,20 @@ import { chartDate } from '../../../utils/utils-functions/formatDate';
 
 const today = new Date().toISOString().slice(0, 10);
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
+const monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -96,6 +110,9 @@ const isActiveEmployee = (row: any) => {
   return status === '' || status === '1' || status === 'active';
 };
 const branchNameFromId = (branches: any[], branchId: any) => branches.find((branch) => String(branch.id) === String(branchId))?.name || '-';
+const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
+const formatOtMatrixValue = (value: number) => (value > 0 ? value.toFixed(2) : '-');
+const formatOtTotalValue = (value: number) => (value > 0 ? value.toFixed(2) : '-');
 
 type AttendanceReportProps = {
   user: any;
@@ -256,8 +273,68 @@ const AttendanceReport = ({
     approved: 0,
     rejected: 0,
     overtime_minutes: 0,
-    overtime_amount: 0,
-  }), [displayRows, employees, report.summary?.active_employees]);
+	    overtime_amount: 0,
+	  }), [displayRows, employees, report.summary?.active_employees]);
+
+  const overtimeDates = useMemo(
+    () => dateRange(filters.date_from, filters.date_to),
+    [filters.date_from, filters.date_to],
+  );
+
+  const overtimeMatrixRows = useMemo(() => {
+    const employeeMap = new Map<string, any>();
+
+    displayRows.forEach((row: any) => {
+      const employeeId = getEmployeeId(row);
+      if (!employeeId) return;
+
+      if (!employeeMap.has(employeeId)) {
+        employeeMap.set(employeeId, {
+          employee_id: employeeId,
+          employee_serial: row.employee_serial,
+          employee_name: row.employee_name || row.name || '-',
+          dates: {},
+        });
+      }
+
+      const attendanceDate = String(row.attendance_date || '').slice(0, 10);
+      if (!attendanceDate) return;
+
+      const currentHours = Number(employeeMap.get(employeeId).dates[attendanceDate] || 0);
+      employeeMap.get(employeeId).dates[attendanceDate] = currentHours + (Number(row.overtime_minutes || 0) / 60);
+    });
+
+    return Array.from(employeeMap.values()).sort((a, b) => {
+      const serialA = Number(a.employee_serial);
+      const serialB = Number(b.employee_serial);
+      if (!Number.isNaN(serialA) && !Number.isNaN(serialB)) return serialA - serialB;
+      return String(a.employee_name || '').localeCompare(String(b.employee_name || ''));
+    });
+  }, [displayRows]);
+
+  const overtimeDayTotals = useMemo(
+    () => overtimeDates.map((date) =>
+      overtimeMatrixRows.reduce((total, employee) => total + Number(employee.dates[date] || 0), 0),
+    ),
+    [overtimeDates, overtimeMatrixRows],
+  );
+
+  const overtimeGrandTotal = useMemo(
+    () => overtimeDayTotals.reduce((total, dayTotal) => total + dayTotal, 0),
+    [overtimeDayTotals],
+  );
+
+  const overtimeMatrixTitle = useMemo(() => {
+    const start = parseLocalDate(filters.date_from);
+    const end = parseLocalDate(filters.date_to);
+    if (!start || !end) return 'Overtime Report';
+
+    if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+      return `Overtime for the Month of ${monthNames[start.getMonth()]} ${start.getFullYear()}`;
+    }
+
+    return `Overtime from ${filters.date_from} to ${filters.date_to}`;
+  }, [filters.date_from, filters.date_to]);
 
   const cards = [
     { label: 'Active Employee', value: summary.active_employees || 0 },
@@ -276,7 +353,7 @@ const AttendanceReport = ({
       : []),
     ...(reportType === 'overtime'
       ? [
-          { label: 'OT Minutes', value: summary.overtime_minutes || 0 },
+          { label: 'OT Hr.', value: formatOtHours(summary.overtime_minutes || 0) },
           { label: 'OT Amount', value: Number(summary.overtime_amount || 0).toLocaleString() },
         ]
       : []),
@@ -303,7 +380,7 @@ const AttendanceReport = ({
     { key: 'work_minutes', header: 'Minutes', render: (row: any) => row.work_minutes || '-' },
     ...(reportType === 'overtime'
       ? [
-          { key: 'overtime_minutes', header: 'OT Min', render: (row: any) => row.overtime_minutes || 0 },
+          { key: 'overtime_minutes', header: 'OT Hr.', render: (row: any) => formatOtHours(row.overtime_minutes || 0) },
           { key: 'overtime_amount', header: 'OT Amount', render: (row: any) => Number(row.overtime_amount || 0).toLocaleString() },
         ]
       : []),
@@ -365,7 +442,72 @@ const AttendanceReport = ({
         ))}
       </div>
 
-      <Table columns={columns} data={displayRows} />
+      {reportType === 'overtime' ? (
+        <div className="overflow-x-auto rounded-sm bg-white shadow-sm dark:bg-boxdark">
+          <div className="border-b border-slate-200 px-3 py-2 text-center text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-white">
+            {overtimeMatrixTitle}
+          </div>
+          <table className="min-w-full border-collapse text-sm text-slate-900 dark:text-slate-100">
+            <thead>
+              <tr className="bg-slate-300 text-left text-xs font-semibold uppercase text-slate-900 dark:bg-slate-700 dark:text-slate-100">
+                <th className="whitespace-nowrap border border-slate-200 px-3 py-3 text-center dark:border-slate-600">Sl. No.</th>
+                <th className="min-w-52 whitespace-nowrap border border-slate-200 px-3 py-3 dark:border-slate-600">Name</th>
+                {overtimeDates.map((date) => (
+                  <th key={date} className="min-w-10 border border-slate-200 px-2 py-3 text-center dark:border-slate-600">
+                    {Number(date.slice(8, 10))}
+                  </th>
+                ))}
+                <th className="min-w-16 border border-slate-200 px-3 py-3 text-center dark:border-slate-600">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {overtimeMatrixRows.map((employee, index) => {
+                const employeeTotal = overtimeDates.reduce((total, date) => total + Number(employee.dates[date] || 0), 0);
+
+                return (
+                  <tr key={employee.employee_id || employee.employee_name} className="border-b border-slate-100 dark:border-slate-700">
+                    <td className="border border-slate-100 px-3 py-3 text-center dark:border-slate-700">{index + 1}</td>
+                    <td className="border border-slate-100 px-3 py-3 dark:border-slate-700">{employee.employee_name || '-'}</td>
+                    {overtimeDates.map((date) => (
+                      <td key={`${employee.employee_id}-${date}`} className="border border-slate-100 px-2 py-3 text-center font-medium dark:border-slate-700">
+                        {formatOtMatrixValue(Number(employee.dates[date] || 0))}
+                      </td>
+                    ))}
+                    <td className="border border-slate-100 px-3 py-3 text-center font-bold dark:border-slate-700">
+                      {formatOtTotalValue(employeeTotal)}
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {overtimeMatrixRows.length === 0 && (
+                <tr>
+                  <td colSpan={overtimeDates.length + 3} className="border border-slate-100 px-3 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-300">
+                    No overtime data found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+            {overtimeMatrixRows.length > 0 && (
+              <tfoot>
+                <tr className="bg-slate-50 font-bold text-slate-900 dark:bg-slate-800 dark:text-white">
+                  <td colSpan={2} className="border border-slate-200 px-3 py-3 text-center dark:border-slate-600">Total</td>
+                  {overtimeDayTotals.map((dayTotal, index) => (
+                    <td key={`${overtimeDates[index]}-total`} className="border border-slate-200 px-2 py-3 text-center dark:border-slate-600">
+                      {formatOtTotalValue(dayTotal)}
+                    </td>
+                  ))}
+                  <td className="border border-slate-200 px-3 py-3 text-center dark:border-slate-600">
+                    {formatOtTotalValue(overtimeGrandTotal)}
+                  </td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      ) : (
+        <Table columns={columns} data={displayRows} />
+      )}
     </div>
   );
 };
