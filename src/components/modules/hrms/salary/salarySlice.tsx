@@ -45,6 +45,7 @@ interface SalaryViewRequest {
   level_ids?: number[]
   month_id: string; // "YYYY-MM"
   employment_type?: string;
+  salary_sheet_type?: string;
 }
 
 interface SalaryState {

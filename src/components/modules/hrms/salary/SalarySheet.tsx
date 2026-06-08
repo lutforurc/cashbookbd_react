@@ -15,6 +15,7 @@ import YearDropdown from "../../../utils/components/YearDropdown";
 import { formatPaymentMonth } from "../../../utils/utils-functions/formatDate";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import SalarySheetPrint from "./SalarySheetPrint";
+import OvertimeSalarySheetPrint from "./OvertimeSalarySheetPrint";
 import SalaryPaymentSelectionModal from "./SalaryPaymentSelectionModal";
 import { salarySheetPrint } from "./salarySlice";
 import routes from "../../../services/appRoutes";
@@ -31,6 +32,14 @@ const getSalaryHistory = (history?: string | Record<string, any>) => {
     return {};
   }
 };
+
+const getSalarySheetType = (rows: any[]) =>
+  rows.some((row) => {
+    const history = getSalaryHistory(row.history);
+    return row.salary_sheet_type === "overtime"
+      || row.note === "salary_sheet_type:overtime"
+      || history.salary_sheet_type === "overtime";
+  }) ? "overtime" : "monthly";
 
 const SalarySheet = ({ user }: any) => {
   const employees = useSelector((state: any) => state.employees);
@@ -51,6 +60,7 @@ const SalarySheet = ({ user }: any) => {
   const [fontSize, setFontSize] = useState<number>(12);
   const [yearId, setYearId] = useState<string>("");
   const [shouldPrint, setShouldPrint] = useState(false);
+  const printSalarySheetType = getSalarySheetType(Array.isArray(tableData) ? tableData : []);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -166,8 +176,9 @@ const SalarySheet = ({ user }: any) => {
       const exportRows = rows.map((item: any, index: number) => {
         const history = getSalaryHistory(item.history);
         const attendanceDeduction = Number(item.attendance_deduction_amount || 0);
+        const isOvertimeSheet = getSalarySheetType(rows) === "overtime";
 
-        return {
+        const baseRow = {
           SL: item.serial_no || index + 1,
           Employee: history.name || item.employee_name || item.name || "",
           Designation: history.designation_name || item.designation_name || "",
@@ -175,7 +186,18 @@ const SalarySheet = ({ user }: any) => {
           "Working Days": item.working_days || history.working_days || "",
           "Monthly Basic": history.monthly_basic_salary || item.monthly_basic_salary || "",
           Salary: Number(item.basic_salary || 0),
-          Mobile: Number(item.others_allowance || 0),
+        };
+
+        return {
+          ...baseRow,
+          ...(isOvertimeSheet
+            ? {
+                "OT Min": Number(item.overtime_minutes || history.overtime_minutes || 0),
+                "OT Amount": Number(item.overtime_amount || history.overtime_amount || 0),
+              }
+            : {
+                Mobile: Number(item.others_allowance || 0),
+              }),
           Total: Number(item.gross_salary || 0),
           Loan: Number(item.loan_deduction || 0),
           "Att. Ded": attendanceDeduction,
@@ -194,7 +216,7 @@ const SalarySheet = ({ user }: any) => {
 
       const worksheet = XLSX.utils.json_to_sheet(exportRows);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Salary Sheet");
+      XLSX.utils.book_append_sheet(workbook, worksheet, getSalarySheetType(rows) === "overtime" ? "Daily Basis Salary" : "Salary Sheet");
       XLSX.writeFile(workbook, `salary-sheet-${row.payment_month || "export"}.xlsx`);
     } catch (error: any) {
       console.error("Excel export error:", error);
@@ -433,16 +455,29 @@ const SalarySheet = ({ user }: any) => {
 
         {/* === Hidden Print Component === */}
         <div className="hidden">
-          <SalarySheetPrint
-            ref={printRef}
-            rows={tableData}
-            meta={meta}
-            rowsPerPage={perPage}
-            fontSize={fontSize}
-            branchName={dropdownData?.find((b: any) => b.id == branchId)?.name}
-            vr_no={salary?.salarySheet?.vr_no}
-            vr_date={salary?.salarySheet?.vr_date}
-          />
+          {printSalarySheetType === "overtime" ? (
+            <OvertimeSalarySheetPrint
+              ref={printRef}
+              rows={tableData}
+              meta={meta}
+              rowsPerPage={perPage}
+              fontSize={fontSize}
+              branchName={dropdownData?.find((b: any) => b.id == branchId)?.name}
+              vr_no={salary?.salarySheet?.vr_no}
+              vr_date={salary?.salarySheet?.vr_date}
+            />
+          ) : (
+            <SalarySheetPrint
+              ref={printRef}
+              rows={tableData}
+              meta={meta}
+              rowsPerPage={perPage}
+              fontSize={fontSize}
+              branchName={dropdownData?.find((b: any) => b.id == branchId)?.name}
+              vr_no={salary?.salarySheet?.vr_no}
+              vr_date={salary?.salarySheet?.vr_date}
+            />
+          )}
         </div>
 
         <SalaryPaymentSelectionModal

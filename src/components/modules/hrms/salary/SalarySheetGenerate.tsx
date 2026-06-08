@@ -30,6 +30,7 @@ interface SalaryRow {
   serial_no: number;
   name: string;
   designation_name: string;
+  employment_type?: string;
 
   basic_salary: number;
   monthly_basic_salary: number;
@@ -220,6 +221,9 @@ const buildAttendanceSummaryMapFromMonthlyRows = (rows: any[], monthInfo: NonNul
 
   return summaries;
 };
+
+const isDailyLabour = (employmentType?: string) =>
+  String(employmentType || "").toLowerCase().includes("daily");
 
 const buildAttendanceSummaryMapFromAttendanceRows = (attendanceRows: any[], leaveRows: any[], monthInfo: NonNullable<ReturnType<typeof parseMonthId>>) => {
   const workingDays = buildAttendanceWorkingDayMap(attendanceRows, leaveRows, monthInfo);
@@ -418,6 +422,7 @@ const SalarySheetGenerate = ({ user }: any) => {
           serial_no: Number(emp.serial_no ?? emp.employee_serial) || 0,
           name: emp.name,
           designation_name: emp.designation_name,
+          employment_type: emp.employment_type,
 
           basic_salary: Number(emp.basic_salary) || 0,
           monthly_basic_salary: Number(emp.basic_salary) || 0,
@@ -431,7 +436,7 @@ const SalarySheetGenerate = ({ user }: any) => {
           loan_deduction: Number(emp.loan_deduction) || 0,
 
           net_deduction: Number(emp.others_deduction) || 0,
-          attendance_deduction_amount: Number(summary?.attendance_deduction_amount) || 0,
+          attendance_deduction_amount: isDailyLabour(emp.employment_type) ? 0 : Number(summary?.attendance_deduction_amount) || 0,
           attendance_absent_days: Number(summary?.attendance_absent_days) || 0,
           attendance_unpaid_leave_days: Number(summary?.attendance_unpaid_leave_days) || 0,
           attendance_half_days: Number(summary?.attendance_half_days) || 0,
@@ -509,7 +514,7 @@ const SalarySheetGenerate = ({ user }: any) => {
     if (days <= 0 || monthDays <= 0) return 0;
     const roundedGross = totalSalary(emp);
     const loanDed = Number(emp.loan_balance) || 0;
-    const attendanceDed = Number(emp.attendance_deduction_amount) || 0;
+    const attendanceDed = isDailyLabour(emp.employment_type) ? 0 : Number(emp.attendance_deduction_amount) || 0;
     return Math.max(0, roundedGross - loanDed - attendanceDed);
   };
 
@@ -521,7 +526,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         acc.total_salary += totalSalary(emp);
         acc.overtime_amount += includeOvertime ? Number(emp.overtime_amount) || 0 : 0;
         acc.loan_deduction += Number(emp.loan_balance) || 0; // ✅ total loan ded = sum loan_balance
-        acc.attendance_deduction += Number(emp.attendance_deduction_amount) || 0;
+        acc.attendance_deduction += isDailyLabour(emp.employment_type) ? 0 : Number(emp.attendance_deduction_amount) || 0;
         acc.net_deduction += Number(emp.net_deduction) || 0;
         acc.net_salary += netSalary(emp);
         return acc;
@@ -704,7 +709,7 @@ const SalarySheetGenerate = ({ user }: any) => {
       cellClass: "text-right font-semibold text-red-700 dark:text-red-400",
       render: (row: SalaryRow) => (
         <span title={`Absent: ${row.attendance_absent_days || 0}, Unpaid: ${row.attendance_unpaid_leave_days || 0}, Half: ${row.attendance_half_days || 0}, Late: ${row.attendance_late_deduction_days || 0}, Early: ${row.attendance_early_out_deduction_days || 0}`}>
-          {thousandSeparator(Number(row.attendance_deduction_amount || 0))}
+          {isDailyLabour(row.employment_type) ? "-" : thousandSeparator(Number(row.attendance_deduction_amount || 0))}
         </span>
       ),
     },
@@ -756,7 +761,7 @@ const SalarySheetGenerate = ({ user }: any) => {
         // ✅ IMPORTANT: save loan_deduction = loan_balance
         loan_deduction: Number(e.loan_balance) || 0,
 
-        attendance_deduction_amount: Number(e.attendance_deduction_amount) || 0,
+        attendance_deduction_amount: isDailyLabour(e.employment_type) ? 0 : Number(e.attendance_deduction_amount) || 0,
         attendance_absent_days: Number(e.attendance_absent_days) || 0,
         attendance_unpaid_leave_days: Number(e.attendance_unpaid_leave_days) || 0,
         attendance_half_days: Number(e.attendance_half_days) || 0,
