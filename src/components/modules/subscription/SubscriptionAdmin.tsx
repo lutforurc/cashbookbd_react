@@ -134,14 +134,14 @@ const SubscriptionAdmin: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <HelmetTitle title="Subscription Admin" />
 
-      <div className="rounded border border-gray-400 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Subscription Admin</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-semibold text-black dark:text-white">Subscription Admin</h1>
+            <p className="mt-2 text-sm text-bodydark2">
               Review subscriptions, pending manual payments, and activation status.
             </p>
           </div>
@@ -157,16 +157,16 @@ const SubscriptionAdmin: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-5 md:grid-cols-4">
         <StatCard label="Pending Payments" value={adminOverview?.pending_payments ?? 0} />
         <StatCard label="Active" value={adminOverview?.active_subscriptions ?? 0} />
         <StatCard label="Expired" value={adminOverview?.expired_subscriptions ?? 0} />
         <StatCard label="Trialing" value={adminOverview?.trial_subscriptions ?? 0} />
       </div>
 
-      <section className="rounded border border-gray-400 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <h2 className="text-base font-semibold text-gray-800 dark:text-white">Assign Subscription</h2>
-        <p className="mt-1 text-sm text-gray-500">
+      <section className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+        <h2 className="text-lg font-semibold text-black dark:text-white">Assign Subscription</h2>
+        <p className="mt-2 text-sm text-bodydark2">
           Payment ছাড়া direct plan assign বা renew করতে এখানে company এবং plan select করুন।
         </p>
 
@@ -311,9 +311,9 @@ const SubscriptionAdmin: React.FC = () => {
       </section>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <section className="overflow-hidden rounded border border-gray-400 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="border-b border-gray-300 px-4 py-3 dark:border-gray-700">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-white">Subscriptions</h2>
+        <section className="overflow-hidden rounded-2xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+          <div className="border-b border-stroke px-6 py-4 dark:border-strokedark">
+            <h2 className="text-lg font-semibold text-black dark:text-white">Subscriptions</h2>
           </div>
 
           <div className="overflow-x-auto">
@@ -353,16 +353,16 @@ const SubscriptionAdmin: React.FC = () => {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded border border-gray-400 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="border-b border-gray-300 px-4 py-3 dark:border-gray-700">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-white">Payment Requests</h2>
+        <section className="overflow-hidden rounded-2xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+          <div className="border-b border-stroke px-6 py-4 dark:border-strokedark">
+            <h2 className="text-lg font-semibold text-black dark:text-white">Payment Requests</h2>
           </div>
 
-          <div className="space-y-3 p-4">
+          <div className="space-y-3 p-6">
             {adminPayments.map((payment: any) => (
               <div
                 key={payment.id}
-                className="rounded border border-gray-300 p-3 dark:border-gray-700"
+                className="rounded border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -428,9 +428,9 @@ const SubscriptionAdmin: React.FC = () => {
 };
 
 const StatCard = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded border border-gray-400 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-    <p className="text-sm text-gray-500">{label}</p>
-    <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-white">{value}</p>
+  <div className="rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+    <p className="text-sm text-bodydark2">{label}</p>
+    <p className="mt-2 text-2xl font-bold text-black dark:text-white">{value}</p>
   </div>
 );
 

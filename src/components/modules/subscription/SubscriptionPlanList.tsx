@@ -20,13 +20,13 @@ const SubscriptionPlanList: React.FC = () => {
   }, [dispatch]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <HelmetTitle title="Subscription Plan List" />
 
-      <div className="flex flex-col gap-3 rounded border border-gray-400 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Subscription Plans</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold text-black dark:text-white">Subscription Plans</h1>
+          <p className="mt-2 text-sm text-bodydark2">
             Pricing plan, quota, trial days, and activation state এখান থেকে manage করতে পারবেন।
           </p>
         </div>
@@ -46,7 +46,7 @@ const SubscriptionPlanList: React.FC = () => {
         </div>
       )}
 
-      <div className="overflow-hidden rounded border border-gray-400 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="overflow-hidden rounded-2xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-100 dark:bg-gray-900/40">
