@@ -57,16 +57,17 @@ const LeaveApplications = ({ user }: any) => {
   const branches = branchDdlData?.protectedData?.data || [];
   const leaveTypes = Array.isArray(attendance.leaveTypes) ? attendance.leaveTypes : [];
   const leaveApplications = Array.isArray(attendance.leaveApplications) ? attendance.leaveApplications : [];
+  const userBranchId = user?.branch_id ? String(user.branch_id) : '';
 
-  const [form, setForm] = useState<any>(initialForm);
-  const [filters, setFilters] = useState<any>({ date_from: today, date_to: today, branch_id: '' });
+  const [form, setForm] = useState<any>({ ...initialForm, branch_id: userBranchId });
+  const [filters, setFilters] = useState<any>({ date_from: today, date_to: today, branch_id: userBranchId });
   const [buttonLoading, setButtonLoading] = useState(false);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
     dispatch(fetchLeaveTypes());
-    dispatch(fetchLeaveApplications(filters));
-  }, [dispatch]);
+    dispatch(fetchLeaveApplications({ date_from: today, date_to: today, branch_id: userBranchId }));
+  }, [dispatch, userBranchId]);
 
   const handleChange = (setter: any) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -84,12 +85,16 @@ const LeaveApplications = ({ user }: any) => {
     dispatch(fetchLeaveApplications(params));
   };
 
-  const reset = () => setForm(initialForm);
+  const reset = () => setForm({ ...initialForm, branch_id: userBranchId });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.employee_id || !form.leave_type_id) {
       toast.error('Please select employee and leave type');
+      return;
+    }
+    if (form.from_date && form.to_date && form.from_date > form.to_date) {
+      toast.error('To date must be after from date');
       return;
     }
     setButtonLoading(true);

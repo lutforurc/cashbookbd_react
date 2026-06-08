@@ -421,11 +421,11 @@ const AttendanceEntries = ({ user }: any) => {
       return;
     }
     if (!form.employee_id) {
-      toast.error('Single entry করতে employee select করুন; সব employee হলে Bulk Entry ব্যবহার করুন');
+      toast.error('Select an employee for single entry; use Bulk Entry for all employees');
       return;
     }
     if (form.employment_type === 'shifting' && !form.shift_id) {
-      toast.error('Shift based employee attendance save করতে roster/default shift লাগবে');
+      toast.error('Shift based employee attendance requires a roster/default shift');
       return;
     }
     setButtonLoading(true);
