@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FiRefreshCcw } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
 
 import Loader from '../../../../common/Loader';
+import { PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -12,6 +14,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchEmployees } from '../employee/employeeSlice';
 import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice';
 import { chartDate } from '../../../utils/utils-functions/formatDate';
+import OvertimeReportPrint from './OvertimeReportPrint';
 
 const today = new Date().toISOString().slice(0, 10);
 const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
@@ -111,8 +114,6 @@ const isActiveEmployee = (row: any) => {
 };
 const branchNameFromId = (branches: any[], branchId: any) => branches.find((branch) => String(branch.id) === String(branchId))?.name || '-';
 const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
-const formatOtMatrixValue = (value: number) => (value > 0 ? value.toFixed(2) : '-');
-const formatOtTotalValue = (value: number) => (value > 0 ? value.toFixed(2) : '-');
 
 type AttendanceReportProps = {
   user: any;
@@ -131,6 +132,7 @@ const AttendanceReport = ({
   const attendance = useSelector((state: any) => state.attendance);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const employeeState = useSelector((state: any) => state.employees);
+  const overtimePrintRef = useRef<HTMLDivElement>(null);
   const branches = branchDdlData?.protectedData?.data || [];
   const report = attendance.report || {};
   const rows = Array.isArray(report.rows) ? report.rows : [];
@@ -336,6 +338,12 @@ const AttendanceReport = ({
     return `Overtime from ${filters.date_from} to ${filters.date_to}`;
   }, [filters.date_from, filters.date_to]);
 
+  const handleOvertimePrint = useReactToPrint({
+    content: () => overtimePrintRef.current,
+    documentTitle: overtimeMatrixTitle,
+    removeAfterPrint: true,
+  });
+
   const cards = [
     { label: 'Active Employee', value: summary.active_employees || 0 },
     { label: 'Attendance Entry', value: summary.total_entries || 0 },
@@ -425,11 +433,19 @@ const AttendanceReport = ({
         </div>
         <DropdownCommon id="status" name="status" label="Status" value={filters.status} data={statusOptions} onChange={handleChange(setFilters)} className="h-9" />
         <DropdownCommon id="approval_status" name="approval_status" label="Approval" value={filters.approval_status} data={approvalOptions} onChange={handleChange(setFilters)} className="h-9" />
-        <div className="flex items-end">
+        <div className="flex items-end gap-2">
           <button type="button" onClick={loadReport} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
             <FiRefreshCcw className="mr-2" />
             Load
           </button>
+          {reportType === 'overtime' && (
+            <PrintButton
+              label="Print"
+              onClick={handleOvertimePrint}
+              className="h-10 px-5"
+              disabled={attendance.loading || employeeState.loading}
+            />
+          )}
         </div>
       </div>
 
@@ -443,68 +459,15 @@ const AttendanceReport = ({
       </div>
 
       {reportType === 'overtime' ? (
-        <div className="overflow-x-auto rounded-sm bg-white shadow-sm dark:bg-boxdark">
-          <div className="border-b border-slate-200 px-3 py-2 text-center text-sm font-semibold text-slate-900 dark:border-slate-700 dark:text-white">
-            {overtimeMatrixTitle}
-          </div>
-          <table className="min-w-full border-collapse text-sm text-slate-900 dark:text-slate-100">
-            <thead>
-              <tr className="bg-slate-300 text-left text-xs font-semibold uppercase text-slate-900 dark:bg-slate-700 dark:text-slate-100">
-                <th className="whitespace-nowrap border border-slate-200 px-3 py-3 text-center dark:border-slate-600">Sl. No.</th>
-                <th className="min-w-52 whitespace-nowrap border border-slate-200 px-3 py-3 dark:border-slate-600">Name</th>
-                {overtimeDates.map((date) => (
-                  <th key={date} className="min-w-10 border border-slate-200 px-2 py-3 text-center dark:border-slate-600">
-                    {Number(date.slice(8, 10))}
-                  </th>
-                ))}
-                <th className="min-w-16 border border-slate-200 px-3 py-3 text-center dark:border-slate-600">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {overtimeMatrixRows.map((employee, index) => {
-                const employeeTotal = overtimeDates.reduce((total, date) => total + Number(employee.dates[date] || 0), 0);
-
-                return (
-                  <tr key={employee.employee_id || employee.employee_name} className="border-b border-slate-100 dark:border-slate-700">
-                    <td className="border border-slate-100 px-3 py-3 text-center dark:border-slate-700">{index + 1}</td>
-                    <td className="border border-slate-100 px-3 py-3 dark:border-slate-700">{employee.employee_name || '-'}</td>
-                    {overtimeDates.map((date) => (
-                      <td key={`${employee.employee_id}-${date}`} className="border border-slate-100 px-2 py-3 text-center font-medium dark:border-slate-700">
-                        {formatOtMatrixValue(Number(employee.dates[date] || 0))}
-                      </td>
-                    ))}
-                    <td className="border border-slate-100 px-3 py-3 text-center font-bold dark:border-slate-700">
-                      {formatOtTotalValue(employeeTotal)}
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {overtimeMatrixRows.length === 0 && (
-                <tr>
-                  <td colSpan={overtimeDates.length + 3} className="border border-slate-100 px-3 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-300">
-                    No overtime data found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-            {overtimeMatrixRows.length > 0 && (
-              <tfoot>
-                <tr className="bg-slate-50 font-bold text-slate-900 dark:bg-slate-800 dark:text-white">
-                  <td colSpan={2} className="border border-slate-200 px-3 py-3 text-center dark:border-slate-600">Total</td>
-                  {overtimeDayTotals.map((dayTotal, index) => (
-                    <td key={`${overtimeDates[index]}-total`} className="border border-slate-200 px-2 py-3 text-center dark:border-slate-600">
-                      {formatOtTotalValue(dayTotal)}
-                    </td>
-                  ))}
-                  <td className="border border-slate-200 px-3 py-3 text-center dark:border-slate-600">
-                    {formatOtTotalValue(overtimeGrandTotal)}
-                  </td>
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        </div>
+        <OvertimeReportPrint
+          ref={overtimePrintRef}
+          title={overtimeMatrixTitle}
+          dates={overtimeDates}
+          rows={overtimeMatrixRows}
+          dayTotals={overtimeDayTotals}
+          grandTotal={overtimeGrandTotal}
+          screen
+        />
       ) : (
         <Table columns={columns} data={displayRows} />
       )}
