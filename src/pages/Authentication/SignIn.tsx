@@ -113,7 +113,7 @@ const SignIn: React.FC = () => {
             <img
               src="/cover-page.svg"
               alt="Sign In Cover"
-              className="absolute inset-0 h-full w-full object-fill"
+              className="absolute inset-0 h-full w-full object-contain"
             />
           </div>
 
