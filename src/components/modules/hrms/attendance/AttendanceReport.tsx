@@ -147,8 +147,8 @@ const AttendanceReport = ({
     status: defaultStatus,
     approval_status: '',
   });
-  const [overtimeRowsPerPage, setOvertimeRowsPerPage] = useState(12);
-  const [overtimePrintFontSize, setOvertimePrintFontSize] = useState(12);
+  const [overtimeRowsPerPage, setOvertimeRowsPerPage] = useState('12');
+  const [overtimePrintFontSize, setOvertimePrintFontSize] = useState('12');
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -453,18 +453,24 @@ const AttendanceReport = ({
         {reportType === 'overtime' && (
           <div className="flex items-end gap-2">
             <input
-              type="number"
-              min={1}
+              type="text"
+              inputMode="numeric"
               value={overtimeRowsPerPage}
-              onChange={(e) => setOvertimeRowsPerPage(Math.max(1, Number(e.target.value) || 1))}
+              onChange={(e) => {
+                if (/^\d*$/.test(e.target.value)) setOvertimeRowsPerPage(e.target.value);
+              }}
+              onBlur={() => setOvertimeRowsPerPage(String(Math.max(1, Number(overtimeRowsPerPage) || 12)))}
               title="Rows per page"
               className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
             />
             <input
-              type="number"
-              min={6}
+              type="text"
+              inputMode="numeric"
               value={overtimePrintFontSize}
-              onChange={(e) => setOvertimePrintFontSize(Math.max(6, Number(e.target.value) || 6))}
+              onChange={(e) => {
+                if (/^\d*$/.test(e.target.value)) setOvertimePrintFontSize(e.target.value);
+              }}
+              onBlur={() => setOvertimePrintFontSize(String(Math.max(6, Number(overtimePrintFontSize) || 12)))}
               title="Print font size"
               className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
             />
@@ -496,8 +502,8 @@ const AttendanceReport = ({
               rows={overtimeMatrixRows}
               dayTotals={overtimeDayTotals}
               grandTotal={overtimeGrandTotal}
-              rowsPerPage={overtimeRowsPerPage}
-              fontSize={overtimePrintFontSize}
+              rowsPerPage={Number(overtimeRowsPerPage) || 12}
+              fontSize={Number(overtimePrintFontSize) || 12}
             />
           </div>
         </>
