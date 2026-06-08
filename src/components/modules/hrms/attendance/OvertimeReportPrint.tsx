@@ -15,7 +15,6 @@ type Props = {
   rows: OvertimeEmployeeRow[];
   dayTotals: number[];
   grandTotal: number;
-  screen?: boolean;
   rowsPerPage?: number;
   fontSize?: number;
 };
@@ -31,21 +30,29 @@ const chunkRows = (rows: OvertimeEmployeeRow[], perPage: number) => {
 };
 
 const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ title, dates, rows, dayTotals, grandTotal, screen = false, rowsPerPage = 12, fontSize = 12 }, ref) => {
-    const pages = screen ? [rows] : chunkRows(rows, rowsPerPage);
+  ({ title, dates, rows, dayTotals, grandTotal, rowsPerPage = 12, fontSize = 12 }, ref) => {
+    const pages = chunkRows(rows, rowsPerPage);
     const fs = Math.max(6, fontSize || 12);
+    const longestNameLength = rows.reduce((max, row) => Math.max(max, String(row.employee_name || '').length), 4);
+    const nameWidth = Math.min(220, Math.max(70, Math.ceil(longestNameLength * fs * 0.52)));
     const renderTable = (pageRows: OvertimeEmployeeRow[], pageIndex: number, showFooter: boolean) => (
-      <table className="overtime-print-table min-w-full border-collapse border border-slate-900 text-slate-950" style={{ fontSize: screen ? undefined : fs }}>
+      <table className="overtime-print-table">
+        <colgroup>
+          <col style={{ width: 28 }} />
+          <col style={{ width: nameWidth }} />
+          {dates.map((date) => <col key={`${date}-col`} />)}
+          <col style={{ width: 38 }} />
+        </colgroup>
         <thead>
           <tr>
-            <th className="serial-cell matrix-header-cell w-10 border border-slate-900 px-1 py-1 text-center font-semibold">Sl. No.</th>
-            <th className="name-cell matrix-header-cell min-w-45 border border-slate-900 px-1 py-1 text-left font-semibold">Name</th>
+            <th className="serial-cell matrix-header-cell">#</th>
+            <th className="name-cell matrix-header-cell">Name</th>
             {dates.map((date) => (
-              <th key={date} className="day-cell matrix-header-cell w-6 border border-slate-900 px-1 py-1 text-center font-semibold">
+              <th key={date} className="day-cell matrix-header-cell">
                 {Number(date.slice(8, 10))}
               </th>
             ))}
-            <th className="total-cell matrix-header-cell w-8 border border-slate-900 px-1 py-1 text-center font-semibold">Total</th>
+            <th className="total-cell matrix-header-cell">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -54,14 +61,14 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 
             return (
               <tr key={employee.employee_id || employee.employee_name}>
-                <td className="serial-cell border border-slate-900 px-1 py-1 text-center">{(pageIndex * rowsPerPage) + index + 1}</td>
-                <td className="name-cell border border-slate-900 px-1 py-1 text-left">{employee.employee_name || '-'}</td>
+                <td className="serial-cell">{(pageIndex * rowsPerPage) + index + 1}</td>
+                <td className="name-cell">{employee.employee_name || '-'}</td>
                 {dates.map((date) => (
-                  <td key={`${employee.employee_id}-${date}`} className="day-cell border border-slate-900 px-1 py-1 text-center">
+                  <td key={`${employee.employee_id}-${date}`} className="day-cell">
                     {formatValue(Number(employee.dates[date] || 0))}
                   </td>
                 ))}
-                <td className="total-cell border border-slate-900 px-1 py-1 text-center font-semibold">
+                <td className="total-cell">
                   {formatValue(employeeTotal)}
                 </td>
               </tr>
@@ -70,7 +77,7 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 
           {rows.length === 0 && (
             <tr>
-              <td colSpan={dates.length + 3} className="border border-slate-900 px-2 py-4 text-center">
+              <td colSpan={dates.length + 3} className="empty-cell">
                 No overtime data found.
               </td>
             </tr>
@@ -79,13 +86,13 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
         {rows.length > 0 && showFooter && (
           <tfoot>
             <tr>
-              <td colSpan={2} className="border border-slate-900 px-1 py-1 text-center font-semibold">Total</td>
+              <td colSpan={2} className="total-label-cell">Total</td>
               {dayTotals.map((dayTotal, index) => (
-                <td key={`${dates[index]}-total`} className="day-cell border border-slate-900 px-1 py-1 text-center font-semibold">
+                <td key={`${dates[index]}-total`} className="day-cell total-row-cell">
                   {formatValue(dayTotal)}
                 </td>
               ))}
-              <td className="total-cell border border-slate-900 px-1 py-1 text-center font-semibold">
+              <td className="total-cell">
                 {formatValue(grandTotal)}
               </td>
             </tr>
@@ -97,30 +104,28 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
     return (
     <div
       ref={ref}
-      className={`${screen ? 'overtime-monthly-screen rounded-sm bg-white shadow-sm dark:bg-boxdark' : 'overtime-monthly-print bg-white text-slate-950'}`}
+	      className="overtime-monthly-print bg-white text-slate-950"
     >
       <PrintStyles />
       <style>{`
-        .overtime-monthly-screen .matrix-header-cell,
-        .overtime-monthly-print .matrix-header-cell {
-          background: #e8eef6;
-          color: #0f172a;
-        }
-
-        .overtime-monthly-screen .total-cell,
-        .overtime-monthly-print .total-cell {
-          background: #f8fafc;
-          color: #0f172a;
-        }
+	        .overtime-monthly-print .matrix-header-cell {
+	          background: #e8eef6;
+	          color: #0f172a;
+	        }
+	
+	        .overtime-monthly-print .total-cell {
+	          background: #f8fafc;
+	          color: #0f172a;
+	        }
 
         .overtime-monthly-print tfoot td {
           background: #eef2f7;
           color: #0f172a;
         }
 
-        .overtime-pad {
-          display: ${screen ? 'none' : 'block'};
-        }
+	        .overtime-pad {
+	          display: block;
+	        }
 
         @media print {
           @page {
@@ -152,7 +157,8 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
             break-after: auto !important;
           }
 
-	          .overtime-monthly-print table {
+	          .overtime-monthly-print table,
+	          .overtime-monthly-print .overtime-print-table {
 	            width: 100% !important;
 	            min-width: 0 !important;
 	            table-layout: fixed !important;
@@ -161,41 +167,47 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 	            line-height: 1.15 !important;
 	            color: #000000 !important;
 	          }
-
-          .overtime-monthly-print th,
-          .overtime-monthly-print td {
-            border: 1px solid #000000 !important;
-            padding: 2px 1px !important;
-            overflow: hidden !important;
-          }
+	
+	          .overtime-monthly-print th,
+	          .overtime-monthly-print td,
+	          .overtime-monthly-print .empty-cell,
+	          .overtime-monthly-print .total-label-cell {
+	            border: 1px solid #000000 !important;
+	            padding: 2px 1px !important;
+	            overflow: hidden !important;
+	          }
 
           .overtime-monthly-print .matrix-header-cell {
             background: #e5e7eb !important;
             color: #000000 !important;
           }
 
-          .overtime-monthly-print .serial-cell {
-            width: 34px !important;
-          }
+	          .overtime-monthly-print .serial-cell {
+	            text-align: center !important;
+	          }
+	
+	          .overtime-monthly-print .name-cell {
+	            white-space: nowrap !important;
+	            text-overflow: ellipsis !important;
+	            text-align: left !important;
+	          }
+	
+	          .overtime-monthly-print .day-cell {
+	            text-align: center !important;
+	          }
+	
+	          .overtime-monthly-print .total-cell {
+	            text-align: center !important;
+	            font-weight: 700 !important;
+	            background: #eeeeee !important;
+	            color: #000000 !important;
+	          }
 
-          .overtime-monthly-print .name-cell {
-            width: 128px !important;
-            white-space: nowrap !important;
-            text-overflow: ellipsis !important;
-          }
-
-          .overtime-monthly-print .day-cell {
-            width: 18px !important;
-            text-align: center !important;
-          }
-
-          .overtime-monthly-print .total-cell {
-            width: 28px !important;
-            text-align: center !important;
-            font-weight: 700 !important;
-            background: #eeeeee !important;
-            color: #000000 !important;
-          }
+	          .overtime-monthly-print .total-label-cell,
+	          .overtime-monthly-print .total-row-cell {
+	            text-align: center !important;
+	            font-weight: 700 !important;
+	          }
 
           .overtime-monthly-print .report-heading {
             display: flex !important;
@@ -214,19 +226,17 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
         }
       `}</style>
 
-	      {pages.map((pageRows, pageIndex) => (
-	        <div key={`page-${pageIndex}`} className="print-page">
-	          {!screen && (
-	            <div className="overtime-pad">
-	              <PadPrinting />
-	            </div>
-	          )}
-	          <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-gray-200 px-3 py-2 text-center text-sm font-medium text-slate-800 dark:border-gray-700 dark:text-slate-100">
-	            <div>{title}</div>
-	          </div>
-	          {renderTable(pageRows, pageIndex, screen || pageIndex === pages.length - 1)}
-	        </div>
-	      ))}
+		      {pages.map((pageRows, pageIndex) => (
+		        <div key={`page-${pageIndex}`} className="print-page">
+		          <div className="overtime-pad">
+		            <PadPrinting />
+		          </div>
+		          <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-gray-200 px-3 py-2 text-center text-sm font-medium text-slate-800 dark:border-gray-700 dark:text-slate-100">
+		            <div>{title}</div>
+		          </div>
+		          {renderTable(pageRows, pageIndex, pageIndex === pages.length - 1)}
+		        </div>
+		      ))}
 	    </div>
     );
   },

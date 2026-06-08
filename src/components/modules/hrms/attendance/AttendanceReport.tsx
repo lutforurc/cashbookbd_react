@@ -14,6 +14,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchEmployees } from '../employee/employeeSlice';
 import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice';
 import { chartDate } from '../../../utils/utils-functions/formatDate';
+import OvertimeReportMatrix from './OvertimeReportMatrix';
 import OvertimeReportPrint from './OvertimeReportPrint';
 
 const today = new Date().toISOString().slice(0, 10);
@@ -486,13 +487,12 @@ const AttendanceReport = ({
 
       {reportType === 'overtime' ? (
         <>
-          <OvertimeReportPrint
+          <OvertimeReportMatrix
             title={overtimeMatrixTitle}
             dates={overtimeDates}
             rows={overtimeMatrixRows}
             dayTotals={overtimeDayTotals}
             grandTotal={overtimeGrandTotal}
-            screen
           />
           <div className="fixed left-[-10000px] top-0">
             <OvertimeReportPrint
