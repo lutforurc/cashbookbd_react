@@ -147,6 +147,8 @@ const AttendanceReport = ({
     status: defaultStatus,
     approval_status: '',
   });
+  const [overtimeRowsPerPage, setOvertimeRowsPerPage] = useState(12);
+  const [overtimePrintFontSize, setOvertimePrintFontSize] = useState(12);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -438,14 +440,6 @@ const AttendanceReport = ({
             <FiRefreshCcw className="mr-2" />
             Load
           </button>
-          {reportType === 'overtime' && (
-            <PrintButton
-              label="Print"
-              onClick={handleOvertimePrint}
-              className="h-10 px-5"
-              disabled={attendance.loading || employeeState.loading}
-            />
-          )}
         </div>
       </div>
 
@@ -456,18 +450,57 @@ const AttendanceReport = ({
             <div className="text-xl font-semibold text-slate-900 dark:text-white">{card.value}</div>
           </div>
         ))}
+        {reportType === 'overtime' && (
+          <div className="flex items-end gap-2">
+            <input
+              type="number"
+              min={1}
+              value={overtimeRowsPerPage}
+              onChange={(e) => setOvertimeRowsPerPage(Math.max(1, Number(e.target.value) || 1))}
+              title="Rows per page"
+              className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
+            />
+            <input
+              type="number"
+              min={6}
+              value={overtimePrintFontSize}
+              onChange={(e) => setOvertimePrintFontSize(Math.max(6, Number(e.target.value) || 6))}
+              title="Print font size"
+              className="h-10 w-20 border border-stroke bg-white px-3 text-center text-sm text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark dark:text-white"
+            />
+            <PrintButton
+              label="Print"
+              onClick={handleOvertimePrint}
+              className="h-10 px-5"
+              disabled={attendance.loading || employeeState.loading}
+            />
+          </div>
+        )}
       </div>
 
       {reportType === 'overtime' ? (
-        <OvertimeReportPrint
-          ref={overtimePrintRef}
-          title={overtimeMatrixTitle}
-          dates={overtimeDates}
-          rows={overtimeMatrixRows}
-          dayTotals={overtimeDayTotals}
-          grandTotal={overtimeGrandTotal}
-          screen
-        />
+        <>
+          <OvertimeReportPrint
+            title={overtimeMatrixTitle}
+            dates={overtimeDates}
+            rows={overtimeMatrixRows}
+            dayTotals={overtimeDayTotals}
+            grandTotal={overtimeGrandTotal}
+            screen
+          />
+          <div className="fixed left-[-10000px] top-0">
+            <OvertimeReportPrint
+              ref={overtimePrintRef}
+              title={overtimeMatrixTitle}
+              dates={overtimeDates}
+              rows={overtimeMatrixRows}
+              dayTotals={overtimeDayTotals}
+              grandTotal={overtimeGrandTotal}
+              rowsPerPage={overtimeRowsPerPage}
+              fontSize={overtimePrintFontSize}
+            />
+          </div>
+        </>
       ) : (
         <Table columns={columns} data={displayRows} />
       )}
