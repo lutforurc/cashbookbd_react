@@ -108,26 +108,13 @@ const SignIn: React.FC = () => {
 
         <div className="grid h-full grid-cols-1 xl:grid-cols-2">
 
-          <div className="hidden xl:flex items-center justify-center xl:border-r-2 border-stroke dark:border-strokedark bg-strokedark">
-            <div className="w-full max-w-lg px-10 py-12 text-center">
-              <Link className="mb-6 inline-block" to="/" />
-
-              <p className="mb-6 text-sm text-white/90 font-semibold text-left">
-                Accounting, Inventory and HRMS System.
-              </p>
-
-              {/* <img
-                src={coverImg}
-                alt="Inventory & Accounting Management System"
-                className="mx-auto w-full max-w-md shadow-sm object-contain"
-              /> */}
-
-              <div className="mt-6 grid grid-cols-1 gap-2 text-left text-sm text-white/90">
-                <p>• Track Sales, Purchase, Stock</p>
-                <p>• Voucher, Ledger, Reports</p>
-                <p>• HRMS & Payroll workflow</p>
-              </div>
-            </div>
+          {/* LEFT: Branding Image */}
+          <div className="relative hidden h-full overflow-hidden xl:block xl:border-r-2 border-stroke dark:border-strokedark bg-strokedark">
+            <img
+              src="/cover-page.svg"
+              alt="Sign In Cover"
+              className="absolute inset-0 h-full w-full object-fill"
+            />
           </div>
 
           {/* RIGHT: Form Panel */}
