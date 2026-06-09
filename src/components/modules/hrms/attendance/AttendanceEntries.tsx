@@ -28,8 +28,11 @@ import { chartDate, formatDateUsdToBd, formatLongDateUsdToBd } from '../../../ut
 
 const today = new Date().toISOString().slice(0, 10);
 
-const commandButtonClass = 'h-10 min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
-const iconButtonClass = 'inline-flex h-8 w-8 items-center justify-center rounded-none bg-slate-700 text-white hover:bg-slate-600';
+const iconButtonClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary text-white transition hover:bg-opacity-90';
+const iconSuccessClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-success text-white transition hover:bg-opacity-90';
+const iconDangerClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-danger text-white transition hover:bg-opacity-90';
+const iconNeutralClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-meta-3 text-white transition hover:bg-opacity-90';
+const sectionLabelClass = 'mb-2 block text-sm font-medium text-black dark:text-white';
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -114,6 +117,37 @@ const isLateAttendance = (row: any) => {
 };
 
 const displayStatus = (row: any) => (isLateAttendance(row) ? 'late' : row?.status);
+
+const statusBadgeClass = (status: string) => {
+  const map: Record<string, string> = {
+    present: 'bg-success/10 text-success',
+    absent: 'bg-danger/10 text-danger',
+    late: 'bg-warning/10 text-warning',
+    early_out: 'bg-warning/10 text-warning',
+    half_day: 'bg-primary/10 text-primary',
+    leave: 'bg-meta-3/10 text-meta-3',
+    holiday: 'bg-bodydark2/10 text-bodydark2',
+    weekly_holiday: 'bg-bodydark2/10 text-bodydark2',
+    pending: 'bg-warning/10 text-warning',
+  };
+  return map[status] || 'bg-bodydark2/10 text-bodydark2';
+};
+
+const approvalBadgeClass = (status: string) => {
+  const map: Record<string, string> = {
+    approved: 'bg-success/10 text-success',
+    rejected: 'bg-danger/10 text-danger',
+    pending: 'bg-warning/10 text-warning',
+    'pending save': 'bg-primary/10 text-primary',
+  };
+  return map[status] || 'bg-warning/10 text-warning';
+};
+
+const StatusBadge = ({ value, tone }: { value: string; tone: string }) => (
+  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${tone}`}>
+    {String(value || '-').replace(/_/g, ' ')}
+  </span>
+);
 
 const shiftWorkMinutes = (shift: any) => {
   const startMinutes = parseTimeMinutes(shift?.start_time || shift?.shift_start_time);
@@ -627,8 +661,22 @@ const AttendanceEntries = ({ user }: any) => {
       header: 'OT Hr.',
       render: (row: any) => formatOtHours(row.overtime_minutes || attendanceOvertimeMinutes(row, shifts) || 0),
     },
-    { key: 'status', header: 'Status', render: (row: any) => displayStatus(row) },
-    { key: 'approval_status', header: 'Approval', render: (row: any) => (row.__pending ? 'pending save' : row.approval_status) },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (row: any) => {
+        const value = displayStatus(row);
+        return <StatusBadge value={value} tone={statusBadgeClass(value)} />;
+      },
+    },
+    {
+      key: 'approval_status',
+      header: 'Approval',
+      render: (row: any) => {
+        const value = row.__pending ? 'pending save' : row.approval_status;
+        return <StatusBadge value={value} tone={approvalBadgeClass(value)} />;
+      },
+    },
     {
       key: 'action',
       header: 'Action',
@@ -661,12 +709,12 @@ const AttendanceEntries = ({ user }: any) => {
                 <FiEdit2 />
               </button>
               {row.id && row.status === 'rejected' && (
-                <button type="button" title="Cancel rejected" onClick={() => handleApproval(row, 'approved', 'Rejected attendance restored')} className={iconButtonClass}>
+                <button type="button" title="Cancel rejected" onClick={() => handleApproval(row, 'approved', 'Rejected attendance restored')} className={iconNeutralClass}>
                   <FiRefreshCcw />
                 </button>
               )}
               {row.id && row.approval_status !== 'approved' && row.status !== 'rejected' && (
-                <button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconButtonClass}>
+                <button type="button" title="Approve" onClick={() => handleApproval(row, 'approved')} className={iconSuccessClass}>
                   <FiCheck />
                 </button>
               )}
@@ -683,13 +731,13 @@ const AttendanceEntries = ({ user }: any) => {
                         : 'Attendance rejected from list',
                     )
                   }
-                  className={iconButtonClass}
+                  className={iconDangerClass}
                 >
                   <FiX />
                 </button>
               )}
               {row.id && row.approval_status === 'rejected' && (
-                <button type="button" title="Delete attendance" onClick={() => handleDelete(row)} className={iconButtonClass}>
+                <button type="button" title="Delete attendance" onClick={() => handleDelete(row)} className={iconDangerClass}>
                   <FiTrash2 />
                 </button>
               )}
@@ -707,10 +755,24 @@ const AttendanceEntries = ({ user }: any) => {
       <HelmetTitle title="Manual Attendance" />
       {attendance.loading && <Loader />}
 
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <FiUsers className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="text-lg font-semibold text-black dark:text-white">Manual Attendance</h2>
+          <p className="text-sm text-bodydark2">Record, load and approve daily attendance entries</p>
+        </div>
+      </div>
+
+      <div className="mb-4 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-6">
+        <h3 className="mb-4 border-b border-stroke pb-3 text-base font-medium text-black dark:border-strokedark dark:text-white">
+          Attendance Entry
+        </h3>
+        <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <div>
-            <label className="text-black dark:text-white">Employee</label>
+            <label className={sectionLabelClass}>Employee</label>
             <EmployeeDropdownSearch
               id="employee_id"
               name="employee_id"
@@ -727,7 +789,7 @@ const AttendanceEntries = ({ user }: any) => {
             />
           </div>
           <div>
-            <label className="text-black dark:text-white">Branch</label>
+            <label className={sectionLabelClass}>Branch</label>
             <BranchDropdown
               name="branch_id"
               defaultValue={userBranchId}
@@ -765,7 +827,8 @@ const AttendanceEntries = ({ user }: any) => {
             buttonLoading={buttonLoading}
             disabled={form.id && form.approval_status === 'approved'}
             label={form.employee_id ? 'Update Single' : 'Save Single'}
-            className={commandButtonClass}
+            // className={commandButtonClass}
+            className =" h-9"
             icon={<FiSave className="mr-2" />}
           />
           <ButtonLoading
@@ -773,21 +836,32 @@ const AttendanceEntries = ({ user }: any) => {
             onClick={handleBulkSubmit}
             buttonLoading={bulkLoading}
             label="Bulk Entry"
-            className={commandButtonClass}
+            className =" h-9"
             icon={<FiUsers className="mr-2" />}
           />
-          <button type="button" onClick={reset} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
-            <FiRefreshCcw className="mr-2" />
-            Reset
-          </button>
-          <button type="button" onClick={handleBulkLoad} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
-            <FiSearch className="mr-2" />
-            Load
-          </button>
+          <ButtonLoading
+            type="button"
+            onClick={reset}
+            label="Reset"
+            className =" h-9"
+            icon={<FiRefreshCcw className="mr-2" />}
+          />
+          <ButtonLoading
+            type="button"
+            onClick={handleBulkLoad}
+            label="Load"
+            className =" h-9 w-30"
+            icon={<FiSearch className="mr-2" />}
+          />
         </div>
-      </form>
+        </form>
+      </div>
 
-      <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-5">
+      <div className="mb-4 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-6">
+        <h3 className="mb-4 border-b border-stroke pb-3 text-base font-medium text-black dark:border-strokedark dark:text-white">
+          Filter &amp; Approval
+        </h3>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
         <InputDatePicker
           id="date_from"
           name="date_from"
@@ -807,7 +881,7 @@ const AttendanceEntries = ({ user }: any) => {
           className="h-9 w-full"
         />
         <div>
-          <label className="text-black dark:text-white">Branch</label>
+          <label className={sectionLabelClass}>Branch</label>
           <BranchDropdown
             name="branch_id"
             defaultValue={userBranchId}
@@ -817,25 +891,32 @@ const AttendanceEntries = ({ user }: any) => {
             className="h-9 w-full font-medium text-sm p-1.5"
           />
         </div>
-        <div className="flex items-end">
-          <button type="button" onClick={() => loadEntries()} className={commandButtonClass}>
-            Load
-          </button>
-        </div>
-        <div className="flex items-end">
+        <div className="flex items-end gap-2">
+          <ButtonLoading
+            type="button"
+            onClick={() => loadEntries()}
+            label="Load"
+            className =" h-9 w-30"
+            icon={<FiSearch className="mr-2" />}
+          />
+        {/* </div>
+        <div className="flex items-end"> */}
           <ButtonLoading
             type="button"
             onClick={handleBulkApprove}
             buttonLoading={bulkApproveLoading}
             disabled={bulkApproveLoading || (pendingRowsList().length === 0 && entries.every((row: any) => row?.approval_status === 'approved'))}
             label="Bulk Approve"
-            className={commandButtonClass}
+            className =" h-9"
             icon={<FiCheck className="mr-2" />}
           />
         </div>
+        </div>
       </div>
 
-      <Table columns={columns} data={displayEntries} />
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <Table columns={columns} data={displayEntries} />
+      </div>
     </div>
   );
 };
