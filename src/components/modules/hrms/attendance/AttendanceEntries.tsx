@@ -765,10 +765,17 @@ const AttendanceEntries = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="mb-4 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-6">
-        <h3 className="mb-4 border-b border-stroke pb-3 text-base font-medium text-black dark:border-strokedark dark:text-white">
-          Attendance Entry
-        </h3>
+      <div className="mb-4 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="flex items-center gap-3 border-b border-stroke px-4 py-3 dark:border-strokedark sm:px-6">
+          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <FiEdit2 className="h-5 w-5" />
+          </span>
+          <div>
+            <h3 className="text-base font-semibold text-black dark:text-white">Attendance Entry</h3>
+            <p className="text-xs text-bodydark2">Single or bulk daily attendance</p>
+          </div>
+        </div>
+        <div className="p-4 sm:p-6">
         <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <div>
@@ -821,7 +828,7 @@ const AttendanceEntries = ({ user }: any) => {
             {rosterMessage}
           </div>
         )}
-        <div className="mt-3 flex gap-2">
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-stroke pt-4 dark:border-strokedark">
           <ButtonLoading
             type="submit"
             buttonLoading={buttonLoading}
@@ -855,12 +862,20 @@ const AttendanceEntries = ({ user }: any) => {
           />
         </div>
         </form>
+        </div>
       </div>
 
-      <div className="mb-4 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-6">
-        <h3 className="mb-4 border-b border-stroke pb-3 text-base font-medium text-black dark:border-strokedark dark:text-white">
-          Filter &amp; Approval
-        </h3>
+      <div className="mb-4 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="flex items-center gap-3 border-b border-stroke px-4 py-3 dark:border-strokedark sm:px-6">
+          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-meta-3/10 text-meta-3">
+            <FiSearch className="h-5 w-5" />
+          </span>
+          <div>
+            <h3 className="text-base font-semibold text-black dark:text-white">Filter &amp; Approval</h3>
+            <p className="text-xs text-bodydark2">Load entries and approve in bulk</p>
+          </div>
+        </div>
+        <div className="p-4 sm:p-6">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
         <InputDatePicker
           id="date_from"
@@ -912,9 +927,21 @@ const AttendanceEntries = ({ user }: any) => {
           />
         </div>
         </div>
+        </div>
       </div>
 
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark sm:px-6">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <FiUsers className="h-5 w-5" />
+            </span>
+            <h3 className="text-base font-semibold text-black dark:text-white">Attendance List</h3>
+          </div>
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            {displayEntries.length} entries
+          </span>
+        </div>
         <Table columns={columns} data={displayEntries} />
       </div>
     </div>
