@@ -4,7 +4,18 @@ import { dispatchRemittance, getDashboard } from './dashboardSlice';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import TransactionChart from './TransactionChart';
-import { FaCheckCircle, FaMinus, FaPlus, FaSpinner } from 'react-icons/fa';
+import {
+  FaCheckCircle,
+  FaMinus,
+  FaPlus,
+  FaSpinner,
+  FaArrowDown,
+  FaArrowUp,
+  FaWallet,
+  FaRegClock,
+  FaRegCalendarAlt,
+  FaShoppingCart,
+} from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 import {
@@ -204,113 +215,146 @@ const ConstructionDashboard = () => {
   return (
     <>
       <HelmetTitle title="Construction Dashboard" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:text-xs xl:grid-cols-4 gap-10 flex-wrap">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {dashboard.isLoading == false ? (
           <>
-            <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
-              <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
-                <span className="text-sm font-bold">
+            {/* Branch summary card */}
+            <div className="group relative flex flex-col bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700">
+              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {dashboard?.data &&
                     !dashboard.isLoading &&
                     dashboard?.data?.branch?.name}
                 </span>
+                <FaWallet className="shrink-0 text-indigo-500" />
               </div>
-              <div className="p-4">
-                <div className="mb-2 text-sm ">
-                  Trx Date:{' '}
-                  <span className="italic font-bold">
-                    {' '}
-                    {settings?.data?.trx_dt}
+
+              <div className="divide-y divide-slate-100 dark:divide-gray-700">
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-gray-700 dark:text-slate-300">
+                    <FaRegCalendarAlt className="text-sm" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                      Trx Date
+                    </p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-100">
+                      {settings?.data?.trx_dt}
+                    </p>
+                  </div>
                 </div>
-                <div className="mb-2 text-sm ">
-                  Today Received:{' '}
-                  <span className="italic font-bold">
-                    {' '}
-                    {dashboard?.data?.todayReceived?.debit > 0
-                      ? thousandSeparator(
-                        dashboard?.data?.todayReceived?.debit)
-                      : 0}
+
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    <FaArrowDown className="text-sm" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                      Today Received
+                    </p>
+                    <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                      {dashboard?.data?.todayReceived?.debit > 0
+                        ? thousandSeparator(dashboard?.data?.todayReceived?.debit)
+                        : 0}
+                    </p>
+                  </div>
                 </div>
-                <div className="mb-2 text-sm ">
-                  Today Payment:{' '}
-                  <span className="italic font-bold">
-                    {' '}
-                    {dashboard?.data?.todayReceived?.credit > 0
-                      ? thousandSeparator(
-                        dashboard?.data?.todayReceived?.credit)
-                      : 0}
+
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
+                    <FaArrowUp className="text-sm" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                      Today Payment
+                    </p>
+                    <p className="text-base font-bold text-rose-600 dark:text-rose-400">
+                      {dashboard?.data?.todayReceived?.credit > 0
+                        ? thousandSeparator(dashboard?.data?.todayReceived?.credit)
+                        : 0}
+                    </p>
+                  </div>
                 </div>
-                <div className="mb-2 text-sm ">
-                  Balance:{' '}
-                  <span className="italic font-bold">
-                    {' '}
-                    {dashboard?.data &&
-                      !dashboard.isLoading &&
-                      thousandSeparator(
-                        (Number(dashboard?.data?.totalTransaction?.debit) ||
-                          0) -
-                        (Number(dashboard?.data?.totalTransaction?.credit) ||
-                          0))}
+
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                    <FaWallet className="text-sm" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                      Balance
+                    </p>
+                    <p className="text-base font-bold text-indigo-600 dark:text-indigo-300">
+                      {dashboard?.data &&
+                        !dashboard.isLoading &&
+                        thousandSeparator(
+                          (Number(dashboard?.data?.totalTransaction?.debit) ||
+                            0) -
+                          (Number(dashboard?.data?.totalTransaction?.credit) ||
+                            0))}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="mx-3 border-t border-slate-200 pb-3 pt-2 px-1">
-                <span className="text-sm font-medium">
-                  Last updated: {dashboard?.data?.last_update}
-                </span>
+
+              <div className="mt-auto flex items-center gap-1.5 bg-slate-50 px-4 py-2 text-xs text-slate-400 dark:bg-gray-700/50 dark:text-slate-400">
+                <FaRegClock className="text-[11px]" />
+                <span>Last updated: {dashboard?.data?.last_update}</span>
               </div>
             </div>
 
             {dashboard?.data?.topProductsPurchase?.length > 0 && (
-              <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
+              <div className="group relative flex flex-col bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700">
                 {/* Header */}
-                <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
-                  <span className="text-sm font-bold">
-                    Top Purchase (Last 7 Days)
+                <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                  <span className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
+                    Top Purchase
+                  </span>
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                    Last 7 Days
                   </span>
                 </div>
                 {/* Body */}
-                <div className={`p-4 max-h-72 overflow-y-auto`}>
+                <div className="max-h-72 overflow-y-auto p-3">
                   {dashboard?.data?.topProductsPurchase?.length > 0 ? (
-                    <ul className="space-y-2">
+                    <ul className="space-y-1">
                       {dashboard?.data?.topProductsPurchase.map(
-                        (item, index) => {
+                        (item: any, index: number) => {
                           const nameLength = item.name?.length || 0;
                           const fontClass =
                             nameLength <= 10
                               ? 'text-[13px]'
                               : nameLength <= 20
                                 ? 'text-[12px]'
-                                : 'text-[10px]';
+                                : 'text-[11px]';
                           return (
                             <li
                               key={item.product_id}
-                              className="flex items-center justify-between border-b border-slate-200 dark:border-gray-600 rounded transition"
+                              className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-slate-50 dark:hover:bg-gray-700/60"
                             >
-                              <div className="flex-1">
-                                <span
-                                  className={`font-medium truncate block ${fontClass}`}
-                                >
-                                  {index + 1}. {item.name}
-                                </span>
-                              </div>
-                              <div className="ml-2">
-                                <span className={`font-bold ${fontClass}`}>
-                                  {thousandSeparator((Number(item.qty)))}
-                                </span>
-                              </div>
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[11px] font-bold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                                {index + 1}
+                              </span>
+                              <span
+                                className={`flex-1 truncate font-medium text-slate-700 dark:text-slate-100 ${fontClass}`}
+                              >
+                                {item.name}
+                              </span>
+                              <span
+                                className={`shrink-0 rounded-md bg-slate-100 px-2 py-0.5 font-bold text-slate-700 dark:bg-gray-700 dark:text-slate-100 ${fontClass}`}
+                              >
+                                {thousandSeparator(Number(item.qty))}
+                              </span>
                             </li>
                           );
                         },
                       )}
                     </ul>
                   ) : (
-                    <p className="text-sm italic text-gray-500 dark:text-gray-300">
-                      No sales found
-                    </p>
+                    <div className="flex h-32 flex-col items-center justify-center gap-2 text-slate-400">
+                      <FaShoppingCart className="text-2xl" />
+                      <p className="text-sm italic">No purchase found</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -324,12 +368,12 @@ const ConstructionDashboard = () => {
       {!dashboard.isLoading && hasReceiveDetails ? (
         <>
           <div className="grid grid-cols-1 mt-6">
-            <div className="w-full xl:w-[500px] bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
-              <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 flex justify-between">
-                <span className="text-sm font-bold">
+            <div className="w-full xl:w-[560px] bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden dark:bg-gray-800 dark:ring-gray-700">
+              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                <span className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {!dashboard.isLoading && dashboard?.data?.transactionText}
                 </span>
-                <span>
+                <span className="rounded-full bg-sky-100 px-3 py-0.5 text-sm font-semibold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
                   {totalDebit ? `Tk. ${thousandSeparator(totalDebit)}` : '-'}
                 </span>
               </div>
@@ -351,21 +395,22 @@ const ConstructionDashboard = () => {
 
                   return (
                     <div
-                      className="border-b border-slate-200 last:border-b-0 dark:border-gray-600"
+                      className="border-b border-slate-100 last:border-b-0 dark:border-gray-700"
                       key={branchKey}
                     >
                       <button
                         type="button"
                         onClick={() => toggleBranchDetails(branchKey)}
-                        className={`w-full px-3 py-2 text-left ${
+                        className={`w-full bg-slate-50 px-4 py-2.5 text-left transition hover:bg-slate-100 dark:bg-gray-700/40 dark:hover:bg-gray-700 ${
                           isHeadOfficeBranch ? 'cursor-pointer' : 'cursor-default'
                         }`}
                       >
                         <div className="flex items-center gap-2 text-xs min-[462px]:text-sm">
-                          <span className="font-semibold flex-1">{branchName}</span>
-                          <span className="font-semibold whitespace-nowrap">
-                            <span className="mr-2"></span>
-                            <span>{thousandSeparator(branchTotal)}</span>
+                          <span className="flex-1 font-semibold text-slate-700 dark:text-slate-100">
+                            {branchName}
+                          </span>
+                          <span className="font-bold text-slate-800 whitespace-nowrap dark:text-white">
+                            {thousandSeparator(branchTotal)}
                           </span>
                           <span className="w-5 text-right text-sky-600">
                             {isHeadOfficeBranch ? (
@@ -380,7 +425,7 @@ const ConstructionDashboard = () => {
                       </button>
 
                       {isExpanded && (
-                        <div className="pb-1">
+                        <div>
                           {items.map((item: any, index: number) => {
                             const itemKey = getReceiveDetailStatusKey(item);
                             const isProcessed =
@@ -389,46 +434,46 @@ const ConstructionDashboard = () => {
 
                             return (
                               <div
-                                className="px-3 py-2 flex items-center border-t border-slate-100 dark:border-gray-600"
+                                className="flex items-center border-t border-slate-100 px-4 py-2 transition hover:bg-sky-50/50 dark:border-gray-700 dark:hover:bg-gray-700/40"
                                 key={`${branchKey}-${itemKey}-${index}`}
                               >
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                  <div className="text-xs min-[462px]:text-sm text-center w-6 shrink-0">
+                                <div className="flex min-w-0 flex-1 items-center gap-3">
+                                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500 dark:bg-gray-700 dark:text-slate-300">
                                     {index + 1}
                                   </div>
-                                  <div className="text-xs min-[462px]:text-sm flex-[1.35] min-w-0 font-medium truncate">
+                                  <div className="min-w-0 flex-[1.35] truncate text-xs font-semibold text-slate-700 min-[462px]:text-sm dark:text-slate-100">
                                     {item.vr_no}
                                   </div>
-                                  <div className="text-xs min-[462px]:text-sm flex-1 min-w-0 font-medium">
+                                  <div className="min-w-0 flex-1 text-xs text-slate-500 min-[462px]:text-sm dark:text-slate-400">
                                     {formatDate(item.vr_date)}
                                   </div>
                                 </div>
-                                <div className="text-xs min-[462px]:text-sm w-26 min-[462px]:w-32 text-right shrink-0">
+                                <div className="w-26 shrink-0 text-right text-xs font-bold text-slate-800 min-[462px]:w-32 min-[462px]:text-sm dark:text-white">
                                   {thousandSeparator(item.debit)}
                                 </div>
-                                <div className="text-xs min-[462px]:text-sm w-8 min-[462px]:w-10 ml-3 mr-2 text-right">
+                                <div className="ml-3 mr-2 w-8 text-right text-sm min-[462px]:w-10">
                                   {!isProcessed ? (
                                     isHeadOfficeBranch ? (
-                                      <FaRightToBracket className="text-red-500 text-sm inline-block" />
+                                      <FaRightToBracket className="inline-block text-sm text-red-500" />
                                     ) : (
                                       <div
                                         onClick={() =>
                                           !isLoading &&
                                           handleCheckCircleClick(item)
                                         }
-                                        className="inline-block cursor-pointer"
+                                        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-50 transition hover:bg-red-100 cursor-pointer dark:bg-red-900/30"
                                       >
                                         {isLoading ? (
-                                          <FaSpinner className="text-red-500 text-sm animate-spin" />
+                                          <FaSpinner className="animate-spin text-sm text-red-500" />
                                         ) : successItems[itemKey] ? (
-                                          <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                                          <FaCheckCircle className="inline-block text-sm text-green-500" />
                                         ) : (
-                                          <FaRightToBracket className="text-red-500 text-sm" />
+                                          <FaRightToBracket className="text-sm text-red-500" />
                                         )}
                                       </div>
                                     )
                                   ) : (
-                                    <FaCheckCircle className="inline-block text-green-500 text-sm" />
+                                    <FaCheckCircle className="inline-block text-sm text-green-500" />
                                   )}
                                 </div>
                               </div>

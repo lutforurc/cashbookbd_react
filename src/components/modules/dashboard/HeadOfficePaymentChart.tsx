@@ -37,53 +37,93 @@ const HeadOfficePaymentChart: React.FC = () => {
   }, [charts?.headOfficePayment?.data?.data]);
 
 
-  const options = {
+  const isDark = colorMode === 'dark';
+  const axisColor = isDark ? '#94a3b8' : '#94a3b8';
+
+  const options: any = {
     chart: {
-      type: "area",
-      height: 350,
-      zoom: {
-        enabled: false
-      },
-      toolbar: { show: false }
+      type: 'line',
+      height: 360,
+      fontFamily: 'inherit',
+      foreColor: axisColor,
+      zoom: { enabled: false },
+      toolbar: { show: false },
+      animations: { enabled: true, easing: 'easeinout', speed: 700 },
     },
-    
-    labels: {
-      style: {
-        fontSize: '12px'
-      },
-      formatter: (defaultValue: number): string => {
-        return (defaultValue / 1000).toString();
-      }
-    },
+
     dataLabels: { enabled: false },
-    legend: { show: false },
-    stroke: { curve: 'smooth', show: true, width: 3 },
-    colors: ['#2E93fA', '#66DA26', '#546E7A', '#E91E63', '#FF9800', '#DC9899', '#A6D21E'],
-    xaxis: { categories: chartData.labels },
+
+    legend: {
+      show: true,
+      position: 'bottom',
+      horizontalAlign: 'center',
+      fontSize: '12px',
+      fontWeight: 600,
+      offsetY: 4,
+      markers: { width: 9, height: 9, radius: 12 },
+      labels: { colors: isDark ? '#e2e8f0' : '#475569' },
+      itemMargin: { horizontal: 8, vertical: 3 },
+    },
+
+    stroke: { curve: 'smooth', width: 2.5, lineCap: 'round' },
+
+    colors: [
+      '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+      '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#14b8a6',
+    ],
+
+    grid: {
+      borderColor: isDark ? '#334155' : '#eef2f7',
+      strokeDashArray: 4,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+      padding: { left: 12, right: 12 },
+    },
+
+    markers: { size: 0, hover: { size: 5 }, strokeWidth: 2 },
+
+    xaxis: {
+      categories: chartData.labels,
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      tooltip: { enabled: false },
+      labels: { style: { colors: axisColor, fontSize: '12px' } },
+    },
+
     yaxis: {
-    title: {
-        text: 'Payment'
+      title: {
+        text: 'Payment',
+        style: { color: axisColor, fontSize: '12px', fontWeight: 600 },
       },
       labels: {
-        formatter: function (value:number) {
-          return thousandSeparator(value);
-        }
-      }
+        formatter: (value: number) => thousandSeparator(value),
+        style: { colors: axisColor, fontSize: '12px' },
+      },
     },
-    title: { text: "Payment from Head Office to Branch", align: "center", style: { color: titleColor } },
+
+    title: {
+      text: 'Payment from Head Office to Branch',
+      align: 'center',
+      style: { color: titleColor, fontSize: '15px', fontWeight: 700 },
+    },
+
     tooltip: {
-      enabled: true, theme: "dark", style: { fontSize: "12px" },
-      y: {
-        formatter: (value: number): string => {
-          return `${ thousandSeparator (value)}`;
-        }
-      }
-    }
+      enabled: true,
+      theme: isDark ? 'dark' : 'light',
+      style: { fontSize: '12px' },
+      y: { formatter: (value: number) => `${thousandSeparator(value)}` },
+    },
   };
+
   return (
-    <div>
+    <div className="bg-white p-4 shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700">
       {chartData.series.length > 0 ? (
-        <ApexChart options={options} series={chartData.series} type="line" height={350} />
+        <ApexChart
+          options={options}
+          series={chartData.series}
+          type="line"
+          height={360}
+        />
       ) : (
         ''
         // <Loader />
