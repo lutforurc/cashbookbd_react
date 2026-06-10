@@ -12,7 +12,13 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import Link from '../../../utils/others/Link';
 import { toast } from 'react-toastify';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
-import { employeeLoan, employeeLoanDisbursement, employeeLoanLedger } from './employeeLoanSlice';
+import {
+  employeeLoan,
+  employeeLoanDisbursement,
+  employeeLoanLedger,
+  employeeLoanSearch,
+  employeeLoanUpdate,
+} from './employeeLoanSlice';
 
 interface LoanPayload {
   id: string | number;
@@ -22,6 +28,12 @@ interface LoanPayload {
   amount: number | string;
 }
 
+interface LoanEditInfo {
+  loan_detail_id: number;
+  main_trx_id: number;
+  vr_no: string;
+}
+
 const EmployeeLoan = () => {
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
@@ -29,8 +41,12 @@ const EmployeeLoan = () => {
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
 
-  // ✅ single payload state
+  // When set, the form is editing an existing loan disbursement.
+  const [editInfo, setEditInfo] = useState<LoanEditInfo | null>(null);
+
+  // âœ… single payload state
   const [tx, setTx] = useState<LoanPayload>({
     id: Date.now(),
     account: '',
@@ -59,12 +75,52 @@ const EmployeeLoan = () => {
     }));
   };
 
+  const resetForm = () => {
+    setTx({
+      id: Date.now(),
+      account: '',
+      accountName: '',
+      remarks: '',
+      amount: '',
+    });
+    setEditInfo(null);
+    setSearch('');
+  };
+
   const searchTransaction = async () => {
-    if (search === '') {
-      toast.error('Please enter a search value.');
+    const vrNo = search.trim();
+    if (vrNo === '') {
+      toast.error('Please enter a voucher number to search.');
       return;
     }
-    toast.info('Search এখনো implement করা হয়নি (Single Entry Mode)।');
+
+    setSearchLoading(true);
+    try {
+      const data = await dispatch(employeeLoanSearch({ vr_no: vrNo })).unwrap();
+
+      if (data.is_approved === 1) {
+        toast.error('Approved loan cannot be edited.');
+        return;
+      }
+
+      setTx({
+        id: data.loan_detail_id,
+        account: String(data.account ?? ''),
+        accountName: String(data.accountName ?? ''),
+        remarks: data.remarks ?? '',
+        amount: data.amount ?? '',
+      });
+      setEditInfo({
+        loan_detail_id: data.loan_detail_id,
+        main_trx_id: data.main_trx_id,
+        vr_no: data.vr_no,
+      });
+      toast.success(`Loan loaded for editing (Vr. No. ${data.vr_no}).`);
+    } catch (error: any) {
+      toast.info(typeof error === 'string' ? error : error?.message || 'No employee loan found.');
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   const handleSave = useCallback(async () => {
@@ -78,6 +134,25 @@ const EmployeeLoan = () => {
     setSaveButtonLoading(true);
 
     try {
+      // ===== Edit mode: update an existing loan disbursement =====
+      if (editInfo) {
+        const result = await dispatch(
+          employeeLoanUpdate({
+            loan_detail_id: editInfo.loan_detail_id,
+            main_trx_id: editInfo.main_trx_id,
+            account: tx.account,
+            accountName: tx.accountName,
+            remarks: tx.remarks ?? '',
+            amount: Number(tx.amount),
+          })
+        ).unwrap();
+
+        toast.success(result?.message || 'Loan updated successfully.');
+        resetForm();
+        return;
+      }
+
+      // ===== Create mode: new loan disbursement =====
       const payload = {
         id: tx.id,
         account: tx.account,
@@ -107,12 +182,12 @@ const EmployeeLoan = () => {
         });
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Something went wrong while saving.');
+      toast.info(typeof error === 'string' ? error : error?.message || 'Something went wrong while saving.');
     } finally {
       setSaveButtonLoading(false);
       setIsLoading(false);
     }
-  }, [saveButtonLoading, tx, dispatch]);
+  }, [saveButtonLoading, tx, editInfo, dispatch]);
 
   useCtrlS(handleSave);
 
@@ -132,23 +207,29 @@ const EmployeeLoan = () => {
                     <>
                       <div className="w-full mb-4">
                         <label htmlFor="search" className="text-black dark:text-white">
-                          Search Employee Loan
+                          Search Employee Loan (Vr. No.)
                         </label>
                         <InputOnly
                           id="search"
                           value={search}
                           name="search"
-                          placeholder="Search Employee Loan"
+                          placeholder="Enter voucher no. e.g. 2-260600035"
                           label=""
                           className="py-1 w-full"
                           onChange={(e) => setSearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              searchTransaction();
+                            }
+                          }}
                         />
                       </div>
 
                       <div>
                         <ButtonLoading
                           onClick={searchTransaction}
-                          buttonLoading={false}
+                          buttonLoading={searchLoading}
                           label=" "
                           className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
                           icon={<FiSearch className="text-white text-lg ml-2" />}
@@ -199,6 +280,21 @@ const EmployeeLoan = () => {
                 />
               </div>
 
+              {editInfo && (
+                <div className="mt-3 flex items-center justify-between rounded border border-amber-400/40 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-400/30 dark:bg-amber-900/20 dark:text-amber-300">
+                  <span>
+                    Editing loan — Vr. No. <strong>{editInfo.vr_no}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="font-medium text-amber-700 underline hover:text-amber-900 dark:text-amber-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+
               <div>
                 <div className="grid grid-cols-2 gap-x-1 gap-y-1 mt-3">
                   <ButtonLoading
@@ -206,7 +302,15 @@ const EmployeeLoan = () => {
                     disabled={saveButtonLoading}
                     onClick={handleSave}
                     buttonLoading={saveButtonLoading}
-                    label={saveButtonLoading ? 'Saving...' : 'Save'}
+                    label={
+                      saveButtonLoading
+                        ? editInfo
+                          ? 'Updating...'
+                          : 'Saving...'
+                        : editInfo
+                          ? 'Update'
+                          : 'Save'
+                    }
                     className="whitespace-nowrap text-center mr-0 p-2"
                     icon={<FiSave className="text-white text-lg ml-2 mr-2 " />}
                   />

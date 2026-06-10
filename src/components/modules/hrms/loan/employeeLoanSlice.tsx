@@ -5,6 +5,8 @@ import {
   API_EMPLOYEE_LOAN_BALANCE_URL,
   API_EMPLOYEE_LOAN_DISBURSEMENT_URL,
   API_EMPLOYEE_LOAN_LEDGER_URL,
+  API_EMPLOYEE_LOAN_SEARCH_URL,
+  API_EMPLOYEE_LOAN_UPDATE_URL,
 } from '../../../services/apiRoutes';
 
 // ===== Types =====
@@ -174,6 +176,79 @@ export const employeeLoanDisbursement = createAsyncThunk<LoanDisbursementRespons
       error?.response?.data?.message ||
       error?.message ||
       'Failed to create loan disbursement';
+    return thunkAPI.rejectWithValue(message);
+  }
+});
+
+// ===== Type: Loan edit (search/update) =====
+export type LoanEditData = {
+  main_trx_id: number;
+  vr_no: string;
+  vr_date: string;
+  loan_master_id: number;
+  loan_detail_id: number;
+  is_approved: number;
+  account: string;
+  accountName: string;
+  remarks: string;
+  amount: number;
+};
+
+// ===== Thunk: Loan Search by voucher number (edit lookup) =====
+export const employeeLoanSearch = createAsyncThunk<
+  LoanEditData,
+  { vr_no: string },
+  { rejectValue: string }
+>('employeeLoan/employeeLoanSearch', async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_EMPLOYEE_LOAN_SEARCH_URL, payload);
+    const raw = response.data;
+
+    if (raw?.success === false) {
+      return thunkAPI.rejectWithValue(raw?.message || 'No employee loan found.');
+    }
+
+    const data = raw?.data?.data ?? null;
+    if (!data) {
+      return thunkAPI.rejectWithValue('No employee loan found for this voucher number.');
+    }
+
+    return data as LoanEditData;
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || error?.message || 'Failed to search employee loan';
+    return thunkAPI.rejectWithValue(message);
+  }
+});
+
+// ===== Thunk: Loan Update (edit save) =====
+export const employeeLoanUpdate = createAsyncThunk<
+  { message: string; vr_no?: string },
+  {
+    loan_detail_id: number;
+    main_trx_id?: number;
+    account: string;
+    accountName: string;
+    remarks: string;
+    amount: number;
+  },
+  { rejectValue: string }
+>('employeeLoan/employeeLoanUpdate', async (payload, thunkAPI) => {
+  try {
+    const response = await httpService.post(API_EMPLOYEE_LOAN_UPDATE_URL, payload);
+    const raw = response.data;
+
+    if (raw?.success === false) {
+      return thunkAPI.rejectWithValue(raw?.message || 'Failed to update employee loan.');
+    }
+
+    return {
+      message: raw?.message || 'Loan updated successfully.',
+      vr_no: raw?.data?.data?.vr_no,
+    };
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || error?.message || 'Failed to update employee loan';
     return thunkAPI.rejectWithValue(message);
   }
 });
