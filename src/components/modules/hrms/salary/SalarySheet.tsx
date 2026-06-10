@@ -240,7 +240,7 @@ const SalarySheet = ({ user }: any) => {
       header: "Payment Month",
       render: (row: any) => (
         <span
-          className="text-blue-600 cursor-pointer"
+          className="cursor-pointer font-semibold text-blue-600 hover:underline dark:text-blue-400"
           onClick={() => handlePrint(row)}
           title="Click to print salary sheet"
         >
@@ -258,14 +258,14 @@ const SalarySheet = ({ user }: any) => {
       key: "gross_salary",
       header: "Gross Salary",
       headerClass: "text-right",
-      cellClass: "text-right",
+      cellClass: "text-right font-medium text-slate-700 dark:text-slate-200",
       render: (row: any) => thousandSeparator(row.gross_salary),
     },
     {
       key: "net_salary",
       header: "Net Salary",
       headerClass: "text-right",
-      cellClass: "text-right",
+      cellClass: "text-right font-semibold text-slate-900 dark:text-white",
       render: (row: any) => thousandSeparator(row.net_salary),
     },
     {
@@ -273,22 +273,42 @@ const SalarySheet = ({ user }: any) => {
       header: "Loan Ded.",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(row.total_deduction),
+      render: (row: any) => {
+        const value = Number(row.total_deduction || 0);
+        return value > 0 ? (
+          <span className="font-medium text-rose-600 dark:text-rose-400">{thousandSeparator(value)}</span>
+        ) : (
+          <span className="text-slate-400 dark:text-slate-600">-</span>
+        );
+      },
     },
     {
       key: "payment_amount",
       header: "Payment Amount",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(row.payment_amount),
+      render: (row: any) => {
+        const value = Number(row.payment_amount || 0);
+        return value > 0 ? (
+          <span className="font-medium text-emerald-600 dark:text-emerald-400">{thousandSeparator(value)}</span>
+        ) : (
+          <span className="text-slate-400 dark:text-slate-600">-</span>
+        );
+      },
     },
     {
       key: "due",
       header: "Due",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) =>
-        thousandSeparator(Number(row.net_salary) - Number(row.payment_amount)),
+      render: (row: any) => {
+        const due = Number(row.net_salary || 0) - Number(row.payment_amount || 0);
+        return due > 0 ? (
+          <span className="font-semibold text-rose-600 dark:text-rose-400">{thousandSeparator(due)}</span>
+        ) : (
+          <span className="text-slate-400 dark:text-slate-600">-</span>
+        );
+      },
     },
     {
       key: "action",
@@ -301,7 +321,7 @@ const SalarySheet = ({ user }: any) => {
         return (
           <>
             {dueAmount === 0 ? (
-              <span className="text-green-600">Paid</span>
+              <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">Paid</span>
             ) : (
               <select
                 defaultValue=""

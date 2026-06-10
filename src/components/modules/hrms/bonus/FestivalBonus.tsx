@@ -213,7 +213,7 @@ const FestivalBonus = ({ user }: any) => {
       key: "bonus_title",
       header: "Bonus Title",
       render: (row: any) => (
-        <button type="button" onClick={() => handleOpenDetails(row, "print")} className="text-left font-semibold">
+        <button type="button" onClick={() => handleOpenDetails(row, "print")} className="cursor-pointer text-left font-semibold text-blue-600 hover:underline dark:text-blue-400">
           {row.bonus_title}
         </button>
       ),
@@ -224,7 +224,7 @@ const FestivalBonus = ({ user }: any) => {
       key: "bonus_amount",
       header: "Bonus Amount",
       headerClass: "text-right",
-      cellClass: "text-right",
+      cellClass: "text-right font-medium text-slate-700 dark:text-slate-200",
       render: (row: any) => thousandSeparator(Number(row.bonus_amount || 0)),
     },
     {
@@ -232,14 +232,28 @@ const FestivalBonus = ({ user }: any) => {
       header: "Paid",
       headerClass: "text-right",
       cellClass: "text-right",
-      render: (row: any) => thousandSeparator(Number(row.payment_amount || 0)),
+      render: (row: any) => {
+        const value = Number(row.payment_amount || 0);
+        return value > 0 ? (
+          <span className="font-medium text-emerald-600 dark:text-emerald-400">{thousandSeparator(value)}</span>
+        ) : (
+          <span className="text-slate-400 dark:text-slate-600">-</span>
+        );
+      },
     },
     {
       key: "due",
       header: "Due",
       headerClass: "text-right",
-      cellClass: "text-right font-semibold",
-      render: (row: any) => thousandSeparator(Number(row.bonus_amount || 0) - Number(row.payment_amount || 0)),
+      cellClass: "text-right",
+      render: (row: any) => {
+        const due = Number(row.bonus_amount || 0) - Number(row.payment_amount || 0);
+        return due > 0 ? (
+          <span className="font-semibold text-rose-600 dark:text-rose-400">{thousandSeparator(due)}</span>
+        ) : (
+          <span className="text-slate-400 dark:text-slate-600">-</span>
+        );
+      },
     },
     {
       key: "action",
@@ -249,7 +263,7 @@ const FestivalBonus = ({ user }: any) => {
       render: (row: any) => {
         const dueAmount = Number(row.bonus_amount || 0) - Number(row.payment_amount || 0);
         if (dueAmount <= 0) {
-          return <span className="text-green-600">Paid</span>;
+          return <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">Paid</span>;
         }
 
         return (
@@ -401,7 +415,7 @@ const FestivalBonus = ({ user }: any) => {
           </div>
         </div>
 
-        <div className="">
+        <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
           <Table columns={columns} data={tableData} perPage={10} />
         </div>
       </div>
