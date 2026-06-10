@@ -886,7 +886,8 @@ const SalarySheetGenerate = ({ user }: any) => {
       <HelmetTitle title="Salary Generate" />
 
       {/* ===== Top Bar ===== */}
-      <div className="flex justify-between items-center mb-2 ">
+      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="flex flex-wrap justify-between items-center gap-2">
         <div className="max-w-280 flex ">
           <BranchDropdown
             defaultValue={branchId?.toString()}
@@ -960,10 +961,12 @@ const SalarySheetGenerate = ({ user }: any) => {
           )}
         </div>
       </div>
+      </div>
 
       {loading && <Loader />}
 
       {/* ===== TABLE ===== */}
+      <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
       <Table
         columns={columns}
         data={searched ? employees : []}
@@ -993,34 +996,35 @@ const SalarySheetGenerate = ({ user }: any) => {
       />
 
       {/* ===== FOOTER ===== */}
-      <div className="mt-2 p-3 text-sm text-gray-700 dark:text-gray-300 dark:bg-gray-800 rounded-b-sm flex justify-between items-center">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
         <div>
-          Total Employees: <span className="font-semibold">{employees.length}</span>
+          Total Employees: <span className="font-semibold text-slate-900 dark:text-white">{employees.length}</span>
         </div>
 
-        <div className="flex flex-wrap justify-end gap-6">
+        <div className="flex flex-wrap justify-end gap-x-6 gap-y-1">
           <div>
             Total Salary:{" "}
-            <span className="font-semibold">{thousandSeparator(grandTotals.total_salary)}</span>
+            <span className="font-semibold text-slate-900 dark:text-white">{thousandSeparator(grandTotals.total_salary)}</span>
           </div>
           {includeOvertime && (
             <div>
               OT:{" "}
-              <span className="font-semibold">{thousandSeparator(grandTotals.overtime_amount)}</span>
+              <span className="font-semibold text-cyan-600 dark:text-cyan-400">{thousandSeparator(grandTotals.overtime_amount)}</span>
             </div>
           )}
           <div>
             Loan Deduction:{" "}
-            <span className="font-semibold">{thousandSeparator(grandTotals?.loan_deduction)}</span>
+            <span className="font-semibold text-rose-600 dark:text-rose-400">{thousandSeparator(grandTotals?.loan_deduction)}</span>
           </div>
           <div>
             Att. Deduction:{" "}
-            <span className="font-semibold">{thousandSeparator(grandTotals.attendance_deduction)}</span>
+            <span className="font-semibold text-rose-600 dark:text-rose-400">{thousandSeparator(grandTotals.attendance_deduction)}</span>
           </div>
-          <div className="font-bold text-green-700 dark:text-green-400">
+          <div className="font-bold text-emerald-600 dark:text-emerald-400">
             Net Total: {thousandSeparator(grandTotals.net_salary)}
           </div>
         </div>
+      </div>
       </div>
 
       <ConfirmModal

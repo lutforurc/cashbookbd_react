@@ -116,6 +116,27 @@ const isActiveEmployee = (row: any) => {
 const branchNameFromId = (branches: any[], branchId: any) => branches.find((branch) => String(branch.id) === String(branchId))?.name || '-';
 const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
 
+const cardTone = (label: string) => {
+  const map: Record<string, { bar: string; value: string; dot: string }> = {
+    'Active Employee': { bar: 'bg-indigo-500', value: 'text-indigo-600 dark:text-indigo-400', dot: 'bg-indigo-500' },
+    'Attendance Entry': { bar: 'bg-sky-500', value: 'text-sky-600 dark:text-sky-400', dot: 'bg-sky-500' },
+    'Absent/Missing': { bar: 'bg-rose-500', value: 'text-rose-600 dark:text-rose-400', dot: 'bg-rose-500' },
+    Present: { bar: 'bg-emerald-500', value: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' },
+    'Half Day': { bar: 'bg-blue-500', value: 'text-blue-600 dark:text-blue-400', dot: 'bg-blue-500' },
+    Leave: { bar: 'bg-violet-500', value: 'text-violet-600 dark:text-violet-400', dot: 'bg-violet-500' },
+    Late: { bar: 'bg-amber-500', value: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' },
+    'Late Deduction Days': { bar: 'bg-amber-500', value: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' },
+    'Early Out': { bar: 'bg-orange-500', value: 'text-orange-600 dark:text-orange-400', dot: 'bg-orange-500' },
+    'Early Out Deduction Days': { bar: 'bg-orange-500', value: 'text-orange-600 dark:text-orange-400', dot: 'bg-orange-500' },
+    'OT Hr.': { bar: 'bg-teal-500', value: 'text-teal-600 dark:text-teal-400', dot: 'bg-teal-500' },
+    'OT Amount': { bar: 'bg-teal-500', value: 'text-teal-600 dark:text-teal-400', dot: 'bg-teal-500' },
+    'Pending Approval': { bar: 'bg-amber-500', value: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' },
+    Approved: { bar: 'bg-emerald-500', value: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' },
+    Rejected: { bar: 'bg-rose-500', value: 'text-rose-600 dark:text-rose-400', dot: 'bg-rose-500' },
+  };
+  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-white', dot: 'bg-slate-400' };
+};
+
 type AttendanceReportProps = {
   user: any;
   reportTitle?: string;
@@ -404,7 +425,8 @@ const AttendanceReport = ({
       <HelmetTitle title={reportTitle} />
       {(attendance.loading || employeeState.loading) && <Loader />}
 
-      <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-6">
+      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
         <InputDatePicker
           id="date_from"
           name="date_from"
@@ -443,14 +465,22 @@ const AttendanceReport = ({
           </button>
         </div>
       </div>
+      </div>
 
       <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-6">
-        {cards.map((card) => (
-          <div key={card.label} className="border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
-            <div className="text-xs text-slate-500 dark:text-slate-300">{card.label}</div>
-            <div className="text-xl font-semibold text-slate-900 dark:text-white">{card.value}</div>
-          </div>
-        ))}
+        {cards.map((card) => {
+          const tone = cardTone(card.label);
+          return (
+            <div key={card.label} className="relative overflow-hidden border border-slate-200 bg-white p-3 pl-4 dark:border-slate-700 dark:bg-boxdark">
+              <span className={`absolute inset-y-0 left-0 w-1 ${tone.bar}`} />
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300">
+                <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
+                {card.label}
+              </div>
+              <div className={`mt-1 text-xl font-bold ${tone.value}`}>{card.value}</div>
+            </div>
+          );
+        })}
         {reportType === 'overtime' && (
           <div className="flex items-end gap-2">
             <input
@@ -508,7 +538,9 @@ const AttendanceReport = ({
           </div>
         </>
       ) : (
-        <Table columns={columns} data={displayRows} />
+        <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
+          <Table columns={columns} data={displayRows} />
+        </div>
       )}
     </div>
   );

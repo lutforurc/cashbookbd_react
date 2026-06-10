@@ -118,6 +118,12 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 	          color: #0f172a;
 	        }
 
+        .overtime-monthly-print tbody tr:nth-child(even) .serial-cell,
+        .overtime-monthly-print tbody tr:nth-child(even) .name-cell,
+        .overtime-monthly-print tbody tr:nth-child(even) .day-cell {
+          background: #f4f6f9;
+        }
+
         .overtime-monthly-print tfoot td {
           background: #eef2f7;
           color: #0f172a;
@@ -173,7 +179,7 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 	          .overtime-monthly-print .empty-cell,
 	          .overtime-monthly-print .total-label-cell {
 	            border: 1px solid #000000 !important;
-	            padding: 2px 1px !important;
+	            padding: 3px 2px !important;
 	            overflow: hidden !important;
 	          }
 
@@ -209,13 +215,19 @@ const OvertimeReportPrint = React.forwardRef<HTMLDivElement, Props>(
 	            font-weight: 700 !important;
 	          }
 
+          .overtime-monthly-print tbody tr:nth-child(even) .serial-cell,
+          .overtime-monthly-print tbody tr:nth-child(even) .name-cell,
+          .overtime-monthly-print tbody tr:nth-child(even) .day-cell {
+            background: #f4f6f9 !important;
+          }
+
           .overtime-monthly-print .report-heading {
             display: flex !important;
             justify-content: center !important;
             gap: 12px !important;
-            margin-bottom: 3px !important;
-            font-size: 10px !important;
-            font-weight: 400 !important;
+            margin-bottom: 5px !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
             text-align: center !important;
             color: #000000 !important;
           }

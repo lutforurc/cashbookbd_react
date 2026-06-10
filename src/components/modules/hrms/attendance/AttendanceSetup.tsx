@@ -425,29 +425,32 @@ const AttendanceSetup = ({ user }: any) => {
       <HelmetTitle title="Attendance Setup" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-700">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const active = activeTab === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => {
-                setActiveTab(tab.key);
-                fetchTabData(tab.key);
-              }}
-              className={`inline-flex h-10 items-center border-b-2 px-3 text-sm ${
-                active
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-slate-600 hover:text-blue-600 dark:text-slate-300'
-              }`}
-            >
-              <Icon className="mr-2" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      <div className="border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
+        <div className="flex flex-wrap gap-1 border-b border-slate-200 bg-slate-50 px-2 dark:border-slate-700 dark:bg-slate-800">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  fetchTabData(tab.key);
+                }}
+                className={`inline-flex h-11 items-center gap-2 border-b-2 px-4 text-sm font-medium transition ${
+                  active
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-slate-500 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400'
+                }`}
+              >
+                <Icon className="text-base" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="p-4">
 
       {activeTab === 'shift' && (
         <form
@@ -467,7 +470,7 @@ const AttendanceSetup = ({ user }: any) => {
             <DropdownCommon id="is_night_shift" name="is_night_shift" label="Night Shift" value={shiftForm.is_night_shift?.toString()} data={yesNo} onChange={handleChange(setShiftForm)} className="h-9" />
           </div>
           {renderActions(Boolean(shiftForm.id), () => setShiftForm(initialShift))}
-          <div className="mt-3">
+          <div className="mt-3 border border-slate-200 dark:border-slate-700">
             <Table columns={shiftColumns} data={shifts} />
           </div>
         </form>
@@ -497,7 +500,7 @@ const AttendanceSetup = ({ user }: any) => {
             <DropdownCommon id="status" name="status" label="Status" value={policyForm.status?.toString()} data={yesNo} onChange={handleChange(setPolicyForm)} className="h-9" />
           </div>
           {renderActions(Boolean(policyForm.id), () => setPolicyForm(initialPolicy))}
-          <div className="mt-3">
+          <div className="mt-3 border border-slate-200 dark:border-slate-700">
             <Table columns={policyColumns} data={policies} />
           </div>
         </form>
@@ -547,7 +550,7 @@ const AttendanceSetup = ({ user }: any) => {
               Load Roster
             </button>
           </div>
-          <div className="mt-3">
+          <div className="mt-3 border border-slate-200 dark:border-slate-700">
             <Table columns={rosterColumns} data={rosters} />
           </div>
         </form>
@@ -586,7 +589,7 @@ const AttendanceSetup = ({ user }: any) => {
             <InputElement name="remarks" label="Remarks" value={weeklyForm.remarks || ''} onChange={handleChange(setWeeklyForm)} />
           </div>
           {renderActions(Boolean(weeklyForm.id), () => setWeeklyForm(initialWeekly))}
-          <div className="mt-3">
+          <div className="mt-3 border border-slate-200 dark:border-slate-700">
             <Table columns={weeklyColumns} data={weeklyHolidays} />
           </div>
         </form>
@@ -618,7 +621,7 @@ const AttendanceSetup = ({ user }: any) => {
             <InputElement name="remarks" label="Remarks" value={holidayForm.remarks || ''} onChange={handleChange(setHolidayForm)} />
           </div>
           {renderActions(Boolean(holidayForm.id), () => setHolidayForm(initialHoliday))}
-          <div className="mt-3">
+          <div className="mt-3 border border-slate-200 dark:border-slate-700">
             <Table columns={holidayColumns} data={holidays} />
           </div>
         </form>
@@ -642,11 +645,13 @@ const AttendanceSetup = ({ user }: any) => {
             <DropdownCommon id="requires_attachment" name="requires_attachment" label="Attachment" value={leaveTypeForm.requires_attachment?.toString()} data={yesNo} onChange={handleChange(setLeaveTypeForm)} className="h-9" />
           </div>
           {renderActions(Boolean(leaveTypeForm.id), () => setLeaveTypeForm(initialLeaveType))}
-          <div className="mt-3">
+          <div className="mt-3 border border-slate-200 dark:border-slate-700">
             <Table columns={leaveColumns} data={leaveTypes} />
           </div>
         </form>
       )}
+        </div>
+      </div>
     </div>
   );
 };

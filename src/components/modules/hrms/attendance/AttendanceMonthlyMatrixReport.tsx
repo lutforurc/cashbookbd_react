@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FiCheckSquare } from 'react-icons/fi';
+import { FiCheck, FiCheckSquare, FiClock, FiSun, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
@@ -122,6 +122,40 @@ const statusClassName = (code?: string) => {
       return 'status-cell status-half-day';
     default:
       return 'status-cell status-empty';
+  }
+};
+
+const statusGlyph = (code?: string): React.ReactNode => {
+  switch (code) {
+    case '✓':
+      return <FiCheck className="h-3.5 w-3.5" strokeWidth={3} />;
+    case '✕':
+      return <FiX className="h-3.5 w-3.5" strokeWidth={3} />;
+    case '!':
+      return <FiClock className="h-3.5 w-3.5" strokeWidth={2.5} />;
+    case '○':
+      return <FiSun className="h-3.5 w-3.5" strokeWidth={2.5} />;
+    default:
+      return code || null;
+  }
+};
+
+const cellTintClass = (code?: string) => {
+  switch (code) {
+    case '✓':
+      return 'cell-tint cell-tint-present';
+    case '!':
+      return 'cell-tint cell-tint-late';
+    case '✕':
+      return 'cell-tint cell-tint-absent';
+    case '○':
+      return 'cell-tint cell-tint-holiday';
+    case 'L':
+      return 'cell-tint cell-tint-leave';
+    case '½':
+      return 'cell-tint cell-tint-half';
+    default:
+      return '';
   }
 };
 
@@ -282,9 +316,9 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             title={entry?.approval_status === 'approved' ? 'Approved attendance cannot be changed' : code ? 'Click to update manual attendance' : ''}
             onClick={() => openManualAttendance(employee, dateKey, code)}
             disabled={!code}
-            className={`group flex min-h-9 w-full items-center justify-center px-1 py-1 text-center ${isEditable ? 'cursor-pointer hover:bg-indigo-50 dark:hover:bg-slate-700' : 'cursor-default'}`}
+            className={`group flex min-h-9 w-full items-center justify-center px-1 py-1 text-center ${code ? cellTintClass(code) : ''} ${isEditable ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-125' : 'cursor-default'}`}
           >
-            {code ? <span className={`attendance-mark ${statusClassName(code)}`}>{code}</span> : null}
+            {code ? <span className={`attendance-mark ${statusClassName(code)}`}>{statusGlyph(code)}</span> : null}
           </button>
         );
       },
@@ -396,7 +430,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       <HelmetTitle title="Monthly Attendance Report" />
       {attendance.loading && <Loader />}
 
-      <div className="py-3">
+      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
@@ -428,8 +462,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       </div>
       </div>
 
-      <div className="mb-3 rounded-sm bg-white shadow-sm dark:bg-boxdark">
-        <div className="border-b border-gray-200 px-3 py-2 text-sm font-semibold text-slate-800 dark:border-gray-700 dark:text-slate-100">
+      <div className="mb-3 border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
+        <div className="border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
           Monthly Attendance Summary
         </div>
         <Table
@@ -443,7 +477,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         />
       </div>
 
-      <div className="attendance-monthly-screen rounded-sm bg-white shadow-sm dark:bg-boxdark">
+      <div className="attendance-monthly-screen border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
         <style>
           {`
             .attendance-monthly-screen .status-cell {
@@ -456,102 +490,77 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
               height: 24px;
               align-items: center;
               justify-content: center;
-              border-radius: 6px;
-              border: 1px solid currentColor;
+              border-radius: 9999px;
+              color: #ffffff;
               font-size: 13px;
               font-weight: 800;
               line-height: 1;
-              box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+              box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+              transition: transform 0.12s ease;
             }
 
-            .attendance-monthly-screen .status-present {
-              background: #dcfce7;
-              color: #15803d;
+            .attendance-monthly-screen .group:hover .attendance-mark {
+              transform: scale(1.12);
             }
 
-            .attendance-monthly-screen .status-late {
-              background: #fef3c7;
-              color: #b45309;
-            }
+            .attendance-monthly-screen .status-present { background: #16a34a; color: #ffffff; }
+            .attendance-monthly-screen .status-late { background: #d97706; color: #ffffff; }
+            .attendance-monthly-screen .status-absent { background: #dc2626; color: #ffffff; }
+            .attendance-monthly-screen .status-holiday { background: #2563eb; color: #ffffff; }
+            .attendance-monthly-screen .status-leave { background: #ca8a04; color: #ffffff; }
+            .attendance-monthly-screen .status-half-day { background: #7c3aed; color: #ffffff; }
 
-            .attendance-monthly-screen .status-absent {
-              background: #fee2e2;
-              color: #b91c1c;
-            }
+            .dark .attendance-monthly-screen .status-present { background: #22c55e; }
+            .dark .attendance-monthly-screen .status-late { background: #f59e0b; }
+            .dark .attendance-monthly-screen .status-absent { background: #ef4444; }
+            .dark .attendance-monthly-screen .status-holiday { background: #3b82f6; }
+            .dark .attendance-monthly-screen .status-leave { background: #eab308; }
+            .dark .attendance-monthly-screen .status-half-day { background: #8b5cf6; }
 
-            .attendance-monthly-screen .status-holiday {
-              background: #dbeafe;
-              color: #1d4ed8;
+            .attendance-monthly-screen .cell-tint {
+              transition: filter 0.12s ease;
             }
+            .attendance-monthly-screen .cell-tint-present { background: #dcfce7; }
+            .attendance-monthly-screen .cell-tint-late { background: #fef3c7; }
+            .attendance-monthly-screen .cell-tint-absent { background: #fee2e2; }
+            .attendance-monthly-screen .cell-tint-holiday { background: #dbeafe; }
+            .attendance-monthly-screen .cell-tint-leave { background: #fef9c3; }
+            .attendance-monthly-screen .cell-tint-half { background: #f3e8ff; }
 
-            .attendance-monthly-screen .status-leave {
-              background: #fef9c3;
-              color: #a16207;
-            }
-
-            .attendance-monthly-screen .status-half-day {
-              background: #f3e8ff;
-              color: #7e22ce;
-            }
-
-            .dark .attendance-monthly-screen .status-present {
-              background: rgba(22, 163, 74, 0.28);
-              color: #bbf7d0;
-              box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25), 0 0 14px rgba(34, 197, 94, 0.18);
-            }
-
-            .dark .attendance-monthly-screen .status-late {
-              background: rgba(217, 119, 6, 0.3);
-              color: #fde68a;
-              box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25), 0 0 14px rgba(245, 158, 11, 0.18);
-            }
-
-            .dark .attendance-monthly-screen .status-absent {
-              background: rgba(220, 38, 38, 0.3);
-              color: #fecaca;
-              box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25), 0 0 14px rgba(239, 68, 68, 0.18);
-            }
-
-            .dark .attendance-monthly-screen .status-holiday {
-              background: rgba(37, 99, 235, 0.3);
-              color: #bfdbfe;
-              box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.22), 0 0 14px rgba(96, 165, 250, 0.16);
-            }
-
-            .dark .attendance-monthly-screen .status-leave {
-              background: rgba(202, 138, 4, 0.32);
-              color: #fef3c7;
-              box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.24), 0 0 14px rgba(234, 179, 8, 0.16);
-            }
-
-            .dark .attendance-monthly-screen .status-half-day {
-              background: rgba(147, 51, 234, 0.32);
-              color: #e9d5ff;
-              box-shadow: 0 0 0 1px rgba(192, 132, 252, 0.24), 0 0 14px rgba(192, 132, 252, 0.16);
-            }
+            .dark .attendance-monthly-screen .cell-tint-present { background: rgba(34, 197, 94, 0.20); }
+            .dark .attendance-monthly-screen .cell-tint-late { background: rgba(245, 158, 11, 0.20); }
+            .dark .attendance-monthly-screen .cell-tint-absent { background: rgba(239, 68, 68, 0.22); }
+            .dark .attendance-monthly-screen .cell-tint-holiday { background: rgba(59, 130, 246, 0.20); }
+            .dark .attendance-monthly-screen .cell-tint-leave { background: rgba(234, 179, 8, 0.20); }
+            .dark .attendance-monthly-screen .cell-tint-half { background: rgba(139, 92, 246, 0.22); }
 
             .attendance-monthly-screen .legend-chip {
               display: inline-flex;
               align-items: center;
-              gap: 4px;
-              margin-right: 10px;
+              gap: 5px;
+              margin-right: 14px;
               margin-bottom: 4px;
-              color: #334155;
             }
 
             .attendance-monthly-screen .legend-mark {
               display: inline-flex;
-              min-width: 18px;
-              height: 18px;
+              min-width: 20px;
+              height: 20px;
               align-items: center;
               justify-content: center;
-              border: 1px solid #cbd5e1;
+              border-radius: 9999px;
+              color: #ffffff;
               font-size: 11px;
-              font-weight: 700;
+              font-weight: 800;
             }
 
             .attendance-monthly-screen .legend-total {
-              background: #f8fafc;
+              background: #64748b;
+              color: #ffffff;
+            }
+
+            .dark .attendance-monthly-screen .legend-total {
+              background: #94a3b8;
               color: #0f172a;
             }
 
@@ -682,7 +691,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             }
           `}
         </style>
-        <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-gray-200 px-3 py-2 text-center text-sm font-medium text-slate-800 dark:border-gray-700 dark:text-slate-100">
+        <div className="report-heading flex w-full items-center justify-center gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-center text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
           <div>Attendance for the Month of <span>{monthNames[monthIndex]} {year}</span></div>
         </div>
         <Table
@@ -695,11 +704,11 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           tableClassName="text-sm"
         />
 
-        <div className="print-legend border-t border-gray-200 px-3 py-2 text-xs text-slate-600 dark:border-gray-700 dark:text-slate-300">
-          <span className="legend-chip"><span className="legend-mark status-present">✓</span> Present</span>
-          <span className="legend-chip"><span className="legend-mark status-late">!</span> Late</span>
-          <span className="legend-chip"><span className="legend-mark status-holiday">○</span> Holiday</span>
-          <span className="legend-chip"><span className="legend-mark status-absent">✕</span> Absent</span>
+        <div className="print-legend flex flex-wrap items-center border-t border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+          <span className="legend-chip"><span className="legend-mark status-present">{statusGlyph('✓')}</span> Present</span>
+          <span className="legend-chip"><span className="legend-mark status-late">{statusGlyph('!')}</span> Late</span>
+          <span className="legend-chip"><span className="legend-mark status-holiday">{statusGlyph('○')}</span> Holiday</span>
+          <span className="legend-chip"><span className="legend-mark status-absent">{statusGlyph('✕')}</span> Absent</span>
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
           <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>
           <span className="legend-chip"><span className="legend-mark legend-total">T</span> Present days</span>

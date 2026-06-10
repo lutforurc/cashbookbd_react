@@ -32,7 +32,7 @@ const iconButtonClass = 'inline-flex h-8 w-8 items-center justify-center rounded
 const iconSuccessClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-success text-white transition hover:bg-opacity-90';
 const iconDangerClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-danger text-white transition hover:bg-opacity-90';
 const iconNeutralClass = 'inline-flex h-8 w-8 items-center justify-center rounded-md bg-meta-3 text-white transition hover:bg-opacity-90';
-const sectionLabelClass = 'mb-2 block text-sm font-medium text-black dark:text-white';
+const sectionLabelClass = 'mb-1 block text-sm font-medium text-black dark:text-white';
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -755,18 +755,8 @@ const AttendanceEntries = ({ user }: any) => {
       <HelmetTitle title="Manual Attendance" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-4 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
-          <FiUsers className="h-5 w-5" />
-        </span>
-        <div>
-          <h2 className="text-lg font-semibold text-black dark:text-white">Manual Attendance</h2>
-          <p className="text-sm text-bodydark2">Record, load and approve daily attendance entries</p>
-        </div>
-      </div>
-
-      <div className="mb-4 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="flex items-center gap-3 border-b border-stroke px-4 py-3 dark:border-strokedark sm:px-6">
+      <div className="mb-3 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="flex items-center gap-3 border-b border-stroke px-4 py-2.5 dark:border-strokedark sm:px-6">
           <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <FiEdit2 className="h-5 w-5" />
           </span>
@@ -775,9 +765,9 @@ const AttendanceEntries = ({ user }: any) => {
             <p className="text-xs text-bodydark2">Single or bulk daily attendance</p>
           </div>
         </div>
-        <div className="p-4 sm:p-6">
+        <div className="p-3 sm:p-4">
         <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
           <div>
             <label className={sectionLabelClass}>Employee</label>
             <EmployeeDropdownSearch
@@ -828,7 +818,7 @@ const AttendanceEntries = ({ user }: any) => {
             {rosterMessage}
           </div>
         )}
-        <div className="mt-4 flex flex-wrap gap-2 border-t border-stroke pt-4 dark:border-strokedark">
+        <div className="mt-3 flex flex-wrap gap-2 border-t border-stroke pt-3 dark:border-strokedark">
           <ButtonLoading
             type="submit"
             buttonLoading={buttonLoading}
@@ -865,8 +855,8 @@ const AttendanceEntries = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="mb-4 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="flex items-center gap-3 border-b border-stroke px-4 py-3 dark:border-strokedark sm:px-6">
+      <div className="mb-3 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="flex items-center gap-3 border-b border-stroke px-4 py-2.5 dark:border-strokedark sm:px-6">
           <span className="flex h-9 w-9 items-center justify-center rounded-md bg-meta-3/10 text-meta-3">
             <FiSearch className="h-5 w-5" />
           </span>
@@ -875,8 +865,8 @@ const AttendanceEntries = ({ user }: any) => {
             <p className="text-xs text-bodydark2">Load entries and approve in bulk</p>
           </div>
         </div>
-        <div className="p-4 sm:p-6">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
+        <div className="p-3 sm:p-4">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
         <InputDatePicker
           id="date_from"
           name="date_from"
@@ -931,7 +921,7 @@ const AttendanceEntries = ({ user }: any) => {
       </div>
 
       <div className="border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="flex items-center justify-between border-b border-stroke px-4 py-3 dark:border-strokedark sm:px-6">
+        <div className="flex items-center justify-between border-b border-stroke px-4 py-2.5 dark:border-strokedark sm:px-6">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
               <FiUsers className="h-5 w-5" />

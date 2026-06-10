@@ -32,6 +32,20 @@ const summaryNumber = (value: any) => {
   return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(1);
 };
 
+const cardTone = (label: string) => {
+  const map: Record<string, { bar: string; value: string; dot: string }> = {
+    Branches: { bar: 'bg-cyan-500', value: 'text-cyan-600 dark:text-cyan-400', dot: 'bg-cyan-500' },
+    Employees: { bar: 'bg-indigo-500', value: 'text-indigo-600 dark:text-indigo-400', dot: 'bg-indigo-500' },
+    Present: { bar: 'bg-emerald-500', value: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' },
+    Absent: { bar: 'bg-rose-500', value: 'text-rose-600 dark:text-rose-400', dot: 'bg-rose-500' },
+    Leave: { bar: 'bg-violet-500', value: 'text-violet-600 dark:text-violet-400', dot: 'bg-violet-500' },
+    Late: { bar: 'bg-amber-500', value: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' },
+    'Early Out': { bar: 'bg-orange-500', value: 'text-orange-600 dark:text-orange-400', dot: 'bg-orange-500' },
+    Deduction: { bar: 'bg-rose-500', value: 'text-rose-600 dark:text-rose-400', dot: 'bg-rose-500' },
+  };
+  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-white', dot: 'bg-slate-400' };
+};
+
 const BranchAttendanceSummaryReport = ({ user }: any) => {
   const dispatch = useDispatch<any>();
   const attendance = useSelector((state: any) => state.attendance);
@@ -177,7 +191,8 @@ const BranchAttendanceSummaryReport = ({ user }: any) => {
       <HelmetTitle title="Branch Attendance Summary" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-4">
+      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch/Project</label>
           <BranchDropdown
@@ -198,17 +213,27 @@ const BranchAttendanceSummaryReport = ({ user }: any) => {
           </button>
         </div>
       </div>
-
-      <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
-        {cards.map((card) => (
-          <div key={card.label} className="border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
-            <div className="text-xs text-slate-500 dark:text-slate-300">{card.label}</div>
-            <div className="text-xl font-semibold text-slate-900 dark:text-white">{card.value}</div>
-          </div>
-        ))}
       </div>
 
-      <Table columns={columns} data={branchRows} />
+      <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
+        {cards.map((card) => {
+          const tone = cardTone(card.label);
+          return (
+            <div key={card.label} className="relative overflow-hidden border border-slate-200 bg-white p-3 pl-4 dark:border-slate-700 dark:bg-boxdark">
+              <span className={`absolute inset-y-0 left-0 w-1 ${tone.bar}`} />
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300">
+                <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
+                {card.label}
+              </div>
+              <div className={`mt-1 text-xl font-bold ${tone.value}`}>{card.value}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
+        <Table columns={columns} data={branchRows} />
+      </div>
     </div>
   );
 };

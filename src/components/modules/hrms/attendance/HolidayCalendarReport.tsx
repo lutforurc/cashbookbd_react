@@ -62,6 +62,17 @@ const branchNameFromId = (branches: any[], branchId: any) => branches.find((bran
 const dayName = (day: any) => dayOptions.find((option) => String(option.id) === String(day))?.name || '-';
 const dayShortName = (day: any) => dayName(day).slice(0, 3);
 
+const cardTone = (label: string) => {
+  const map: Record<string, { bar: string; value: string; dot: string }> = {
+    'Total Days': { bar: 'bg-indigo-500', value: 'text-indigo-600 dark:text-indigo-400', dot: 'bg-indigo-500' },
+    Holiday: { bar: 'bg-emerald-500', value: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' },
+    'Weekly Holiday': { bar: 'bg-blue-500', value: 'text-blue-600 dark:text-blue-400', dot: 'bg-blue-500' },
+    Paid: { bar: 'bg-teal-500', value: 'text-teal-600 dark:text-teal-400', dot: 'bg-teal-500' },
+    Optional: { bar: 'bg-amber-500', value: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' },
+  };
+  return map[label] || { bar: 'bg-slate-400', value: 'text-slate-900 dark:text-white', dot: 'bg-slate-400' };
+};
+
 const HolidayCalendarReport = ({ user }: any) => {
   const dispatch = useDispatch<any>();
   const attendance = useSelector((state: any) => state.attendance);
@@ -226,7 +237,8 @@ const HolidayCalendarReport = ({ user }: any) => {
       <HelmetTitle title="Holiday Calendar Report" />
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-5">
+      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
         <DropdownCommon id="month" name="month" label="Month" value={filters.month} data={monthOptions} onChange={handleChange} className="h-9" />
         <DropdownCommon id="year" name="year" label="Year" value={filters.year} data={yearOptions} onChange={handleChange} className="h-9" />
         <div>
@@ -248,14 +260,22 @@ const HolidayCalendarReport = ({ user }: any) => {
           </button>
         </div>
       </div>
+      </div>
 
       <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-5">
-        {cards.map((card) => (
-          <div key={card.label} className="border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
-            <div className="text-xs text-slate-500 dark:text-slate-300">{card.label}</div>
-            <div className="text-xl font-semibold text-slate-900 dark:text-white">{card.value}</div>
-          </div>
-        ))}
+        {cards.map((card) => {
+          const tone = cardTone(card.label);
+          return (
+            <div key={card.label} className="relative overflow-hidden border border-slate-200 bg-white p-3 pl-4 dark:border-slate-700 dark:bg-boxdark">
+              <span className={`absolute inset-y-0 left-0 w-1 ${tone.bar}`} />
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300">
+                <span className={`h-2 w-2 rounded-full ${tone.dot}`} />
+                {card.label}
+              </div>
+              <div className={`mt-1 text-xl font-bold ${tone.value}`}>{card.value}</div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
@@ -323,11 +343,11 @@ const HolidayCalendarReport = ({ user }: any) => {
               >
                 {day && (
                   <>
-                    <div className={`mb-2 flex h-6 w-6 items-center justify-center text-sm font-semibold ${
+                    <div className={`mb-2 flex h-6 w-6 items-center justify-center rounded-md text-sm font-semibold ${
                       hasHoliday
-                        ? 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/25 dark:text-emerald-200'
                         : hasWeekly
-                          ? 'bg-blue-100 text-blue-800'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/25 dark:text-blue-200'
                           : 'text-slate-800 dark:text-slate-100'
                     }`}>
                       {day}
@@ -337,12 +357,12 @@ const HolidayCalendarReport = ({ user }: any) => {
                         <div
                           key={event.id}
                           title={`${event.title} - ${event.branch_name}${event.remarks ? ` (${event.remarks})` : ''}`}
-                          className={`truncate border px-2 py-1 text-[11px] font-medium ${
+                          className={`truncate rounded border px-2 py-1 text-[11px] font-medium ${
                             event.type === 'Holiday'
                               ? hasOptional
-                                ? 'border-amber-300 bg-amber-50 text-amber-800'
-                                : 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                              : 'border-blue-300 bg-blue-50 text-blue-800'
+                                ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700/60 dark:bg-amber-500/15 dark:text-amber-200'
+                                : 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700/60 dark:bg-emerald-500/15 dark:text-emerald-200'
+                              : 'border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-700/60 dark:bg-blue-500/15 dark:text-blue-200'
                           }`}
                         >
                           {event.title}

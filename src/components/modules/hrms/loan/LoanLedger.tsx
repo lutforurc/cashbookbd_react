@@ -232,9 +232,9 @@ const LoanLedger = (user: any) => {
   return (
     <div className="">
       <HelmetTitle title={'Loan Ledger'} />
-      <div className="mb-2">
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-5 md:gap-x-4">
-          <div className="">
+      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[180px] flex-1">
             <div>
               {' '}
               <label htmlFor="">Select Branch</label>
@@ -250,7 +250,7 @@ const LoanLedger = (user: any) => {
             </div>
           </div>
 
-          <div className="mt-0 mb-2">
+          <div className="min-w-[180px] flex-1">
             <label className="text-black dark:text-white">Select Employee</label>
             <EmployeeDropdownSearch
               id="account"
@@ -264,7 +264,7 @@ const LoanLedger = (user: any) => {
             />
           </div> 
 
-          <div className="w-full">
+          <div className="min-w-[150px] flex-1">
             <label htmlFor="">Start Date</label>
             <InputDatePicker
               setCurrentDate={handleStartDate}
@@ -274,7 +274,7 @@ const LoanLedger = (user: any) => {
             />
           </div>
 
-          <div>
+          <div className="min-w-[150px] flex-1">
             <label htmlFor="">End Date</label>
             <InputDatePicker
               setCurrentDate={handleEndDate}
@@ -284,8 +284,8 @@ const LoanLedger = (user: any) => {
             />
           </div>
 
-          <div className="mt-2 md:mt-0 flex">
-            <div className="mr-2">
+          <div className="flex shrink-0 items-end gap-2">
+            <div>
               <InputElement
                 id="perPage"
                 name="perPage"
@@ -293,10 +293,10 @@ const LoanLedger = (user: any) => {
                 value={perPage.toString()}
                 onChange={handlePerPageChange}
                 type='text'
-                className="font-medium text-sm h-9 w-12"
+                className="font-medium text-sm h-9 w-16"
               />
             </div>
-            <div className="mr-2">
+            <div>
               <InputElement
                 id="fontSize"
                 name="fontSize"
@@ -304,7 +304,7 @@ const LoanLedger = (user: any) => {
                 value={fontSize.toString()}
                 onChange={handleFontSizeChange}
                 type='text'
-                className="font-medium text-sm h-9 w-12"
+                className="font-medium text-sm h-9 w-16"
               />
             </div>
             <ButtonLoading
@@ -312,17 +312,17 @@ const LoanLedger = (user: any) => {
               buttonLoading={buttonLoading}
               label="Run"
               icon={<FiSearch size={15} />}
-              className="mt-6 md:mt-6 pt-[0.45rem] pb-[0.45rem] h-9"
+              className="h-9 px-4"
             />
             <PrintButton
               onClick={handlePrint}
               label=""
-              className="ml-2 mt-6  pt-[0.45rem] pb-[0.45rem] h-9"
+              className="h-9 px-3"
             />
           </div>
         </div>
       </div>
-      <div className="overflow-y-auto">
+      <div className="overflow-y-auto border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
         {ledgerData.isLoading && <Loader />}
         <Table columns={columns} data={tableData || []} />{' '}
 
