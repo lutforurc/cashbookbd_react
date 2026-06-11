@@ -335,6 +335,43 @@ const DateWiseInOut = ({ user }: any) => {
     [branchId, detailLoadingDate, productId],
   );
 
+  const totals = useMemo(
+    () =>
+      rows.reduce(
+        (acc, row) => {
+          acc.inQty += toQuantityNumber(row.in_qty);
+          acc.outQty += toQuantityNumber(row.out_qty);
+          acc.damage += toQuantityNumber(row.damage);
+          acc.over += toQuantityNumber(row.over);
+          acc.balance += Number(row.stock) || 0;
+          return acc;
+        },
+        { inQty: 0, outQty: 0, damage: 0, over: 0, balance: 0 },
+      ),
+    [rows],
+  );
+
+  const footerRows = useMemo(() => {
+    if (!rows.length) return undefined;
+
+    const balanceTone =
+      totals.balance < 0 ? 'text-red-700' : totals.balance > 0 ? 'text-green-700' : '';
+
+    return [
+      [
+        { label: 'Total', colSpan: 2, className: 'text-right' },
+        { label: formatQuantity(totals.inQty), className: 'text-right' },
+        { label: formatQuantity(totals.outQty), className: 'text-right' },
+        { label: formatQuantity(totals.damage), className: 'text-right' },
+        { label: formatQuantity(totals.over), className: 'text-right' },
+        {
+          label: <span className={balanceTone}>{thousandSeparator(totals.balance)}</span>,
+          className: 'text-right',
+        },
+      ],
+    ];
+  }, [rows.length, totals]);
+
   return (
     <div>
       <HelmetTitle title="Date Wise In Out" />
@@ -450,6 +487,7 @@ const DateWiseInOut = ({ user }: any) => {
             tableClassName="table-auto text-sm"
             theadClassName=""
             tbodyClassName="divide-y"
+            footerRows={footerRows as any}
             noDataMessage="No data found"
           />
         </div>

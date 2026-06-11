@@ -89,9 +89,32 @@ const getDetailTotals = (purchase: InOutDetailRow[], sales: InOutDetailRow[]) =>
   };
 };
 
+const parsePrintQuantity = (value: any) => {
+  const numericValue = Number(String(value ?? '').replace(/,/g, '').trim());
+  return Number.isFinite(numericValue) ? numericValue : 0;
+};
+
 export const DateWiseInOutPrint = React.forwardRef<HTMLDivElement, DateWiseInOutPrintProps>(
   ({ rows, showProductColumn = false, rowsPerPage, fontSize }, ref) => {
     const printPages = useMemo(() => chunkRows(rows, rowsPerPage), [rows, rowsPerPage]);
+
+    const totals = useMemo(
+      () =>
+        rows.reduce(
+          (acc, row) => {
+            acc.inQty += parsePrintQuantity(row.in_qty);
+            acc.outQty += parsePrintQuantity(row.out_qty);
+            acc.damage += parsePrintQuantity(row.damage);
+            acc.over += parsePrintQuantity(row.over);
+            acc.balance += Number(row.stock) || 0;
+            return acc;
+          },
+          { inQty: 0, outQty: 0, damage: 0, over: 0, balance: 0 },
+        ),
+      [rows],
+    );
+
+    const leadingColSpan = showProductColumn ? 3 : 2;
     const headers = [
       'Sl. No.',
       'Date',
@@ -164,6 +187,24 @@ export const DateWiseInOutPrint = React.forwardRef<HTMLDivElement, DateWiseInOut
                     </td>
                   </tr>
                 )}
+                {pageRows.length > 0 && index === printPages.length - 1 ? (
+                  <tr className="font-bold">
+                    <td className="border border-black px-2 py-1 text-right" colSpan={leadingColSpan}>
+                      Total
+                    </td>
+                    <td className="border border-black px-2 py-1 text-right">{formatNumber(totals.inQty)}</td>
+                    <td className="border border-black px-2 py-1 text-right">{formatNumber(totals.outQty)}</td>
+                    <td className="border border-black px-2 py-1 text-right">{formatNumber(totals.damage)}</td>
+                    <td className="border border-black px-2 py-1 text-right">{formatNumber(totals.over)}</td>
+                    <td
+                      className={`border border-black px-2 py-1 text-right ${
+                        totals.balance < 0 ? 'text-red-700' : totals.balance > 0 ? 'text-green-700' : ''
+                      }`}
+                    >
+                      {thousandSeparator(totals.balance)}
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
