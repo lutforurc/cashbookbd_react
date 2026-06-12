@@ -14,8 +14,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import InputElement from "../../utils/fields/InputElement";
 import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
-import { ClientType, TrueFalse } from "../../utils/fields/DataConstant";
+import {
+  ClientType,
+  nomineeRelationType,
+  relationType,
+  TrueFalse,
+} from "../../utils/fields/DataConstant";
 import DdlDynamicMultiline from "../../utils/utils-functions/DdlDynamicMultiline";
+import InputDatePicker from "../../utils/fields/DatePicker";
 import { getDdlArea } from "../area/areaSlice";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
 import Link from "../../utils/others/Link";
@@ -51,6 +57,22 @@ const EditCustomerSupplier = () => {
       : [];
   const hasSettings = Boolean(settings?.data && Object.keys(settings.data).length);
 
+  const formatPickerDate = (date: Date | null) => {
+    if (!date || Number.isNaN(date.getTime())) return '';
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const parsePickerDate = (value?: string) => {
+    if (!value) return null;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
   /* ================= LOAD NEEDED DATA ================= */
   useEffect(() => {
     if (!area?.loaded && !area?.loading) {
@@ -74,9 +96,6 @@ const EditCustomerSupplier = () => {
     dispatch(getCustomerForEdit(editId));
   }, [dispatch, id]);
 
- 
-
-
   /* ================= AREA FORMAT ================= */
   const formattedAreaData = useMemo(
     () =>
@@ -95,10 +114,13 @@ const EditCustomerSupplier = () => {
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Name is required"),
     father: Yup.string(),
+    mother_name: Yup.string(),
+    contact_person: Yup.string(),
+    contact_number: Yup.string(),
     manual_address: Yup.string().required("Address is required"),
     mobile: Yup.string().required("Mobile number is required"),
     ledger_page: Yup.string(),
-    idfr_code: Yup.string(), 
+    idfr_code: Yup.string(),
     party_type_id: Yup.string().required("Customer or Supplier type is required"),
     area_id: Yup.string(),
     customerLogin: Yup.boolean(),
@@ -108,6 +130,7 @@ const EditCustomerSupplier = () => {
         name: Yup.string().required("Guarantor name required"),
         father_name: Yup.string().required("Father name required"),
         mobile: Yup.string().required("Mobile required"),
+        national_id: Yup.string(),
         address: Yup.string().required("Address required"),
       })
     ),
@@ -115,6 +138,7 @@ const EditCustomerSupplier = () => {
       Yup.object().shape({
         name: Yup.string().required('Nominee name required'),
         relation: Yup.string(),
+        relation_name: Yup.string(),
         date_of_birth: Yup.string(),
         mobile: Yup.string(),
         present_address: Yup.string(),
@@ -129,7 +153,6 @@ const EditCustomerSupplier = () => {
           .transform((value, originalValue) => (originalValue === '' ? null : value))
           .nullable()
           .min(1, 'Priority order must be at least 1'),
-        is_minor: Yup.mixed().oneOf([0, 1, '0', '1']),
         guardian_name: Yup.string(),
         guardian_mobile: Yup.string(),
         status: Yup.string(),
@@ -145,6 +168,10 @@ const EditCustomerSupplier = () => {
       // ----- keep same fields as Add page -----
       name: editCustomer?.name ?? "",
       father: editCustomer?.father ?? "",
+      mother_name: editCustomer?.mother_name ?? "",
+      contact_person: editCustomer?.contact_person ?? "",
+      contact_number: editCustomer?.contact_number ?? "",
+      relation_id: editCustomer?.relation_id ?? "",
       manual_address: editCustomer?.manual_address ?? "",
       mobile: editCustomer?.mobile ?? "",
       ledger_page: editCustomer?.ledger_page ?? "",
@@ -155,7 +182,7 @@ const EditCustomerSupplier = () => {
       areaName: editCustomer?.areaName ?? "",
       customerLogin: Boolean(editCustomer?.customerLogin ?? false),
 
-      // ----- guarantors -----
+      // ----- guarantors & nominees -----
       guarantors: editCustomer?.guarantors ?? [],
       nominees: editCustomer?.nominees ?? [],
     },
@@ -222,7 +249,7 @@ const EditCustomerSupplier = () => {
               <DropdownCommon
                 id="party_type_id"
                 name="party_type_id"
-                label="Select Customer / Supplier Type"
+                label="Select Type"
                 onChange={formik.handleChange}
                 value={formik.values.party_type_id}
                 className="h-[2.4rem] bg-transparent"
@@ -236,7 +263,7 @@ const EditCustomerSupplier = () => {
             </div>
           </div>
 
-          {/* ================= NAME + FATHER ================= */}
+          {/* ================= NAME + ADDRESS ================= */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="text-left flex flex-col">
               <InputElement
@@ -254,20 +281,6 @@ const EditCustomerSupplier = () => {
                 </div>
               )}
             </div>
-
-            <InputElement
-              id="father"
-              name="father"
-              placeholder="Enter father's Name"
-              label="Father's Name"
-              value={formik.values.father}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-          </div>
-
-          {/* ================= ADDRESS ================= */}
-          <div className="grid grid-cols-1 mb-2">
             <div className="text-left flex flex-col">
               <InputElement
                 id="manual_address"
@@ -285,6 +298,92 @@ const EditCustomerSupplier = () => {
               )}
             </div>
           </div>
+
+          {/* ================= RELATION + MOTHER ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            {settings?.data?.branch?.need_relation_info === '1' && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                <>
+                  <div className="md:col-span-1">
+                    <DropdownCommon
+                      id="relation_id"
+                      name="relation_id"
+                      label="Relation"
+                      onChange={formik.handleChange}
+                      value={formik.values.relation_id}
+                      className="h-[2.1rem] bg-transparent"
+                      data={relationType}
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <InputElement
+                      id="father"
+                      name="father"
+                      placeholder="Enter relation's name"
+                      label="Relation's Name"
+                      value={formik.values.father}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    />
+                    {formik.touched.father && formik.errors.father && (
+                      <div className="text-red-500 text-sm">{formik.errors.father as any}</div>
+                    )}
+                  </div>
+                </>
+              </div>
+            )}
+            {settings?.data?.branch?.need_mother_name === '1' && (
+              <div className="text-left flex flex-col">
+                <InputElement
+                  id="mother_name"
+                  name="mother_name"
+                  placeholder="Enter Mother's Name"
+                  label="Mother's Name"
+                  value={formik.values.mother_name}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.mother_name && formik.errors.mother_name && (
+                  <div className="text-red-500 text-sm">{formik.errors.mother_name as any}</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ================= CONTACT PERSON + NUMBER ================= */}
+          {settings?.data?.branch?.need_contact_person === '1' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <div className="text-left flex flex-col">
+                <InputElement
+                  id="contact_person"
+                  name="contact_person"
+                  placeholder="Enter Contact Person"
+                  label="Contact Person"
+                  value={formik.values.contact_person}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.contact_person && formik.errors.contact_person && (
+                  <div className="text-red-500 text-sm">{formik.errors.contact_person as any}</div>
+                )}
+              </div>
+
+              <div className="text-left flex flex-col">
+                <InputElement
+                  id="contact_number"
+                  name="contact_number"
+                  placeholder="Enter Contact Number"
+                  label="Contact Number"
+                  value={formik.values.contact_number}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.contact_number && formik.errors.contact_number && (
+                  <div className="text-red-500 text-sm">{formik.errors.contact_number as any}</div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ================= MOBILE + LEDGER ================= */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
@@ -317,7 +416,10 @@ const EditCustomerSupplier = () => {
 
           {/* ================= NID + CUSTOMER NO + LOGIN ================= */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div
+              className={`grid grid-cols-1 ${settings?.data?.branch?.have_customer_sl === 1 ? 'md:grid-cols-2' : 'md:grid-cols-1'
+                } gap-2`}
+            >
               <InputElement
                 id="national_id"
                 name="national_id"
@@ -327,14 +429,16 @@ const EditCustomerSupplier = () => {
                 onChange={formik.handleChange}
               />
 
-              <InputElement
-                id="idfr_code"
-                name="idfr_code"
-                value={formik.values.idfr_code}
-                placeholder="Enter Customer Number"
-                label="Customer Number"
-                onChange={formik.handleChange}
-              />
+              {settings?.data?.branch?.have_customer_sl === 1 && (
+                <InputElement
+                  id="idfr_code"
+                  name="idfr_code"
+                  value={formik.values.idfr_code}
+                  placeholder="Enter Customer Number"
+                  label="Customer Number"
+                  onChange={formik.handleChange}
+                />
+              )}
             </div>
 
             <DropdownCommon
@@ -433,178 +537,182 @@ const EditCustomerSupplier = () => {
             </>
           )}
 
-          <h3 className="mt-4 mb-2 font-semibold">Nominee Details</h3>
+          {/* ================= NOMINEES ================= */}
+          {settings?.data?.branch?.have_is_nominee === '1' && (
+            <>
+              <h3 className="mt-4 mb-2 font-semibold">Nominee Details</h3>
 
-          <FieldArray name="nominees">
-            {({ push, remove }) => (
-              <>
-                {formik.values.nominees.map((n: any, index: number) => (
-                  <div key={index} className="border p-3 mb-2 ">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                      <InputElement
-                        name={`nominees.${index}.name`}
-                        label="Name"
-                        placeholder="Enter Name"
-                        value={n.name}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.relation`}
-                        label="Relation"
-                        placeholder="Enter Relation"
-                        value={n.relation}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.date_of_birth`}
-                        label="Date of Birth"
-                        type="date"
-                        value={n.date_of_birth}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.father_name`}
-                        label="Father Name"
-                        placeholder="Enter Father Name"
-                        value={n.father_name}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.mother_name`}
-                        label="Mother Name"
-                        placeholder="Enter Mother Name"
-                        value={n.mother_name}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.mobile`}
-                        label="Mobile"
-                        placeholder="Enter Mobile Number"
-                        value={n.mobile}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.present_address`}
-                        label="Present Address"
-                        placeholder="Enter Present Address"
-                        value={n.present_address}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.permanent_address`}
-                        label="Permanent Address"
-                        placeholder="Enter Permanent Address"
-                        value={n.permanent_address}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.national_id`}
-                        label="National ID"
-                        placeholder="Enter National ID"
-                        value={n.national_id}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.share_percentage`}
-                        label="Share Percentage"
-                        type="number"
-                        placeholder="Enter Share Percentage"
-                        value={n.share_percentage}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.priority_order`}
-                        label="Priority Order"
-                        type="number"
-                        placeholder="Enter Priority Order"
-                        value={n.priority_order}
-                        onChange={formik.handleChange}
-                      />
-                      <DropdownCommon
-                        id={`nominees.${index}.is_minor`}
-                        name={`nominees.${index}.is_minor`}
-                        label="Is Minor"
-                        onChange={formik.handleChange}
-                        value={String(n.is_minor ?? 0)}
-                        className="h-[2.1rem] bg-transparent"
-                        data={TrueFalse}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.guardian_name`}
-                        label="Guardian Name"
-                        placeholder="Enter Guardian Name"
-                        value={n.guardian_name}
-                        onChange={formik.handleChange}
-                      />
-                      <InputElement
-                        name={`nominees.${index}.guardian_mobile`}
-                        label="Guardian Mobile"
-                        placeholder="Enter Guardian Mobile"
-                        value={n.guardian_mobile}
-                        onChange={formik.handleChange}
-                      />
-                      <DropdownCommon
-                        id={`nominees.${index}.status`}
-                        name={`nominees.${index}.status`}
-                        label="Status"
-                        onChange={formik.handleChange}
-                        value={n.status || 'active'}
-                        className="h-[2.1rem] bg-transparent"
-                        data={nomineeStatusOptions}
-                      />
-                      <div className="md:col-span-3">
-                        <InputElement
-                          name={`nominees.${index}.remarks`}
-                          label="Remarks"
-                          placeholder="Enter Remarks"
-                          value={n.remarks}
-                          onChange={formik.handleChange}
-                        />
+              <FieldArray name="nominees">
+                {({ push, remove }) => (
+                  <>
+                    {formik.values.nominees.map((n: any, index: number) => (
+                      <div key={index} className="border p-3 mb-2 ">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                          <InputElement
+                            name={`nominees.${index}.name`}
+                            label="Name"
+                            placeholder="Enter Name"
+                            value={n.name}
+                            onChange={formik.handleChange}
+                          />
+                          <DropdownCommon
+                            id={`nominees.${index}.relation`}
+                            name={`nominees.${index}.relation`}
+                            label="Relation"
+                            onChange={formik.handleChange}
+                            value={n.relation || ''}
+                            className="h-[2.1rem] bg-transparent"
+                            data={nomineeRelationType}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.relation_name`}
+                            label="Relation's Name"
+                            placeholder="Enter Relation's Name"
+                            value={n.relation_name}
+                            onChange={formik.handleChange}
+                          />
+                          <InputDatePicker
+                            id={`nominees.${index}.date_of_birth`}
+                            name={`nominees.${index}.date_of_birth`}
+                            label="Date of Birth"
+                            setCurrentDate={(date) =>
+                              formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
+                            }
+                            className="font-medium text-sm w-full h-8"
+                            selectedDate={parsePickerDate(n.date_of_birth)}
+                            setSelectedDate={(date) =>
+                              formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
+                            }
+                          />
+                          <InputElement
+                            name={`nominees.${index}.mother_name`}
+                            label="Mother Name"
+                            placeholder="Enter Mother Name"
+                            value={n.mother_name}
+                            onChange={formik.handleChange}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.mobile`}
+                            label="Mobile"
+                            placeholder="Enter Mobile Number"
+                            value={n.mobile}
+                            onChange={formik.handleChange}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.present_address`}
+                            label="Present Address"
+                            placeholder="Enter Present Address"
+                            value={n.present_address}
+                            onChange={formik.handleChange}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.permanent_address`}
+                            label="Permanent Address"
+                            placeholder="Enter Permanent Address"
+                            value={n.permanent_address}
+                            onChange={formik.handleChange}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.national_id`}
+                            label="National ID"
+                            placeholder="Enter National ID"
+                            value={n.national_id}
+                            onChange={formik.handleChange}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.share_percentage`}
+                            label="Share Percentage"
+                            type="number"
+                            placeholder="Enter Share Percentage"
+                            value={n.share_percentage}
+                            onChange={formik.handleChange}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.priority_order`}
+                            label="Priority Order"
+                            type="number"
+                            placeholder="Enter Priority Order"
+                            value={n.priority_order}
+                            onChange={formik.handleChange}
+                          />
+
+                          <InputElement
+                            name={`nominees.${index}.guardian_name`}
+                            label="Guardian Name"
+                            placeholder="Enter Guardian Name"
+                            value={n.guardian_name}
+                            onChange={formik.handleChange}
+                          />
+                          <InputElement
+                            name={`nominees.${index}.guardian_mobile`}
+                            label="Guardian Mobile"
+                            placeholder="Enter Guardian Mobile"
+                            value={n.guardian_mobile}
+                            onChange={formik.handleChange}
+                          />
+                          <DropdownCommon
+                            id={`nominees.${index}.status`}
+                            name={`nominees.${index}.status`}
+                            label="Status"
+                            onChange={formik.handleChange}
+                            value={n.status || 'active'}
+                            className="h-[2.1rem] bg-transparent"
+                            data={nomineeStatusOptions}
+                          />
+                          <div className="md:col-span-3">
+                            <InputElement
+                              name={`nominees.${index}.remarks`}
+                              label="Remarks"
+                              placeholder="Enter Remarks"
+                              value={n.remarks}
+                              onChange={formik.handleChange}
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="text-red-600 mt-2"
+                          onClick={() => remove(index)}
+                        >
+                          <div className="flex">
+                            <FiTrash2 />
+                            <span className="ml-2 -mt-1">Remove</span>
+                          </div>
+                        </button>
                       </div>
-                    </div>
+                    ))}
 
-                    <button
+                    <ButtonLoading
                       type="button"
-                      className="text-red-600 mt-2"
-                      onClick={() => remove(index)}
-                    >
-                      <div className="flex">
-                        <FiTrash2 />
-                        <span className="ml-2 -mt-1">Remove</span>
-                      </div>
-                    </button>
-                  </div>
-                ))}
-
-                <ButtonLoading
-                  type="button"
-                  label="Add Nominee"
-                  className="flex items-center gap-2 text-blue-600 mb-4 p-2"
-                  onClick={() =>
-                    push({
-                      name: '',
-                      father_name: '',
-                      mother_name: '',
-                      relation: '',
-                      date_of_birth: '',
-                      mobile: '',
-                      present_address: '',
-                      permanent_address: '',
-                      national_id: '',
-                      share_percentage: '',
-                      priority_order: '',
-                      is_minor: 0,
-                      guardian_name: '',
-                      guardian_mobile: '',
-                      status: 'active',
-                      remarks: '',
-                    })
-                  }
-                  icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
-                />
-              </>
-            )}
-          </FieldArray>
+                      label="Add Nominee"
+                      className="flex items-center gap-2 text-blue-600 mb-4 p-2"
+                      onClick={() =>
+                        push({
+                          name: '',
+                          relation: '',
+                          relation_name: '',
+                          mother_name: '',
+                          date_of_birth: '',
+                          mobile: '',
+                          present_address: '',
+                          permanent_address: '',
+                          national_id: '',
+                          share_percentage: '',
+                          priority_order: '',
+                          guardian_name: '',
+                          guardian_mobile: '',
+                          status: 'active',
+                          remarks: '',
+                        })
+                      }
+                      icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+                    />
+                  </>
+                )}
+              </FieldArray>
+            </>
+          )}
 
           {/* ================= ACTIONS ================= */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">

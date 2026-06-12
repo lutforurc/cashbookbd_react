@@ -143,6 +143,7 @@ const AddCustomerSupplier = () => {
     mother_name: '',
     contact_person: '',
     contact_number: '',
+    relation_id: '',
     manual_address: '',
     mobile: '',
     ledger_page: '',
@@ -434,7 +435,7 @@ const AddCustomerSupplier = () => {
                       name="relation_id"
                       label="Relation"
                       onChange={formik.handleChange}
-                      defaultValue={formik.values.customerLogin.toString()}
+                      defaultValue={formik.values.relation_id}
                       className="h-[2.1rem] bg-transparent"
                       data={relationType}
                     />
