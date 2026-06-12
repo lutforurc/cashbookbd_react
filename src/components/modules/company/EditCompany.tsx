@@ -192,6 +192,7 @@ const EditCompany = () => {
               label="Update"
               icon={<FiSave />}
               type="submit"
+              className="h-9"
             />
           </div>
         </form>

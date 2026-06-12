@@ -146,6 +146,7 @@ const FlatLayout = () => {
   const [unitPaymentLoading, setUnitPaymentLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "building">("building");
 
   const handleBuildingSelect = (option: any) => {
     if (!option?.value) return;
@@ -688,6 +689,121 @@ const FlatLayout = () => {
     );
   };
 
+  const renderBuildingFloor = (floor: FlatLayoutFloor, isGround: boolean) => {
+    const units = getFloorUnits(floor);
+    const statusCounts = getFloorStatusCounts(floor);
+    const hasMultipleFlats = (floor.flats?.length ?? 0) > 1;
+    const floorTitle =
+      !hasMultipleFlats && floor.flats?.[0]?.flat_name
+        ? floor.flats[0].flat_name
+        : `Floor ${floor.floor_no}`;
+
+    return (
+      <div
+        key={floor.floor_no}
+        className={`flex items-stretch ${
+          isGround ? "" : "border-b-2 border-slate-400/70 dark:border-slate-700/70"
+        }`}
+      >
+        <div
+          title={floorTitle}
+          className="flex w-24 shrink-0 flex-col items-center justify-center gap-1.5 border-r border-slate-300 bg-slate-700 px-2 py-3 text-center dark:border-slate-700 dark:bg-slate-800"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-base font-bold text-white ring-1 ring-white/25">
+            {floor.floor_no}
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+            {Number(floor.floor_no) === 1 ? "Ground" : "Floor"}
+          </span>
+          <div className="flex flex-wrap justify-center gap-1">
+            {statusLegend.map((status) =>
+              statusCounts[status] > 0 ? (
+                <span
+                  key={status}
+                  className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold text-white ${STATUS_DOT_MAP[status]}`}
+                  title={STATUS_LABELS[status]}
+                >
+                  {statusCounts[status]}
+                </span>
+              ) : null,
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-1 flex-wrap content-center gap-2.5 bg-gradient-to-b from-slate-300 to-slate-200 px-4 py-4 shadow-inner dark:from-slate-800/50 dark:to-slate-800/10">
+          {units.length ? (
+            units.map((unit: UnitItem) => (
+              <button
+                type="button"
+                key={unit.id ?? `${floor.floor_no}-${unit.unit_no}`}
+                onClick={(e) => handleUnitClick(unit, e)}
+                title={unit.unit_no}
+                className={`relative group isolate flex h-14 w-20 flex-col items-center justify-center overflow-hidden rounded-[4px] border-2 border-slate-900/25 px-1 text-center text-[11px] font-semibold leading-tight text-white shadow-[0_4px_10px_rgba(0,0,0,0.28)] ring-1 ring-inset ring-white/35 transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none ${getUnitButtonClass(
+                  unit,
+                )}`}
+              >
+                {/* window panes */}
+                <span className="pointer-events-none absolute left-1/2 top-1 bottom-1 z-[5] w-px -translate-x-1/2 bg-white/30" />
+                <span className="pointer-events-none absolute left-1.5 right-1.5 top-1/2 z-[5] h-px -translate-y-1/2 bg-white/30" />
+                <span className="relative z-10 block w-full truncate drop-shadow">
+                  {unit.unit_no}
+                </span>
+                <span className="relative z-10 mt-0.5 block w-full truncate text-[8px] font-semibold uppercase tracking-wide opacity-90">
+                  {isParkingUnit(unit) ? "Parking" : STATUS_LABELS[Number(unit.status)] ?? ""}
+                </span>
+                {renderUnitTooltip(unit)}
+              </button>
+            ))
+          ) : (
+            <span className="self-center text-xs text-gray-400">No units</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderBuildingView = () => {
+    if (!floorsToShow.length) {
+      return <div className="text-center text-gray-500">No floors found.</div>;
+    }
+
+    const stackedFloors = [...floorsToShow].reverse();
+
+    return (
+      <div className="overflow-x-auto rounded-xl bg-gradient-to-b from-sky-300 via-sky-100 to-emerald-100/80 p-4 sm:p-8 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+        <div className="mx-auto w-full max-w-4xl">
+          {/* Rooftop nameplate */}
+          <div className="mx-auto mb-1 w-fit rounded-md bg-slate-800 px-4 py-1 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300 shadow-lg ring-1 ring-white/10">
+            {viewLayout?.building ?? "Building"}
+          </div>
+
+          {/* Roof */}
+          <div className="mx-auto h-4 w-[78%] rounded-t-2xl bg-gradient-to-b from-slate-500 to-slate-700 shadow-md dark:from-slate-600 dark:to-slate-800" />
+          <div className="mx-auto mb-px h-3 w-[92%] rounded-t-sm bg-slate-600 shadow dark:bg-slate-800" />
+
+          {/* Tower body */}
+          <div className="min-w-[20rem] overflow-hidden rounded-sm border border-x-[7px] border-slate-500 bg-slate-200 shadow-2xl dark:border-slate-800 dark:bg-slate-900/50">
+            {stackedFloors.map((floor: FlatLayoutFloor, index: number) =>
+              renderBuildingFloor(floor, index === stackedFloors.length - 1),
+            )}
+          </div>
+
+          {/* Plinth + entrance */}
+          <div className="mx-auto flex h-7 w-[101%] items-end justify-center rounded-b-md bg-slate-600 shadow-md dark:bg-slate-800">
+            <span
+              title="Entrance"
+              className="h-5 w-10 rounded-t-md border border-white/15 bg-slate-900/40"
+            />
+          </div>
+
+          {/* Ground + road */}
+          <div className="mx-auto mt-1 h-2 w-[114%] rounded bg-emerald-700/40 dark:bg-slate-700/70" />
+          <div className="mx-auto mt-1 h-0.5 w-[114%] bg-[repeating-linear-gradient(90deg,rgba(148,163,184,0.55)_0,rgba(148,163,184,0.55)_14px,transparent_14px,transparent_28px)]" />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <HelmetTitle title={viewLayout?.building ?? "Building Layout"} />
@@ -834,15 +950,48 @@ const FlatLayout = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {floorsToShow.length ? (
-              floorsToShow.map((floor: FlatLayoutFloor) => renderFloorCard(floor))
-            ) : (
-              <div className="col-span-full text-center text-gray-500">
-                No floors found.
-              </div>
-            )}
+          <div className="mb-4 flex items-center justify-end">
+            <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <button
+                type="button"
+                onClick={() => setViewMode("building")}
+                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  viewMode === "building"
+                    ? "bg-cyan-600 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                }`}
+              >
+                <FiLayers />
+                Building
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  viewMode === "grid"
+                    ? "bg-cyan-600 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                }`}
+              >
+                <FiGrid />
+                Grid
+              </button>
+            </div>
           </div>
+
+          {viewMode === "building" ? (
+            renderBuildingView()
+          ) : (
+            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {floorsToShow.length ? (
+                floorsToShow.map((floor: FlatLayoutFloor) => renderFloorCard(floor))
+              ) : (
+                <div className="col-span-full text-center text-gray-500">
+                  No floors found.
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 
