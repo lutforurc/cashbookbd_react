@@ -6,6 +6,7 @@ import {
   API_AREA_SAVE_URL,
   API_AREA_EDIT_URL,
   API_AREA_UPDATE_URL,
+  API_AREA_DELETE_URL,
   API_AREA_DDL_URL
 } from '../../../services/apiRoutes';
 
@@ -97,6 +98,23 @@ export const updateArea = createAsyncThunk<Area, Area, { rejectValue: string }>(
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
       err?.message || 'Failed to update area'
+    );
+  }
+});
+
+// 📌 Delete Area
+export const deleteArea = createAsyncThunk<any, string | number, { rejectValue: string }>('area/deleteArea', async (id, thunkAPI) => {
+  try {
+    const res = await httpService.post(`${API_AREA_DELETE_URL}/${id}`);
+    if (res.data?.success === false) {
+      return thunkAPI.rejectWithValue(
+        res.data?.message || 'Failed to delete area'
+      );
+    }
+    return { id, ...res.data };
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message || err?.message || 'Failed to delete area'
     );
   }
 });
@@ -195,6 +213,22 @@ const areaSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Failed to update area';
       })
+      /* ===== Delete Area ===== */
+      .addCase(deleteArea.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteArea.fulfilled, (state, action) => {
+        state.loading = false;
+        state.areas = state.areas.filter(
+          (a) => a.id !== action.payload.id
+        );
+      })
+      .addCase(deleteArea.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to delete area';
+      })
+
       /* ===== Area DDL ===== */
       .addCase(fetchAreaDdl.pending, (state) => {
         state.loading = true;

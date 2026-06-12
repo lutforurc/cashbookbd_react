@@ -5,6 +5,7 @@ import {
   API_FLAT_STORE_URL,
   API_FLAT_UPDATE_URL,
   API_FLAT_EDIT_URL,
+  API_FLAT_DELETE_URL,
   API_FLAT_DDL_LIST_URL,
   API_FLAT_LAYOUT_URL,
 } from "../../../services/apiRoutes";
@@ -211,6 +212,21 @@ export const flatLayout = createAsyncThunk<FlatLayoutResponse,number,{ rejectVal
   }
 });
 
+/* ---- Delete Flat ---- */
+export const flatDelete = createAsyncThunk<any, number | string, { rejectValue: string }>("flat/flatDelete", async (id, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_FLAT_DELETE_URL}/${id}`);
+    if (res.data?.success === false) {
+      return rejectWithValue(res.data?.message || "Flat delete failed");
+    }
+    return { id, ...res.data };
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message || error.message || "Flat delete failed"
+    );
+  }
+});
+
 /* ================= SLICE ================= */
 
 const flatSlice = createSlice({
@@ -319,6 +335,20 @@ const flatSlice = createSlice({
       .addCase(flatLayout.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load flat layout";
+      })
+
+      /* ===== Delete Flat ===== */
+      .addCase(flatDelete.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(flatDelete.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload?.message || "Flat deleted successfully";
+      })
+      .addCase(flatDelete.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Flat delete failed";
       });
   },
 });

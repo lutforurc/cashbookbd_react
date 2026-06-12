@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { projectList } from './projectSlice';
+import { projectList, projectDelete } from './projectSlice';
+import { toast } from 'react-toastify';
+import ActionButtons from '../../../utils/fields/ActionButton';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
@@ -17,13 +19,14 @@ const ProjectsList = ({ user }: any) => {
   const branchDdlData = useSelector((state) => state.branchDdl);
   const realEstateProjects = useSelector((state) => state.realEstateProjects);
   const settings = useSelector((state: any) => state.settings);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [showConfirmId, setShowConfirmId] = useState<number | null>(null);
   const navigate = useNavigate();
 
 
@@ -130,7 +133,46 @@ const ProjectsList = ({ user }: any) => {
         </div>
       ),
     },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => (
+        <div>
+          <ActionButtons
+            row={row}
+            showEdit={true}
+            handleEdit={handleProjectEdit}
+            showDelete={true}
+            handleDelete={handleProjectDelete}
+            showConfirmId={showConfirmId}
+            setShowConfirmId={setShowConfirmId}
+          />
+        </div>
+      ),
+    },
   ];
+
+  const handleProjectEdit = (row: any) => {
+    navigate(`/real-estate/project-edit/${row?.id}`);
+  };
+
+  const handleProjectDelete = async (id: number) => {
+    try {
+      const response = await dispatch(projectDelete(id)).unwrap();
+      toast.success(response?.message || 'Project deleted successfully');
+      dispatch(
+        projectList({
+          page,
+          per_page: perPage,
+          branchId: branchId ? Number(branchId) : undefined,
+        })
+      );
+    } catch (error: any) {
+      toast.error(error || 'Failed to delete project');
+    }
+  };
 
   return (
     <div className=''>

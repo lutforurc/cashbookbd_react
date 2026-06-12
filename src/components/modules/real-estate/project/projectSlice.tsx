@@ -5,6 +5,7 @@ import {
   API_PROJECT_STORE_URL,
   API_PROJECT_UPDATE_URL,
   API_PROJECT_EDIT_URL,
+  API_PROJECT_DELETE_URL,
   API_PROJECT_DDL_LIST_URL,
 } from "../../../services/apiRoutes";
 import { getToken } from "../../../../features/authReducer";
@@ -150,6 +151,21 @@ export const projectEdit = createAsyncThunk<ProjectItem, number, { rejectValue: 
   }
 });
 
+/* ---- Delete Project ---- */
+export const projectDelete = createAsyncThunk<any, number | string, { rejectValue: string }>("project/projectDelete", async (id, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_PROJECT_DELETE_URL}/${id}`);
+    if (res.data?.success === false) {
+      return rejectWithValue(res.data?.message || "Project delete failed");
+    }
+    return { id, ...res.data };
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message || error.message || "Project delete failed"
+    );
+  }
+});
+
 /* ================= SLICE ================= */
 
 const projectSlice = createSlice({
@@ -238,6 +254,20 @@ const projectSlice = createSlice({
       .addCase(projectEdit.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load project";
+      })
+
+      /* ===== Delete Project ===== */
+      .addCase(projectDelete.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(projectDelete.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload?.message || "Project deleted successfully";
+      })
+      .addCase(projectDelete.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Project delete failed";
       });
   },
 });

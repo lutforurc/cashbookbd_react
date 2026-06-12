@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
-import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL, API_UNIT_CHARGE_DDL_LIST_URL, API_PARKING_DDL_LIST_URL } from "../../../services/apiRoutes";
+import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DELETE_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL, API_UNIT_CHARGE_DDL_LIST_URL, API_PARKING_DDL_LIST_URL } from "../../../services/apiRoutes";
 import { getToken } from "../../../../features/authReducer";
 import { UnitChargeTypeItem } from "./types";
 
@@ -13,6 +13,7 @@ export interface BuildingUnitListRequest {
   flat_id?: number;
   customer_id?: number;
   status?: number;
+  branch_id?: number;
 }
 
 export interface UnitItem {
@@ -367,6 +368,21 @@ export const unitEdit = createAsyncThunk<UnitItem, number, { rejectValue: string
   }
 });
 
+/* ---- Delete Unit ---- */
+export const unitDelete = createAsyncThunk<any, number | string, { rejectValue: string }>("unit/unitDelete", async (id, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_UNIT_DELETE_URL}/${id}`);
+    if (res.data?.success === false) {
+      return rejectWithValue(res.data?.message || "Unit delete failed");
+    }
+    return { id, ...res.data };
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message || error.message || "Unit delete failed"
+    );
+  }
+});
+
 /* ================= SLICE ================= */
 
 const unitSlice = createSlice({
@@ -473,6 +489,20 @@ const unitSlice = createSlice({
       .addCase(unitChargeTypeList.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load unit charge types";
+      })
+
+      /* ===== Unit Delete ===== */
+      .addCase(unitDelete.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(unitDelete.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload?.message || "Unit deleted successfully";
+      })
+      .addCase(unitDelete.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Unit delete failed";
       });
   },
 });

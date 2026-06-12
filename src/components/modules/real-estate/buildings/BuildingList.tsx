@@ -7,10 +7,12 @@ import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import Pagination from '../../../utils/utils-functions/Pagination';
-import { buildingList } from './buildingsSlice';
+import { buildingList, buildingDelete } from './buildingsSlice';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import ActionButtons from '../../../utils/fields/ActionButton';
 
 
 const BuildingList = ({ user }: any) => {
@@ -19,7 +21,7 @@ const BuildingList = ({ user }: any) => {
   const realEstateProjects = useSelector((state) => state.realEstateProjects);
   const buildings = useSelector((state) => state.buildings);
   const settings = useSelector((state: any) => state.settings);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +29,28 @@ const BuildingList = ({ user }: any) => {
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [expandedBuildingIds, setExpandedBuildingIds] = useState<Record<number, boolean>>({});
+  const [showConfirmId, setShowConfirmId] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  const handleBuildingEdit = (row: any) => {
+    navigate(`/real-estate/building-edit/${row?.id}`);
+  };
+
+  const handleBuildingDelete = async (id: number) => {
+    try {
+      const response = await dispatch(buildingDelete(id)).unwrap();
+      toast.success(response?.message || 'Building deleted successfully');
+      dispatch(
+        buildingList({
+          page,
+          per_page: perPage,
+          branchId: branchId ? Number(branchId) : undefined,
+        })
+      );
+    } catch (error: any) {
+      toast.error(error || 'Failed to delete building');
+    }
+  };
 
 
 
@@ -180,8 +203,27 @@ const BuildingList = ({ user }: any) => {
           </div>
         ),
       },
+      {
+        key: 'action',
+        header: 'Action',
+        headerClass: 'text-center',
+        cellClass: 'text-center',
+        render: (row: any) => (
+          <div>
+            <ActionButtons
+              row={row}
+              showEdit={true}
+              handleEdit={handleBuildingEdit}
+              showDelete={true}
+              handleDelete={handleBuildingDelete}
+              showConfirmId={showConfirmId}
+              setShowConfirmId={setShowConfirmId}
+            />
+          </div>
+        ),
+      },
     ],
-    [expandedBuildingIds]
+    [expandedBuildingIds, showConfirmId]
   );
 
 

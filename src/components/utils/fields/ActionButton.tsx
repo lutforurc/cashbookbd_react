@@ -76,7 +76,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           className="btn btn-sm btn-outline cursor-pointer w-5 h-5 flex items-center justify-center"
           onClick={() => setShowConfirmId?.(row.id)}
         >
-          <FiTrash2 className="text-red-600" />
+          <FiTrash2 className="text-red-600 text-lg" />
         </div>
       )}
 

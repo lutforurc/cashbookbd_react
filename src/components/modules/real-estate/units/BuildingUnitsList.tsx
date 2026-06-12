@@ -9,7 +9,7 @@ import Pagination from '../../../utils/utils-functions/Pagination';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useNavigate } from 'react-router-dom';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { buildingUnitList, unitUpdate } from './unitSlice';
+import { buildingUnitList, unitUpdate, unitDelete } from './unitSlice';
 import routes from '../../../services/appRoutes';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ActionButtons from '../../../utils/fields/ActionButton';
@@ -30,6 +30,7 @@ const BuildingUnitsList = ({ user }: any) => {
   const [totalPages, setTotalPages] = useState(0);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? '');
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [showConfirmId, setShowConfirmId] = useState<number | null>(null);
 
   /* ---- Initial Load ---- */
   useEffect(() => {
@@ -90,6 +91,22 @@ const handleUnitEdit = (row: any) => {
   navigate(
     routes.real_estate_add_floor_unit_edit.replace(":id", String(row.id))
   );
+};
+
+const handleUnitDelete = async (id: number) => {
+  try {
+    const response = await dispatch(unitDelete(id) as any).unwrap();
+    toast.success(response?.message || 'Unit deleted successfully');
+    dispatch(
+      buildingUnitList({
+        page,
+        per_page: perPage,
+        branch_id: branchId ? Number(branchId) : undefined,
+      }) as any
+    );
+  } catch (error: any) {
+    toast.error(error || 'Failed to delete unit');
+  }
 };
 
 const handleToggle = (row: any) => {
@@ -227,13 +244,12 @@ const handleToggle = (row: any) => {
               row={row}
               showEdit={true}
               handleEdit={handleUnitEdit}
-              showDelete={false}
-              // handleDelete={handleBranchDelete}
+              showDelete={true}
+              handleDelete={handleUnitDelete}
               showToggle={true}
               handleToggle={() => handleToggle(row)}
-
-            // showConfirmId={showConfirmId}
-            // setShowConfirmId={setShowConfirmId}
+              showConfirmId={showConfirmId}
+              setShowConfirmId={setShowConfirmId}
             />
           </div>
         </>

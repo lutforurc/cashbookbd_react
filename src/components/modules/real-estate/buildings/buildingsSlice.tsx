@@ -5,6 +5,7 @@ import {
   API_BUILDING_STORE_URL,
   API_BUILDING_UPDATE_URL,
   API_BUILDING_EDIT_URL,
+  API_BUILDING_DELETE_URL,
   API_BUILDING_DDL_LIST_URL,
 } from "../../../services/apiRoutes";
 import { getToken } from "../../../../features/authReducer";
@@ -175,6 +176,21 @@ export const buildingEdit = createAsyncThunk<
   }
 });
 
+/* ---- Delete Building ---- */
+export const buildingDelete = createAsyncThunk<any, number | string, { rejectValue: string }>("building/buildingDelete", async (id, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_BUILDING_DELETE_URL}/${id}`);
+    if (res.data?.success === false) {
+      return rejectWithValue(res.data?.message || "Building delete failed");
+    }
+    return { id, ...res.data };
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message || error.message || "Building delete failed"
+    );
+  }
+});
+
 /* ================= SLICE ================= */
 
 const buildingSlice = createSlice({
@@ -267,6 +283,21 @@ const buildingSlice = createSlice({
       .addCase(buildingEdit.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load building";
+      })
+
+      /* ===== Delete Building ===== */
+      .addCase(buildingDelete.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(buildingDelete.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message =
+          action.payload?.message || "Building deleted successfully";
+      })
+      .addCase(buildingDelete.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Building delete failed";
       });
   },
 });

@@ -10,11 +10,13 @@ import { useNavigate } from 'react-router-dom';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 
 import routes from '../../../services/appRoutes';
-import { floorList } from './flatSlice';
+import { floorList, flatDelete } from './flatSlice';
 import { FiPlus } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import ActionButtons from '../../../utils/fields/ActionButton';
 
 const FloorList = ({ user }: any) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -30,6 +32,7 @@ const FloorList = ({ user }: any) => {
     user?.branch_id ?? ''
   );
   const [dropdownData, setDropdownData] = useState<any[]>([]);
+  const [showConfirmId, setShowConfirmId] = useState<number | null>(null);
 
   /* ---- Initial Load ---- */
   useEffect(() => {
@@ -84,6 +87,26 @@ const FloorList = ({ user }: any) => {
     navigate(routes.real_estate_add_building_floor);
   };
 
+  const handleFloorEdit = (row: any) => {
+    navigate(`/real-estate/building/floor-edit/${row?.id}`);
+  };
+
+  const handleFloorDelete = async (id: number) => {
+    try {
+      const response = await dispatch(flatDelete(id)).unwrap();
+      toast.success(response?.message || 'Flat deleted successfully');
+      dispatch(
+        floorList({
+          page,
+          per_page: perPage,
+          branch_id: branchId ? Number(branchId) : undefined,
+        })
+      );
+    } catch (error: any) {
+      toast.error(error || 'Failed to delete flat');
+    }
+  };
+
   /* ---- Table Columns ---- */
   const columns = [
     {
@@ -130,6 +153,25 @@ const FloorList = ({ user }: any) => {
           {row.status === 1 && 'Active'}
           {row.status === 0 && 'Inactive'}
         </span>
+      ),
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => (
+        <div>
+          <ActionButtons
+            row={row}
+            showEdit={true}
+            handleEdit={handleFloorEdit}
+            showDelete={true}
+            handleDelete={handleFloorDelete}
+            showConfirmId={showConfirmId}
+            setShowConfirmId={setShowConfirmId}
+          />
+        </div>
       ),
     },
   ];

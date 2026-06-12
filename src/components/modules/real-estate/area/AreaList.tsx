@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAreas } from './projectAreaSlice';
+import { fetchAreas, deleteArea } from './projectAreaSlice';
+import { toast } from 'react-toastify';
 import Loader from '../../../../common/Loader';
 import Table from '../../../utils/others/Table';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -8,14 +9,16 @@ import SelectOption from '../../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
+import ActionButtons from '../../../utils/fields/ActionButton';
 
 
 const AreaList = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const realEstateArea = useSelector((state) => state.realEstateArea);
   const [tableData, setTableData] = useState<any[]>([]);
   const navigate = useNavigate();
    const [buttonLoading, setButtonLoading] = useState(false);
+  const [showConfirmId, setShowConfirmId] = useState<number | null>(null);
 
   useEffect(() => {
     dispatch(fetchAreas());
@@ -56,8 +59,41 @@ const AreaList = () => {
         {row?.company?.description ? row?.company?.description : ''}
       </div>,
     },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => (
+        <div>
+          <ActionButtons
+            row={row}
+            showEdit={true}
+            handleEdit={handleAreaEdit}
+            showDelete={true}
+            handleDelete={handleAreaDelete}
+            showConfirmId={showConfirmId}
+            setShowConfirmId={setShowConfirmId}
+          />
+        </div>
+      ),
+    },
 
   ];
+
+  const handleAreaEdit = (row: any) => {
+    navigate(`/real-estate/area-edit/${row?.id}`);
+  };
+
+  const handleAreaDelete = async (id: number) => {
+    try {
+      const response = await dispatch(deleteArea(id)).unwrap();
+      toast.success(response?.message || 'Area deleted successfully');
+      dispatch(fetchAreas());
+    } catch (error: any) {
+      toast.error(error || 'Failed to delete area');
+    }
+  };
 
   const handleSelectChange = (page: any) => {
     // setPerPage(page.target.value);
