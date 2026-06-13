@@ -30,6 +30,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   // right under the delete button.
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
   const [enabled, setEnabled] = useState(row.status === 1);
+  const yesRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (showConfirmId === row.id && btnRef.current) {
@@ -42,6 +43,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       setPopupPos(null);
     }
   }, [showConfirmId, row.id]);
+
+  // Focus the "Yes" button when the confirm opens, so Enter executes it.
+  useEffect(() => {
+    if (showConfirmId === row.id && popupPos) {
+      yesRef.current?.focus();
+    }
+  }, [showConfirmId, row.id, popupPos]);
 
   useEffect(() => {
     setEnabled(row.status === 1);
@@ -85,6 +93,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             left: popupPos.left,
             transform: 'translateX(-50%)',
           }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              handleDelete?.(row.id);
+              setShowConfirmId?.(null);
+            } else if (event.key === 'Escape') {
+              event.preventDefault();
+              setShowConfirmId?.(null);
+            }
+          }}
         >
           <div className="relative bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-md rounded-md px-4 py-3">
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-gray-300 dark:border-gray-700 rotate-45"></div>
@@ -93,6 +111,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             </p>
             <div className="flex justify-center gap-3">
               <button
+                ref={yesRef}
                 onClick={() => {
                   handleDelete?.(row.id);
                   setShowConfirmId?.(null);

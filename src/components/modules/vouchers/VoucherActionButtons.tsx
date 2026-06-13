@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   FiCheckCircle,
   FiEdit,
@@ -50,6 +50,14 @@ const VoucherActionButtons = ({
   const [pending, setPending] = useState<null | 'approve' | 'remove'>(null);
   // `fixed` position so the confirm escapes the table cell's overflow:hidden.
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const yesRef = useRef<HTMLButtonElement>(null);
+
+  // Focus the "Yes" button when the confirm opens, so Enter executes it.
+  useEffect(() => {
+    if (pending && pos) {
+      yesRef.current?.focus();
+    }
+  }, [pending, pos]);
 
   if (!row?.vr_no) {
     return null;
@@ -178,6 +186,15 @@ const VoucherActionButtons = ({
         <div
           className="fixed z-50"
           style={{ top: pos.top, left: pos.left, transform: 'translateX(-50%)' }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              confirmAction();
+            } else if (event.key === 'Escape') {
+              event.preventDefault();
+              closeConfirm();
+            }
+          }}
         >
           <div className="relative bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-md rounded-md px-4 py-3">
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-gray-300 dark:border-gray-700 rotate-45"></div>
@@ -187,6 +204,7 @@ const VoucherActionButtons = ({
             <div className="flex justify-center gap-3">
               <button
                 type="button"
+                ref={yesRef}
                 onClick={confirmAction}
                 className={`px-4 py-1.5 text-sm text-white rounded ${
                   pending === 'approve'
