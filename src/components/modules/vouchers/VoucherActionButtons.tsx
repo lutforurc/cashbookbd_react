@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FiCheckCircle,
   FiEdit,
@@ -24,6 +24,8 @@ interface VoucherActionButtonsProps {
   stopPropagation?: boolean;
   printTitle?: string;
   editTitle?: string;
+  /** Show a compact confirm right beside the button instead of a centered modal. */
+  confirmInline?: boolean;
 }
 
 const VoucherActionButtons = ({
@@ -43,7 +45,12 @@ const VoucherActionButtons = ({
   stopPropagation = false,
   printTitle = 'Print Voucher',
   editTitle = 'Edit Voucher',
+  confirmInline = false,
 }: VoucherActionButtonsProps) => {
+  const [pending, setPending] = useState<null | 'approve' | 'remove'>(null);
+  // `fixed` position so the confirm escapes the table cell's overflow:hidden.
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
   if (!row?.vr_no) {
     return null;
   }
@@ -64,6 +71,35 @@ const VoucherActionButtons = ({
     callback?.(row);
   };
 
+  const openConfirm = (type: 'approve' | 'remove') => (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    if (stopPropagation) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (type === 'approve' && (isApproved || approvingId === voucherId)) return;
+    if (type === 'remove' && removingApprovalId === voucherId) return;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    setPos({ top: rect.top + rect.height / 2, left: rect.left - 8 });
+    setPending(type);
+  };
+
+  const closeConfirm = () => {
+    setPending(null);
+    setPos(null);
+  };
+
+  const confirmAction = () => {
+    if (pending === 'approve') {
+      onApprove?.(row);
+    } else if (pending === 'remove') {
+      onRemoveApproval?.(row);
+    }
+    closeConfirm();
+  };
+
   const approvedByName = String(
     row?.approved_user?.name ??
     row?.approved_by_name ??
@@ -76,7 +112,11 @@ const VoucherActionButtons = ({
       {canShowApproveAction ? (
         <button
           type="button"
-          onClick={withEventGuard(onApprove, () => !isApproved && approvingId !== voucherId)}
+          onClick={
+            confirmInline
+              ? openConfirm('approve')
+              : withEventGuard(onApprove, () => !isApproved && approvingId !== voucherId)
+          }
           className={`cursor-pointer ${isApproved ? 'cursor-default' : ''}`}
           title={
             isApproved
@@ -98,10 +138,11 @@ const VoucherActionButtons = ({
       {canShowRemoveApprovalAction ? (
         <button
           type="button"
-          onClick={withEventGuard(
-            onRemoveApproval,
-            () => removingApprovalId !== voucherId,
-          )}
+          onClick={
+            confirmInline
+              ? openConfirm('remove')
+              : withEventGuard(onRemoveApproval, () => removingApprovalId !== voucherId)
+          }
           className="ml-2 text-amber-600"
           title="Remove approval"
           disabled={removingApprovalId === voucherId}
@@ -130,6 +171,40 @@ const VoucherActionButtons = ({
         >
           <FiEdit className="cursor-pointer" />
         </button>
+      ) : null}
+
+      {/* Inline confirm — shown right beside the clicked button */}
+      {confirmInline && pending && pos ? (
+        <div
+          className="fixed z-50 flex items-center gap-1 whitespace-nowrap rounded-md border border-gray-300 bg-white px-2 py-1 shadow-md dark:border-gray-700 dark:bg-gray-800"
+          style={{
+            top: pos.top,
+            left: pos.left,
+            transform: 'translate(-100%, -50%)',
+          }}
+        >
+          <span className="text-xs text-gray-600 dark:text-gray-300">
+            {pending === 'approve' ? 'Approve?' : 'Remove?'}
+          </span>
+          <button
+            type="button"
+            onClick={confirmAction}
+            className={`rounded px-2 py-0.5 text-xs text-white ${
+              pending === 'approve'
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-amber-600 hover:bg-amber-700'
+            }`}
+          >
+            Yes
+          </button>
+          <button
+            type="button"
+            onClick={closeConfirm}
+            className="rounded bg-gray-500 px-2 py-0.5 text-xs text-white hover:bg-gray-600"
+          >
+            No
+          </button>
+        </div>
       ) : null}
     </>
   );
