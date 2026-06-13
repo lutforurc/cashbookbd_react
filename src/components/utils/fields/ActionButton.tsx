@@ -26,8 +26,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   setShowConfirmId,
 }) => {
   const btnRef = useRef<HTMLDivElement | null>(null);
-  // Positioned with `fixed` so the confirm escapes the table cell's
-  // `overflow:hidden` (truncate) and shows right beside the delete button.
+  // `fixed` so the confirm box escapes the table cell's overflow and sits
+  // right under the delete button.
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
   const [enabled, setEnabled] = useState(row.status === 1);
 
@@ -35,8 +35,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     if (showConfirmId === row.id && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
       setPopupPos({
-        top: rect.top + rect.height / 2, // vertical centre of the button
-        left: rect.left - 8,             // just to the left of the button
+        top: rect.bottom + 10,        // just below the button
+        left: rect.left + rect.width / 2, // centre of the button
       });
     } else {
       setPopupPos(null);
@@ -76,32 +76,39 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         </div>
       )}
 
-      {/* Inline Confirm — shown right beside the delete button */}
+      {/* Delete Confirmation Popup — box right below the delete button */}
       {showDelete && showConfirmId === row.id && popupPos && (
         <div
-          className="fixed z-50 flex items-center gap-1 whitespace-nowrap rounded-md border border-gray-300 bg-white px-2 py-1 shadow-md dark:border-gray-700 dark:bg-gray-800"
+          className="fixed z-50"
           style={{
             top: popupPos.top,
             left: popupPos.left,
-            transform: 'translate(-100%, -50%)',
+            transform: 'translateX(-50%)',
           }}
         >
-          <span className="text-xs text-gray-600 dark:text-gray-300">Sure?</span>
-          <button
-            onClick={() => {
-              handleDelete?.(row.id);
-              setShowConfirmId?.(null);
-            }}
-            className="rounded bg-red-600 px-2 py-0.5 text-xs text-white hover:bg-red-700"
-          >
-            Yes
-          </button>
-          <button
-            onClick={() => setShowConfirmId?.(null)}
-            className="rounded bg-gray-500 px-2 py-0.5 text-xs text-white hover:bg-gray-600"
-          >
-            No
-          </button>
+          <div className="relative bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-md rounded-md px-4 py-3">
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-gray-300 dark:border-gray-700 rotate-45"></div>
+            <p className="text-sm text-black-900 dark:text-gray-200 mb-3 text-center whitespace-nowrap">
+              Are you sure?
+            </p>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => {
+                  handleDelete?.(row.id);
+                  setShowConfirmId?.(null);
+                }}
+                className="px-4 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setShowConfirmId?.(null)}
+                className="px-4 py-1.5 text-sm bg-gray-500 hover:bg-gray-600 text-white rounded"
+              >
+                No
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
