@@ -338,14 +338,15 @@ const SalesLedger = (user: any) => {
     setShowRemoveApprovalConfirm(true);
   };
 
-  const handleApproveClick = async () => {
+  const handleApproveClick = async (rowArg?: any) => {
+    const targetRow = rowArg ?? selectedApprovalRow;
     const voucherId = Number(
-      selectedApprovalRow?.mtm_id ??
-      selectedApprovalRow?.smtm_id ??
-      selectedApprovalRow?.mtmid ??
-      selectedApprovalRow?.mtmId ??
-      selectedApprovalRow?.mid ??
-      selectedApprovalRow?.id ??
+      targetRow?.mtm_id ??
+      targetRow?.smtm_id ??
+      targetRow?.mtmid ??
+      targetRow?.mtmId ??
+      targetRow?.mid ??
+      targetRow?.id ??
       0,
     );
 
@@ -380,8 +381,8 @@ const SalesLedger = (user: any) => {
     }
   };
 
-  const handleRemoveApprovalClick = async () => {
-    await removeVoucherApproval(selectedApprovalRow, {
+  const handleRemoveApprovalClick = async (rowArg?: any) => {
+    await removeVoucherApproval(rowArg ?? selectedApprovalRow, {
       onSuccess: () => {
         setShowRemoveApprovalConfirm(false);
         setSelectedApprovalRow(null);
@@ -708,8 +709,9 @@ const SalesLedger = (user: any) => {
             stopPropagation
             printTitle="Print Invoice"
             editTitle="Edit Invoice"
-            onApprove={handleApprovePrompt}
-            onRemoveApproval={handleRemoveApprovalPrompt}
+            confirmInline
+            onApprove={handleApproveClick}
+            onRemoveApproval={handleRemoveApprovalClick}
             onPrint={handlePrintVoucher}
             onEdit={(actionRow) => handleEditVoucher(buildVoucherActionRow(actionRow))}
           />
@@ -1089,59 +1091,6 @@ const SalesLedger = (user: any) => {
           </div>
         )}
       </div>
-
-      {/* Ã¢Å“â€¦ Hidden print component */}
-      <ConfirmModal
-        show={showApproveConfirm}
-        title="Confirm Voucher Approval"
-        message={
-          <div className="space-y-2">
-            <p>Are you sure you want to approve voucher</p>
-            <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
-          </div>
-        }
-        confirmLabel="Confirm"
-        cancelLabel="Cancel"
-        loading={
-          approvingId ===
-          Number(
-            selectedApprovalRow?.mtm_id ??
-            selectedApprovalRow?.smtm_id ??
-            selectedApprovalRow?.mtmid ??
-            selectedApprovalRow?.mtmId ??
-            selectedApprovalRow?.mid ??
-            selectedApprovalRow?.id ??
-            0,
-          )
-        }
-        onCancel={() => {
-          if (approvingId) return;
-          setShowApproveConfirm(false);
-          setSelectedApprovalRow(null);
-        }}
-        onConfirm={handleApproveClick}
-        className="bg-green-600 hover:bg-sky-600"
-      />
-      <ConfirmModal
-        show={showRemoveApprovalConfirm}
-        title="Confirm Remove Approval"
-        message={
-          <div className="space-y-2">
-            <p>Are you sure you want to remove approval from voucher</p>
-            <p className="text-lg font-semibold">{selectedApprovalRow?.vr_no || '-'}</p>
-          </div>
-        }
-        confirmLabel="Remove"
-        cancelLabel="Cancel"
-        loading={removingApprovalId === getVoucherId(selectedApprovalRow)}
-        onCancel={() => {
-          if (removingApprovalId) return;
-          setShowRemoveApprovalConfirm(false);
-          setSelectedApprovalRow(null);
-        }}
-        onConfirm={handleRemoveApprovalClick}
-        className="bg-amber-600 hover:bg-amber-700"
-      />
 
       <div className="hidden">
         <SalesLedgerPrint
