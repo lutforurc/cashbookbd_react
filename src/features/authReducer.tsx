@@ -22,16 +22,22 @@ export const getToken = () => Cookies.get('_trio_lead_token');
 
 export const storeToken = (token: string, remember?: boolean | string) => {
   const rememberBool = remember === true || remember === 'true' || remember === '1';
+  // Secure cookies are silently dropped by browsers on http origins (except
+  // localhost) — e.g. a LAN IP or an http *.test domain. That would stop the
+  // token (and therefore "Remember me") from persisting, so only mark the
+  // cookie Secure when the page is actually served over https.
+  const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
 
   Cookies.set('_trio_lead_token', token, {
-    secure: true,
-    sameSite: 'strict',
-    ...(rememberBool ? { expires: 30 } : {}), // remember হলে 30 days
+    path: '/',
+    secure: isSecure,
+    sameSite: 'lax',
+    ...(rememberBool ? { expires: 30 } : {}), // remember → 30 days, else session cookie
   });
 };
 
 export const removeData = () => {
-  Cookies.remove('_trio_lead_token');
+  Cookies.remove('_trio_lead_token', { path: '/' });
   Cookies.remove('laravel_session');
   Cookies.remove('XSRF-TOKEN');
   localStorage.removeItem('settings');

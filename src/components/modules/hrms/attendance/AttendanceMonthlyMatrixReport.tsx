@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FiCheck, FiCheckSquare, FiClock, FiSun, FiX } from 'react-icons/fi';
+import { FiCalendar, FiCheck, FiCheckSquare, FiClock, FiGrid, FiSun, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
@@ -178,6 +178,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
     month: String(now.getMonth() + 1),
     year: String(now.getFullYear()),
   });
+  const [activeTab, setActiveTab] = useState<'summary' | 'matrix'>('summary');
 
   const monthIndex = Math.max(0, Number(filters.month || 1) - 1);
   const year = Number(filters.year || now.getFullYear());
@@ -462,7 +463,37 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       </div>
       </div>
 
-      <div className="mb-3 border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
+      {/* Tabs */}
+      <div className="mb-4 flex">
+        <div className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800/60">
+          <button
+            type="button"
+            onClick={() => setActiveTab('summary')}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              activeTab === 'summary'
+                ? 'bg-white text-blue-600 shadow-sm ring-1 ring-blue-100 dark:bg-slate-700 dark:text-blue-300 dark:ring-slate-600'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
+          >
+            <FiGrid className="h-4 w-4" />
+            Monthly Attendance Summary
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('matrix')}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              activeTab === 'matrix'
+                ? 'bg-white text-blue-600 shadow-sm ring-1 ring-blue-100 dark:bg-slate-700 dark:text-blue-300 dark:ring-slate-600'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
+          >
+            <FiCalendar className="h-4 w-4" />
+            Attendance for the Month of {monthNames[monthIndex]} {year}
+          </button>
+        </div>
+      </div>
+
+      <div className={`mb-3 border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark ${activeTab === 'summary' ? '' : 'hidden'}`}>
         <div className="border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
           Monthly Attendance Summary
         </div>
@@ -477,7 +508,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         />
       </div>
 
-      <div className="attendance-monthly-screen border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark">
+      <div className={`attendance-monthly-screen border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-boxdark ${activeTab === 'matrix' ? '' : 'hidden'}`}>
         <style>
           {`
             .attendance-monthly-screen .status-cell {
