@@ -255,8 +255,11 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs, lineHeight: 0.95 }}
                       className="border border-gray-900 px-2 py-[2px] align-middle w-36"
                     >
-                      <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }}>
-                        {row.product_name || row.trx_type || ''}
+                      <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }} className="whitespace-normal">
+                        {row.transaction_name}
+                        {row.sales_item_name ? (
+                          <span style={{ fontSize: fs }} className="text-xs"> &nbsp;({row.sales_item_name})</span>
+                        ) : null}
                       </div>
                       {row.remarks ? <div style={{ fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="text-xs">{row.remarks}</div> : null}
                       {row.order_number ? <div style={{ fontSize: fs, lineHeight: 1.15, margin: 0, padding: 0 }} className="text-xs">{row.order_number}</div> : null}
