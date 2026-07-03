@@ -7,11 +7,14 @@ import {
   FiCheckSquare,
   FiCreditCard,
   FiRefreshCw,
+  FiX,
 } from 'react-icons/fi';
 import ClickOutside from '../ClickOutside';
 import httpService from '../services/httpService';
-import { API_NOTIFICATION_SUMMARY_URL } from '../services/apiRoutes';
-import routes from '../services/appRoutes';
+import {
+  API_NOTIFICATION_DISMISS_URL,
+  API_NOTIFICATION_SUMMARY_URL,
+} from '../services/apiRoutes';
 import { useSelector } from 'react-redux';
 import { hasPermission } from '../utils/permissionChecker';
 
@@ -24,26 +27,14 @@ type NotificationItem = {
   count?: number;
   tone: NotificationTone;
   to: string;
+  notificationKey: string;
+  dismissed?: boolean;
+  preview?: Array<{
+    label?: string;
+    meta?: string;
+    value?: string;
+  }>;
   icon: JSX.Element;
-};
-
-type NotificationCounts = {
-  lowStock: number;
-  negativeStock: number;
-  dueInstallments: number;
-  pendingVoucherApproval: number;
-  pendingPayments: number;
-  subscriptionExpiry: number;
-};
-
-type SubscriptionAlert = {
-  needs_attention?: boolean;
-  status?: string | null;
-  access_status?: string | null;
-  plan_name?: string | null;
-  end_date?: string | null;
-  trial_end_at?: string | null;
-  days_left?: number | null;
 };
 
 const toneClass: Record<NotificationTone, string> = {
@@ -67,18 +58,38 @@ const toIsoDate = (value?: string): string => {
   return new Date().toISOString().slice(0, 10);
 };
 
+const iconForNotification = (id: string) => {
+  if (id === 'due_installments') return <FiCreditCard />;
+  if (id === 'subscription_expiry') return <FiCalendar />;
+  if (id === 'pending_voucher_approval' || id === 'pending_subscription_payments') {
+    return <FiCheckSquare />;
+  }
+  return <FiAlertTriangle />;
+};
+
+const readDismissedNotifications = (storageKey: string): Record<string, true> => {
+  if (typeof window === 'undefined') return {};
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(storageKey) || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeDismissedNotifications = (
+  storageKey: string,
+  dismissed: Record<string, true>,
+) => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(storageKey, JSON.stringify(dismissed));
+};
+
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [counts, setCounts] = useState<NotificationCounts>({
-    lowStock: 0,
-    negativeStock: 0,
-    dueInstallments: 0,
-    pendingVoucherApproval: 0,
-    pendingPayments: 0,
-    subscriptionExpiry: 0,
-  });
-  const [subscriptionAlert, setSubscriptionAlert] = useState<SubscriptionAlert | null>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const settings = useSelector((state: any) => state.settings);
   const user = useSelector((state: any) => state.auth?.me);
   const permissions = settings?.data?.permissions || [];
@@ -92,6 +103,7 @@ const DropdownNotification = () => {
   const canViewSubscriptionAdmin =
     hasPermission(permissions, 'subscription.admin') ||
     hasPermission(permissions, 'subscription.payment.approve');
+  const dismissStorageKey = `cashbook-dismissed-notifications:${user?.id || 'user'}:${branchId || 'branch'}`;
 
   const loadNotifications = async () => {
     if (!user?.id || !branchId) return;
@@ -106,27 +118,30 @@ const DropdownNotification = () => {
         },
       });
       const summary = response?.data?.data?.data || {};
-      const summaryCounts = summary?.counts || {};
+      const incoming = Array.isArray(summary?.notifications)
+        ? summary.notifications
+        : [];
+      const localDismissed = readDismissedNotifications(dismissStorageKey);
 
-      setCounts({
-        lowStock: canViewStockAlerts ? Number(summaryCounts.low_stock || 0) : 0,
-        negativeStock: canViewStockAlerts ? Number(summaryCounts.negative_stock || 0) : 0,
-        dueInstallments: canViewInstallments ? Number(summaryCounts.due_installments || 0) : 0,
-        pendingVoucherApproval: canApproveVoucher ? Number(summaryCounts.pending_voucher_approval || 0) : 0,
-        pendingPayments: canViewSubscriptionAdmin ? Number(summaryCounts.pending_subscription_payments || 0) : 0,
-        subscriptionExpiry: Number(summaryCounts.subscription_expiry || 0),
-      });
-      setSubscriptionAlert(summary?.subscription || null);
+      setNotifications(
+        incoming.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          message: item.message,
+          count: Number(item.count || 0),
+          tone: item.tone || 'info',
+          to: item.to || '#',
+          notificationKey: item.notification_key,
+          dismissed:
+            Boolean(item.dismissed) ||
+            Boolean(localDismissed[item.notification_key]) ||
+            Boolean(localDismissed[`type:${item.id}`]),
+          preview: Array.isArray(item.preview) ? item.preview : [],
+          icon: iconForNotification(item.id),
+        })),
+      );
     } catch {
-      setCounts({
-        lowStock: 0,
-        negativeStock: 0,
-        dueInstallments: 0,
-        pendingVoucherApproval: 0,
-        pendingPayments: 0,
-        subscriptionExpiry: 0,
-      });
-      setSubscriptionAlert(null);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -145,71 +160,58 @@ const DropdownNotification = () => {
   ]);
 
   const items = useMemo<NotificationItem[]>(() => {
-    const subscriptionDaysLeft = subscriptionAlert?.days_left;
-    const subscriptionIsExpiring =
-      counts.subscriptionExpiry > 0 && subscriptionAlert?.needs_attention;
-
-    return [
-      counts.negativeStock > 0 && {
-        id: 'negative-stock',
-        title: 'Negative Stock',
-        message: `${counts.negativeStock} products need stock correction.`,
-        count: counts.negativeStock,
-        tone: 'danger' as const,
-        to: routes.product_negative_stock,
-        icon: <FiAlertTriangle />,
-      },
-      counts.lowStock > 0 && {
-        id: 'low-stock',
-        title: 'Low Stock',
-        message: `${counts.lowStock} products reached reorder level.`,
-        count: counts.lowStock,
-        tone: 'warning' as const,
-        to: routes.product_low_stock,
-        icon: <FiAlertTriangle />,
-      },
-      counts.dueInstallments > 0 && {
-        id: 'due-installment',
-        title: 'Due Installment',
-        message: `${counts.dueInstallments} installments are due or upcoming.`,
-        count: counts.dueInstallments,
-        tone: 'info' as const,
-        to: routes.due_installment_list,
-        icon: <FiCreditCard />,
-      },
-      subscriptionIsExpiring && {
-        id: 'subscription-expiry',
-        title: subscriptionAlert?.status === 'expired' ? 'Subscription Expired' : 'Subscription Reminder',
-        message:
-          subscriptionDaysLeft !== null && subscriptionDaysLeft >= 0
-            ? `${subscriptionAlert?.plan_name || 'Current plan'} expires in ${subscriptionDaysLeft} day(s).`
-            : `${subscriptionAlert?.plan_name || 'Current plan'} needs attention.`,
-        tone: subscriptionAlert?.status === 'expired' ? 'danger' as const : 'warning' as const,
-        to: routes.my_subscription,
-        icon: <FiCalendar />,
-      },
-      counts.pendingVoucherApproval > 0 && {
-        id: 'pending-voucher-approval',
-        title: 'Voucher Approval',
-        message: `${counts.pendingVoucherApproval} vouchers are waiting for approval.`,
-        count: counts.pendingVoucherApproval,
-        tone: 'success' as const,
-        to: routes.admin_voucher_approval,
-        icon: <FiCheckSquare />,
-      },
-      counts.pendingPayments > 0 && {
-        id: 'pending-payment',
-        title: 'Pending Approval',
-        message: `${counts.pendingPayments} subscription payment requests need review.`,
-        count: counts.pendingPayments,
-        tone: 'warning' as const,
-        to: routes.subscription_admin,
-        icon: <FiCheckSquare />,
-      },
-    ].filter(Boolean) as NotificationItem[];
-  }, [counts, subscriptionAlert]);
+    return notifications.filter((item) => {
+      if (item.dismissed) return false;
+      if ((item.id === 'negative_stock' || item.id === 'low_stock') && !canViewStockAlerts) return false;
+      if (item.id === 'due_installments' && !canViewInstallments) return false;
+      if (item.id === 'pending_voucher_approval' && !canApproveVoucher) return false;
+      if (item.id === 'pending_subscription_payments' && !canViewSubscriptionAdmin) return false;
+      return true;
+    });
+  }, [
+    notifications,
+    canApproveVoucher,
+    canViewInstallments,
+    canViewStockAlerts,
+    canViewSubscriptionAdmin,
+  ]);
 
   const totalCount = items.reduce((sum, item) => sum + (item.count || 1), 0);
+
+  const dismissNotification = async (item: NotificationItem) => {
+    const localDismissed = readDismissedNotifications(dismissStorageKey);
+    const nextDismissed = {
+      ...localDismissed,
+      [item.notificationKey]: true as const,
+      [`type:${item.id}`]: true as const,
+    };
+
+    writeDismissedNotifications(dismissStorageKey, nextDismissed);
+
+    setNotifications((current) =>
+      current.map((notification) =>
+        notification.notificationKey === item.notificationKey
+          ? { ...notification, dismissed: true }
+          : notification,
+      ),
+    );
+
+    try {
+      await httpService.post(API_NOTIFICATION_DISMISS_URL, {
+        notification_key: item.notificationKey,
+        notification_id: item.id,
+        branch_id: branchId,
+      });
+    } catch {
+      // Keep the item hidden locally; it will reappear on a future refresh if the server did not save it.
+    }
+  };
+
+  const handleDismissClick = (event: any, item: NotificationItem) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dismissNotification(item);
+  };
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
@@ -257,30 +259,64 @@ const DropdownNotification = () => {
               ) : items.length > 0 ? (
                 items.map((item) => (
                   <li key={item.id}>
-                    <Link
-                      className="flex items-start gap-3 border-b border-stroke px-4 py-3 transition hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                      to={item.to}
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-sm ring-1 ${toneClass[item.tone]}`}>
-                        {item.icon}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center justify-between gap-3">
-                          <span className="truncate text-sm font-bold text-black dark:text-white">
-                            {item.title}
+                    <div className="relative border-b border-stroke transition hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4">
+                      <Link
+                        className="flex items-start gap-3 px-4 py-3 pr-11"
+                        to={item.to}
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-sm ring-1 ${toneClass[item.tone]}`}>
+                          {item.icon}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center justify-between gap-3">
+                            <span className="truncate text-sm font-bold text-black dark:text-white">
+                              {item.title}
+                            </span>
+                            {item.count ? (
+                              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-100">
+                                {item.count}
+                              </span>
+                            ) : null}
                           </span>
-                          {item.count ? (
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-100">
-                              {item.count}
+                          <span className="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
+                            {item.message}
+                          </span>
+                          {item.preview?.length ? (
+                            <span className="mt-2 block space-y-1">
+                              {item.preview.map((row, index) => (
+                                <span
+                                  key={`${item.notificationKey}-${index}`}
+                                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 rounded-sm bg-slate-50 px-2 py-1 text-[11px] dark:bg-slate-800/60"
+                                >
+                                  <span className="min-w-0">
+                                    <span className="block truncate font-semibold text-slate-700 dark:text-slate-100">
+                                      {row.label}
+                                    </span>
+                                    {row.meta ? (
+                                      <span className="block truncate text-slate-400">
+                                        {row.meta}
+                                      </span>
+                                    ) : null}
+                                  </span>
+                                  <span className="text-right font-bold text-slate-600 dark:text-slate-200">
+                                    {row.value}
+                                  </span>
+                                </span>
+                              ))}
                             </span>
                           ) : null}
                         </span>
-                        <span className="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
-                          {item.message}
-                        </span>
-                      </span>
-                    </Link>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={(event) => handleDismissClick(event, item)}
+                        className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-sm text-slate-400 transition hover:bg-slate-100 hover:text-danger dark:hover:bg-slate-700"
+                        aria-label={`Dismiss ${item.title}`}
+                      >
+                        <FiX />
+                      </button>
+                    </div>
                   </li>
                 ))
               ) : (
