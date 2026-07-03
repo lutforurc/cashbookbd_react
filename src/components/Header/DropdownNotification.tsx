@@ -115,7 +115,6 @@ const DropdownNotification = () => {
   const transactionDate = settings?.data?.trx_dt;
   const canViewLowStock = hasPermission(permissions, 'product.view');
   const canViewInstallments = hasPermission(permissions, 'installment.create');
-  const canApproveVoucher = hasPermission(permissions, 'voucher.approval');
   const canViewSubscriptionAdmin =
     hasPermission(permissions, 'subscription.admin') ||
     hasPermission(permissions, 'subscription.payment.approve');
@@ -271,16 +270,8 @@ const DropdownNotification = () => {
         to: routes.subscription_admin,
         icon: <FiCheckSquare />,
       },
-      canApproveVoucher && {
-        id: 'day-close-reminder',
-        title: 'Day Close Reminder',
-        message: 'Review voucher approval before closing the transaction day.',
-        tone: 'success' as const,
-        to: routes.admin_voucher_approval,
-        icon: <FiCheckSquare />,
-      },
     ].filter(Boolean) as NotificationItem[];
-  }, [counts, subscription, canApproveVoucher]);
+  }, [counts, subscription]);
 
   const totalCount = items.reduce((sum, item) => sum + (item.count || 1), 0);
 
