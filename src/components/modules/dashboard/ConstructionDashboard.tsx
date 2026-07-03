@@ -215,7 +215,7 @@ const ConstructionDashboard = () => {
   return (
     <>
       <HelmetTitle title="Construction Dashboard" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
         {dashboard.isLoading == false ? (
           <>
             {/* Branch summary card */}
@@ -307,7 +307,7 @@ const ConstructionDashboard = () => {
               <div className="group relative flex flex-col bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
-                  <span className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
+                  <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                     Top Purchase
                   </span>
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
@@ -315,9 +315,9 @@ const ConstructionDashboard = () => {
                   </span>
                 </div>
                 {/* Body */}
-                <div className="max-h-72 overflow-y-auto p-3">
+                <div className="hover-scrollbar max-h-72 overflow-y-auto">
                   {dashboard?.data?.topProductsPurchase?.length > 0 ? (
-                    <ul className="space-y-1">
+                    <ul className="divide-y divide-slate-100 dark:divide-gray-700">
                       {dashboard?.data?.topProductsPurchase.map(
                         (item: any, index: number) => {
                           const nameLength = item.name?.length || 0;
@@ -330,18 +330,18 @@ const ConstructionDashboard = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-slate-50 dark:hover:bg-gray-700/60"
+                              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2.5 transition hover:bg-slate-50 dark:hover:bg-gray-700/45"
                             >
-                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[11px] font-bold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                                {index + 1}
+                              <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-500">
+                                {String(index + 1).padStart(2, '0')}
                               </span>
                               <span
-                                className={`flex-1 truncate font-medium text-slate-700 dark:text-slate-100 ${fontClass}`}
+                                className={`min-w-0 flex-1 truncate font-semibold text-slate-700 dark:text-slate-100 ${fontClass}`}
                               >
                                 {item.name}
                               </span>
                               <span
-                                className={`shrink-0 rounded-md bg-slate-100 px-2 py-0.5 font-bold text-slate-700 dark:bg-gray-700 dark:text-slate-100 ${fontClass}`}
+                                className={`shrink-0 text-right font-bold tabular-nums text-amber-600 dark:text-amber-300 ${fontClass}`}
                               >
                                 {thousandSeparator(Number(item.qty))}
                               </span>
