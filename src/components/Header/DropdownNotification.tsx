@@ -10,12 +10,7 @@ import {
 } from 'react-icons/fi';
 import ClickOutside from '../ClickOutside';
 import httpService from '../services/httpService';
-import {
-  API_FILTER_INSTALLMENT_LIST_URL,
-  API_PRODUCT_LOW_STOCK_URL,
-  API_PRODUCT_NEGATIVE_STOCK_URL,
-  API_SUBSCRIPTION_ADMIN_PAYMENTS_URL,
-} from '../services/apiRoutes';
+import { API_NOTIFICATION_SUMMARY_URL } from '../services/apiRoutes';
 import routes from '../services/appRoutes';
 import { useSelector } from 'react-redux';
 import { hasPermission } from '../utils/permissionChecker';
@@ -36,7 +31,19 @@ type NotificationCounts = {
   lowStock: number;
   negativeStock: number;
   dueInstallments: number;
+  pendingVoucherApproval: number;
   pendingPayments: number;
+  subscriptionExpiry: number;
+};
+
+type SubscriptionAlert = {
+  needs_attention?: boolean;
+  status?: string | null;
+  access_status?: string | null;
+  plan_name?: string | null;
+  end_date?: string | null;
+  trial_end_at?: string | null;
+  days_left?: number | null;
 };
 
 const toneClass: Record<NotificationTone, string> = {
@@ -44,31 +51,6 @@ const toneClass: Record<NotificationTone, string> = {
   warning: 'bg-amber-50 text-amber-600 ring-amber-100 dark:bg-amber-900/20 dark:text-amber-300 dark:ring-amber-900/40',
   info: 'bg-sky-50 text-sky-600 ring-sky-100 dark:bg-sky-900/20 dark:text-sky-300 dark:ring-sky-900/40',
   success: 'bg-emerald-50 text-emerald-600 ring-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:ring-emerald-900/40',
-};
-
-const extractTotal = (payload: any): number => {
-  const candidates = [
-    payload?.data?.data?.total,
-    payload?.data?.total,
-    payload?.data?.data?.total_installments,
-    payload?.data?.total_installments,
-    payload?.total,
-    payload?.total_installments,
-  ];
-
-  const found = candidates.find((value) => Number.isFinite(Number(value)));
-  if (found !== undefined) return Number(found);
-
-  const arrays = [
-    payload?.data?.data?.data,
-    payload?.data?.data?.installments,
-    payload?.data?.data,
-    payload?.data,
-    payload,
-  ];
-
-  const foundArray = arrays.find((value) => Array.isArray(value));
-  return Array.isArray(foundArray) ? foundArray.length : 0;
 };
 
 const toIsoDate = (value?: string): string => {
@@ -85,19 +67,6 @@ const toIsoDate = (value?: string): string => {
   return new Date().toISOString().slice(0, 10);
 };
 
-const daysUntil = (value?: string | null): number | null => {
-  if (!value) return null;
-
-  const target = new Date(value);
-  if (Number.isNaN(target.getTime())) return null;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  target.setHours(0, 0, 0, 0);
-
-  return Math.ceil((target.getTime() - today.getTime()) / 86400000);
-};
-
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -105,100 +74,60 @@ const DropdownNotification = () => {
     lowStock: 0,
     negativeStock: 0,
     dueInstallments: 0,
+    pendingVoucherApproval: 0,
     pendingPayments: 0,
+    subscriptionExpiry: 0,
   });
+  const [subscriptionAlert, setSubscriptionAlert] = useState<SubscriptionAlert | null>(null);
   const settings = useSelector((state: any) => state.settings);
   const user = useSelector((state: any) => state.auth?.me);
-  const subscription = useSelector((state: any) => state.subscription?.current);
   const permissions = settings?.data?.permissions || [];
   const branchId = user?.branch_id || settings?.data?.branch?.id;
   const transactionDate = settings?.data?.trx_dt;
   const canViewLowStock = hasPermission(permissions, 'product.view');
   const canViewInstallments = hasPermission(permissions, 'installment.create');
+  const canApproveVoucher = hasPermission(permissions, 'voucher.approval');
   const canViewSubscriptionAdmin =
     hasPermission(permissions, 'subscription.admin') ||
     hasPermission(permissions, 'subscription.payment.approve');
 
   const loadNotifications = async () => {
-    if (!user?.id) return;
+    if (!user?.id || !branchId) return;
 
     setLoading(true);
-    const startDate = toIsoDate(transactionDate);
-
-    const requests: Array<Promise<{ key: keyof NotificationCounts; total: number }>> = [];
-
-    if (canViewLowStock) {
-      requests.push(
-        httpService
-          .get(API_PRODUCT_LOW_STOCK_URL, { params: { per_page: 1 } })
-          .then((res) => ({ key: 'lowStock', total: extractTotal(res.data) })),
-      );
-      requests.push(
-        httpService
-          .get(API_PRODUCT_NEGATIVE_STOCK_URL, { params: { per_page: 1 } })
-          .then((res) => ({ key: 'negativeStock', total: extractTotal(res.data) })),
-      );
-    }
-
-    if (canViewInstallments && branchId) {
-      requests.push(
-        httpService
-          .post(API_FILTER_INSTALLMENT_LIST_URL, {
-            branch_id: branchId,
-            startDate,
-            endDate: startDate,
-            due_only: true,
-            upcoming_day: 7,
-          })
-          .then((res) => ({ key: 'dueInstallments', total: extractTotal(res.data) })),
-      );
-    }
-
-    if (canViewSubscriptionAdmin) {
-      requests.push(
-        httpService
-          .get(API_SUBSCRIPTION_ADMIN_PAYMENTS_URL)
-          .then((res) => {
-            const rows = [
-              res.data?.data?.data,
-              res.data?.data,
-              res.data,
-            ].find((value) => Array.isArray(value));
-
-            const total = Array.isArray(rows)
-              ? rows.filter((row: any) =>
-                  ['pending', 'submitted', 'pending_payment'].includes(
-                    String(row?.payment_status || row?.status || '').toLowerCase(),
-                  ),
-                ).length
-              : extractTotal(res.data);
-
-            return { key: 'pendingPayments' as const, total };
-          }),
-      );
-    }
-
-    const results = await Promise.allSettled(requests);
-
-    setCounts((current) => {
-      const next = { ...current };
-
-      results.forEach((result) => {
-        if (result.status === 'fulfilled') {
-          next[result.value.key] = result.value.total;
-        }
+    try {
+      const response = await httpService.get(API_NOTIFICATION_SUMMARY_URL, {
+        params: {
+          branch_id: branchId,
+          transaction_date: toIsoDate(transactionDate),
+          upcoming_days: 7,
+        },
       });
+      const summary = response?.data?.data?.data || {};
+      const summaryCounts = summary?.counts || {};
 
-      if (!canViewLowStock) {
-        next.lowStock = 0;
-        next.negativeStock = 0;
-      }
-      if (!canViewInstallments) next.dueInstallments = 0;
-      if (!canViewSubscriptionAdmin) next.pendingPayments = 0;
-
-      return next;
-    });
-    setLoading(false);
+      setCounts({
+        lowStock: canViewLowStock ? Number(summaryCounts.low_stock || 0) : 0,
+        negativeStock: canViewLowStock ? Number(summaryCounts.negative_stock || 0) : 0,
+        dueInstallments: canViewInstallments ? Number(summaryCounts.due_installments || 0) : 0,
+        pendingVoucherApproval: canApproveVoucher ? Number(summaryCounts.pending_voucher_approval || 0) : 0,
+        pendingPayments: canViewSubscriptionAdmin ? Number(summaryCounts.pending_subscription_payments || 0) : 0,
+        subscriptionExpiry: Number(summaryCounts.subscription_expiry || 0),
+      });
+      setSubscriptionAlert(summary?.subscription || null);
+    } catch {
+      setCounts({
+        lowStock: 0,
+        negativeStock: 0,
+        dueInstallments: 0,
+        pendingVoucherApproval: 0,
+        pendingPayments: 0,
+        subscriptionExpiry: 0,
+      });
+      setSubscriptionAlert(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -209,18 +138,14 @@ const DropdownNotification = () => {
     transactionDate,
     canViewLowStock,
     canViewInstallments,
+    canApproveVoucher,
     canViewSubscriptionAdmin,
   ]);
 
   const items = useMemo<NotificationItem[]>(() => {
-    const subscriptionDaysLeft = daysUntil(
-      subscription?.end_date || subscription?.trial_end_at,
-    );
+    const subscriptionDaysLeft = subscriptionAlert?.days_left;
     const subscriptionIsExpiring =
-      subscription?.status &&
-      (subscription.status === 'expired' ||
-        subscription.access_status === 'billing_only' ||
-        (subscriptionDaysLeft !== null && subscriptionDaysLeft <= 7));
+      counts.subscriptionExpiry > 0 && subscriptionAlert?.needs_attention;
 
     return [
       counts.negativeStock > 0 && {
@@ -252,14 +177,23 @@ const DropdownNotification = () => {
       },
       subscriptionIsExpiring && {
         id: 'subscription-expiry',
-        title: subscription?.status === 'expired' ? 'Subscription Expired' : 'Subscription Reminder',
+        title: subscriptionAlert?.status === 'expired' ? 'Subscription Expired' : 'Subscription Reminder',
         message:
           subscriptionDaysLeft !== null && subscriptionDaysLeft >= 0
-            ? `${subscription?.plan_name || 'Current plan'} expires in ${subscriptionDaysLeft} day(s).`
-            : `${subscription?.plan_name || 'Current plan'} needs attention.`,
-        tone: subscription?.status === 'expired' ? 'danger' as const : 'warning' as const,
+            ? `${subscriptionAlert?.plan_name || 'Current plan'} expires in ${subscriptionDaysLeft} day(s).`
+            : `${subscriptionAlert?.plan_name || 'Current plan'} needs attention.`,
+        tone: subscriptionAlert?.status === 'expired' ? 'danger' as const : 'warning' as const,
         to: routes.my_subscription,
         icon: <FiCalendar />,
+      },
+      counts.pendingVoucherApproval > 0 && {
+        id: 'pending-voucher-approval',
+        title: 'Voucher Approval',
+        message: `${counts.pendingVoucherApproval} vouchers are waiting for approval.`,
+        count: counts.pendingVoucherApproval,
+        tone: 'success' as const,
+        to: routes.admin_voucher_approval,
+        icon: <FiCheckSquare />,
       },
       counts.pendingPayments > 0 && {
         id: 'pending-payment',
@@ -271,7 +205,7 @@ const DropdownNotification = () => {
         icon: <FiCheckSquare />,
       },
     ].filter(Boolean) as NotificationItem[];
-  }, [counts, subscription]);
+  }, [counts, subscriptionAlert]);
 
   const totalCount = items.reduce((sum, item) => sum + (item.count || 1), 0);
 

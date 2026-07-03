@@ -145,6 +145,7 @@ export const API_LOGOUT_URL = `${API_BASE_URL}/logout`;
 // export const API_LOGOUT_URL = API_BASE_URL + '/logout';
 export const API_AUTH_CHECK_URL = `${API_BASE_URL}/me`;
 // export const API_AUTH_CHECK_URL = API_BASE_URL + '/me';
+export const API_NOTIFICATION_SUMMARY_URL = `${API_BASE_URL}/notifications/summary`;
 
 // Customer
 export const API_CUSTOMER_BASE_URL = `${API_BASE_URL}/customer`;
