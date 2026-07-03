@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiCheck, FiRefreshCcw, FiTrash2, FiX } from 'react-icons/fi';
+import { Link, useSearchParams } from 'react-router-dom';
+import { FiCheck, FiClock, FiRefreshCcw, FiRotateCcw, FiTrash2, FiX } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 import Loader from '../../../common/Loader';
@@ -15,6 +16,8 @@ import InputElement from '../../utils/fields/InputElement';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { useDispatch, useSelector } from 'react-redux';
 import { chartDate } from '../../utils/utils-functions/formatDate';
+import routes from '../../services/appRoutes';
+import { hasPermission } from '../../utils/permissionChecker';
 
 const commandButtonClass = 'h-10 min-w-[110px] whitespace-nowrap rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
@@ -46,14 +49,21 @@ const ApprovalCenter = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const branches = branchDdlData?.protectedData?.data || [];
   const userBranchId = user?.branch_id ? String(user.branch_id) : '';
+  const settings = useSelector((state: any) => state.settings);
+  const permissions = settings?.data?.permissions || [];
+  const canRemoveApproval = hasPermission(permissions, 'remove.approval');
 
-  const [activeTab, setActiveTab] = useState<'attendance' | 'voucher'>('attendance');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'voucher' ? 'voucher' : 'attendance';
+
+  const [activeTab, setActiveTab] = useState<'attendance' | 'voucher'>(initialTab);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [data, setData] = useState<any>({ counts: {}, attendance: [], vouchers: [] });
   const [selectedAttendance, setSelectedAttendance] = useState<number[]>([]);
   const [selectedVouchers, setSelectedVouchers] = useState<number[]>([]);
-  const [confirmAction, setConfirmAction] = useState<null | { type: 'attendance' | 'voucher'; action: 'approve' | 'reject' | 'clear' }>(null);
+  const [confirmAction, setConfirmAction] = useState<null | { type: 'attendance' | 'voucher'; action: 'approve' | 'reject' | 'clear' | 'remove' }>(null);
+  const [remarks, setRemarks] = useState('');
   const [filters, setFilters] = useState({
     date_from: '',
     date_to: '',
@@ -62,6 +72,7 @@ const ApprovalCenter = ({ user }: any) => {
     per_page: 25,
     attendance_page: 1,
     voucher_page: 1,
+    voucher_status: 'pending' as 'pending' | 'approved',
   });
 
   const attendanceRows = Array.isArray(data.attendance) ? data.attendance : [];
@@ -126,6 +137,13 @@ const ApprovalCenter = ({ user }: any) => {
     loadData(nextFilters);
   };
 
+  const changeVoucherStatus = (status: 'pending' | 'approved') => {
+    if (filters.voucher_status === status) return;
+    const nextFilters = { ...filters, voucher_status: status, voucher_page: 1 };
+    setFilters(nextFilters);
+    loadData(nextFilters);
+  };
+
   const toggleSelected = (type: 'attendance' | 'voucher', id: number) => {
     const setter = type === 'attendance' ? setSelectedAttendance : setSelectedVouchers;
     setter((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
@@ -140,24 +158,35 @@ const ApprovalCenter = ({ user }: any) => {
     setSelectedVouchers(selectedVouchers.length === ids.length ? [] : ids);
   };
 
+  const openConfirm = (payload: { type: 'attendance' | 'voucher'; action: 'approve' | 'reject' | 'clear' }) => {
+    setRemarks('');
+    setConfirmAction(payload);
+  };
+
+  const closeConfirm = () => {
+    setConfirmAction(null);
+    setRemarks('');
+  };
+
   const runAction = async () => {
     if (!confirmAction) return;
     const ids = confirmAction.type === 'attendance' ? selectedAttendance : selectedVouchers;
     if (!ids.length) {
       toast.info('Please select at least one item');
-      setConfirmAction(null);
+      closeConfirm();
       return;
     }
 
+    const trimmedRemarks = remarks.trim();
     setActionLoading(true);
     try {
       const response = await httpService.post(API_APPROVAL_CENTER_ACTION_URL, {
         ...confirmAction,
         ids,
-        remarks: `${statusText(confirmAction.action)} from Approval Center`,
+        remarks: trimmedRemarks || `${statusText(confirmAction.action)} from Approval Center`,
       });
       toast.success(response?.data?.message || 'Approval action completed');
-      setConfirmAction(null);
+      closeConfirm();
       await loadData();
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message || 'Approval action failed');
@@ -224,6 +253,12 @@ const ApprovalCenter = ({ user }: any) => {
     { key: 'branch_name', header: 'Branch/Project', render: (row: any) => row.branch_name || '-' },
     { key: 'transaction_type', header: 'Type', render: (row: any) => row.transaction_type || '-' },
     { key: 'created_by_name', header: 'Created By', render: (row: any) => row.created_by_name || '-' },
+    ...(filters.voucher_status === 'approved'
+      ? [
+          { key: 'approved_by_name', header: 'Approved By', render: (row: any) => row.approved_by_name || '-' },
+          { key: 'approved_date', header: 'Approved On', render: (row: any) => (row.approved_date ? chartDate(row.approved_date) : '-') },
+        ]
+      : []),
   ];
 
   return (
@@ -307,29 +342,64 @@ const ApprovalCenter = ({ user }: any) => {
 
       <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setActiveTab('attendance')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'attendance' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Attendance ({data?.counts?.attendance || 0})
             </button>
             <button type="button" onClick={() => setActiveTab('voucher')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'voucher' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Vouchers ({data?.counts?.voucher || 0})
             </button>
+            <Link
+              to={routes.approval_center_audit}
+              className="flex h-9 items-center gap-2 px-4 text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-200"
+            >
+              <FiClock />
+              Audit History
+            </Link>
+            {activeTab === 'voucher' ? (
+              <div className="flex items-center overflow-hidden rounded-sm border border-slate-300 dark:border-slate-600">
+                <button
+                  type="button"
+                  onClick={() => changeVoucherStatus('pending')}
+                  className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'pending' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
+                >
+                  Pending
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeVoucherStatus('approved')}
+                  className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'approved' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
+                >
+                  Approved
+                </button>
+              </div>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <ButtonLoading
               type="button"
               label="Approve"
-              disabled={!activeSelection.length}
-              onClick={() => setConfirmAction({ type: activeTab, action: 'approve' })}
+              disabled={!activeSelection.length || (activeTab === 'voucher' && filters.voucher_status === 'approved')}
+              onClick={() => openConfirm({ type: activeTab, action: 'approve' })}
               className="h-9 min-w-[110px] whitespace-nowrap px-4"
               icon={<FiCheck className="mr-2" />}
             />
+            {activeTab === 'voucher' && filters.voucher_status === 'approved' && canRemoveApproval ? (
+              <ButtonLoading
+                type="button"
+                label="Remove Approval"
+                disabled={!selectedVouchers.length}
+                onClick={() => openConfirm({ type: 'voucher', action: 'remove' })}
+                className="h-9 min-w-[150px] whitespace-nowrap bg-amber-600 px-4 hover:bg-amber-700"
+                icon={<FiRotateCcw className="mr-2" />}
+              />
+            ) : null}
             <ButtonLoading
               type="button"
               label="Reject"
               disabled={activeTab !== 'attendance' || !activeSelection.length}
-              onClick={() => setConfirmAction({ type: 'attendance', action: 'reject' })}
+              onClick={() => openConfirm({ type: 'attendance', action: 'reject' })}
               className="h-9 min-w-[105px] whitespace-nowrap px-4"
               icon={<FiX className="mr-2" />}
             />
@@ -337,7 +407,7 @@ const ApprovalCenter = ({ user }: any) => {
               type="button"
               label="Clear"
               disabled={activeTab !== 'attendance' || !activeSelection.length}
-              onClick={() => setConfirmAction({ type: 'attendance', action: 'clear' })}
+              onClick={() => openConfirm({ type: 'attendance', action: 'clear' })}
               className="h-9 min-w-[100px] whitespace-nowrap px-4"
               icon={<FiTrash2 className="mr-2" />}
             />
@@ -347,7 +417,7 @@ const ApprovalCenter = ({ user }: any) => {
         <Table
           columns={activeTab === 'attendance' ? attendanceColumns : voucherColumns}
           data={activeTab === 'attendance' ? attendanceRows : voucherRows}
-          noDataMessage="No pending approvals found"
+          noDataMessage={activeTab === 'voucher' && filters.voucher_status === 'approved' ? 'No approved vouchers found' : 'No pending approvals found'}
         />
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
           <div className="font-medium text-slate-600 dark:text-slate-300">
@@ -383,10 +453,25 @@ const ApprovalCenter = ({ user }: any) => {
             <span className="mt-1 block font-bold">
               {confirmAction?.type === 'attendance' ? selectedAttendance.length : selectedVouchers.length} item(s) ?
             </span>
+            {confirmAction?.type === 'attendance' ? (
+              <span className="mt-3 block text-left">
+                <span className="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Remarks {confirmAction?.action === 'approve' ? '(optional)' : '(recommended)'}
+                </span>
+                <textarea
+                  value={remarks}
+                  onChange={(event) => setRemarks(event.target.value)}
+                  rows={3}
+                  maxLength={255}
+                  placeholder={`Reason / note for this ${confirmAction?.action}`}
+                  className="block w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+                />
+              </span>
+            ) : null}
           </>
         }
         loading={actionLoading}
-        onCancel={() => setConfirmAction(null)}
+        onCancel={closeConfirm}
         onConfirm={runAction}
         confirmLabel="Confirm"
         cancelLabel="Cancel"
