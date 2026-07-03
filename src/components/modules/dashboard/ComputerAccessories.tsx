@@ -8,6 +8,13 @@ import DailyPurchaseSalesChart from './DailyPurchaseChart';
 import DailyPurchaseChart from './DailyPurchaseChart';
 import DailySalesChart from './DailySalesChart';
 import { getMonthlyPurchaseSales } from './chartSlice';
+import {
+  FaArrowDown,
+  FaArrowUp,
+  FaRegCalendarAlt,
+  FaRegClock,
+  FaWallet,
+} from 'react-icons/fa';
 
 const ComputerAccessories = () => {
   const dashboard = useSelector((state) => state.dashboard);
@@ -43,75 +50,109 @@ const ComputerAccessories = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:text-xs xl:grid-cols-4 gap-10 flex-wrap">
         {dashboard.isLoading == false && (
           <>
-            <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
-              <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
-                <span className="text-sm font-bold">
+            <div className="group relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
+              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {dashboard?.data &&
                     !dashboard.isLoading &&
                     dashboard?.data?.branch?.name}
                 </span>
+                <FaWallet className="shrink-0 text-indigo-500" />
               </div>
-              <div className="p-4">
-                <div className="mb-2 text-sm ">
-                  Trx Date:{' '} 
-                  <span className="italic font-bold">
-                    {' '}
+
+              <div className="divide-y divide-slate-100 dark:divide-gray-700">
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-gray-700 dark:text-slate-300">
+                    <FaRegCalendarAlt className="text-sm" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                      Trx Date
+                    </p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-100">
                     {settings?.data?.trx_dt}
-                  </span>
+                    </p>
+                  </div>
                 </div>
-                <div className="mb-2 text-sm ">
-                  Today Received:{' '}
-                  <span className="italic font-bold">
-                    {' '}
-                    {dashboard?.data?.todayReceived?.debit > 0
-                      ? thousandSeparator(
-                          dashboard?.data?.todayReceived?.debit)
-                      : '-'}
+
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    <FaArrowDown className="text-sm" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                      Today Received
+                    </p>
+                    <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                      {dashboard?.data?.todayReceived?.debit > 0
+                        ? thousandSeparator(
+                            dashboard?.data?.todayReceived?.debit)
+                        : 0}
+                    </p>
+                  </div>
                 </div>
-                <div className="mb-2 text-sm ">
-                  Today Payment:{' '}
-                  <span className="italic font-bold">
-                    {' '}
-                    {dashboard?.data?.todayReceived?.credit > 0
-                      ? thousandSeparator(
-                          dashboard?.data?.todayReceived?.credit)
-                      : '-'}
+
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
+                    <FaArrowUp className="text-sm" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                      Today Payment
+                    </p>
+                    <p className="text-base font-bold text-rose-600 dark:text-rose-400">
+                      {dashboard?.data?.todayReceived?.credit > 0
+                        ? thousandSeparator(
+                            dashboard?.data?.todayReceived?.credit)
+                        : 0}
+                    </p>
+                  </div>
                 </div>
-                <div className="mb-2 text-sm ">
-                  Balance:{' '}
-                  <span className="italic font-bold">
-                    {' '}
-                    {dashboard?.data &&
-                      !dashboard.isLoading &&
-                      thousandSeparator(
-                        (Number(dashboard?.data?.totalTransaction?.debit) ||
-                          0) -
-                          (Number(dashboard?.data?.totalTransaction?.credit) ||
-                            0))}
+
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                    <FaWallet className="text-sm" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                      Balance
+                    </p>
+                    <p className="text-base font-bold text-indigo-600 dark:text-indigo-300">
+                      {dashboard?.data &&
+                        !dashboard.isLoading &&
+                        thousandSeparator(
+                          (Number(dashboard?.data?.totalTransaction?.debit) ||
+                            0) -
+                            (Number(dashboard?.data?.totalTransaction?.credit) ||
+                              0))}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="mx-3 border-t border-slate-200 pb-3 pt-2 px-1">
-                <span className="text-sm font-medium">
+
+              <div className="mt-auto flex items-center gap-1.5 bg-slate-50 px-4 py-2 text-xs text-slate-400 dark:bg-gray-700/50 dark:text-slate-400">
+                <FaRegClock className="text-[11px]" />
+                <span>
                   Last updated: {dashboard?.data?.last_update}
                 </span>
               </div>
             </div>
 
             {topProductsSales?.length > 0 && (
-              <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
+              <div className="relative flex flex-col overflow-hidden border border-slate-200 bg-white text-black shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                 {/* Header */}
-                <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
-                  <span className="text-sm font-bold">
-                    Top Sales Products ({settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today Day' : `${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`})
+                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-600">
+                  <span className="truncate text-sm font-bold">
+                    Top Sales Products
+                  </span>
+                  <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+                    {settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today' : `${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`}
                   </span>
                 </div>
                 {/* Body */}
-                <div className={`p-4 max-h-72 overflow-y-auto`}>
+                <div className="hover-scrollbar max-h-72 overflow-y-auto">
                   {topProductsSales?.length > 0 ? (
-                    <ul className="space-y-2">
+                    <ul className="divide-y divide-slate-200 dark:divide-gray-600">
                       {topProductsSales.map(
                         (item, index) => {
                           const nameLength = item.name?.length || 0;
@@ -124,27 +165,26 @@ const ComputerAccessories = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className="flex items-center justify-between border-b border-slate-200 dark:border-gray-600 rounded transition"
+                              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2.5 transition hover:bg-slate-50 dark:hover:bg-gray-600/45"
                             >
-                              <div className="flex-1">
-                                <span
-                                  className={`font-medium truncate block ${fontClass}`}
-                                >
-                                  {index + 1}. {item.name}
-                                </span>
-                              </div>
-                              <div className="ml-2">
-                                <span className={`font-bold ${fontClass}`}>
-                                  {thousandSeparator(Number(item.qty))}
-                                </span>
-                              </div>
+                              <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
+                                {String(index + 1).padStart(2, '0')}
+                              </span>
+                              <span
+                                className={`min-w-0 truncate font-semibold ${fontClass}`}
+                              >
+                                {item.name}
+                              </span>
+                              <span className={`text-right font-bold tabular-nums text-sky-600 dark:text-sky-300 ${fontClass}`}>
+                                {thousandSeparator(Number(item.qty))}
+                              </span>
                             </li>
                           );
                         },
                       )}
-                      <li className="flex items-center justify-between border-t border-slate-300 dark:border-gray-500 pt-2 font-bold">
+                      <li className="flex items-center justify-between bg-slate-50 px-4 py-2.5 font-bold dark:bg-gray-800/35">
                         <span className="text-[12px]">Total</span>
-                        <span className="text-[12px]">
+                        <span className="text-[12px] tabular-nums text-sky-600 dark:text-sky-300">
                           {thousandSeparator(topProductsSalesTotal)}
                         </span>
                       </li>
@@ -158,17 +198,20 @@ const ComputerAccessories = () => {
               </div>
             )}
             {topProductsPurchase?.length > 0 && (
-              <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 overflow-hidden text-black dark:bg-gray-700 dark:text-white">
+              <div className="relative flex flex-col overflow-hidden border border-slate-200 bg-white text-black shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                 {/* Header */}
-                <div className="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
-                  <span className="text-sm font-bold">
-                    Top Purchase Products ({settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today Day' : `${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`})
+                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-600">
+                  <span className="truncate text-sm font-bold">
+                    Top Purchase Products
+                  </span>
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                    {settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today' : `${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`}
                   </span>
                 </div>
                 {/* Body */}
-                <div className={`p-4 max-h-72 overflow-y-auto`}>
+                <div className="hover-scrollbar max-h-72 overflow-y-auto">
                   {topProductsPurchase?.length > 0 ? (
-                    <ul className="space-y-2">
+                    <ul className="divide-y divide-slate-200 dark:divide-gray-600">
                       {topProductsPurchase.map(
                         (item, index) => {
                           const nameLength = item.name?.length || 0;
@@ -181,27 +224,26 @@ const ComputerAccessories = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className="flex items-center justify-between border-b border-slate-200 dark:border-gray-600 rounded transition"
+                              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2.5 transition hover:bg-slate-50 dark:hover:bg-gray-600/45"
                             >
-                              <div className="flex-1">
-                                <span
-                                  className={`font-medium truncate block ${fontClass}`}
-                                >
-                                  {index + 1}. {item.name}
-                                </span>
-                              </div>
-                              <div className="ml-2">
-                                <span className={`font-bold ${fontClass}`}>
-                                  {thousandSeparator(Number(item.qty))}
-                                </span>
-                              </div>
+                              <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
+                                {String(index + 1).padStart(2, '0')}
+                              </span>
+                              <span
+                                className={`min-w-0 truncate font-semibold ${fontClass}`}
+                              >
+                                {item.name}
+                              </span>
+                              <span className={`text-right font-bold tabular-nums text-amber-600 dark:text-amber-300 ${fontClass}`}>
+                                {thousandSeparator(Number(item.qty))}
+                              </span>
                             </li>
                           );
                         },
                       )}
-                      <li className="flex items-center justify-between border-t border-slate-300 dark:border-gray-500 pt-2 font-bold">
+                      <li className="flex items-center justify-between bg-slate-50 px-4 py-2.5 font-bold dark:bg-gray-800/35">
                         <span className="text-[12px]">Total</span>
-                        <span className="text-[12px]">
+                        <span className="text-[12px] tabular-nums text-amber-600 dark:text-amber-300">
                           {thousandSeparator(topProductsPurchaseTotal)}
                         </span>
                       </li>
