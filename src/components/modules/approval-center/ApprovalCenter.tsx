@@ -11,11 +11,11 @@ import InputDatePicker from '../../utils/fields/DatePicker';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
+import InputElement from '../../utils/fields/InputElement';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { useDispatch, useSelector } from 'react-redux';
 import { chartDate } from '../../utils/utils-functions/formatDate';
 
-const today = new Date().toISOString().slice(0, 10);
 const commandButtonClass = 'h-10 min-w-[110px] whitespace-nowrap rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
 const dateFromString = (value?: string | null) => {
@@ -58,13 +58,20 @@ const ApprovalCenter = ({ user }: any) => {
     date_from: '',
     date_to: '',
     branch_id: '',
-    limit: 100,
+    search: '',
+    per_page: 25,
+    attendance_page: 1,
+    voucher_page: 1,
   });
 
   const attendanceRows = Array.isArray(data.attendance) ? data.attendance : [];
   const voucherRows = Array.isArray(data.vouchers) ? data.vouchers : [];
   const activeSelection = activeTab === 'attendance' ? selectedAttendance : selectedVouchers;
   const activeRows = activeTab === 'attendance' ? attendanceRows : voucherRows;
+  const meta = data?.meta || {};
+  const activePage = activeTab === 'attendance' ? Number(meta.attendance_page || filters.attendance_page || 1) : Number(meta.voucher_page || filters.voucher_page || 1);
+  const activeLastPage = activeTab === 'attendance' ? Number(meta.attendance_last_page || 1) : Number(meta.voucher_last_page || 1);
+  const activeTotal = activeTab === 'attendance' ? Number(data?.counts?.attendance || 0) : Number(data?.counts?.voucher || 0);
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -91,7 +98,32 @@ const ApprovalCenter = ({ user }: any) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+      attendance_page: 1,
+      voucher_page: 1,
+    }));
+  };
+
+  const loadWithFilters = () => {
+    const nextFilters = {
+      ...filters,
+      attendance_page: 1,
+      voucher_page: 1,
+    };
+    setFilters(nextFilters);
+    loadData(nextFilters);
+  };
+
+  const changePage = (nextPage: number) => {
+    const boundedPage = Math.min(Math.max(nextPage, 1), activeLastPage);
+    const nextFilters = {
+      ...filters,
+      [activeTab === 'attendance' ? 'attendance_page' : 'voucher_page']: boundedPage,
+    };
+    setFilters(nextFilters);
+    loadData(nextFilters);
   };
 
   const toggleSelected = (type: 'attendance' | 'voucher', id: number) => {
@@ -200,7 +232,7 @@ const ApprovalCenter = ({ user }: any) => {
       {(loading || actionLoading) && <Loader />}
 
       <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <InputDatePicker
             id="date_from"
             name="date_from"
@@ -230,8 +262,33 @@ const ApprovalCenter = ({ user }: any) => {
               className="h-10 w-full font-medium text-sm p-2"
             />
           </div>
+          <InputElement
+            id="search"
+            name="search"
+            label="Search"
+            value={filters.search}
+            onChange={handleChange}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') loadWithFilters();
+            }}
+            placeholder="Employee, voucher, branch"
+            className="h-10"
+          />
+          <div>
+            <label className="mb-1 block text-sm font-medium text-black dark:text-white">Per Page</label>
+            <select
+              name="per_page"
+              value={filters.per_page}
+              onChange={handleChange}
+              className="block h-10 w-full rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+            >
+              {[10, 25, 50, 100, 200].map((value) => (
+                <option key={value} value={value}>{value}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex items-end">
-            <button type="button" onClick={() => loadData()} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+            <button type="button" onClick={loadWithFilters} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
               <FiRefreshCcw className="mr-2" />
               Load
             </button>
@@ -290,9 +347,31 @@ const ApprovalCenter = ({ user }: any) => {
         <Table
           columns={activeTab === 'attendance' ? attendanceColumns : voucherColumns}
           data={activeTab === 'attendance' ? attendanceRows : voucherRows}
-          perPage={20}
           noDataMessage="No pending approvals found"
         />
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+          <div className="font-medium text-slate-600 dark:text-slate-300">
+            Page {activePage} of {activeLastPage} | {activeTotal} item(s)
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={activePage <= 1}
+              onClick={() => changePage(activePage - 1)}
+              className="h-9 min-w-[90px] bg-slate-700 px-4 text-white disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={activePage >= activeLastPage}
+              onClick={() => changePage(activePage + 1)}
+              className="h-9 min-w-[90px] bg-slate-700 px-4 text-white disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       <ConfirmModal
