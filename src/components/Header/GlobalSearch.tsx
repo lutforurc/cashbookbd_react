@@ -12,6 +12,25 @@ import globalSearchItems, { GlobalSearchItem } from './globalSearchItems';
 const RESULT_LIMIT = 10;
 const VOUCHER_NO_PATTERN = /^\d+-[\w-]+$/;
 const MOBILE_NO_PATTERN = /^01\d{8,9}$/;
+const QUICK_ACTION_TITLES = [
+  'Sales Invoice',
+  'Purchase Invoice',
+  'Cash Received',
+  'Cash Payment',
+  'Add Customer & Supplier',
+  'Add Product',
+  'Ledger',
+  'Cashbook',
+  'Product Stock',
+];
+const QUICK_ACTION_LABELS: Record<string, string> = {
+  'Sales Invoice': 'New Sale',
+  'Purchase Invoice': 'New Purchase',
+  'Cash Received': 'Cash Receive',
+  'Cash Payment': 'Cash Payment',
+  'Add Customer & Supplier': 'New Customer',
+  'Add Product': 'New Product',
+};
 
 const canShowItem = (permissions: Permission[] | undefined, item: GlobalSearchItem) => {
   if (!item.permissions || item.permissions.length === 0) return true;
@@ -33,14 +52,22 @@ const GlobalSearch = () => {
     [permissions],
   );
 
+  const quickActions = useMemo(() => {
+    const itemMap = new Map(availableItems.map((item) => [item.title, item]));
+
+    return QUICK_ACTION_TITLES.map((title) => itemMap.get(title)).filter(
+      (item): item is GlobalSearchItem => Boolean(item),
+    );
+  }, [availableItems]);
+
   const results = useMemo(() => {
     const searchText = query.trim();
-    if (!searchText) return availableItems.slice(0, RESULT_LIMIT);
+    if (!searchText) return quickActions.slice(0, RESULT_LIMIT);
 
     return matchSorter(availableItems, searchText, {
       keys: ['title', 'group', 'path', 'keywords'],
     }).slice(0, RESULT_LIMIT);
-  }, [availableItems, query]);
+  }, [availableItems, query, quickActions]);
 
   const voucherTarget = useMemo(() => {
     const searchText = query.trim();
@@ -65,6 +92,23 @@ const GlobalSearch = () => {
   useEffect(() => {
     setActiveIndex(0);
   }, [query]);
+
+  useEffect(() => {
+    const handleShortcut = (event: globalThis.KeyboardEvent) => {
+      const isQuickActionShortcut =
+        (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+
+      if (!isQuickActionShortcut) return;
+
+      event.preventDefault();
+      setOpen(true);
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+
+    document.addEventListener('keydown', handleShortcut);
+    return () => document.removeEventListener('keydown', handleShortcut);
+  }, []);
 
   const resetSearch = () => {
     setQuery('');
@@ -155,8 +199,8 @@ const GlobalSearch = () => {
             ref={inputRef}
             type="text"
             value={query}
-            placeholder="Search menus, reports, pages..."
-            className="w-full bg-transparent pl-9 pr-9 text-black focus:outline-none dark:text-white xl:w-125"
+            placeholder="Search or quick action..."
+            className="w-full bg-transparent pl-9 pr-16 text-black focus:outline-none dark:text-white xl:w-125"
             onChange={(event) => {
               setQuery(event.target.value);
               setOpen(true);
@@ -176,14 +220,23 @@ const GlobalSearch = () => {
             >
               <FiX size={18} />
             </button>
-          ) : null}
+          ) : (
+            <span className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 rounded border border-stroke px-1.5 py-0.5 text-[10px] font-semibold uppercase text-body dark:border-strokedark dark:text-bodydark md:inline-flex">
+              Ctrl K
+            </span>
+          )}
         </div>
       </form>
 
-      {open && query.trim() ? (
+      {open ? (
         <div className="absolute left-0 top-full z-999 mt-3 w-full overflow-hidden rounded border border-stroke bg-white shadow-5 dark:border-strokedark dark:bg-boxdark">
           {voucherTarget || isCustomerMobileSearch || results.length > 0 ? (
             <ul className="max-h-96 overflow-y-auto py-2">
+              {!query.trim() && results.length > 0 ? (
+                <li className="px-4 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-body dark:text-bodydark">
+                  Quick Actions
+                </li>
+              ) : null}
               {voucherTarget ? (
                 <li>
                   <button
@@ -229,8 +282,10 @@ const GlobalSearch = () => {
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => goToItem(item)}
                   >
-                    <span className="min-w-0">
-                      <span className="block truncate font-medium text-black dark:text-white">{item.title}</span>
+                      <span className="min-w-0">
+                      <span className="block truncate font-medium text-black dark:text-white">
+                        {!query.trim() ? QUICK_ACTION_LABELS[item.title] ?? item.title : item.title}
+                      </span>
                       <span className="block truncate text-xs text-body dark:text-bodydark">{item.group}</span>
                     </span>
                     <span className="shrink-0 truncate text-xs text-body dark:text-bodydark">{item.path}</span>

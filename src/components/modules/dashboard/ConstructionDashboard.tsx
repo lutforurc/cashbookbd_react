@@ -62,7 +62,6 @@ const ConstructionDashboard = () => {
   const hasReceiveDetails = Object.values(groupedReceiveDetails).some(
     (items): items is any[] => Array.isArray(items) && items.length > 0,
   );
-
   const getReceiveDetailStatusKey = (item: any) =>
     String(item?.mtm_id ?? item?.vr_no ?? item?.id ?? '');
 
@@ -304,20 +303,20 @@ const ConstructionDashboard = () => {
             </div>
 
             {dashboard?.data?.topProductsPurchase?.length > 0 && (
-              <div className="group relative flex flex-col bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700">
+              <div className="relative flex flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[#1f2937]">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
-                  <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
+                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3.5 dark:border-slate-600">
+                  <span className="truncate text-base font-bold tracking-wide text-slate-700 dark:text-slate-100">
                     Top Purchase
                   </span>
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                    Last 7 Days
+                  <span className="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
+                    {settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today' : `Last ${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`}
                   </span>
                 </div>
                 {/* Body */}
                 <div className="hover-scrollbar max-h-72 overflow-y-auto">
                   {dashboard?.data?.topProductsPurchase?.length > 0 ? (
-                    <ul className="divide-y divide-slate-100 dark:divide-gray-700">
+                    <ul className="divide-y divide-slate-200 dark:divide-slate-600/80">
                       {dashboard?.data?.topProductsPurchase.map(
                         (item: any, index: number) => {
                           const nameLength = item.name?.length || 0;
@@ -330,18 +329,18 @@ const ConstructionDashboard = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2.5 transition hover:bg-slate-50 dark:hover:bg-gray-700/45"
+                              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-700/45"
                             >
-                              <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-500">
+                              <span className="text-sm font-medium tabular-nums text-sky-500/70 dark:text-sky-300/60">
                                 {String(index + 1).padStart(2, '0')}
                               </span>
                               <span
-                                className={`min-w-0 flex-1 truncate font-semibold text-slate-700 dark:text-slate-100 ${fontClass}`}
+                                className={`min-w-0 flex-1 truncate font-bold text-slate-700 dark:text-slate-100 ${fontClass}`}
                               >
                                 {item.name}
                               </span>
                               <span
-                                className={`shrink-0 text-right font-bold tabular-nums text-amber-600 dark:text-amber-300 ${fontClass}`}
+                                className={`shrink-0 text-right font-bold tabular-nums text-yellow-500 dark:text-yellow-300 ${fontClass}`}
                               >
                                 {thousandSeparator(Number(item.qty))}
                               </span>
