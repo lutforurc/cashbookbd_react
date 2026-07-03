@@ -84,7 +84,9 @@ const DropdownNotification = () => {
   const permissions = settings?.data?.permissions || [];
   const branchId = user?.branch_id || settings?.data?.branch?.id;
   const transactionDate = settings?.data?.trx_dt;
-  const canViewLowStock = hasPermission(permissions, 'product.view');
+  const canViewStockAlerts =
+    hasPermission(permissions, 'products.view') ||
+    hasPermission(permissions, 'product.stock.view');
   const canViewInstallments = hasPermission(permissions, 'installment.create');
   const canApproveVoucher = hasPermission(permissions, 'voucher.approval');
   const canViewSubscriptionAdmin =
@@ -107,8 +109,8 @@ const DropdownNotification = () => {
       const summaryCounts = summary?.counts || {};
 
       setCounts({
-        lowStock: canViewLowStock ? Number(summaryCounts.low_stock || 0) : 0,
-        negativeStock: canViewLowStock ? Number(summaryCounts.negative_stock || 0) : 0,
+        lowStock: canViewStockAlerts ? Number(summaryCounts.low_stock || 0) : 0,
+        negativeStock: canViewStockAlerts ? Number(summaryCounts.negative_stock || 0) : 0,
         dueInstallments: canViewInstallments ? Number(summaryCounts.due_installments || 0) : 0,
         pendingVoucherApproval: canApproveVoucher ? Number(summaryCounts.pending_voucher_approval || 0) : 0,
         pendingPayments: canViewSubscriptionAdmin ? Number(summaryCounts.pending_subscription_payments || 0) : 0,
@@ -136,7 +138,7 @@ const DropdownNotification = () => {
     user?.id,
     branchId,
     transactionDate,
-    canViewLowStock,
+    canViewStockAlerts,
     canViewInstallments,
     canApproveVoucher,
     canViewSubscriptionAdmin,
