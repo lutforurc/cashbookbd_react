@@ -47,7 +47,7 @@ const ComputerAccessories = () => {
   return (
     <div>
       <HelmetTitle title="Dashboard" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:text-xs xl:grid-cols-4 gap-10 flex-wrap">
+      <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:text-xs lg:grid-cols-3 xl:grid-cols-4">
         {dashboard.isLoading == false && (
           <>
             <div className="group relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
