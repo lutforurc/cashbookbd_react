@@ -58,6 +58,7 @@ import Roles from './components/modules/user-management/Roles';
 import AddRole from './components/modules/user-management/AddRole';
 import JumpDate from './components/modules/dayclose/JumpDate';
 import VoucherApproval from './components/modules/voucher_approval/VoucherApproval';
+import ApprovalCenter from './components/modules/approval-center/ApprovalCenter';
 import PurchaseIndex from './components/modules/invoices/purchase/PurchaseIndex';
 import TradingPurchaseImport from './components/modules/invoices/purchase/TradingPurchaseImport';
 import ConstructionBusinessPurchaseReturn from './components/modules/invoices/purchase/ConstructionBusinessPurchaseReturn';
@@ -485,6 +486,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.approval']} loading={permissionsLoading} />}>
               <Route path={routes.admin_voucher_approval} element={<VoucherApproval />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.approval', 'attendance.view']} loading={permissionsLoading} />}>
+              <Route path={routes.approval_center} element={<ApprovalCenter user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['remove.approval']} loading={permissionsLoading} />}>
               <Route path={routes.admin_remove_approval} element={<RemoveApproval />} />

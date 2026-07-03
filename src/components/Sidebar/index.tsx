@@ -1562,6 +1562,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 	                          pathname === '/admin/dayclose' ||
 	                          pathname === '/order/order-list' ||
                           pathname === '/admin/voucher-approval' ||
+                          pathname === routes.approval_center ||
                           pathname === '/admin/remove-approval' ||
                           pathname === '/admin/voucher/type-change' ||
                           pathname === '/admin/image-upload' ||
@@ -1767,6 +1768,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {/* voucher.approval */}
+                          {(hasPermission(permissions, 'voucher.approval') || hasPermission(permissions, 'attendance.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.approval_center}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Approval Center
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'voucher.approval') && (
                             <li>
                               <NavLink

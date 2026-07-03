@@ -476,6 +476,9 @@ export const API_VOUCHER_APPROVAL_STORE_URL = `${API_BASE_URL}/admin/voucher/vou
 
 export const API_VOUCHER_APPROVAL_REMOVE_URL = `${API_BASE_URL}/admin/voucher/remove-approval`;
 export const API_VOUCHER_APPROVAL_REMOVE_BY_ID_URL = `${API_BASE_URL}/admin/voucher/remove/approval`;
+
+export const API_APPROVAL_CENTER_SUMMARY_URL = `${API_BASE_URL}/approval-center/summary`;
+export const API_APPROVAL_CENTER_ACTION_URL = `${API_BASE_URL}/approval-center/action`;
 export const API_VOUCHER_TYPE_CHANGE_STORE_URL = `${API_BASE_URL}/admin/voucher/voucher-type-change`;
 export const API_VOUCHER_TYPE_URL = `${API_BASE_URL}/settings/voucher-types`;
 
