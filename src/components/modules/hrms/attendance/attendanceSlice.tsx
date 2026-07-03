@@ -4,7 +4,9 @@ import {
   API_ATTENDANCE_HOLIDAY_LIST_URL,
   API_ATTENDANCE_HOLIDAY_STORE_URL,
   API_ATTENDANCE_HOLIDAY_UPDATE_URL,
+  API_ATTENDANCE_AUDIT_HISTORY_URL,
   API_ATTENDANCE_ENTRY_APPROVE_URL,
+  API_ATTENDANCE_ENTRY_BULK_CLEAR_URL,
   API_ATTENDANCE_ENTRY_BULK_STORE_URL,
   API_ATTENDANCE_ENTRY_DELETE_URL,
   API_ATTENDANCE_ENTRY_LIST_URL,
@@ -218,6 +220,19 @@ export const fetchAttendanceReport = createAsyncThunk<any, any | undefined, { re
   },
 );
 
+export const fetchAttendanceAuditHistory = createAsyncThunk<any, any | undefined, { rejectValue: string }>(
+  'attendance/fetchAttendanceAuditHistory',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await httpService.get(API_ATTENDANCE_AUDIT_HISTORY_URL, { params });
+      const payload = response?.data?.data || response?.data || {};
+      return Array.isArray(payload?.data) ? payload : { data: extractData(response) };
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to fetch attendance audit history'));
+    }
+  },
+);
+
 export const fetchMonthlyAttendanceSummary = createAsyncThunk<any, any | undefined, { rejectValue: string }>(
   'attendance/fetchMonthlyAttendanceSummary',
   async (params = {}, { rejectWithValue }) => {
@@ -251,6 +266,18 @@ export const bulkSaveAttendanceEntries = createAsyncThunk<any, any, { rejectValu
       return response.data;
     } catch (error: any) {
       return rejectWithValue(rejectMessage(error, 'Failed to save bulk attendance'));
+    }
+  },
+);
+
+export const bulkClearAttendanceEntries = createAsyncThunk<any, any, { rejectValue: string }>(
+  'attendance/bulkClearAttendanceEntries',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await httpService.post(API_ATTENDANCE_ENTRY_BULK_CLEAR_URL, payload);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to clear attendance entries'));
     }
   },
 );
@@ -324,6 +351,7 @@ interface AttendanceState {
   leaveTypes: any[];
   entries: any[];
   report: any;
+  auditHistory: any;
   monthlySummary: any;
   leaveApplications: any[];
   loading: boolean;
@@ -339,6 +367,7 @@ const initialState: AttendanceState = {
   leaveTypes: [],
   entries: [],
   report: null,
+  auditHistory: null,
   monthlySummary: null,
   leaveApplications: [],
   loading: false,
@@ -408,6 +437,12 @@ const attendanceSlice = createSlice({
         state.report = action.payload;
       })
       .addCase(fetchAttendanceReport.rejected, rejected)
+      .addCase(fetchAttendanceAuditHistory.pending, pending)
+      .addCase(fetchAttendanceAuditHistory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.auditHistory = action.payload;
+      })
+      .addCase(fetchAttendanceAuditHistory.rejected, rejected)
       .addCase(fetchMonthlyAttendanceSummary.pending, pending)
       .addCase(fetchMonthlyAttendanceSummary.fulfilled, (state, action) => {
         state.loading = false;

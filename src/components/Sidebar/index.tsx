@@ -2113,6 +2113,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
                             <li>
                               <NavLink
+                                to={routes.hrms_attendance_audit_history}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Audit History
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                            <li>
+                              <NavLink
                                 to={routes.hrms_overtime_report}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +

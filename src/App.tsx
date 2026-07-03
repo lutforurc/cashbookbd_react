@@ -114,6 +114,7 @@ import EmployeeLoan from './components/modules/hrms/loan/EmployeeLoan';
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
+import AttendanceAuditHistory from './components/modules/hrms/attendance/AttendanceAuditHistory';
 import AttendanceExceptionReports from './components/modules/hrms/attendance/AttendanceExceptionReports';
 import EmployeeAttendanceReport from './components/modules/hrms/attendance/EmployeeAttendanceReport';
 import BranchAttendanceSummaryReport from './components/modules/hrms/attendance/BranchAttendanceSummaryReport';
@@ -604,6 +605,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['attendance.view', 'employee.view']} loading={permissionsLoading} />}>
               <Route path={routes.hrms_attendance_entries} element={<AttendanceEntries user={me} />} />
               <Route path={routes.hrms_attendance_report} element={<AttendanceReport user={me} />} />
+              <Route path={routes.hrms_attendance_audit_history} element={<AttendanceAuditHistory user={me} />} />
               <Route path={routes.hrms_overtime_report} element={<AttendanceReport user={me} reportTitle="Overtime Report" reportType="overtime" />} />
               <Route path={routes.hrms_attendance_exception_reports} element={<AttendanceExceptionReports user={me} />} />
               <Route path={routes.hrms_absent_report} element={<AttendanceExceptionReports user={me} />} />

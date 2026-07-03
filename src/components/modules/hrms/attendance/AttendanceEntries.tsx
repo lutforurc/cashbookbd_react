@@ -11,11 +11,13 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import EmployeeDropdownSearch from '../../../utils/utils-functions/EmployeeDropdownSearch';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
+import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   approveAttendanceEntry,
+  bulkClearAttendanceEntries,
   bulkSaveAttendanceEntries,
   deleteAttendanceEntry,
   fetchAttendanceEntries,
@@ -208,6 +210,8 @@ const AttendanceEntries = ({ user }: any) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkApproveLoading, setBulkApproveLoading] = useState(false);
+  const [bulkClearLoading, setBulkClearLoading] = useState(false);
+  const [showBulkClearConfirm, setShowBulkClearConfirm] = useState(false);
   const [bulkLoadedKey, setBulkLoadedKey] = useState('');
   const [pendingRows, setPendingRows] = useState<Record<string, any>>({});
   const [employeeMeta, setEmployeeMeta] = useState<any>(null);
@@ -642,6 +646,45 @@ const AttendanceEntries = ({ user }: any) => {
     }
   };
 
+  const approvedEntriesForClear = displayEntries.filter((row: any) => row?.id && row?.approval_status === 'approved');
+
+  const openBulkClearConfirm = () => {
+    if (approvedEntriesForClear.length === 0) {
+      toast.info('No approved attendance found to clear');
+      return;
+    }
+
+    setShowBulkClearConfirm(true);
+  };
+
+  const handleBulkClearApprovedEntries = async () => {
+    const approvedEntries = displayEntries.filter((row: any) => row?.id && row?.approval_status === 'approved');
+
+    if (approvedEntries.length === 0) {
+      toast.info('No approved attendance found to clear');
+      setShowBulkClearConfirm(false);
+      return;
+    }
+
+    setBulkClearLoading(true);
+    try {
+      const response = await dispatch(
+        bulkClearAttendanceEntries({
+          entry_ids: approvedEntries.map((row: any) => row.id),
+          remarks: 'Bulk attendance cleared',
+        }),
+      ).unwrap();
+      const result = response?.data?.data || response?.data || {};
+      toast.success(response?.message || `Bulk clear completed. Cleared: ${result.cleared || 0}, Skipped: ${result.skipped || 0}`);
+      setShowBulkClearConfirm(false);
+      loadEntries();
+    } catch (error: any) {
+      toast.error(error || 'Bulk clear failed');
+    } finally {
+      setBulkClearLoading(false);
+    }
+  };
+
   const columns = [
     {
       key: 'serial_no',
@@ -896,12 +939,12 @@ const AttendanceEntries = ({ user }: any) => {
             className="h-9 w-full font-medium text-sm p-1.5"
           />
         </div>
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2 xl:flex-nowrap">
           <ButtonLoading
             type="button"
             onClick={() => loadEntries()}
             label="Load"
-            className =" h-9 w-30"
+            className ="h-9 min-w-[92px] whitespace-nowrap px-4"
             icon={<FiSearch className="mr-2" />}
           />
         {/* </div>
@@ -912,8 +955,17 @@ const AttendanceEntries = ({ user }: any) => {
             buttonLoading={bulkApproveLoading}
             disabled={bulkApproveLoading || (pendingRowsList().length === 0 && entries.every((row: any) => row?.approval_status === 'approved'))}
             label="Bulk Approve"
-            className =" h-9"
+            className ="h-9 min-w-[135px] whitespace-nowrap px-4"
             icon={<FiCheck className="mr-2" />}
+          />
+          <ButtonLoading
+            type="button"
+            onClick={openBulkClearConfirm}
+            buttonLoading={bulkClearLoading}
+            disabled={bulkClearLoading || approvedEntriesForClear.length === 0}
+            label="Bulk Clear"
+            className ="h-9 min-w-[120px] whitespace-nowrap px-4"
+            icon={<FiTrash2 className="mr-2" />}
           />
         </div>
         </div>
@@ -934,6 +986,25 @@ const AttendanceEntries = ({ user }: any) => {
         </div>
         <Table columns={columns} data={displayEntries} />
       </div>
+
+      <ConfirmModal
+        show={showBulkClearConfirm}
+        title="Confirm Deletion"
+        message={
+          <>
+            Are you sure you want to clear attendance entries
+            <span className="mt-1 block font-bold">
+              {approvedEntriesForClear.length} approved entries ?
+            </span>
+          </>
+        }
+        loading={bulkClearLoading}
+        cancelLabel="Cancel"
+        confirmLabel="Confirm"
+        onCancel={() => setShowBulkClearConfirm(false)}
+        onConfirm={handleBulkClearApprovedEntries}
+        className="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 };
