@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 
 import Loader from '../../../common/Loader';
-import { PrintButton } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import httpService from '../../services/httpService';
 import { API_APPROVAL_CENTER_AUDIT_URL } from '../../services/apiRoutes';
 import routes from '../../services/appRoutes';
@@ -14,12 +14,11 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
+import Pagination from '../../utils/utils-functions/Pagination';
 import InputElement from '../../utils/fields/InputElement';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { useDispatch, useSelector } from 'react-redux';
 import { chartDate } from '../../utils/utils-functions/formatDate';
-
-const commandButtonClass = 'h-10 min-w-[110px] whitespace-nowrap rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -194,7 +193,7 @@ const ApprovalAudit = ({ user }: any) => {
       <HelmetTitle title="Approval Audit" />
       {(loading || exporting) && <Loader />}
 
-      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="mb-3 border border-stroke bg-white p-3 dark:border-strokedark dark:bg-boxdark">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <InputDatePicker
             id="date_from"
@@ -266,10 +265,13 @@ const ApprovalAudit = ({ user }: any) => {
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={loadWithFilters} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
-            <FiRefreshCcw className="mr-2" />
-            Load
-          </button>
+          <ButtonLoading
+            type="button"
+            label="Load"
+            onClick={loadWithFilters}
+            className="h-10 min-w-[110px] whitespace-nowrap px-5"
+            icon={<FiRefreshCcw className="mr-2" />}
+          />
           <PrintButton label="Print" onClick={handlePrint} className="h-10" disabled={!rows.length} />
           <button
             type="button"
@@ -290,36 +292,23 @@ const ApprovalAudit = ({ user }: any) => {
         </div>
       </div>
 
-      <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+      <div className="border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
           <h5 className="text-sm font-bold text-black dark:text-white">Attendance Approval Audit</h5>
           <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{total} record(s)</span>
         </div>
 
         <Table columns={columns} data={rows} noDataMessage="No audit records found" />
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stroke px-4 py-3 text-sm dark:border-strokedark">
           <div className="font-medium text-slate-600 dark:text-slate-300">
             Page {page} of {lastPage} | {total} record(s)
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              disabled={page <= 1}
-              onClick={() => changePage(page - 1)}
-              className="h-9 min-w-[90px] bg-slate-700 px-4 text-white disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              disabled={page >= lastPage}
-              onClick={() => changePage(page + 1)}
-              className="h-9 min-w-[90px] bg-slate-700 px-4 text-white disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              Next
-            </button>
-          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={lastPage}
+            handlePageChange={changePage}
+          />
         </div>
       </div>
 

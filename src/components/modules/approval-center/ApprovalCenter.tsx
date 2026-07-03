@@ -12,14 +12,13 @@ import InputDatePicker from '../../utils/fields/DatePicker';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
+import Pagination from '../../utils/utils-functions/Pagination';
 import InputElement from '../../utils/fields/InputElement';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { useDispatch, useSelector } from 'react-redux';
 import { chartDate } from '../../utils/utils-functions/formatDate';
 import routes from '../../services/appRoutes';
 import { hasPermission } from '../../utils/permissionChecker';
-
-const commandButtonClass = 'h-10 min-w-[110px] whitespace-nowrap rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -266,7 +265,7 @@ const ApprovalCenter = ({ user }: any) => {
       <HelmetTitle title="Approval Center" />
       {(loading || actionLoading) && <Loader />}
 
-      <div className="mb-3 border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-boxdark">
+      <div className="mb-3 border border-stroke bg-white p-3 dark:border-strokedark dark:bg-boxdark">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <InputDatePicker
             id="date_from"
@@ -323,25 +322,28 @@ const ApprovalCenter = ({ user }: any) => {
             </select>
           </div>
           <div className="flex items-end">
-            <button type="button" onClick={loadWithFilters} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
-              <FiRefreshCcw className="mr-2" />
-              Load
-            </button>
+            <ButtonLoading
+              type="button"
+              label="Load"
+              onClick={loadWithFilters}
+              className="h-10 min-w-[110px] whitespace-nowrap px-5"
+              icon={<FiRefreshCcw className="mr-2" />}
+            />
           </div>
         </div>
       </div>
 
       <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-4">
         {summaryCards.map((card) => (
-          <div key={card.label} className="border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-boxdark">
+          <div key={card.label} className="border border-stroke bg-white px-4 py-3 dark:border-strokedark dark:bg-boxdark">
             <div className="text-xs font-semibold uppercase text-slate-500">{card.label}</div>
             <div className="mt-1 text-xl font-bold text-slate-900 dark:text-white">{card.value}</div>
           </div>
         ))}
       </div>
 
-      <div className="border border-slate-200 bg-white dark:border-slate-700 dark:bg-boxdark">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+      <div className="border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setActiveTab('attendance')} className={`h-9 px-4 text-sm font-semibold ${activeTab === 'attendance' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Attendance ({data?.counts?.attendance || 0})
@@ -357,18 +359,18 @@ const ApprovalCenter = ({ user }: any) => {
               Audit History
             </Link>
             {activeTab === 'voucher' ? (
-              <div className="flex items-center overflow-hidden rounded-sm border border-slate-300 dark:border-slate-600">
+              <div className="flex items-center overflow-hidden rounded-sm border border-stroke dark:border-strokedark">
                 <button
                   type="button"
                   onClick={() => changeVoucherStatus('pending')}
-                  className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'pending' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
+                  className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'pending' ? 'bg-primary text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
                 >
                   Pending
                 </button>
                 <button
                   type="button"
                   onClick={() => changeVoucherStatus('approved')}
-                  className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'approved' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
+                  className={`h-9 px-3 text-xs font-semibold ${filters.voucher_status === 'approved' ? 'bg-primary text-white' : 'bg-white text-slate-700 dark:bg-boxdark dark:text-slate-200'}`}
                 >
                   Approved
                 </button>
@@ -419,28 +421,15 @@ const ApprovalCenter = ({ user }: any) => {
           data={activeTab === 'attendance' ? attendanceRows : voucherRows}
           noDataMessage={activeTab === 'voucher' && filters.voucher_status === 'approved' ? 'No approved vouchers found' : 'No pending approvals found'}
         />
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-4 py-3 text-sm dark:border-slate-700">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stroke px-4 py-3 text-sm dark:border-strokedark">
           <div className="font-medium text-slate-600 dark:text-slate-300">
             Page {activePage} of {activeLastPage} | {activeTotal} item(s)
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              disabled={activePage <= 1}
-              onClick={() => changePage(activePage - 1)}
-              className="h-9 min-w-[90px] bg-slate-700 px-4 text-white disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              disabled={activePage >= activeLastPage}
-              onClick={() => changePage(activePage + 1)}
-              className="h-9 min-w-[90px] bg-slate-700 px-4 text-white disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              Next
-            </button>
-          </div>
+          <Pagination
+            currentPage={activePage}
+            totalPages={activeLastPage}
+            handlePageChange={changePage}
+          />
         </div>
       </div>
 
