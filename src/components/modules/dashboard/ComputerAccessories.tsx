@@ -15,10 +15,25 @@ import {
   FaRegClock,
   FaWallet,
 } from 'react-icons/fa';
+import DashboardCustomizeButton, {
+  DashboardWidget,
+  useDashboardCustomization,
+} from './dashboardCustomization';
+
+const NORMAL_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  { id: 'summary', title: 'Balance Summary' },
+  { id: 'top-sales', title: 'Top Sales Products' },
+  { id: 'top-purchase', title: 'Top Purchase Products' },
+  { id: 'daily-sales', title: 'Daily Sales Chart' },
+  { id: 'daily-purchase', title: 'Daily Purchase Chart' },
+  { id: 'monthly-purchase-sales', title: 'Monthly Purchase Sales Chart' },
+];
 
 const ComputerAccessories = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const settings = useSelector((s: any) => s.settings);
+  const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
+  const me = useSelector((s: any) => s.auth?.me);
   const { purchaseSales, loading } = useSelector((state) => state.charts);
   const dispatch = useDispatch();
   const topProductsSales = purchaseSales?.data?.data?.topProductsSales || [];
@@ -31,12 +46,28 @@ const ComputerAccessories = () => {
     (sum, item) => sum + Number(item?.qty || 0),
     0,
   );
-
-
-  console.log('====================================');
-  console.log("settings", settings?.data?.branch?.dashboard_top_sales_days);
-  console.log('====================================');
-
+  const {
+    density,
+    orderedWidgets,
+    visibleWidgets,
+    isWidgetVisible,
+    toggleWidget,
+    moveWidget,
+    setDensity,
+    reset,
+  } = useDashboardCustomization(
+    `cashbook-normal-dashboard:${me?.id || 'user'}:${currentBranch?.id || 'branch'}`,
+    NORMAL_DASHBOARD_WIDGETS,
+    {
+      dashboardKey: 'normal',
+      branchId: currentBranch?.id,
+      enabled: Boolean(me?.id && currentBranch?.id),
+    },
+  );
+  const isCompact = density === 'compact';
+  const cardRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
+  const listRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
+  const dashboardGapClass = isCompact ? 'gap-4' : 'gap-10';
 
   useEffect(() => {
     dispatch(getDashboard());
@@ -47,10 +78,23 @@ const ComputerAccessories = () => {
   return (
     <div>
       <HelmetTitle title="Dashboard" />
-      <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:text-xs lg:grid-cols-3 xl:grid-cols-4">
-        {dashboard.isLoading == false && (
-          <>
-            <div className="group relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
+      <div className="mb-4">
+        <DashboardCustomizeButton
+          density={density}
+          widgets={orderedWidgets}
+          isWidgetVisible={isWidgetVisible}
+          onToggleWidget={toggleWidget}
+          onMoveWidget={moveWidget}
+          onDensityChange={setDensity}
+          onReset={reset}
+        />
+      </div>
+      <div className={`grid grid-cols-1 items-start ${dashboardGapClass} md:grid-cols-2 md:text-xs lg:grid-cols-3 xl:grid-cols-4`}>
+        {dashboard.isLoading == false &&
+          visibleWidgets.map((widget) => {
+            if (widget.id === 'summary') {
+              return (
+            <div key={widget.id} className="group relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
                 <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {dashboard?.data &&
@@ -61,7 +105,7 @@ const ComputerAccessories = () => {
               </div>
 
               <div className="divide-y divide-slate-100 dark:divide-gray-700">
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`flex items-center gap-3 ${cardRowClass}`}>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-gray-700 dark:text-slate-300">
                     <FaRegCalendarAlt className="text-sm" />
                   </span>
@@ -75,7 +119,7 @@ const ComputerAccessories = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`flex items-center gap-3 ${cardRowClass}`}>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                     <FaArrowDown className="text-sm" />
                   </span>
@@ -92,7 +136,7 @@ const ComputerAccessories = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`flex items-center gap-3 ${cardRowClass}`}>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
                     <FaArrowUp className="text-sm" />
                   </span>
@@ -109,7 +153,7 @@ const ComputerAccessories = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`flex items-center gap-3 ${cardRowClass}`}>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
                     <FaWallet className="text-sm" />
                   </span>
@@ -137,9 +181,12 @@ const ComputerAccessories = () => {
                 </span>
               </div>
             </div>
+              );
+            }
 
-            {topProductsSales?.length > 0 && (
-              <div className="relative flex flex-col overflow-hidden border border-slate-200 bg-white text-black shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+            if (widget.id === 'top-sales' && topProductsSales?.length > 0) {
+              return (
+              <div key={widget.id} className="relative flex flex-col overflow-hidden border border-slate-200 bg-white text-black shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-600">
                   <span className="truncate text-sm font-bold">
@@ -165,7 +212,7 @@ const ComputerAccessories = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2.5 transition hover:bg-slate-50 dark:hover:bg-gray-600/45"
+                              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-gray-600/45`}
                             >
                               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                                 {String(index + 1).padStart(2, '0')}
@@ -182,7 +229,7 @@ const ComputerAccessories = () => {
                           );
                         },
                       )}
-                      <li className="flex items-center justify-between bg-slate-50 px-4 py-2.5 font-bold dark:bg-gray-800/35">
+                      <li className={`flex items-center justify-between bg-slate-50 ${listRowClass} font-bold dark:bg-gray-800/35`}>
                         <span className="text-[12px]">Total</span>
                         <span className="text-[12px] tabular-nums text-sky-600 dark:text-sky-300">
                           {thousandSeparator(topProductsSalesTotal)}
@@ -196,9 +243,12 @@ const ComputerAccessories = () => {
                   )}
                 </div>
               </div>
-            )}
-            {topProductsPurchase?.length > 0 && (
-              <div className="relative flex flex-col overflow-hidden border border-slate-200 bg-white text-black shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+              );
+            }
+
+            if (widget.id === 'top-purchase' && topProductsPurchase?.length > 0) {
+              return (
+              <div key={widget.id} className="relative flex flex-col overflow-hidden border border-slate-200 bg-white text-black shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-600">
                   <span className="truncate text-sm font-bold">
@@ -224,7 +274,7 @@ const ComputerAccessories = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2.5 transition hover:bg-slate-50 dark:hover:bg-gray-600/45"
+                              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-gray-600/45`}
                             >
                               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                                 {String(index + 1).padStart(2, '0')}
@@ -241,7 +291,7 @@ const ComputerAccessories = () => {
                           );
                         },
                       )}
-                      <li className="flex items-center justify-between bg-slate-50 px-4 py-2.5 font-bold dark:bg-gray-800/35">
+                      <li className={`flex items-center justify-between bg-slate-50 ${listRowClass} font-bold dark:bg-gray-800/35`}>
                         <span className="text-[12px]">Total</span>
                         <span className="text-[12px] tabular-nums text-amber-600 dark:text-amber-300">
                           {thousandSeparator(topProductsPurchaseTotal)}
@@ -255,14 +305,35 @@ const ComputerAccessories = () => {
                   )}
                 </div>
               </div>
-            )}
-          </>
-        )}
-      </div>
-      <div className="mt-5">
-        <DailySalesChart />
-        <DailyPurchaseChart />
-        <MonthlyPurchaseSalesChart />
+              );
+            }
+
+            if (widget.id === 'daily-sales') {
+              return (
+                <div className="col-span-full" key={widget.id}>
+                  <DailySalesChart />
+                </div>
+              );
+            }
+
+            if (widget.id === 'daily-purchase') {
+              return (
+                <div className="col-span-full" key={widget.id}>
+                  <DailyPurchaseChart />
+                </div>
+              );
+            }
+
+            if (widget.id === 'monthly-purchase-sales') {
+              return (
+                <div className="col-span-full" key={widget.id}>
+                  <MonthlyPurchaseSalesChart />
+                </div>
+              );
+            }
+
+            return null;
+          })}
       </div>
     </div>
   );

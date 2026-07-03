@@ -27,11 +27,23 @@ import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { formatDate } from '../../utils/utils-functions/formatDate';
 import { FaRightToBracket } from 'react-icons/fa6';
 import CompareSingleItem from './CompareSingleItem';
+import DashboardCustomizeButton, {
+  DashboardWidget,
+  useDashboardCustomization,
+} from './dashboardCustomization';
+
+const CONSTRUCTION_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  { id: 'summary', title: 'Balance Summary' },
+  { id: 'top-purchase', title: 'Top Purchase' },
+  { id: 'receive-details', title: 'Receive Details' },
+  { id: 'charts', title: 'Charts' },
+];
 
 const ConstructionDashboard = () => {
   const dashboard = useSelector((state) => state.dashboard);
   const dispatch = useDispatch();
   const settings = useSelector((s: any) => s.settings);
+  const me = useSelector((s: any) => s.auth?.me);
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   const protectedBranches = useSelector(
     (s: any) => s.branchDdl?.protectedData?.data || [],
@@ -62,6 +74,32 @@ const ConstructionDashboard = () => {
   const hasReceiveDetails = Object.values(groupedReceiveDetails).some(
     (items): items is any[] => Array.isArray(items) && items.length > 0,
   );
+  const {
+    density,
+    orderedWidgets,
+    isWidgetVisible,
+    toggleWidget,
+    moveWidget,
+    setDensity,
+    reset,
+  } = useDashboardCustomization(
+    `cashbook-construction-dashboard:${me?.id || 'user'}:${currentBranch?.id || 'branch'}`,
+    CONSTRUCTION_DASHBOARD_WIDGETS,
+    {
+      dashboardKey: 'construction',
+      branchId: currentBranch?.id,
+      enabled: Boolean(me?.id && currentBranch?.id),
+    },
+  );
+  const isCompact = density === 'compact';
+  const orderMap = useMemo(
+    () => new Map(orderedWidgets.map((widget, index) => [widget.id, index])),
+    [orderedWidgets],
+  );
+  const widgetOrder = (id: string) => orderMap.get(id) ?? 0;
+  const dashboardGapClass = isCompact ? 'gap-4' : 'gap-6';
+  const summaryRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
+  const listRowClass = isCompact ? 'px-4 py-2.5' : 'px-4 py-3';
   const getReceiveDetailStatusKey = (item: any) =>
     String(item?.mtm_id ?? item?.vr_no ?? item?.id ?? '');
 
@@ -214,11 +252,26 @@ const ConstructionDashboard = () => {
   return (
     <>
       <HelmetTitle title="Construction Dashboard" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+      <div className="mt-6">
+        <DashboardCustomizeButton
+          density={density}
+          widgets={orderedWidgets}
+          isWidgetVisible={isWidgetVisible}
+          onToggleWidget={toggleWidget}
+          onMoveWidget={moveWidget}
+          onDensityChange={setDensity}
+          onReset={reset}
+        />
+      </div>
+      <div className={`mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${dashboardGapClass}`}>
         {dashboard.isLoading == false ? (
           <>
             {/* Branch summary card */}
-            <div className="group relative flex flex-col bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700">
+            {isWidgetVisible('summary') ? (
+            <div
+              className="group relative flex flex-col bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700"
+              style={{ order: widgetOrder('summary') }}
+            >
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
                 <span className="truncate text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {dashboard?.data &&
@@ -229,7 +282,7 @@ const ConstructionDashboard = () => {
               </div>
 
               <div className="divide-y divide-slate-100 dark:divide-gray-700">
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`flex items-center gap-3 ${summaryRowClass}`}>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-gray-700 dark:text-slate-300">
                     <FaRegCalendarAlt className="text-sm" />
                   </span>
@@ -243,7 +296,7 @@ const ConstructionDashboard = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`flex items-center gap-3 ${summaryRowClass}`}>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                     <FaArrowDown className="text-sm" />
                   </span>
@@ -259,7 +312,7 @@ const ConstructionDashboard = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`flex items-center gap-3 ${summaryRowClass}`}>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
                     <FaArrowUp className="text-sm" />
                   </span>
@@ -275,7 +328,7 @@ const ConstructionDashboard = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className={`flex items-center gap-3 ${summaryRowClass}`}>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
                     <FaWallet className="text-sm" />
                   </span>
@@ -301,9 +354,13 @@ const ConstructionDashboard = () => {
                 <span>Last updated: {dashboard?.data?.last_update}</span>
               </div>
             </div>
+            ) : null}
 
-            {dashboard?.data?.topProductsPurchase?.length > 0 && (
-              <div className="relative flex flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[#1f2937]">
+            {isWidgetVisible('top-purchase') && dashboard?.data?.topProductsPurchase?.length > 0 && (
+              <div
+                className="relative flex flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[#1f2937]"
+                style={{ order: widgetOrder('top-purchase') }}
+              >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3.5 dark:border-slate-600">
                   <span className="truncate text-base font-bold tracking-wide text-slate-700 dark:text-slate-100">
@@ -329,7 +386,7 @@ const ConstructionDashboard = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-700/45"
+                              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-slate-700/45`}
                             >
                               <span className="text-sm font-medium tabular-nums text-sky-500/70 dark:text-sky-300/60">
                                 {String(index + 1).padStart(2, '0')}
@@ -358,16 +415,13 @@ const ConstructionDashboard = () => {
                 </div>
               </div>
             )}
-          </>
-        ) : (
-          ''
-        )}
-      </div>
 
-      {!dashboard.isLoading && hasReceiveDetails ? (
-        <>
-          <div className="grid grid-cols-1 mt-6">
-            <div className="w-full xl:w-[560px] bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden dark:bg-gray-800 dark:ring-gray-700">
+            {hasReceiveDetails && isWidgetVisible('receive-details') ? (
+          <div
+            className="grid grid-cols-1"
+            style={{ order: widgetOrder('receive-details') }}
+          >
+            <div className="w-full bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden dark:bg-gray-800 dark:ring-gray-700">
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
                 <span className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {!dashboard.isLoading && dashboard?.data?.transactionText}
@@ -486,15 +540,10 @@ const ConstructionDashboard = () => {
               </div>
             </div>
           </div>
-        </>
-      ) : (
-        ''
-      )}
+            ) : null}
 
-
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-2"></div>
-      {!dashboard.isLoading == true ? (
-        <div className="mt-10">
+            {isWidgetVisible('charts') ? (
+        <div className="col-span-full" style={{ order: widgetOrder('charts') }}>
           <div className=""></div>
           <div className="border-slate-200 pb-3 text-white pt-2">
             {currentBranch.branch_types_id == 1 ? (
@@ -512,9 +561,12 @@ const ConstructionDashboard = () => {
             )}
           </div>
         </div>
-      ) : (
-        ''
-      )}
+            ) : null}
+          </>
+        ) : (
+          ''
+        )}
+      </div>
     </>
   );
 };
