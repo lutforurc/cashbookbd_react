@@ -6,6 +6,7 @@ import {
   API_CONTACT_EDIT_URL,
   API_CONTACT_UPDATE_URL,
   API_CUSTOMER_FROM_UI_URL,
+  API_CUSTOMER_SET_PASSWORD_URL,
   API_STORE_CUSTOMER_URL,
 } from '../../services/apiRoutes';
 
@@ -150,6 +151,30 @@ export const updateCustomerFromUI = createAsyncThunk<{ message: string }, { id: 
         error.response?.data?.message ||
         error.message ||
         "Failed to update employee"
+      );
+    }
+  }
+);
+
+/* ---------- Set / reset customer portal password ---------- */
+export const setCustomerPortalPassword = createAsyncThunk<
+  { message: string },
+  { id: number; password: string },
+  { rejectValue: string }
+>(
+  "customer/setPortalPassword",
+  async ({ id, password }, thunkAPI) => {
+    try {
+      const response = await httpService.post(
+        `${API_CUSTOMER_SET_PASSWORD_URL}${id}`,
+        { password }
+      );
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to set portal password"
       );
     }
   }

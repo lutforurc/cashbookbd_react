@@ -76,6 +76,7 @@ import InstallmentDetails from './components/modules/installment/InstallmentDeta
 import DueInstallment from './components/modules/installment/DueInstallment';
 import CustomerDashboard from './components/modules/Customers/Dashboard/CustomerDashboard';
 import CustomerLogin from './pages/CustomerAuth/CustomerLogin';
+import CustomerChangePassword from './pages/CustomerAuth/CustomerChangePassword';
 import CustomerLayout from './layout/CustomerLayout';
 import AddCustomerSupplier from './components/modules/customer-supplier/AddCustomerSupplier';
 import ChangeDate from './components/modules/change_date/ChangeDate';
@@ -232,6 +233,7 @@ function App() {
           {/* <Route path="/customer" element={<CustomerLayout isLoggedIn={isLoggedIn} isLoading={isLoading} />}> */}
           <Route path="/customer" element={<CustomerLayout />}>
             <Route path={routes.customerHome} element={<CustomerDashboard />} />
+            <Route path={routes.customerChangePassword} element={<CustomerChangePassword />} />
           </Route>
 
           {/* Admin + Authenticated User Section */}

@@ -97,7 +97,8 @@ const AddCustomerSupplier = () => {
     idfr_code: Yup.string(), // ✅ no `.required()` 
     type_id: Yup.string().required('Customer or Supplier type is required'),
     area_id: Yup.string(), //.required('Area is required'),
-    customerLogin: Yup.boolean(),
+    customerLogin: Yup.mixed(),
+    password: Yup.string().min(4, 'Password must be at least 4 characters'),
 
     /* 🔥 GUARANTORS */
     guarantors: Yup.array().of(
@@ -152,7 +153,8 @@ const AddCustomerSupplier = () => {
     type_id: '',
     area_id: '',
     areaName: '',
-    customerLogin: false,
+    customerLogin: 0,
+    password: '',
     guarantors: [],
     nominees: [],
   };
@@ -592,10 +594,34 @@ const AddCustomerSupplier = () => {
               label="Access Customer Login"
               selectOption="Access Customer Login"
               onChange={formik.handleChange}
-              defaultValue={formik.values.customerLogin.toString()}
+              value={formik.values.customerLogin.toString()}
               className="h-[2.1rem] bg-transparent"
               data={TrueFalse}
             />
+          </div>
+
+          {/* ================= PORTAL PASSWORD (self-service login) ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            <div className="text-left flex flex-col">
+              <InputElement
+                id="password"
+                name="password"
+                type="password"
+                value={formik.values.password}
+                placeholder="Set portal login password (optional)"
+                label="Portal Password"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.password && formik.errors.password && (
+                <div className="text-red-500 text-sm">{formik.errors.password}</div>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 self-end pb-2">
+              If set, the customer can log in at{' '}
+              <span className="font-medium">/customer/login</span> using their mobile number and this
+              password. Leave blank to skip.
+            </p>
           </div>
           {/* ================= GUARANTORS ================= */}
           {settings?.data?.branch?.have_is_guaranter === '1' && (

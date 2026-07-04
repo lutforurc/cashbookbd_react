@@ -18,6 +18,7 @@ const ROUTES = {
   // Customer Login
   customerLogin: '/customer/login',
   customerHome: '/customer',
+  customerChangePassword: '/customer/change-password',
 
   // User Routes
   user_list: '/user/user-list',

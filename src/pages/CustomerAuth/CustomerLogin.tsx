@@ -15,12 +15,13 @@ const CustomerLogin = () => {
 
   const [formError, setFormError] = useState("");
 
-  const initialValues = { mobile: "" };
+  const initialValues = { mobile: "", password: "" };
 
   const validationSchema = Yup.object({
     mobile: Yup.string()
       .matches(/^01[0-9]{9}$/, "Must be a valid 11-digit Bangladeshi number")
       .required("Mobile number is required"),
+    password: Yup.string().required("Password is required"),
   });
 
   useEffect(() => {
@@ -36,10 +37,8 @@ const CustomerLogin = () => {
     dispatch(
       customerLogin({
         mobile: values.mobile,
-        callback: (res: any) => {
-          // ✅ You can extract token/data here if needed from res
-          // localStorage.setItem("customer_token", res.token);
-          // localStorage.setItem("customer_info", JSON.stringify(res.data));
+        password: values.password,
+        callback: () => {
           navigate(ROUTES.customerHome);
         },
         onError: (errorMessage: string) => {
@@ -68,6 +67,21 @@ return (
               <Field name="mobile" className="border border-gray-300 p-2 w-full rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
 />
               <ErrorMessage name="mobile" component="div" className="text-red-500 text-sm" />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block mb-1 font-medium">
+                Password
+              </label>
+              <Field
+                type="password"
+                name="password"
+                className="border border-gray-300 p-2 w-full rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+              />
+              <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
+              <p className="text-xs text-gray-500 mt-1">
+                First time? Your default password is your mobile number.
+              </p>
             </div>
 
             <button

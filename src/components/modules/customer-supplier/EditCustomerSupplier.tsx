@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FieldArray, useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
@@ -30,6 +30,7 @@ import { getSettings } from "../settings/settingsSlice";
 import {
   getCustomerForEdit,
   updateCustomerFromEdit,
+  setCustomerPortalPassword,
 } from "./customerSlice";
 import Loader from "../../../common/Loader";
 
@@ -50,6 +51,29 @@ const EditCustomerSupplier = () => {
 
   const editCustomer = customers?.editCustomer;
   const editLoading = customers?.editLoading;
+
+  // Self-service portal password (set/reset separately from the profile update).
+  const [portalPassword, setPortalPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  const handleSavePortalPassword = async () => {
+    if (!portalPassword || portalPassword.length < 4) {
+      toast.error("Password must be at least 4 characters");
+      return;
+    }
+    try {
+      setSavingPassword(true);
+      const res = await dispatch(
+        setCustomerPortalPassword({ id: Number(id), password: portalPassword })
+      ).unwrap();
+      toast.success(res?.message || "Portal password updated");
+      setPortalPassword("");
+    } catch (error: any) {
+      toast.error(error || "Failed to set portal password");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
   const areaList = Array.isArray(area?.area)
     ? area.area
     : Array.isArray(area?.area?.data)
@@ -123,7 +147,7 @@ const EditCustomerSupplier = () => {
     idfr_code: Yup.string(),
     party_type_id: Yup.string().required("Customer or Supplier type is required"),
     area_id: Yup.string(),
-    customerLogin: Yup.boolean(),
+    customerLogin: Yup.mixed(),
 
     guarantors: Yup.array().of(
       Yup.object().shape({
@@ -180,7 +204,7 @@ const EditCustomerSupplier = () => {
       party_type_id: (editCustomer?.party_type_id ?? "").toString(),
       area_id: (editCustomer?.area_id ?? "").toString(),
       areaName: editCustomer?.areaName ?? "",
-      customerLogin: Boolean(editCustomer?.customerLogin ?? false),
+      customerLogin: Number(editCustomer?.customer_login ?? 0),
 
       // ----- guarantors & nominees -----
       guarantors: editCustomer?.guarantors ?? [],
@@ -447,10 +471,39 @@ const EditCustomerSupplier = () => {
               label="Access Customer Login"
               selectOption="Access Customer Login"
               onChange={formik.handleChange}
-              defaultValue={formik.values.customerLogin.toString()}
+              value={formik.values.customerLogin.toString()}
               className="h-[2.1rem] bg-transparent"
               data={TrueFalse}
             />
+          </div>
+
+          {/* ================= PORTAL PASSWORD (self-service login) ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <InputElement
+                  id="portalPassword"
+                  name="portalPassword"
+                  type="password"
+                  value={portalPassword}
+                  placeholder="Set / reset portal password"
+                  label="Portal Password"
+                  onChange={(e: any) => setPortalPassword(e.target.value)}
+                />
+              </div>
+              <ButtonLoading
+                type="button"
+                onClick={handleSavePortalPassword}
+                buttonLoading={savingPassword}
+                label="Save Password"
+                className="whitespace-nowrap text-center pt-2 pb-2 h-[2.4rem]"
+                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+              />
+            </div>
+            <p className="text-xs text-gray-500 self-end pb-2">
+              The customer logs in at <span className="font-medium">/customer/login</span> using their
+              mobile number and this password. Leave blank and it stays unchanged.
+            </p>
           </div>
 
           {/* ================= GUARANTORS ================= */}

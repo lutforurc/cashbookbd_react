@@ -1,19 +1,29 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import ROUTES from "../components/services/appRoutes";
+import { customerCheck } from "../features/customerAuthReducer";
 import Loader from "../common/Loader";
 // import Header from "../components/Header/index";
 // import Sidebar from "../components/Sidebar/index";
 
 const CustomerLayout: React.FC = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
 
   // Assuming your auth state in redux has isLoggedIn flag for customer
-  const { isLoggedIn, isLoading } = useSelector((state: any) => state.customerAuth);
+  const { isLoggedIn, isLoading, authChecked, mustChange } = useSelector((state: any) => state.customerAuth);
 
-  // You can add loading spinner or placeholder during isLoading if you want
-  if (isLoading) {
+  // Restore the session from the stored token on first load / reload.
+  useEffect(() => {
+    if (!authChecked) {
+      dispatch(customerCheck());
+    }
+  }, [authChecked, dispatch]);
+
+  // Wait for the initial session check (and any in-flight request) to resolve
+  // before deciding whether to render the portal or redirect to login.
+  if (isLoading || !authChecked) {
     return <div className="flex justify-center items-center h-screen">
       <Loader />
     </div>;
@@ -22,6 +32,11 @@ const CustomerLayout: React.FC = () => {
   if (!isLoggedIn) {
     // Redirect to login page if not authenticated
     return <Navigate to={ROUTES.customerLogin} replace state={{ from: location }} />;
+  }
+
+  // Still on the default (mobile) password → force a change before anything else.
+  if (mustChange && location.pathname !== ROUTES.customerChangePassword) {
+    return <Navigate to={ROUTES.customerChangePassword} replace />;
   }
 
   return (

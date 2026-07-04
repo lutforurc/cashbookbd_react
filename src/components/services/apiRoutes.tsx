@@ -490,7 +490,16 @@ export const API_VOUCHER_IMAGE_FOR_UPLOAD_URL = `${API_BASE_URL}/admin/voucher-l
 
 // Customer Routes
 export const API_CUSTOMER_LOGIN_URL = `${API_CUSTOMER_BASE_URL}/login`;
+export const API_CUSTOMER_LOGOUT_URL = `${API_CUSTOMER_BASE_URL}/logout`;
 export const API_CUSTOMER_AUTH_CHECK_URL = `${API_CUSTOMER_BASE_URL}/me`;
+export const API_CUSTOMER_CHANGE_PASSWORD_URL = `${API_CUSTOMER_BASE_URL}/change-password`;
+export const API_CUSTOMER_STATEMENT_URL = `${API_CUSTOMER_BASE_URL}/statement`;
+export const API_CUSTOMER_DUES_URL = `${API_CUSTOMER_BASE_URL}/dues`;
+export const API_CUSTOMER_SUMMARY_URL = `${API_CUSTOMER_BASE_URL}/summary`;
+export const API_CUSTOMER_VOUCHER_URL = `${API_CUSTOMER_BASE_URL}/voucher/`;
+
+// Admin-side: set/reset a customer's portal password
+export const API_CUSTOMER_SET_PASSWORD_URL = `${API_BASE_URL}/contact/customer/set-password/`;
 
 
 
