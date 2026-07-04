@@ -14,6 +14,8 @@ import {
   FiCheckCircle,
   FiClock,
   FiAlertTriangle,
+  FiGrid,
+  FiFileText,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import formatDate from '../../../utils/utils-functions/formatDate';
@@ -344,29 +346,31 @@ const allPayments = paymentList.map((pay: any) => ({
 
         {/* Tabs */}
         <div className="rounded-2xl border border-gray-200 bg-white dark:border-strokedark dark:bg-boxdark shadow-md">
-          <nav className="flex gap-1 overflow-x-auto p-2">
-            {['overview', 'statement', 'due', 'installments', 'payments'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab as any)}
-                className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition-colors
-                  ${
-                    activeTab === tab
-                      ? 'bg-primary text-white shadow'
-                      : 'text-gray-600 dark:text-bodydark hover:bg-gray-100 dark:hover:bg-strokedark'
-                  }`}
-              >
-                {tab === 'overview'
-                  ? 'Overview'
-                  : tab === 'statement'
-                    ? 'Statement'
-                    : tab === 'due'
-                      ? 'Due'
-                      : tab === 'installments'
-                        ? 'Installments'
-                        : 'Payments'}
-              </button>
-            ))}
+          <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 px-2 dark:border-strokedark sm:gap-2 sm:px-3">
+            {[
+              { key: 'overview', label: 'Overview', icon: <FiGrid /> },
+              { key: 'statement', label: 'Statement', icon: <FiFileText /> },
+              { key: 'due', label: 'Due', icon: <FiClock /> },
+              { key: 'installments', label: 'Installments', icon: <FiLayers /> },
+              { key: 'payments', label: 'Payments', icon: <FiCreditCard /> },
+            ].map((tab) => {
+              const active = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={`relative flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors
+                    ${
+                      active
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-bodydark dark:hover:text-white'
+                    }`}
+                >
+                  <span className={active ? 'text-primary' : 'opacity-70'}>{tab.icon}</span>
+                  {tab.label}
+                </button>
+              );
+            })}
           </nav>
           <div className="p-4">
             {/* Overview Tab */}
