@@ -76,46 +76,63 @@ const VoucherDelete = () => {
     <>
       <HelmetTitle title="Voucher Delete" />
 
-      <div className="grid grid-cols-1 gap-2 w-full md:w-1/2 xl:w-1/3 mx-auto mt-5">
-        {/* Branch Info */}
-        <div className="!mb-2">
-          <div className='text-gray-800 dark:text-white mb-1'>The branch whose data you want to delete:</div>
-          <span className="text-gray-800 dark:text-white font-bold">
-            {settings?.data?.branch?.name}
-          </span>
-        </div>
+      <div className="mx-auto mt-6 w-full max-w-md">
+        <div className="border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+          {/* Header */}
+          <div className="flex items-center gap-3 border-b border-stroke px-5 py-3.5 dark:border-strokedark">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-red-500/10 text-red-500">
+              <FiTrash2 className="h-5 w-5" />
+            </span>
+            <div>
+              <h3 className="text-base font-semibold text-black dark:text-white">Voucher Delete</h3>
+              <p className="text-xs text-slate-500 dark:text-bodydark2">Remove a voucher and its related entries.</p>
+            </div>
+          </div>
 
-        {/* Voucher Number Input */}
-        <InputElement
-          id="voucher_no"
-          value={voucherNo}
-          name="voucher_no"
-          placeholder="Enter Voucher Number"
-          label="Enter Voucher Number"
-          className="mb-2"
-          onChange={(e) => setVoucherNo(e.target.value)}
-        />
+          <div className="space-y-4 p-5">
+            {/* Branch Info */}
+            <div className="border-l-4 border-amber-400 bg-amber-50 px-4 py-3 dark:bg-amber-500/10">
+              <div className="text-[11px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                Branch whose data you want to delete
+              </div>
+              <div className="mt-0.5 text-base font-bold text-slate-800 dark:text-white">
+                {settings?.data?.branch?.name || '-'}
+              </div>
+            </div>
 
-        {/* Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <ButtonLoading
-            onClick={() => {
-              if (!voucherNo) {
-                toast.error('Please enter voucher number');
-                return;
-              }
-              setShowConfirm(true);
-            }}
-            buttonLoading={saveButtonLoading}
-            label="Delete Voucher"
-            className="whitespace-nowrap h-8"
-            icon={<FiTrash2 className="dark:text-red-700 text-lg ml-2 mr-2" />}
-          />
+            {/* Voucher Number Input */}
+            <InputElement
+              id="voucher_no"
+              value={voucherNo}
+              name="voucher_no"
+              placeholder="Enter Voucher Number"
+              label="Enter Voucher Number"
+              className="mb-0"
+              onChange={(e) => setVoucherNo(e.target.value)}
+            />
 
-          <Link to="/dashboard" className="text-nowrap justify-center h-8">
-            <FiHome className="text-white text-lg ml-2 mr-2" />
-            <span className="hidden md:block">Home</span>
-          </Link>
+            {/* Buttons */}
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              <ButtonLoading
+                onClick={() => {
+                  if (!voucherNo) {
+                    toast.error('Please enter voucher number');
+                    return;
+                  }
+                  setShowConfirm(true);
+                }}
+                buttonLoading={saveButtonLoading}
+                label="Delete Voucher"
+                className="h-10 whitespace-nowrap"
+                icon={<FiTrash2 className="ml-2 mr-2 text-lg text-red-400" />}
+              />
+
+              <Link to="/dashboard" className="h-10 justify-center text-nowrap">
+                <FiHome className="ml-2 mr-2 text-lg text-white" />
+                <span className="hidden md:block">Home</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
