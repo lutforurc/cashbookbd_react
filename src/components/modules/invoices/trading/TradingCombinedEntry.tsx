@@ -489,6 +489,12 @@ const TradingCombinedEntry = () => {
       purchaseOrderNumber: option?.value || '',
       purchaseOrderText: option?.label || '',
     }));
+
+    // Prefill Purchase Rate from the selected purchase order's Order Rate (label_5).
+    const purchaseOrderRate = selectedOrderOption?.label_5;
+    if (purchaseOrderRate !== undefined && purchaseOrderRate !== null && String(purchaseOrderRate) !== '') {
+      setProductData((prev: any) => ({ ...prev, purchase_price: String(purchaseOrderRate) }));
+    }
   };
 
   const salesOrderHandler = async (option: any) => {
@@ -588,6 +594,12 @@ const TradingCombinedEntry = () => {
       salesOrderNumber: option?.value || '',
       salesOrderText: option?.label || '',
     }));
+
+    // Prefill Sales Rate from the selected sales order's Order Rate (label_5).
+    const salesOrderRate = selectedOrderOption?.label_5;
+    if (salesOrderRate !== undefined && salesOrderRate !== null && String(salesOrderRate) !== '') {
+      setProductData((prev: any) => ({ ...prev, sales_price: String(salesOrderRate) }));
+    }
   };
 
   const productSelectHandler = (option: any) => {
