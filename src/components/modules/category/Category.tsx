@@ -147,6 +147,7 @@ const Category = () => {
       header: 'Sl. No.',
       headerClass: 'text-center',
       cellClass: 'text-center',
+      render: (_row: any, index: number) => (currentPage - 1) * perPage + index + 1,
     },
     {
       key: 'name',

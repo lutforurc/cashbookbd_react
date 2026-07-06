@@ -25,8 +25,10 @@ interface RecycleBinResponse {
 
 interface VoucherDeleteResponse {
   success: boolean;
-  message: string;
-  voucher_no: string | number;
+  message?: string;
+  voucher_no?: string | number;
+  requires_confirmation?: boolean;
+  error?: { code?: number; message?: string };
 }
 
 interface RecycleBinParams {
@@ -116,10 +118,11 @@ export const restoreRecycleBin = createAsyncThunk<RemoveRecycleBinResponse,Remov
 });
 
 // Delete Voucher (soft delete)
-export const deleteVoucher = createAsyncThunk<VoucherDeleteResponse,{ voucher_no: string | number },{ rejectValue: string }>("voucher/deleteVoucher", async (payload, thunkAPI) => {
+export const deleteVoucher = createAsyncThunk<VoucherDeleteResponse,{ voucher_no: string | number; confirm?: boolean },{ rejectValue: string }>("voucher/deleteVoucher", async (payload, thunkAPI) => {
   try {
     const response = await httpService.post(API_VOUCHER_DELETE_URL, {
       voucher_no: payload.voucher_no,
+      confirm: payload.confirm ? 1 : 0,
     });
     return response.data as VoucherDeleteResponse;
   } catch (error: any) {
