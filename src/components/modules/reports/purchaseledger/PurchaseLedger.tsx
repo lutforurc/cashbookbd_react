@@ -13,7 +13,6 @@ import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { getPurchaseLedger } from './purchaseLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import ImagePopup from '../../../utils/others/ImagePopup';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import PurchaseLedgerPrint from './PurchaseLedgerPrint';
@@ -496,7 +495,7 @@ const PurchaseLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       render: (row: any) => {
         return (
           <div>
@@ -519,7 +518,7 @@ const PurchaseLedger = (user: any) => {
       key: 'rate',
       header: 'Rate',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
           {row?.purchase_master?.details?.map((detail: any, index: number) => {
@@ -544,7 +543,7 @@ const PurchaseLedger = (user: any) => {
       key: 'total',
       header: 'Total',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       render: (row: any) => (
         <div>
           {row?.purchase_master?.details?.map((detail: any, index: number) => {
@@ -613,19 +612,48 @@ const PurchaseLedger = (user: any) => {
       width: '120px',
     },
     {
-      key: 'voucher_image',
-      header: 'Voucher',
+      key: 'balance',
+      header: 'Balance',
+      headerClass: 'text-right',
+      cellClass: 'text-right align-center',
       width: '120px',
-      headerClass: 'text-center',
-      cellClass: 'flex justify-center',
       render: (row: any) => {
-        return (
-          <ImagePopup
-            title={row?.remarks || ''}
-            branchPad={row?.branch_id?.toString().padStart(4, '0') || ''} // Ã°Å¸â€˜Ë† here
-            voucher_image={row?.voucher_image || ''}
-          />
-        );
+        const parseNumber = (v: any) => {
+          if (v == null) return 0;
+          if (typeof v === 'number') return v;
+          const cleaned = String(v).replace(/[^\d.-]/g, '');
+          const n = Number(cleaned);
+          return Number.isFinite(n) ? n : 0;
+        };
+
+        // Purchase total = sum of (rate × qty) across details (matches Total column).
+        const total = Array.isArray(row?.purchase_master?.details)
+          ? row.purchase_master.details.reduce(
+              (s: number, d: any) => s + parseNumber(d?.purchase_price) * parseNumber(d?.quantity),
+              0,
+            )
+          : 0;
+
+        const masters = Array.isArray(row?.acc_transaction_master)
+          ? row.acc_transaction_master
+          : row?.acc_transaction_master
+            ? [row.acc_transaction_master]
+            : [];
+        const allDetails = masters.reduce((acc: any[], m: any) => {
+          if (Array.isArray(m?.acc_transaction_details)) acc.push(...m.acc_transaction_details);
+          return acc;
+        }, []);
+
+        // Payment (cash/bank credit, coa4_id 17) and purchase discount (coa4_id 40 credit).
+        const payment = allDetails
+          .filter((d: any) => d?.coa4_id === 17)
+          .reduce((s: number, d: any) => s + parseNumber(d?.credit), 0);
+        const discount = allDetails
+          .filter((d: any) => d?.coa4_id === 40)
+          .reduce((s: number, d: any) => s + parseNumber(d?.credit), 0);
+
+        const balance = total - payment - discount;
+        return <div className="text-right">{thousandSeparator(balance)}</div>;
       },
     },
     {
