@@ -27,10 +27,11 @@ const AddEditFlat = () => {
   const dispatch = useDispatch();
   const { id, buildingId } = useParams();
 
-  const flatState = useSelector((state: any) => state.flat);
+  const flatState = useSelector((state: any) => state.flats);
 
   const [buttonLoading, setButtonLoading] = useState(false);
   const [saleDate, setSaleDate] = useState<Date | null>(null);
+  const [buildingOption, setBuildingOption] = useState<any>(null);
 
   const [formData, setFormData] = useState<FlatItem>(
     getInitialFlat(buildingId)
@@ -48,6 +49,9 @@ const AddEditFlat = () => {
       const f = flatState.editFlat;
       setFormData(f);
       setSaleDate(f.sale_date ? new Date(f.sale_date) : null);
+      if (f.building_id) {
+        setBuildingOption({ value: f.building_id, label: f.building?.name ?? "" });
+      }
     }
   }, [flatState?.editFlat]);
 
@@ -80,9 +84,10 @@ const AddEditFlat = () => {
     };
 
   const handleBuildingSelect = (option: any) => {
+    setBuildingOption(option);
     setFormData((prev) => ({
       ...prev,
-      building_id: option.value,
+      building_id: option?.value,
     }));
   };
 
@@ -120,7 +125,7 @@ const AddEditFlat = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <div>
           <label>Select Building</label>
-          <BuildingDropdown onSelect={handleBuildingSelect} />
+          <BuildingDropdown onSelect={handleBuildingSelect} value={buildingOption} />
         </div>
 
         <InputElement
@@ -199,7 +204,7 @@ const AddEditFlat = () => {
           label="Select Status"
           data={status}
           className="h-8.5"
-          defaultValue={formData.status.toString()}
+          value={formData.status.toString()}
           onChange={handleSelectChange}
         />
 

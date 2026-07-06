@@ -589,6 +589,7 @@ function App() {
 
             <Route path={routes.real_estate_floor_list} element={<FloorList user={me} />} />
             <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
+            <Route path={`${routes.real_estate_floor_edit}/:id`} element={<AddEditFlat />} />
             <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
 
             <Route path={routes.real_estate_floor_unit_list} element={<BuildingUnitsList user={me} />} />

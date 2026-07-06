@@ -157,7 +157,7 @@ export const flatUpdate = createAsyncThunk<
   { rejectValue: string }
 >("flat/flatUpdate", async (payload, { rejectWithValue }) => {
   try {
-    const res = await httpService.post(API_FLAT_UPDATE_URL, payload);
+    const res = await httpService.post(`${API_FLAT_UPDATE_URL}/${payload.id}`, payload);
     if (res.data?.success === true) {
       return res.data;
     }
@@ -178,7 +178,7 @@ export const flatEdit = createAsyncThunk<
   { rejectValue: string }
 >("flat/flatEdit", async (id, { rejectWithValue }) => {
   try {
-    const res = await httpService.get(API_FLAT_EDIT_URL + id);
+    const res = await httpService.get(`${API_FLAT_EDIT_URL}/${id}`);
     if (res.data?.success === true) {
       return res.data.data.data;
     }
