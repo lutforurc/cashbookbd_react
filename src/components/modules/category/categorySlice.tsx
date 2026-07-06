@@ -19,6 +19,7 @@ import {
 import httpService from '../../services/httpService';
 import {
   API_CATEGORY_DDL_URL,
+  API_CATEGORY_DELETE_URL,
   API_CATEGORY_LIST_URL,
   API_CATEGORY_STORE_URL,
 } from '../../services/apiRoutes';
@@ -128,6 +129,40 @@ export const storeCategory = (data: any, callback?: (message: string, success?: 
 };
 
 
+
+export const deleteCategory =
+  (id: number | string, callback?: (message: string, success?: boolean) => void) =>
+  (dispatch: any) => {
+    dispatch({ type: CATEGORY_STORE_PENDING });
+
+    httpService
+      .post(`${API_CATEGORY_DELETE_URL}/${id}`)
+      .then((res) => {
+        const _data = res.data;
+
+        if (_data.success) {
+          dispatch({ type: CATEGORY_STORE_SUCCESS, payload: null });
+          if (typeof callback === 'function') {
+            callback(_data.message ?? 'Category deleted successfully.', true);
+          }
+        } else {
+          dispatch({
+            type: CATEGORY_STORE_ERROR,
+            payload: _data.message ?? 'Unable to delete category.',
+          });
+          if (typeof callback === 'function') {
+            callback(_data.message ?? 'Unable to delete category.', false);
+          }
+        }
+      })
+      .catch((err) => {
+        const errorMessage = err?.response?.data?.message || 'Something went wrong.';
+        dispatch({ type: CATEGORY_STORE_ERROR, payload: errorMessage });
+        if (typeof callback === 'function') {
+          callback(errorMessage, false);
+        }
+      });
+  };
 
 const initialState = {
   isLoading: false,

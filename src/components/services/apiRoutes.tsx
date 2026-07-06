@@ -384,6 +384,7 @@ export const API_CATEGORY_DDL_URL = `${API_BASE_URL}/category/category-ddl`;
 export const API_CATEGORY_LIST_URL = `${API_BASE_URL}/category/category-list`;
 export const API_CATEGORY_ADD_URL = `${API_BASE_URL}/category/add-category`;
 export const API_CATEGORY_STORE_URL = `${API_BASE_URL}/category/api-store`;
+export const API_CATEGORY_DELETE_URL = `${API_BASE_URL}/category/delete`;
 export const API_CATEGORY_EDIT_URL = `${API_BASE_URL}/category/edit/`;
 export const API_CATEGORY_UPDATE_URL = `${API_BASE_URL}/category/category-update`;
 export const API_CATEGORY_CHECK = `${API_BASE_URL}/category/category-check`;

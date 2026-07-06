@@ -4,12 +4,16 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiBook, FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiBook, FiEdit2, FiRefreshCcw, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 import SearchInput from '../../utils/fields/SearchInput';
 import Link from '../../utils/others/Link';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { getCategory } from './categorySlice';
+import { deleteCategory, getCategory, storeCategory } from './categorySlice';
 import Table from '../../utils/others/Table';
+import InputElement from '../../utils/fields/InputElement';
+import { toast } from 'react-toastify';
+
+const emptyEditForm = { id: '', category_name: '', description: '' };
 
 const Category = () => {
   const category = useSelector((state: any) => state.category);
@@ -22,6 +26,11 @@ const Category = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
+  const [editForm, setEditForm] = useState<any>(emptyEditForm);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteRow, setDeleteRow] = useState<any>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // ✅ API Call (search/page/perPage change হলে)
   useEffect(() => {
@@ -68,6 +77,70 @@ const Category = () => {
     setCurrentPage(p);
   };
 
+  const openEdit = (row: any) => {
+    setEditForm({
+      id: row.id,
+      category_name: row.name || '',
+      description: row.description || '',
+    });
+    setEditOpen(true);
+  };
+
+  const closeEdit = () => {
+    setEditOpen(false);
+    setEditForm(emptyEditForm);
+  };
+
+  const handleEditChange = (e: any) => {
+    const { name, value } = e.target;
+    setEditForm((prev: any) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSave = () => {
+    if (!editForm.category_name.trim()) {
+      toast.info('Category name is required');
+      return;
+    }
+    if (!editForm.description.trim()) {
+      toast.info('Category description is required');
+      return;
+    }
+
+    setEditLoading(true);
+    dispatch(
+      storeCategory(editForm, (message: string, success?: boolean) => {
+        setEditLoading(false);
+        if (success) {
+          toast.success(message);
+          closeEdit();
+          dispatch(getCategory({ page, perPage, search }));
+        } else {
+          toast.error(typeof message === 'string' ? message : 'Failed to update category');
+        }
+      }),
+    );
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deleteRow?.id) return;
+
+    setDeleteLoading(true);
+    dispatch(
+      deleteCategory(deleteRow.id, (message: string, success?: boolean) => {
+        setDeleteLoading(false);
+        if (success) {
+          toast.success(message);
+          setDeleteRow(null);
+          dispatch(getCategory({ page, perPage, search }));
+        } else {
+          // e.g. "This category has 5 product(s), so it cannot be deleted."
+          toast.error(typeof message === 'string' ? message : 'Unable to delete category');
+          setDeleteRow(null);
+        }
+      }),
+    );
+  };
+
   const columns = [
     {
       key: 'serial',
@@ -93,10 +166,10 @@ const Category = () => {
           <button onClick={() => {}} className="text-blue-500">
             <FiBook className="cursor-pointer" />
           </button>
-          <button onClick={() => {}} className="text-blue-500 ml-2">
+          <button onClick={() => openEdit(data)} className="text-blue-500 ml-2" title="Edit">
             <FiEdit2 className="cursor-pointer" />
           </button>
-          <button onClick={() => {}} className="text-red-500 ml-2">
+          <button onClick={() => setDeleteRow(data)} className="text-red-500 ml-2" title="Delete">
             <FiTrash2 className="cursor-pointer" />
           </button>
         </div>
@@ -150,6 +223,106 @@ const Category = () => {
           ''
         )}
       </div>
+
+      {editOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+            <div className="flex items-center justify-between border-b border-stroke px-5 py-3 dark:border-strokedark">
+              <h3 className="text-base font-semibold text-black dark:text-white">Edit Category</h3>
+              <button
+                type="button"
+                onClick={closeEdit}
+                className="text-slate-400 transition hover:text-slate-700 dark:hover:text-white"
+                aria-label="Close"
+              >
+                <FiX />
+              </button>
+            </div>
+
+            <div className="space-y-3 p-5">
+              <div>
+                <InputElement
+                  id="category_name"
+                  name="category_name"
+                  label="Category Name"
+                  placeholder="Category Name"
+                  value={editForm.category_name}
+                  onChange={handleEditChange}
+                />
+              </div>
+              <div>
+                <InputElement
+                  id="description"
+                  name="description"
+                  label="Category Description"
+                  placeholder="Category Description"
+                  value={editForm.description}
+                  onChange={handleEditChange}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
+              <button
+                type="button"
+                onClick={closeEdit}
+                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+              >
+                Cancel
+              </button>
+              <ButtonLoading
+                type="button"
+                onClick={handleEditSave}
+                buttonLoading={editLoading}
+                disabled={editLoading}
+                label="Update"
+                className="h-9 px-6"
+                icon={<FiRefreshCcw className="text-white text-lg ml-2 mr-2" />}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteRow && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+            <div className="flex items-center gap-3 border-b border-stroke px-5 py-3 dark:border-strokedark">
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
+                <FiTrash2 />
+              </span>
+              <h3 className="text-base font-semibold text-black dark:text-white">Delete Category</h3>
+            </div>
+
+            <div className="px-5 py-4 text-sm text-slate-600 dark:text-bodydark">
+              Are you sure you want to delete
+              <span className="font-semibold text-black dark:text-white"> {deleteRow.name}</span>?
+              <p className="mt-1 text-xs text-slate-400">
+                If any product exists under this category, it cannot be deleted.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
+              <button
+                type="button"
+                onClick={() => setDeleteRow(null)}
+                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+              >
+                Cancel
+              </button>
+              <ButtonLoading
+                type="button"
+                onClick={handleDeleteConfirm}
+                buttonLoading={deleteLoading}
+                disabled={deleteLoading}
+                label="Delete"
+                icon={<FiTrash2 className="mr-2" />}
+                className="h-9 bg-red-600 px-6 hover:bg-red-700"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
