@@ -506,7 +506,7 @@ const SalesLedger = (user: any) => {
       key: 'quantity',
       header: 'Quantity',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       width: '120px',
       render: (row: any) => (
         <>
@@ -523,7 +523,7 @@ const SalesLedger = (user: any) => {
       header: 'Rate',
       width: '120px',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       render: (row: any) => (
         <>
           {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
@@ -547,7 +547,7 @@ const SalesLedger = (user: any) => {
       header: 'Total',
       width: '130px',
       headerClass: 'text-right',
-      cellClass: 'text-right align-top',
+      cellClass: 'text-right align-center',
       render: (row: any) => (
         <>
           {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {

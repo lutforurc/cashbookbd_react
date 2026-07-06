@@ -579,9 +579,8 @@ const PurchaseLedger = (user: any) => {
         )?.credit;
 
         // value format Ã Â¦â€¢Ã Â¦Â°Ã Â¦Â¾ Ã Â¦ÂÃ Â¦Â¬Ã Â¦â€š default
-        const displayValue = creditValue
-          ? thousandSeparator(creditValue)
-          : '-';
+        // Show the discount only when there is one; otherwise leave the cell blank.
+        const displayValue = creditValue ? thousandSeparator(creditValue) : '';
 
         return <div className="text-right">{displayValue}</div>;
       },
