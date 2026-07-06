@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FiSave, FiRefreshCcw, FiHome, FiPlus, FiEdit2 } from 'react-icons/fi';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../../utils/fields/InputElement';
@@ -8,15 +8,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import Loader from '../../../../common/Loader';
 import { status } from '../../../utils/fields/DataConstant';
-import { saveArea } from './projectAreaSlice';
+import { saveArea, editArea, updateArea } from './projectAreaSlice';
 import { FaArrowLeft } from 'react-icons/fa6';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { toast } from 'react-toastify';
 
 const AreaAdd = (user: any) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -24,7 +26,7 @@ const AreaAdd = (user: any) => {
     latitude: '',
     longitude: '',
     notes: '',
-    status: 'active',
+    status: '1',
     created_by: '',
     updated_by: '',
   });
@@ -32,8 +34,32 @@ const AreaAdd = (user: any) => {
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
-
   }, []);
+
+  // Load area data when editing
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      try {
+        const area: any = await dispatch(editArea({ id })).unwrap();
+        if (area) {
+          setFormData((prev) => ({
+            ...prev,
+            name: area.name ?? '',
+            description: area.description ?? '',
+            latitude: area.latitude ?? '',
+            longitude: area.longitude ?? '',
+            notes: area.notes ?? '',
+            status: String(area.status ?? '1'),
+            created_by: area.created_by ?? '',
+            updated_by: area.updated_by ?? '',
+          }));
+        }
+      } catch (error: any) {
+        toast.error(error?.message || 'Failed to load area');
+      }
+    })();
+  }, [id]);
 
   const handleOnChange = (e: any) => {
     const { name, value, type, checked } = e.target;
@@ -74,20 +100,15 @@ const AreaAdd = (user: any) => {
 
   const handleAreaUpdate = async () => {
     setButtonLoading(true);
-    // try {
-    //   // Call API to update area
-    //   const response = await fetch(`/api/areas/${areaEditData?.editData?.id}`, {
-    //     method: 'PUT',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(formData),
-    //   });
-    //   if (response.ok) {
-    //     onSuccess();
-    //   }
-    // } catch (error) {
-    //   console.error('Error updating area:', error);
-    // }
-    setButtonLoading(false);
+    try {
+      await dispatch(updateArea({ ...formData, id } as any)).unwrap();
+      toast.success('Area updated successfully');
+      navigate('/real-estate/area-list');
+    } catch (error: any) {
+      toast.info(error?.message || 'Something went wrong while updating.');
+    } finally {
+      setButtonLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -111,7 +132,7 @@ const AreaAdd = (user: any) => {
 
   return (
     <div>
-      <HelmetTitle title={'Add New Area'} />
+      <HelmetTitle title={isEdit ? 'Edit Area' : 'Add New Area'} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         {branchDdlData.isLoading == true ? <Loader /> : ''}
         <InputElement
@@ -167,14 +188,14 @@ const AreaAdd = (user: any) => {
           name="status"
           label="Select Status"
           onChange={handleOnSelectChange}
-          defaultValue={formData.status || ''}
+          value={formData.status || ''}
           className="h-[2.1rem] bg-transparent mt-1"
           data={status}
         />
       </div>
 
       <div className="grid grid-cols-3 gap-x-1 gap-y-1">
-        {1 !== 1 ? (
+        {isEdit ? (
           <ButtonLoading
             onClick={handleAreaUpdate}
             buttonLoading={buttonLoading}

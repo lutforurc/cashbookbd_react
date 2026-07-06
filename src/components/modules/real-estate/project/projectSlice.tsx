@@ -123,7 +123,7 @@ export const projectStore = createAsyncThunk<any, ProjectItem, { rejectValue: st
 /* ---- Update Project ---- */
 export const projectUpdate = createAsyncThunk<any, ProjectItem, { rejectValue: string }>("project/projectUpdate", async (payload, { rejectWithValue }) => {
   try {
-    const res = await httpService.post(API_PROJECT_UPDATE_URL, payload);
+    const res = await httpService.post(`${API_PROJECT_UPDATE_URL}/${payload.id}`, payload);
     if (res.data?.success === true) {
       return res.data;
     }
@@ -138,7 +138,7 @@ export const projectUpdate = createAsyncThunk<any, ProjectItem, { rejectValue: s
 /* ---- Edit Project ---- */
 export const projectEdit = createAsyncThunk<ProjectItem, number, { rejectValue: string }>("project/projectEdit", async (id, { rejectWithValue }) => {
   try {
-    const res = await httpService.get(API_PROJECT_EDIT_URL + id);
+    const res = await httpService.get(`${API_PROJECT_EDIT_URL}/${id}`);
     if (res.data?.success === true) {
       return res.data.data.data;
     }

@@ -19,13 +19,13 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { fetchAreaDdl } from '../area/projectAreaSlice';
 import ProjectAreaDropdown from '../../../utils/utils-functions/ProjectAreaDropdown';
-import { projectStore } from './projectSlice';
+import { projectStore, projectEdit, projectUpdate } from './projectSlice';
 import { toast } from 'react-toastify';
 
 const AddEditProject = (user: any) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<any>();
     const { id, areaId } = useParams();
-    const projectState = useSelector((state: any) => state.projectList);
+    const projectState = useSelector((state: any) => state.realEstateProjects);
 
     const branchDdlData = useSelector((state) => state.branchDdl);
     const [branchId, setBranchId] = useState<number | null>(null);
@@ -33,6 +33,8 @@ const AddEditProject = (user: any) => {
     const [ledgerId, setLedgerAccount] = useState<number | null>(null);
     const [salesDate, setSalesDate] = useState<Date | null>(null); // Define state with type
     const [purchaseDate, setPurchaseDate] = useState<Date | null>(null); // Define state with type
+    const [areaOption, setAreaOption] = useState<any>(null);
+    const [landOwnerOption, setLandOwnerOption] = useState<any>(null);
 
     // ✅ initial state ONLY from initial.ts
     const [formData, setFormData] = useState<ProjectItem>(
@@ -41,9 +43,9 @@ const AddEditProject = (user: any) => {
 
     const [buttonLoading, setButtonLoading] = useState(false);
 
-    // EDIT MODE
+    // EDIT MODE — load project data
     useEffect(() => {
-        // if (id) dispatch(editProject(id));
+        if (id) dispatch(projectEdit(Number(id)));
     }, [id]);
 
     useEffect(() => {
@@ -76,10 +78,20 @@ const AddEditProject = (user: any) => {
 
     // Populate form on edit
     useEffect(() => {
-        if (projectState?.editData?.project) {
-            setFormData(projectState.editData.project);
+        const project = projectState?.editProject;
+        if (project) {
+            setFormData((prev) => ({ ...prev, ...project }));
+            if (project.branch_id) setBranchId(project.branch_id);
+            if (project.purchase_date) setPurchaseDate(new Date(project.purchase_date));
+            if (project.sale_date) setSalesDate(new Date(project.sale_date));
+            if (project.area_id) {
+                setAreaOption({ value: project.area_id, label: project.area?.name ?? '' });
+            }
+            if (project.customer_id) {
+                setLandOwnerOption({ value: project.customer_id, label: project.customer_name ?? '' });
+            }
         }
-    }, [projectState?.editData]);
+    }, [projectState?.editProject]);
 
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -94,6 +106,17 @@ const AddEditProject = (user: any) => {
     const handleSave = async () => {
 
         setButtonLoading(true);
+
+        if (id) {
+            const resultAction = await dispatch(projectUpdate({ ...formData, id } as any));
+            setButtonLoading(false);
+            if (projectUpdate.fulfilled.match(resultAction)) {
+                toast.success("Project updated successfully");
+            } else {
+                toast.error("Failed to update project");
+            }
+            return;
+        }
 
         const resultAction = await dispatch(projectStore(formData));
 
@@ -121,18 +144,20 @@ const AddEditProject = (user: any) => {
     };
 
     const handleAreaSelect = (option: any) => {
+        setAreaOption(option);
         setFormData((prev) => ({
             ...prev,
-            area_id: option.value,
+            area_id: option?.value,
         }));
     };
 
     const selectedLedgerOptionHandler = (option: any) => {
-        setLedgerAccount(option.value);
+        setLandOwnerOption(option);
+        setLedgerAccount(option?.value);
 
         setFormData((prev) => ({
             ...prev,
-            customer_id: option.value,
+            customer_id: option?.value,
         }));
     };
 
@@ -182,11 +207,11 @@ const AddEditProject = (user: any) => {
                 </div>
                 <div className="">
                     <label htmlFor="">Select Location</label>
-                    <ProjectAreaDropdown onSelect={handleAreaSelect} />
+                    <ProjectAreaDropdown onSelect={handleAreaSelect} value={areaOption} />
                 </div>
                 <div className="">
                     <label htmlFor="">Select Land Owner</label>
-                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='h-1' />
+                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='h-1' value={landOwnerOption} />
                 </div>
                 <InputElement
                     id="name"
@@ -269,7 +294,7 @@ const AddEditProject = (user: any) => {
                     name="status"
                     label="Select Status"
                     data={status}
-                    defaultValue={formData.status?.toString()}
+                    value={formData.status?.toString()}
                     className="h-[2.2rem] bg-transparent"
                     onChange={handleSelectChange}
                 />

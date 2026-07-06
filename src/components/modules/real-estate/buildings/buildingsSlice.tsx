@@ -141,7 +141,7 @@ export const buildingUpdate = createAsyncThunk<
   { rejectValue: string }
 >("building/buildingUpdate", async (payload, { rejectWithValue }) => {
   try {
-    const res = await httpService.post(API_BUILDING_UPDATE_URL, payload);
+    const res = await httpService.post(`${API_BUILDING_UPDATE_URL}/${payload.id}`, payload);
     if (res.data?.success === true) {
       return res.data;
     }
@@ -162,7 +162,7 @@ export const buildingEdit = createAsyncThunk<
   { rejectValue: string }
 >("building/buildingEdit", async (id, { rejectWithValue }) => {
   try {
-    const res = await httpService.get(API_BUILDING_EDIT_URL + id);
+    const res = await httpService.get(`${API_BUILDING_EDIT_URL}/${id}`);
     if (res.data?.success === true) {
       return res.data.data.data;
     }

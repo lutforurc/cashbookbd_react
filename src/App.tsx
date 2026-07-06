@@ -575,13 +575,16 @@ function App() {
 
             {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
             <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
+            <Route path={`${routes.real_estate_area_edit}/:id`} element={<AreaAdd />} />
             <Route path={routes.real_estate_area_list} element={<AreaList />} />
 
             <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me} />} />
+            <Route path={`${routes.real_estate_project_edit}/:id`} element={<AddEditProject user={me} />} />
             <Route path={routes.real_estate_project_list} element={<ProjectsList user={me} />} />
 
 
             <Route path={routes.real_estate_buildings} element={<AddEditBuilding />} />
+            <Route path={`${routes.real_estate_building_edit}/:id`} element={<AddEditBuilding />} />
             <Route path={routes.real_estate_buildings_list} element={<BuildingList user={me} />} />
 
             <Route path={routes.real_estate_floor_list} element={<FloorList user={me} />} />

@@ -26,16 +26,17 @@ import { toast } from "react-toastify";
 // } from "./buildingSlice";  
 
 const AddEditBuilding = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const { id, projectId } = useParams();
 
-  const buildingState = useSelector((state: any) => state.building);
+  const buildingState = useSelector((state: any) => state.buildings);
 
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [completionDate, setCompletionDate] = useState<Date | null>(null);
   const [saleDate, setSaleDate] = useState<Date | null>(null);
+  const [projectOption, setProjectOption] = useState<any>(null);
 
   const [formData, setFormData] = useState<BuildingItem>(
     getInitialBuilding(projectId)
@@ -59,6 +60,10 @@ const AddEditBuilding = () => {
         b.completion_date ? new Date(b.completion_date) : null
       );
       setSaleDate(b.sale_date ? new Date(b.sale_date) : null);
+
+      if (b.project_id) {
+        setProjectOption({ value: b.project_id, label: b.project?.name ?? "" });
+      }
     }
   }, [buildingState?.editBuilding]);
 
@@ -87,7 +92,6 @@ const AddEditBuilding = () => {
       buildingStore.fulfilled.match(action) ||
       buildingUpdate.fulfilled.match(action)
     ) {
-      alert(id ? "Building updated successfully" : "Building created successfully");
       toast.success(id ? "Building updated successfully" : "Building created successfully");
     } else {
       toast.error("Failed to save building");
@@ -120,9 +124,10 @@ const AddEditBuilding = () => {
   /* ================= RENDER ================= */
 
   const handleProjectSelect = (option: any) => {
+    setProjectOption(option);
     setFormData((prev) => ({
       ...prev,
-      project_id: option.value,
+      project_id: option?.value,
     }));
   };
 
@@ -137,7 +142,7 @@ const AddEditBuilding = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
         <div className="">
           <label htmlFor="">Select Project</label>
-          <ProjectDropdown onSelect={handleProjectSelect} className="" />
+          <ProjectDropdown onSelect={handleProjectSelect} value={projectOption} className="" />
         </div>
         <InputElement
           id="name"
@@ -255,7 +260,7 @@ const AddEditBuilding = () => {
             label="Select Status"
             data={status}
             className="h-8.5"
-            defaultValue={formData.status?.toString()}
+            value={formData.status?.toString()}
             onChange={handleSelectChange}
           />
         </div>

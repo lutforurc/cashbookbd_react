@@ -82,7 +82,7 @@ export const editArea = createAsyncThunk<Area, { id: string | number }, { reject
 >('area/editArea', async ({ id }, thunkAPI) => {
   try {
     const res = await httpService.get(`${API_AREA_EDIT_URL}/${id}`);
-    return res.data?.data ?? res.data;
+    return res.data?.data?.data ?? res.data?.data ?? res.data;
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
       err?.message || 'Failed to fetch area'
@@ -93,8 +93,8 @@ export const editArea = createAsyncThunk<Area, { id: string | number }, { reject
 // 📌 Update Area
 export const updateArea = createAsyncThunk<Area, Area, { rejectValue: string }>('area/updateArea', async (payload, thunkAPI) => {
   try {
-    const res = await httpService.post(API_AREA_UPDATE_URL, payload);
-    return res.data?.data ?? res.data;
+    const res = await httpService.post(`${API_AREA_UPDATE_URL}/${payload.id}`, payload);
+    return res.data?.data?.data ?? res.data?.data ?? res.data;
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
       err?.message || 'Failed to update area'
