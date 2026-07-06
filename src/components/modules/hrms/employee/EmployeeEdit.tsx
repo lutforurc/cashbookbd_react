@@ -28,6 +28,15 @@ const yesNo = [
   { id: 0, name: 'No' },
 ];
 
+// The API returns dates in DB datetime form ('YYYY-MM-DD HH:mm:ss'), but the
+// picker/save flow expects DD/MM/YYYY. Parse either so existing dates populate.
+const parseFlexibleDate = (val: any): Date | null => {
+  if (!val) return null;
+  let d = dayjs(val); // handles 'YYYY-MM-DD HH:mm:ss' / ISO
+  if (!d.isValid()) d = dayjs(val, 'DD/MM/YYYY');
+  return d.isValid() ? d.toDate() : null;
+};
+
 /* ===== SAME MODEL ===== */
 class EmployeeFormModel {
   static create() {
@@ -108,6 +117,9 @@ const EmployeeEdit = ({ user }: any) => {
     const emp = employeeState?.employee;
     if (!emp) return;
 
+    const dobDate = parseFlexibleDate(emp.date_of_birth);
+    const joinDate = parseFlexibleDate(emp.joning_dt);
+
     setFormData({
       name: emp.name,
       father_name: emp.father_name,
@@ -115,8 +127,8 @@ const EmployeeEdit = ({ user }: any) => {
       permanent_address: emp.permanent_address,
       nid: emp.nid,
       mobile: emp.mobile,
-      date_of_birth: emp.date_of_birth,
-      joning_dt: emp.joning_dt,
+      date_of_birth: dobDate ? dayjs(dobDate).format('DD/MM/YYYY') : '',
+      joning_dt: joinDate ? dayjs(joinDate).format('DD/MM/YYYY') : '',
       designation: emp.designation,
       qualification: emp.qualification,
       status: String(emp.status),
@@ -141,8 +153,8 @@ const EmployeeEdit = ({ user }: any) => {
     setBranchId(emp.project_id);
     setIsSelected(emp.project_id);
 
-    setEndDate(emp.date_of_birth ? dayjs(emp.date_of_birth, 'DD/MM/YYYY').toDate() : null);
-    setStartDate(emp.joning_dt ? dayjs(emp.joning_dt, 'DD/MM/YYYY').toDate() : null);
+    setEndDate(dobDate);
+    setStartDate(joinDate);
   }, [employeeState?.employee]);
 
   /* ================= HANDLERS ================= */
