@@ -100,6 +100,7 @@ const Requisitions = (user: any) => {
       header: 'Sl. No.',
       headerClass: 'text-center w-16',
       cellClass: 'text-center w-16',
+      render: (_row: any, index: number) => index + 1,
     },
 
     {

@@ -65,7 +65,7 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
       header: 'Sl',
       headerClass: 'text-center w-16',
       cellClass: 'text-center w-16',
-      render: (row: any) => <span>{pickFirst(row, ['sl', 'serial', 'id'])}</span>,
+      render: (_row: any, index: number) => <span>{index + 1}</span>,
     },
     {
       key: 'vr_no',
