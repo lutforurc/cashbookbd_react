@@ -372,6 +372,8 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.ledger.view']} loading={permissionsLoading} />}>
               <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.ledger.view', 'hrm.loan.create']} loading={permissionsLoading} />}>
               <Route path={routes.employee_loan_balance} element={<LoanBalance user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
@@ -407,10 +409,16 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'profit.loss']} loading={permissionsLoading} />}>
               <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'balancesheet.view']} loading={permissionsLoading} />}>
               <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'trial.balance.l3']} loading={permissionsLoading} />}>
               <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'trial.balance.l4']} loading={permissionsLoading} />}>
               <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.information']} loading={permissionsLoading} />}>
@@ -434,6 +442,8 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.view', 'ledger.customer']} loading={permissionsLoading} />}>
               <Route path={routes.report_ledger} element={<Ledger user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.view', 'ledger.customer', 'product.in.out']} loading={permissionsLoading} />}>
               <Route path={routes.product_ledger_data} element={<ProductLedgerData user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.labour']} loading={permissionsLoading} />}>
@@ -628,14 +638,18 @@ function App() {
               <Route path={routes.hrms_branch_attendance_summary} element={<BranchAttendanceSummaryReport user={me} />} />
               <Route path={routes.hrms_holiday_calendar_report} element={<HolidayCalendarReport user={me} />} />
               <Route path={routes.hrms_attendance_monthly_report} element={<AttendanceMonthlyMatrixReport user={me} />} />
-              <Route path={routes.hrms_leave_applications} element={<LeaveApplications user={me} />} />
               <Route path={routes.hrms_attendance_setup} element={<AttendanceSetup user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['attendance.view', 'employee.view', 'leave.view']} loading={permissionsLoading} />}>
+              <Route path={routes.hrms_leave_applications} element={<LeaveApplications user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.generate']} loading={permissionsLoading} />}>
               <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
               <Route path={routes.hrms_festival_bonus_generate} element={<FestivalBonusGenerate user={me} />} />
-              <Route path={routes.hrms_festival_bonus_list} element={<FestivalBonus user={me} />} />
               <Route path={routes.hrms_festival_bonus_update} element={<FestivalBonusUpdate user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.generate', 'salary.sheet.view']} loading={permissionsLoading} />}>
+              <Route path={routes.hrms_festival_bonus_list} element={<FestivalBonus user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.sheet.view']} loading={permissionsLoading} />}>
               <Route path={routes.hrms_salary_sheet_update} element={<SalarySheetUpdate user={me} />} />
