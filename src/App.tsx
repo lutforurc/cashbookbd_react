@@ -596,6 +596,7 @@ function App() {
             <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
             <Route path={routes.real_estate_add_floor_unit_edit} element={<AddEditUnit />} /> 
             <Route path={routes.real_estate_unit_types_create} element={<AddEditUnitChargeType />} />
+            <Route path={`${routes.real_estate_charge_type_edit}/:id`} element={<AddEditUnitChargeType />} />
 
             <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
             <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />

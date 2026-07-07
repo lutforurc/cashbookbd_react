@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import httpService from "../../../services/httpService";
-import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DELETE_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL, API_UNIT_CHARGE_DDL_LIST_URL, API_PARKING_DDL_LIST_URL } from "../../../services/apiRoutes";
+import { API_UNIT_LIST_URL, API_UNIT_STORE_URL, API_UNIT_UPDATE_URL, API_UNIT_EDIT_URL, API_UNIT_DELETE_URL, API_UNIT_DDL_LIST_URL, API_UNIT_CHARGE_TYPE_LIST_URL, API_UNIT_CHARGE_TYPE_STORE_URL, API_UNIT_CHARGE_TYPE_EDIT_URL, API_UNIT_CHARGE_DDL_LIST_URL, API_PARKING_DDL_LIST_URL } from "../../../services/apiRoutes";
 import { getToken } from "../../../../features/authReducer";
 import { UnitChargeTypeItem } from "./types";
 
@@ -57,6 +57,7 @@ interface UnitState {
   editUnit: UnitItem | null;
 
   unitChargeTypes: UnitChargeTypeItem[];
+  editChargeType: UnitChargeTypeItem | null;
   unitPrices: UnitPriceItem[];
 
   loading: boolean;
@@ -82,6 +83,7 @@ const initialState: UnitState = {
   editUnit: null,
 
   unitChargeTypes: [],
+  editChargeType: null,
   unitPrices: [],
 
   loading: false,
@@ -154,9 +156,9 @@ export const unitChargeTypeDdl = createAsyncThunk<UnitChargeTypeItem[], string |
 /* ---- Fetch Single Charge Type (Edit) ---- */
 export const fetchUnitChargeType = createAsyncThunk<UnitChargeTypeItem, number, { rejectValue: string }>("unit/fetchUnitChargeType", async (id, { rejectWithValue }) => {
   try {
-    const res = await httpService.get(`/api/units/charge-types/${id}`);
+    const res = await httpService.get(`${API_UNIT_CHARGE_TYPE_EDIT_URL}/${id}`);
     if (res.data?.success === true) {
-      return res.data.data;
+      return res.data?.data?.data ?? res.data?.data;
     }
     return rejectWithValue(res.data?.message || "Failed to load charge type");
   } catch (error: any) {
@@ -180,9 +182,8 @@ export const storeUnitChargeType = createAsyncThunk<any, Partial<UnitChargeTypeI
 /* ---- Update Charge Type ---- */
 export const updateUnitChargeType = createAsyncThunk<any, Partial<UnitChargeTypeItem>, { rejectValue: string }>("unit/updateUnitChargeType", async (payload, { rejectWithValue }) => {
   try {
-    const res = await httpService.put(`${API_UNIT_CHARGE_TYPE_LIST_URL}/${payload.id}`,
-      payload
-    );
+    // Store endpoint is an upsert: sending `id` updates the existing row.
+    const res = await httpService.post(API_UNIT_CHARGE_TYPE_STORE_URL, payload);
     if (res.data?.success === true) {
       return res.data;
     }
@@ -469,6 +470,9 @@ const unitSlice = createSlice({
       })
 
       /* ===== Unit Charge Type CRUD (Message only) ===== */
+      .addCase(fetchUnitChargeType.fulfilled, (state, action) => {
+        state.editChargeType = action.payload;
+      })
       .addCase(storeUnitChargeType.fulfilled, (state, action) => {
         state.message =
           action.payload?.message || "Charge type created successfully";

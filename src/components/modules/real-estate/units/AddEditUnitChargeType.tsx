@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FiSave, FiRefreshCcw, FiArrowLeft } from "react-icons/fi";
+import { FiSave, FiRefreshCcw, FiArrowLeft, FiEdit2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
@@ -159,9 +159,9 @@ const AddEditUnitChargeType = () => {
         <ButtonLoading
           onClick={handleSave}
           buttonLoading={buttonLoading}
-          label="Save"
+          label={isEdit ? "Update" : "Save"}
           className="p-2"
-          icon={<FiSave className="!mr-2 text-lg" />}
+          icon={isEdit ? <FiEdit2 className="!mr-2 text-lg" /> : <FiSave className="!mr-2 text-lg" />}
         />
 
         <ButtonLoading

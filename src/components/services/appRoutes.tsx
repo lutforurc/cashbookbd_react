@@ -250,7 +250,8 @@ const ROUTES = {
   real_estate_add_floor_unit_edit: "/real-estate/add-floor-unit/:id",
   real_estate_floor_unit_list: '/real-estate/unit/list',  
   real_estate_unit_types_create: '/real-estate/unit-types/create',
-  real_estate_unit_types_list: '/real-estate/unit-types/list',  
+  real_estate_charge_type_edit: '/real-estate/charge-types/edit',
+  real_estate_unit_types_list: '/real-estate/unit-types/list',
   real_estate_unit_sales: '/real-estate/unit-sales',  
   real_estate_installment_create: '/real-estate/installment-create',  
   
