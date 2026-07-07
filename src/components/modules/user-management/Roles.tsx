@@ -1,6 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useEffect, useState } from 'react';
+import routes from '../../services/appRoutes';
 import {
   getPermissions,
   getRoles,
@@ -36,6 +38,7 @@ interface Role {
 
 const Roles = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const rolesPermissions = useSelector((state: any) => state.userManagement);
   const auth = useSelector((state: any) => state.auth);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -206,7 +209,7 @@ const Roles = () => {
           <ButtonLoading className="p-2 w-30" icon={<FiCheckSquare />} onClick={handleUpdatePermissions} buttonLoading={updating} label="Update" />
         )}
         {!isCompanyBoundRoleView && (
-          <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className="mr-2" />} onClick={() => {}} buttonLoading={addingRole} label="Add Role" />
+          <ButtonLoading className="p-2 w-40" icon={<FiPlus size={16} className="mr-2" />} onClick={() => navigate(routes.add_role)} buttonLoading={addingRole} label="Add Role" />
         )}
       </div>
 
