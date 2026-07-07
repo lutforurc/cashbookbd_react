@@ -283,7 +283,7 @@ const AddEditBuilding = () => {
         />
 
         <Link
-          to={`/real-estate/projects/${projectId}/buildings`}
+          to={`/real-estate/building/list`}
           className="flex items-center justify-center"
         >
           <FiArrowLeft className="mr-2" /> Back

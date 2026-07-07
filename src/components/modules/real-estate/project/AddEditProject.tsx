@@ -211,7 +211,7 @@ const AddEditProject = (user: any) => {
                 </div>
                 <div className="">
                     <label htmlFor="">Select Land Owner</label>
-                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='h-1' value={landOwnerOption} />
+                    <DdlMultiline onSelect={selectedLedgerOptionHandler} acType={''} className='h-9.5' value={landOwnerOption} />
                 </div>
                 <InputElement
                     id="name"
@@ -317,7 +317,7 @@ const AddEditProject = (user: any) => {
                     icon={<FiRefreshCcw className="ml-2 text-lg" />}
                 />
                 <Link
-                    to={`/real-estate/areas/${areaId}/projects`}
+                    to={`/real-estate/project-list`}
                     className="flex items-center justify-center"
                 >
                     <FiArrowLeft className="mr-2" /> Back
