@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
-import { API_BRAND_LIST_URL, API_BRAND_SAVE_URL, API_BRAND_EDIT_URL, API_BRAND_UPDATE_URL, API_BRAND_DDL_URL } from '../../../services/apiRoutes';
+import { API_BRAND_LIST_URL, API_BRAND_SAVE_URL, API_BRAND_EDIT_URL, API_BRAND_UPDATE_URL, API_BRAND_DDL_URL, API_BRAND_DELETE_URL } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
 /* ================= TYPES ================= */
@@ -81,6 +81,19 @@ export const updateBrand = createAsyncThunk<any, Brand, { rejectValue: string }>
     return res.data;
   } catch (err: any) {
     return thunkAPI.rejectWithValue(err?.message || 'Failed to update brand');
+  }
+}
+);
+
+// 📌 Delete Brand
+export const deleteBrand = createAsyncThunk<any, string | number, { rejectValue: string }>('brand/deleteBrand', async (id, thunkAPI) => {
+  try {
+    const res = await httpService.post(`${API_BRAND_DELETE_URL}${id}`);
+    return res.data;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message || err?.message || 'Failed to delete brand'
+    );
   }
 }
 );

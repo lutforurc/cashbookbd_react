@@ -372,6 +372,7 @@ export const API_BRAND_SAVE_URL = `${API_BASE_URL}/product/brand/store`;
 export const API_BRAND_EDIT_URL = `${API_BASE_URL}/product/brand/edit`;
 export const API_BRAND_UPDATE_URL = `${API_BASE_URL}/product/brand/update`;
 export const API_BRAND_DDL_URL = `${API_BASE_URL}/product/brand/ddl`;
+export const API_BRAND_DELETE_URL = `${API_BASE_URL}/product/brand/delete/`;
 
 // Product Unit Route
 export const API_PRODUCT_UNIT_LIST_URL = `${API_BASE_URL}/product/unit/list`;
