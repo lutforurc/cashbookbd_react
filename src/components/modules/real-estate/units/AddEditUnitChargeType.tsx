@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FiSave, FiRefreshCcw, FiArrowLeft, FiEdit2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputElement from "../../../utils/fields/InputElement";
@@ -28,6 +28,7 @@ interface ChargeTypeForm {
 
 const AddEditUnitChargeType = () => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const { id } = useParams(); // charge type id
   const isEdit = Boolean(id);
 
@@ -80,6 +81,7 @@ const AddEditUnitChargeType = () => {
       toast.success(
         isEdit ? "Charge type updated" : "Charge type created"
       );
+      navigate((routes as any).real_estate_unit_types_list);
     } else {
       toast.error("Failed to save charge type");
     }
