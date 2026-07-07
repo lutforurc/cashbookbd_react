@@ -1,0 +1,1290 @@
+CashBookBD Mobile App - Reports Menu Implementation Guide
+=========================================================
+
+This guide explains how to implement all reports under the `Reports` menu in
+the CashBookBD mobile app. It is based on the current React web app code.
+
+Use this guide together with:
+- `docs/ROLE_MANAGEMENT_MOBILE_GUIDE.txt`
+
+The mobile app must show one parent menu named `Reports`. Under that parent
+menu, show only the report items the logged-in user is allowed to access.
+
+
+1. Core Rule
+------------
+
+After login, load app settings from:
+
+- `POST /api/settings/get-settings`
+
+Store:
+
+- `settings.permissions`
+
+Use the permission helper functions from the role guide:
+
+- `hasPermission`
+- `hasAnyPermission`
+- `hasAllPermissions`
+
+If the user has `"*"`, show all reports.
+
+The `Reports` parent menu should be visible if the user has any permission used
+by any report child item.
+
+
+2. Web App References
+---------------------
+
+Routes:
+- `src/components/services/appRoutes.tsx`
+
+API endpoint constants:
+- `src/components/services/apiRoutes.tsx`
+
+Reports menu and permission checks:
+- `src/components/Sidebar/index.tsx`
+- `src/components/Header/globalSearchItems.ts`
+- `src/App.tsx`
+
+Report modules:
+- `src/components/modules/reports/`
+- `src/components/modules/installment/`
+
+
+3. Required Mobile Files
+------------------------
+
+Recommended mobile structure:
+
+- `mobile-app/src/config/reportMenu.ts`
+- `mobile-app/src/services/reportService.ts`
+- `mobile-app/src/screens/reports/ReportsHomeScreen.tsx`
+- `mobile-app/src/screens/reports/ReportFilterScreen.tsx`
+- `mobile-app/src/screens/reports/ReportResultScreen.tsx`
+- `mobile-app/src/screens/reports/NoAccessScreen.tsx`
+
+You can also create one screen per report later, but the fastest maintainable
+implementation is:
+
+1. A `ReportsHomeScreen` that lists all permitted reports.
+2. A generic filter screen driven by report config.
+3. A generic result screen that renders rows/cards/totals from API responses.
+
+
+4. Reports Parent Permission
+----------------------------
+
+Use this permission list for the parent `Reports` menu:
+
+```ts
+export const REPORTS_PARENT_PERMISSIONS = [
+  'date.wise.total',
+  'cashbook.view',
+  'profit.loss',
+  'balancesheet.view',
+  'trial.balance.l3',
+  'trial.balance.l4',
+  'bank.information',
+  'connected.member.view',
+  'productwise.profit',
+  'ledger.customer',
+  'installment.create',
+  'ledger.due.view',
+  'ledger.view',
+  'ledger.labour',
+  'purchase.ledger',
+  'sales.ledger',
+  'mitch.match',
+  'group.report',
+  'product.stock.view',
+  'product.in.out',
+];
+```
+
+Show the Reports parent menu when:
+
+```ts
+hasAnyPermission(permissions, REPORTS_PARENT_PERMISSIONS)
+```
+
+
+5. Reports Menu Registry
+------------------------
+
+Create this file:
+
+- `mobile-app/src/config/reportMenu.ts`
+
+The mobile app should render this list under the `Reports` menu, filtered by
+permission.
+
+```ts
+export type ReportConfig = {
+  key: string;
+  title: string;
+  group: 'Reports';
+  routeName: string;
+  webPath: string;
+  anyOf: string[];
+  endpointKey: string;
+  method: 'GET' | 'POST';
+  filterType:
+    | 'branchDateRange'
+    | 'branchEndDate'
+    | 'branchLedgerDateRange'
+    | 'branchProductDateRange'
+    | 'branchProductOnly'
+    | 'branchCategoryDateRange'
+    | 'branchBrandCategoryProductDateRange'
+    | 'branchReportTypeEndDate'
+    | 'branchDateRangeWithOptionalProduct'
+    | 'branchEmployeeInstallment'
+    | 'branchCustomerInstallment'
+    | 'collectionSheet'
+    | 'groupReport';
+};
+
+export const REPORT_MENU: ReportConfig[] = [
+  {
+    key: 'dateWiseTotal',
+    title: 'Date Wise Total',
+    group: 'Reports',
+    routeName: 'ReportDateWiseTotal',
+    webPath: '/reports/date-wise-total-data',
+    anyOf: ['date.wise.total'],
+    endpointKey: 'dateWiseTotal',
+    method: 'GET',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'cashbook',
+    title: 'Cashbook',
+    group: 'Reports',
+    routeName: 'ReportCashbook',
+    webPath: '/reports/cashbook',
+    anyOf: ['cashbook.view'],
+    endpointKey: 'cashbook',
+    method: 'GET',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'profitLoss',
+    title: 'Profit Loss',
+    group: 'Reports',
+    routeName: 'ReportProfitLoss',
+    webPath: '/reports/profit-loss',
+    anyOf: ['cashbook.view', 'profit.loss'],
+    endpointKey: 'profitLoss',
+    method: 'POST',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'balanceSheet',
+    title: 'Balance Sheet',
+    group: 'Reports',
+    routeName: 'ReportBalanceSheet',
+    webPath: '/reports/balance-sheet',
+    anyOf: ['cashbook.view', 'balancesheet.view'],
+    endpointKey: 'balanceSheet',
+    method: 'POST',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'trialBalanceLevel3',
+    title: 'Trial Balance Level 3',
+    group: 'Reports',
+    routeName: 'ReportTrialBalanceLevel3',
+    webPath: '/reports/trialbalance-level3',
+    anyOf: ['cashbook.view', 'trial.balance.l3'],
+    endpointKey: 'trialBalanceLevel3',
+    method: 'GET',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'trialBalanceLevel4',
+    title: 'Trial Balance Level 4',
+    group: 'Reports',
+    routeName: 'ReportTrialBalanceLevel4',
+    webPath: '/reports/trialbalance-level4',
+    anyOf: ['cashbook.view', 'trial.balance.l4'],
+    endpointKey: 'trialBalanceLevel4',
+    method: 'GET',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'bankInformation',
+    title: 'Bank Information',
+    group: 'Reports',
+    routeName: 'ReportBankInformation',
+    webPath: '/reports/bank-information',
+    anyOf: ['bank.information'],
+    endpointKey: 'bankInformation',
+    method: 'GET',
+    filterType: 'branchReportTypeEndDate',
+  },
+  {
+    key: 'connectedMember',
+    title: 'Connected Member',
+    group: 'Reports',
+    routeName: 'ReportConnectedMember',
+    webPath: '/reports/connected-member',
+    anyOf: ['connected.member.view'],
+    endpointKey: 'connectedMember',
+    method: 'POST',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'productProfitLoss',
+    title: 'Product Profit Loss',
+    group: 'Reports',
+    routeName: 'ReportProductProfitLoss',
+    webPath: '/reports/product-profit-loss',
+    anyOf: ['productwise.profit'],
+    endpointKey: 'productProfitLoss',
+    method: 'POST',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'customerSupplierStatement',
+    title: 'Customer Supplier Statement',
+    group: 'Reports',
+    routeName: 'ReportCustomerSupplierStatement',
+    webPath: '/reports/ledger-with-product',
+    anyOf: ['ledger.customer'],
+    endpointKey: 'customerSupplierStatement',
+    method: 'GET',
+    filterType: 'branchLedgerDateRange',
+  },
+  {
+    key: 'dueInstallments',
+    title: 'Due Installments',
+    group: 'Reports',
+    routeName: 'ReportDueInstallments',
+    webPath: '/reports/due-installments',
+    anyOf: ['installment.create'],
+    endpointKey: 'dueInstallments',
+    method: 'POST',
+    filterType: 'branchCustomerInstallment',
+  },
+  {
+    key: 'employeeInstallments',
+    title: 'Employee Installments',
+    group: 'Reports',
+    routeName: 'ReportEmployeeInstallments',
+    webPath: '/reports/employee-installment',
+    anyOf: ['installment.create'],
+    endpointKey: 'employeeInstallments',
+    method: 'POST',
+    filterType: 'branchEmployeeInstallment',
+  },
+  {
+    key: 'dueList',
+    title: 'Due List',
+    group: 'Reports',
+    routeName: 'ReportDueList',
+    webPath: '/reports/due-list',
+    anyOf: ['ledger.due.view'],
+    endpointKey: 'dueList',
+    method: 'GET',
+    filterType: 'branchEndDate',
+  },
+  {
+    key: 'ledger',
+    title: 'Ledger',
+    group: 'Reports',
+    routeName: 'ReportLedger',
+    webPath: '/reports/ledger',
+    anyOf: ['ledger.view', 'ledger.customer'],
+    endpointKey: 'ledger',
+    method: 'GET',
+    filterType: 'branchLedgerDateRange',
+  },
+  {
+    key: 'productInOut',
+    title: 'Product In Out',
+    group: 'Reports',
+    routeName: 'ReportProductInOut',
+    webPath: '/reports/product-ledger-data',
+    anyOf: ['ledger.view', 'ledger.customer', 'product.in.out'],
+    endpointKey: 'productLedgerData',
+    method: 'GET',
+    filterType: 'branchProductDateRange',
+  },
+  {
+    key: 'labourLedger',
+    title: 'Labour Ledger',
+    group: 'Reports',
+    routeName: 'ReportLabourLedger',
+    webPath: '/reports/labour/ledger',
+    anyOf: ['ledger.labour'],
+    endpointKey: 'labourLedger',
+    method: 'POST',
+    filterType: 'branchProductDateRange',
+  },
+  {
+    key: 'purchaseLedger',
+    title: 'Purchase Ledger',
+    group: 'Reports',
+    routeName: 'ReportPurchaseLedger',
+    webPath: '/reports/purchase-ledger',
+    anyOf: ['purchase.ledger'],
+    endpointKey: 'purchaseLedger',
+    method: 'GET',
+    filterType: 'branchLedgerDateRange',
+  },
+  {
+    key: 'salesLedger',
+    title: 'Sales Ledger',
+    group: 'Reports',
+    routeName: 'ReportSalesLedger',
+    webPath: '/reports/sales-ledger',
+    anyOf: ['sales.ledger'],
+    endpointKey: 'salesLedger',
+    method: 'GET',
+    filterType: 'branchLedgerDateRange',
+  },
+  {
+    key: 'mitchMatch',
+    title: 'Mitch Match',
+    group: 'Reports',
+    routeName: 'ReportMitchMatch',
+    webPath: '/reports/mitch-match',
+    anyOf: ['mitch.match'],
+    endpointKey: 'mitchMatch',
+    method: 'GET',
+    filterType: 'branchEndDate',
+  },
+  {
+    key: 'groupReport',
+    title: 'Group Report',
+    group: 'Reports',
+    routeName: 'ReportGroup',
+    webPath: '/reports/group-report',
+    anyOf: ['group.report'],
+    endpointKey: 'groupReport',
+    method: 'POST',
+    filterType: 'groupReport',
+  },
+  {
+    key: 'collectionSheet',
+    title: 'Collection Sheet',
+    group: 'Reports',
+    routeName: 'ReportCollectionSheet',
+    webPath: '/somity-report/collection-sheet',
+    anyOf: ['group.report', 'ledger.due.view', 'cashbook.view'],
+    endpointKey: 'collectionSheet',
+    method: 'POST',
+    filterType: 'collectionSheet',
+  },
+  {
+    key: 'monthlyReport',
+    title: 'Monthly Report',
+    group: 'Reports',
+    routeName: 'ReportMonthly',
+    webPath: '/somity-report/monthly-report',
+    anyOf: ['group.report', 'ledger.due.view', 'cashbook.view'],
+    endpointKey: 'monthlyReport',
+    method: 'POST',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'closingStock',
+    title: 'Closing Stock',
+    group: 'Reports',
+    routeName: 'ReportClosingStock',
+    webPath: '/reports/closing-stock',
+    anyOf: ['product.stock.view'],
+    endpointKey: 'closingStock',
+    method: 'POST',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'stockDetails',
+    title: 'Stock Details',
+    group: 'Reports',
+    routeName: 'ReportStockDetails',
+    webPath: '/somity-report/stock-details',
+    anyOf: ['product.stock.view'],
+    endpointKey: 'closingStock',
+    method: 'POST',
+    filterType: 'branchDateRange',
+  },
+  {
+    key: 'productStock',
+    title: 'Product Stock',
+    group: 'Reports',
+    routeName: 'ReportProductStock',
+    webPath: '/reports/product/stock',
+    anyOf: ['product.stock.view'],
+    endpointKey: 'productStock',
+    method: 'POST',
+    filterType: 'branchBrandCategoryProductDateRange',
+  },
+  {
+    key: 'imeiStock',
+    title: 'IMEI Stock',
+    group: 'Reports',
+    routeName: 'ReportImeiStock',
+    webPath: '/reports/stock-imei',
+    anyOf: ['product.stock.view'],
+    endpointKey: 'imeiStock',
+    method: 'GET',
+    filterType: 'branchProductOnly',
+  },
+  {
+    key: 'categoryWiseInOut',
+    title: 'Category Wise In Out',
+    group: 'Reports',
+    routeName: 'ReportCategoryWiseInOut',
+    webPath: '/reports/cat-wise/in-out',
+    anyOf: ['product.in.out'],
+    endpointKey: 'categoryWiseInOut',
+    method: 'POST',
+    filterType: 'branchCategoryDateRange',
+  },
+  {
+    key: 'dateWiseInOut',
+    title: 'Date Wise In Out',
+    group: 'Reports',
+    routeName: 'ReportDateWiseInOut',
+    webPath: '/reports/in-out/date-wise',
+    anyOf: ['product.in.out'],
+    endpointKey: 'dateWiseInOut',
+    method: 'GET',
+    filterType: 'branchDateRangeWithOptionalProduct',
+  },
+];
+
+export const visibleReports = (permissions) =>
+  REPORT_MENU.filter((report) => hasAnyPermission(permissions, report.anyOf));
+```
+
+
+6. Report API Endpoints
+-----------------------
+
+Add these endpoint constants to:
+
+- `mobile-app/src/config/api.ts`
+
+```ts
+export const reportEndpoints = {
+  dateWiseTotal: `${API_BASE_URL}/reports/date-wise-total-data`,
+  cashbook: `${API_BASE_URL}/reports/cashbook`,
+  profitLoss: `${API_BASE_URL}/reports/profit-loss`,
+  profitLossExpenseSummary: `${API_BASE_URL}/reports/profit-loss-expense-summary`,
+  balanceSheet: `${API_BASE_URL}/reports/balance-sheet`,
+  trialBalanceLevel3: `${API_BASE_URL}/reports/trialbalance-level3`,
+  trialBalanceLevel4: `${API_BASE_URL}/reports/trialbalance-level4`,
+  bankInformation: `${API_BASE_URL}/reports/bank-information-data`,
+  connectedMember: `${API_BASE_URL}/reports/connected-member-data`,
+  productProfitLoss: `${API_BASE_URL}/reports/product-profit-loss`,
+  customerSupplierStatement: `${API_BASE_URL}/reports/ledger-with-product`,
+  dueInstallments: `${API_BASE_URL}/accounts/installment/filter`,
+  employeeInstallments: `${API_BASE_URL}/accounts/installment/employees`,
+  dueList: `${API_BASE_URL}/reports/duelist`,
+  ledger: `${API_BASE_URL}/reports/api-ledger`,
+  productLedgerData: `${API_BASE_URL}/reports/product-ledger-data`,
+  labourLedger: `${API_BASE_URL}/reports/labour/ledger`,
+  purchaseLedger: `${API_BASE_URL}/reports/purchase/ledger`,
+  salesLedger: `${API_BASE_URL}/reports/sales/ledger`,
+  mitchMatch: `${API_BASE_URL}/reports/mitch-match/data`,
+  groupReport: `${API_BASE_URL}/reports/group/report/data`,
+  collectionSheet: `${API_BASE_URL}/somity-report/collection-sheet`,
+  monthlyReport: `${API_BASE_URL}/somity-report/monthly-report/data`,
+  closingStock: `${API_BASE_URL}/reports/closing-stock`,
+  productStock: `${API_BASE_URL}/reports/product-stock`,
+  imeiStock: `${API_BASE_URL}/reports/stock-imei-data`,
+  categoryWiseInOut: `${API_BASE_URL}/reports/category-wise-in-out`,
+  dateWiseInOut: `${API_BASE_URL}/reports/in-out/date-wise/data`,
+  dateWiseInOutDetails: `${API_BASE_URL}/reports/in-out/date-wise/details`,
+};
+```
+
+
+7. Dropdown / Lookup Endpoints
+------------------------------
+
+Most reports require filters. Add these lookup endpoints as needed:
+
+```ts
+export const lookupEndpoints = {
+  branches: `${API_BASE_URL}/branch/ddl/all-branch`,
+  protectedBranches: `${API_BASE_URL}/branch/ddl/protected-branch`,
+  products: `${API_BASE_URL}/product/ddl/list`,
+  brands: `${API_BASE_URL}/product/brand/ddl`,
+  categories: `${API_BASE_URL}/category/category-ddl`,
+  coaL3: `${API_BASE_URL}/chart_of_accounts/ddl/l3-list`,
+  coaL4: `${API_BASE_URL}/chart_of_accounts/ddl/l4-list`,
+  customers: `${API_BASE_URL}/contact/details`,
+  employees: `${API_BASE_URL}/hrms/employee/ddl/list`,
+  labourItems: `${API_BASE_URL}/labour/items`,
+  areas: `${API_BASE_URL}/area/ddl-list`,
+};
+```
+
+Default branch:
+- Use `user.branch_id` from `/api/me` when available.
+- Also load protected branch settings because some report screens use the
+  current transaction date from protected branch data.
+
+Date format note:
+- Some legacy report APIs use `DD/MM/YYYY`.
+- Some newer APIs use `YYYY-MM-DD`.
+- Follow the parameter format listed in section 8.
+
+
+8. Report Request Shapes
+------------------------
+
+Use these method, endpoint, and parameter shapes.
+
+Date Wise Total:
+- Permission: `date.wise.total`
+- Method: `GET`
+- Endpoint: `/api/reports/date-wise-total-data`
+- Query params:
+  - `branch_id`
+  - `start_date`
+  - `end_date`
+
+Cashbook:
+- Permission: `cashbook.view`
+- Method: `GET`
+- Endpoint: `/api/reports/cashbook`
+- Query params:
+  - `branch_id`
+  - `start_date`
+  - `end_date`
+
+Profit Loss:
+- Permissions: `cashbook.view` or `profit.loss`
+- Method: `POST`
+- Endpoint: `/api/reports/profit-loss`
+- Body:
+  - `branch_id`
+  - `start_date`
+  - `end_date`
+
+Balance Sheet:
+- Permissions: `cashbook.view` or `balancesheet.view`
+- Method: `POST`
+- Endpoint: `/api/reports/balance-sheet`
+- Body:
+  - `branchId`
+  - `startDate`
+  - `endDate`
+
+Trial Balance Level 3:
+- Permissions: `cashbook.view` or `trial.balance.l3`
+- Method: `GET`
+- Endpoint: `/api/reports/trialbalance-level3`
+- Query params:
+  - `branch_id`
+  - `start_date`
+  - `end_date`
+
+Trial Balance Level 4:
+- Permissions: `cashbook.view` or `trial.balance.l4`
+- Method: `GET`
+- Endpoint: `/api/reports/trialbalance-level4`
+- Query params:
+  - `branch_id`
+  - `start_date`
+  - `end_date`
+
+Bank Information:
+- Permission: `bank.information`
+- Method: `GET`
+- Endpoint: `/api/reports/bank-information-data`
+- Query params:
+  - `branch_id`
+  - `report_type_id`
+  - `enddate`
+- Date format:
+  - `DD/MM/YYYY`
+- Report type options:
+  - `1`: Bank Balance
+  - `2`: Bank Received
+  - `3`: Bank Payment
+
+Connected Member:
+- Permission: `connected.member.view`
+- Method: `POST`
+- Endpoint: `/api/reports/connected-member-data`
+- Body:
+  - `branch_id`
+  - `startdate`
+  - `enddate`
+- Date format:
+  - `DD/MM/YYYY`
+
+Product Profit Loss:
+- Permission: `productwise.profit`
+- Method: `POST`
+- Endpoint: `/api/reports/product-profit-loss`
+- Body:
+  - `branch_id`
+  - `start_date`
+  - `end_date`
+
+Customer Supplier Statement:
+- Permission: `ledger.customer`
+- Method: `GET`
+- Endpoint: `/api/reports/ledger-with-product`
+- Query params:
+  - `branch_id`
+  - `party_id`
+  - `transaction_type`
+  - `item_id`
+  - `start_date`
+  - `end_date`
+
+Due Installments:
+- Permission: `installment.create`
+- Method: `POST`
+- Endpoint: `/api/accounts/installment/filter`
+- Body:
+  - `branch_id`
+  - `customer_id`
+  - `startDate`
+  - `endDate`
+  - `due_only`
+  - `status`
+- Status options:
+  - `overdue`
+  - `pending`
+  - `upcoming`
+  - `partial`
+  - `null`
+
+Employee Installments:
+- Permission: `installment.create`
+- Method: `POST`
+- Endpoint: `/api/accounts/installment/employees`
+- Body:
+  - `branch_id`
+  - `employee_id`
+  - `startDate`
+  - `endDate`
+  - `due_only`
+  - `status`
+
+Due List:
+- Permission: `ledger.due.view`
+- Method: `GET`
+- Endpoint: `/api/reports/duelist`
+- Query params:
+  - `branch_id`
+  - `enddate`
+
+Ledger:
+- Permissions: `ledger.view` or `ledger.customer`
+- Method: `GET`
+- Endpoint: `/api/reports/api-ledger`
+- Query params:
+  - `branch_id`
+  - `ledger_id`
+  - `start_date`
+  - `end_date`
+  - `delay=1`
+
+Product In Out:
+- Permissions: `ledger.view`, `ledger.customer`, or `product.in.out`
+- Method: `GET`
+- Endpoint: `/api/reports/product-ledger-data`
+- Query params:
+  - `branch_id`
+  - `ledger_id`
+  - `startdate`
+  - `enddate`
+
+Labour Ledger:
+- Permission: `ledger.labour`
+- Method: `POST`
+- Endpoint: `/api/reports/labour/ledger`
+- Body:
+  - `branch_id`
+  - `labour_id` or selected labour item id
+  - `startdate`
+  - `enddate`
+
+Purchase Ledger:
+- Permission: `purchase.ledger`
+- Method: `GET`
+- Endpoint: `/api/reports/purchase/ledger`
+- Query params:
+  - `branch_id`
+  - `ledger_id`
+  - `item_id`
+  - `startdate`
+  - `enddate`
+  - `search`
+  - `delay=1`
+
+Sales Ledger:
+- Permission: `sales.ledger`
+- Method: `GET`
+- Endpoint: `/api/reports/sales/ledger`
+- Query params:
+  - `branch_id`
+  - `ledger_id`
+  - `item_id`
+  - `startdate`
+  - `enddate`
+  - `search`
+  - `delay=1`
+
+Mitch Match:
+- Permission: `mitch.match`
+- Method: `GET`
+- Endpoint: `/api/reports/mitch-match/data`
+- Query params:
+  - `branch_id`
+  - `delay=1`
+
+Group Report:
+- Permission: `group.report`
+- Method: `POST`
+- Endpoint: `/api/reports/group/report/data`
+- Body:
+  - `branch_id`
+  - `startdate`
+  - `enddate`
+- Date format:
+  - `DD/MM/YYYY`
+
+Collection Sheet:
+- Permissions: `group.report`, `ledger.due.view`, or `cashbook.view`
+- Method: `POST`
+- Endpoint: `/api/somity-report/collection-sheet`
+- Body:
+  - `branch_id`
+  - `somity_id`
+  - `month_year`
+  - `type_id`
+- `month_year` format:
+  - `MM/YYYY`
+- `type_id` is the collection status/type selected in the UI.
+
+Monthly Report:
+- Permissions: `group.report`, `ledger.due.view`, or `cashbook.view`
+- Method: `POST`
+- Endpoint: `/api/somity-report/monthly-report/data`
+- Body:
+  - `branch_id`
+  - `startdate`
+  - `enddate`
+- Date format:
+  - `DD/MM/YYYY`
+
+Closing Stock:
+- Permission: `product.stock.view`
+- Method: `POST`
+- Endpoint: `/api/reports/closing-stock`
+- Body:
+  - `branch_id`
+  - `startdate`
+  - `enddate`
+  - `start_date`
+  - `end_date`
+- Send both old and new date keys to match the web implementation.
+
+Stock Details:
+- Permission: `product.stock.view`
+- Use the same endpoint and body as Closing Stock:
+  - `POST /api/reports/closing-stock`
+
+Product Stock:
+- Permission: `product.stock.view`
+- Method: `POST`
+- Endpoint: `/api/reports/product-stock`
+- Body:
+  - `branch_id`
+  - `brand_id`
+  - `category_id`
+  - `product_name`
+  - `startdate`
+  - `enddate`
+
+IMEI Stock:
+- Permission: `product.stock.view`
+- Method: `GET`
+- Endpoint: `/api/reports/stock-imei-data`
+- Query params:
+  - `branch_id`
+  - `item_id`
+
+Category Wise In Out:
+- Permission: `product.in.out`
+- Method: `POST`
+- Endpoint: `/api/reports/category-wise-in-out`
+- Body:
+  - `branch_id`
+  - `reportType`
+  - `category_id`
+  - `startdate`
+  - `enddate`
+
+Date Wise In Out:
+- Permission: `product.in.out`
+- Method: `GET`
+- Endpoint: `/api/reports/in-out/date-wise/data`
+- Query params:
+  - `branch_id`
+  - `startdate`
+  - `enddate`
+  - optional `ledger_id`
+
+Date Wise In Out Details:
+- Used when opening a row from Date Wise In Out.
+- Method: `GET`
+- Endpoint: `/api/reports/in-out/date-wise/details`
+- Query params:
+  - `branch_id`
+  - `date`
+  - optional `ledger_id`
+  - optional `item_id`
+
+
+9. Report Service
+-----------------
+
+Create:
+
+- `mobile-app/src/services/reportService.ts`
+
+Recommended style:
+
+```ts
+import { reportEndpoints } from '../config/api';
+import { apiRequest } from './http';
+
+const toQueryString = (params: Record<string, unknown>) => {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return;
+    query.append(key, String(value));
+  });
+
+  const text = query.toString();
+  return text ? `?${text}` : '';
+};
+
+const unwrapReportResponse = (response: any) => {
+  if (response?.success === false) {
+    throw new Error(response?.message || response?.error?.message || 'Report load failed.');
+  }
+
+  return response?.data?.data ?? response?.data ?? response;
+};
+
+export const reportService = {
+  async getReport(endpoint: string, params: Record<string, unknown>) {
+    const response = await apiRequest(`${endpoint}${toQueryString(params)}`);
+    return unwrapReportResponse(response);
+  },
+
+  async postReport(endpoint: string, body: Record<string, unknown>) {
+    const response = await apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    return unwrapReportResponse(response);
+  },
+};
+```
+
+Then create report-specific wrapper functions only where useful:
+
+```ts
+export const fetchCashbook = (params) =>
+  reportService.getReport(reportEndpoints.cashbook, params);
+
+export const fetchProfitLoss = (body) =>
+  reportService.postReport(reportEndpoints.profitLoss, body);
+```
+
+
+10. ReportsHomeScreen Behavior
+------------------------------
+
+The Reports screen should:
+
+1. Read `permissions` from `AuthContext`.
+2. Build `visibleReports = REPORT_MENU.filter(report => canAny(report.anyOf))`.
+3. Render a parent title: `Reports`.
+4. Render all visible child reports as list rows or cards.
+5. On tap, navigate to the report filter/result screen with the report `key`.
+6. If no reports are visible, show a no-access or empty state.
+
+Do not show reports outside the Reports parent section.
+
+Example:
+
+```ts
+const { canAny } = useAuth();
+const reports = REPORT_MENU.filter((report) => canAny(report.anyOf));
+```
+
+
+11. Generic Filter UX
+---------------------
+
+Use the report `filterType` to decide which inputs to show.
+
+Common filters:
+- Branch dropdown
+- Start date
+- End date
+- End date only
+- Ledger/customer dropdown
+- Product/item dropdown
+- Category dropdown
+- Brand dropdown
+- Employee dropdown
+- Month picker
+- Status/type picker
+
+Recommended defaults:
+- `branch_id`: current user branch id.
+- `start_date`: first day of current month.
+- `end_date`: current transaction date if available, otherwise today.
+- Rows per page and font size are web print controls; mobile can skip them.
+
+Mobile should prioritize readable data cards/tables and optional export/print
+later.
+
+
+12. Result Rendering Guidance
+-----------------------------
+
+API response shapes are not fully uniform. The mobile result renderer should be
+defensive:
+
+1. If response is an array, render it as rows.
+2. If response has `rows`, render `rows`.
+3. If response has `items`, render `items`.
+4. If response has `data`, inspect `data`.
+5. If response has grouped sections, render collapsible sections.
+6. Show summary totals at the top when fields such as `summary`, `totals`,
+   `total`, `opening`, or `closing` are present.
+
+Recommended helper:
+
+```ts
+export const extractReportRows = (payload: any): any[] => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.rows)) return payload.rows;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.details)) return payload.details;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.transactions)) return payload.transactions;
+  return [];
+};
+```
+
+Use currency formatting:
+
+```ts
+new Intl.NumberFormat('en-BD', { maximumFractionDigits: 2 }).format(value)
+```
+
+Important UI requirement:
+- Report results must be shown as table-style rows, not dashboard cards.
+- The mobile UI should look like a compact report table adapted for mobile.
+- Each data record should be rendered as one rounded row block.
+- Inside each row block, show label/value pairs in vertical table rows.
+- Labels stay on the left.
+- Values stay right-aligned on the right.
+- Numeric values must be right-aligned.
+- Long text values should wrap but must not overlap the value column.
+
+Target layout example:
+
+```text
+Trial Balance Level 4
+
+[ Branch dropdown                         v ]
+[ Start Date        ] [ End Date          ]
+[ Apply                                      ]
+
+------------------------------------------------
+Serial                                      74
+Coa4 Id                                  1,136
+Coa3 Id                                     15
+NAME                      Al Noor Construction
+Opening Debit Bal                    108,500
+Opening Credit Bal                         0
+Movement Debit Bal                         0
+Movement Credit Bal                        0
+Debit Bal                             108,500
+Credit Bal                                  0
+------------------------------------------------
+
+------------------------------------------------
+Serial                                      63
+Coa4 Id                                  1,040
+Coa3 Id                                     15
+NAME                             Atik (Mason)
+Opening Debit Bal                         0
+Opening Credit Bal                        0
+Movement Debit Bal                        0
+Movement Credit Bal                       0
+Debit Bal                                  0
+Credit Bal                                 0
+------------------------------------------------
+```
+
+Recommended row component:
+
+```tsx
+type ReportRowBlockProps = {
+  item: Record<string, unknown>;
+  fields: Array<{
+    key: string;
+    label: string;
+    type?: 'text' | 'number' | 'currency' | 'date';
+  }>;
+};
+
+export const ReportRowBlock = ({ item, fields }: ReportRowBlockProps) => {
+  return (
+    <View style={styles.rowBlock}>
+      {fields.map((field) => (
+        <View key={field.key} style={styles.line}>
+          <Text style={styles.label}>{field.label}</Text>
+          <Text style={styles.value}>
+            {formatReportValue(item[field.key], field.type)}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+};
+```
+
+Recommended styles:
+
+```ts
+const styles = StyleSheet.create({
+  rowBlock: {
+    backgroundColor: '#e7e8f1',
+    borderRadius: 8,
+    marginBottom: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  line: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    minHeight: 20,
+  },
+  label: {
+    color: '#374151',
+    flexShrink: 0,
+    fontSize: 11,
+    width: 130,
+  },
+  value: {
+    color: '#111827',
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+});
+```
+
+Do not render report results as:
+- dashboard stat cards
+- large grid cards
+- marketing-style cards
+- charts first
+- one-value summary tiles only
+
+Summary totals may be shown above the rows, but the main report data must remain
+row-based.
+
+
+13. Field Mapping for Row Blocks
+--------------------------------
+
+Each report screen should define a `fields` array. This controls which values
+appear in every table-style row block.
+
+Example for Trial Balance Level 4:
+
+```ts
+const trialBalanceLevel4Fields = [
+  { key: 'serial', label: 'Serial', type: 'number' },
+  { key: 'coa4_id', label: 'Coa4 Id', type: 'number' },
+  { key: 'coa3_id', label: 'Coa3 Id', type: 'number' },
+  { key: 'name', label: 'NAME', type: 'text' },
+  { key: 'opening_debit_bal', label: 'Opening Debit Bal', type: 'currency' },
+  { key: 'opening_credit_bal', label: 'Opening Credit Bal', type: 'currency' },
+  { key: 'movement_debit_bal', label: 'Movement Debit Bal', type: 'currency' },
+  { key: 'movement_credit_bal', label: 'Movement Credit Bal', type: 'currency' },
+  { key: 'debit_bal', label: 'Debit Bal', type: 'currency' },
+  { key: 'credit_bal', label: 'Credit Bal', type: 'currency' },
+];
+```
+
+Because backend field names can vary, normalize each API row before rendering:
+
+```ts
+const normalizeTrialBalanceLevel4Row = (row: any, index: number) => ({
+  serial: row.serial ?? row.sl_no ?? index + 1,
+  coa4_id: row.coa4_id ?? row.coa_l4_id ?? row.id,
+  coa3_id: row.coa3_id ?? row.coa_l3_id,
+  name: row.name ?? row.account_name ?? row.coa_name,
+  opening_debit_bal: row.opening_debit_bal ?? row.opening_debit ?? 0,
+  opening_credit_bal: row.opening_credit_bal ?? row.opening_credit ?? 0,
+  movement_debit_bal: row.movement_debit_bal ?? row.movement_debit ?? 0,
+  movement_credit_bal: row.movement_credit_bal ?? row.movement_credit ?? 0,
+  debit_bal: row.debit_bal ?? row.debit ?? 0,
+  credit_bal: row.credit_bal ?? row.credit ?? 0,
+});
+```
+
+Use the same pattern for every report:
+
+1. Fetch the report data.
+2. Extract rows from the response.
+3. Normalize each row into consistent field names.
+4. Render each normalized row with `ReportRowBlock`.
+
+
+14. Filter Area Layout
+----------------------
+
+The filter area should be compact and appear above the row list.
+
+For most reports:
+
+```text
+Title
+[ Branch dropdown                         v ]
+[ Start Date        ] [ End Date          ]
+[ Apply                                      ]
+```
+
+For reports with one date:
+
+```text
+Title
+[ Branch dropdown                         v ]
+[ End Date                                  ]
+[ Apply                                      ]
+```
+
+For reports with extra selectors:
+
+```text
+Title
+[ Branch dropdown                         v ]
+[ Ledger / Product / Category dropdown     ]
+[ Start Date        ] [ End Date          ]
+[ Apply                                      ]
+```
+
+The `Apply` button should reload the report. The screen should not auto-load
+large report data repeatedly while the user is still changing filters.
+
+
+15. Navigation Guard
+--------------------
+
+Every report screen must validate permission before rendering.
+
+```ts
+const report = REPORT_MENU.find((item) => item.key === reportKey);
+const allowed = report ? canAny(report.anyOf) : false;
+
+if (!allowed) {
+  return <NoAccessScreen />;
+}
+```
+
+Also handle backend `403` errors:
+
+- Show: `You do not have permission to view this report.`
+
+
+16. Suggested Build Order
+-------------------------
+
+Build in this order to reduce risk:
+
+1. Add report endpoint constants.
+2. Add `REPORT_MENU`.
+3. Add `ReportsHomeScreen`.
+4. Add permission filtering.
+5. Add generic `reportService`.
+6. Implement simple reports first:
+   - Cashbook
+   - Due List
+   - Ledger
+   - Product Stock
+7. Implement accounting summaries:
+   - Profit Loss
+   - Balance Sheet
+   - Trial Balance Level 3
+   - Trial Balance Level 4
+8. Implement stock/in-out reports:
+   - Closing Stock
+   - IMEI Stock
+   - Category Wise In Out
+   - Date Wise In Out
+9. Implement specialized reports:
+   - Bank Information
+   - Connected Member
+   - Product Profit Loss
+   - Group Report
+   - Collection Sheet
+   - Monthly Report
+10. Add export/print later if required.
+
+
+17. Acceptance Criteria
+-----------------------
+
+The mobile Reports implementation is complete when:
+
+- The app has one visible parent section named `Reports`.
+- All report items appear under that parent section only.
+- A report item is visible only when the user has at least one of its required
+  permissions.
+- The Reports parent is hidden when the user has no report permission.
+- Tapping a report opens its filter/result flow.
+- Report API requests use the bearer token.
+- Backend `403` errors are handled clearly.
+- Empty data states are readable.
+- Loading states are shown.
+- Date and branch filters work.
+- At least the current user branch is selected by default.
+- Report result data is rendered as compact table-style row blocks.
+- Labels are left-aligned and values are right-aligned inside each row block.
+- Numeric values are formatted and right-aligned.
+- Reports are not rendered as dashboard cards or large summary cards.
+- The implementation does not hardcode reports directly in `DashboardScreen`;
+  it uses the `REPORT_MENU` registry.
+
+
+18. Short Instruction for Claude
+--------------------------------
+
+Implement the mobile Reports section from the web app. Use the authenticated
+user's `settings.permissions` to show a single parent menu named `Reports`.
+Under it, render all permitted reports from `REPORT_MENU`. Each report item must
+use its own `anyOf` permission list. Build `reportEndpoints`, `reportService`,
+`ReportsHomeScreen`, a permission guard, and a generic filter/result flow.
+Use the endpoint and parameter shapes listed in this document. Do not show any
+report outside the Reports parent menu. Report results must be displayed as
+compact table-style row blocks like a mobile report table: one record per block,
+labels on the left, values on the right, and numeric values right-aligned.

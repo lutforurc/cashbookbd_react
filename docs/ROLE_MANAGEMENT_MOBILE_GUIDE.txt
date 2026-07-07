@@ -1,0 +1,666 @@
+CashBookBD Mobile App - Role Management System Development Guide
+================================================================
+
+This project uses an API-driven role and permission system. The web app loads
+the authenticated user's permissions from the settings API, then uses those
+permissions to control menus, routes, screens, and action buttons.
+
+The mobile app should follow the same model:
+
+1. Log in and store the bearer token.
+2. Load the current user with `/api/me`.
+3. Load app settings with `/api/settings/get-settings`.
+4. Store `settings.permissions` in the mobile auth/app context.
+5. Use permission helper functions to decide which screens, menus, and buttons
+   are visible or accessible.
+
+
+1. Where the Current Web App Logic Lives
+----------------------------------------
+
+Authentication:
+- Web login API: `POST /api/login`
+- Auth check API: `GET /api/me`
+- The login response returns a bearer token.
+- Every authenticated request sends:
+  `Authorization: Bearer <token>`
+
+Relevant web files:
+- `src/features/authReducer.tsx`
+- `src/components/services/httpService.tsx`
+
+Settings and permissions:
+- API: `POST /api/settings/get-settings`
+- Web file: `src/components/modules/settings/settingsSlice.tsx`
+- After auth check succeeds, the web app dispatches `getSettings()`.
+- User permissions are read from:
+  `settings.data.permissions`
+
+Permission data shape:
+
+```json
+[
+  { "id": 1, "name": "cash.received.create", "group_name": "Transaction" },
+  { "id": 2, "name": "roles.view", "group_name": "Admin" }
+]
+```
+
+Some helpers also support a string array:
+
+```json
+["cash.received.create", "roles.view"]
+```
+
+Important rule:
+- If the user has `"*"`, treat it as full access to every permission.
+
+
+2. Permission Helper Logic
+--------------------------
+
+Web reference:
+- `src/components/Sidebar/permissionUtils.ts`
+
+The mobile app should implement the same helpers.
+
+Recommended file:
+- `mobile-app/src/utils/permissionUtils.ts`
+
+```ts
+export type Permission = string | { name: string };
+
+export const normalizePermissions = (
+  permissions: Permission[] | undefined | null,
+): string[] => {
+  if (!Array.isArray(permissions)) return [];
+  return permissions
+    .map((permission) =>
+      typeof permission === 'string' ? permission : permission.name,
+    )
+    .filter(Boolean);
+};
+
+export const hasPermission = (
+  permissions: Permission[] | undefined | null,
+  requiredPermission: string,
+): boolean => {
+  const names = normalizePermissions(permissions);
+  return names.includes('*') || names.includes(requiredPermission);
+};
+
+export const hasAnyPermission = (
+  permissions: Permission[] | undefined | null,
+  requiredAnyOf: string[],
+): boolean => {
+  const names = normalizePermissions(permissions);
+  return names.includes('*') || requiredAnyOf.some((name) => names.includes(name));
+};
+
+export const hasAllPermissions = (
+  permissions: Permission[] | undefined | null,
+  requiredAll: string[],
+): boolean => {
+  const names = normalizePermissions(permissions);
+  return names.includes('*') || requiredAll.every((name) => names.includes(name));
+};
+```
+
+
+3. Current Mobile App Status
+----------------------------
+
+Mobile app folder:
+- `mobile-app/`
+
+Existing mobile auth and API files:
+- `mobile-app/src/services/authService.ts`
+- `mobile-app/src/services/http.ts`
+- `mobile-app/src/config/api.ts`
+- `mobile-app/src/context/AuthContext.tsx`
+
+Existing mobile endpoints:
+- `login`: `/api/login`
+- `me`: `/api/me`
+- `dashboard`: `/api/dashboard/data`
+- `settings`: `/api/settings/get-settings`
+
+Current gap:
+- The settings endpoint already exists in `mobile-app/src/config/api.ts`.
+- The mobile app does not yet load settings or keep permissions in context.
+- `DashboardScreen.tsx` currently has a hardcoded module list without permission filtering.
+
+
+4. Add a Mobile Settings Service
+--------------------------------
+
+Recommended file:
+- `mobile-app/src/services/settingsService.ts`
+
+```ts
+import { endpoints } from '../config/api';
+import { apiRequest } from './http';
+import { Permission } from '../utils/permissionUtils';
+
+export type SettingsData = {
+  permissions?: Permission[];
+  company?: unknown;
+  branch?: unknown;
+  user_feature_settings?: unknown;
+  [key: string]: unknown;
+};
+
+type SettingsResponse = {
+  success?: boolean;
+  data?: {
+    data?: SettingsData;
+  };
+  message?: string;
+  error?: {
+    message?: string;
+  };
+};
+
+export const settingsService = {
+  async getSettings() {
+    const response = await apiRequest<SettingsResponse>(endpoints.settings, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+
+    if (response?.success) {
+      return response.data?.data || {};
+    }
+
+    throw new Error(
+      response?.error?.message || response?.message || 'Settings load failed.',
+    );
+  },
+};
+```
+
+
+5. Store Permissions in AuthContext
+-----------------------------------
+
+File to update:
+- `mobile-app/src/context/AuthContext.tsx`
+
+Add these state values:
+- `settings`
+- `permissions`
+- `settingsLoading`
+
+After login:
+1. Save token.
+2. Save user.
+3. Call `settingsService.getSettings()`.
+4. Save `settings`.
+5. Save `settings.permissions`.
+
+During app boot:
+1. Read token from storage.
+2. Load cached user if available.
+3. Call `/api/me`.
+4. Call `/api/settings/get-settings`.
+5. Store permissions in context.
+
+During logout:
+- Clear token.
+- Clear user.
+- Clear settings.
+- Clear permissions.
+
+Recommended context shape:
+
+```ts
+type AuthContextValue = {
+  isBooting: boolean;
+  isLoggedIn: boolean;
+  isSubmitting: boolean;
+  user: User | null;
+  settings: SettingsData | null;
+  permissions: Permission[];
+  can: (permission: string) => boolean;
+  canAny: (permissions: string[]) => boolean;
+  canAll: (permissions: string[]) => boolean;
+  login: (loginId: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+};
+```
+
+Helper implementation inside context:
+
+```ts
+const can = (permission: string) => hasPermission(permissions, permission);
+const canAny = (list: string[]) => hasAnyPermission(permissions, list);
+const canAll = (list: string[]) => hasAllPermissions(permissions, list);
+```
+
+
+6. Menu Permission Map
+----------------------
+
+Web reference:
+- `src/components/Sidebar/menuPermissions.ts`
+
+Recommended mobile file:
+- `mobile-app/src/config/menuPermissions.ts`
+
+```ts
+export const MENU_PERMISSIONS = {
+  transaction: [
+    'cash.received.create',
+    'cash.payment.create',
+    'bank.received.create',
+    'bank.payment.create',
+    'hrm.loan.create',
+    'journal.create',
+    'branch.transfer.create',
+    'branch.received.create',
+    'inventory.transfer.create',
+    'inventory.received.create',
+    'product.transfer.create',
+    'product.received.create',
+  ],
+  invoice: ['purchase.create', 'sales.create', 'labour.invoice.create'],
+  reports: [
+    'cashbook.view',
+    'installment.create',
+    'ledger.view',
+    'ledger.labour',
+    'ledger.due.view',
+    'date.wise.total',
+    'product.stock.view',
+    'product.in.out',
+    'purchase.ledger',
+    'sales.ledger',
+    'group.report',
+    'mitch.match',
+    'productwise.profit',
+  ],
+  requisition: ['requisition.view', 'requisition.create', 'requisition.comparison'],
+  products: ['products.view'],
+  admin: [
+    'check.register.view',
+    'branch.view',
+    'all.user.view',
+    'dayclose.create',
+    'order.view',
+    'order.avg.price',
+    'voucher.approval',
+    'remove.approval',
+    'change.vourcher.type',
+    'voucher.photo.upload',
+    'voucher.photo.delete',
+    'bulk.photo.upload',
+    'roles.view',
+    'roles.create',
+    'roles.edit',
+    'roles.delete',
+    'reseller.view',
+  ],
+  voucher_settings: [
+    'voucher.delete',
+    'installment.delete',
+    'voucher.date.change',
+    'voucher.recycle',
+    'voucher.history',
+    'voucher.changes',
+  ],
+  hrm: [
+    'employee.view',
+    'attendance.view',
+    'attendance.create',
+    'attendance.approve',
+    'leave.view',
+    'leave.approve',
+    'holiday.view',
+    'shift.view',
+    'salary.generate',
+    'salary.sheet.view',
+    'employee.loan.ledger.view',
+  ],
+  roles: ['roles.view', 'roles.create', 'roles.edit', 'roles.delete'],
+  customer: [
+    'cs.delete',
+    'cs.edit',
+    'cs.information',
+    'cs.ledger',
+    'cs.photo.delete',
+    'cs.photo.edit',
+    'cs.photo.update',
+    'cs.photo.view',
+    'cs.update',
+    'cs.view',
+    'coa.l1.view',
+    'coa.l2.view',
+    'coa.l3.view',
+    'coa.l4.view',
+  ],
+  chart_of_accounts: ['coa.l1.view', 'coa.l2.view', 'coa.l3.view', 'coa.l4.view'],
+  analytics: ['analytics.comparison'],
+  reseller: ['reseller.dashboard.view'],
+  subscription_history: ['subscription.view', 'subscription.history'],
+};
+```
+
+Parent menu helper:
+
+```ts
+import { hasAnyPermission, Permission } from '../utils/permissionUtils';
+import { MENU_PERMISSIONS } from './menuPermissions';
+
+export const hasMenuPermission = (
+  permissions: Permission[] | undefined | null,
+  menuKey: keyof typeof MENU_PERMISSIONS,
+): boolean => {
+  return hasAnyPermission(permissions, MENU_PERMISSIONS[menuKey] || []);
+};
+```
+
+
+7. Filter Mobile Dashboard Modules
+----------------------------------
+
+Current file:
+- `mobile-app/src/screens/DashboardScreen.tsx`
+
+Current issue:
+- The module list is hardcoded.
+- It is not filtered by user permissions.
+
+Recommended module structure:
+
+```ts
+const modules = [
+  { title: 'Cash Received', permission: 'cash.received.create', screen: 'CashReceived' },
+  { title: 'Cash Payment', permission: 'cash.payment.create', screen: 'CashPayment' },
+  { title: 'Bank Received', permission: 'bank.received.create', screen: 'BankReceived' },
+  { title: 'Bank Payment', permission: 'bank.payment.create', screen: 'BankPayment' },
+  { title: 'Journal', permission: 'journal.create', screen: 'Journal' },
+  { title: 'Ledger', anyOf: ['ledger.view', 'ledger.customer'], screen: 'Ledger' },
+  { title: 'Cash Book', permission: 'cashbook.view', screen: 'CashBook' },
+  { title: 'Stock', permission: 'product.stock.view', screen: 'ProductStock' },
+  { title: 'Purchase', permission: 'purchase.create', screen: 'Purchase' },
+  { title: 'Sales', permission: 'sales.create', screen: 'Sales' },
+  { title: 'Roles', anyOf: ['roles.view', 'roles.create', 'roles.edit', 'roles.delete'], screen: 'Roles' },
+];
+```
+
+Filter logic:
+
+```ts
+const visibleModules = modules.filter((item) => {
+  if (item.permission) return can(item.permission);
+  if (item.anyOf) return canAny(item.anyOf);
+  return true;
+});
+```
+
+
+8. Add a Mobile Screen Guard
+----------------------------
+
+Use a reusable guard for React Navigation screens.
+
+```ts
+function useRequirePermission(anyOf?: string[], allOf?: string[]) {
+  const { permissions, isBooting } = useAuth();
+
+  if (isBooting) {
+    return { loading: true, allowed: false };
+  }
+
+  const allowedAny = anyOf ? hasAnyPermission(permissions, anyOf) : true;
+  const allowedAll = allOf ? hasAllPermissions(permissions, allOf) : true;
+
+  return {
+    loading: false,
+    allowed: allowedAny && allowedAll,
+  };
+}
+```
+
+Screen behavior:
+- If loading, show `ActivityIndicator`.
+- If not allowed, show `NoAccessScreen`.
+- If allowed, render the real screen.
+
+Important:
+- Hiding menu items is not enough.
+- Every protected screen and sensitive action button should also check permission.
+- Backend authorization still matters. If the API returns `403`, show a readable
+  "You do not have permission" message.
+
+
+9. Role Management API Endpoints
+--------------------------------
+
+Role list:
+- `GET /api/ddl/role/role-list`
+- `GET /api/role/role-list`
+
+The web app calls both endpoints, merges the results, and removes duplicates.
+
+Web reference:
+- `src/components/modules/user-management/userManagementSlice.tsx`
+
+Permission list:
+- `GET /api/role/permission-list`
+
+Selected permissions for a role:
+- `GET /api/role/selected-permissions/{roleId}`
+
+Create role:
+- `POST /api/role/create/new`
+
+Request body:
+
+```json
+{
+  "name": "Manager"
+}
+```
+
+Assign or update role permissions:
+- `PUT /api/role/role-permission-assign/{roleId}`
+
+Request body:
+
+```json
+[1, 2, 3, 4]
+```
+
+The update endpoint expects an array of selected permission IDs, not permission
+names.
+
+After updating role permissions:
+1. Reload selected permissions for that role.
+2. Reload app settings with `/api/settings/get-settings`.
+3. Refresh the current user's permission-based UI if needed.
+
+
+10. Role Management UI Rules
+----------------------------
+
+The web app uses these role fields:
+- `id`
+- `name`
+- `can_edit_permissions`
+- `is_plan_role`
+- `role_source`
+- `subscription_plan_id`
+- `role_group_code`
+- `is_company_owned_role`
+- `company_id`
+- `team_id`
+
+Readonly role logic:
+- A software company user is identified as `company_id <= 1`.
+- A company user should not edit global or plan roles.
+- A role is readonly if:
+  - `selectedRole.can_edit_permissions === false`
+  - `selectedRole.is_plan_role === true`
+  - `selectedRole.role_source === 'plan'`
+  - `selectedRole.role_source === 'global'`
+  - `selectedRole.subscription_plan_id` is not null or undefined
+
+Recommended mobile Role Management screen behavior:
+1. On screen load, fetch role list and permission list.
+2. Show a role selector.
+3. When a role is selected, fetch selected permissions for that role.
+4. Group permissions by `group_name`.
+5. Show a root "All" toggle.
+6. Show a group-level "All" toggle.
+7. Show each permission as a switch or checkbox.
+8. If the selected role is readonly, disable the toggles and hide or disable
+   the update button.
+9. On update, convert selected permission names to IDs and send the ID array.
+10. After update, reload selected permissions and settings.
+
+Recommended permission checks:
+- Role list screen: `roles.view`
+- Add role screen/button: `roles.create`
+- Update permissions button: `roles.edit`
+- Delete role action, if implemented: `roles.delete`
+
+
+11. Important Permission Names
+------------------------------
+
+Transactions:
+- `cash.received.create`
+- `cash.received.edit`
+- `cash.payment.create`
+- `cash.payment.edit`
+- `bank.received.create`
+- `bank.payment.create`
+- `journal.create`
+- `hrm.loan.create`
+
+Reports:
+- `cashbook.view`
+- `ledger.view`
+- `ledger.customer`
+- `ledger.due.view`
+- `ledger.labour`
+- `date.wise.total`
+- `product.stock.view`
+- `product.in.out`
+- `purchase.ledger`
+- `sales.ledger`
+- `productwise.profit`
+- `group.report`
+- `mitch.match`
+- `bank.information`
+- `connected.member.view`
+
+Admin:
+- `branch.view`
+- `all.user.view`
+- `user.view`
+- `all.user.create`
+- `user.create`
+- `user.store`
+- `dayclose.create`
+- `dayclose.jumpdate`
+- `voucher.approval`
+- `remove.approval`
+- `change.vourcher.type`
+- `voucher.date.change`
+- `voucher.photo.upload`
+- `voucher.photo.delete`
+- `bulk.photo.upload`
+
+Roles:
+- `roles.view`
+- `roles.create`
+- `roles.edit`
+- `roles.delete`
+
+Customer and Chart of Accounts:
+- `cs.view`
+- `cs.edit`
+- `cs.delete`
+- `ledger.customer`
+- `coa.l1.view`
+- `coa.l2.view`
+- `coa.l3.view`
+- `coa.l4.view`
+
+Invoices:
+- `purchase.create`
+- `purchase.edit`
+- `sales.create`
+- `sales.edit`
+- `labour.invoice.create`
+
+HRM:
+- `employee.view`
+- `attendance.view`
+- `attendance.create`
+- `attendance.approve`
+- `leave.view`
+- `leave.approve`
+- `salary.generate`
+- `salary.sheet.view`
+- `employee.loan.ledger.view`
+
+
+12. Backend Security Note
+-------------------------
+
+Mobile permission checks are for user experience and client-side navigation.
+Real authorization must remain on the backend.
+
+If a user calls an API without permission, the backend may return `403`.
+The mobile app should catch that response and show a clear permission message.
+
+Current mobile request helper:
+- `mobile-app/src/services/http.ts`
+
+Suggested handling:
+- If `ApiError.status === 403`, show `NoAccessScreen` or an alert such as:
+  "You do not have permission to perform this action."
+
+
+13. Implementation Checklist
+----------------------------
+
+- Add `mobile-app/src/services/settingsService.ts`.
+- Add `mobile-app/src/utils/permissionUtils.ts`.
+- Add `mobile-app/src/config/menuPermissions.ts`.
+- Store `settings` and `permissions` in `AuthContext`.
+- Load settings after login.
+- Load settings during app boot when a token exists.
+- Clear settings and permissions on logout.
+- Optionally cache settings in token storage or app storage.
+- Filter dashboard modules by permission.
+- Add a reusable screen permission guard.
+- Add a `NoAccessScreen`.
+- Build Role list screen with `roles.view`.
+- Build Add Role screen/button with `roles.create`.
+- Build permission assignment UI with `roles.edit`.
+- Use `roles.delete` for delete actions if delete is implemented.
+- Handle API `403` errors clearly.
+
+
+14. Short Developer Instruction
+-------------------------------
+
+The web app role system is API-driven. After login, call
+`/api/settings/get-settings` and store `response.data.data.permissions` in the
+mobile app context. Use the permission `name` field to guard menus, screens,
+and buttons. If the user has `"*"`, allow all access. For parent menus, use a
+menu permission map and check whether the user has any child permission.
+
+For Role Management screens, use these endpoints:
+- `GET /api/ddl/role/role-list`
+- `GET /api/role/role-list`
+- `GET /api/role/permission-list`
+- `GET /api/role/selected-permissions/{roleId}`
+- `POST /api/role/create/new`
+- `PUT /api/role/role-permission-assign/{roleId}`
+
+When assigning permissions to a role, send an array of selected permission IDs.
+After saving, reload both selected role permissions and app settings.
