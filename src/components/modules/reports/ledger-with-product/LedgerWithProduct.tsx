@@ -181,6 +181,12 @@ const getSalesQty = (row: any) => {
   return getVoucherType(row?.vr_no) === '3' ? Number(row?.quantity || 0) : 0;
 };
 
+const getPurchaseAmount = (row: any) =>
+  getVoucherType(row?.vr_no) === '4' ? Number(row?.purchase_total || 0) : 0;
+
+const getSalesAmount = (row: any) =>
+  getVoucherType(row?.vr_no) === '3' ? Number(row?.sales_total || 0) : 0;
+
 const shouldShowZeroProductAmountMark = (
   row: any,
   rate: number,
@@ -323,6 +329,14 @@ const LedgerWithProduct = (user: any) => {
       ),
       sales_qty: rows.reduce(
         (sum: number, row: any) => sum + getSalesQty(row),
+        0,
+      ),
+      purchase_amt: rows.reduce(
+        (sum: number, row: any) => sum + getPurchaseAmount(row),
+        0,
+      ),
+      sales_amt: rows.reduce(
+        (sum: number, row: any) => sum + getSalesAmount(row),
         0,
       ),
       total_amount: rows.reduce(
@@ -510,22 +524,30 @@ const LedgerWithProduct = (user: any) => {
       header: 'Pur. Qty.',
       headerClass: 'w-[10.5%] text-right',
       cellClass: 'w-[10.5%] text-right',
-      render: (row: any) => (
-        <div>
-          {getPurchaseQty(row) ? thousandSeparator(getPurchaseQty(row)) : '-'}
-        </div>
-      ),
+      render: (row: any) => {
+        const purchaseQty = getPurchaseQty(row);
+
+        return (
+          <div>
+            {purchaseQty > 0 ? thousandSeparator(purchaseQty) : ''}
+          </div>
+        );
+      },
     },
     {
       key: 'sales_qty',
       header: 'Sal. Qty.',
       headerClass: 'w-[10.5%] text-right',
       cellClass: 'w-[10.5%] text-right',
-      render: (row: any) => (
-        <div>
-          {getSalesQty(row) ? thousandSeparator(getSalesQty(row)) : '-'}
-        </div>
-      ),
+      render: (row: any) => {
+        const salesQty = getSalesQty(row);
+
+        return (
+          <div>
+            {salesQty > 0 ? thousandSeparator(salesQty) : ''}
+          </div>
+        );
+      },
     },
     {
       key: 'rate',
@@ -657,7 +679,7 @@ const LedgerWithProduct = (user: any) => {
     [
       {
         label: (
-          <div className="flex flex-nowrap items-center justify-end gap-10 whitespace-nowrap">
+          <div className="flex flex-wrap items-center justify-end gap-x-8 gap-y-1">
             <div>
               <span className="text-slate-500 dark:text-slate-400">
                 Opening:
@@ -668,22 +690,46 @@ const LedgerWithProduct = (user: any) => {
                   : '-'}
               </span>
             </div>
-            <div>
-              <span className="text-slate-500 dark:text-slate-400">
-                Pur. Qty:
-              </span>{' '}
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
-                {thousandSeparator(Number(summary?.purchase_qty || 0))}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-500 dark:text-slate-400">
-                Sal. Qty:
-              </span>{' '}
-              <span className="font-semibold text-slate-800 dark:text-slate-100">
-                {thousandSeparator(Number(summary?.sales_qty || 0))}
-              </span>
-            </div>
+            {Number(summary?.purchase_qty || 0) > 0 ? (
+              <div>
+                <span className="text-slate-500 dark:text-slate-400">
+                  Pur. Qty:
+                </span>{' '}
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {thousandSeparator(Number(summary?.purchase_qty || 0))}
+                </span>
+              </div>
+            ) : null}
+            {Number(summary?.sales_qty || 0) > 0 ? (
+              <div>
+                <span className="text-slate-500 dark:text-slate-400">
+                  Sal. Qty:
+                </span>{' '}
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {thousandSeparator(Number(summary?.sales_qty || 0))}
+                </span>
+              </div>
+            ) : null}
+            {Number(summary?.purchase_amt || 0) > 0 ? (
+              <div>
+                <span className="text-slate-500 dark:text-slate-400">
+                  Pur. Amt:
+                </span>{' '}
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {thousandSeparator(Number(summary?.purchase_amt || 0))}
+                </span>
+              </div>
+            ) : null}
+            {Number(summary?.sales_amt || 0) > 0 ? (
+              <div>
+                <span className="text-slate-500 dark:text-slate-400">
+                  Sal. Amt:
+                </span>{' '}
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {thousandSeparator(Number(summary?.sales_amt || 0))}
+                </span>
+              </div>
+            ) : null}
             <div>
               <span className="text-slate-500 dark:text-slate-400">Debit:</span>{' '}
               <span className="font-semibold text-slate-800 dark:text-slate-100">

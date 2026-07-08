@@ -127,6 +127,8 @@ type Props = {
     qty?: number;
     purchase_qty?: number;
     sales_qty?: number;
+    purchase_amt?: number;
+    sales_amt?: number;
     total_received?: number;
     total_payment?: number;
     closing_balance?: number;
@@ -303,7 +305,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
             {pageIndex === pages.length - 1 ? (
               <div
-                className="mt-1 flex w-full flex-nowrap items-center justify-center gap-8 overflow-hidden border border-gray-900 px-3 font-bold text-gray-900"
+                className="mt-1 flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-1 overflow-hidden border border-gray-900 px-3 font-bold text-gray-900"
                 style={{ fontSize: fs, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
               >
                 <div className="whitespace-nowrap">
@@ -311,17 +313,31 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   <span>{formatSummaryAmount(summary.opening_balance)}</span>
                 </div>
 
-                {Number(summary.purchase_qty || 0) !== 0 && (
+                {Number(summary.purchase_qty || 0) > 0 && (
                   <div className="whitespace-nowrap">
                     <span>Pur. Qty :</span>{' '}
                     <span>{formatSummaryAmount(summary.purchase_qty)}</span>
                   </div>
                 )}
 
-                {Number(summary.sales_qty || 0) !== 0 && (
+                {Number(summary.sales_qty || 0) > 0 && (
                   <div className="whitespace-nowrap">
                     <span>Sal. Qty:</span>{' '}
                     <span>{formatSummaryAmount(summary.sales_qty)}</span>
+                  </div>
+                )}
+
+                {Number(summary.purchase_amt || 0) > 0 && (
+                  <div className="whitespace-nowrap">
+                    <span>Purchase Amt:</span>{' '}
+                    <span>{formatSummaryAmount(summary.purchase_amt)}</span>
+                  </div>
+                )}
+
+                {Number(summary.sales_amt || 0) > 0 && (
+                  <div className="whitespace-nowrap">
+                    <span>Sales Amt:</span>{' '}
+                    <span>{formatSummaryAmount(summary.sales_amt)}</span>
                   </div>
                 )}
 
