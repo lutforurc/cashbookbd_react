@@ -41,6 +41,41 @@ import {
 import { useRemoveVoucherApproval } from '../../vouchers';
 import routes from '../../../services/appRoutes';
 
+const LEDGER_FILTER_STORAGE_KEY = 'ledger-filter-state';
+
+type LedgerSavedFilters = {
+  branchId?: number | string | null;
+  ledgerId?: number | string | null;
+  selectedLedgerOption?: { value: any; label: any } | null;
+  startDate?: string | null;
+  endDate?: string | null;
+};
+
+const toNullableNumber = (value: unknown) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
+const parseStoredDate = (value?: string | null) => {
+  if (!value) return null;
+
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  return new Date(year, month - 1, day);
+};
+
+const readSavedLedgerFilters = (): LedgerSavedFilters | null => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(LEDGER_FILTER_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -63,6 +98,7 @@ const Ledger = (user: any) => {
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
   const voucherRegistryRef = useRef<any>(null);
+  const restoredFilterRef = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
@@ -101,6 +137,35 @@ const Ledger = (user: any) => {
     dispatch(getDdlProtectedBranch());
     setBranchId(user.user.branch_id);
     setBranchPad(user?.user?.branch_id.toString().padStart(4, '0'));
+  }, []);
+
+  const saveLedgerFilters = () => {
+    if (typeof window === 'undefined') return;
+
+    const filters: LedgerSavedFilters = {
+      branchId,
+      ledgerId,
+      selectedLedgerOption,
+      startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
+      endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
+    };
+
+    window.sessionStorage.setItem(
+      LEDGER_FILTER_STORAGE_KEY,
+      JSON.stringify(filters),
+    );
+  };
+
+  useEffect(() => {
+    const savedFilters = readSavedLedgerFilters();
+    if (!savedFilters) return;
+
+    restoredFilterRef.current = true;
+    setBranchId(toNullableNumber(savedFilters.branchId) ?? user.user.branch_id);
+    setLedgerAccount(toNullableNumber(savedFilters.ledgerId));
+    setSelectedLedgerOption(savedFilters.selectedLedgerOption || null);
+    setStartDate(parseStoredDate(savedFilters.startDate));
+    setEndDate(parseStoredDate(savedFilters.endDate));
   }, []);
 
 
@@ -144,6 +209,7 @@ const Ledger = (user: any) => {
       getLedger({ branchId, ledgerId, startDate: startD, endDate: endD }),
     );
     dispatch(getCoal4ById(Number(ledgerId)));
+    saveLedgerFilters();
     setFilterOpen(false);
   };
 
@@ -166,10 +232,11 @@ const Ledger = (user: any) => {
         branchDdlData?.protectedData?.transactionDate.split('/');
       const startDate = new Date(Number(year), Number(month) - 1, Number('01'));
       const endDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setStartDate(startDate);
-      setEndDate(endDate);
-
-      setBranchId(user.user.branch_id);
+      if (!restoredFilterRef.current) {
+        setStartDate(startDate);
+        setEndDate(endDate);
+        setBranchId(user.user.branch_id);
+      }
     }
   }, [branchDdlData?.protectedData]);
 
@@ -249,6 +316,8 @@ const Ledger = (user: any) => {
   };
 
   const handleEditVoucher = (row: any) => {
+    saveLedgerFilters();
+
     const combinedNumber = String(row?.combined_number || '').trim();
     if (combinedNumber) {
       const combinedOpenState = getCombinedVoucherOpenState(row);
