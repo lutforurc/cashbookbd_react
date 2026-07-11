@@ -14,6 +14,8 @@ import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import routes from "../../../services/appRoutes";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { salarySheetPrint, salarySheetRowDelete, salarySheetUpdate, salaryView } from "./salarySlice";
+import httpService from "../../../services/httpService";
+import { API_ATTENDANCE_MONTHLY_SUMMARY_URL } from "../../../services/apiRoutes";
 
 type SalaryHistory = {
   id?: number | string;
@@ -62,6 +64,20 @@ type UpdateRow = {
   working_days: number;
 };
 
+type AttendanceSalarySummary = {
+  working_days: number;
+  attendance_deduction_amount: number;
+  attendance_absent_days: number;
+  attendance_unpaid_leave_days: number;
+  attendance_half_days: number;
+  attendance_late_count: number;
+  attendance_late_deduction_days: number;
+  attendance_early_out_count: number;
+  attendance_early_out_deduction_days: number;
+  overtime_minutes: number;
+  overtime_amount: number;
+};
+
 type AvailableEmployee = {
   id: number;
   serial_no?: number;
@@ -73,6 +89,16 @@ type AvailableEmployee = {
   others_allowance?: number | string;
   loan_balance?: number | string;
   loan_deduction?: number | string;
+  month_days?: number | string;
+  working_days?: number | string;
+  attendance_deduction_amount?: number | string;
+  attendance_absent_days?: number | string;
+  attendance_unpaid_leave_days?: number | string;
+  attendance_half_days?: number | string;
+  attendance_late_count?: number | string;
+  attendance_late_deduction_days?: number | string;
+  attendance_early_out_count?: number | string;
+  attendance_early_out_deduction_days?: number | string;
   overtime_minutes?: number | string;
   overtime_amount?: number | string;
 };
@@ -136,6 +162,45 @@ const pickNumber = (sources: any[], keys: string[], fallback = 0) => {
 
   return fallback;
 };
+const toNumber = (value: any, fallback = 0) => {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : fallback;
+};
+
+const monthlySummaryRowsFromResponse = (response: any) => {
+  const payload = response?.data?.data?.data || response?.data?.data || response?.data || {};
+  return Array.isArray(payload?.rows) ? payload.rows : [];
+};
+
+const buildAttendanceSummaryMapFromMonthlyRows = (rows: any[], monthDays: number) => {
+  const summaries = new Map<string, AttendanceSalarySummary>();
+
+  rows.forEach((row: any) => {
+    const employeeId = String(row.employee_id || row.id || "");
+    if (!employeeId) return;
+
+    const deductionDays = toNumber(row.deduction_days);
+    const payableDays = row.payable_days !== undefined && row.payable_days !== null
+      ? toNumber(row.payable_days)
+      : Math.max(0, monthDays - deductionDays);
+
+    summaries.set(employeeId, {
+      working_days: Math.min(monthDays, Math.max(0, payableDays)),
+      attendance_deduction_amount: toNumber(row.attendance_deduction_amount),
+      attendance_absent_days: toNumber(row.absent_days),
+      attendance_unpaid_leave_days: toNumber(row.unpaid_leave_days),
+      attendance_half_days: toNumber(row.half_days),
+      attendance_late_count: toNumber(row.late_count),
+      attendance_late_deduction_days: toNumber(row.late_deduction_days),
+      attendance_early_out_count: toNumber(row.early_out_count),
+      attendance_early_out_deduction_days: toNumber(row.early_out_deduction_days),
+      overtime_minutes: toNumber(row.overtime_minutes),
+      overtime_amount: toNumber(row.overtime_amount),
+    });
+  });
+
+  return summaries;
+};
 
 const isDailyLabour = (employmentType?: string) =>
   String(employmentType || "").toLowerCase().includes("daily");
@@ -184,6 +249,7 @@ const SalarySheetUpdate = (user: any) => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
   const [addEmployeeLoading, setAddEmployeeLoading] = useState(false);
   const [draggingRowId, setDraggingRowId] = useState<number | null>(null);
+  const [attendanceSummaries, setAttendanceSummaries] = useState<Map<string, AttendanceSalarySummary>>(new Map());
   const sheetRows = Array.isArray(salary?.salarySheet?.data) ? salary.salarySheet.data : [];
   const salarySheetType = getSheetTypeFromSource(sourceRow, sheetRows);
   const isOvertimeSheet = salarySheetType === "overtime";
@@ -215,6 +281,33 @@ const SalarySheetUpdate = (user: any) => {
     setSelectedMonthDays(getMonthDaysFromPaymentMonth(sourceRow?.payment_month));
   }, [sourceRow?.payment_month]);
 
+
+  useEffect(() => {
+    if (!sourceRow?.payment_month || salarySheetType !== "monthly") {
+      setAttendanceSummaries(new Map());
+      return;
+    }
+
+    const branchId = getSourceBranchId();
+    const month = Number(sourceRow.payment_month.substring(0, 2));
+    const year = Number(sourceRow.payment_month.substring(2));
+    if (!branchId || !month || !year) return;
+
+    httpService.get(API_ATTENDANCE_MONTHLY_SUMMARY_URL, {
+      params: {
+        branch_id: branchId,
+        employment_type: "monthly",
+        month: String(month),
+        year: String(year),
+      },
+    })
+      .then((response: any) => {
+        setAttendanceSummaries(buildAttendanceSummaryMapFromMonthlyRows(monthlySummaryRowsFromResponse(response), selectedMonthDays));
+      })
+      .catch(() => {
+        setAttendanceSummaries(new Map());
+      });
+  }, [sourceRow?.payment_month, sourceRow?.branch_id, sourceRow?.main_trx?.branch_id, salarySheetType, selectedMonthDays]);
   useEffect(() => {
     if (!sourceRow?.payment_month) return;
 
@@ -250,17 +343,19 @@ const SalarySheetUpdate = (user: any) => {
 
     const mapped: UpdateRow[] = data.map((row: any, index: number) => {
       const history = getHistory(row.history);
-      const workingDays = Number(history.working_days ?? row.working_days ?? 0) || 0;
-      const basicSalary = Number(row.basic_salary) || 0;
-      const overtimeMinutes = pickNumber([row, history], ["overtime_minutes"], 0);
-      const overtimeAmount = pickNumber([row, history], ["overtime_amount"], 0);
-      const othersAllowance = isOvertimeSheet ? 0 : Number(row.others_allowance) || 0;
       const employeeId = pickNumber(
         [row, history, row.employee, row.employee_info],
         ["employee_id", "hrms_employee_id", "employee_master_id", "id"],
         0
       );
       const salaryViewEmployee = availableEmployees.find((employee) => Number(employee.id) === Number(employeeId));
+      const attendanceSummary = attendanceSummaries.get(String(employeeId));
+      const liveSources = [attendanceSummary, row, salaryViewEmployee, history];
+      const workingDays = pickNumber(liveSources, ["working_days"], 0);
+      const basicSalary = Number(row.basic_salary) || 0;
+      const overtimeMinutes = pickNumber([row, history], ["overtime_minutes"], 0);
+      const overtimeAmount = pickNumber([row, history], ["overtime_amount"], 0);
+      const othersAllowance = isOvertimeSheet ? 0 : Number(row.others_allowance) || 0;
       const savedMonthlyBasicSalary = pickNumber(
         [row, history],
         ["monthly_basic_salary", "employee_basic_salary", "original_basic_salary"],
@@ -296,15 +391,15 @@ const SalarySheetUpdate = (user: any) => {
         loan_deduction: Number(row.loan_deduction) || 0,
         attendance_deduction_amount: isDailyLabour(row.employment_type || history.employment_type || row.employee?.employment_type || salaryViewEmployee?.employment_type)
           ? 0
-          : Number(row.attendance_deduction_amount) || 0,
-        attendance_absent_days: Number(row.attendance_absent_days) || 0,
-        attendance_unpaid_leave_days: Number(row.attendance_unpaid_leave_days) || 0,
-        attendance_half_days: Number(row.attendance_half_days) || 0,
-        attendance_late_count: Number(row.attendance_late_count) || 0,
-        attendance_late_deduction_days: Number(row.attendance_late_deduction_days) || 0,
-        attendance_early_out_count: Number(row.attendance_early_out_count) || 0,
-        attendance_early_out_deduction_days: Number(row.attendance_early_out_deduction_days) || 0,
-        month_days: Number(row.month_days ?? history.month_days ?? selectedMonthDays) || 0,
+          : pickNumber(liveSources, ["attendance_deduction_amount"], 0),
+        attendance_absent_days: pickNumber(liveSources, ["attendance_absent_days"], 0),
+        attendance_unpaid_leave_days: pickNumber(liveSources, ["attendance_unpaid_leave_days"], 0),
+        attendance_half_days: pickNumber(liveSources, ["attendance_half_days"], 0),
+        attendance_late_count: pickNumber(liveSources, ["attendance_late_count"], 0),
+        attendance_late_deduction_days: pickNumber(liveSources, ["attendance_late_deduction_days"], 0),
+        attendance_early_out_count: pickNumber(liveSources, ["attendance_early_out_count"], 0),
+        attendance_early_out_deduction_days: pickNumber(liveSources, ["attendance_early_out_deduction_days"], 0),
+        month_days: pickNumber(liveSources, ["month_days"], selectedMonthDays),
         payment_amount: Number(row.payment_amount) || 0,
         gross_salary: Number(row.gross_salary) || 0,
         net_salary: Number(row.net_salary) || 0,
@@ -314,7 +409,7 @@ const SalarySheetUpdate = (user: any) => {
     });
 
     setRows(withSequence(mapped));
-  }, [salary?.salarySheet, selectedMonthDays, availableEmployees, isOvertimeSheet]);
+  }, [salary?.salarySheet, selectedMonthDays, availableEmployees, attendanceSummaries, isOvertimeSheet]);
 
   const existingEmployeeKeys = useMemo(() => {
     const ids = new Set<number>();
@@ -358,8 +453,10 @@ const SalarySheetUpdate = (user: any) => {
 
     const basicSalary = Number(employee.basic_salary) || 0;
     const othersAllowance = isOvertimeSheet ? 0 : Number(employee.others_allowance) || 0;
-    const overtimeMinutes = isOvertimeSheet ? Number(employee.overtime_minutes || 0) : 0;
-    const overtimeAmount = isOvertimeSheet ? Number(employee.overtime_amount || 0) : 0;
+    const summary = attendanceSummaries.get(String(employee.id));
+    const overtimeMinutes = isOvertimeSheet ? Number(summary?.overtime_minutes ?? employee.overtime_minutes ?? 0) : 0;
+    const overtimeAmount = isOvertimeSheet ? Number(summary?.overtime_amount ?? employee.overtime_amount ?? 0) : 0;
+    const workingDays = Number(summary?.working_days ?? selectedMonthDays) || 0;
     const loanDeduction = Number(employee.loan_balance ?? employee.loan_deduction) || 0;
 
     setRows((prev) =>
@@ -373,23 +470,23 @@ const SalarySheetUpdate = (user: any) => {
           serial_no: Number(employee.serial_no ?? employee.employee_serial ?? prev.length + 1) || prev.length + 1,
           monthly_basic_salary: basicSalary,
           monthly_others_allowance: othersAllowance,
-          basic_salary: basicSalary,
-          others_allowance: othersAllowance,
+          basic_salary: proratedAmount(basicSalary, workingDays),
+          others_allowance: isOvertimeSheet ? 0 : proratedAmount(othersAllowance, workingDays),
           overtime_minutes: overtimeMinutes,
           overtime_amount: overtimeAmount,
           loan_deduction: loanDeduction,
-          attendance_deduction_amount: 0,
-          attendance_absent_days: 0,
-          attendance_unpaid_leave_days: 0,
-          attendance_half_days: 0,
-          attendance_late_count: 0,
-          attendance_late_deduction_days: 0,
-          attendance_early_out_count: 0,
-          attendance_early_out_deduction_days: 0,
+          attendance_deduction_amount: isDailyLabour(employee.employment_type) ? 0 : Number(summary?.attendance_deduction_amount || 0),
+          attendance_absent_days: Number(summary?.attendance_absent_days || 0),
+          attendance_unpaid_leave_days: Number(summary?.attendance_unpaid_leave_days || 0),
+          attendance_half_days: Number(summary?.attendance_half_days || 0),
+          attendance_late_count: Number(summary?.attendance_late_count || 0),
+          attendance_late_deduction_days: Number(summary?.attendance_late_deduction_days || 0),
+          attendance_early_out_count: Number(summary?.attendance_early_out_count || 0),
+          attendance_early_out_deduction_days: Number(summary?.attendance_early_out_deduction_days || 0),
           month_days: selectedMonthDays,
           payment_amount: 0,
-          gross_salary: basicSalary + othersAllowance + overtimeAmount,
-          net_salary: Math.max(0, basicSalary + othersAllowance + overtimeAmount - loanDeduction),
+          gross_salary: proratedAmount(basicSalary, workingDays) + (isOvertimeSheet ? 0 : proratedAmount(othersAllowance, workingDays)) + overtimeAmount,
+          net_salary: Math.max(0, proratedAmount(basicSalary, workingDays) + (isOvertimeSheet ? 0 : proratedAmount(othersAllowance, workingDays)) + overtimeAmount - loanDeduction - (isDailyLabour(employee.employment_type) ? 0 : Number(summary?.attendance_deduction_amount || 0))),
           history: {
             id: employee.id,
             employee_id: employee.id,
@@ -397,7 +494,7 @@ const SalarySheetUpdate = (user: any) => {
             designation_name: employee.designation_name,
             employment_type: employee.employment_type,
             month_days: selectedMonthDays,
-            working_days: selectedMonthDays,
+            working_days: workingDays,
             monthly_basic_salary: basicSalary,
             monthly_others_allowance: othersAllowance,
             basic_salary: basicSalary,
@@ -406,7 +503,7 @@ const SalarySheetUpdate = (user: any) => {
             overtime_amount: overtimeAmount,
             salary_sheet_type: salarySheetType,
           },
-          working_days: selectedMonthDays,
+          working_days: workingDays,
         },
       ])
     );
