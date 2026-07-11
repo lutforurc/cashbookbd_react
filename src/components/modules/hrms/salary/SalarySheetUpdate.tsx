@@ -969,7 +969,6 @@ const SalarySheetUpdate = (user: any) => {
           />
         </div>
       </div>
-
       <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-6">
         <div className="border bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
           <div className="text-xs dark:text-slate-300 text-slate-700">Basic</div>
