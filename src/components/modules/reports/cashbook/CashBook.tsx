@@ -45,6 +45,8 @@ type CashBookSavedFilters = {
   branchId?: number | string | null;
   startDate?: string | null;
   endDate?: string | null;
+  perPage?: number | string | null;
+  fontSize?: number | string | null;
 };
 
 const toNullableNumber = (value: unknown) => {
@@ -145,6 +147,8 @@ const CashBook = (user: any) => {
       branchId,
       startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
       endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null,
+      perPage,
+      fontSize,
     };
 
     window.sessionStorage.setItem(
@@ -161,6 +165,8 @@ const CashBook = (user: any) => {
     setBranchId(toNullableNumber(savedFilters.branchId) ?? user.user.branch_id);
     setStartDate(parseStoredDate(savedFilters.startDate));
     setEndDate(parseStoredDate(savedFilters.endDate));
+    setPerPage(toNullableNumber(savedFilters.perPage) ?? 12);
+    setFontSize(toNullableNumber(savedFilters.fontSize) ?? 12);
   }, []);
 
   useEffect(() => {
