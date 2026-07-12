@@ -29,6 +29,8 @@ import { render } from 'react-dom';
 import { isUserFeatureEnabled } from '../../utils/userFeatureSettings';
 import ActionButtons from '../../utils/fields/ActionButton';
 
+const ORDERS_LIST_STATE_KEY = 'orders-list-state';
+
 const toNumber = (value: any) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -37,6 +39,15 @@ const toNumber = (value: any) => {
 const formatNumberOrDash = (value: any) => {
   const numericValue = toNumber(value);
   return numericValue === 0 ? '-' : thousandSeparator(numericValue);
+};
+
+const getPersistedOrdersListState = () => {
+  try {
+    const state = window.sessionStorage.getItem(ORDERS_LIST_STATE_KEY);
+    return state ? JSON.parse(state) : {};
+  } catch (error) {
+    return {};
+  }
 };
 
 const getOrderRemainingQuantity = (row: any) =>
@@ -284,21 +295,22 @@ const Orders = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
+  const persistedOrdersListState = useMemo(() => getPersistedOrdersListState(), []);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [resetButtonLoading, setResetButtonLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
-  const [printRowsPerPage, setPrintRowsPerPage] = useState(12);
-  const [printFontSize, setPrintFontSize] = useState(10);
-  const [search, setSearchValue] = useState('');
-  const [searchFilter, setSearchFilter] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [selectedProductOption, setSelectedProductOption] = useState<any | null>(null);
-  const [selectedLedger, setSelectedLedger] = useState<any | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [orderType, setOrderType] = useState('');
-  const [orderStatus, setOrderStatus] = useState(1);
+  const [page, setPage] = useState(Number(persistedOrdersListState.page ?? 1));
+  const [perPage, setPerPage] = useState(Number(persistedOrdersListState.perPage ?? 10));
+  const [printRowsPerPage, setPrintRowsPerPage] = useState(Number(persistedOrdersListState.printRowsPerPage ?? 12));
+  const [printFontSize, setPrintFontSize] = useState(Number(persistedOrdersListState.printFontSize ?? 10));
+  const [search, setSearchValue] = useState(persistedOrdersListState.search ?? '');
+  const [searchFilter, setSearchFilter] = useState(persistedOrdersListState.searchFilter ?? '');
+  const [startDate, setStartDate] = useState(persistedOrdersListState.startDate ?? '');
+  const [endDate, setEndDate] = useState(persistedOrdersListState.endDate ?? '');
+  const [selectedProductOption, setSelectedProductOption] = useState<any | null>(persistedOrdersListState.selectedProductOption ?? null);
+  const [selectedLedger, setSelectedLedger] = useState<any | null>(persistedOrdersListState.selectedLedger ?? null);
+  const [currentPage, setCurrentPage] = useState(Number(persistedOrdersListState.currentPage ?? persistedOrdersListState.page ?? 1));
+  const [orderType, setOrderType] = useState(persistedOrdersListState.orderType ?? '');
+  const [orderStatus, setOrderStatus] = useState(persistedOrdersListState.orderStatus ?? 1);
   const [selectedLinkedOrder, setSelectedLinkedOrder] = useState<any | null>(null);
   const [printRows, setPrintRows] = useState<any[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -312,6 +324,30 @@ const Orders = () => {
   const tableData = Array.isArray(ordersData?.data) ? ordersData.data : [];
   const totalPages = Number(ordersData?.last_page ?? 0);
   const totalRows = Number(ordersData?.total ?? 0);
+
+  const getOrdersListStateSnapshot = () => ({
+    page,
+    perPage,
+    printRowsPerPage,
+    printFontSize,
+    search,
+    searchFilter,
+    startDate,
+    endDate,
+    selectedProductOption,
+    selectedLedger,
+    currentPage,
+    orderType,
+    orderStatus,
+  });
+
+  const persistOrdersListState = () => {
+    window.sessionStorage.setItem(ORDERS_LIST_STATE_KEY, JSON.stringify(getOrdersListStateSnapshot()));
+  };
+
+  useEffect(() => {
+    persistOrdersListState();
+  }, [page, perPage, printRowsPerPage, printFontSize, search, searchFilter, startDate, endDate, selectedProductOption, selectedLedger, currentPage, orderType, orderStatus]);
 
   useEffect(() => {
     dispatch(
@@ -719,7 +755,8 @@ const Orders = () => {
   };
 
   const handleOrderEdit = (row: any) => {
-    navigate(`/orders/edit/${row.id}`, { state: { order: row } });
+    persistOrdersListState();
+    navigate(`/orders/edit/${row.id}`, { state: { order: row, returnToOrdersList: true } });
   };
 
   const refreshOrders = () => {
@@ -1012,7 +1049,7 @@ const Orders = () => {
                       label="Order Status"
                       onChange={handleOrderStatus}
                       className="h-9 bg-transparent"
-                      // value={formData?.status?.toString() ?? ''}
+                      value={orderStatus}
                       data={ORDER_STATUS}
                     />
                   </div>

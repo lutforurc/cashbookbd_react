@@ -501,7 +501,7 @@ const AddOrder = (user: any) => {
                 resetOrder();
             }
             if (response?.success && isEditMode) {
-                navigate('/order/order-list');
+                navigate('/order/order-list', { state: { restoreOrdersList: true } });
             }
         }));
     };
