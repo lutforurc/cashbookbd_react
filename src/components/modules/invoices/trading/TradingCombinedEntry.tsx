@@ -82,6 +82,17 @@ const hasPositiveAmount = (value: unknown) => {
   const amount = Number(value || 0);
   return Number.isFinite(amount) && amount > 0;
 };
+const getVarianceAdjustedQty = (row: Pick<CombinedProduct, 'qty' | 'variance' | 'variance_type'>) => {
+  const qty = Number(row.qty || 0);
+  const variance = Number(row.variance || 0);
+
+  if (!Number.isFinite(qty)) return 0;
+  if (!Number.isFinite(variance) || variance <= 0) return qty;
+  if (row.variance_type === '+') return qty + variance;
+  if (row.variance_type === '-') return qty - variance;
+
+  return qty;
+};
 
 const initialProductData = {
   product: '',
@@ -276,7 +287,16 @@ const TradingCombinedEntry = () => {
     [formData.products],
   );
 
-  const profitAmount = salesTotal - purchaseTotal;
+  const profitSalesTotal = useMemo(
+    () =>
+      formData.products.reduce(
+        (sum, row) => sum + getVarianceAdjustedQty(row) * Number(row.sales_price || 0),
+        0,
+      ),
+    [formData.products],
+  );
+
+  const profitAmount = profitSalesTotal - purchaseTotal;
   const purchaseLineTotal =
     (parseFloat(productData.qty || '0') || 0) *
     (parseFloat(productData.purchase_price || '0') || 0);
