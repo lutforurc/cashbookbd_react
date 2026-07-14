@@ -148,17 +148,18 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
             @media print {
               @page {
                 size: A4 landscape;
-                margin: 6mm 8mm 8mm 10mm;
+                /* small bottom margin so the footer can sit close to the paper edge */
+                margin: 6mm 8mm 5mm 10mm;
               }
 
               /*
-                Landscape printable height = 210mm - 6mm(top margin) - 8mm(bottom margin) = 196mm.
-                Each .print-page adds 8mm top + 8mm bottom padding (16mm). The page nearly fills
-                the printable area (so the inside footer sits at the very bottom via mt-auto);
-                the small 3mm buffer keeps a sub-millimetre overflow off a second page.
+                Landscape printable height = 210mm - 6mm(top margin) - 5mm(bottom margin) = 199mm.
+                .print-page adds 8mm top + 2mm bottom padding (from PrintStyles). The page fills
+                almost the whole printable area (so the inside footer sits at the bottom via
+                mt-auto); the tiny 1mm buffer keeps a sub-millimetre overflow off a second page.
               */
               .orders-print-page {
-                min-height: calc(210mm - 6mm - 8mm - 8mm - 8mm - 3mm);
+                min-height: calc(210mm - 6mm - 5mm - 8mm - 2mm - 1mm);
               }
             }
           `}
