@@ -2,6 +2,7 @@ import React from 'react';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatBdShortDate } from '../../utils/utils-functions/formatDate';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../utils/utils-functions/ReportFooter';
 
 export type InstallmentRow = {
   sl_number?: string | number;
@@ -310,6 +311,7 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
         <div style={{ fontSize: fs }} className="mt-4 text-xs text-gray-900">
           * This document is system generated.
         </div>
+        <ReportFooter />
       </div>
     );
   },

@@ -1,6 +1,7 @@
 import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import { employeeGroup } from '../../../utils/fields/DataConstant';
 import { FaKipSign } from 'react-icons/fa6';
 
@@ -127,6 +128,7 @@ const EmployeePrint = React.forwardRef<HTMLDivElement, Props>(
         <div className="mt-2 text-xs">
           * This document is system generated
         </div>
+        <ReportFooter />
       </div>
     );
   },

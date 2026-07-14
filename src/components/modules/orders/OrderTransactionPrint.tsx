@@ -1,5 +1,6 @@
 import React from 'react';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../utils/utils-functions/formatRoleName';
@@ -364,6 +365,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 	          </div>
 	          );
 	        })}
+        <ReportFooter />
       </div>
     );
   },

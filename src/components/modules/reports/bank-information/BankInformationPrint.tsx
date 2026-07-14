@@ -2,6 +2,7 @@ import React, { forwardRef, useMemo } from 'react';
 
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 export type BankInformationPrintRow = {
@@ -140,6 +141,7 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
         <div className="mt-2 text-xs text-gray-900">
           * This document is system generated.
         </div>
+        <ReportFooter />
       </div>
     );
   },

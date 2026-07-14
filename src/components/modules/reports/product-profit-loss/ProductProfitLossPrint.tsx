@@ -1,6 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
@@ -285,6 +286,7 @@ const ProductProfitLossPrint = React.forwardRef<HTMLDivElement, Props>(
             {pageIndex !== pages.length - 1 && <div className="page-break" />}
           </div>
         ))}
+        <ReportFooter />
       </div>
     );
   }

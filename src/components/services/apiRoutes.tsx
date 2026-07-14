@@ -157,6 +157,8 @@ export const API_APP_SETTING_URL = `${API_BASE_URL}/settings/get-settings`;
 export const API_APP_BRANCH_SETTING_URL = `${API_BASE_URL}/settings/get-branch-settings`;
 export const API_APP_SETTING_VOCHER_TYPE_URL = `${API_BASE_URL}/settings/voucher-types`;
 export const API_SERVICE_LIST_URL = `${API_BASE_URL}/settings/service-list`;
+export const API_SOFTWARE_INFO_URL = `${API_BASE_URL}/settings/software-info`;
+export const API_SOFTWARE_INFO_UPDATE_URL = `${API_BASE_URL}/settings/software-info/update`;
 
 // dashboard Routes
 export const API_DASHBOARD_URL = `${API_BASE_URL}/dashboard/data`;

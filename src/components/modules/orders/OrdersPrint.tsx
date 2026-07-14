@@ -1,5 +1,6 @@
 import React from 'react';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 
@@ -303,6 +304,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
           );
         })}
 
+        <ReportFooter />
       </div>
     );
   },

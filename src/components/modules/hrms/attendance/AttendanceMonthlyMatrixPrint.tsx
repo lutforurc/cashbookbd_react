@@ -1,6 +1,7 @@
 import React from 'react';
 
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
 type AttendanceMonthlyMatrixPrintProps = {
@@ -319,6 +320,7 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
           <span className="legend-chip"><span className="legend-mark total-cell">T</span> Present days</span>
         </div>
       </div>
+      <ReportFooter />
     </div>
   ),
 );

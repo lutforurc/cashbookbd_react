@@ -5,6 +5,7 @@ import PurchaseLedgerCalculator from "../../../utils/calculators/PurchaseLedgerC
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import { useSelector } from "react-redux";
 
 type Props = {
@@ -375,6 +376,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
           * This document is system generated. Printed:{" "}
           {dayjs().format("DD-MMM-YYYY hh:mm A")}
         </div>
+        <ReportFooter />
       </div>
     );
   }

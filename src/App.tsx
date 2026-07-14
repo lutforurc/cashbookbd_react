@@ -20,6 +20,7 @@ import OnlineUsers from './components/modules/user/OnlineUsers';
 import CompanyUsers from './components/modules/user/CompanyUsers';
 import CompanyList from './components/modules/company/CompanyList';
 import EditCompany from './components/modules/company/EditCompany';
+import SoftwareInfo from './components/modules/settings/SoftwareInfo';
 import AddUser from './components/modules/user/AddUser';
 import Product from './components/modules/product/Product';
 import LowStockProducts from './components/modules/product/LowStockProducts';
@@ -305,6 +306,7 @@ function App() {
                 <Route path={routes.branch_edit} element={<AddBranch />} />
                 <Route path={routes.company_list} element={<CompanyList />} />
                 <Route path={routes.company_edit} element={<EditCompany />} />
+                <Route path={routes.software_info} element={<SoftwareInfo />} />
               </Route>
 	            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view']} loading={permissionsLoading} />}>
 	              <Route path={routes.user_list} element={<UserList />} />

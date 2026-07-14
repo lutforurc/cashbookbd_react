@@ -1,4 +1,5 @@
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
@@ -174,6 +175,7 @@ const BalanceSheetPrint = ({
           </div>
         </div>
       </div>
+      <ReportFooter />
     </div>
   );
 };

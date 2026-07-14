@@ -1,6 +1,7 @@
 import React from "react";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
 type RowType = {
@@ -260,6 +261,7 @@ const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
                 ))}
 
                 <div className="text-xs mt-1">* This document is system generated.</div>
+                <ReportFooter />
             </div>
         );
     }

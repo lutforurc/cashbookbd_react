@@ -1,6 +1,7 @@
 import React from "react";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { useSelector } from "react-redux";
 
@@ -134,6 +135,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
         <div className="mt-2 text-xs text-gray-900">
           * This document is system generated.
         </div>
+        <ReportFooter />
       </div>
     );
   }

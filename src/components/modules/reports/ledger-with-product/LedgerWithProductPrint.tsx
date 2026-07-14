@@ -1,6 +1,7 @@
 import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import type {
@@ -267,6 +268,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
           </div>
         ))}
+        <ReportFooter />
       </div>
     );
   },

@@ -1621,6 +1621,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
+                          {hasPermission(permissions, 'branch.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.software_info}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Software Information
+                              </NavLink>
+                            </li>
+                          )}
+
 	                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
 	                            <li>
 	                              <NavLink

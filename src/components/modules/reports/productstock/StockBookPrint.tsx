@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { humanizeEnumText } from '../../../utils/hooks/humanizeEnumText';
@@ -393,6 +394,7 @@ const StockBookPrint = React.forwardRef<HTMLDivElement, Props>(
         ))}
 
         <div className="mt-2 text-xs text-gray-900">* This document is system generated.</div>
+        <ReportFooter />
       </div>
     );
   },

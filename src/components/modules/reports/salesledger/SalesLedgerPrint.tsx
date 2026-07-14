@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
+import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import SalesLedgerCalculator from "../../../utils/calculators/SalesLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
 import { formatDateUsdToBd, formatLongDateUsdToBd } from "../../../utils/utils-functions/formatDate";
@@ -515,6 +516,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
           * This document is system generated. Printed:{" "}
           {dayjs().format("DD-MMM-YYYY hh:mm A")}
         </div>
+        <ReportFooter />
       </div>
     );
   }
