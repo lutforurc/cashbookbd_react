@@ -300,13 +300,7 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
               ) : null}
 
               <div style={{ fontSize: fs }} className="mt-auto flex items-end justify-between gap-4 border-t border-gray-400 pt-1 text-xs text-gray-600">
-                <span className="text-left">
-                  {pageIndex === pages.length - 1 ? (
-                    <ReportFooter inline />
-                  ) : (
-                    '* This document is system generated.'
-                  )}
-                </span>
+                <span className="text-left"><ReportFooter inline /></span>
                 <span className="whitespace-nowrap text-right">
                   Page {pageIndex + 1} of {pages.length}
                 </span>
