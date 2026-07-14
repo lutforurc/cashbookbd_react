@@ -151,8 +151,14 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                 margin: 6mm 8mm 8mm 10mm;
               }
 
+              /*
+                Landscape printable height = 210mm - 6mm(top margin) - 8mm(bottom margin) = 196mm.
+                Each .print-page adds 8mm top + 8mm bottom padding (16mm). So the page box must
+                stay a few mm under (196 - 16) = 180mm, otherwise a single page of content spills
+                onto a near-empty second page. The extra -12mm is that safety buffer.
+              */
               .orders-print-page {
-                min-height: calc(210mm - 6mm - 8mm - 8mm - 8mm);
+                min-height: calc(210mm - 6mm - 8mm - 8mm - 8mm - 12mm);
               }
             }
           `}
