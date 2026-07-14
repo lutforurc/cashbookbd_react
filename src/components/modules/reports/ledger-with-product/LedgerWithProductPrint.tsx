@@ -9,8 +9,8 @@ import type {
   LedgerWithProductSummary,
 } from './ledgerWithProductTypes';
 import {
-  getDisplayedCreditValue,
-  getDisplayedDebitValue,
+  getBalanceCreditValue,
+  getBalanceDebitValue,
   getPurchaseAmount,
   getPurchaseQty,
   getSalesAmount,
@@ -225,14 +225,14 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {(() => {
-                        const displayValue = getDisplayedDebitValue(row);
+                        const displayValue = getBalanceDebitValue(row);
 
                         return displayValue ? formatAmount(displayValue) : '-';
                       })()}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {(() => {
-                        const displayValue = getDisplayedCreditValue(row);
+                        const displayValue = getBalanceCreditValue(row);
 
                         return displayValue ? formatAmount(displayValue) : '-';
                       })()}

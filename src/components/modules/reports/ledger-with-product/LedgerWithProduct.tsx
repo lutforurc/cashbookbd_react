@@ -35,8 +35,8 @@ import type {
 } from './ledgerWithProductTypes';
 import {
   buildRowsWithRunningBalance,
-  getDisplayedCreditValue,
-  getDisplayedDebitValue,
+  getBalanceCreditValue,
+  getBalanceDebitValue,
   getPurchaseAmount,
   getPurchaseQty,
   getSalesAmount,
@@ -221,13 +221,13 @@ const LedgerWithProduct = (user: any) => {
   const footerReceivedValue = Number.isFinite(Number(summary?.debit))
     ? Number(summary.debit)
     : rows.reduce(
-        (sum: number, row: any) => sum + getDisplayedDebitValue(row),
+        (sum: number, row: any) => sum + getBalanceDebitValue(row),
         0,
       );
   const footerPaymentValue = Number.isFinite(Number(summary?.credit))
     ? Number(summary.credit)
     : rows.reduce(
-        (sum: number, row: any) => sum + getDisplayedCreditValue(row),
+        (sum: number, row: any) => sum + getBalanceCreditValue(row),
         0,
       );
   const footerClosingValue = rows.length
@@ -358,8 +358,8 @@ const LedgerWithProduct = (user: any) => {
           ${excelCell(Number(row.rate || 0) || '', 'td', 'right')}
           ${excelCell(getPurchaseAmount(row) || '', 'td', 'right')}
           ${excelCell(getSalesAmount(row) || '', 'td', 'right')}
-          ${excelCell(getDisplayedDebitValue(row) || '', 'td', 'right')}
-          ${excelCell(getDisplayedCreditValue(row) || '', 'td', 'right')}
+          ${excelCell(getBalanceDebitValue(row) || '', 'td', 'right')}
+          ${excelCell(getBalanceCreditValue(row) || '', 'td', 'right')}
           ${excelCell(parseAmount(row.running_balance ?? row.balance), 'td', 'right')}
         </tr>`;
       })
@@ -668,7 +668,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const debitValue = getDisplayedDebitValue(row);
+        const debitValue = getBalanceDebitValue(row);
 
         return <div>{debitValue ? thousandSeparator(debitValue) : '-'}</div>;
       },
@@ -679,7 +679,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const creditValue = getDisplayedCreditValue(row);
+        const creditValue = getBalanceCreditValue(row);
 
         return <div>{creditValue ? thousandSeparator(creditValue) : '-'}</div>;
       },
