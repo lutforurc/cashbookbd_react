@@ -298,14 +298,18 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                 </table>
               ) : null}
 
-              <div style={{ fontSize: fs }} className="mt-3 flex items-center justify-between text-xs text-gray-900">
-                <span>* This document is system generated.</span>
-                <span>
+              <div style={{ fontSize: fs }} className="mt-auto flex items-end justify-between gap-4 border-t border-gray-400 pt-1 text-xs text-gray-600">
+                <span className="text-left">
+                  {pageIndex === pages.length - 1 ? (
+                    <ReportFooter inline />
+                  ) : (
+                    '* This document is system generated.'
+                  )}
+                </span>
+                <span className="whitespace-nowrap text-right">
                   Page {pageIndex + 1} of {pages.length}
                 </span>
               </div>
-
-              {pageIndex === pages.length - 1 ? <ReportFooter className="mt-auto" /> : null}
 
               {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
             </div>

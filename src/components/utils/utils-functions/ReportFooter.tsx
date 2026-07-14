@@ -6,6 +6,12 @@ interface ReportFooterProps {
   fontSize?: number;
   /** Extra classes for the wrapper. */
   className?: string;
+  /**
+   * Inline mode: render just the text (no border / centering / margin) so it can
+   * sit on the same row as the page number. Used by prints that place the footer
+   * on one line: software info on the left, "Page X of Y" on the right.
+   */
+  inline?: boolean;
 }
 
 /**
@@ -14,7 +20,7 @@ interface ReportFooterProps {
  * configurable from Settings → Software Information and delivered via
  * the `settings.software` payload (see SettingsController::getSettings).
  */
-const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className }) => {
+const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className, inline }) => {
   const software = useSelector((state: any) => state.settings?.data?.software);
 
   const name = software?.name?.trim();
@@ -27,11 +33,26 @@ const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className }) => {
 
   const style = fontSize ? { fontSize } : undefined;
 
+  const content = (
+    <>
+      <span>Software Developed by: </span>
+      {name && <span className="font-semibold">{name}</span>}
+      {name && mobile && <span> | </span>}
+      {mobile && <span>Mobile: {mobile}</span>}
+    </>
+  );
+
+  // Inline: bare text, no wrapper styling — caller controls the row layout.
+  if (inline) {
+    return (
+      <span style={style} className={className}>
+        {content}
+      </span>
+    );
+  }
+
+  // Block (default): its own centered, bordered footer line.
   return (
-    // Kept in normal flow (NOT position: fixed). A fixed, bottom-pinned footer
-    // makes Chrome's print engine emit an extra blank page. Because each
-    // .print-page fills the page via min-height, this footer already lands near
-    // the bottom of the last page without the fixed hack.
     <div
       style={style}
       className={
@@ -39,10 +60,7 @@ const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className }) => {
         (className || '')
       }
     >
-      <span>Software Developed by: </span>
-      {name && <span className="font-semibold">{name}</span>}
-      {name && mobile && <span> | </span>}
-      {mobile && <span>Mobile: {mobile}</span>}
+      {content}
     </div>
   );
 };

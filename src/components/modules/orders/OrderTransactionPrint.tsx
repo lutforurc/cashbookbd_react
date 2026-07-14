@@ -357,11 +357,10 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
               </div>
             ) : null}
 
-            <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
-              Page {pageIndex + 1} of {pages.length || 1}
+            <div style={{ fontSize: fs }} className="mt-auto flex items-end justify-between gap-4 border-t border-gray-400 pt-1 text-xs text-gray-600">
+              <span className="text-left">{isLastPage ? <ReportFooter inline /> : null}</span>
+              <span className="whitespace-nowrap text-right">Page {pageIndex + 1} of {pages.length || 1}</span>
             </div>
-
-            {isLastPage ? <ReportFooter /> : null}
 
 	            {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
 	          </div>
