@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import ReportFooter from '../../utils/utils-functions/ReportFooter';
 import PrintStyles from '../../utils/utils-functions/PrintStyles';
@@ -138,6 +139,8 @@ const getPageEndDue = (cumulativeDueAmounts: number[], pageIndex: number, rowsPe
 const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ order, title, rowsPerPage = 20, fontSize = 11 }, ref) => {
     const fs = Number.isFinite(fontSize) ? fontSize : 11;
+    // Name of the logged-in user who prints the report → shown under "Prepared by".
+    const preparedByName = useSelector((state: any) => state.settings?.data?.user?.name) || '';
     const orderTypeLabel = getOrderTypeLabel(order?.order_type);
     const partyLabel = orderTypeLabel === 'Purchase' ? 'Supplier Name' : 'Customer Name';
     const transactionRows = Array.isArray(order?.transaction_rows) && order.transaction_rows.length > 0
@@ -354,6 +357,16 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
             {order?.notes ? (
               <div style={{ fontSize: fs }} className="mt-4 text-xs md:text-sm">
                 <span className="font-semibold">Notes:</span> {order.notes}
+              </div>
+            ) : null}
+
+            {isLastPage ? (
+              <div style={{ fontSize: fs }} className="mt-16 flex items-start justify-between text-xs">
+                <div className="w-32 border-t border-gray-700 pt-1 text-center">
+                  {preparedByName ? <div className="font-semibold">{preparedByName}</div> : null}
+                  <div>Prepared by</div>
+                </div>
+                <div className="w-32 border-t border-gray-700 pt-1 text-center">Authorized by</div>
               </div>
             ) : null}
 
