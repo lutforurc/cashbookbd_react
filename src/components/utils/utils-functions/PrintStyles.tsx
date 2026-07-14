@@ -25,11 +25,11 @@ const PrintStyles = () => (
                 /* Page content height = 297mm (A4 height)
                     - top margin (6mm) - bottom margin (8mm)
                     - top padding (8mm) - bottom padding (8mm)
-                    - 12mm safety buffer.
-                    Without the buffer the page box (min-height + 16mm padding) exactly
-                    equals the printable height, so a sub-millimetre content difference
-                    spills single-page content onto a near-empty second page. */
-                min-height: calc(297mm - 6mm - 8mm - 8mm - 8mm - 12mm);
+                    - 3mm safety buffer.
+                    The page nearly fills the printable area so a footer placed inside
+                    (via mt-auto) sits at the very bottom; the small buffer keeps a
+                    sub-millimetre overflow from spilling onto a second page. */
+                min-height: calc(297mm - 6mm - 8mm - 8mm - 8mm - 3mm);
                 }
 
                 /* Optional: remove default top margins from headings */
