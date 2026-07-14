@@ -38,7 +38,7 @@ const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className }) => {
         @media print {
           .report-software-footer {
             position: fixed;
-            bottom: 6px;
+            bottom: 2px;
             left: 0;
             right: 0;
             margin-top: 0;
