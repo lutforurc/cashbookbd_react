@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import httpService from '../../../services/httpService';
 import { API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL } from '../../../services/apiRoutes';
+import type { LedgerWithProductReportData } from './ledgerWithProductTypes';
 
 type Params = {
   branchId: number;
@@ -15,7 +16,7 @@ type Params = {
 type StatementState = {
   loading: boolean;
   error: string | null;
-  data: any;
+  data: LedgerWithProductReportData | null;
 };
 
 const initialState: StatementState = {

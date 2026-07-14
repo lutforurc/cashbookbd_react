@@ -24,30 +24,27 @@ import {
 import LedgerWithProductPrint from './LedgerWithProductPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
-import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckSquare, FiDownload, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import TransactionTypes from '../../../utils/utils-functions/TransactionTypes';
-
-
-const parseAmount = (value: any) => {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
-
-  const normalized = String(value ?? '')
-    .replace(/,/g, '')
-    .trim();
-  const isNegative = normalized.startsWith('(') && normalized.endsWith(')');
-  const amount = Number(normalized.replace(/[()]/g, ''));
-
-  if (!Number.isFinite(amount)) return 0;
-
-  return isNegative ? -amount : amount;
-};
-
-const isZeroAmount = (value: unknown) => {
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) && numberValue === 0;
-};
+import type {
+  LedgerWithProductReportData,
+  LedgerWithProductRow,
+  LedgerWithProductSummary,
+} from './ledgerWithProductTypes';
+import {
+  buildRowsWithRunningBalance,
+  getDisplayedCreditValue,
+  getDisplayedDebitValue,
+  getPurchaseAmount,
+  getPurchaseQty,
+  getSalesAmount,
+  getSalesQty,
+  parseAmount,
+  shouldShowZeroProductAmountMark,
+  isZeroAmount,
+} from './ledgerWithProductUtils';
 
 const formatAmountOrZeroMark = (value: unknown) =>
   isZeroAmount(value) ? '-' : thousandSeparator(value);
@@ -55,155 +52,38 @@ const formatAmountOrZeroMark = (value: unknown) =>
 const joinedZeroMarkClass =
   'block -mx-3 border-red-600 px-3 leading-5 text-red-600';
 
-const getVoucherType = (vrNo: any) => {
-  const prefix = String(vrNo || '')
-    .split('-')[0]
-    ?.trim();
-  const parsed = Number.parseInt(prefix, 10);
-  return Number.isNaN(parsed) ? prefix : String(parsed);
-};
+const numberControlClass =
+  'font-medium text-sm h-10 !w-20 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
 
-const isOpeningRow = (row: any) =>
-  String(row?.vr_no || '').toLowerCase() === 'opening' ||
-  /opening balance/i.test(String(row?.remarks || ''));
+const escapeExcelHtml = (value: unknown) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 
-const getDisplayedReceivedValue = (row: any) => {
-  if (Number.isFinite(Number(row?.displayed_received))) {
-    return Number(row.displayed_received);
-  }
+const excelCell = (
+  value: unknown,
+  tag: 'td' | 'th' = 'td',
+  align: 'left' | 'right' | 'center' = 'left',
+  extraStyle = '',
+) =>
+  `<${tag} style="border:.5pt solid #d0d0d0;padding:3px;text-align:${align};vertical-align:top;${extraStyle}">${escapeExcelHtml(
+    value,
+  )}</${tag}>`;
 
-  if (isOpeningRow(row)) return 0;
-
-  return Number(row?.received || 0);
-};
-
-const getDisplayedPaymentValue = (row: any) => {
-  if (Number.isFinite(Number(row?.displayed_payment))) {
-    return Number(row.displayed_payment);
-  }
-
-  const paymentValue = Number(row?.payment || 0);
-
-  return paymentValue;
-};
-
-const getApiVoucherType = (row: any) =>
-  Number(row?.voucher_type ?? row?.voucher_type_id ?? 0);
-
-const getVoucherSideAmount = (row: any) => {
-  const receivedValue = getDisplayedReceivedValue(row);
-  const paymentValue = getDisplayedPaymentValue(row);
-
-  return paymentValue || receivedValue;
-};
-
-const getDisplayedDebitValue = (row: any) => {
-  if (isOpeningRow(row)) {
-    const debitValue = Number(row?.debit || 0);
-    const balanceValue = Number(row?.balance || 0);
-
-    return debitValue || (balanceValue > 0 ? balanceValue : 0);
-  }
-
-  const voucherType = getApiVoucherType(row);
-
-  if (voucherType === 2) return getVoucherSideAmount(row);
-  if (voucherType === 1) return 0;
-
-  return getDisplayedReceivedValue(row);
-};
-
-const getDisplayedCreditValue = (row: any) => {
-  if (isOpeningRow(row)) {
-    const creditValue = Number(row?.credit || 0);
-    const balanceValue = Number(row?.balance || 0);
-
-    return creditValue || (balanceValue < 0 ? Math.abs(balanceValue) : 0);
-  }
-
-  const voucherType = getApiVoucherType(row);
-
-  if (voucherType === 1) return getVoucherSideAmount(row);
-  if (voucherType === 2) return 0;
-
-  return getDisplayedPaymentValue(row);
-};
-
-const getBalanceDebitValue = (row: any) => {
-  if (isOpeningRow(row)) return getDisplayedDebitValue(row);
-
-  const totalValue = Number(row?.total || 0);
-  const voucherType = getVoucherType(row?.vr_no);
-  const salesValue = voucherType === '3' && totalValue > 0 ? totalValue : 0;
-  const debitValue = getDisplayedDebitValue(row);
-
-  return salesValue + debitValue;
-};
-
-const getBalanceCreditValue = (row: any) => {
-  const totalValue = Number(row?.total || 0);
-  const voucherType = getVoucherType(row?.vr_no);
-  const purchaseValue = voucherType === '4' && totalValue > 0 ? totalValue : 0;
-  const creditValue = getDisplayedCreditValue(row);
-
-  return purchaseValue + creditValue;
-};
-
-const getCashAmount = (row: any, key: 'debit' | 'credit') => {
-  const masters = Array.isArray(row?.acc_transaction_master)
-    ? row.acc_transaction_master
-    : row?.acc_transaction_master
-      ? [row.acc_transaction_master]
-      : [];
-
-  return masters.reduce((sum: number, master: any) => {
-    const details = Array.isArray(master?.acc_transaction_details)
-      ? master.acc_transaction_details
-      : [];
-
-    return (
-      sum +
-      details
-        .filter((detail: any) => Number(detail?.coa4_id) === 17)
-        .reduce(
-          (detailSum: number, detail: any) =>
-            detailSum + Number(detail?.[key] || 0),
-          0,
-        )
-    );
-  }, 0);
-};
-
-const getPurchaseQty = (row: any) => {
-  if (isOpeningRow(row)) return 0;
-  return getVoucherType(row?.vr_no) === '4' ? Number(row?.quantity || 0) : 0;
-};
-
-const getSalesQty = (row: any) => {
-  if (isOpeningRow(row)) return 0;
-  return getVoucherType(row?.vr_no) === '3' ? Number(row?.quantity || 0) : 0;
-};
-
-const getPurchaseAmount = (row: any) =>
-  getVoucherType(row?.vr_no) === '4' ? Number(row?.purchase_total || 0) : 0;
-
-const getSalesAmount = (row: any) =>
-  getVoucherType(row?.vr_no) === '3' ? Number(row?.sales_total || 0) : 0;
-
-const shouldShowZeroProductAmountMark = (
-  row: any,
-  rate: number,
-  purchaseTotal: number,
-  salesTotal: number,
-) => {
-  const hasProductQuantity = Boolean(getPurchaseQty(row) || getSalesQty(row));
-
-  return (
-    hasProductQuantity &&
-    isZeroAmount(rate) &&
-    isZeroAmount(purchaseTotal) &&
-    isZeroAmount(salesTotal)
-  );
+const downloadExcelHtml = (html: string, filename: string) => {
+  const blob = new Blob([html], {
+    type: 'application/vnd.ms-excel;charset=utf-8;',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 const LedgerWithProduct = (user: any) => {
@@ -220,15 +100,19 @@ const LedgerWithProduct = (user: any) => {
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
+  const [defaultBranchId, setDefaultBranchId] = useState<number | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [defaultStartDate, setDefaultStartDate] = useState<Date | null>(null);
+  const [defaultEndDate, setDefaultEndDate] = useState<Date | null>(null);
   const [partyId, setPartyId] = useState<number | null>(null);
   const [partyLabel, setPartyLabel] = useState<string>('');
+  const [ledgerSelectKey, setLedgerSelectKey] = useState(0);
   const [productId, setProductId] = useState<number | null>(null);
   const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [transactionType, setTransactionType] = useState('');
-  const [rowsPerPage, setRowsPerPage] = useState<number>(11);
-  const [fontSize, setFontSize] = useState<number>(10);
+  const [rowsPerPage, setRowsPerPage] = useState<string>('11');
+  const [fontSize, setFontSize] = useState<string>('10');
   const [filterOpen, setFilterOpen] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('Notice');
@@ -258,7 +142,9 @@ const LedgerWithProduct = (user: any) => {
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch() as any);
-    setBranchId(Number(user?.user?.branch_id) || null);
+    const userBranchId = Number(user?.user?.branch_id) || null;
+    setBranchId(userBranchId);
+    setDefaultBranchId(userBranchId);
   }, []);
 
   useEffect(() => {
@@ -276,51 +162,23 @@ const LedgerWithProduct = (user: any) => {
         Number(month) - 1,
         Number(day),
       );
-      setStartDate(new Date(Number(year), Number(month) - 1, 1));
+      const parsedStartDate = new Date(Number(year), Number(month) - 1, 1);
+      setStartDate(parsedStartDate);
       setEndDate(parsedEndDate);
+      setDefaultStartDate(parsedStartDate);
+      setDefaultEndDate(parsedEndDate);
     }
   }, [branchDdlData?.protectedData]);
 
-  const reportData = statementState?.data || {};
-  const rawRows = Array.isArray(reportData?.rows) ? reportData.rows : [];
-  const rawSummary = reportData?.summary || {};
+  const reportData: LedgerWithProductReportData = statementState?.data || {};
+  const rawRows: LedgerWithProductRow[] = Array.isArray(reportData?.rows) ? reportData.rows : [];
+  const rawSummary: LedgerWithProductSummary = reportData?.summary || {};
   const party = reportData?.party || {};
 
-  const rows = useMemo(() => {
-    const hasOpeningRow = rawRows.some((row: any) => isOpeningRow(row));
-    let runningBalance = hasOpeningRow
-      ? 0
-      : parseAmount(rawSummary?.opening_balance);
-
-    return rawRows.map((row: any) => {
-      const voucherType = getVoucherType(row?.vr_no);
-      const total = Number(row?.total || 0);
-      const rawReceived = Number(row?.received || 0);
-      const rawPayment = Number(row?.payment || 0);
-      const cashReceived = getCashAmount(row, 'debit');
-      const cashPayment = getCashAmount(row, 'credit');
-      const received = cashReceived > 0 ? cashReceived : rawReceived;
-      const payment = cashPayment > 0 ? cashPayment : rawPayment;
-
-      const normalizedRow = {
-        ...row,
-        received: voucherType === '4' && received === total ? 0 : received,
-        payment: voucherType === '3' && payment === total ? 0 : payment,
-      };
-      const displayedReceived = getDisplayedReceivedValue(normalizedRow);
-      const displayedPayment = getDisplayedPaymentValue(normalizedRow);
-      runningBalance +=
-        getBalanceDebitValue(normalizedRow) -
-        getBalanceCreditValue(normalizedRow);
-
-      return {
-        ...normalizedRow,
-        displayed_received: displayedReceived,
-        displayed_payment: displayedPayment,
-        running_balance: runningBalance,
-      };
-    });
-  }, [rawRows, rawSummary?.opening_balance]);
+  const rows = useMemo(
+    () => buildRowsWithRunningBalance(rawRows, rawSummary),
+    [rawRows, rawSummary],
+  );
 
   const summary = useMemo(
     () => ({
@@ -389,6 +247,15 @@ const LedgerWithProduct = (user: any) => {
     return selected?.name || 'Selected Branch';
   }, [dropdownData, branchId]);
 
+  const transactionTypeLabel =
+    transactionType === '2'
+      ? 'Purchase'
+      : transactionType === '1'
+        ? 'Sales'
+        : 'All';
+  const effectiveRowsPerPage = Math.max(Number(rowsPerPage) || 1, 1);
+  const effectiveFontSize = Math.max(Number(fontSize) || 10, 1);
+
   const handleRun = async () => {
     if (!branchId) {
       openMessageModal('Validation', 'Please select branch.');
@@ -427,6 +294,12 @@ const LedgerWithProduct = (user: any) => {
   };
 
   const handleResetFilters = () => {
+    setBranchId(defaultBranchId);
+    setStartDate(defaultStartDate);
+    setEndDate(defaultEndDate);
+    setPartyId(null);
+    setPartyLabel('');
+    setLedgerSelectKey((prev) => prev + 1);
     setProductId(null);
     setSelectedProductOption(null);
     setTransactionType('');
@@ -453,6 +326,146 @@ const LedgerWithProduct = (user: any) => {
     documentTitle: 'Customer Supplier Statement',
     removeAfterPrint: true,
   });
+
+  const handleExcelExport = () => {
+    if (!rows.length) {
+      openMessageModal('Export', 'No report data found to export.');
+      return;
+    }
+
+    const dateRange = `${startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'} to ${
+      endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'
+    }`;
+    const tableRows = rows
+      .map((row) => {
+        const description = [
+          row.transaction_name,
+          row.sales_item_name ? `(${row.sales_item_name})` : '',
+          row.remarks,
+          row.order_number,
+        ]
+          .filter(Boolean)
+          .join(' ');
+
+        return `<tr>
+          ${excelCell(row.sl_number || '', 'td', 'right')}
+          ${excelCell(row.vr_no || '')}
+          ${excelCell(row.vr_date || '')}
+          ${excelCell(description)}
+          ${excelCell(formatTransportationNumber(row.truck_no || ''))}
+          ${excelCell(getPurchaseQty(row) || '', 'td', 'right')}
+          ${excelCell(getSalesQty(row) || '', 'td', 'right')}
+          ${excelCell(Number(row.rate || 0) || '', 'td', 'right')}
+          ${excelCell(getPurchaseAmount(row) || '', 'td', 'right')}
+          ${excelCell(getSalesAmount(row) || '', 'td', 'right')}
+          ${excelCell(getDisplayedDebitValue(row) || '', 'td', 'right')}
+          ${excelCell(getDisplayedCreditValue(row) || '', 'td', 'right')}
+          ${excelCell(parseAmount(row.running_balance ?? row.balance), 'td', 'right')}
+        </tr>`;
+      })
+      .join('');
+
+    const summaryRow = `<tr>
+      ${excelCell('Opening', 'th')}
+      ${excelCell(Number(summary?.opening_balance || 0), 'td', 'right')}
+      ${excelCell('Pur. Qty', 'th')}
+      ${excelCell(Number(summary?.purchase_qty || 0), 'td', 'right')}
+      ${excelCell('Sal. Qty', 'th')}
+      ${excelCell(Number(summary?.sales_qty || 0), 'td', 'right')}
+      ${excelCell('Pur. Amt', 'th')}
+      ${excelCell(Number(summary?.purchase_amt || 0), 'td', 'right')}
+      ${excelCell('Sal. Amt', 'th')}
+      ${excelCell(Number(summary?.sales_amt || 0), 'td', 'right')}
+      ${excelCell('Debit', 'th')}
+      ${excelCell(footerReceivedValue, 'td', 'right')}
+      ${excelCell('Credit', 'th')}
+      ${excelCell(footerPaymentValue, 'td', 'right')}
+      ${excelCell('Closing', 'th')}
+      ${excelCell(footerClosingValue, 'td', 'right')}
+    </tr>`;
+
+    const html = `<!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <style>
+            table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px; }
+            .sheet th { background: #f2f2f2; font-weight: 700; }
+            .title { font-size: 16px; font-weight: 700; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <table class="sheet">
+            <colgroup>
+              <col style="width:55px" />
+              <col style="width:130px" />
+              <col style="width:95px" />
+              <col style="width:430px" />
+              <col style="width:120px" />
+              <col style="width:90px" />
+              <col style="width:90px" />
+              <col style="width:90px" />
+              <col style="width:105px" />
+              <col style="width:105px" />
+              <col style="width:105px" />
+              <col style="width:105px" />
+              <col style="width:105px" />
+            </colgroup>
+            <tr>
+              <th colspan="13" style="border:.5pt solid #d0d0d0;padding:5px;text-align:center;font-size:16px;font-weight:700;">
+                Ledger Details
+              </th>
+            </tr>
+            <tr>
+              ${excelCell('Branch', 'th')}
+              ${excelCell(branchName)}
+              ${excelCell('Ledger', 'th')}
+              ${excelCell(party?.name || partyLabel || '-', 'td', 'left', 'font-weight:700;')}
+            </tr>
+            <tr>
+              ${excelCell('Ledger Page', 'th')}
+              ${excelCell(party?.ledger_page || '-')}
+              ${excelCell('Mobile', 'th')}
+              ${excelCell(party?.mobile || '-')}
+            </tr>
+            <tr>
+              ${excelCell('Product', 'th')}
+              ${excelCell(selectedProductOption?.label || 'All')}
+              ${excelCell('Transaction Type', 'th')}
+              ${excelCell(transactionTypeLabel)}
+            </tr>
+            <tr>
+              ${excelCell('Date Range', 'th')}
+              ${excelCell(dateRange, 'td', 'left', 'font-weight:700;')}
+            </tr>
+            <tr></tr>
+            <tr>
+              ${excelCell('Sl. No', 'th')}
+              ${excelCell('Voucher No', 'th')}
+              ${excelCell('Date', 'th')}
+              ${excelCell('Description', 'th')}
+              ${excelCell('Vehicle No', 'th')}
+              ${excelCell('Pur. Qty', 'th')}
+              ${excelCell('Sal. Qty', 'th')}
+              ${excelCell('Rate', 'th')}
+              ${excelCell('Pur. Total', 'th')}
+              ${excelCell('Sal. Total', 'th')}
+              ${excelCell('Debit', 'th')}
+              ${excelCell('Credit', 'th')}
+              ${excelCell('Balance', 'th')}
+            </tr>
+            ${tableRows}
+          </table>
+          <br />
+          <table class="sheet">
+            ${summaryRow}
+          </table>
+        </body>
+      </html>`;
+
+    const stamp = dayjs().format('YYYYMMDD-HHmmss');
+    downloadExcelHtml(html, `ledger-with-product-${stamp}.xls`);
+  };
 
   const columns = [
     {
@@ -832,6 +845,7 @@ const LedgerWithProduct = (user: any) => {
                         Select Ledger
                       </label>
                       <DdlMultiline
+                        key={ledgerSelectKey}
                         onSelect={(option: any) => {
                           setPartyId(
                             option?.value ? Number(option.value) : null,
@@ -964,21 +978,29 @@ const LedgerWithProduct = (user: any) => {
                   type="number"
                   id="cs-statement-rows"
                   label=""
+                  title="Rows per print page"
+                  placeholder="Rows"
                   value={rowsPerPage}
-                  onChange={(e: any) =>
-                    setRowsPerPage(Number(e.target.value) || 0)
+                  onChange={(e: any) => setRowsPerPage(e.target.value)}
+                  onBlur={() =>
+                    setRowsPerPage(String(Math.max(Number(rowsPerPage) || 1, 1)))
                   }
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  min={1}
+                  className={numberControlClass}
                 />
                 <InputElement
                   type="number"
                   id="cs-statement-font"
                   label=""
+                  title="Report font size"
+                  placeholder="Font"
                   value={fontSize}
-                  onChange={(e: any) =>
-                    setFontSize(Number(e.target.value) || 10)
+                  onChange={(e: any) => setFontSize(e.target.value)}
+                  onBlur={() =>
+                    setFontSize(String(Math.max(Number(fontSize) || 10, 1)))
                   }
-                  className="font-medium text-sm h-10 !w-20 text-center"
+                  min={1}
+                  className={numberControlClass}
                 />
                 <PrintButton
                   label="Print"
@@ -986,10 +1008,18 @@ const LedgerWithProduct = (user: any) => {
                   className="h-10 px-6"
                   disabled={!rows.length}
                 />
+                <ButtonLoading
+                  label="Excel"
+                  onClick={handleExcelExport}
+                  buttonLoading={false}
+                  className="h-10 px-5"
+                  icon={<FiDownload />}
+                  disabled={!rows.length}
+                />
               </div>
             ) : (
-              <div className="flex w-full flex-nowrap items-end justify-end gap-3 overflow-x-auto">
-                <div className="flex flex-nowrap items-end gap-2">
+              <div className="flex w-full flex-wrap items-end justify-end gap-3">
+                <div className="flex flex-wrap items-end gap-2">
                   <ButtonLoading
                     label="Apply"
                     onClick={handleRun}
@@ -1006,31 +1036,47 @@ const LedgerWithProduct = (user: any) => {
                     icon={<FiRotateCcw />}
                   />
                 </div>
-                <div className="flex flex-nowrap items-end gap-2">
+                <div className="flex flex-wrap items-end gap-2">
                   <InputElement
                     type="number"
                     id="cs-statement-rows"
                     label=""
+                    title="Rows per print page"
+                    placeholder="Rows"
                     value={rowsPerPage}
-                    onChange={(e: any) =>
-                      setRowsPerPage(Number(e.target.value) || 0)
+                    onChange={(e: any) => setRowsPerPage(e.target.value)}
+                    onBlur={() =>
+                      setRowsPerPage(String(Math.max(Number(rowsPerPage) || 1, 1)))
                     }
-                    className="font-medium text-sm h-10 !w-20 text-center"
+                    min={1}
+                    className={numberControlClass}
                   />
                   <InputElement
                     type="number"
                     id="cs-statement-font"
                     label=""
+                    title="Report font size"
+                    placeholder="Font"
                     value={fontSize}
-                    onChange={(e: any) =>
-                      setFontSize(Number(e.target.value) || 10)
+                    onChange={(e: any) => setFontSize(e.target.value)}
+                    onBlur={() =>
+                      setFontSize(String(Math.max(Number(fontSize) || 10, 1)))
                     }
-                    className="font-medium text-sm h-10 !w-20 text-center"
+                    min={1}
+                    className={numberControlClass}
                   />
                   <PrintButton
                     label="Print"
                     onClick={handlePrint}
                     className="h-10 px-6"
+                    disabled={!rows.length}
+                  />
+                  <ButtonLoading
+                    label="Excel"
+                    onClick={handleExcelExport}
+                    buttonLoading={false}
+                    className="h-10 px-5"
+                    icon={<FiDownload />}
                     disabled={!rows.length}
                   />
                 </div>
@@ -1074,7 +1120,7 @@ const LedgerWithProduct = (user: any) => {
               getRowKey={(row: any, index: number) =>
                 `${row?.vr_no || 'row'}-${index}`
               }
-              tableStyle={{ fontSize: `${fontSize}px` }}
+              tableStyle={{ fontSize: `${effectiveFontSize}px` }}
               footerRows={footerRows}
               className="[&_table]:shadow-none [&_tbody_tr:hover]:bg-slate-50 dark:[&_tbody_tr:hover]:bg-[#2b394b]"
             />
@@ -1091,10 +1137,12 @@ const LedgerWithProduct = (user: any) => {
             ledgerPage={party?.ledger_page}
             mobile={party?.mobile}
             address={party?.manual_address}
+            productName={selectedProductOption?.label || 'All'}
+            transactionTypeLabel={transactionTypeLabel}
             startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'}
             endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'}
-            rowsPerPage={rowsPerPage}
-            fontSize={fontSize}
+            rowsPerPage={effectiveRowsPerPage}
+            fontSize={effectiveFontSize}
             summary={{
               ...summary,
               total_received: footerReceivedValue,
@@ -1105,8 +1153,8 @@ const LedgerWithProduct = (user: any) => {
         </div>
         <VoucherPrintRegistry
           ref={voucherRegistryRef}
-          rowsPerPage={rowsPerPage}
-          fontSize={fontSize}
+          rowsPerPage={effectiveRowsPerPage}
+          fontSize={effectiveFontSize}
         />
       </div>
 

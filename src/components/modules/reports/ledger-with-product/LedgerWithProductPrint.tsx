@@ -3,142 +3,46 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
+import type {
+  LedgerWithProductRow,
+  LedgerWithProductSummary,
+} from './ledgerWithProductTypes';
+import {
+  getDisplayedCreditValue,
+  getDisplayedDebitValue,
+  getPurchaseAmount,
+  getPurchaseQty,
+  getSalesAmount,
+  getSalesQty,
+  parseAmount,
+} from './ledgerWithProductUtils';
 
-const formatAmount = (value: any, precision = 0) => {
+const formatAmount = (value: unknown) => {
   const amount = Number(value || 0);
   const formatted = thousandSeparator(Math.abs(amount));
   return amount < 0 ? `(${formatted})` : formatted;
 };
 
-const formatSummaryAmount = (value: any) => {
+const formatSummaryAmount = (value: unknown) => {
   const amount = Number(value || 0);
 
   return Number.isFinite(amount) && amount ? thousandSeparator(amount) : '-';
 };
 
-const parseAmount = (value: any) => {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
-
-  const normalized = String(value ?? '')
-    .replace(/,/g, '')
-    .trim();
-  const isNegative = normalized.startsWith('(') && normalized.endsWith(')');
-  const amount = Number(normalized.replace(/[()]/g, ''));
-
-  if (!Number.isFinite(amount)) return 0;
-
-  return isNegative ? -amount : amount;
-};
-
-const getVoucherType = (vrNo: any) => {
-  const prefix = String(vrNo || '').split('-')[0]?.trim();
-  const parsed = Number.parseInt(prefix, 10);
-  return Number.isNaN(parsed) ? prefix : String(parsed);
-};
-
-const isOpeningRow = (row: any) =>
-  String(row?.vr_no || '').toLowerCase() === 'opening' ||
-  /opening balance/i.test(String(row?.remarks || ''));
-
-const getDisplayedReceivedValue = (row: any) => {
-  if (Number.isFinite(Number(row?.displayed_received))) {
-    return Number(row.displayed_received);
-  }
-
-  if (isOpeningRow(row)) return 0;
-
-  return Number(row?.received || 0);
-};
-
-const getDisplayedPaymentValue = (row: any) => {
-  if (Number.isFinite(Number(row?.displayed_payment))) {
-    return Number(row.displayed_payment);
-  }
-
-  const paymentValue = Number(row?.payment || 0);
-
-  return paymentValue;
-};
-
-const getApiVoucherType = (row: any) => Number(row?.voucher_type ?? row?.voucher_type_id ?? 0);
-
-const getVoucherSideAmount = (row: any) => {
-  const receivedValue = getDisplayedReceivedValue(row);
-  const paymentValue = getDisplayedPaymentValue(row);
-
-  return paymentValue || receivedValue;
-};
-
-const getDisplayedDebitValue = (row: any) => {
-  if (isOpeningRow(row)) {
-    const debitValue = Number(row?.debit || 0);
-    const balanceValue = Number(row?.balance || 0);
-
-    return debitValue || (balanceValue > 0 ? balanceValue : 0);
-  }
-
-  const voucherType = getApiVoucherType(row);
-
-  if (voucherType === 2) return getVoucherSideAmount(row);
-  if (voucherType === 1) return 0;
-
-  return getDisplayedReceivedValue(row);
-};
-
-const getDisplayedCreditValue = (row: any) => {
-  if (isOpeningRow(row)) {
-    const creditValue = Number(row?.credit || 0);
-    const balanceValue = Number(row?.balance || 0);
-
-    return creditValue || (balanceValue < 0 ? Math.abs(balanceValue) : 0);
-  }
-
-  const voucherType = getApiVoucherType(row);
-
-  if (voucherType === 1) return getVoucherSideAmount(row);
-  if (voucherType === 2) return 0;
-
-  return getDisplayedPaymentValue(row);
-};
-
-const getPurchaseQty = (row: any) => {
-  if (isOpeningRow(row)) return 0;
-  return getVoucherType(row?.vr_no) === '4' ? Number(row?.quantity || 0) : 0;
-};
-
-const getSalesQty = (row: any) => {
-  if (isOpeningRow(row)) return 0;
-  return getVoucherType(row?.vr_no) === '3' ? Number(row?.quantity || 0) : 0;
-};
-
-const getPurchaseAmount = (row: any) =>
-  getVoucherType(row?.vr_no) === '4' ? Number(row?.purchase_total || 0) : 0;
-
-const getSalesAmount = (row: any) =>
-  getVoucherType(row?.vr_no) === '3' ? Number(row?.sales_total || 0) : 0;
-
 type Props = {
-  rows: any[];
+  rows: LedgerWithProductRow[];
   branchName?: string | null;
   partyName?: string | null;
   ledgerPage?: string | null;
   mobile?: string | null;
   address?: string | null;
+  productName?: string | null;
+  transactionTypeLabel?: string | null;
   startDate?: string;
   endDate?: string;
   rowsPerPage?: number;
   fontSize?: number;
-  summary?: {
-    opening_balance?: number;
-    qty?: number;
-    purchase_qty?: number;
-    sales_qty?: number;
-    purchase_amt?: number;
-    sales_amt?: number;
-    total_received?: number;
-    total_payment?: number;
-    closing_balance?: number;
-  };
+  summary?: LedgerWithProductSummary;
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -157,6 +61,8 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       ledgerPage = '-',
       mobile = '-',
       address = '-',
+      productName = 'All',
+      transactionTypeLabel = 'All',
       startDate = '-',
       endDate = '-',
       rowsPerPage = 16,
@@ -167,12 +73,22 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
   ) => {
     const pages = chunkRows(rows, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? fontSize : 9;
-    const footerFs = Math.max(fs - 1, 7);
     const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
     const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
     const printablePartyName = partyName || '-';
     const printableMobile = mobile || '';
     const printableAddress = address || '-';
+    const footerItems = [
+      ['Opening', summary.opening_balance],
+      Number(summary.purchase_qty || 0) > 0 ? ['Pur. Qty', summary.purchase_qty] : null,
+      Number(summary.sales_qty || 0) > 0 ? ['Sal. Qty', summary.sales_qty] : null,
+      Number(summary.purchase_amt || 0) > 0 ? ['Pur. Amt', summary.purchase_amt] : null,
+      Number(summary.sales_amt || 0) > 0 ? ['Sal. Amt', summary.sales_amt] : null,
+      Number(summary.total_received || 0) !== 0 ? ['Debit', summary.total_received] : null,
+      Number(summary.total_payment || 0) !== 0 ? ['Credit', summary.total_payment] : null,
+      ['Closing', summary.closing_balance],
+    ].filter(Boolean) as [string, unknown][];
+    const footerFs = fs;
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -202,8 +118,16 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <div>
+                    <span className="font-semibold">Branch:</span> {branchName || '-'}
+                  </div>
+                  <div>
                     <span className="font-semibold">Name:</span> {printablePartyName}
                   </div>
+                  {ledgerPage ? (
+                    <div>
+                      <span className="font-semibold">Ledger Page:</span> {ledgerPage}
+                    </div>
+                  ) : null}
                   {printableMobile.length >= 5 && (
                     <div>
                       <span className="font-semibold">Mobile:</span> {printableMobile}
@@ -214,6 +138,12 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   </div>
                 </div>
                 <div className="text-right self-end">
+                  <div className="text-xs">
+                    Product: {productName || 'All'}
+                  </div>
+                  <div className="text-xs">
+                    Transaction Type: {transactionTypeLabel || 'All'}
+                  </div>
                   <div className="text-xs">
                     Report Date: {startDate} to {endDate}
                   </div>
@@ -317,58 +247,19 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             {pageIndex === pages.length - 1 ? (
               <div
                 className="mt-1 flex w-full flex-nowrap items-center justify-between gap-x-2 overflow-hidden border border-gray-900 px-2 py-1 font-bold text-gray-900"
-                style={{ fontSize: footerFs, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+                style={{
+                  fontSize: footerFs,
+                  lineHeight: 1.15,
+                  WebkitPrintColorAdjust: 'exact',
+                  printColorAdjust: 'exact',
+                }}
               >
-                <div className="whitespace-nowrap">
-                  <span>Opening:</span>{' '}
-                  <span>{formatSummaryAmount(summary.opening_balance)}</span>
-                </div>
-
-                {Number(summary.purchase_qty || 0) > 0 && (
-                  <div className="whitespace-nowrap">
-                    <span>Pur. Qty:</span>{' '}
-                    <span>{formatSummaryAmount(summary.purchase_qty)}</span>
+                {footerItems.map(([label, value]) => (
+                  <div key={label} className="min-w-0 whitespace-nowrap">
+                    <span>{label}:</span>{' '}
+                    <span>{formatSummaryAmount(value)}</span>
                   </div>
-                )}
-
-                {Number(summary.sales_qty || 0) > 0 && (
-                  <div className="whitespace-nowrap">
-                    <span>Sal. Qty:</span>{' '}
-                    <span>{formatSummaryAmount(summary.sales_qty)}</span>
-                  </div>
-                )}
-
-                {Number(summary.purchase_amt || 0) > 0 && (
-                  <div className="whitespace-nowrap">
-                    <span>Pur. Amt:</span>{' '}
-                    <span>{formatSummaryAmount(summary.purchase_amt)}</span>
-                  </div>
-                )}
-
-                {Number(summary.sales_amt || 0) > 0 && (
-                  <div className="whitespace-nowrap">
-                    <span>Sal. Amt:</span>{' '}
-                    <span>{formatSummaryAmount(summary.sales_amt)}</span>
-                  </div>
-                )}
-
-                {Number(summary.total_received || 0) !== 0 && (
-                  <div className="whitespace-nowrap">
-                    <span>Debit:</span>{' '}
-                    <span>{formatSummaryAmount(summary.total_received)}</span>
-                  </div>
-                )}
-
-                {Number(summary.total_payment || 0) !== 0 && (
-                  <div className="whitespace-nowrap">
-                    <span>Credit:</span>{' '}
-                    <span>{formatSummaryAmount(summary.total_payment)}</span>
-                  </div>
-                )}
-                <div className="whitespace-nowrap">
-                  <span>Closing:</span>{' '}
-                  <span>{formatSummaryAmount(summary.closing_balance)}</span>
-                </div>
+                ))}
               </div>
             ) : null}
 
