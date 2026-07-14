@@ -29,8 +29,16 @@ export const fetchCustomerSupplierStatement = createAsyncThunk(
   async ({ branchId, partyId, productId, itemId, transactionType, startDate, endDate }: Params, { rejectWithValue }) => {
     try {
       const selectedItemId = itemId ?? productId ?? '';
+      const params = new URLSearchParams({
+        branch_id: String(branchId),
+        party_id: String(partyId),
+        transaction_type: transactionType ?? '',
+        item_id: selectedItemId ? String(selectedItemId) : '',
+        start_date: startDate,
+        end_date: endDate,
+      });
       const response = await httpService.get(
-        `${API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL}?branch_id=${branchId}&party_id=${partyId}&transaction_type=${transactionType ?? ''}&item_id=${selectedItemId}&start_date=${startDate}&end_date=${endDate}`,
+        `${API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL}?${params.toString()}`,
       );
 
       const payload = response?.data;
@@ -51,7 +59,13 @@ export const fetchCustomerSupplierStatement = createAsyncThunk(
 const ledgerWithProductSlice = createSlice({
   name: 'ledgerWithProduct',
   initialState,
-  reducers: {},
+  reducers: {
+    clearCustomerSupplierStatement: (state) => {
+      state.loading = false;
+      state.error = null;
+      state.data = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCustomerSupplierStatement.pending, (state) => {
@@ -68,5 +82,7 @@ const ledgerWithProductSlice = createSlice({
       });
   },
 });
+
+export const { clearCustomerSupplierStatement } = ledgerWithProductSlice.actions;
 
 export default ledgerWithProductSlice.reducer;

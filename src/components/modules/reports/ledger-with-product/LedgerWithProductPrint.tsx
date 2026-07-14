@@ -111,6 +111,12 @@ const getSalesQty = (row: any) => {
   return getVoucherType(row?.vr_no) === '3' ? Number(row?.quantity || 0) : 0;
 };
 
+const getPurchaseAmount = (row: any) =>
+  getVoucherType(row?.vr_no) === '4' ? Number(row?.purchase_total || 0) : 0;
+
+const getSalesAmount = (row: any) =>
+  getVoucherType(row?.vr_no) === '3' ? Number(row?.sales_total || 0) : 0;
+
 type Props = {
   rows: any[];
   branchName?: string | null;
@@ -161,6 +167,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
   ) => {
     const pages = chunkRows(rows, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? fontSize : 9;
+    const footerFs = Math.max(fs - 1, 7);
     const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
     const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
     const printablePartyName = partyName || '-';
@@ -232,8 +239,9 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Pur. Qty.</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Sal. Qty.</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Rate</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Total</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-14 text-center">Rate</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Pur. Total</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Sal. Total</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Debit</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Credit</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Balance</th>
@@ -279,7 +287,10 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                       {Number(row.rate || 0) ? thousandSeparator(Number(row.rate || 0)) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
-                      {Number(row.total || 0) ? formatAmount(row.total) : '-'}
+                      {getPurchaseAmount(row) ? formatAmount(getPurchaseAmount(row)) : '-'}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {getSalesAmount(row) ? formatAmount(getSalesAmount(row)) : '-'}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {(() => {
@@ -305,17 +316,17 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
             {pageIndex === pages.length - 1 ? (
               <div
-                className="mt-1 flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-1 overflow-hidden border border-gray-900 px-3 font-bold text-gray-900"
-                style={{ fontSize: fs, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+                className="mt-1 flex w-full flex-nowrap items-center justify-between gap-x-2 overflow-hidden border border-gray-900 px-2 py-1 font-bold text-gray-900"
+                style={{ fontSize: footerFs, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
               >
                 <div className="whitespace-nowrap">
-                  <span>Opening :</span>{' '}
+                  <span>Opening:</span>{' '}
                   <span>{formatSummaryAmount(summary.opening_balance)}</span>
                 </div>
 
                 {Number(summary.purchase_qty || 0) > 0 && (
                   <div className="whitespace-nowrap">
-                    <span>Pur. Qty :</span>{' '}
+                    <span>Pur. Qty:</span>{' '}
                     <span>{formatSummaryAmount(summary.purchase_qty)}</span>
                   </div>
                 )}
@@ -329,14 +340,14 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
                 {Number(summary.purchase_amt || 0) > 0 && (
                   <div className="whitespace-nowrap">
-                    <span>Purchase Amt:</span>{' '}
+                    <span>Pur. Amt:</span>{' '}
                     <span>{formatSummaryAmount(summary.purchase_amt)}</span>
                   </div>
                 )}
 
                 {Number(summary.sales_amt || 0) > 0 && (
                   <div className="whitespace-nowrap">
-                    <span>Sales Amt:</span>{' '}
+                    <span>Sal. Amt:</span>{' '}
                     <span>{formatSummaryAmount(summary.sales_amt)}</span>
                   </div>
                 )}

@@ -17,7 +17,10 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { fetchCustomerSupplierStatement } from './ledgerWithProductSlice';
+import {
+  clearCustomerSupplierStatement,
+  fetchCustomerSupplierStatement,
+} from './ledgerWithProductSlice';
 import LedgerWithProductPrint from './LedgerWithProductPrint';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
@@ -284,7 +287,10 @@ const LedgerWithProduct = (user: any) => {
   const party = reportData?.party || {};
 
   const rows = useMemo(() => {
-    let runningBalance = 0;
+    const hasOpeningRow = rawRows.some((row: any) => isOpeningRow(row));
+    let runningBalance = hasOpeningRow
+      ? 0
+      : parseAmount(rawSummary?.opening_balance);
 
     return rawRows.map((row: any) => {
       const voucherType = getVoucherType(row?.vr_no);
@@ -314,7 +320,7 @@ const LedgerWithProduct = (user: any) => {
         running_balance: runningBalance,
       };
     });
-  }, [rawRows]);
+  }, [rawRows, rawSummary?.opening_balance]);
 
   const summary = useMemo(
     () => ({
@@ -424,6 +430,7 @@ const LedgerWithProduct = (user: any) => {
     setProductId(null);
     setSelectedProductOption(null);
     setTransactionType('');
+    dispatch(clearCustomerSupplierStatement());
     setFilterOpen(false);
   };
 
@@ -670,7 +677,7 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold',
       render: (row: any) => (
-        <div>{thousandSeparator(row.balance ?? row.balance)}</div>
+        <div>{thousandSeparator(row.running_balance ?? row.balance)}</div>
       ),
     },
   ];
