@@ -361,11 +361,12 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
               Page {pageIndex + 1} of {pages.length || 1}
             </div>
 
+            {isLastPage ? <ReportFooter /> : null}
+
 	            {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
 	          </div>
 	          );
 	        })}
-        <ReportFooter />
       </div>
     );
   },

@@ -305,12 +305,12 @@ const OrdersPrint = React.forwardRef<HTMLDivElement, Props>(
                 </span>
               </div>
 
+              {pageIndex === pages.length - 1 ? <ReportFooter className="mt-auto" /> : null}
+
               {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
             </div>
           );
         })}
-
-        <ReportFooter />
       </div>
     );
   },
