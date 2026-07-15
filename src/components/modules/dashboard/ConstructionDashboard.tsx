@@ -100,6 +100,8 @@ const ConstructionDashboard = () => {
   const dashboardGapClass = isCompact ? 'gap-4' : 'gap-6';
   const summaryRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
   const listRowClass = isCompact ? 'px-4 py-2.5' : 'px-4 py-3';
+  const receiveDetailsRowClass = isCompact ? 'px-4 py-0.5' : 'px-4 py-1';
+  const receiveDetailsHeightClass = isCompact ? 'h-[20.25rem]' : 'h-[21.25rem]';
   const getReceiveDetailStatusKey = (item: any) =>
     String(item?.mtm_id ?? item?.vr_no ?? item?.id ?? '');
 
@@ -423,10 +425,10 @@ const ConstructionDashboard = () => {
 
             {hasReceiveDetails && isWidgetVisible('receive-details') ? (
           <div
-            className="grid min-w-0 grid-cols-1"
+            className={`grid min-w-0 grid-cols-1 ${receiveDetailsHeightClass}`}
             style={{ order: widgetOrder('receive-details') }}
           >
-            <div className="w-full min-w-0 overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700">
+            <div className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700">
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
                 <span className="min-w-0 flex-1 truncate pr-2 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {!dashboard.isLoading && dashboard?.data?.transactionText}
@@ -435,7 +437,7 @@ const ConstructionDashboard = () => {
                   {totalDebit ? `Tk. ${thousandSeparator(totalDebit)}` : '-'}
                 </span>
               </div>
-              <div className="max-h-96 overflow-y-auto">
+              <div className="min-h-0 flex-1 overflow-y-auto">
                 {Object.entries(groupedReceiveDetails).map(([branchKey, items]) => {
                   if (!Array.isArray(items) || items.length === 0) {
                     return null;
@@ -492,22 +494,24 @@ const ConstructionDashboard = () => {
 
                             return (
                               <div
-                                className="grid grid-cols-[1.5rem_minmax(0,0.8fr)_minmax(4.75rem,1.2fr)_auto_1.75rem] items-center gap-2 border-t border-slate-100 px-4 py-2 transition hover:bg-sky-50/50 dark:border-gray-700 dark:hover:bg-gray-700/40"
+                                className={`flex items-center gap-3 border-t border-slate-100 transition hover:bg-sky-50/50 dark:border-gray-700 dark:hover:bg-gray-700/40 ${receiveDetailsRowClass}`}
                                 key={`${branchKey}-${itemKey}-${index}`}
                               >
-                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500 dark:bg-gray-700 dark:text-slate-300">
+                                <div className="w-6 shrink-0 text-center text-xs font-semibold tabular-nums text-slate-500 dark:text-slate-300">
                                   {index + 1}
                                 </div>
-                                <div className="min-w-0 truncate text-xs font-semibold text-slate-700 min-[462px]:text-sm dark:text-slate-100">
-                                  {item.vr_no}
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-xs font-bold leading-tight text-slate-700 min-[462px]:text-sm dark:text-slate-100">
+                                    {item.vr_no}
+                                  </p>
+                                  <p className="truncate whitespace-nowrap text-[11px] leading-tight text-slate-400 dark:text-slate-400">
+                                    {formatDate(item.vr_date)}
+                                  </p>
                                 </div>
-                                <div className="min-w-0 truncate whitespace-nowrap text-xs text-slate-500 min-[462px]:text-sm dark:text-slate-400">
-                                  {formatDate(item.vr_date)}
-                                </div>
-                                <div className="whitespace-nowrap text-right text-xs font-bold text-slate-800 min-[462px]:text-sm dark:text-white">
+                                <div className="shrink-0 whitespace-nowrap text-right text-xs font-bold text-slate-800 min-[462px]:text-sm dark:text-white">
                                   {thousandSeparator(item.debit)}
                                 </div>
-                                <div className="text-right text-sm">
+                                <div className="w-7 shrink-0 text-right text-sm">
                                   {!isProcessed ? (
                                     isHeadOfficeBranch ? (
                                       <FaRightToBracket className="inline-block text-sm text-red-500" />
