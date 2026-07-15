@@ -15,6 +15,9 @@ import {
   FaRegClock,
   FaRegCalendarAlt,
   FaShoppingCart,
+  FaExclamationTriangle,
+  FaRedoAlt,
+  FaInbox,
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -271,8 +274,35 @@ const ConstructionDashboard = () => {
       >
         {dashboard.isLoading == false ? (
           <>
+            {dashboard.errors ? (
+              <div
+                className="col-span-full flex min-h-64 flex-col items-center justify-center rounded-lg border border-rose-200 bg-white px-6 py-12 text-center shadow-sm dark:border-rose-900/60 dark:bg-gray-800"
+                role="alert"
+              >
+                <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl text-rose-500 dark:bg-rose-900/30 dark:text-rose-400">
+                  <FaExclamationTriangle />
+                </span>
+                <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                  Unable to load dashboard data
+                </h2>
+                <p className="mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">
+                  {typeof dashboard.errors === 'string'
+                    ? dashboard.errors
+                    : 'Please try again.'}
+                </p>
+                <button
+                  className="mt-5 inline-flex items-center gap-2 rounded-md bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                  onClick={() => dispatch(getDashboard())}
+                  type="button"
+                >
+                  <FaRedoAlt className="text-xs" />
+                  Try again
+                </button>
+              </div>
+            ) : null}
+
             {/* Branch summary card */}
-            {isWidgetVisible('summary') ? (
+            {!dashboard.errors && isWidgetVisible('summary') ? (
             <div
               className={`group relative flex min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700 ${dashboardCardHeightClass}`}
               style={{ order: widgetOrder('summary') }}
@@ -363,7 +393,7 @@ const ConstructionDashboard = () => {
             </div>
             ) : null}
 
-            {isWidgetVisible('top-purchase') && dashboard?.data?.topProductsPurchase?.length > 0 && (
+            {!dashboard.errors && isWidgetVisible('top-purchase') && (
               <div
                 className="relative flex min-w-0 flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[#1f2937]"
                 style={{ order: widgetOrder('top-purchase') }}
@@ -414,16 +444,23 @@ const ConstructionDashboard = () => {
                       )}
                     </ul>
                   ) : (
-                    <div className="flex h-32 flex-col items-center justify-center gap-2 text-slate-400">
-                      <FaShoppingCart className="text-2xl" />
-                      <p className="text-sm italic">No purchase found</p>
+                    <div className="flex h-40 flex-col items-center justify-center px-6 text-center text-slate-400">
+                      <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-xl text-amber-500 dark:bg-amber-900/20 dark:text-amber-400">
+                        <FaShoppingCart />
+                      </span>
+                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        No purchases found
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Purchases for the selected period will appear here.
+                      </p>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {hasReceiveDetails && isWidgetVisible('receive-details') ? (
+            {!dashboard.errors && hasReceiveDetails && isWidgetVisible('receive-details') ? (
           <div
             className={`grid min-w-0 grid-cols-1 ${dashboardCardHeightClass}`}
             style={{ order: widgetOrder('receive-details') }}
@@ -549,7 +586,29 @@ const ConstructionDashboard = () => {
           </div>
             ) : null}
 
-            {isWidgetVisible('charts') ? (
+            {!dashboard.errors && !hasReceiveDetails && isWidgetVisible('receive-details') ? (
+              <div
+                className={`flex min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700 ${dashboardCardHeightClass}`}
+                style={{ order: widgetOrder('receive-details') }}
+              >
+                <div className="border-b border-slate-200 px-4 py-3 text-sm font-bold tracking-wide text-slate-700 dark:border-gray-700 dark:text-slate-100">
+                  Received Details
+                </div>
+                <div className="flex flex-1 flex-col items-center justify-center px-6 text-center text-slate-400">
+                  <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl dark:bg-gray-700 dark:text-slate-400">
+                    <FaInbox />
+                  </span>
+                  <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                    No received details found
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    New transactions will appear here.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {!dashboard.errors && isWidgetVisible('charts') ? (
         <div className="col-span-full min-w-0" style={{ order: widgetOrder('charts') }}>
           <div className=""></div>
           <div className="border-slate-200 pb-3 text-white pt-2">

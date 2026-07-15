@@ -33,7 +33,7 @@ export const getDashboard = () => (dispatch: any) => {
     .catch((err) => {
       dispatch({
         type: DASHBOARD_DATA_ERROR,
-        payload: 'Something went wrongs!',
+        payload: 'Dashboard data could not be loaded. Please try again.',
       });
     });
 };
@@ -101,12 +101,14 @@ const dashboardReducer = (state = dashboardData, action: any) => {
       return {
         ...state,
         data: {},
+        errors: null,
         isLoading: true,
       };
     case DASHBOARD_DATA_SUCCESS:
       return {
         ...state,
         isLoading: false,
+        errors: null,
         data: action.payload,
       };
     case DASHBOARD_DATA_ERROR:
