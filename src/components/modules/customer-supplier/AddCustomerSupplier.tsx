@@ -351,7 +351,7 @@ const AddCustomerSupplier = () => {
         </Link>
       </div>
       <FormikProvider value={formik}>
-        <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={formik.handleSubmit} autoComplete="off">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div>
               <label className="dark:text-white text-sm text-gray-900">
@@ -412,6 +412,7 @@ const AddCustomerSupplier = () => {
               <InputElement
                 id="manual_address"
                 name="manual_address"
+                autoComplete="off"
                 placeholder="Enter Address"
                 label="Address"
                 value={formik.values.manual_address}
@@ -607,6 +608,9 @@ const AddCustomerSupplier = () => {
                 id="password"
                 name="password"
                 type="password"
+                // Stops Chrome treating this as a login form and autofilling a
+                // saved password here (and the saved email into Address).
+                autoComplete="new-password"
                 value={formik.values.password}
                 placeholder="Set portal login password (optional)"
                 label="Portal Password"
