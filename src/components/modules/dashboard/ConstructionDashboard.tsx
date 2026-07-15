@@ -263,13 +263,16 @@ const ConstructionDashboard = () => {
           onReset={reset}
         />
       </div>
-      <div className={`mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[1800px]:grid-cols-4 ${dashboardGapClass}`}>
+      <div
+        aria-busy={dashboard.isLoading}
+        className={`mt-4 grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] items-start ${dashboardGapClass}`}
+      >
         {dashboard.isLoading == false ? (
           <>
             {/* Branch summary card */}
             {isWidgetVisible('summary') ? (
             <div
-              className="group relative flex flex-col bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700"
+              className="group relative flex min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700"
               style={{ order: widgetOrder('summary') }}
             >
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
@@ -290,7 +293,7 @@ const ConstructionDashboard = () => {
                     <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
                       Trx Date
                     </p>
-                    <p className="text-sm font-bold text-slate-700 dark:text-slate-100">
+                    <p className="truncate text-sm font-bold text-slate-700 dark:text-slate-100">
                       {settings?.data?.trx_dt}
                     </p>
                   </div>
@@ -304,7 +307,7 @@ const ConstructionDashboard = () => {
                     <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
                       Today Received
                     </p>
-                    <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                    <p className="truncate text-base font-bold text-emerald-600 dark:text-emerald-400">
                       {dashboard?.data?.todayReceived?.debit > 0
                         ? thousandSeparator(dashboard?.data?.todayReceived?.debit)
                         : 0}
@@ -320,7 +323,7 @@ const ConstructionDashboard = () => {
                     <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
                       Today Payment
                     </p>
-                    <p className="text-base font-bold text-rose-600 dark:text-rose-400">
+                    <p className="truncate text-base font-bold text-rose-600 dark:text-rose-400">
                       {dashboard?.data?.todayReceived?.credit > 0
                         ? thousandSeparator(dashboard?.data?.todayReceived?.credit)
                         : 0}
@@ -336,7 +339,7 @@ const ConstructionDashboard = () => {
                     <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
                       Balance
                     </p>
-                    <p className="text-base font-bold text-indigo-600 dark:text-indigo-300">
+                    <p className="truncate text-base font-bold text-indigo-600 dark:text-indigo-300">
                       {dashboard?.data &&
                         !dashboard.isLoading &&
                         thousandSeparator(
@@ -351,14 +354,16 @@ const ConstructionDashboard = () => {
 
               <div className="mt-auto flex items-center gap-1.5 bg-slate-50 px-4 py-2 text-xs text-slate-400 dark:bg-gray-700/50 dark:text-slate-400">
                 <FaRegClock className="text-[11px]" />
-                <span>Last updated: {dashboard?.data?.last_update}</span>
+                <span className="min-w-0 truncate">
+                  Last updated: {dashboard?.data?.last_update}
+                </span>
               </div>
             </div>
             ) : null}
 
             {isWidgetVisible('top-purchase') && dashboard?.data?.topProductsPurchase?.length > 0 && (
               <div
-                className="relative flex flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[#1f2937]"
+                className="relative flex min-w-0 flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[#1f2937]"
                 style={{ order: widgetOrder('top-purchase') }}
               >
                 {/* Header */}
@@ -366,7 +371,7 @@ const ConstructionDashboard = () => {
                   <span className="truncate text-base font-bold tracking-wide text-slate-700 dark:text-slate-100">
                     Top Purchase
                   </span>
-                  <span className="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
+                  <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
                     {settings?.data?.branch?.dashboard_top_sales_days == 1 ? 'Today' : `Last ${settings?.data?.branch?.dashboard_top_sales_days || 7} Days`}
                   </span>
                 </div>
@@ -418,15 +423,15 @@ const ConstructionDashboard = () => {
 
             {hasReceiveDetails && isWidgetVisible('receive-details') ? (
           <div
-            className="grid grid-cols-1"
+            className="grid min-w-0 grid-cols-1"
             style={{ order: widgetOrder('receive-details') }}
           >
-            <div className="w-full bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden dark:bg-gray-800 dark:ring-gray-700">
+            <div className="w-full min-w-0 overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700">
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
-                <span className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
+                <span className="min-w-0 flex-1 truncate pr-2 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
                   {!dashboard.isLoading && dashboard?.data?.transactionText}
                 </span>
-                <span className="rounded-full bg-sky-100 px-3 py-0.5 text-sm font-semibold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+                <span className="shrink-0 whitespace-nowrap rounded-full bg-sky-100 px-3 py-0.5 text-sm font-semibold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
                   {totalDebit ? `Tk. ${thousandSeparator(totalDebit)}` : '-'}
                 </span>
               </div>
@@ -459,7 +464,7 @@ const ConstructionDashboard = () => {
                         }`}
                       >
                         <div className="flex items-center gap-2 text-xs min-[462px]:text-sm">
-                          <span className="flex-1 font-semibold text-slate-700 dark:text-slate-100">
+                          <span className="min-w-0 flex-1 truncate font-semibold text-slate-700 dark:text-slate-100">
                             {branchName}
                           </span>
                           <span className="font-bold text-slate-800 whitespace-nowrap dark:text-white">
@@ -541,7 +546,7 @@ const ConstructionDashboard = () => {
             ) : null}
 
             {isWidgetVisible('charts') ? (
-        <div className="col-span-full" style={{ order: widgetOrder('charts') }}>
+        <div className="col-span-full min-w-0" style={{ order: widgetOrder('charts') }}>
           <div className=""></div>
           <div className="border-slate-200 pb-3 text-white pt-2">
             {currentBranch.branch_types_id == 1 ? (
@@ -562,7 +567,55 @@ const ConstructionDashboard = () => {
             ) : null}
           </>
         ) : (
-          ''
+          <div
+            aria-label="Dashboard loading"
+            className="contents"
+            role="status"
+          >
+            {[0, 1, 2].map((cardIndex) => (
+              <div
+                className="min-w-0 animate-pulse overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700"
+                key={cardIndex}
+              >
+                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3.5 dark:border-gray-700">
+                  <div className="h-4 w-32 rounded bg-slate-200 dark:bg-gray-700" />
+                  <div className="h-7 w-20 rounded-full bg-slate-100 dark:bg-gray-700" />
+                </div>
+
+                <div className="divide-y divide-slate-100 dark:divide-gray-700">
+                  {[0, 1, 2, 3].map((rowIndex) => (
+                    <div
+                      className={`flex items-center gap-3 ${summaryRowClass}`}
+                      key={rowIndex}
+                    >
+                      <div className="h-9 w-9 shrink-0 rounded-lg bg-slate-100 dark:bg-gray-700" />
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div
+                          className={`h-2.5 rounded bg-slate-200 dark:bg-gray-700 ${
+                            rowIndex % 2 === 0 ? 'w-24' : 'w-20'
+                          }`}
+                        />
+                        <div
+                          className={`h-4 rounded bg-slate-200 dark:bg-gray-700 ${
+                            rowIndex % 2 === 0 ? 'w-32' : 'w-28'
+                          }`}
+                        />
+                      </div>
+                      {cardIndex > 0 ? (
+                        <div className="h-4 w-16 rounded bg-slate-200 dark:bg-gray-700" />
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 dark:bg-gray-700/50">
+                  <div className="h-3 w-3 rounded-full bg-slate-200 dark:bg-gray-600" />
+                  <div className="h-2.5 w-28 rounded bg-slate-200 dark:bg-gray-600" />
+                </div>
+              </div>
+            ))}
+            <span className="sr-only">Dashboard data is loading...</span>
+          </div>
         )}
       </div>
     </>
