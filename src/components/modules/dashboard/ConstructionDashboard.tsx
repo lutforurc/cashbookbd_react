@@ -263,7 +263,7 @@ const ConstructionDashboard = () => {
           onReset={reset}
         />
       </div>
-      <div className={`mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${dashboardGapClass}`}>
+      <div className={`mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[1800px]:grid-cols-4 ${dashboardGapClass}`}>
         {dashboard.isLoading == false ? (
           <>
             {/* Branch summary card */}
@@ -487,24 +487,22 @@ const ConstructionDashboard = () => {
 
                             return (
                               <div
-                                className="flex items-center border-t border-slate-100 px-4 py-2 transition hover:bg-sky-50/50 dark:border-gray-700 dark:hover:bg-gray-700/40"
+                                className="grid grid-cols-[1.5rem_minmax(0,0.8fr)_minmax(4.75rem,1.2fr)_auto_1.75rem] items-center gap-2 border-t border-slate-100 px-4 py-2 transition hover:bg-sky-50/50 dark:border-gray-700 dark:hover:bg-gray-700/40"
                                 key={`${branchKey}-${itemKey}-${index}`}
                               >
-                                <div className="flex min-w-0 flex-1 items-center gap-3">
-                                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500 dark:bg-gray-700 dark:text-slate-300">
-                                    {index + 1}
-                                  </div>
-                                  <div className="min-w-0 flex-[1.35] truncate text-xs font-semibold text-slate-700 min-[462px]:text-sm dark:text-slate-100">
-                                    {item.vr_no}
-                                  </div>
-                                  <div className="min-w-0 flex-1 text-xs text-slate-500 min-[462px]:text-sm dark:text-slate-400">
-                                    {formatDate(item.vr_date)}
-                                  </div>
+                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500 dark:bg-gray-700 dark:text-slate-300">
+                                  {index + 1}
                                 </div>
-                                <div className="w-26 shrink-0 text-right text-xs font-bold text-slate-800 min-[462px]:w-32 min-[462px]:text-sm dark:text-white">
+                                <div className="min-w-0 truncate text-xs font-semibold text-slate-700 min-[462px]:text-sm dark:text-slate-100">
+                                  {item.vr_no}
+                                </div>
+                                <div className="min-w-0 truncate whitespace-nowrap text-xs text-slate-500 min-[462px]:text-sm dark:text-slate-400">
+                                  {formatDate(item.vr_date)}
+                                </div>
+                                <div className="whitespace-nowrap text-right text-xs font-bold text-slate-800 min-[462px]:text-sm dark:text-white">
                                   {thousandSeparator(item.debit)}
                                 </div>
-                                <div className="ml-3 mr-2 w-8 text-right text-sm min-[462px]:w-10">
+                                <div className="text-right text-sm">
                                   {!isProcessed ? (
                                     isHeadOfficeBranch ? (
                                       <FaRightToBracket className="inline-block text-sm text-red-500" />
