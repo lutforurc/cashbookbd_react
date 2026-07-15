@@ -147,6 +147,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
       ? order.transaction_rows
       : buildFallbackTransactions(order);
     const pages = chunkRows(transactionRows, rowsPerPage);
+    const printablePages = pages.length > 0 ? pages : [[]];
     const cumulativeDueAmounts = calculateCumulativeDueAmounts(transactionRows);
 
     const totals = calculateTransactionTotals(transactionRows);
@@ -163,10 +164,10 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
       <div ref={ref} className="p-8 text-sm text-gray-900 print-root">
         <PrintStyles />
 
-	        {(pages.length > 0 ? pages : [[]]).map((pageRows, pageIndex) => {
-	          const pageTotals = calculateTransactionTotals(pageRows);
-	          const pageEndDue = getPageEndDue(cumulativeDueAmounts, pageIndex, rowsPerPage);
-	          const isLastPage = pageIndex === pages.length - 1;
+		        {printablePages.map((pageRows, pageIndex) => {
+		          const pageTotals = calculateTransactionTotals(pageRows);
+		          const pageEndDue = getPageEndDue(cumulativeDueAmounts, pageIndex, rowsPerPage);
+		          const isLastPage = pageIndex === printablePages.length - 1;
 
           return (
           <div key={pageIndex} className="print-page">
@@ -372,10 +373,10 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 
             <div style={{ fontSize: fs }} className="mt-auto flex items-end justify-between gap-4 border-t border-gray-400 pt-1 text-xs text-gray-600">
               <span className="text-left"><ReportFooter inline /></span>
-              <span className="whitespace-nowrap text-right">Page {pageIndex + 1} of {pages.length || 1}</span>
+              <span className="whitespace-nowrap text-right">Page {pageIndex + 1} of {printablePages.length}</span>
             </div>
 
-	            {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
+		            {pageIndex !== printablePages.length - 1 ? <div className="page-break" /> : null}
 	          </div>
 	          );
 	        })}
