@@ -101,7 +101,7 @@ const ConstructionDashboard = () => {
   const summaryRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
   const listRowClass = isCompact ? 'px-4 py-2.5' : 'px-4 py-3';
   const receiveDetailsRowClass = isCompact ? 'px-4 py-0.5' : 'px-4 py-1';
-  const receiveDetailsHeightClass = isCompact ? 'h-[20.25rem]' : 'h-[21.25rem]';
+  const dashboardCardHeightClass = isCompact ? 'h-[20.75rem]' : 'h-[21.75rem]';
   const getReceiveDetailStatusKey = (item: any) =>
     String(item?.mtm_id ?? item?.vr_no ?? item?.id ?? '');
 
@@ -274,7 +274,7 @@ const ConstructionDashboard = () => {
             {/* Branch summary card */}
             {isWidgetVisible('summary') ? (
             <div
-              className="group relative flex min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700"
+              className={`group relative flex min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-slate-300 dark:bg-gray-800 dark:ring-gray-700 ${dashboardCardHeightClass}`}
               style={{ order: widgetOrder('summary') }}
             >
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
@@ -425,7 +425,7 @@ const ConstructionDashboard = () => {
 
             {hasReceiveDetails && isWidgetVisible('receive-details') ? (
           <div
-            className={`grid min-w-0 grid-cols-1 ${receiveDetailsHeightClass}`}
+            className={`grid min-w-0 grid-cols-1 ${dashboardCardHeightClass}`}
             style={{ order: widgetOrder('receive-details') }}
           >
             <div className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-white shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:ring-gray-700">
@@ -437,7 +437,7 @@ const ConstructionDashboard = () => {
                   {totalDebit ? `Tk. ${thousandSeparator(totalDebit)}` : '-'}
                 </span>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto">
+              <div className="hover-scrollbar min-h-0 flex-1 overflow-y-auto">
                 {Object.entries(groupedReceiveDetails).map(([branchKey, items]) => {
                   if (!Array.isArray(items) || items.length === 0) {
                     return null;
