@@ -25,6 +25,13 @@ export type CashBankSummaryRow = {
   bank_credit?: number | string;
 };
 
+export type BankDetailRow = {
+  bank_account_id?: number | string;
+  bank_name?: string;
+  received?: number | string;
+  payment?: number | string;
+};
+
 const numberValue = (value: unknown) => {
   const result = Number(String(value ?? 0).replace(/,/g, ''));
   return Number.isFinite(result) ? result : 0;
@@ -51,6 +58,7 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [rows, setRows] = useState<CashBankSummaryRow[]>([]);
+  const [bankDetails, setBankDetails] = useState<BankDetailRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(12);
   const [fontSize, setFontSize] = useState(12);
@@ -101,8 +109,10 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
         },
       });
       setRows(responseRows(response.data));
+      setBankDetails(Array.isArray(response.data?.bank_details) ? response.data.bank_details : []);
     } catch (error: any) {
       setRows([]);
+      setBankDetails([]);
       toast.error(error?.response?.data?.message || 'Report data load failed.');
     } finally {
       setLoading(false);
@@ -144,7 +154,7 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
         </div>
         <div className="grid min-w-max grid-cols-[auto_auto_88px_88px_auto] items-end gap-2 overflow-x-auto xl:ml-auto">
           <ButtonLoading onClick={loadReport} buttonLoading={loading} label="Apply" icon={<FiCheckSquare />} className="h-10 px-5" />
-          <ButtonLoading onClick={() => setRows([])} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-10 px-5" />
+          <ButtonLoading onClick={() => { setRows([]); setBankDetails([]); }} buttonLoading={false} label="Reset" icon={<FiRefreshCcw />} className="h-10 px-5" />
           <InputElement id="cash-bank-rows" name="cash-bank-rows" label="" value={String(rowsPerPage)} onChange={(event: any) => setRowsPerPage(Number(event.target.value) || 12)} type="text" className="h-10 !w-full text-center text-sm font-medium" />
           <InputElement id="cash-bank-font" name="cash-bank-font" label="" value={String(fontSize)} onChange={(event: any) => setFontSize(Number(event.target.value) || 12)} type="text" className="h-10 !w-full text-center text-sm font-medium" />
           <PrintButton onClick={print} label="Print" className="h-10 px-5" disabled={!rows.length} />
@@ -158,7 +168,20 @@ const CashBankReceivedPayment = ({ user }: { user: any }) => {
           <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[#253141] dark:text-white"><tr><td colSpan={2} className="px-3 py-3 text-right">Total</td>{amounts.map((amount, index) => <td key={index} className="px-3 py-3 text-right">{thousandSeparator(amount)}</td>)}</tr><tr><td colSpan={2} className="px-3 py-3 text-right">Balance</td>{balances.map((amount, index) => <td key={index} className="px-3 py-3 text-right">{thousandSeparator(amount)}</td>)}</tr></tfoot>
         </table>
       </div>}
-      <div className="hidden"><CashBankReceivedPaymentPrint ref={printRef} rows={rows} projectName={selectedBranch} startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'} endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'} /></div>
+
+      {!loading && bankDetails.length > 0 && <div className="mt-5 overflow-x-auto bg-white dark:bg-[#1d2735]">
+        <h2 className="bg-slate-200 px-3 py-3 text-center text-sm font-bold uppercase text-slate-950 dark:bg-[#303c4f] dark:text-white">Bank-wise Details</h2>
+        <table className="w-full min-w-[620px] border-collapse" style={{ fontSize }}>
+          <thead className="bg-slate-300 text-xs font-bold uppercase text-slate-950 dark:bg-[#3a4659] dark:text-white"><tr><th className="px-3 py-3 text-center">Sl. No.</th><th className="px-3 py-3 text-left">Bank Account</th><th className="px-3 py-3 text-right">Received (Tk.)</th><th className="px-3 py-3 text-right">Payment (Tk.)</th><th className="px-3 py-3 text-right">Balance (Tk.)</th></tr></thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-[#2e394b]">{bankDetails.map((bank, index) => {
+            const received = numberValue(bank.received);
+            const payment = numberValue(bank.payment);
+            return <tr key={`${bank.bank_account_id ?? bank.bank_name}-${index}`}><td className="px-3 py-3 text-center">{index + 1}</td><td className="px-3 py-3 font-medium">{bank.bank_name || '-'}</td><td className="px-3 py-3 text-right">{received > 0 ? thousandSeparator(received) : '-'}</td><td className="px-3 py-3 text-right">{payment > 0 ? thousandSeparator(payment) : '-'}</td><td className="px-3 py-3 text-right font-bold">{thousandSeparator(received - payment)}</td></tr>;
+          })}</tbody>
+          <tfoot className="bg-slate-100 font-bold text-slate-950 dark:bg-[#253141] dark:text-white"><tr><td colSpan={2} className="px-3 py-3 text-right">Total</td><td className="px-3 py-3 text-right">{thousandSeparator(bankDetails.reduce((sum, bank) => sum + numberValue(bank.received), 0))}</td><td className="px-3 py-3 text-right">{thousandSeparator(bankDetails.reduce((sum, bank) => sum + numberValue(bank.payment), 0))}</td><td className="px-3 py-3 text-right">{thousandSeparator(bankDetails.reduce((sum, bank) => sum + numberValue(bank.received) - numberValue(bank.payment), 0))}</td></tr></tfoot>
+        </table>
+      </div>}
+      <div className="hidden"><CashBankReceivedPaymentPrint ref={printRef} rows={rows} bankDetails={bankDetails} projectName={selectedBranch} startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : '-'} endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : '-'} rowsPerPage={rowsPerPage} fontSize={fontSize} /></div>
     </div>
   );
 };
