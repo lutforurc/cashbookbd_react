@@ -104,6 +104,7 @@ const ROUTES = {
 
   report_ledger: '/reports/ledger',
   report_cashbook: '/reports/cashbook',
+  cash_bank_received_payment: '/reports/cash-bank-received-payment',
   profit_loss: '/reports/profit-loss',
   product_profit_loss: '/reports/product-profit-loss',
   product_ledger_data: '/reports/product-ledger-data',

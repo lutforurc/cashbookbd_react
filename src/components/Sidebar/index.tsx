@@ -630,6 +630,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 <SidebarLinkGroup
                   activeCondition={
                     pathname === '/reports/cashbook' ||
+                    pathname === routes.cash_bank_received_payment ||
                     pathname === routes.profit_loss || //'/reports/profit-loss' ||
                     pathname === routes.product_profit_loss ||
                     pathname === routes.bank_information ||
@@ -719,6 +720,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Cash Book
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.cash_bank_received_payment}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Cash &amp; Bank Summary
                               </NavLink>
                             </li>
                           )}
