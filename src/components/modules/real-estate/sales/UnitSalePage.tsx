@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiLock,
   FiEdit2,
@@ -18,8 +18,9 @@ import BuildingUnitChargesDropdown from "../../../utils/utils-functions/Building
 import InputElement from "../../../utils/fields/InputElement";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { storeSalePricing } from "./unitSaleSlice";
+import { unitDdl } from "../units/unitSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
@@ -93,6 +94,7 @@ export default function UnitSalePage() {
   const [note, setNote] = useState<string>("");
 
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
   /* ================= UNIT ================= */
@@ -148,6 +150,42 @@ export default function UnitSalePage() {
       ];
     });
   };
+
+  /* ============ PRESELECT UNIT (from Flat Layout → Sale / Booking) ============
+     FlatLayout navigates here with { unitId, unitNo } in the router state. The
+     unit dropdown loads options by search, and the price row needs the option's
+     size/rate — so look the unit up by its number and select the full option. */
+
+  const preselectedUnitId = (location.state as any)?.unitId;
+  const preselectedUnitNo = (location.state as any)?.unitNo;
+  const preselectHandled = useRef(false);
+
+  useEffect(() => {
+    if (preselectHandled.current || !preselectedUnitId) return;
+    preselectHandled.current = true;
+
+    (async () => {
+      try {
+        const response = await (dispatch as any)(
+          unitDdl(String(preselectedUnitNo ?? "")),
+        ).unwrap();
+
+        const list = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.data)
+            ? response.data
+            : [];
+
+        const match =
+          list.find((o: any) => String(o.value) === String(preselectedUnitId)) ??
+          list.find((o: any) => String(o.label) === String(preselectedUnitNo));
+
+        if (match) onUnitSelect(match);
+      } catch {
+        // Leave the dropdown empty — the user can still pick the unit manually.
+      }
+    })();
+  }, [preselectedUnitId, preselectedUnitNo]);
 
   /* ================= PARKING ================= */
 
@@ -425,7 +463,7 @@ export default function UnitSalePage() {
                 <label className="block mt-1 text-sm font-semibold">
                   Select Unit
                 </label>
-                <BuildingUnitDropdown onSelect={onUnitSelect} />
+                <BuildingUnitDropdown onSelect={onUnitSelect} value={selectedUnit} />
               </div>
               <div>
                 <label className="block mt-1 text-sm font-semibold">
