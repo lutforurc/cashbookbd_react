@@ -114,7 +114,7 @@ const SignIn: React.FC = () => {
         <div className="grid h-full grid-cols-1 xl:grid-cols-2">
 
           {/* LEFT: Branding Panel */}
-          <div className="relative hidden h-full overflow-hidden xl:flex xl:flex-col xl:justify-center bg-[#0B1B26]">
+          <div className="relative hidden h-full xl:flex xl:flex-col xl:overflow-y-auto bg-[#0B1B26]">
 
             {/* Ambient glows */}
             <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-meta-3/20 blur-[120px]" />
@@ -132,7 +132,7 @@ const SignIn: React.FC = () => {
               }}
             />
 
-            <div className="relative z-10 px-14 2xl:px-20">
+            <div className="relative z-10 my-auto px-14 py-12 2xl:px-20">
               {/* Badge */}
               <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 py-2 pl-3 pr-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
                 <span className="relative flex h-2 w-2">
@@ -143,7 +143,7 @@ const SignIn: React.FC = () => {
               </span>
 
               {/* Heading */}
-              <h1 className="mt-8 text-5xl font-bold leading-[1.1] tracking-tight text-white 2xl:text-6xl">
+              <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight text-white 2xl:text-5xl">
                 Accounts,
                 <br />
                 Stock and{' '}
@@ -152,13 +152,13 @@ const SignIn: React.FC = () => {
                 </span>
               </h1>
 
-              <p className="mt-5 max-w-md text-lg leading-relaxed text-white/50">
+              <p className="mt-4 max-w-md leading-relaxed text-white/50 2xl:text-lg">
                 Multi-branch accounting, inventory and payroll — with role-based
                 permissions and a full audit trail.
               </p>
 
               {/* Features */}
-              <ul className="mt-10 space-y-5">
+              <ul className="mt-8 space-y-4">
                 {[
                   {
                     icon: FiBookOpen,
@@ -198,44 +198,44 @@ const SignIn: React.FC = () => {
                   </li>
                 ))}
               </ul>
-            </div>
 
-            {/* Floating live card */}
-            <div className="absolute bottom-16 right-10 z-20 w-72 rounded-2xl border border-white/10 bg-white/[0.07] p-5 shadow-2xl backdrop-blur-xl 2xl:right-16">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-white">Today</span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-meta-3/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-meta-3">
-                  <span className="h-1.5 w-1.5 rounded-full bg-meta-3" />
-                  Live
-                </span>
-              </div>
-
-              <div className="mt-5 flex items-end justify-between">
-                <div>
-                  <p className="text-xs text-white/40">Cash Balance</p>
-                  <p className="mt-1 text-3xl font-bold tracking-tight text-white">Tk 48.6K</p>
+              {/* Live card — in flow so it centers with the copy above */}
+              <div className="mt-10 ml-auto w-72 rounded-2xl border border-white/10 bg-white/[0.07] p-5 shadow-2xl backdrop-blur-xl">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-white">Today</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-meta-3/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-meta-3">
+                    <span className="h-1.5 w-1.5 rounded-full bg-meta-3" />
+                    Live
+                  </span>
                 </div>
-                <FiTrendingUp className="mb-1 h-8 w-8 text-meta-3" />
-              </div>
 
-              <div className="my-4 h-px bg-white/10" />
+                <div className="mt-5 flex items-end justify-between">
+                  <div>
+                    <p className="text-xs text-white/40">Cash Balance</p>
+                    <p className="mt-1 text-3xl font-bold tracking-tight text-white">Tk 48.6K</p>
+                  </div>
+                  <FiTrendingUp className="mb-1 h-8 w-8 text-meta-3" />
+                </div>
 
-              <ul className="space-y-3">
-                {[
-                  { dot: 'bg-meta-3', title: 'Cash Received', sub: 'Voucher #CR-1028' },
-                  { dot: 'bg-meta-6', title: 'Purchase Bill', sub: 'Inventory posted' },
-                ].map((row) => (
-                  <li key={row.title} className="flex items-center gap-3">
-                    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${row.dot}`} />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium text-white/90">
-                        {row.title}
+                <div className="my-4 h-px bg-white/10" />
+
+                <ul className="space-y-3">
+                  {[
+                    { dot: 'bg-meta-3', title: 'Cash Received', sub: 'Voucher #CR-1028' },
+                    { dot: 'bg-meta-6', title: 'Purchase Bill', sub: 'Inventory posted' },
+                  ].map((row) => (
+                    <li key={row.title} className="flex items-center gap-3">
+                      <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${row.dot}`} />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium text-white/90">
+                          {row.title}
+                        </span>
+                        <span className="block truncate text-xs text-white/35">{row.sub}</span>
                       </span>
-                      <span className="block truncate text-xs text-white/35">{row.sub}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
 
