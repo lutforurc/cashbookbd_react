@@ -1,5 +1,6 @@
 import {
   API_LOGIN_URL,
+  API_LOGOUT_URL,
   API_CSRF_COOKIES,
   API_AUTH_CHECK_URL,
 } from '../components/services/apiRoutes';
@@ -134,6 +135,12 @@ export const authCheck = () => async (dispatch: Dispatch<AnyAction>) => {
 };
 
 export const logout = () => (dispatch: any) => {
+  // Best-effort server-side token revocation; clear locally regardless.
+  // Without this the Sanctum token stays valid forever (tokens have no
+  // expiry), so a "logged out" device would keep holding its device slot.
+  if (getToken()) {
+    httpService.post(API_LOGOUT_URL).catch(() => {});
+  }
   removeData();
   dispatch({ type: 'AUTH/logout/success' });
   window.location.href = '/login';
