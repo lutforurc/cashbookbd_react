@@ -59,6 +59,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   );
   const [logoFailed, setLogoFailed] = useState(false);
   const showCompanyName = !companyLogo || logoFailed;
+  // Stand-in mark for tenants with no logo: initials of the first two words,
+  // so the name never sits against the sidebar edge on its own.
+  const companyInitials = companyName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word: string) => word[0])
+    .join('')
+    .toUpperCase();
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
 
@@ -152,20 +161,25 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
             className={`flex min-w-0 flex-1 items-center ${sidebarCollapsed ? 'lg:hidden' : ''}`}
             title={companyName}
           >
-            {showCompanyName ? (
-              <span
-                className={`block truncate text-lg font-bold leading-tight text-black dark:text-white ${sidebarCollapsed ? 'lg:hidden' : ''}`}
-              >
+            {/* Mark on the left, company name on its right — with the uploaded
+                logo when there is one, initials when there is not. */}
+            <span className={`flex min-w-0 items-center gap-2.5 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
+              {showCompanyName ? (
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
+                  {companyInitials}
+                </span>
+              ) : (
+                <img
+                  src={companyLogo}
+                  alt=""
+                  className="block h-9 w-9 shrink-0 rounded-lg object-contain"
+                  onError={() => setLogoFailed(true)}
+                />
+              )}
+              <span className="block truncate text-lg font-bold leading-tight text-black dark:text-white">
                 {companyName}
               </span>
-            ) : (
-              <img
-                src={companyLogo}
-                alt={companyName}
-                className={`block h-9 max-w-40 object-contain ${sidebarCollapsed ? 'lg:hidden' : ''}`}
-                onError={() => setLogoFailed(true)}
-              />
-            )}
+            </span>
           </NavLink>
           <button
             type="button"
