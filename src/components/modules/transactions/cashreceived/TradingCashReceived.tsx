@@ -32,6 +32,7 @@ import { useNavigate } from 'react-router-dom';
 import httpService from '../../../services/httpService';
 import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { extractVoucherNo } from '../extractVoucherNo';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -123,7 +124,10 @@ const TradingCashReceived = () => {
   };
 
   useEffect(() => {
-    toast.success(cashReceived.data);
+    // cashReceived.data is the API's success sentence, which carries the
+    // voucher number in inconsistent wording — show just the number.
+    const voucherNo = extractVoucherNo(cashReceived.data);
+    toast.success(voucherNo ? `Voucher No. ${voucherNo}` : cashReceived.data);
     setFormData({
       id: formData.id,
       mtmId: '',

@@ -20,6 +20,7 @@ import { toast } from 'react-toastify';
 
 import InputOnly from '../../../utils/fields/InputOnly';
 import { hasPermission } from '../../../utils/permissionChecker';
+import { extractVoucherNo } from '../extractVoucherNo';
 import {
   editCashReceived,
   storeCashReceived,
@@ -118,7 +119,14 @@ const GeneralCashReceived = () => {
       const response: any = await dispatch(storeCashReceived(updatedTableData) as any);
 
       if (response?.success) {
-        toast.success(response.message || 'Saved successfully.');
+        // The endpoint returns the voucher number inside its success text —
+        // sometimes as `message`, sometimes as `data` — so check both.
+        const voucherNo = extractVoucherNo(
+          typeof response.data === 'string' ? response.data : response.message,
+        );
+        toast.success(
+          voucherNo ? `Voucher No. ${voucherNo}` : 'Saved successfully.',
+        );
         setFormData(initialReceivedItem);
         setTableData([]);
         setIsUpdating(false);

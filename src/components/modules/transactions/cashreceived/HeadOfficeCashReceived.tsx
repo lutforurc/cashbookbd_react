@@ -30,6 +30,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { extractVoucherNo } from '../extractVoucherNo';
 
 const normalizeSuggestionItems = (items: any) =>
   Array.isArray(items)
@@ -228,7 +229,10 @@ const HeadOfficeCashReceived = () => {
     }
 
     if (typeof cashReceived.data === 'string') {
-      toast.success(cashReceived.data);
+      // The success string carries the voucher number in inconsistent
+      // wording — show just the number.
+      const voucherNo = extractVoucherNo(cashReceived.data);
+      toast.success(voucherNo ? `Voucher No. ${voucherNo}` : cashReceived.data);
     }
     setFormData((prev) => ({
       ...initialReceivedItem,
