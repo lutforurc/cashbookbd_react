@@ -2,6 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from './apiRoutes';
+import { getDeviceId } from './deviceId';
 
 const AUTH_TOKEN_COOKIE = '_trio_lead_token';
 
@@ -18,6 +19,8 @@ httpService.interceptors.request.use(function (config) {
     const token = getStoredToken();
     config.xsrfHeaderName = 'X-XSRF-TOKEN';
     config.withCredentials = true;
+    // Identifies this browser as one device slot against the plan's limit.
+    config.headers['X-Device-Id'] = getDeviceId();
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -73,8 +76,13 @@ httpService.interceptors.response.use(
             return Promise.reject(error);
         }
 
+        // The device-limit 403 is a normal outcome of logging in, not a
+        // permission failure — the login screen renders its own device
+        // chooser for it, so don't show the generic toast over the top.
+        const isDeviceLimit = error.response?.data?.error?.code === 10010;
+
         // Authenticated but not allowed — components rarely handle 403 distinctly.
-        if (status === 403) {
+        if (status === 403 && !isDeviceLimit) {
             toast.error(error.response?.data?.message || 'You do not have permission to perform this action.', {
                 toastId: 'forbidden',
             });

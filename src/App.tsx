@@ -8,6 +8,7 @@ import Calendar from './pages/Calendar';
 import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
 import Profile from './pages/Profile';
+import MyDevices from './components/modules/devices/MyDevices';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
@@ -260,6 +261,7 @@ function App() {
               <Route path={routes.main} element={<DashboardIndex />} />
               <Route path={routes.dashboard} element={<DashboardIndex />} />
               <Route path={routes.profile} element={<Profile />} />
+              <Route path={routes.my_devices} element={<MyDevices />} />
               <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
               <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
               <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />

@@ -173,6 +173,14 @@ const DropdownUser = () => {
                 Account Settings
               </Link>
             </li>
+            <li>
+              <Link
+                to={routes.my_devices}
+                className="flex items-center pl-9 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+              >
+                My Devices
+              </Link>
+            </li>
             {me && (
               <li>
                 <Link

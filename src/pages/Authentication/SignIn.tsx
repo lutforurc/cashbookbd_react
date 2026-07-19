@@ -10,9 +10,10 @@ import { getSettings } from '../../components/modules/settings/settingsSlice';
 import { FiEye, FiEyeOff, FiLogIn } from 'react-icons/fi';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 import { getSignInTitleByHost } from '../../components/services/tenantTitles';
+import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotice';
 
 const SignIn: React.FC = () => {
-  const { isLoading, errors, isLoggedIn } = useSelector((state: any) => state.auth);
+  const { isLoading, errors, isLoggedIn, deviceLimit } = useSelector((state: any) => state.auth);
 
   const [checkPassword, setCheckPassword] = useState(true);
   const hostname = window.location.hostname;
@@ -53,6 +54,17 @@ const SignIn: React.FC = () => {
 
   const handleCheckPassword = () => setCheckPassword((p) => !p);
 
+  const submitLogin = () => {
+    dispatch(
+      login({
+        loginId: formData.loginId,
+        password: formData.password,
+        remember: formData.remember,
+        callback: () => { },
+      }) as any,
+    );
+  };
+
   const handleLogin = (e: any) => {
     e.preventDefault();
 
@@ -65,14 +77,7 @@ const SignIn: React.FC = () => {
       return;
     }
 
-    dispatch(
-      login({
-        loginId: formData.loginId,
-        password: formData.password,
-        remember: formData.remember,
-        callback: () => { },
-      }) as any,
-    );
+    submitLogin();
   };
 
   useEffect(() => {
@@ -205,6 +210,18 @@ const SignIn: React.FC = () => {
                       Forgot password?
                     </Link>
                   </div>
+
+                  {deviceLimit && (
+                    <div className="mb-4">
+                      <DeviceLimitNotice
+                        block={deviceLimit}
+                        loginId={formData.loginId}
+                        password={formData.password}
+                        onReleased={submitLogin}
+                        onCancel={() => dispatch({ type: 'AUTH/login/deviceLimitDismissed' })}
+                      />
+                    </div>
+                  )}
 
                   <div className="mb-2">
 
