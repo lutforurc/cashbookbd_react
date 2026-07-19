@@ -7,7 +7,7 @@ import Loader from '../../common/Loader';
 import { login } from '../../features/authReducer';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { getSettings } from '../../components/modules/settings/settingsSlice';
-import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiBarChart2, FiShield, FiTrendingUp } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiShoppingCart, FiUsers, FiPieChart, FiTrendingUp } from 'react-icons/fi';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 import { getSignInTitleByHost } from '../../components/services/tenantTitles';
 import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotice';
@@ -153,32 +153,39 @@ const SignIn: React.FC = () => {
               </h1>
 
               <p className="mt-5 max-w-md text-lg leading-relaxed text-white/50">
-                A clean workspace for daily business — everything in one place.
+                Multi-branch accounting, inventory and payroll — with role-based
+                permissions and a full audit trail.
               </p>
 
               {/* Features */}
-              <ul className="mt-12 space-y-6">
+              <ul className="mt-10 space-y-5">
                 {[
                   {
                     icon: FiBookOpen,
                     tint: 'bg-meta-3/15 text-meta-3',
-                    title: 'Ledger and Vouchers',
-                    desc: 'Clear posting, balance and reports',
+                    title: 'Vouchers and Chart of Accounts',
+                    desc: 'Cash, bank, journal and four-level CoA',
                   },
                   {
-                    icon: FiBarChart2,
+                    icon: FiShoppingCart,
                     tint: 'bg-primary/20 text-secondary',
-                    title: 'Sales and Payroll',
-                    desc: 'Inventory and attendance in sync',
+                    title: 'Sales, Purchase and Stock',
+                    desc: 'Invoices, returns, orders and warehouse transfer',
                   },
                   {
-                    icon: FiShield,
+                    icon: FiUsers,
+                    tint: 'bg-meta-10/20 text-meta-10',
+                    title: 'HR, Attendance and Payroll',
+                    desc: 'Salary, festival bonus, leave and overtime',
+                  },
+                  {
+                    icon: FiPieChart,
                     tint: 'bg-meta-6/15 text-meta-6',
-                    title: 'Secure by Design',
-                    desc: 'Device-aware login and audit trail',
+                    title: 'Reports and Statements',
+                    desc: 'Cash book, ledger, trial balance and P&L',
                   },
                 ].map(({ icon: Icon, tint, title, desc }) => (
-                  <li key={title} className="flex items-start gap-4">
+                  <li key={title} className="flex max-w-sm items-start gap-4">
                     <span
                       className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-white/10 ${tint}`}
                     >
