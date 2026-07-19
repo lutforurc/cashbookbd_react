@@ -16,6 +16,7 @@ import { getCoal3ByCoal4 } from "../../chartofaccounts/levelthree/coal3Sliders";
 import httpService from "../../../services/httpService";
 import { toast } from "react-toastify";
 import { unitSalePaymentCreate, unitSalePaymentsDdl } from "./unitSalePaymentsSlice";
+import { trxDateToDate, trxDateToIso } from "../../../utils/utils-functions/transactionDate";
 
 const LIST_PATH = "/admin/unit-payment-list";
 
@@ -60,12 +61,22 @@ const initialForm: FormState = {
 export default function UnitSalePaymentEntry() {
   const coal3 = useSelector((s: any) => s.coal3);
   const unitSalePayments = useSelector((s: any) => s.unitPayments);
+  const settings = useSelector((s: any) => s.settings);
   const dispatch = useDispatch<any>();
+
+  // Entries belong to the branch's open transaction date, which trails the
+  // calendar until day close runs. Fall back to today only if it is unknown.
+  const trxDt = settings?.data?.trx_dt;
+  const defaultPaymentDate = trxDateToIso(trxDt) || dayjs().format("YYYY-MM-DD");
+  const defaultPaymentDateObj = trxDateToDate(trxDt) ?? new Date();
   const navigate = useNavigate();
   const location = useLocation();
   const navigationState = (location.state ?? {}) as any;
 
-  const [form, setForm] = useState<FormState>(initialForm);
+  const [form, setForm] = useState<FormState>({
+    ...initialForm,
+    payment_date: defaultPaymentDate,
+  });
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
   const [customerSearch, setCustomerSearch] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -76,7 +87,9 @@ export default function UnitSalePaymentEntry() {
   const errMsg = (e: any, fallback: string) =>
     e?.response?.data?.message || e?.message || fallback;
 
-  const [paymentDateObj, setPaymentDateObj] = useState<Date | null>(new Date());
+  const [paymentDateObj, setPaymentDateObj] = useState<Date | null>(defaultPaymentDateObj);
+  // Once the user picks a date, stop overwriting it when settings refresh.
+  const [paymentDateTouched, setPaymentDateTouched] = useState(false);
   const [chequeDueDateObj, setChequeDueDateObj] = useState<Date | null>(null);
   const [chequeCollectDateObj, setChequeCollectDateObj] = useState<Date | null>(null);
   const [chequeBounceDateObj, setChequeBounceDateObj] = useState<Date | null>(null);
@@ -381,12 +394,26 @@ export default function UnitSalePaymentEntry() {
     });
   };
 
+  // settings can still be loading on first render, so the initial state above
+  // may have fallen back to today. Correct it once trx_dt arrives, unless the
+  // user has already chosen a date themselves.
+  useEffect(() => {
+    if (paymentDateTouched) return;
+
+    const iso = trxDateToIso(trxDt);
+    if (!iso) return;
+
+    setForm((prev) => (prev.payment_date === iso ? prev : { ...prev, payment_date: iso }));
+    setPaymentDateObj(trxDateToDate(trxDt));
+  }, [trxDt, paymentDateTouched]);
+
   const pretty = (v?: string) =>
     v ? v.toString().replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : "-";
 
   const resetForm = () => {
-    setForm(initialForm);
-    setPaymentDateObj(new Date());
+    setForm({ ...initialForm, payment_date: defaultPaymentDate });
+    setPaymentDateTouched(false);
+    setPaymentDateObj(defaultPaymentDateObj);
     setChequeDueDateObj(null);
     setChequeCollectDateObj(null);
     setChequeBounceDateObj(null);
@@ -621,10 +648,12 @@ export default function UnitSalePaymentEntry() {
                 className="font-medium text-sm w-full h-8.5"
                 selectedDate={paymentDateObj}
                 setSelectedDate={(d: Date | null) => {
+                  setPaymentDateTouched(true);
                   setPaymentDateObj(d);
                   setField("payment_date", d ? dayjs(d).format("YYYY-MM-DD") : "");
                 }}
                 setCurrentDate={(d: Date | null) => {
+                  setPaymentDateTouched(true);
                   setPaymentDateObj(d);
                   setField("payment_date", d ? dayjs(d).format("YYYY-MM-DD") : "");
                 }}

@@ -384,7 +384,14 @@ export default function UnitSalePage() {
 
 
     if (storeSalePricing.fulfilled.match(response)) {
-      toast.success(response?.payload?.message || "Unit sale transaction saved successfully");
+      // Prefer the structured vr_no over the message text, which is only a
+      // sentence the API happens to phrase this way today.
+      const vrNo = response?.payload?.data?.data?.vr_no;
+      toast.success(
+        vrNo
+          ? `Vr. No. ${vrNo}`
+          : response?.payload?.message || "Unit sale transaction saved successfully",
+      );
 
       // ✅ clear only the table part + inputs
       setItems([]);
