@@ -42,6 +42,7 @@ export interface SubscriptionPlan {
   max_customers?: number | null;
   max_products?: number | null;
   max_users?: number | null;
+  max_devices_per_user?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;
   support_time?: string | null;
@@ -62,6 +63,7 @@ export interface SubscriptionPlanPayload {
   max_customers?: number | null;
   max_products?: number | null;
   max_users?: number | null;
+  max_devices_per_user?: number | null;
   max_branches?: number | null;
   max_transactions_per_month?: number | null;
   support_time?: string | null;

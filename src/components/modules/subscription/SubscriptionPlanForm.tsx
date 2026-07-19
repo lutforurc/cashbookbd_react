@@ -30,6 +30,7 @@ type PlanFormState = {
   max_customers: string;
   max_products: string;
   max_users: string;
+  max_devices_per_user: string;
   max_branches: string;
   max_transactions_per_month: string;
   support_time: string;
@@ -63,6 +64,7 @@ const initialForm: PlanFormState = {
   max_customers: '',
   max_products: '',
   max_users: '',
+  max_devices_per_user: '',
   max_branches: '',
   max_transactions_per_month: '',
   support_time: '',
@@ -109,6 +111,7 @@ const SubscriptionPlanForm: React.FC = () => {
       max_customers: editingPlan.max_customers ?? '',
       max_products: editingPlan.max_products ?? '',
       max_users: editingPlan.max_users ?? '',
+      max_devices_per_user: editingPlan.max_devices_per_user ?? '',
       max_branches: editingPlan.max_branches ?? '',
       max_transactions_per_month: editingPlan.max_transactions_per_month ?? '',
       support_time: editingPlan.support_time || '',
@@ -168,6 +171,7 @@ const SubscriptionPlanForm: React.FC = () => {
         max_customers: editingPlan.max_customers ?? '',
         max_products: editingPlan.max_products ?? '',
         max_users: editingPlan.max_users ?? '',
+        max_devices_per_user: editingPlan.max_devices_per_user ?? '',
         max_branches: editingPlan.max_branches ?? '',
         max_transactions_per_month: editingPlan.max_transactions_per_month ?? '',
         support_time: editingPlan.support_time || '',
@@ -208,6 +212,7 @@ const SubscriptionPlanForm: React.FC = () => {
       max_customers: toNullableNumber(form.max_customers),
       max_products: toNullableNumber(form.max_products),
       max_users: toNullableNumber(form.max_users),
+      max_devices_per_user: toNullableNumber(form.max_devices_per_user),
       max_branches: toNullableNumber(form.max_branches),
       max_transactions_per_month: toNullableNumber(form.max_transactions_per_month),
       support_time: form.support_time.trim() || undefined,
@@ -360,6 +365,17 @@ const SubscriptionPlanForm: React.FC = () => {
             value={form.max_users}
             onChange={handleChange as any}
             inputMode="numeric"
+            placeholder="Blank = Unlimited"
+          />
+          <InputElement
+            id="max_devices_per_user"
+            name="max_devices_per_user"
+            label="Max Devices / User"
+            type="number"
+            value={form.max_devices_per_user}
+            onChange={handleChange as any}
+            inputMode="numeric"
+            min={1}
             placeholder="Blank = Unlimited"
           />
           <InputElement
