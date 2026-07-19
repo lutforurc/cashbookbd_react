@@ -158,9 +158,14 @@ const SignIn: React.FC = () => {
                 </span>
               </h1>
 
-              <p className="mt-3.5 max-w-lg text-sm leading-relaxed text-white/45 2xl:mt-5 2xl:text-base">
-                Multi-branch accounting, inventory and payroll — with role-based
-                permissions and a full audit trail.
+              {/* Brighter than the surrounding copy, with the three pillars
+                  tinted to match their cards further down the panel. */}
+              <p className="mt-3.5 max-w-lg text-sm leading-relaxed text-white/70 2xl:mt-5 2xl:text-base">
+                Multi-branch{' '}
+                <span className="font-semibold text-meta-3">accounting</span>,{' '}
+                <span className="font-semibold text-meta-5">inventory</span> and{' '}
+                <span className="font-semibold text-meta-6">payroll</span> — with
+                role-based permissions and a full audit trail.
               </p>
 
               {/* The Android app signs in against this same API, so it is worth

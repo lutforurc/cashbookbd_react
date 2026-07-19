@@ -26,7 +26,6 @@ import routes from '../services/appRoutes';
 import { API_REMOTE_URL } from '../services/apiRoutes';
 import { hasMenuPermission } from './hasMenuPermission';
 import DropdownUser from '../Header/DropdownUser';
-import Logo from '../../images/logo/logo.svg';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -52,8 +51,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
     currentBranch?.company?.name ||
     settings?.data?.branch?.name ||
     'CashbookBD';
-  const companyLogo =
-    resolveLogoUrl(settings?.data?.company?.company_logo || currentBranch?.company?.company_logo) || Logo;
+  // Empty when the company has not uploaded one. Falling back to the bundled
+  // logo.svg would brand every such tenant "TailAdmin", so show the company
+  // name as text instead.
+  const companyLogo = resolveLogoUrl(
+    settings?.data?.company?.company_logo || currentBranch?.company?.company_logo,
+  );
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showCompanyName = !companyLogo || logoFailed;
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
 
@@ -147,14 +152,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
             className={`flex min-w-0 flex-1 items-center ${sidebarCollapsed ? 'lg:hidden' : ''}`}
             title={companyName}
           >
-            <img
-              src={companyLogo}
-              alt={companyName}
-              className={`block h-9 max-w-40 object-contain ${sidebarCollapsed ? 'lg:hidden' : ''}`}
-              onError={(event) => {
-                event.currentTarget.src = Logo;
-              }}
-            />
+            {showCompanyName ? (
+              <span
+                className={`block truncate text-lg font-bold leading-tight text-black dark:text-white ${sidebarCollapsed ? 'lg:hidden' : ''}`}
+              >
+                {companyName}
+              </span>
+            ) : (
+              <img
+                src={companyLogo}
+                alt={companyName}
+                className={`block h-9 max-w-40 object-contain ${sidebarCollapsed ? 'lg:hidden' : ''}`}
+                onError={() => setLogoFailed(true)}
+              />
+            )}
           </NavLink>
           <button
             type="button"
