@@ -9,14 +9,8 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import Pagination from '../../utils/utils-functions/Pagination';
 import SelectOption from '../../utils/utils-functions/SelectOption';
-import { API_REMOTE_URL } from '../../services/apiRoutes';
+import { resolveAssetUrl } from '../../services/resolveAssetUrl';
 import { getCompanies } from './companySlice';
-
-const resolveLogoUrl = (path?: string) => {
-  if (!path) return '';
-  if (/^(https?:|data:|blob:)/i.test(path)) return path;
-  return `${API_REMOTE_URL}/${path.replace(/^\/+/, '').replace(/^public\//i, '')}`;
-};
 
 const CompanyList = () => {
   const company = useSelector((state: any) => state.company);
@@ -92,7 +86,7 @@ const CompanyList = () => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => {
-        const logoUrl = resolveLogoUrl(row?.company_logo);
+        const logoUrl = resolveAssetUrl(row?.company_logo);
 
         return logoUrl ? (
           <img

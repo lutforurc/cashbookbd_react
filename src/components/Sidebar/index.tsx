@@ -23,7 +23,7 @@ import { hasPermission } from '../utils/permissionChecker';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
-import { API_REMOTE_URL } from '../services/apiRoutes';
+import { resolveAssetUrl } from '../services/resolveAssetUrl';
 import { hasMenuPermission } from './hasMenuPermission';
 import DropdownUser from '../Header/DropdownUser';
 
@@ -32,12 +32,6 @@ interface SidebarProps {
   setSidebarOpen: (arg: boolean) => void;
   mode?: 'sidebar' | 'topbar';
 }
-
-const resolveLogoUrl = (path?: string) => {
-  if (!path) return '';
-  if (/^(https?:|data:|blob:)/i.test(path)) return path;
-  return `${API_REMOTE_URL}/${path.replace(/^\/+/, '').replace(/^public\//i, '')}`;
-};
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps) => {
   const location = useLocation();
@@ -54,7 +48,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   // Empty when the company has not uploaded one. Falling back to the bundled
   // logo.svg would brand every such tenant "TailAdmin", so show the company
   // name as text instead.
-  const companyLogo = resolveLogoUrl(
+  const companyLogo = resolveAssetUrl(
     settings?.data?.company?.company_logo || currentBranch?.company?.company_logo,
   );
   const [logoFailed, setLogoFailed] = useState(false);

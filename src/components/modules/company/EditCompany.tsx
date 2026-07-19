@@ -6,15 +6,9 @@ import { toast } from 'react-toastify';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { getSettings } from '../settings/settingsSlice';
-import { API_REMOTE_URL } from '../../services/apiRoutes';
+import { resolveAssetUrl } from '../../services/resolveAssetUrl';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { editCompany, updateCompany } from './companySlice';
-
-const resolveLogoUrl = (path?: string) => {
-  if (!path) return '';
-  if (/^(https?:|data:|blob:)/i.test(path)) return path;
-  return `${API_REMOTE_URL}/${path.replace(/^\/+/, '').replace(/^public\//i, '')}`;
-};
 
 const buildCompanyFormData = (data: any, logoFile: File | null) => {
   const payload = new FormData();
@@ -66,7 +60,7 @@ const EditCompany = () => {
       company_logo: editData.company_logo || '',
     });
     setLogoFile(null);
-    setLogoPreview(resolveLogoUrl(editData.company_logo || ''));
+    setLogoPreview(resolveAssetUrl(editData.company_logo || ''));
   }, [company?.editData]);
 
   const handleChange = (field: string, value: string) => {
@@ -79,7 +73,7 @@ const EditCompany = () => {
   const handleLogoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
     setLogoFile(file);
-    setLogoPreview(file ? URL.createObjectURL(file) : resolveLogoUrl(formData.company_logo));
+    setLogoPreview(file ? URL.createObjectURL(file) : resolveAssetUrl(formData.company_logo));
   };
 
   const handleSubmit = async (event: FormEvent) => {
