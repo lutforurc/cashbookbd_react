@@ -7,7 +7,7 @@ import Loader from '../../common/Loader';
 import { login } from '../../features/authReducer';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { getSettings } from '../../components/modules/settings/settingsSlice';
-import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiShoppingCart, FiUsers, FiPieChart, FiTrendingUp } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiShoppingCart, FiUsers, FiPieChart, FiSmartphone } from 'react-icons/fi';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 import { getSignInTitleByHost } from '../../components/services/tenantTitles';
 import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotice';
@@ -114,25 +114,28 @@ const SignIn: React.FC = () => {
         <div className="grid h-full grid-cols-1 xl:grid-cols-2">
 
           {/* LEFT: Branding Panel */}
-          <div className="relative hidden h-full xl:flex xl:flex-col xl:overflow-y-auto bg-[#0B1B26]">
+          <div className="relative hidden h-full xl:flex xl:flex-col xl:overflow-hidden bg-[#0B1B26]">
 
             {/* Ambient glows */}
             <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-meta-3/20 blur-[120px]" />
             <div className="pointer-events-none absolute -bottom-32 right-0 h-[28rem] w-[28rem] rounded-full bg-primary/20 blur-[130px]" />
 
-            {/* Grid texture */}
+            {/* Grid texture. Fades from the top-left so it sits behind the
+                heading and dissolves before the feature tiles. */}
             <div
-              className="pointer-events-none absolute inset-0 opacity-[0.07]"
+              className="pointer-events-none absolute inset-0 opacity-[0.06]"
               style={{
                 backgroundImage:
                   'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
-                backgroundSize: '56px 56px',
-                maskImage: 'radial-gradient(ellipse at 30% 40%, #000 40%, transparent 75%)',
-                WebkitMaskImage: 'radial-gradient(ellipse at 30% 40%, #000 40%, transparent 75%)',
+                backgroundSize: '48px 48px',
+                maskImage: 'radial-gradient(120% 90% at 0% 0%, #000 0%, transparent 65%)',
+                WebkitMaskImage: 'radial-gradient(120% 90% at 0% 0%, #000 0%, transparent 65%)',
               }}
             />
 
-            <div className="relative z-10 my-auto px-14 py-12 2xl:px-20">
+            {/* Sizing is deliberately tight so the panel fits a 768px-tall
+                laptop without scrolling; 2xl relaxes it on roomier screens. */}
+            <div className="relative z-10 my-auto w-full px-12 py-10 2xl:px-20 2xl:py-14">
               {/* Badge */}
               <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 py-2 pl-3 pr-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
                 <span className="relative flex h-2 w-2">
@@ -143,7 +146,7 @@ const SignIn: React.FC = () => {
               </span>
 
               {/* Heading */}
-              <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight text-white 2xl:text-5xl">
+              <h1 className="mt-5 text-[2.25rem] font-bold leading-[1.05] tracking-tight text-white 2xl:mt-7 2xl:text-[3.25rem]">
                 Accounts,
                 <br />
                 Stock and{' '}
@@ -152,19 +155,30 @@ const SignIn: React.FC = () => {
                 </span>
               </h1>
 
-              <p className="mt-4 max-w-md leading-relaxed text-white/50 2xl:text-lg">
+              <p className="mt-3.5 max-w-lg text-sm leading-relaxed text-white/45 2xl:mt-5 2xl:text-base">
                 Multi-branch accounting, inventory and payroll — with role-based
                 permissions and a full audit trail.
               </p>
 
-              {/* Features */}
-              <ul className="mt-8 space-y-4">
+              {/* The Android app signs in against this same API, so it is worth
+                  saying up front rather than only in the footer line. */}
+              <div className="mt-4 inline-flex items-center gap-2.5 rounded-lg border border-meta-3/20 bg-meta-3/10 py-1.5 pl-2.5 pr-3.5">
+                <FiSmartphone className="h-4 w-4 shrink-0 text-meta-3" />
+                <span className="text-[13px] font-semibold text-white">
+                  Mobile app available
+                  <span className="font-normal text-white/45"> — on Android</span>
+                </span>
+              </div>
+
+              {/* Features. A 2x2 grid of tiles rather than a single narrow
+                  column, so the panel's width is actually used. */}
+              <ul className="mt-5 grid max-w-2xl gap-2.5 sm:grid-cols-2 2xl:mt-8">
                 {[
                   {
                     icon: FiBookOpen,
                     tint: 'bg-meta-3/15 text-meta-3',
-                    title: 'Vouchers and Chart of Accounts',
-                    desc: 'Cash, bank, journal and four-level CoA',
+                    title: 'Cash, Bank and Journal Transaction',
+                    desc: 'Receipts, payments and journal entries',
                   },
                   {
                     icon: FiShoppingCart,
@@ -185,57 +199,51 @@ const SignIn: React.FC = () => {
                     desc: 'Cash book, ledger, trial balance and P&L',
                   },
                 ].map(({ icon: Icon, tint, title, desc }) => (
-                  <li key={title} className="flex max-w-sm items-start gap-4">
+                  <li
+                    key={title}
+                    className="group flex items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 transition-colors duration-200 hover:border-white/15 hover:bg-white/[0.06]"
+                  >
                     <span
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-white/10 ${tint}`}
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ring-white/10 ${tint}`}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-4 w-4" />
                     </span>
-                    <span className="pt-0.5">
-                      <span className="block font-semibold text-white">{title}</span>
-                      <span className="block text-sm text-white/40">{desc}</span>
+                    <span className="min-w-0">
+                      <span className="block text-[13px] font-semibold leading-snug text-white">
+                        {title}
+                      </span>
+                      <span className="mt-0.5 block text-[11px] leading-snug text-white/40">
+                        {desc}
+                      </span>
                     </span>
                   </li>
                 ))}
               </ul>
 
-              {/* Live card — in flow so it centers with the copy above */}
-              <div className="mt-10 ml-auto w-72 rounded-2xl border border-white/10 bg-white/[0.07] p-5 shadow-2xl backdrop-blur-xl">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-white">Today</span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-meta-3/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-meta-3">
-                    <span className="h-1.5 w-1.5 rounded-full bg-meta-3" />
-                    Live
-                  </span>
-                </div>
-
-                <div className="mt-5 flex items-end justify-between">
-                  <div>
-                    <p className="text-xs text-white/40">Cash Balance</p>
-                    <p className="mt-1 text-3xl font-bold tracking-tight text-white">Tk 48.6K</p>
-                  </div>
-                  <FiTrendingUp className="mb-1 h-8 w-8 text-meta-3" />
-                </div>
-
-                <div className="my-4 h-px bg-white/10" />
-
-                <ul className="space-y-3">
-                  {[
-                    { dot: 'bg-meta-3', title: 'Cash Received', sub: 'Voucher #CR-1028' },
-                    { dot: 'bg-meta-6', title: 'Purchase Bill', sub: 'Inventory posted' },
-                  ].map((row) => (
-                    <li key={row.title} className="flex items-center gap-3">
-                      <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${row.dot}`} />
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium text-white/90">
-                          {row.title}
-                        </span>
-                        <span className="block truncate text-xs text-white/35">{row.sub}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* Footer: the secondary modules, each with its own accent so the
+                  row reads as a set rather than a wall of grey. Every one is a
+                  real module in the API (realestate, installment, requisition,
+                  warehouse-transfer, sms routes) — nothing aspirational here. */}
+              <ul className="mt-6 flex max-w-2xl flex-wrap gap-2 border-t border-white/[0.07] pt-5 2xl:mt-8 2xl:gap-2.5 2xl:pt-7">
+                {[
+                  // Business types the app has dedicated purchase/sales flows for.
+                  { label: 'Real Estate Business', ring: 'border-meta-3/40', text: 'text-meta-3' },
+                  { label: 'Electronics Business', ring: 'border-meta-5/40', text: 'text-meta-5' },
+                  { label: 'Trading Business', ring: 'border-meta-8/40', text: 'text-meta-8' },
+                  { label: 'General Business', ring: 'border-meta-7/40', text: 'text-meta-7' },
+                  // Secondary modules.
+                  { label: 'Installments Sales', ring: 'border-meta-10/40', text: 'text-meta-10' },
+                  { label: 'Warehouse Transfer', ring: 'border-meta-6/40', text: 'text-meta-6' },
+                  { label: 'SMS Alerts', ring: 'border-meta-1/40', text: 'text-meta-1' },
+                ].map(({ label, ring, text }) => (
+                  <li
+                    key={label}
+                    className={`rounded-lg border bg-black/25 px-2.5 py-1.5 text-xs font-bold tracking-tight ${ring} ${text} 2xl:px-3 2xl:py-2 2xl:text-[13px]`}
+                  >
+                    {label}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
