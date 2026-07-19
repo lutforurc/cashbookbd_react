@@ -114,7 +114,10 @@ const SignIn: React.FC = () => {
         <div className="grid h-full grid-cols-1 xl:grid-cols-2">
 
           {/* LEFT: Branding Panel */}
-          <div className="relative hidden h-full xl:flex xl:flex-col xl:overflow-hidden bg-[#0B1B26]">
+          {/* h-screen, not h-full: the grid row stretches to whichever column is
+              taller, so h-full would inherit the form's height and park the
+              branding content above the fold instead of centring it. */}
+          <div className="relative hidden h-full bg-[#0B1B26] xl:flex xl:h-screen xl:flex-col xl:justify-center xl:overflow-hidden">
 
             {/* Ambient glows */}
             <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-meta-3/20 blur-[120px]" />
@@ -135,7 +138,7 @@ const SignIn: React.FC = () => {
 
             {/* Sizing is deliberately tight so the panel fits a 768px-tall
                 laptop without scrolling; 2xl relaxes it on roomier screens. */}
-            <div className="relative z-10 my-auto w-full px-12 py-10 2xl:px-20 2xl:py-14">
+            <div className="relative z-10 w-full px-12 py-10 2xl:px-20 2xl:py-14">
               {/* Badge */}
               <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 py-2 pl-3 pr-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
                 <span className="relative flex h-2 w-2">
@@ -149,7 +152,7 @@ const SignIn: React.FC = () => {
               <h1 className="mt-5 text-[2.25rem] font-bold leading-[1.05] tracking-tight text-white 2xl:mt-7 2xl:text-[3.25rem]">
                 Accounts,
                 <br />
-                Stock and{' '}
+                Procurement and{' '}
                 <span className="bg-gradient-to-r from-meta-3 to-secondary bg-clip-text text-transparent">
                   HR
                 </span>
@@ -227,10 +230,10 @@ const SignIn: React.FC = () => {
               <ul className="mt-6 flex max-w-2xl flex-wrap gap-2 border-t border-white/[0.07] pt-5 2xl:mt-8 2xl:gap-2.5 2xl:pt-7">
                 {[
                   // Business types the app has dedicated purchase/sales flows for.
-                  { label: 'Real Estate Business', ring: 'border-meta-3/40', text: 'text-meta-3' },
+                  { label: 'General Business', ring: 'border-meta-3/40', text: 'text-meta-3' },
                   { label: 'Electronics Business', ring: 'border-meta-5/40', text: 'text-meta-5' },
                   { label: 'Trading Business', ring: 'border-meta-8/40', text: 'text-meta-8' },
-                  { label: 'General Business', ring: 'border-meta-7/40', text: 'text-meta-7' },
+                  { label: 'Real Estate Business', ring: 'border-meta-7/40', text: 'text-meta-7' },
                   // Secondary modules.
                   { label: 'Installments Sales', ring: 'border-meta-10/40', text: 'text-meta-10' },
                   { label: 'Warehouse Transfer', ring: 'border-meta-6/40', text: 'text-meta-6' },
