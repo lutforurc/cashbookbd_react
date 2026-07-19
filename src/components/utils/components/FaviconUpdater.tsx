@@ -1,16 +1,11 @@
 import { useEffect } from 'react';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
+import { resolveAssetUrl } from '../../services/resolveAssetUrl';
 
 interface Props {
   companyName?: string;
   companyLogo?: string;
 }
-
-const resolveImageUrl = (path?: string) => {
-  if (!path) return '';
-  if (/^(https?:|data:|blob:)/i.test(path)) return path;
-  return `${API_REMOTE_URL}/${path.replace(/^\/+/, '').replace(/^public\//i, '')}`;
-};
 
 const FaviconUpdater = ({ companyName, companyLogo }: Props) => {
   useEffect(() => {
@@ -22,7 +17,7 @@ const FaviconUpdater = ({ companyName, companyLogo }: Props) => {
         .replace(/\s+/g, '-');
     };
 
-    const logoFaviconUrl = resolveImageUrl(companyLogo);
+    const logoFaviconUrl = resolveAssetUrl(companyLogo);
     const api_remote_url =  API_REMOTE_URL  
 
     const dynamicFaviconUrl = companyName
@@ -34,12 +29,17 @@ const FaviconUpdater = ({ companyName, companyLogo }: Props) => {
       const timestamp = new Date().getTime(); // prevent caching
       const finalUrl = `${url}?v=${timestamp}`;
 
-      let link = document.querySelector("link[rel~='icon']");
+      let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
       if (!link) {
         link = document.createElement('link');
         link.rel = 'icon';
         document.head.appendChild(link);
       }
+
+      // index.html declares type="image/svg+xml"; reusing that tag for a PNG
+      // logo leaves the declared type contradicting the file, and browsers
+      // drop the icon. Let the browser sniff it instead.
+      link.removeAttribute('type');
       link.href = finalUrl;
     };
 
