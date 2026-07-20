@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getProduct, updateProductQtyRate } from './productSlice';
+import { deleteProduct, getProduct, updateProductQtyRate } from './productSlice';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -94,6 +94,9 @@ const Product = (user: any) => {
 
   const printRef = useRef<HTMLDivElement>(null);
   const didInitRef = useRef(false);
+  const [deleteRow, setDeleteRow] = useState<any>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const [fontSize, setFontSize] = useState<number>(12);
   const [rowsPerPage, setRowsPerPage] = useState<number>(25);
 
@@ -268,6 +271,27 @@ const Product = (user: any) => {
     navigate(`/product/edit/${row.product_id}`);
   };
 
+  const handleDeleteConfirm = () => {
+    if (!deleteRow?.product_id) return;
+
+    setDeleteLoading(true);
+    dispatch(
+      deleteProduct(deleteRow.product_id, (res: any) => {
+        setDeleteLoading(false);
+        setDeleteRow(null);
+
+        if (res?.success) {
+          toast.success(res?.message || 'Product deleted successfully.');
+          dispatch(
+            getProduct({ page, perPage, categoryId, brandId, search: appliedSearch }) as any,
+          );
+        } else {
+          toast.error(res?.message || 'Product could not be deleted.');
+        }
+      }) as any,
+    );
+  };
+
   const handleCategoryChange = (selectedOption: any) => {
     setCategoryId(selectedOption ? selectedOption.value : null);
     setPage(1);
@@ -434,7 +458,9 @@ const Product = (user: any) => {
             <div className="flex justify-center gap-2">
               <FiBook className="cursor-pointer text-blue-500" />
               <FiEdit2 className="cursor-pointer text-blue-500" onClick={() => handleProductEdit(row)} />
-              <FiTrash2 className="cursor-pointer text-red-500" />
+              <button type="button" onClick={() => setDeleteRow(row)} title="Delete">
+                <FiTrash2 className="cursor-pointer text-red-500" />
+              </button>
             </div>
           );
         },
@@ -578,6 +604,47 @@ const Product = (user: any) => {
           />
         </div>
       </div>
+
+      {deleteRow && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+            <div className="flex items-center gap-3 border-b border-stroke px-5 py-3 dark:border-strokedark">
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
+                <FiTrash2 />
+              </span>
+              <h3 className="text-base font-semibold text-black dark:text-white">Delete Product</h3>
+            </div>
+
+            <div className="px-5 py-4 text-sm text-slate-600 dark:text-bodydark">
+              Are you sure you want to delete
+              <span className="font-semibold text-black dark:text-white"> {deleteRow.name}</span>?
+              <p className="mt-1 text-xs text-slate-400">
+                This cannot be undone. A product already used in a transaction
+                will not be deleted.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
+              <button
+                type="button"
+                onClick={() => setDeleteRow(null)}
+                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+              >
+                Cancel
+              </button>
+              <ButtonLoading
+                type="button"
+                onClick={handleDeleteConfirm}
+                buttonLoading={deleteLoading}
+                disabled={deleteLoading}
+                label="Delete"
+                icon={<FiTrash2 className="mr-2" />}
+                className="h-9 bg-red-600 px-6 hover:bg-red-700"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

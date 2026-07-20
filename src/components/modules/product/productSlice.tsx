@@ -21,6 +21,7 @@ import {
 import httpService from '../../services/httpService';
 import {
   API_PRODUCT_DDL_LIST_URL,
+  API_PRODUCT_DELETE_URL,
   API_PRODUCT_EDIT_URL,
   API_PRODUCT_LIST_URL,
   API_PRODUCT_STORE_URL,
@@ -208,6 +209,27 @@ export const updateProduct = (data: any, callback: any) => (dispatch: any) => {
         type: PRODUCT_UPDATE_ERROR,
         payload: 'Something went wrong.',
       });
+    });
+};
+
+export const deleteProduct = (productId: string, callback: any) => () => {
+  httpService
+    .post(API_PRODUCT_DELETE_URL, { product_id: productId })
+    .then((res) => {
+      if ('function' === typeof callback) {
+        callback(res.data);
+      }
+    })
+    .catch((er) => {
+      if ('function' === typeof callback) {
+        // notFound() answers with a 2xx, so a real throw here is a network or
+        // server error; keep whatever the API said when it said anything.
+        callback({
+          success: false,
+          message:
+            er?.response?.data?.message || 'Product could not be deleted.',
+        });
+      }
     });
 };
 
