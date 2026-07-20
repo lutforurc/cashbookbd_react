@@ -77,7 +77,13 @@ export const updateCompany = createAsyncThunk(
       const responseData = res.data;
 
       if (responseData?.success === false) {
-        return rejectWithValue(responseData?.error?.message || 'Company update failed');
+        // notFound() puts the reason in `message` and leaves `error.message` empty,
+        // so read both before falling back to the generic text.
+        return rejectWithValue(
+          responseData?.error?.message ||
+            responseData?.message ||
+            'Company update failed',
+        );
       }
 
       return responseData;
