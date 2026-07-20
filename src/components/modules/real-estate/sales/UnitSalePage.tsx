@@ -407,7 +407,9 @@ export default function UnitSalePage() {
       setBankName("");
       setBranchName("");
     } else {
-      toast.info(response?.payload || "Failed to save.");
+      // A failed save is an error, not a notice: toast.info renders it in the
+      // same blue style as a success.
+      toast.error(response?.payload || "Failed to save.");
     }
   };
 
