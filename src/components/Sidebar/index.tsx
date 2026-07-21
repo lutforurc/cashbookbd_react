@@ -746,6 +746,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'cashbook.view') && (
                             <li>
                               <NavLink
+                                to={routes.report_bankbook}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Bank Book
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'cashbook.view') && (
+                            <li>
+                              <NavLink
                                 to={routes.cash_bank_received_payment}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +

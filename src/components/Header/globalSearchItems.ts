@@ -60,6 +60,7 @@ const globalSearchItems: GlobalSearchItem[] = [
 
   { title: 'Date Wise Total', path: routes.report_date_wise_total, group: 'Reports', permissions: ['date.wise.total'] },
   { title: 'Cashbook', path: routes.report_cashbook, group: 'Reports', permissions: ['cashbook.view'] },
+  { title: 'Bank Book', path: routes.report_bankbook, group: 'Reports', permissions: ['cashbook.view'] },
   { title: 'Profit Loss', path: routes.profit_loss, group: 'Reports', permissions: ['cashbook.view'] },
   { title: 'Balance Sheet', path: routes.balance_sheet, group: 'Reports', permissions: ['cashbook.view'] },
   { title: 'Trial Balance Level 3', path: routes.trial_balance_level3, group: 'Reports', permissions: ['cashbook.view'] },

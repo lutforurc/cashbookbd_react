@@ -34,6 +34,7 @@ import Category from './components/modules/category/Category';
 import AddCategory from './components/modules/category/AddCategory';
 import EditCategory from './components/modules/category/EditCategory';
 import CashBook from './components/modules/reports/cashbook/CashBook';
+import BankBook from './components/modules/reports/bankbook/BankBook';
 import CashBankReceivedPayment from './components/modules/reports/cash-bank-received-payment/CashBankReceivedPayment';
 import Ledger from './components/modules/reports/ledger/Ledger';
 import CoaL4 from './components/modules/chartofaccounts/levelfour/CoaL4';
@@ -413,6 +414,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
+              <Route path={routes.report_bankbook} element={<BankBook user={me} />} />
               <Route path={routes.cash_bank_received_payment} element={<CashBankReceivedPayment user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'profit.loss']} loading={permissionsLoading} />}>

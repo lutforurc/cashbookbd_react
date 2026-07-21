@@ -257,6 +257,7 @@ export const API_REPORT_CAT_IN_OUT_URL = `${API_BASE_URL}/reports/category-wise-
 
 // Cash Book url
 export const API_REPORT_CASHBOOK_URL = `${API_BASE_URL}/reports/cashbook`;
+export const API_REPORT_BANKBOOK_URL = `${API_BASE_URL}/reports/bankbook`;
 export const API_REPORT_CASH_BANK_RECEIVED_PAYMENT_URL = `${API_BASE_URL}/reports/cash-bank-received-payment`;
 export const API_REPORT_GROUP_DATA_URL = `${API_BASE_URL}/reports/group/report/data`;
 export const API_REPORT_GROUP_SETUP_URL = `${API_BASE_URL}/reports/group-report/setup`;

@@ -10,6 +10,7 @@ import dateWiseTotalReducer from './components/modules/reports/datewisedata/date
 import branchDdlReducer from './components/modules/branch/ddlBranchSlider';
 import categoryReducer from './components/modules/category/categorySlice';
 import cashBookReducer from './components/modules/reports/cashbook/cashBookSlice';
+import bankBookReducer from './components/modules/reports/bankbook/bankBookSlice';
 import ledgerReducer from './components/modules/reports/ledger/ledgerSlice';
 import coal4Reducer from './components/modules/chartofaccounts/levelfour/coal4Sliders';
 import coal3Reducer from './components/modules/chartofaccounts/levelthree/coal3Sliders';
@@ -96,6 +97,7 @@ const store = configureStore({
     dateWiseTotal: dateWiseTotalReducer,
     branchDdl: branchDdlReducer,
     cashBook: cashBookReducer,
+    bankBook: bankBookReducer,
     profitLoss: profitLossSlice,
     balanceSheet: balanceSheetSlice,
     trialBalanceLevel3: trialBalanceLevel3Slice,

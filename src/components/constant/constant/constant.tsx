@@ -265,6 +265,11 @@ export const CASHBOOK_DATA_LIST_PENDING = 'CASHBOOK/DATA/list/pending';
 export const CASHBOOK_DATA_LIST_SUCCESS = 'CASHBOOK/DATA/list/success';
 export const CASHBOOK_DATA_LIST_ERROR = 'CASHBOOK/DATA/list/error';
 
+// Bank Book Data
+export const BANKBOOK_DATA_LIST_PENDING = 'BANKBOOK/DATA/list/pending';
+export const BANKBOOK_DATA_LIST_SUCCESS = 'BANKBOOK/DATA/list/success';
+export const BANKBOOK_DATA_LIST_ERROR = 'BANKBOOK/DATA/list/error';
+
 // Due List Data
 export const DUE_LIST_DATA_PENDING = 'DUE/DATA/list/pending';
 export const DUE_LIST_DATA_SUCCESS = 'DUE/DATA/list/success';
