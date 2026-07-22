@@ -198,6 +198,10 @@ export const API_ADMIN_NOTIFICATIONS_URL = `${API_BASE_URL}/admin/notifications`
 export const API_ADMIN_INVENTORY_SYSTEMS_URL = `${API_BASE_URL}/admin/inventory-systems`;
 export const API_INVENTORY_SYSTEMS_DDL_URL = `${API_BASE_URL}/inventory-systems/ddl`;
 
+// Highlight Rules (platform admin CRUD + open active list the reports apply)
+export const API_ADMIN_HIGHLIGHT_RULES_URL = `${API_BASE_URL}/admin/highlight-rules`;
+export const API_HIGHLIGHT_RULES_ACTIVE_URL = `${API_BASE_URL}/highlight-rules/active`;
+
 // Role Routes
 export const API_ROLE_LIST_URL = `${API_BASE_URL}/role/role-list`;
 export const API_DDL_ROLE_LIST_URL = `${API_BASE_URL}/ddl/role/role-list`;

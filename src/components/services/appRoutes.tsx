@@ -15,6 +15,7 @@ const ROUTES = {
   reseller_admin: '/admin/resellers',
   admin_notifications: '/admin/notifications',
   inventory_systems: '/admin/inventory-systems',
+  highlight_rules: '/admin/highlight-rules',
   reseller_dashboard: '/reseller/dashboard',
 
   // Customer Login

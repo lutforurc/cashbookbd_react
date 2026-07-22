@@ -184,6 +184,7 @@ import BillingHistory from './components/modules/subscription/BillingHistory';
 import SubscriptionAdmin from './components/modules/subscription/SubscriptionAdmin';
 import AdminNotifications from './components/modules/admin-notifications/AdminNotifications';
 import InventorySystem from './components/modules/inventory-system/InventorySystem';
+import HighlightRules from './components/modules/highlight-rules/HighlightRules';
 import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
 import SubscriptionPlanForm from './components/modules/subscription/SubscriptionPlanForm';
 import RequireUserQuota from './components/auth/RequireUserQuota';
@@ -272,6 +273,7 @@ function App() {
               <Route path={routes.reseller_admin} element={<ResellerAdmin />} />
               <Route path={routes.admin_notifications} element={<AdminNotifications />} />
               <Route path={routes.inventory_systems} element={<InventorySystem />} />
+              <Route path={routes.highlight_rules} element={<HighlightRules />} />
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.dashboard.view']} loading={permissionsLoading} />}>
                 <Route path={routes.reseller_dashboard} element={<ResellerDashboard />} />
               </Route>
