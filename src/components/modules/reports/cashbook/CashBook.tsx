@@ -12,6 +12,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCashBook } from './cashBookSlice';
 import { FiCheckSquare, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import Table from '../../../utils/others/Table';
+import { useHighlightRules } from '../../../utils/highlight/useHighlightRules';
+import { matchHighlightRule, highlightLineClass } from '../../../utils/highlight/highlightRules';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import dayjs from 'dayjs';
 import ImagePopup from '../../../utils/others/ImagePopup';
@@ -77,6 +79,7 @@ const readSavedCashBookFilters = (): CashBookSavedFilters | null => {
 
 const CashBook = (user: any) => {
   const dispatch = useDispatch();
+  const highlightRules = useHighlightRules();
   const navigate = useNavigate();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const cashBookData = useSelector((state) => state.cashBook);
@@ -402,7 +405,9 @@ const CashBook = (user: any) => {
             </a>
           </div>
           <div className="text-sm text-gray-500 break-words whitespace-normal">
-            {row?.remarks}
+            <span className={highlightLineClass(matchHighlightRule(row?.remarks, highlightRules))}>
+              {row?.remarks}
+            </span>
          
               {row?.order_number ? (
 	                <p className="text-sm text-fuchsia-600 dark:text-green-500">{row.order_number}</p>

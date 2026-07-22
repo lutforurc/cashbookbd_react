@@ -7,6 +7,8 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import Table from '../../../utils/others/Table';
+import { useHighlightRules } from '../../../utils/highlight/useHighlightRules';
+import { matchHighlightRule, highlightLineClass } from '../../../utils/highlight/highlightRules';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { getLedger } from './ledgerSlice';
@@ -78,6 +80,7 @@ const readSavedLedgerFilters = (): LedgerSavedFilters | null => {
 
 const Ledger = (user: any) => {
   const dispatch = useDispatch();
+  const highlightRules = useHighlightRules();
   const navigate = useNavigate();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.ledger);
@@ -404,7 +407,13 @@ const Ledger = (user: any) => {
         <>
           <p>{getLedgerRowName(row)}</p>
           <div className="text-sm text-gray-500 lg:max-w-150 break-words whitespace-normal block">
-            {row.remarks === '-' ? '' : row.remarks}
+            <span
+              className={highlightLineClass(
+                matchHighlightRule(row.remarks === '-' ? '' : row.remarks, highlightRules),
+              )}
+            >
+              {row.remarks === '-' ? '' : row.remarks}
+            </span>
           </div>
           {branchId === null && (
             <div

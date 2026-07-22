@@ -16,6 +16,8 @@ import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import Table from '../../../utils/others/Table';
+import { useHighlightRules } from '../../../utils/highlight/useHighlightRules';
+import { matchHighlightRule, highlightLineClass } from '../../../utils/highlight/highlightRules';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   clearCustomerSupplierStatement,
@@ -88,6 +90,7 @@ const downloadExcelHtml = (html: string, filename: string) => {
 
 const LedgerWithProduct = (user: any) => {
   const dispatch = useDispatch();
+  const highlightRules = useHighlightRules();
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
   const statementState: any = useSelector(
     (state: any) => state.customerSupplierStatement,
@@ -522,7 +525,9 @@ const LedgerWithProduct = (user: any) => {
           </div>
           {row.remarks ? (
             <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">
-              {row.remarks} 
+              <span className={highlightLineClass(matchHighlightRule(row.remarks, highlightRules))}>
+                {row.remarks}
+              </span>
             </div>
           ) : null}
           { row.order_number && (

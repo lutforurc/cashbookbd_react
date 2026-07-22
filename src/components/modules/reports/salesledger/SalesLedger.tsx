@@ -7,6 +7,8 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
 import Table from '../../../utils/others/Table';
+import { useHighlightRules } from '../../../utils/highlight/useHighlightRules';
+import { matchHighlightRule, highlightLineClass } from '../../../utils/highlight/highlightRules';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
@@ -94,6 +96,7 @@ const joinedZeroMarkClass =
 
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
+  const highlightRules = useHighlightRules();
   const navigate = useNavigate();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const ledgerData = useSelector((state: any) => state.salesLedger);
@@ -484,7 +487,13 @@ const SalesLedger = (user: any) => {
               })}
             {detailText ? (
               <div className="text-green-500 dark:text-yellow-300">
-                {detailText}
+                <span
+                  className={highlightLineClass(
+                    matchHighlightRule(detailText, highlightRules),
+                  )}
+                >
+                  {detailText}
+                </span>
               </div>
             ) : null}
           </div>

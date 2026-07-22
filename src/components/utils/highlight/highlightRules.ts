@@ -15,7 +15,9 @@ export type HighlightRule = {
 // `border-${color}-500`) so Tailwind's scanner keeps them, and paired for both
 // light and dark. Keep the keys in step with COLORS in HighlightRuleController.
 const BORDER_CLASS: Record<string, string> = {
-  red: 'border-red-500 dark:border-red-400',
+  // True vivid red (#ff0000) in both modes — Tailwind's red-500/400 read as a
+  // washed-out coral, especially in dark mode.
+  red: 'border-[#ff0000]',
   amber: 'border-amber-500 dark:border-amber-400',
   green: 'border-green-500 dark:border-green-400',
   blue: 'border-blue-500 dark:border-blue-400',
@@ -26,7 +28,7 @@ const BORDER_CLASS: Record<string, string> = {
 
 // The swatch a palette key shows in the admin picker/preview.
 export const HIGHLIGHT_COLORS: { value: string; label: string; swatch: string }[] = [
-  { value: 'red', label: 'Red', swatch: 'bg-red-500' },
+  { value: 'red', label: 'Red', swatch: 'bg-[#ff0000]' },
   { value: 'amber', label: 'Amber', swatch: 'bg-amber-500' },
   { value: 'green', label: 'Green', swatch: 'bg-green-500' },
   { value: 'blue', label: 'Blue', swatch: 'bg-blue-500' },
@@ -63,7 +65,7 @@ export const matchHighlightRule = (
  *   <div className={`... ${highlightLineClass(matchHighlightRule(text, rules))}`}>
  */
 export const highlightLineClass = (rule: HighlightRule | null): string =>
-  rule ? `rounded border-2 px-1 ${borderFor(rule.color)}` : '';
+  rule ? `inline-block rounded border-2 px-1 ${borderFor(rule.color)}` : '';
 
 // --- active-rules fetch, cached so many pages share one request ------------
 
