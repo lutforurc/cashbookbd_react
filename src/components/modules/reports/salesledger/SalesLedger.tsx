@@ -44,6 +44,11 @@ import OrderTypes from '../../../utils/utils-functions/OrderTypes';
 
 const SALES_LEDGER_FILTER_STORAGE_KEY = 'sales-ledger-filter-state';
 
+// A note that still reads "Not Yet Report(s)"/"Not Yet Repors" (any casing or
+// spacing) marks a sale whose report is pending, so flag it with a red box.
+const isNotYetReport = (text: unknown) =>
+  /not\s*yet\s*repor/i.test(String(text ?? ''));
+
 type SalesLedgerSavedFilters = {
   branchId?: number | string | null;
   ledgerId?: number | string | null;
@@ -482,7 +487,17 @@ const SalesLedger = (user: any) => {
                   </div>
                 );
               })}
-            {detailText ? <div className=" text-green-500 dark:text-yellow-300">{detailText}</div> : null}
+            {detailText ? (
+              <div
+                className={`text-green-500 dark:text-yellow-300 ${
+                  isNotYetReport(detailText)
+                    ? 'inline-block rounded border border-red-500 px-1'
+                    : ''
+                }`}
+              >
+                {detailText}
+              </div>
+            ) : null}
           </div>
         );
       },
