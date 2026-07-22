@@ -14,7 +14,6 @@ import {
   FaWallet,
   FaRegClock,
   FaRegCalendarAlt,
-  FaShoppingCart,
   FaExclamationTriangle,
   FaRedoAlt,
   FaInbox,
@@ -393,7 +392,7 @@ const ConstructionDashboard = () => {
             </div>
             ) : null}
 
-            {!dashboard.errors && isWidgetVisible('top-purchase') && (
+            {!dashboard.errors && isWidgetVisible('top-purchase') && dashboard?.data?.topProductsPurchase?.length > 0 && (
               <div
                 className="relative flex min-w-0 flex-col overflow-hidden border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-[#1f2937]"
                 style={{ order: widgetOrder('top-purchase') }}
@@ -409,53 +408,39 @@ const ConstructionDashboard = () => {
                 </div>
                 {/* Body */}
                 <div className="hover-scrollbar max-h-72 overflow-y-auto">
-                  {dashboard?.data?.topProductsPurchase?.length > 0 ? (
-                    <ul className="divide-y divide-slate-200 dark:divide-slate-600/80">
-                      {dashboard?.data?.topProductsPurchase.map(
-                        (item: any, index: number) => {
-                          const nameLength = item.name?.length || 0;
-                          const fontClass =
-                            nameLength <= 10
-                              ? 'text-[13px]'
-                              : nameLength <= 20
-                                ? 'text-[12px]'
-                                : 'text-[11px]';
-                          return (
-                            <li
-                              key={item.product_id}
-                              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-slate-700/45`}
+                  <ul className="divide-y divide-slate-200 dark:divide-slate-600/80">
+                    {dashboard?.data?.topProductsPurchase.map(
+                      (item: any, index: number) => {
+                        const nameLength = item.name?.length || 0;
+                        const fontClass =
+                          nameLength <= 10
+                            ? 'text-[13px]'
+                            : nameLength <= 20
+                              ? 'text-[12px]'
+                              : 'text-[11px]';
+                        return (
+                          <li
+                            key={item.product_id}
+                            className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-slate-700/45`}
+                          >
+                            <span className="text-sm font-medium tabular-nums text-sky-500/70 dark:text-sky-300/60">
+                              {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <span
+                              className={`min-w-0 flex-1 truncate font-bold text-slate-700 dark:text-slate-100 ${fontClass}`}
                             >
-                              <span className="text-sm font-medium tabular-nums text-sky-500/70 dark:text-sky-300/60">
-                                {String(index + 1).padStart(2, '0')}
-                              </span>
-                              <span
-                                className={`min-w-0 flex-1 truncate font-bold text-slate-700 dark:text-slate-100 ${fontClass}`}
-                              >
-                                {item.name}
-                              </span>
-                              <span
-                                className={`shrink-0 text-right font-bold tabular-nums text-yellow-500 dark:text-yellow-300 ${fontClass}`}
-                              >
-                                {thousandSeparator(Number(item.qty))}
-                              </span>
-                            </li>
-                          );
-                        },
-                      )}
-                    </ul>
-                  ) : (
-                    <div className="flex h-40 flex-col items-center justify-center px-6 text-center text-slate-400">
-                      <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-xl text-amber-500 dark:bg-amber-900/20 dark:text-amber-400">
-                        <FaShoppingCart />
-                      </span>
-                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                        No purchases found
-                      </p>
-                      <p className="mt-1 text-xs text-slate-400">
-                        Purchases for the selected period will appear here.
-                      </p>
-                    </div>
-                  )}
+                              {item.name}
+                            </span>
+                            <span
+                              className={`shrink-0 text-right font-bold tabular-nums text-yellow-500 dark:text-yellow-300 ${fontClass}`}
+                            >
+                              {thousandSeparator(Number(item.qty))}
+                            </span>
+                          </li>
+                        );
+                      },
+                    )}
+                  </ul>
                 </div>
               </div>
             )}
