@@ -11,21 +11,21 @@ const SalesIndex = () => {
   const currentBranch = useSelector((state: any) => state.branchList.currentBranch);
 
   useEffect(() => {
-    if (!currentBranch?.business_type_id) {
+    if (!currentBranch?.inventory_system_id) {
       dispatch(userCurrentBranch());
     }
-  }, [dispatch, currentBranch?.business_type_id]);
+  }, [dispatch, currentBranch?.inventory_system_id]);
 
-  if (!currentBranch?.business_type_id) {
+  if (!currentBranch?.inventory_system_id) {
     return <Loader />;
   }
 
   const components: { [key: number]: JSX.Element } = {
-    4: <ElectronicsBusinessSales />,
-    8: <TradingBusinessSales />,
+    2: <ElectronicsBusinessSales />,
+    4: <TradingBusinessSales />,
   };
 
-  return components[currentBranch.business_type_id] || <GeneralBusinessSales />;
+  return components[currentBranch.inventory_system_id] || <GeneralBusinessSales />;
 };
 
 export default SalesIndex;

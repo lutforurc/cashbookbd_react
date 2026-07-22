@@ -13,23 +13,23 @@ const PurchaseIndex = () => {
   );
 
   useEffect(() => {
-    if (!currentBranch?.business_type_id) {
+    if (!currentBranch?.inventory_system_id) {
       dispatch(userCurrentBranch());
     }
-  }, [dispatch, currentBranch?.business_type_id]);
+  }, [dispatch, currentBranch?.inventory_system_id]);
 
-  if (!currentBranch?.business_type_id) {
+  if (!currentBranch?.inventory_system_id) {
     return <Loader />;
   }
 
   const components: { [key: number]: JSX.Element } = {
-    4: <ElectronicsBusinessPurchase />,
-    7: <ConstructionBusinessPurchase />,
-    8: <TradingBusinessPurchase />,
+    2: <ElectronicsBusinessPurchase />,
+    3: <ConstructionBusinessPurchase />,
+    4: <TradingBusinessPurchase />,
   };
 
   return (
-    components[currentBranch?.business_type_id] || (
+    components[currentBranch?.inventory_system_id] || (
       <ConstructionBusinessPurchase />
     )
   );
