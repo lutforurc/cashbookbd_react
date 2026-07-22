@@ -1,34 +1,42 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+
 import TradingCashReceived from './TradingCashReceived';
 import GeneralCashReceived from './GeneralCashReceived';
 import HeadOfficeCashReceived from './HeadOfficeCashReceived';
-import { useEffect } from 'react';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import Loader from '../../../../common/Loader';
 
-
-const CashReceivedIndex = () => { 
-
+const CashReceivedIndex = () => {
   const dispatch = useDispatch();
   const currentBranch = useSelector((state: any) => state.branchList.currentBranch);
 
   useEffect(() => {
-  if (!currentBranch?.business_type_id) {
-    dispatch(userCurrentBranch());
-  }
-}, [currentBranch, dispatch]);
- 
-if (!currentBranch || !currentBranch.business_type_id) {
-  return <Loader />;
-}
+    if (!currentBranch?.inventory_system_id) {
+      dispatch(userCurrentBranch());
+    }
+  }, [currentBranch?.inventory_system_id, dispatch]);
 
+  if (!currentBranch?.inventory_system_id) {
+    return <Loader />;
+  }
+
+  // Head office is a branch role, not an inventory system, so it keeps its own
+  // business_type_id check and wins over the inventory-system mapping below.
+  if (Number(currentBranch?.business_type_id) === 1) {
+    return <HeadOfficeCashReceived />;
+  }
+
+  // Every other branch picks its screen from its inventory system (see the
+  // inventory_system table: 4 = trading). Electronics (2) and construction (3)
+  // have no dedicated screen yet, so they fall through to General.
   const components: { [key: number]: JSX.Element } = {
-    1: <HeadOfficeCashReceived />,
-    4: <GeneralCashReceived />,
-    8: <TradingCashReceived />,
+    4: <TradingCashReceived />,
   };
- 
-  return components[currentBranch?.business_type_id] || <GeneralCashReceived />;
+
+  return (
+    components[Number(currentBranch?.inventory_system_id)] || <GeneralCashReceived />
+  );
 };
 
 export default CashReceivedIndex;
