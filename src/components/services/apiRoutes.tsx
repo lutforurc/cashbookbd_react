@@ -194,6 +194,10 @@ export const API_PROFILE_COVER_URL = `${API_BASE_URL}/user/profile-cover`;
 // Admin Notifications (platform admin broadcasts)
 export const API_ADMIN_NOTIFICATIONS_URL = `${API_BASE_URL}/admin/notifications`;
 
+// Inventory System lookup (platform admin CRUD + open ddl for branch settings)
+export const API_ADMIN_INVENTORY_SYSTEMS_URL = `${API_BASE_URL}/admin/inventory-systems`;
+export const API_INVENTORY_SYSTEMS_DDL_URL = `${API_BASE_URL}/inventory-systems/ddl`;
+
 // Role Routes
 export const API_ROLE_LIST_URL = `${API_BASE_URL}/role/role-list`;
 export const API_DDL_ROLE_LIST_URL = `${API_BASE_URL}/ddl/role/role-list`;

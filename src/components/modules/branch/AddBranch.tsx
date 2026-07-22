@@ -31,6 +31,7 @@ interface branchItem {
   branch_types_id: string;
   branchTypeText?: string; // Add this line
   business_type_id: string;
+  inventory_system_id: string | number;
   email: string;
   pad_heading_print: string;
   address: string;
@@ -131,6 +132,7 @@ const AddBranch = () => {
     branch_types_id: '',
     branchTypeText: '', // Add this line
     business_type_id: '',
+    inventory_system_id: 1, // default: General Inventory
     email: '',
     pad_heading_print: '',
     address: '',
@@ -449,6 +451,15 @@ const AddBranch = () => {
                       value={formData?.business_type_id || ''}
                       className="h-[2.1rem] bg-transparent"
                       data={settings?.branchSettings?.businessType}
+                    />
+                    <DropdownCommon
+                      id="inventory_system_id"
+                      name={'inventory_system_id'}
+                      label="Select Inventory System"
+                      onChange={handleOnSelectChange}
+                      value={formData?.inventory_system_id || ''}
+                      className="h-[2.1rem] bg-transparent"
+                      data={settings?.branchSettings?.inventorySystem}
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
