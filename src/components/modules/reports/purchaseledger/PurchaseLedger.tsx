@@ -45,6 +45,11 @@ import OrderTypes from '../../../utils/utils-functions/OrderTypes';
 
 const PURCHASE_LEDGER_FILTER_STORAGE_KEY = 'purchase-ledger-filter-state';
 
+// A note that still reads "Not Yet Report(s)"/"Not Yet Repors" (any casing or
+// spacing) marks a purchase whose report is pending, so flag it with a red box.
+const isNotYetReport = (text: unknown) =>
+  /not\s*yet\s*repor/i.test(String(text ?? ''));
+
 type PurchaseLedgerSavedFilters = {
   branchId?: number | string | null;
   ledgerId?: number | string | null;
@@ -469,7 +474,15 @@ const PurchaseLedger = (user: any) => {
               })}
             
             {row?.purchase_master?.notes && (
-              <div className='text-green-500 dark:text-yellow-300'>{row?.purchase_master?.notes}</div>
+              <div
+                className={`text-green-500 dark:text-yellow-300 ${
+                  isNotYetReport(row?.purchase_master?.notes)
+                    ? 'inline-block rounded border border-red-500 px-1'
+                    : ''
+                }`}
+              >
+                {row?.purchase_master?.notes}
+              </div>
             )}
           </div>
         );
