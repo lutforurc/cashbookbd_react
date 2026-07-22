@@ -191,6 +191,9 @@ export const API_USER_CHECK = `${API_BASE_URL}/user/user-check`;
 export const API_PROFILE_PHOTO_URL = `${API_BASE_URL}/user/profile-photo`;
 export const API_PROFILE_COVER_URL = `${API_BASE_URL}/user/profile-cover`;
 
+// Admin Notifications (platform admin broadcasts)
+export const API_ADMIN_NOTIFICATIONS_URL = `${API_BASE_URL}/admin/notifications`;
+
 // Role Routes
 export const API_ROLE_LIST_URL = `${API_BASE_URL}/role/role-list`;
 export const API_DDL_ROLE_LIST_URL = `${API_BASE_URL}/ddl/role/role-list`;

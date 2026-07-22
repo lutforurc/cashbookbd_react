@@ -13,6 +13,7 @@ const ROUTES = {
   subscription_plan_entry: '/subscription/admin/plans/entry',
   subscription_plan_edit: '/subscription/admin/plans/edit/:id',
   reseller_admin: '/admin/resellers',
+  admin_notifications: '/admin/notifications',
   reseller_dashboard: '/reseller/dashboard',
 
   // Customer Login

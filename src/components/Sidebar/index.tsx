@@ -1737,6 +1737,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {(hasPermission(permissions, 'reseller.view') ||
+                            hasPermission(permissions, 'subscription.view') ||
+                            hasPermission(permissions, 'all.user.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.admin_notifications}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Admin Notifications
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'roles.view') && (
                             <li>
                               <NavLink
