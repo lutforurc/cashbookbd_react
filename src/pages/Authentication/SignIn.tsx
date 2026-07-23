@@ -7,7 +7,7 @@ import Loader from '../../common/Loader';
 import { login } from '../../features/authReducer';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { getSettings } from '../../components/modules/settings/settingsSlice';
-import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiShoppingCart, FiUsers, FiPieChart, FiSmartphone } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiLogIn, FiBookOpen, FiShoppingCart, FiUsers, FiPieChart, FiSmartphone, FiMail, FiLock } from 'react-icons/fi';
 import { ButtonLoading } from '../UiElements/CustomButtons';
 import { getSignInTitleByHost } from '../../components/services/tenantTitles';
 import DeviceLimitNotice from '../../components/modules/devices/DeviceLimitNotice';
@@ -138,7 +138,7 @@ const SignIn: React.FC = () => {
 
             {/* Sizing is deliberately tight so the panel fits a 768px-tall
                 laptop without scrolling; 2xl relaxes it on roomier screens. */}
-            <div className="relative z-10 w-full px-12 py-10 2xl:px-20 2xl:py-14">
+            <div className="relative z-10 w-full animate-fade-in-up px-12 py-10 2xl:px-20 2xl:py-14">
               {/* Badge */}
               <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 py-2 pl-3 pr-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
                 <span className="relative flex h-2 w-2">
@@ -257,12 +257,24 @@ const SignIn: React.FC = () => {
 
           {/* RIGHT: Form Panel */}
           <div className="flex h-full items-center justify-center px-4 py-8 sm:px-10 xl:py-0">
-            <div className="w-full max-w-md">
-              <h2 className="mb-2 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
+            <div className="w-full max-w-md animate-fade-in-up">
+              {/* Brand lockup — shown only below xl, where the left panel is
+                  hidden and the form would otherwise sit on a blank field. */}
+              <div className="mb-6 flex items-center justify-center gap-2.5 xl:hidden">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-meta-3 opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-meta-3" />
+                </span>
+                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-black/70 dark:text-white/70">
+                  CashbookBD
+                </span>
+              </div>
+
+              <h2 className="mb-2 text-center text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
                 <HelmetTitle title={getSignInTitleByHost(hostname)} />
               </h2>
 
-              <p className="mb-1 text-sm text-black/60 dark:text-white/60 text-center w-full">
+              <p className="mb-6 w-full text-center text-sm text-black/60 dark:text-white/60">
                 Sign in to continue.
               </p>
 
@@ -278,14 +290,14 @@ const SignIn: React.FC = () => {
                 </div>
               ) : null}
 
-              {/* ✅ Card: border ছিল না, add করা হলো */}
-              <div className="rounded-xl  border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark p-6 sm:p-6 ">
+              <div className="rounded-xl bg-white p-6 shadow-default dark:bg-boxdark">
                 <form onSubmit={handleLogin}>
                   <div className="mb-4">
                     <label className="mb-2.5 block font-medium text-black dark:text-white">
                       Email or Phone
                     </label>
                     <div className="relative">
+                      <FiMail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
                       <input
                         type="text"
                         name="loginId"
@@ -294,7 +306,7 @@ const SignIn: React.FC = () => {
                         onChange={handleChange}
                         placeholder="Enter email or phone number"
                         autoComplete="username"
-                        className="w-full border border-stroke bg-transparent py-2 pl-4 pr-4 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                        className="w-full rounded-lg border border-stroke bg-transparent py-2.5 pl-11 pr-4 text-black outline-none transition focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                       />
                     </div>
                   </div>
@@ -304,6 +316,7 @@ const SignIn: React.FC = () => {
                       Password
                     </label>
                     <div className="relative">
+                      <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
                       <input
                         name="password"
                         type={checkPassword ? 'password' : 'text'}
@@ -311,7 +324,7 @@ const SignIn: React.FC = () => {
                         value={formData.password}
                         onChange={handleChange}
                         placeholder="Enter your password"
-                        className="w-full border border-stroke bg-transparent py-2 pl-4 pr-14 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                        className="w-full rounded-lg border border-stroke bg-transparent py-2.5 pl-11 pr-14 text-black outline-none transition focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                       />
 
                       {/* ✅ Show/Hide Password */}
@@ -358,11 +371,14 @@ const SignIn: React.FC = () => {
 
                   <div className="mb-2">
 
+                    {/* Override the shared button's grey base with the brand
+                        primary so it matches the links; !important because the
+                        base class order would otherwise win. */}
                     <ButtonLoading icon={
                       <div className='md:hidden'>
                         <FiLogIn className="h-5 w-5" />
                       </div>
-                    } type="submit" label='Sign In' className='p-3 w-full' />
+                    } type="submit" label='Sign In' className='p-3 w-full rounded-lg !bg-primary hover:!bg-primary/90 focus:!bg-primary/90 transition' />
                   </div>
 
                     {shouldShowCompanyRegistration && (
