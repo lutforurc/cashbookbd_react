@@ -5,6 +5,7 @@ import { FiEdit2, FiPlus, FiRefreshCw, FiSave, FiTrash2, FiX } from 'react-icons
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import {
   HIGHLIGHT_COLORS,
   highlightLineClass,
@@ -38,6 +39,7 @@ const HighlightRules = () => {
   const [loadingList, setLoadingList] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteConfirmRow, setDeleteConfirmRow] = useState<HighlightRuleRow | null>(null);
 
   const [form, setForm] = useState({ ...emptyForm });
   const isEditing = form.id > 0;
@@ -103,10 +105,9 @@ const HighlightRules = () => {
     }
   };
 
-  const handleDelete = async (row: HighlightRuleRow) => {
-    if (!window.confirm(`Delete the rule for "${row.phrase}"?`)) {
-      return;
-    }
+  const handleDeleteConfirmed = async () => {
+    const row = deleteConfirmRow;
+    if (!row) return;
     setDeletingId(row.id);
     try {
       const response = await deleteHighlightRule(row.id);
@@ -114,6 +115,7 @@ const HighlightRules = () => {
       invalidateHighlightRulesCache();
       if (form.id === row.id) resetForm();
       setRows((current) => current.filter((item) => item.id !== row.id));
+      setDeleteConfirmRow(null);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Could not delete.');
     } finally {
@@ -337,7 +339,7 @@ const HighlightRules = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(row)}
+                          onClick={() => setDeleteConfirmRow(row)}
                           disabled={deletingId === row.id}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-rose-500 transition hover:bg-rose-50 disabled:opacity-50 dark:hover:bg-rose-900/20"
                           aria-label={`Delete ${row.phrase}`}
@@ -359,6 +361,25 @@ const HighlightRules = () => {
           </table>
         </div>
       </div>
+
+      <ConfirmModal
+        show={Boolean(deleteConfirmRow)}
+        title="Confirm Deletion"
+        message={
+          <div className="text-base leading-7 text-slate-700 dark:text-slate-200">
+            <div>Are you sure you want to delete this rule</div>
+            <div className="font-bold text-slate-800 dark:text-white">
+              {deleteConfirmRow?.phrase || ''} ?
+            </div>
+          </div>
+        }
+        cancelLabel="Cancel"
+        confirmLabel="Confirm"
+        className="bg-red-600 hover:bg-red-700 min-w-[128px]"
+        loading={deletingId === deleteConfirmRow?.id}
+        onCancel={() => setDeleteConfirmRow(null)}
+        onConfirm={handleDeleteConfirmed}
+      />
     </div>
   );
 };

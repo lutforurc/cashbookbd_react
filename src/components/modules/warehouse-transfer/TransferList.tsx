@@ -22,6 +22,14 @@ const pickFirst = (row: any, keys: string[]) => {
   return '';
 };
 
+// transfer_status: 1 = issued (still in transit), 2 = partially received,
+// 3 = fully received. Shows at a glance which stock hasn't arrived yet.
+const TRANSFER_STATUS: Record<number, { label: string; className: string }> = {
+  1: { label: 'In Transit', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' },
+  2: { label: 'Partial', className: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300' },
+  3: { label: 'Received', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' },
+};
+
 const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
   const dispatch = useDispatch<any>();
   const transfer = useSelector((s: any) => s.branchTransfer);
@@ -100,6 +108,23 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
       render: (row: any) => (
         <span>{pickFirst(row, ['to_branch_name', 'to_branch', 'branch_to']) || '-'}</span>
       ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      headerClass: 'text-center w-28',
+      cellClass: 'text-center w-28',
+      render: (row: any) => {
+        const s = Number(pickFirst(row, ['transfer_status', 'status']) || 0);
+        const meta = TRANSFER_STATUS[s];
+        return meta ? (
+          <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${meta.className}`}>
+            {meta.label}
+          </span>
+        ) : (
+          <span>-</span>
+        );
+      },
     },
     {
       key: 'product',
