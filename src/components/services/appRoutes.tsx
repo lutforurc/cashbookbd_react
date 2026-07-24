@@ -57,6 +57,7 @@ const ROUTES = {
   employee_loan_balance: '/accounts/employee-loan/balance',
   branch_transfer: '/inventory/branch-transfer',
   branch_received: '/inventory/branch-received',
+  material_issue: '/inventory/material-issue',
 
   journal: '/accounts/journal',
 

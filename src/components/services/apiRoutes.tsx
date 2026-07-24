@@ -235,6 +235,11 @@ export const API_BRANCH_RECEIVED_LIST_URL = `${API_BASE_URL}/warehouse/received/
 export const API_BRANCH_TRANSFER_STORE_URL = `${API_BASE_URL}/warehouse/transfer/issue`;
 export const API_BRANCH_RECEIVED_STORE_URL = `${API_BASE_URL}/warehouse/transfer/receive`;
 
+// Material Issue Routes
+export const API_MATERIAL_ISSUE_LIST_URL = `${API_BASE_URL}/material-issue/list`;
+export const API_MATERIAL_ISSUE_DETAILS_URL = `${API_BASE_URL}/material-issue/details`;
+export const API_MATERIAL_ISSUE_STORE_URL = `${API_BASE_URL}/material-issue/store`;
+
 // Chart of Accounts
 // COAL1
 export const API_COAL1_LIST_URL = `${API_BASE_URL}/coal1/coal1-list`;

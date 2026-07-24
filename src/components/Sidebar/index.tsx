@@ -453,6 +453,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/invoice/sales' ||
                     pathname === routes.branch_transfer ||
                     pathname === routes.branch_received ||
+                    pathname === routes.material_issue ||
                     pathname.includes('forms')
                   }
                   menuId="invoice"
@@ -472,6 +473,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname === '/invoice/labour-invoice' ||
                           pathname === routes.branch_transfer ||
                           pathname === routes.branch_received ||
+                          pathname === routes.material_issue ||
                           pathname.includes('/invoice/sales')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -634,6 +636,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   }
                                 >
                                   Branch Issue
+                                </NavLink>
+                              </li>
+                            )}
+                          {(hasPermission(permissions, 'material.issue.create') ||
+                            hasPermission(permissions, 'inventory.issue.create') ||
+                            hasPermission(permissions, 'purchase.create')) && (
+                              <li>
+                                <NavLink
+                                  to={routes.material_issue}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Material Issue
                                 </NavLink>
                               </li>
                             )}

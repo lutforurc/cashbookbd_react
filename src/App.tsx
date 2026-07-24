@@ -172,6 +172,7 @@ import CollectionSheet from './components/modules/reports/somity/CollectionSheet
 import MonthlyReport from './components/modules/reports/somity/MonthlyReport';
 import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTransfer';
 import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
+import MaterialIssue from './components/modules/material-issue/MaterialIssue';
 import SendSms from './components/modules/sms/SendSms';
 import SmsTemplateList from './components/modules/sms/SmsTemplateList';
 import SmsTemplateCreate from './components/modules/sms/SmsTemplateCreate';
@@ -393,6 +394,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'purchase.create']} loading={permissionsLoading} />}>
               <Route path={routes.branch_transfer} element={<BranchTransfer />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['material.issue.create', 'inventory.issue.create', 'purchase.create']} loading={permissionsLoading} />}>
+              <Route path={routes.material_issue} element={<MaterialIssue />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create', 'inventory.received.create', 'product.received.create']} loading={permissionsLoading} />}>
               <Route path={routes.branch_received} element={<WarehouseReceived />} />
