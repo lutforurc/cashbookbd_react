@@ -63,7 +63,7 @@ const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className, inline
             position: fixed;
             left: 0;
             right: 0;
-            bottom: 4mm;
+            bottom: 0;
             margin-top: 0;
           }
         }
