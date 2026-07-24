@@ -152,7 +152,7 @@ const SignIn: React.FC = () => {
               <h1 className="mt-5 text-[2.25rem] font-bold leading-[1.05] tracking-tight text-white 2xl:mt-7 2xl:text-[3.25rem]">
                 Accounts,
                 <br />
-                Procurement and{' '}
+                Inventory and{' '}
                 <span className="bg-gradient-to-r from-meta-3 to-secondary bg-clip-text text-transparent">
                   HR
                 </span>

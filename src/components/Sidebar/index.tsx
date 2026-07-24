@@ -975,7 +975,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'ledger.due.view') && (
+                          {hasPermission(permissions, 'due.list') && (
                             <li>
                               <NavLink
                                 to="/reports/due-list"
