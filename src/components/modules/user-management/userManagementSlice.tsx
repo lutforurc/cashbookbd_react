@@ -3,6 +3,9 @@ import httpService from "../../services/httpService";
 import {
   API_DDL_ROLE_LIST_URL,
   API_GET_PERMISSIONS_URL,
+  API_GET_PERMISSION_GROUPS_URL,
+  API_PERMISSION_STORE_URL,
+  API_PERMISSION_UPDATE_URL,
   API_GET_ROLES_URL,
   API_OWNER_ROLE_GROUP_URL,
   API_OWNER_ROLE_GROUP_SYNC_URL,
@@ -29,8 +32,10 @@ interface RoleState {
   roles: Role[];
   permissions: Permission[];
   selectedPermissions: number[]; // Assuming selected permission IDs
+  permissionGroups: any;
   ownerRoleGroup: any;
   storeRole: any; // You can define a type if needed
+  storePermission: any; // You can define a type if needed
   updatePermission: any; // You can define a type if needed
   error: string | null;
 }
@@ -87,8 +92,10 @@ const initialState: RoleState = {
   roles: [],
   permissions: [],
   selectedPermissions: [],
+  permissionGroups: [],
   ownerRoleGroup: null,
   storeRole: {},
+  storePermission: {},
   updatePermission: {},
   error: null,
 };
@@ -118,6 +125,36 @@ export const getPermissions = createAsyncThunk<Permission[], void, { rejectValue
       return data;
     } catch {
       return rejectWithValue({ message: "Authentication failed, please try again!" });
+    }
+  }
+);
+
+export const getPermissionGroups = createAsyncThunk<any, void, { rejectValue: ErrorResponse }>("getPermissionGroups/fetch", async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await httpService.get(API_GET_PERMISSION_GROUPS_URL);
+      return data;
+    } catch {
+      return rejectWithValue({ message: "Authentication failed, please try again!" });
+    }
+  }
+);
+
+export const storePermission = createAsyncThunk<any, any, { rejectValue: ErrorResponse }>("storePermission/fetch", async (formData, { rejectWithValue }) => {
+    try {
+      const response = await httpService.post(API_PERMISSION_STORE_URL, formData);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong!" });
+    }
+  }
+);
+
+export const updatePermission = createAsyncThunk<any, { id: number | string; name: string; group_name: string }, { rejectValue: ErrorResponse }>("updatePermission/fetch", async ({ id, name, group_name }, { rejectWithValue }) => {
+    try {
+      const response = await httpService.put(`${API_PERMISSION_UPDATE_URL}/${id}`, { name, group_name });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong!" });
     }
   }
 );
@@ -223,6 +260,48 @@ const userManagementSlice = createSlice({
         state.permissions = action.payload;
       })
       .addCase(getPermissions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong!";
+      })
+
+      // getPermissionGroups
+      .addCase(getPermissionGroups.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getPermissionGroups.fulfilled, (state, action) => {
+        state.loading = false;
+        state.permissionGroups = action.payload;
+      })
+      .addCase(getPermissionGroups.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong!";
+      })
+
+      // storePermission
+      .addCase(storePermission.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(storePermission.fulfilled, (state, action) => {
+        state.loading = false;
+        state.storePermission = action.payload;
+      })
+      .addCase(storePermission.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong!";
+      })
+
+      // updatePermission
+      .addCase(updatePermission.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updatePermission.fulfilled, (state, action) => {
+        state.loading = false;
+        state.storePermission = action.payload;
+      })
+      .addCase(updatePermission.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong!";
       })

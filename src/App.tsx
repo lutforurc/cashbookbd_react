@@ -60,6 +60,7 @@ import MitchMatch from './components/modules/reports/mitchmatch/MitchMatch';
 import AddBranch from './components/modules/branch/AddBranch';
 import Roles from './components/modules/user-management/Roles';
 import AddRole from './components/modules/user-management/AddRole';
+import AddPermission from './components/modules/user-management/AddPermission';
 import JumpDate from './components/modules/dayclose/JumpDate';
 import VoucherApproval from './components/modules/voucher_approval/VoucherApproval';
 import ApprovalCenter from './components/modules/approval-center/ApprovalCenter';
@@ -537,6 +538,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.roles} loading={permissionsLoading} />}>
               <Route path={routes.roles} element={<Roles />} />
               <Route path={routes.add_role} element={<AddRole />} />
+              <Route path={routes.add_permission} element={<AddPermission />} />
             </Route>
 
 

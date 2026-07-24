@@ -1597,6 +1597,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname === routes.reseller_admin ||
                       pathname === routes.roles ||
                       pathname === routes.add_role ||
+                      pathname === routes.add_permission ||
                       pathname === routes.group_report_setup ||
 	                    pathname === '/admin/dayclose' ||
 	                    pathname === '/order/order-list' ||
@@ -1623,6 +1624,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             pathname === routes.reseller_admin ||
                             pathname === routes.roles ||
                             pathname === routes.add_role ||
+                            pathname === routes.add_permission ||
                             pathname === routes.group_report_setup ||
 	                          pathname === '/admin/dayclose' ||
 	                          pathname === '/order/order-list' ||
@@ -1820,6 +1822,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Add Roles
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'roles.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.add_permission}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Add Permission
                               </NavLink>
                             </li>
                           )}

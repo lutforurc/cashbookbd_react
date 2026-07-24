@@ -215,6 +215,7 @@ const ROUTES = {
   // User Management Routes
   roles: '/user-management/roles',
   add_role: '/user-management/create-role',
+  add_permission: '/user-management/create-permission',
   user_management_list: '/user-management/user-list',
   user_management_add: '/user-management/add-user',
   user_management_edit: '/user-management/edit-user',
