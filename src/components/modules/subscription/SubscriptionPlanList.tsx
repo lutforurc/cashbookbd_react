@@ -27,7 +27,7 @@ const SubscriptionPlanList: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold text-black dark:text-white">Subscription Plans</h1>
           <p className="mt-2 text-sm text-bodydark2">
-            Pricing plan, quota, trial days, and activation state এখান থেকে manage করতে পারবেন।
+            You can manage the pricing plan, quota, trial period, and activation status from here.
           </p>
         </div>
 
