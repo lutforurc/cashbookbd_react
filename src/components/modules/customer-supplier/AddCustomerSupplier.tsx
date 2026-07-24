@@ -602,31 +602,33 @@ const AddCustomerSupplier = () => {
           </div>
 
           {/* ================= PORTAL PASSWORD (self-service login) ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div className="text-left flex flex-col">
-              <InputElement
-                id="password"
-                name="password"
-                type="password"
-                // Stops Chrome treating this as a login form and autofilling a
-                // saved password here (and the saved email into Address).
-                autoComplete="new-password"
-                value={formik.values.password}
-                placeholder="Set portal login password (optional)"
-                label="Portal Password"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.password && formik.errors.password && (
-                <div className="text-red-500 text-sm">{formik.errors.password}</div>
-              )}
+          {String(formik.values.customerLogin) === '1' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <div className="text-left flex flex-col">
+                <InputElement
+                  id="password"
+                  name="password"
+                  type="password"
+                  // Stops Chrome treating this as a login form and autofilling a
+                  // saved password here (and the saved email into Address).
+                  autoComplete="new-password"
+                  value={formik.values.password}
+                  placeholder="Set portal login password (optional)"
+                  label="Portal Password"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.password && formik.errors.password && (
+                  <div className="text-red-500 text-sm">{formik.errors.password}</div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 self-end pb-2">
+                If set, the customer can log in at{' '}
+                <span className="font-medium">/customer/login</span> using their mobile number and this
+                password. Leave blank to skip.
+              </p>
             </div>
-            <p className="text-xs text-gray-500 self-end pb-2">
-              If set, the customer can log in at{' '}
-              <span className="font-medium">/customer/login</span> using their mobile number and this
-              password. Leave blank to skip.
-            </p>
-          </div>
+          )}
           {/* ================= GUARANTORS ================= */}
           {settings?.data?.branch?.have_is_guaranter === '1' && (
             <>

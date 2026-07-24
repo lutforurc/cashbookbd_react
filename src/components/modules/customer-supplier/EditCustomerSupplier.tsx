@@ -478,33 +478,35 @@ const EditCustomerSupplier = () => {
           </div>
 
           {/* ================= PORTAL PASSWORD (self-service login) ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <InputElement
-                  id="portalPassword"
-                  name="portalPassword"
-                  type="password"
-                  value={portalPassword}
-                  placeholder="Set / reset portal password"
-                  label="Portal Password"
-                  onChange={(e: any) => setPortalPassword(e.target.value)}
+          {String(formik.values.customerLogin) === '1' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <InputElement
+                    id="portalPassword"
+                    name="portalPassword"
+                    type="password"
+                    value={portalPassword}
+                    placeholder="Set / reset portal password"
+                    label="Portal Password"
+                    onChange={(e: any) => setPortalPassword(e.target.value)}
+                  />
+                </div>
+                <ButtonLoading
+                  type="button"
+                  onClick={handleSavePortalPassword}
+                  buttonLoading={savingPassword}
+                  label="Save Password"
+                  className="whitespace-nowrap text-center pt-2 pb-2 h-[2.4rem]"
+                  icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                 />
               </div>
-              <ButtonLoading
-                type="button"
-                onClick={handleSavePortalPassword}
-                buttonLoading={savingPassword}
-                label="Save Password"
-                className="whitespace-nowrap text-center pt-2 pb-2 h-[2.4rem]"
-                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
-              />
+              <p className="text-xs text-gray-500 self-end pb-2">
+                The customer logs in at <span className="font-medium">/customer/login</span> using their
+                mobile number and this password. Leave blank and it stays unchanged.
+              </p>
             </div>
-            <p className="text-xs text-gray-500 self-end pb-2">
-              The customer logs in at <span className="font-medium">/customer/login</span> using their
-              mobile number and this password. Leave blank and it stays unchanged.
-            </p>
-          </div>
+          )}
 
           {/* ================= GUARANTORS ================= */}
           {settings?.data?.branch?.have_is_guaranter === "1" && (
