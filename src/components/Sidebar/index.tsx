@@ -1228,7 +1228,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
               {/* Real Estate */}
 
-              {settings?.data?.branch?.business_type_id == 9 && (
+              {settings?.data?.branch?.business_type_id == 9 &&
+                hasMenuPermission(permissions, 'real_estate') && (
                 <SidebarLinkGroup
                   activeCondition={
                     pathname === '/real-estate/add-area' ||

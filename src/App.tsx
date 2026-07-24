@@ -268,21 +268,33 @@ function App() {
               <Route path={routes.dashboard} element={<DashboardIndex />} />
               <Route path={routes.profile} element={<Profile />} />
               <Route path={routes.my_devices} element={<MyDevices />} />
-              <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
-              <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
-              <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
-              <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
-              <Route path={routes.reseller_admin} element={<ResellerAdmin />} />
-              <Route path={routes.admin_notifications} element={<AdminNotifications />} />
-              <Route path={routes.inventory_systems} element={<InventorySystem />} />
-              <Route path={routes.highlight_rules} element={<HighlightRules />} />
+              {/* Platform operator (company 1) admin tools — gated to match sidebar/dropdown menus */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['subscription.history']} loading={permissionsLoading} />}>
+                <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['subscription.plans']} loading={permissionsLoading} />}>
+                <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
+                <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
+                <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.view', 'subscription.view', 'all.user.view']} loading={permissionsLoading} />}>
+                <Route path={routes.reseller_admin} element={<ResellerAdmin />} />
+                <Route path={routes.admin_notifications} element={<AdminNotifications />} />
+                <Route path={routes.inventory_systems} element={<InventorySystem />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['highlight.rules']} loading={permissionsLoading} />}>
+                <Route path={routes.highlight_rules} element={<HighlightRules />} />
+              </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.dashboard.view']} loading={permissionsLoading} />}>
                 <Route path={routes.reseller_dashboard} element={<ResellerDashboard />} />
               </Route>
-              <Route path={routes.calendar} element={<Calendar />} />
-              <Route path={routes.formElements} element={<FormElements />} />
-              <Route path={routes.formLayout} element={<FormLayout />} />
-              <Route path={'hello-bangladesh'} element={<ReportComponent />} />
+              {/* Demo/reference pages — superadmin ('*') only via a sentinel permission nobody is granted */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['dev.tools']} loading={permissionsLoading} />}>
+                <Route path={routes.calendar} element={<Calendar />} />
+                <Route path={routes.formElements} element={<FormElements />} />
+                <Route path={routes.formLayout} element={<FormLayout />} />
+                <Route path={'hello-bangladesh'} element={<ReportComponent />} />
+              </Route>
 
               {/* Chart of Accounts */}
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['coa.l1.view']} loading={permissionsLoading} />}>
@@ -307,9 +319,11 @@ function App() {
                 <Route path={routes.supplier_customer_edit} element={<EditCustomerSupplier />} />
               </Route>
 
-              {/* UI */}
-              <Route path={routes.buttons} element={<Buttons />} />
-              <Route path={routes.alert} element={<Alerts />} />
+              {/* UI demo — superadmin ('*') only via a sentinel permission nobody is granted */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['dev.tools']} loading={permissionsLoading} />}>
+                <Route path={routes.buttons} element={<Buttons />} />
+                <Route path={routes.alert} element={<Alerts />} />
+              </Route>
 
               {/* Settings */}
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.view']} loading={permissionsLoading} />}>
@@ -342,10 +356,14 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['installment.create']} loading={permissionsLoading} />}>
               <Route path={routes.installment_list} element={<InstallmentDetails />} />
             </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sms.logs']} loading={permissionsLoading} />}>
               <Route path={routes.sms_send} element={<SendSms user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sms.templates']} loading={permissionsLoading} />}>
               <Route path={routes.sms_template_list} element={<SmsTemplateList />} />
               <Route path={routes.sms_template_create} element={<SmsTemplateCreate />} />
               <Route path={routes.sms_template_edit} element={<SmsTemplateEdit />} />
+            </Route>
 
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['check.register.view']} loading={permissionsLoading} />}>
               <Route path={routes.unit_payment_list} element={<UnitSalePaymentList />} />
@@ -605,34 +623,37 @@ function App() {
             </Route>
 
 
-            {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
-            <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
-            <Route path={`${routes.real_estate_area_edit}/:id`} element={<AreaAdd />} />
-            <Route path={routes.real_estate_area_list} element={<AreaList />} />
+            {/* Real Estate — module-level permission guard (matches sidebar real_estate group) */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.real_estate} loading={permissionsLoading} />}>
+              {/* <Route path={routes.real_estate_area_list} element={<RealEstateAreaList />} /> */}
+              <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
+              <Route path={`${routes.real_estate_area_edit}/:id`} element={<AreaAdd />} />
+              <Route path={routes.real_estate_area_list} element={<AreaList />} />
 
-            <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me} />} />
-            <Route path={`${routes.real_estate_project_edit}/:id`} element={<AddEditProject user={me} />} />
-            <Route path={routes.real_estate_project_list} element={<ProjectsList user={me} />} />
+              <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me} />} />
+              <Route path={`${routes.real_estate_project_edit}/:id`} element={<AddEditProject user={me} />} />
+              <Route path={routes.real_estate_project_list} element={<ProjectsList user={me} />} />
 
 
-            <Route path={routes.real_estate_buildings} element={<AddEditBuilding />} />
-            <Route path={`${routes.real_estate_building_edit}/:id`} element={<AddEditBuilding />} />
-            <Route path={routes.real_estate_buildings_list} element={<BuildingList user={me} />} />
+              <Route path={routes.real_estate_buildings} element={<AddEditBuilding />} />
+              <Route path={`${routes.real_estate_building_edit}/:id`} element={<AddEditBuilding />} />
+              <Route path={routes.real_estate_buildings_list} element={<BuildingList user={me} />} />
 
-            <Route path={routes.real_estate_floor_list} element={<FloorList user={me} />} />
-            <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
-            <Route path={`${routes.real_estate_floor_edit}/:id`} element={<AddEditFlat />} />
-            <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
+              <Route path={routes.real_estate_floor_list} element={<FloorList user={me} />} />
+              <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
+              <Route path={`${routes.real_estate_floor_edit}/:id`} element={<AddEditFlat />} />
+              <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
 
-            <Route path={routes.real_estate_floor_unit_list} element={<BuildingUnitsList user={me} />} />
-            <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
-            <Route path={routes.real_estate_add_floor_unit_edit} element={<AddEditUnit />} /> 
-            <Route path={routes.real_estate_unit_types_create} element={<AddEditUnitChargeType />} />
-            <Route path={`${routes.real_estate_charge_type_edit}/:id`} element={<AddEditUnitChargeType />} />
+              <Route path={routes.real_estate_floor_unit_list} element={<BuildingUnitsList user={me} />} />
+              <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
+              <Route path={routes.real_estate_add_floor_unit_edit} element={<AddEditUnit />} />
+              <Route path={routes.real_estate_unit_types_create} element={<AddEditUnitChargeType />} />
+              <Route path={`${routes.real_estate_charge_type_edit}/:id`} element={<AddEditUnitChargeType />} />
 
-            <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
-            <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />
-            <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
+              <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
+              <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />
+              <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
+            </Route>
 
 
             {/* HRM */}

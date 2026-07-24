@@ -96,7 +96,8 @@ export const MENU_PERMISSIONS = {
     'coa.l4.view',
   ],
   analytics: ['analytics.comparison'],
+  real_estate: ['real.estate.view'],
   reseller: ['reseller.dashboard.view'],
   subscription_history: ['subscription.view', 'subscription.history'],
-  // customer_dashboard: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'],
+  customer_dashboard: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'],
 };
