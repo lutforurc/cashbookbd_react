@@ -125,6 +125,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
     return () => document.removeEventListener('keydown', keyHandler);
   });
 
+  
+
   useEffect(() => {
     localStorage.setItem('sidebar-expanded', sidebarExpanded.toString());
     if (sidebarExpanded) {
