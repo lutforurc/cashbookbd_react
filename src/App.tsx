@@ -483,6 +483,8 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report', 'ledger.due.view', 'cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.somity_collection_sheet} element={<CollectionSheet user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['monthly.report']} loading={permissionsLoading} />}>
               <Route path={routes.somity_monthly_report} element={<MonthlyReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>

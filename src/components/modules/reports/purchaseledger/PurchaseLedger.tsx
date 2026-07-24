@@ -898,7 +898,7 @@ const PurchaseLedger = (user: any) => {
                         <PrintButton
                           onClick={handlePrint}
                           label="Print"
-                          className="h-9 px-6"
+                          className="h-9 !min-w-[80px] px-6"
                           disabled={!Array.isArray(tableData) || tableData.length === 0}
                         />
                       </div>

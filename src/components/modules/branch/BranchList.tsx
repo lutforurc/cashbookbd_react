@@ -12,9 +12,11 @@ import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../../utils/fields/ActionButton';
 import { FaYoutube } from 'react-icons/fa';
 import { FiPlus } from 'react-icons/fi';
+import { hasPermission } from '../../utils/permissionChecker';
 
 const BranchList = () => {
   const branchList = useSelector((state) => state.branchList);
+  const settings = useSelector((state: any) => state.settings);
   const dispatch = useDispatch();
   const [searchValue, setSearchValue] = useState('');
   const [page, setPage] = useState(1);
@@ -151,12 +153,14 @@ const BranchList = () => {
       
       <div className="flex justify-between mb-1">
         <SelectOption onChange={handleSelectChange} />
-        <ButtonLoading
-          onClick={handleSearchButton}
-          buttonLoading={buttonLoading}
-          label="Add Branch"
-          icon={<FiPlus size={15} />}
-        />
+        {hasPermission(settings?.data?.permissions, 'branch.create') && (
+          <ButtonLoading
+            onClick={handleSearchButton}
+            buttonLoading={buttonLoading}
+            label="Add Branch"
+            icon={<FiPlus size={15} />}
+          />
+        )}
       </div>
       <div className="relative no-scrollbar">
         <div className="relative h-full">

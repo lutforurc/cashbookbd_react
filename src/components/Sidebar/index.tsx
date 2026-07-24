@@ -368,7 +368,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Installments
                               </NavLink>
                             </li>
-                          )}  
+                          )}
 
                           {hasPermission(permissions, 'cash.payment.create') && (
                             <li>
@@ -505,7 +505,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'purchase.create') && (
+                          {hasPermission(permissions, 'purchase.import') && (
                             <li>
                               <NavLink
                                 to={routes.inv_purchase_import}
@@ -518,7 +518,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          
+
                           {hasPermission(permissions, 'sales.create') && (
                             <li>
                               <NavLink
@@ -532,7 +532,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'sales.create') && (
+                          {hasPermission(permissions, 'sales.import') && (
                             <li>
                               <NavLink
                                 to={routes.inv_sales_import}
@@ -545,7 +545,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'purchase.create') && (
+                          {hasPermission(permissions, 'purchase.return.view') && (
                             <li>
                               <NavLink
                                 to={routes.inv_purchase_return}
@@ -558,7 +558,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'sales.create') && (
+                          {hasPermission(permissions, 'sales.return') && (
                             <li>
                               <NavLink
                                 to={routes.inv_sales_return}
@@ -572,7 +572,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          
+
                           {hasPermission(permissions, 'labour.invoice.create') && (
                             <li>
                               <NavLink
@@ -623,10 +623,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </li>
                             )}
                           {/* // )} */}
-                          {(hasPermission(permissions, 'branch.transfer.create') ||
-                            hasPermission(permissions, 'inventory.transfer.create') ||
-                            hasPermission(permissions, 'product.transfer.create') ||
-                            hasPermission(permissions, 'purchase.create')) && (
+                          {(hasPermission(permissions, 'branch.issue.create')) && (
                               <li>
                                 <NavLink
                                   to={routes.branch_transfer}
@@ -639,9 +636,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {(hasPermission(permissions, 'material.issue.create') ||
-                            hasPermission(permissions, 'inventory.issue.create') ||
-                            hasPermission(permissions, 'purchase.create')) && (
+                          {(hasPermission(permissions, 'material.issue.create')) && (
                               <li>
                                 <NavLink
                                   to={routes.material_issue}
@@ -760,7 +755,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'cashbook.view') && (
+                          {hasPermission(permissions, 'bank.book') && (
                             <li>
                               <NavLink
                                 to={routes.report_bankbook}
@@ -774,7 +769,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'cashbook.view') && (
+                          {hasPermission(permissions, 'cash.bank.summery') && (
                             <li>
                               <NavLink
                                 to={routes.cash_bank_received_payment}
@@ -788,7 +783,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          
+
                           {hasPermission(permissions, 'profit.loss') && (
                             <li>
                               <NavLink
@@ -913,19 +908,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           {(hasPermission(permissions, 'ledger.view') ||
                             hasPermission(permissions, 'ledger.customer')) && (
-                            <li>
-                              <NavLink
-                                to="/reports/ledger"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Ledger
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'ledger.customer') && (
+                              <li>
+                                <NavLink
+                                  to="/reports/ledger"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Ledger
+                                </NavLink>
+                              </li>
+                            )}
+                          {hasPermission(permissions, 'ledger.details') && (
                             <li>
                               <NavLink
                                 to={routes.customer_supplier_statement}
@@ -964,7 +959,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          
+
                           {hasPermission(permissions, 'ledger.labour') && (
                             <li>
                               <NavLink
@@ -991,9 +986,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'group.report') ||
-                            hasPermission(permissions, 'ledger.due.view') ||
-                            hasPermission(permissions, 'cashbook.view')) && (
+                          {(hasPermission(permissions, 'collection.sheet')) && (
                             <li>
                               <NavLink
                                 to={routes.somity_collection_sheet}
@@ -1002,13 +995,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                              Collection Sheet
+                                Collection Sheet
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'group.report') ||
-                            hasPermission(permissions, 'ledger.due.view') ||
-                            hasPermission(permissions, 'cashbook.view')) && (
+                          {hasPermission(permissions, 'monthly.report') && (
                             <li>
                               <NavLink
                                 to={routes.somity_monthly_report}
@@ -1047,7 +1038,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.stock.view') && (
+                          {hasPermission(permissions, 'product.stock.details') && (
                             <li>
                               <NavLink
                                 to={routes.somity_stock_details}
@@ -1060,7 +1051,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.stock.view') && (
+                          {hasPermission(permissions, 'imei.stock') && (
                             <li>
                               <NavLink
                                 to={routes.report_imei_stock}
@@ -1589,18 +1580,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
               {/* Admin */}
               {hasMenuPermission(permissions, 'admin') && (
                 <SidebarLinkGroup
-	                  activeCondition={
-	                    pathname === '/branch/branch-list' ||
-	                    pathname === '/user/user-list' ||
-	                    pathname === routes.online_users ||
-	                    pathname === routes.company_user_list ||
-                      pathname === routes.reseller_admin ||
-                      pathname === routes.roles ||
-                      pathname === routes.add_role ||
-                      pathname === routes.add_permission ||
-                      pathname === routes.group_report_setup ||
-	                    pathname === '/admin/dayclose' ||
-	                    pathname === '/order/order-list' ||
+                  activeCondition={
+                    pathname === '/branch/branch-list' ||
+                    pathname === '/user/user-list' ||
+                    pathname === routes.online_users ||
+                    pathname === routes.company_user_list ||
+                    pathname === routes.reseller_admin ||
+                    pathname === routes.roles ||
+                    pathname === routes.add_role ||
+                    pathname === routes.add_permission ||
+                    pathname === routes.group_report_setup ||
+                    pathname === '/admin/dayclose' ||
+                    pathname === '/order/order-list' ||
                     pathname === routes.sms_send ||
                     pathname === routes.sms_template_list ||
                     pathname === routes.sms_template_create ||
@@ -1615,19 +1606,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     <React.Fragment>
                       <NavLink
                         to="#"
-	                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
-	                          pathname === routes.company_list ||
-	                          pathname.includes('/company/company-edit/') ||
-	                          pathname === '/user/user-list' ||
-	                          pathname === routes.online_users ||
-	                          pathname === routes.company_user_list ||
-                            pathname === routes.reseller_admin ||
-                            pathname === routes.roles ||
-                            pathname === routes.add_role ||
-                            pathname === routes.add_permission ||
-                            pathname === routes.group_report_setup ||
-	                          pathname === '/admin/dayclose' ||
-	                          pathname === '/order/order-list' ||
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === '/branch/branch-list' ||
+                          pathname === routes.company_list ||
+                          pathname.includes('/company/company-edit/') ||
+                          pathname === '/user/user-list' ||
+                          pathname === routes.online_users ||
+                          pathname === routes.company_user_list ||
+                          pathname === routes.reseller_admin ||
+                          pathname === routes.roles ||
+                          pathname === routes.add_role ||
+                          pathname === routes.add_permission ||
+                          pathname === routes.group_report_setup ||
+                          pathname === '/admin/dayclose' ||
+                          pathname === '/order/order-list' ||
                           pathname === '/admin/voucher-approval' ||
                           pathname === routes.approval_center ||
                           pathname === '/admin/remove-approval' ||
@@ -1663,20 +1654,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'branch.view') && (
                             <li>
                               <NavLink
-                                to="/branch/branch-list"
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Branch List
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'branch.view') && (
-                            <li>
-                              <NavLink
                                 to={routes.company_list}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
@@ -1691,6 +1668,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'branch.view') && (
                             <li>
                               <NavLink
+                                to="/branch/branch-list"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch List
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'software.information') && (
+                            <li>
+                              <NavLink
                                 to={routes.software_info}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
@@ -1702,91 +1692,91 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-	                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
-	                            <li>
-	                              <NavLink
-	                                to={routes.user_list}
-	                                className={({ isActive }) =>
-	                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-	                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-	                                User List
-	                              </NavLink>
-	                            </li>
-	                          )}
-	                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
-	                            <li>
-	                              <NavLink
-	                                to={routes.online_users}
-	                                className={({ isActive }) =>
-	                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-	                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-	                                }
-	                              >
-	                                Online Users
-	                              </NavLink>
-	                            </li>
-	                          )}
-	                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
-	                            <li>
-	                              <NavLink
-	                                to={routes.company_user_list}
-	                                className={({ isActive }) =>
-	                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-	                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-	                                }
-	                              >
-	                                Company User
-	                              </NavLink>
-	                            </li>
-	                          )}
-                          {(hasPermission(permissions, 'reseller.view') ||
-                            hasPermission(permissions, 'subscription.view') ||
-                            hasPermission(permissions, 'all.user.view')) && (
+                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
                             <li>
                               <NavLink
-                                to={routes.reseller_admin}
+                                to={routes.user_list}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Resellers
+                                User List
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.online_users}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Online Users
+                              </NavLink>
+                            </li>
+                          )}
+                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
+                            <li>
+                              <NavLink
+                                to={routes.company_user_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Company User
                               </NavLink>
                             </li>
                           )}
                           {(hasPermission(permissions, 'reseller.view') ||
                             hasPermission(permissions, 'subscription.view') ||
                             hasPermission(permissions, 'all.user.view')) && (
-                            <li>
-                              <NavLink
-                                to={routes.admin_notifications}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Admin Notifications
-                              </NavLink>
-                            </li>
-                          )}
+                              <li>
+                                <NavLink
+                                  to={routes.reseller_admin}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Resellers
+                                </NavLink>
+                              </li>
+                            )}
                           {(hasPermission(permissions, 'reseller.view') ||
                             hasPermission(permissions, 'subscription.view') ||
                             hasPermission(permissions, 'all.user.view')) && (
-                            <li>
-                              <NavLink
-                                to={routes.inventory_systems}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Inventory Systems
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'branch.view') && (
+                              <li>
+                                <NavLink
+                                  to={routes.admin_notifications}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Admin Notifications
+                                </NavLink>
+                              </li>
+                            )}
+                          {(hasPermission(permissions, 'reseller.view') ||
+                            hasPermission(permissions, 'subscription.view') ||
+                            hasPermission(permissions, 'all.user.view')) && (
+                              <li>
+                                <NavLink
+                                  to={routes.inventory_systems}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Inventory Systems
+                                </NavLink>
+                              </li>
+                            )}
+                          {hasPermission(permissions, 'highlight.rules') && (
                             <li>
                               <NavLink
                                 to={routes.highlight_rules}
@@ -1988,28 +1978,37 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          <li>
-                            <NavLink
-                              to={routes.sms_send}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              SMS Logs
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to={routes.sms_template_list}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              SMS Templates
-                            </NavLink>
-                          </li>
+
+                          {hasPermission(permissions, 'sms.logs') && (
+                            <li>
+                              <NavLink
+                                to={routes.sms_send}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                SMS Logs
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'sms.templates') && (
+                            <li>
+                              <NavLink
+                                to={routes.sms_template_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                SMS Templates
+                              </NavLink>
+                            </li>
+                          )}
+
+
+
                         </ul>
                       </div>
                     </React.Fragment>

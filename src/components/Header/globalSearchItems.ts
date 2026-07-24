@@ -80,7 +80,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Mitch Match', path: routes.mitch_match, group: 'Reports', permissions: ['mitch.match'], keywords: ['mismatch'] },
   { title: 'Group Report', path: routes.group_report, group: 'Reports', permissions: ['group.report'] },
   { title: 'Collection Sheet', path: routes.somity_collection_sheet, group: 'Reports', permissions: ['group.report', 'ledger.due.view', 'cashbook.view'] },
-  { title: 'Monthly Report', path: routes.somity_monthly_report, group: 'Reports', permissions: ['group.report', 'ledger.due.view', 'cashbook.view'] },
+  { title: 'Monthly Report', path: routes.somity_monthly_report, group: 'Reports', permissions: ['monthly.report'] },
   { title: 'Closing Stock', path: routes.report_closing_stock, group: 'Reports', permissions: ['product.stock.view'] },
   { title: 'Stock Details', path: routes.somity_stock_details, group: 'Reports', permissions: ['product.stock.view'] },
   { title: 'Product Stock', path: routes.report_product_stock, group: 'Reports', permissions: ['product.stock.view'] },
