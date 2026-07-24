@@ -51,17 +51,33 @@ const ReportFooter: React.FC<ReportFooterProps> = ({ fontSize, className, inline
     );
   }
 
-  // Block (default): its own centered, bordered footer line.
+  // Block (default): its own centered, bordered footer line. In print it is
+  // pinned to the very bottom of EVERY page — position:fixed is re-painted on
+  // each printed page — so it sits at the page foot whether the report has one
+  // row or fills the page.
   return (
-    <div
-      style={style}
-      className={
-        'report-software-footer mt-2 border-t border-gray-400 pt-1 text-center text-[10px] text-gray-600 ' +
-        (className || '')
-      }
-    >
-      {content}
-    </div>
+    <>
+      <style>{`
+        @media print {
+          .report-software-footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 4mm;
+            margin-top: 0;
+          }
+        }
+      `}</style>
+      <div
+        style={style}
+        className={
+          'report-software-footer mt-2 border-t border-gray-400 pt-1 text-center text-[10px] text-gray-600 ' +
+          (className || '')
+        }
+      >
+        {content}
+      </div>
+    </>
   );
 };
 
