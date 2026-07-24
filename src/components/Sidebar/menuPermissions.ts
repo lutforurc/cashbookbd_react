@@ -99,5 +99,5 @@ export const MENU_PERMISSIONS = {
   real_estate: ['real.estate.view'],
   reseller: ['reseller.dashboard.view'],
   subscription_history: ['subscription.view', 'subscription.history'],
-  customer_dashboard: ['cs.view', 'ledger.customer', 'ledger.due.view', 'installment.create'],
+  customer_dashboard: ['customer.dashboard'],
 };

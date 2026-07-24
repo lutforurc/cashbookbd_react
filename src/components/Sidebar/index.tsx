@@ -125,7 +125,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
     return () => document.removeEventListener('keydown', keyHandler);
   });
 
-  
+
 
   useEffect(() => {
     localStorage.setItem('sidebar-expanded', sidebarExpanded.toString());
@@ -626,31 +626,31 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             )}
                           {/* // )} */}
                           {(hasPermission(permissions, 'branch.issue.create')) && (
-                              <li>
-                                <NavLink
-                                  to={routes.branch_transfer}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-white')
-                                  }
-                                >
-                                  Branch Issue
-                                </NavLink>
-                              </li>
-                            )}
+                            <li>
+                              <NavLink
+                                to={routes.branch_transfer}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch Issue
+                              </NavLink>
+                            </li>
+                          )}
                           {(hasPermission(permissions, 'material.issue.create')) && (
-                              <li>
-                                <NavLink
-                                  to={routes.material_issue}
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                    (isActive && 'text-gray-900 font-bold dark:text-white')
-                                  }
-                                >
-                                  Material Issue
-                                </NavLink>
-                              </li>
-                            )}
+                            <li>
+                              <NavLink
+                                to={routes.material_issue}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Material Issue
+                              </NavLink>
+                            </li>
+                          )}
                         </ul>
                       </div>
                     </React.Fragment>
@@ -1232,185 +1232,185 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
               {settings?.data?.branch?.business_type_id == 9 &&
                 hasMenuPermission(permissions, 'real_estate') && (
-                <SidebarLinkGroup
-                  activeCondition={
-                    pathname === '/real-estate/add-area' ||
-                    pathname === '/real-estate/area-list' ||
-                    pathname === '/real-estate/project-activities' ||
-                    pathname === '/real-estate/flat-layout' ||
-                    pathname === '/real-estate/unit-sales' ||
-                    pathname === routes.real_estate_installment_create ||
-                    pathname.includes('forms')
-                  }
-                  menuId="real-estate"
-                  open={openMenu === 'real-estate'}
-                  handleClick={() => handleMenuClick('real-estate')}
-                >
-                  {(handleClick, open) => (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 
+                  <SidebarLinkGroup
+                    activeCondition={
+                      pathname === '/real-estate/add-area' ||
+                      pathname === '/real-estate/area-list' ||
+                      pathname === '/real-estate/project-activities' ||
+                      pathname === '/real-estate/flat-layout' ||
+                      pathname === '/real-estate/unit-sales' ||
+                      pathname === routes.real_estate_installment_create ||
+                      pathname.includes('forms')
+                    }
+                    menuId="real-estate"
+                    open={openMenu === 'real-estate'}
+                    handleClick={() => handleMenuClick('real-estate')}
+                  >
+                    {(handleClick, open) => (
+                      <React.Fragment>
+                        <NavLink
+                          to="#"
+                          className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 
                         ${(
-                            pathname === '/real-estate/area-list' ||
-                            pathname === '/real-estate/project-activities' ||
-                            pathname === '/real-estate/buildings' ||
-                            pathname === '/real-estate/flat-layout' ||
-                            pathname === '/real-estate/building/floor' ||
-                            pathname === '/real-estate/add-unit' ||
-                            pathname === '/real-estate/unit-sales' ||
-                            pathname === routes.real_estate_installment_create ||
-                            pathname === routes.real_estate_unit_types_create ||
-                            pathname === routes.real_estate_buildings_list ||
-                            pathname === routes.real_estate_floor_list ||
-                            pathname === routes.real_estate_unit_types_list ||
-                            pathname === routes.real_estate_floor_unit_list ||
-                            pathname === routes.unit_payment_list ||
-                            pathname === routes.real_estate_floor_unit_list ||
-                            pathname === '/real-estate/project-list' ||
-                            pathname.includes('/real-estate/add-area')) &&
-                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FiMapPin className='-ml-1' />
-                        Real Estate
-                      </NavLink>
-                      <div
-                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
-                          }`}
-                      >
-                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                              pathname === '/real-estate/area-list' ||
+                              pathname === '/real-estate/project-activities' ||
+                              pathname === '/real-estate/buildings' ||
+                              pathname === '/real-estate/flat-layout' ||
+                              pathname === '/real-estate/building/floor' ||
+                              pathname === '/real-estate/add-unit' ||
+                              pathname === '/real-estate/unit-sales' ||
+                              pathname === routes.real_estate_installment_create ||
+                              pathname === routes.real_estate_unit_types_create ||
+                              pathname === routes.real_estate_buildings_list ||
+                              pathname === routes.real_estate_floor_list ||
+                              pathname === routes.real_estate_unit_types_list ||
+                              pathname === routes.real_estate_floor_unit_list ||
+                              pathname === routes.unit_payment_list ||
+                              pathname === routes.real_estate_floor_unit_list ||
+                              pathname === '/real-estate/project-list' ||
+                              pathname.includes('/real-estate/add-area')) &&
+                            'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                            }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            sidebarExpanded
+                              ? handleClick()
+                              : setSidebarExpanded(true);
+                          }}
+                        >
+                          <FiMapPin className='-ml-1' />
+                          Real Estate
+                        </NavLink>
+                        <div
+                          className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                            }`}
+                        >
+                          <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
 
-                          {hasPermission(permissions, 'check.register.view') && (
+                            {hasPermission(permissions, 'check.register.view') && (
+                              <li>
+                                <NavLink
+                                  // to="/admin/check-register"
+                                  to={routes.unit_payment_list}
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Check Register
+                                </NavLink>
+                              </li>
+                            )}
+
                             <li>
                               <NavLink
-                                // to="/admin/check-register"
-                                to={routes.unit_payment_list}
+                                to="/real-estate/area-list"
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Check Register
+                                Location
                               </NavLink>
                             </li>
-                          )}
+                            <li>
+                              <NavLink
+                                to={routes.real_estate_project_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Projects
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                to={routes.real_estate_buildings_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Buildings
+                              </NavLink>
+                            </li>
 
-                          <li>
-                            <NavLink
-                              to="/real-estate/area-list"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Location
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to={routes.real_estate_project_list}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Projects
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to={routes.real_estate_buildings_list}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Buildings
-                            </NavLink>
-                          </li>
+                            <li>
+                              <NavLink
+                                to={routes.real_estate_floor_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Floor List
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                to={routes.real_estate_floor_unit_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Unit List
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                to={routes.real_estate_unit_types_list}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Chareges
+                              </NavLink>
+                            </li>
 
-                          <li>
-                            <NavLink
-                              to={routes.real_estate_floor_list}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Floor List
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to={routes.real_estate_floor_unit_list}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Unit List
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to={routes.real_estate_unit_types_list}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Chareges
-                            </NavLink>
-                          </li>
+                            <li>
+                              <NavLink
+                                to="/real-estate/flat-layout"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Layout
+                              </NavLink>
+                            </li>
 
-                          <li>
-                            <NavLink
-                              to="/real-estate/flat-layout"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Layout
-                            </NavLink>
-                          </li>
+                            <li>
+                              <NavLink
+                                to="/real-estate/unit-sales"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Unit Sales
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                to={routes.real_estate_installment_create}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Installment Create
+                              </NavLink>
+                            </li>
 
-                          <li>
-                            <NavLink
-                              to="/real-estate/unit-sales"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Unit Sales
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to={routes.real_estate_installment_create}
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                (isActive && 'text-gray-900 font-bold dark:text-white')
-                              }
-                            >
-                              Installment Create
-                            </NavLink>
-                          </li>
-
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  )}
-                </SidebarLinkGroup>
-              )}
+                          </ul>
+                        </div>
+                      </React.Fragment>
+                    )}
+                  </SidebarLinkGroup>
+                )}
 
 
               {/* Products */}
@@ -2641,7 +2641,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 </SidebarLinkGroup>
               )}
               {/* Customer Dashboard */}
-              {hasMenuPermission(permissions, 'customer_dashboard') && (
+
+
+              {hasPermission(permissions, 'customer.dashboard') && (
                 <li>
                   <NavLink
                     to="/customer-dashboard"
