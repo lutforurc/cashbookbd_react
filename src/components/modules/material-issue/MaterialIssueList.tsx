@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiCheckSquare } from 'react-icons/fi';
+import { FiCheckSquare, FiPrinter } from 'react-icons/fi';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -9,6 +9,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getMaterialIssues } from './materialIssueSlice';
+import MaterialIssuePrintModal from './MaterialIssuePrintModal';
 
 interface MaterialIssueListProps {
   refreshKey?: number;
@@ -23,6 +24,7 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number | string>(10);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [printId, setPrintId] = useState<number | string | null>(null);
 
   useEffect(() => {
     dispatch(getMaterialIssues({ page, perPage, search }));
@@ -102,6 +104,22 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
       cellClass: 'text-right w-28',
       render: (row: any) => <span>{thousandSeparator(Number(row?.total_qty || 0))}</span>,
     },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center w-20',
+      cellClass: 'text-center w-20',
+      render: (row: any) => (
+        <button
+          type="button"
+          onClick={() => setPrintId(row?.id)}
+          title="Print"
+          className="text-primary hover:text-blue-700"
+        >
+          <FiPrinter className="mx-auto cursor-pointer text-lg" />
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -116,7 +134,7 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
             onClick={handleSearch}
             buttonLoading={searchLoading}
             label="Search"
-            className="whitespace-nowrap"
+            className="whitespace-nowrap w-30 text-left"
             icon={<FiCheckSquare />}
           />
         </div>
@@ -135,6 +153,10 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
           ''
         )}
       </div>
+
+      {printId !== null && (
+        <MaterialIssuePrintModal id={printId} onClose={() => setPrintId(null)} />
+      )}
     </div>
   );
 };

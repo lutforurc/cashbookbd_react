@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
+  API_MATERIAL_ISSUE_DETAILS_URL,
   API_MATERIAL_ISSUE_LIST_URL,
   API_MATERIAL_ISSUE_STORE_URL,
 } from '../../services/apiRoutes';
@@ -87,6 +88,44 @@ export const getMaterialIssues = createAsyncThunk<
     );
   }
 });
+
+interface MaterialIssueDetailsPayload {
+  id: number | string;
+  callback?: (response: any) => void;
+}
+
+const getMaterialIssueDetailsThunk = createAsyncThunk<
+  any,
+  MaterialIssueDetailsPayload,
+  { rejectValue: string }
+>('materialIssue/getMaterialIssueDetails', async ({ id, callback }, thunkAPI) => {
+  try {
+    const res = await httpService.get(`${API_MATERIAL_ISSUE_DETAILS_URL}/${id}`);
+    const responseData = res.data;
+
+    if (responseData?.success) {
+      // foundData() wraps the payload as data.data, so unwrap one level here.
+      const details = responseData?.data?.data ?? responseData?.data ?? {};
+      if (typeof callback === 'function') callback({ success: true, data: details });
+      return details;
+    }
+
+    const message =
+      responseData?.error?.message ||
+      responseData?.message ||
+      'Failed to load material issue details';
+    if (typeof callback === 'function') callback({ success: false, message });
+    return thunkAPI.rejectWithValue(message);
+  } catch (err: any) {
+    const message = err?.response?.data?.message || err?.message || 'Something went wrong';
+    if (typeof callback === 'function') callback({ success: false, message });
+    return thunkAPI.rejectWithValue(message);
+  }
+});
+
+export const getMaterialIssueDetails =
+  (id: number | string, callback?: (response: any) => void) => (dispatch: any) =>
+    dispatch(getMaterialIssueDetailsThunk({ id, callback }));
 
 const storeMaterialIssueThunk = createAsyncThunk<
   any,
