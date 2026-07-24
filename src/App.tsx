@@ -474,7 +474,7 @@ function App() {
               <Route path={routes.due_installment_list} element={<DueInstallment user={me} />} />
               <Route path={routes.employee_wise_installment} element={<StaffWiseDueInstallment user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.due.view']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['due.list', 'ledger.due.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_due_list} element={<DueList user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.view', 'ledger.customer']} loading={permissionsLoading} />}>

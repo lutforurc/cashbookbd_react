@@ -71,7 +71,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Customer Supplier Statement', path: routes.customer_supplier_statement, group: 'Reports', permissions: ['ledger.customer'] },
   { title: 'Due Installments', path: routes.due_installment_list, group: 'Reports', permissions: ['installment.create'] },
   { title: 'Employee Installments', path: routes.employee_wise_installment, group: 'Reports', permissions: ['installment.create'] },
-  { title: 'Due List', path: routes.report_due_list, group: 'Reports', permissions: ['ledger.due.view'] },
+  { title: 'Due List', path: routes.report_due_list, group: 'Reports', permissions: ['due.list', 'ledger.due.view'] },
   { title: 'Ledger', path: routes.report_ledger, group: 'Reports', permissions: ['ledger.view', 'ledger.customer'] },
   { title: 'Product In Out', path: routes.product_ledger_data, group: 'Reports', permissions: ['ledger.view', 'ledger.customer'] },
   { title: 'Labour Ledger', path: routes.report_labour_ledger, group: 'Reports', permissions: ['ledger.labour'] },
