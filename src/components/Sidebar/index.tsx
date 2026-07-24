@@ -1465,7 +1465,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          {hasPermission(permissions, 'category.view') && (
+                          {hasPermission(permissions, 'brand.list') && (
                             <li>
                               <NavLink
                                 to="/brand/brand-list"
@@ -1505,7 +1505,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'products.view') && (
+                          {hasPermission(permissions, 'low.stock') && (
                             <li>
                               <NavLink
                                 to={routes.product_low_stock}
@@ -1518,7 +1518,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'products.view') && (
+                          {hasPermission(permissions, 'negative.stock') && (
                             <li>
                               <NavLink
                                 to={routes.product_negative_stock}
@@ -1531,7 +1531,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'products.view') && (
+                          {hasPermission(permissions, 'slow.moving') && (
                             <li>
                               <NavLink
                                 to={routes.product_slow_moving}
@@ -1544,7 +1544,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'products.view') && (
+                          {hasPermission(permissions, 'warehouse.difference') && (
                             <li>
                               <NavLink
                                 to={routes.product_warehouse_difference}
@@ -1557,7 +1557,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'products.view') && (
+                          {hasPermission(permissions, 'product.unit') && (
                             <li>
                               <NavLink
                                 to={routes.product_unit_list}
@@ -1651,7 +1651,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
 
-                          {hasPermission(permissions, 'branch.view') && (
+                          {hasPermission(permissions, 'company.view') && (
                             <li>
                               <NavLink
                                 to={routes.company_list}
@@ -1705,7 +1705,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
+                          {(hasPermission(permissions, 'online.users') || hasPermission(permissions, 'user.view')) && (
                             <li>
                               <NavLink
                                 to={routes.online_users}
@@ -1718,7 +1718,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
+                          {(hasPermission(permissions, 'company.user') || hasPermission(permissions, 'user.view')) && (
                             <li>
                               <NavLink
                                 to={routes.company_user_list}
@@ -1895,7 +1895,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {/* voucher.approval */}
-                          {(hasPermission(permissions, 'voucher.approval') || hasPermission(permissions, 'attendance.view')) && (
+                          {(hasPermission(permissions, 'approval.center')) && (
                             <li>
                               <NavLink
                                 to={routes.approval_center}
