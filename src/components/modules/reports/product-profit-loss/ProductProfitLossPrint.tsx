@@ -86,9 +86,14 @@ type Props = {
 
 const formatNumber = (value: number | null | undefined, decimal = 2) => {
   if (value === null || value === undefined) return "-";
+  // toLocaleString only accepts fraction digits in the 0–20 range; guard
+  // against NaN / out-of-range config values.
+  const safeDecimal = Number.isFinite(decimal)
+    ? Math.min(Math.max(Math.trunc(decimal), 0), 20)
+    : 2;
   return Number(value).toLocaleString("en-IN", {
-    minimumFractionDigits: decimal,
-    maximumFractionDigits: decimal,
+    minimumFractionDigits: safeDecimal,
+    maximumFractionDigits: safeDecimal,
   });
 };
 

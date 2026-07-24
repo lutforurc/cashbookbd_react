@@ -39,9 +39,15 @@ const formatNumber = (value: any, decimals = 0) => {
   const numericValue = Number(value || 0);
   if (!Number.isFinite(numericValue) || numericValue === 0) return '-';
 
+  // toLocaleString/Intl.NumberFormat only accept fraction digits in the
+  // 0–20 range; guard against NaN / out-of-range config values.
+  const safeDecimals = Number.isFinite(decimals)
+    ? Math.min(Math.max(Math.trunc(decimals), 0), 20)
+    : 0;
+
   return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
+    minimumFractionDigits: safeDecimals,
+    maximumFractionDigits: safeDecimals,
   }).format(numericValue);
 };
 
