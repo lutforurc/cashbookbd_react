@@ -259,6 +259,7 @@ const HrmMismatchPayment = (user: any) => {
         }
         onCancel={() => setPendingRow(null)}
         onConfirm={handleDeleteConfirmed}
+        className="bg-red-600 hover:bg-red-700"
       />
     </div>
   );
