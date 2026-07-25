@@ -109,7 +109,7 @@ const buildBrandCategoryRows = (rows: any[]) => {
   return finalRows;
 };
 
-const ProductStock = ( user : any) => {
+const ProductStock = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const categoryData = useSelector((state: any) => state.category);
@@ -177,6 +177,10 @@ const ProductStock = ( user : any) => {
 
       if (authUser?.branch_id) {
         setBranchId(authUser.branch_id);
+      } else {
+        // The dropdown has no "All Branch" option, so an empty value would
+        // still render the first branch while sending no branch filter at all.
+        setBranchId((prev) => prev || branchDdlData.protectedData.data[0]?.id || '');
       }
     }
   }, [branchDdlData?.protectedData, authUser?.branch_id]);
@@ -454,7 +458,7 @@ const ProductStock = ( user : any) => {
                         defaultValue={authUser?.branch_id}
                         value={String(branchId)}
                         onChange={handleBranchChange}
-                        className="!w-20 text-sm p-2 border h-9.5"
+                        className="w-full text-sm p-2 border h-9.5"
                         branchDdl={dropdownData}
                       />
                     )}
