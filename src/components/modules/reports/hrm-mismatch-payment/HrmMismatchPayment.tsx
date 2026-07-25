@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
+import { FiSearch } from 'react-icons/fi';
 
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -173,7 +174,7 @@ const HrmMismatchPayment = (user: any) => {
               className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
               title="Keep one, remove duplicate deductions"
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? 'Clearing...' : 'Clear'}
             </button>
           </div>
         );
@@ -220,9 +221,10 @@ const HrmMismatchPayment = (user: any) => {
           <div className="mt-2 md:mt-0">
             <ButtonLoading
               onClick={handleRun}
-              buttonLoading={false}
-              label="Run"
-              className="mt-0 md:mt-6 pt-2 pb-2.5 w-full"
+              buttonLoading={hrmMismatchPayment?.isLoading}
+              label="Search"
+              className="mt-0 md:mt-6 h-10 whitespace-nowrap"
+              icon={<FiSearch size={15} />}
             />
           </div>
         </div>
