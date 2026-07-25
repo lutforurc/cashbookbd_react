@@ -57,6 +57,7 @@ import AddOrder from './components/modules/orders/AddOrder';
 import AveragePrice from './components/modules/orders/AveragePrice';
 import OrderWithProduct from './components/modules/orders/OrderWithProduct';
 import MitchMatch from './components/modules/reports/mitchmatch/MitchMatch';
+import HrmMismatchPayment from './components/modules/reports/hrm-mismatch-payment/HrmMismatchPayment';
 import AddBranch from './components/modules/branch/AddBranch';
 import Roles from './components/modules/user-management/Roles';
 import AddRole from './components/modules/user-management/AddRole';
@@ -494,6 +495,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['mitch.match']} loading={permissionsLoading} />}>
               <Route path={routes.mitch_match} element={<MitchMatch user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.sheet.view']} loading={permissionsLoading} />}>
+              <Route path={routes.hrm_mismatch_payment} element={<HrmMismatchPayment user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report']} loading={permissionsLoading} />}>
               <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />

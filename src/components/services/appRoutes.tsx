@@ -131,6 +131,7 @@ const ROUTES = {
   purchase_ledger: '/reports/purchase-ledger',
   sales_ledger: '/reports/sales-ledger',
   mitch_match: '/reports/mitch-match',
+  hrm_mismatch_payment: '/reports/hrm-mismatch-payment',
   report_labour_ledger: '/reports/labour/ledger',
   group_report: '/reports/group-report',
   group_report_setup: '/reports/group-report/setup',

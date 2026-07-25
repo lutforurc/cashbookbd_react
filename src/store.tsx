@@ -31,6 +31,7 @@ import dayCloseReducer from './components/modules/dayclose/daycloseSlice';
 import orderReducer from './components/modules/orders/ordersSlice';
 import settingsReducer from './components/modules/settings/settingsSlice';
 import mitchMatchReducer from './components/modules/reports/mitchmatch/mitchMatchSlice';
+import hrmMismatchPaymentReducer from './components/modules/reports/hrm-mismatch-payment/hrmMismatchPaymentSlice';
 import rolesSlice from './components/modules/roles/rolesSlice';
 import constructionPurchaseReducer from './components/modules/invoices/purchase/constructionPurchaseSlice';
 import userManagementSlice from './components/modules/user-management/userManagementSlice';
@@ -129,6 +130,7 @@ const store = configureStore({
     dayclose: dayCloseReducer,
     orders: orderReducer,
     mitchMatch: mitchMatchReducer,
+    hrmMismatchPayment: hrmMismatchPaymentReducer,
     roles: rolesSlice,
     userManagement: userManagementSlice,
     charts: chartSlice,

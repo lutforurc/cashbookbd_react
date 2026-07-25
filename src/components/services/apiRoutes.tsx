@@ -303,6 +303,9 @@ export const API_SOMITY_MONTHLY_REPORT_DATA_URL = `${API_BASE_URL}/somity-report
 
 // Mitch Match url
 export const API_REPORT_MITCH_MATCH_URL = `${API_BASE_URL}/reports/mitch-match/data`;
+// HRMS Mismatch Payment url
+export const API_REPORT_HRM_MISMATCH_PAYMENT_URL = `${API_BASE_URL}/reports/hrm-mismatch-payment/data`;
+export const API_REPORT_HRM_MISMATCH_PAYMENT_DELETE_URL = `${API_BASE_URL}/reports/hrm-mismatch-payment/delete`;
 
 // Chart of Accounts
 export const API_CHART_OF_ACCOUNTS_L1_URL = `${API_BASE_URL}/coal1/coal1-list`;

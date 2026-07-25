@@ -2453,6 +2453,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'salary.sheet.view') && (
                             <li>
                               <NavLink
+                                to={routes.hrm_mismatch_payment}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Salary Mismatch
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'salary.sheet.view') && (
+                            <li>
+                              <NavLink
                                 to={routes.hrms_festival_bonus_list}
                                 className={({ isActive }) =>
                                   'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
