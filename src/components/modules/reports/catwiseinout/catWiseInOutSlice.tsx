@@ -1,4 +1,4 @@
-import { CAT_WISE_IN_OUT_DATA_LIST_ERROR, CAT_WISE_IN_OUT_DATA_LIST_PENDING, CAT_WISE_IN_OUT_DATA_LIST_SUCCESS } from '../../../constant/constant/constant';
+import { CAT_WISE_IN_OUT_DATA_LIST_ERROR, CAT_WISE_IN_OUT_DATA_LIST_PENDING, CAT_WISE_IN_OUT_DATA_LIST_RESET, CAT_WISE_IN_OUT_DATA_LIST_SUCCESS } from '../../../constant/constant/constant';
 import { API_REPORT_CAT_IN_OUT_URL } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
@@ -59,6 +59,9 @@ const catWiseInOutReducer = (state = initialState, action: any) => {
         isLoading: false,
         errors: action.payload,
       };
+
+    case CAT_WISE_IN_OUT_DATA_LIST_RESET:
+      return initialState;
     default:
       return state;
   }

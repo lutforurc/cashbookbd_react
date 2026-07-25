@@ -308,6 +308,7 @@ export const PRODUCT_STOCK_DATA_LIST_ERROR = 'PRODUCT/STOCK/DATA/list/error';
 export const CAT_WISE_IN_OUT_DATA_LIST_PENDING ='CAT/WISE/IN/OUT/DATA/list/pending';
 export const CAT_WISE_IN_OUT_DATA_LIST_SUCCESS ='CAT/WISE/IN/OUT/DATA/list/success';
 export const CAT_WISE_IN_OUT_DATA_LIST_ERROR ='CAT/WISE/IN/OUT/DATA/list/error';
+export const CAT_WISE_IN_OUT_DATA_LIST_RESET ='CAT/WISE/IN/OUT/DATA/list/reset';
 
 // Date Wise Data
 export const DATE_WISE_TOTAL_PENDING = 'DATE/WISE/DATA/pending';

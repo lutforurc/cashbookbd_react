@@ -72,7 +72,13 @@ const formatReportDate = (value: any) => {
 };
 
 const mapDateWiseInOutRows = (payload: any): DateWiseInOutRow[] => {
-  const data = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+  const data = Array.isArray(payload?.data?.data)
+    ? payload.data.data
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : Array.isArray(payload)
+        ? payload
+        : [];
 
   return data.map((item: any, index: number) => {
     const inQty = formatQuantity(item?.in_qty);

@@ -15,6 +15,7 @@ import InputElement from "../../../utils/fields/InputElement";
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { getCategoryDdl } from "../../category/categorySlice";
 import { getCatWiseInOut } from "./catWiseInOutSlice";
+import { CAT_WISE_IN_OUT_DATA_LIST_RESET } from "../../../constant/constant/constant";
 
 import { orderType } from "../../../utils/fields/DataConstant";
 import { toast } from "react-toastify";
@@ -52,7 +53,6 @@ const CatWiseInOut = (user: any) => {
 
   const [perPage, setPerPage] = useState(20);
   const [fontSize, setFontSize] = useState(11);
-  const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +71,6 @@ const CatWiseInOut = (user: any) => {
         branchDdlData?.protectedData?.transactionDate.split("/");
 
       const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
-      setDefaultTransactionDate(parsedDate);
       setStartDate(parsedDate);
       setEndDate(parsedDate);
 
@@ -128,10 +127,11 @@ const CatWiseInOut = (user: any) => {
     setCategoryId(null);
     setReportType("");
     setPerPage(20);
-    setStartDate(defaultTransactionDate);
-    setEndDate(defaultTransactionDate);
+    setFontSize(11);
     setBranchId(user.user.branch_id);
     setFilterOpen(false);
+    setTableData([]);
+    dispatch({ type: CAT_WISE_IN_OUT_DATA_LIST_RESET });
   };
 
   // Print handler
