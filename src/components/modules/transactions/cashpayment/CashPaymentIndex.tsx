@@ -20,10 +20,12 @@ const CashPaymentIndex = () => {
   if (!currentBranch?.inventory_system_id) {
     return <Loader />;
   }
+  
+  console.log('Current Branch:', currentBranch);
 
   // Head office is a branch role, not an inventory system, so it keeps its own
   // business_type_id check and wins over the inventory-system mapping below.
-  if (Number(currentBranch?.business_type_id) === 1) {
+  if (Number(currentBranch?.branch_types_id) === 1) {
     return <HeadOfficeCashPayment />;
   }
 
