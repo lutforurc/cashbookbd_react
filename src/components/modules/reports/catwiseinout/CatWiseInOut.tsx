@@ -187,6 +187,37 @@ const CatWiseInOut = (user: any) => {
     
   ];
 
+  const grandTotal = useMemo(
+    () =>
+      (tableData || []).reduce(
+        (sum: number, row: any) => sum + (Number(row?.quantity) || 0),
+        0
+      ),
+    [tableData]
+  );
+
+  // Only label the total with a unit when every row actually shares it.
+  const totalUnit = useMemo(() => {
+    const units = Array.from(
+      new Set((tableData || []).map((row: any) => row?.unit).filter(Boolean))
+    );
+    return units.length === 1 ? String(units[0]) : "";
+  }, [tableData]);
+
+  const footerRows = useMemo(() => {
+    if (!tableData?.length) return undefined;
+
+    return [
+      [
+        { label: "Grand Total", colSpan: 3, className: "text-right" },
+        {
+          label: `${thousandSeparator(grandTotal)} ${totalUnit}`.trim(),
+          className: "text-center",
+        },
+      ],
+    ];
+  }, [tableData, grandTotal, totalUnit]);
+
   const handleCategoryChange = (selectedOption: any) => {
     if (selectedOption) {
       setCategoryId(selectedOption.value);
@@ -455,7 +486,11 @@ const CatWiseInOut = (user: any) => {
       {/* TABLE */}
       <div className="overflow-y-auto">
         {inOutData.isLoading && <Loader />}
-        <Table columns={columns} data={tableData || []} />
+        <Table
+          columns={columns}
+          data={tableData || []}
+          footerRows={footerRows as any}
+        />
       </div>
 
       {/* PRINT COMPONENT */}
