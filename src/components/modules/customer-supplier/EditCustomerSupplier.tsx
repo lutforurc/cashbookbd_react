@@ -1,6 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FieldArray, useFormik, FormikProvider } from "formik";
+import {
+  FieldArray,
+  useFormik,
+  FormikProvider,
+  getIn,
+  setNestedObjectValues,
+} from "formik";
 import * as Yup from "yup";
 import {
   FiHome,
@@ -34,6 +40,32 @@ import {
 } from "./customerSlice";
 import Loader from "../../../common/Loader";
 
+/**
+ * The API returns guarantor/nominee rows straight from the DB, so optional
+ * columns arrive as `null`. Yup's `string()` rejects null and the inputs would
+ * flip to uncontrolled, so every null is turned into an empty string first.
+ */
+const normalizeRows = (rows: any) =>
+  (Array.isArray(rows) ? rows : []).map((row: any) =>
+    Object.fromEntries(
+      Object.entries(row ?? {}).map(([key, value]) => [key, value ?? '']),
+    ),
+  );
+
+/** First human-readable message inside Formik's nested error tree. */
+const firstErrorMessage = (errors: any): string | null => {
+  if (!errors) return null;
+  if (typeof errors === 'string') return errors;
+  if (typeof errors !== 'object') return null;
+
+  for (const value of Object.values(errors)) {
+    const found = firstErrorMessage(value);
+    if (found) return found;
+  }
+
+  return null;
+};
+
 const EditCustomerSupplier = () => {
   const nomineeStatusOptions = [
     { id: 'active', name: 'Active' },
@@ -51,6 +83,10 @@ const EditCustomerSupplier = () => {
 
   const editCustomer = customers?.editCustomer;
   const editLoading = customers?.editLoading;
+  const updating = customers?.updating;
+
+  const guarantorEnabled = settings?.data?.branch?.have_is_guaranter === '1';
+  const nomineeEnabled = settings?.data?.branch?.have_is_nominee === '1';
 
   // Self-service portal password (set/reset separately from the profile update).
   const [portalPassword, setPortalPassword] = useState("");
@@ -134,56 +170,80 @@ const EditCustomerSupplier = () => {
     [areaList]
   );
 
-  /* ================= VALIDATION ================= */
-  const validationSchema = Yup.object().shape({
-    name: Yup.string().required("Name is required"),
-    father: Yup.string(),
-    mother_name: Yup.string(),
-    contact_person: Yup.string(),
-    contact_number: Yup.string(),
-    manual_address: Yup.string().required("Address is required"),
-    mobile: Yup.string().required("Mobile number is required"),
-    ledger_page: Yup.string(),
-    idfr_code: Yup.string(),
-    party_type_id: Yup.string().required("Customer or Supplier type is required"),
-    area_id: Yup.string(),
-    customerLogin: Yup.mixed(),
+  const initialGuarantors = useMemo(
+    () => normalizeRows(editCustomer?.guarantors),
+    [editCustomer]
+  );
+  const initialNominees = useMemo(
+    () => normalizeRows(editCustomer?.nominees),
+    [editCustomer]
+  );
 
-    guarantors: Yup.array().of(
+  /* ================= VALIDATION ================= */
+  // Hidden sections are not validated — otherwise a legacy row with a missing
+  // required field blocks Update with no way to see or fix it on screen.
+  const validationSchema = useMemo(
+    () =>
       Yup.object().shape({
-        name: Yup.string().required("Guarantor name required"),
-        father_name: Yup.string().required("Father name required"),
-        mobile: Yup.string().required("Mobile required"),
-        national_id: Yup.string(),
-        address: Yup.string().required("Address required"),
-      })
-    ),
-    nominees: Yup.array().of(
-      Yup.object().shape({
-        name: Yup.string().required('Nominee name required'),
-        relation: Yup.string(),
-        relation_name: Yup.string(),
-        date_of_birth: Yup.string(),
-        mobile: Yup.string(),
-        present_address: Yup.string(),
-        permanent_address: Yup.string(),
-        national_id: Yup.string(),
-        share_percentage: Yup.number()
-          .transform((value, originalValue) => (originalValue === '' ? null : value))
-          .nullable()
-          .min(0, 'Share percentage cannot be negative')
-          .max(100, 'Share percentage cannot be more than 100'),
-        priority_order: Yup.number()
-          .transform((value, originalValue) => (originalValue === '' ? null : value))
-          .nullable()
-          .min(1, 'Priority order must be at least 1'),
-        guardian_name: Yup.string(),
-        guardian_mobile: Yup.string(),
-        status: Yup.string(),
-        remarks: Yup.string(),
-      })
-    ),
-  });
+        name: Yup.string().required("Name is required"),
+        father: Yup.string().nullable(),
+        mother_name: Yup.string().nullable(),
+        contact_person: Yup.string().nullable(),
+        contact_number: Yup.string().nullable(),
+        manual_address: Yup.string().required("Address is required"),
+        mobile: Yup.string().required("Mobile number is required"),
+        ledger_page: Yup.string().nullable(),
+        idfr_code: Yup.string().nullable(),
+        party_type_id: Yup.string().required("Customer or Supplier type is required"),
+        area_id: Yup.string().nullable(),
+        customerLogin: Yup.mixed(),
+
+        guarantors: guarantorEnabled
+          ? Yup.array().of(
+              Yup.object().shape({
+                name: Yup.string().required("Guarantor name required"),
+                father_name: Yup.string().required("Father name required"),
+                mobile: Yup.string().required("Mobile required"),
+                national_id: Yup.string().nullable(),
+                address: Yup.string().required("Address required"),
+              })
+            )
+          : Yup.array(),
+        nominees: nomineeEnabled
+          ? Yup.array().of(
+              Yup.object().shape({
+                name: Yup.string().required('Nominee name required'),
+                relation: Yup.string().nullable(),
+                relation_name: Yup.string().nullable(),
+                mother_name: Yup.string().nullable(),
+                date_of_birth: Yup.string().nullable(),
+                mobile: Yup.string().nullable(),
+                present_address: Yup.string().nullable(),
+                permanent_address: Yup.string().nullable(),
+                national_id: Yup.string().nullable(),
+                share_percentage: Yup.number()
+                  .transform((value, originalValue) =>
+                    originalValue === '' || originalValue === null ? null : value
+                  )
+                  .nullable()
+                  .min(0, 'Share percentage cannot be negative')
+                  .max(100, 'Share percentage cannot be more than 100'),
+                priority_order: Yup.number()
+                  .transform((value, originalValue) =>
+                    originalValue === '' || originalValue === null ? null : value
+                  )
+                  .nullable()
+                  .min(1, 'Priority order must be at least 1'),
+                guardian_name: Yup.string().nullable(),
+                guardian_mobile: Yup.string().nullable(),
+                status: Yup.string().nullable(),
+                remarks: Yup.string().nullable(),
+              })
+            )
+          : Yup.array(),
+      }),
+    [guarantorEnabled, nomineeEnabled]
+  );
 
   /* ================= FORM ================= */
   const formik = useFormik({
@@ -207,8 +267,8 @@ const EditCustomerSupplier = () => {
       customerLogin: Number(editCustomer?.customer_login ?? 0),
 
       // ----- guarantors & nominees -----
-      guarantors: editCustomer?.guarantors ?? [],
-      nominees: editCustomer?.nominees ?? [],
+      guarantors: initialGuarantors,
+      nominees: initialNominees,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -233,6 +293,38 @@ const EditCustomerSupplier = () => {
     (opt: any) => opt.value === formik.values.area_id?.toString()
   );
 
+  /**
+   * Formik silently swallows a failed validation, so surface it: touch every
+   * offending field and show the first message instead of doing nothing.
+   */
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const errors = await formik.validateForm();
+
+    if (Object.keys(errors).length > 0) {
+      formik.setTouched(setNestedObjectValues(errors, true));
+      toast.error(firstErrorMessage(errors) || "Please fix the highlighted fields.");
+      return;
+    }
+
+    formik.submitForm();
+  };
+
+  const handleResetForm = () => {
+    formik.handleReset();
+    toast.info("Form reset to the saved values.");
+  };
+
+  const fieldError = (path: string) => {
+    const error = getIn(formik.errors, path);
+    const touched = getIn(formik.touched, path);
+
+    return touched && typeof error === "string" ? (
+      <div className="text-red-500 text-sm">{error}</div>
+    ) : null;
+  };
+
   if (editLoading) return <Loader />;
 
   return (
@@ -247,7 +339,7 @@ const EditCustomerSupplier = () => {
       </div>
 
       <FormikProvider value={formik}>
-        <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={handleFormSubmit}>
           {/* ================= TOP AREA + TYPE ================= */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div>
@@ -509,7 +601,7 @@ const EditCustomerSupplier = () => {
           )}
 
           {/* ================= GUARANTORS ================= */}
-          {settings?.data?.branch?.have_is_guaranter === "1" && (
+          {guarantorEnabled && (
             <>
               <h3 className="mt-4 mb-2 font-semibold">
                 Guarantor Details
@@ -521,27 +613,39 @@ const EditCustomerSupplier = () => {
                     {formik.values.guarantors.map((g: any, index: number) => (
                       <div key={index} className="border p-3 mb-2 ">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                          <InputElement
-                            name={`guarantors.${index}.name`}
-                            label="Name"
-                            placeholder="Enter Name"
-                            value={g.name}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`guarantors.${index}.father_name`}
-                            label="Father Name"
-                            placeholder="Enter Father Name"
-                            value={g.father_name}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`guarantors.${index}.mobile`}
-                            label="Mobile"
-                            placeholder="Enter Mobile Number"
-                            value={g.mobile}
-                            onChange={formik.handleChange}
-                          />
+                          <div>
+                            <InputElement
+                              name={`guarantors.${index}.name`}
+                              label="Name"
+                              placeholder="Enter Name"
+                              value={g.name}
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                            {fieldError(`guarantors.${index}.name`)}
+                          </div>
+                          <div>
+                            <InputElement
+                              name={`guarantors.${index}.father_name`}
+                              label="Father Name"
+                              placeholder="Enter Father Name"
+                              value={g.father_name}
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                            {fieldError(`guarantors.${index}.father_name`)}
+                          </div>
+                          <div>
+                            <InputElement
+                              name={`guarantors.${index}.mobile`}
+                              label="Mobile"
+                              placeholder="Enter Mobile Number"
+                              value={g.mobile}
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                            {fieldError(`guarantors.${index}.mobile`)}
+                          </div>
                           <InputElement
                             name={`guarantors.${index}.national_id`}
                             label="National ID"
@@ -549,13 +653,17 @@ const EditCustomerSupplier = () => {
                             value={g.national_id}
                             onChange={formik.handleChange}
                           />
-                          <InputElement
-                            name={`guarantors.${index}.address`}
-                            label="Address"
-                            placeholder="Enter Address"
-                            value={g.address}
-                            onChange={formik.handleChange}
-                          />
+                          <div>
+                            <InputElement
+                              name={`guarantors.${index}.address`}
+                              label="Address"
+                              placeholder="Enter Address"
+                              value={g.address}
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                            {fieldError(`guarantors.${index}.address`)}
+                          </div>
                         </div>
 
                         <button
@@ -593,7 +701,7 @@ const EditCustomerSupplier = () => {
           )}
 
           {/* ================= NOMINEES ================= */}
-          {settings?.data?.branch?.have_is_nominee === '1' && (
+          {nomineeEnabled && (
             <>
               <h3 className="mt-4 mb-2 font-semibold">Nominee Details</h3>
 
@@ -603,13 +711,17 @@ const EditCustomerSupplier = () => {
                     {formik.values.nominees.map((n: any, index: number) => (
                       <div key={index} className="border p-3 mb-2 ">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                          <InputElement
-                            name={`nominees.${index}.name`}
-                            label="Name"
-                            placeholder="Enter Name"
-                            value={n.name}
-                            onChange={formik.handleChange}
-                          />
+                          <div>
+                            <InputElement
+                              name={`nominees.${index}.name`}
+                              label="Name"
+                              placeholder="Enter Name"
+                              value={n.name}
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                            {fieldError(`nominees.${index}.name`)}
+                          </div>
                           <DropdownCommon
                             id={`nominees.${index}.relation`}
                             name={`nominees.${index}.relation`}
@@ -674,22 +786,30 @@ const EditCustomerSupplier = () => {
                             value={n.national_id}
                             onChange={formik.handleChange}
                           />
-                          <InputElement
-                            name={`nominees.${index}.share_percentage`}
-                            label="Share Percentage"
-                            type="number"
-                            placeholder="Enter Share Percentage"
-                            value={n.share_percentage}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.priority_order`}
-                            label="Priority Order"
-                            type="number"
-                            placeholder="Enter Priority Order"
-                            value={n.priority_order}
-                            onChange={formik.handleChange}
-                          />
+                          <div>
+                            <InputElement
+                              name={`nominees.${index}.share_percentage`}
+                              label="Share Percentage"
+                              type="number"
+                              placeholder="Enter Share Percentage"
+                              value={n.share_percentage}
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                            {fieldError(`nominees.${index}.share_percentage`)}
+                          </div>
+                          <div>
+                            <InputElement
+                              name={`nominees.${index}.priority_order`}
+                              label="Priority Order"
+                              type="number"
+                              placeholder="Enter Priority Order"
+                              value={n.priority_order}
+                              onChange={formik.handleChange}
+                              onBlur={formik.handleBlur}
+                            />
+                            {fieldError(`nominees.${index}.priority_order`)}
+                          </div>
 
                           <InputElement
                             name={`nominees.${index}.guardian_name`}
@@ -773,7 +893,8 @@ const EditCustomerSupplier = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
             <ButtonLoading
               type="submit"
-              buttonLoading={editLoading}
+              disabled={updating}
+              buttonLoading={updating}
               label="Update"
               className="whitespace-nowrap text-center pt-2 pb-2"
               icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
@@ -781,7 +902,7 @@ const EditCustomerSupplier = () => {
 
             <ButtonLoading
               type="button"
-              onClick={formik.handleReset}
+              onClick={handleResetForm}
               buttonLoading={false}
               label="Reset"
               className="whitespace-nowrap text-center pt-2 pb-2"

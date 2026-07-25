@@ -53,6 +53,8 @@ interface CustomerState {
   /* 🔥 NEW */
   editCustomer: any | null;
   editLoading: boolean;
+  /* Kept separate from editLoading so submitting does not unmount the edit form. */
+  updating: boolean;
 
   loading: boolean;
   error: string | null;
@@ -73,6 +75,7 @@ const initialState: CustomerState = {
   total: 0,
   editCustomer: null,
   editLoading: false,
+  updating: false,
 
   loading: false,
   error: null,
@@ -254,13 +257,13 @@ const customerSlice = createSlice({
 
       /* ================= EDIT UPDATE ================= */
       .addCase(updateCustomerFromEdit.pending, (state) => {
-        state.editLoading = true;
+        state.updating = true;
       })
       .addCase(updateCustomerFromEdit.fulfilled, (state) => {
-        state.editLoading = false;
+        state.updating = false;
       })
       .addCase(updateCustomerFromEdit.rejected, (state, action) => {
-        state.editLoading = false;
+        state.updating = false;
         state.error = action.payload?.message || "Update failed";
       })
   },
