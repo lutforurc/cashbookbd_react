@@ -7,6 +7,7 @@ import Loader from "../common/Loader";
 // import Header from "../components/Header/index";
 // import Sidebar from "../components/Sidebar/index";
 
+
 const CustomerLayout: React.FC = () => {
   const location = useLocation();
   const dispatch = useDispatch();
