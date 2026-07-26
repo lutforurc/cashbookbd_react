@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
+import { FiAlertCircle, FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import HelmetTitle from '../../utils/others/HelmetTitle'; 
@@ -14,6 +14,8 @@ import { storeBranchTransfer } from './warehouseTransferSlice';
 import TransferList from './TransferList';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { trxDateToDate, trxDateToIso } from '../../utils/utils-functions/transactionDate';
+import httpService from '../../services/httpService';
+import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
 
 type ProductOption = {
   value: string;
@@ -47,6 +49,19 @@ const BranchTransfer = () => {
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [listRefreshKey, setListRefreshKey] = useState(0);
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    mobile: string;
+    items: any[];
+    payload: any;
+  } | null>(null);
+  // A stock shortage no longer blocks: warn with the same confirm modal the
+  // customer form uses, and let the operator transfer anyway.
+  const [stockWarning, setStockWarning] = useState<{
+    rows: { name: string; available: number; requested: number }[];
+    shortages: string[];
+    message: string;
+    payload: any;
+  } | null>(null);
   const [transferDate, setTransferDate] = useState<Date | null>(defaultTransferDate);
   // Once the user picks a date, stop overwriting it when settings refreshes.
   const [transferDateTouched, setTransferDateTouched] = useState(false);
@@ -311,7 +326,46 @@ const BranchTransfer = () => {
     }
   };
 
-  const handleSave = () => {
+  // Same warning the customer form shows: if the receiver mobile already
+  // belongs to a party, let the operator confirm before saving rather than
+  // block them. Returns the matching parties.
+  const checkDuplicateMobile = async (mobile: string) => {
+    const response = await httpService.post(API_CUSTOMER_MOBILE_CHECK_URL, { mobile });
+    const payload = response?.data?.data ?? response?.data ?? {};
+    return {
+      exists: Boolean(payload?.exists),
+      items: Array.isArray(payload?.items) ? payload.items : [],
+    };
+  };
+
+  const performSave = (payload: any, allowNegative = false) => {
+    setSaveButtonLoading(true);
+    const finalPayload = allowNegative ? { ...payload, allow_negative: true } : payload;
+    dispatch(
+      storeBranchTransfer(finalPayload, (response: any) => {
+        setSaveButtonLoading(false);
+        if (response?.success) {
+          toast.success(response?.message || 'Branch transfer saved');
+          resetForm();
+          setListRefreshKey((prev) => prev + 1);
+          return;
+        }
+        // A shortage is a warning the operator can override, not a hard error.
+        if (response?.stock_shortage) {
+          setStockWarning({
+            rows: Array.isArray(response?.shortage_rows) ? response.shortage_rows : [],
+            shortages: Array.isArray(response?.shortages) ? response.shortages : [],
+            message: response?.message || 'Not enough stock at the source branch.',
+            payload,
+          });
+          return;
+        }
+        toast.error(response?.message || 'Failed to save branch transfer');
+      }),
+    );
+  };
+
+  const handleSave = async () => {
     if (toBranchOptions.length < 2) {
       toast.error('At least two branches are required for transfer');
       return;
@@ -355,19 +409,44 @@ const BranchTransfer = () => {
       })),
     };
 
-    setSaveButtonLoading(true);
-    dispatch(
-      storeBranchTransfer(payload, (response: any) => {
-        if (response?.success) {
-          toast.success(response?.message || 'Branch transfer saved');
-          resetForm();
-          setListRefreshKey((prev) => prev + 1);
-        } else {
-          toast.error(response?.message || 'Failed to save branch transfer');
-        }
+    if (receiverMobile) {
+      setSaveButtonLoading(true);
+      try {
+        const duplicate = await checkDuplicateMobile(receiverMobile);
         setSaveButtonLoading(false);
-      }),
-    );
+        if (duplicate.exists) {
+          setDuplicateWarning({ mobile: receiverMobile, items: duplicate.items, payload });
+          return;
+        }
+      } catch {
+        // A failed check shouldn't stop the transfer — fall through and save.
+        setSaveButtonLoading(false);
+      }
+    }
+
+    performSave(payload);
+  };
+
+  const handleDuplicateContinue = () => {
+    if (!duplicateWarning) return;
+    const pending = duplicateWarning;
+    setDuplicateWarning(null);
+    performSave(pending.payload);
+  };
+
+  const handleDuplicateCancel = () => {
+    setDuplicateWarning(null);
+  };
+
+  const handleStockContinue = () => {
+    if (!stockWarning) return;
+    const pending = stockWarning;
+    setStockWarning(null);
+    performSave(pending.payload, true);
+  };
+
+  const handleStockCancel = () => {
+    setStockWarning(null);
   };
   return (
     <div>
@@ -625,6 +704,137 @@ const BranchTransfer = () => {
       </div>
 
       <TransferList refreshKey={listRefreshKey} />
+
+      {duplicateWarning ? (
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6">
+          <div className="w-full max-w-lg rounded-sm bg-white shadow-xl dark:bg-gray-800">
+            <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-900/20">
+              <h3 className="text-base font-semibold text-amber-800 dark:text-amber-100">
+                Mobile Number Already Exists
+              </h3>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-200">
+                This mobile number already exists: {duplicateWarning.mobile}
+              </p>
+            </div>
+
+            <div className="px-4 py-4">
+              <p className="text-sm text-gray-700 dark:text-gray-200">
+                You can continue and save this transfer with the same receiver mobile, or cancel and change it.
+              </p>
+
+              {duplicateWarning.items.length > 0 ? (
+                <div className="mt-3 max-h-48 overflow-y-auto rounded-sm border border-gray-200 dark:border-gray-700">
+                  {duplicateWarning.items.map((item: any) => (
+                    <div
+                      key={item?.id ?? item?.coa4_id ?? `${item?.name}-${item?.mobile}`}
+                      className="border-b border-gray-100 px-3 py-2 text-sm last:border-b-0 dark:border-gray-700"
+                    >
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {item?.name || '-'}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {item?.mobile || '-'}
+                        {item?.manual_address ? ` | ${item.manual_address}` : ''}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
+              <button
+                type="button"
+                onClick={handleDuplicateCancel}
+                className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <ButtonLoading
+                type="button"
+                onClick={handleDuplicateContinue}
+                buttonLoading={saveButtonLoading}
+                label="Continue Save"
+                className="whitespace-nowrap px-4 py-2"
+                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                disabled={saveButtonLoading}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {stockWarning ? (
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center bg-black/50 px-3 py-6">
+          <div className="w-full max-w-lg rounded-sm bg-white shadow-xl dark:bg-gray-800">
+            <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-900/20">
+              <FiAlertCircle className="h-5 w-5 shrink-0 text-amber-500" />
+              <h3 className="text-base font-semibold text-amber-800 dark:text-amber-100">
+                Not Enough Stock
+              </h3>
+            </div>
+
+            <div className="px-4 py-4 text-sm text-gray-700 dark:text-gray-200">
+              {stockWarning.rows.length > 0 ? (
+                <>
+                  <p>Not enough stock at the source branch for</p>
+                  <ol className="mt-1 list-decimal space-y-0.5 pl-6">
+                    {stockWarning.rows.map((row, i) => (
+                      <li key={i}>
+                        <span className="font-medium">{row.name}</span>
+                        {' — '}
+                        <span className="font-semibold text-danger">
+                          Available {thousandSeparator(Number(row.available))}
+                        </span>
+                        {', '}
+                        <span className="font-semibold text-warning">
+                          Requested {thousandSeparator(Number(row.requested))}
+                        </span>
+                        {i === stockWarning.rows.length - 1 ? '.' : ';'}
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="mt-3">You can transfer anyway.</p>
+                </>
+              ) : stockWarning.shortages.length > 0 ? (
+                <>
+                  <p>Not enough stock at the source branch for</p>
+                  <ol className="mt-1 list-decimal space-y-0.5 pl-6">
+                    {stockWarning.shortages.map((line, i) => (
+                      <li key={i}>
+                        {line}
+                        {i === stockWarning.shortages.length - 1 ? '.' : ';'}
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="mt-3">You can transfer anyway.</p>
+                </>
+              ) : (
+                <p>{stockWarning.message}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3 sm:flex-row sm:justify-end dark:border-gray-700">
+              <button
+                type="button"
+                onClick={handleStockCancel}
+                className="rounded-sm border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <ButtonLoading
+                type="button"
+                onClick={handleStockContinue}
+                buttonLoading={saveButtonLoading}
+                label="Continue Save"
+                className="whitespace-nowrap px-4 py-2"
+                icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+                disabled={saveButtonLoading}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
