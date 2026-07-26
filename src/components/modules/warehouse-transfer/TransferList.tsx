@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
-import { FiPrinter, FiSearch } from 'react-icons/fi';
+import { FiInbox, FiPrinter, FiSearch } from 'react-icons/fi';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -11,6 +12,10 @@ import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getBranchTransfers, getBranchTransferDetails } from './warehouseTransferSlice';
 import ChallanPrint from './ChallanPrint';
+import ROUTES from '../../services/appRoutes';
+
+// transfer_status: 1 = issued/in transit (still receivable), 3 = fully received.
+const STATUS_IN_TRANSIT = 1;
 
 interface TransferListProps {
   refreshKey?: number;
@@ -35,7 +40,9 @@ const TRANSFER_STATUS: Record<number, { label: string; className: string }> = {
 
 const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const transfer = useSelector((s: any) => s.branchTransfer);
+  const myBranchId = useSelector((s: any) => s.settings?.data?.branch?.id);
 
   const [search, setSearchValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -186,19 +193,44 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
     {
       key: 'action',
       header: 'Action',
-      headerClass: 'text-center w-20',
-      cellClass: 'text-center w-20',
-      render: (row: any) => (
-        <button
-          type="button"
-          title="Print challan"
-          disabled={printingId === row.id}
-          onClick={() => handlePrint(row.id)}
-          className="text-primary hover:opacity-80 disabled:opacity-40"
-        >
-          <FiPrinter className="inline h-4 w-4" />
-        </button>
-      ),
+      headerClass: 'text-center w-24',
+      cellClass: 'text-center w-24',
+      render: (row: any) => {
+        const toBranch = Number(pickFirst(row, ['to_branch', 'to_branch_id']) || 0);
+        const status = Number(pickFirst(row, ['transfer_status', 'status']) || 0);
+        // Only the destination branch's user can receive, and only while the
+        // transfer is still in transit.
+        const canReceive =
+          myBranchId &&
+          toBranch === Number(myBranchId) &&
+          status === STATUS_IN_TRANSIT;
+
+        return (
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              title="Print challan"
+              disabled={printingId === row.id}
+              onClick={() => handlePrint(row.id)}
+              className="text-primary hover:opacity-80 disabled:opacity-40"
+            >
+              <FiPrinter className="inline h-4 w-4" />
+            </button>
+            {canReceive ? (
+              <button
+                type="button"
+                title="Receive this transfer"
+                onClick={() =>
+                  navigate(ROUTES.branch_received, { state: { sourceTransferId: row.id } })
+                }
+                className="text-meta-3 hover:opacity-80"
+              >
+                <FiInbox className="inline h-4 w-4" />
+              </button>
+            ) : null}
+          </div>
+        );
+      },
     },
   ];
 

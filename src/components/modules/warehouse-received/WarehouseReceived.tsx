@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
-import HelmetTitle from '../../utils/others/HelmetTitle'; 
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons'; 
+import HelmetTitle from '../../utils/others/HelmetTitle';
+import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
-import BranchDropdown from '../../utils/utils-functions/BranchDropdown'; 
+import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDdlAllBranch, getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { storeBranchReceived } from './warehouseReceivedSlice';
+import { getBranchTransferDetails } from '../warehouse-transfer/warehouseTransferSlice';
 import ReceiveList from './ReceiveList';
 import InputDatePicker from '../../utils/fields/DatePicker';
 
@@ -34,10 +36,14 @@ type TransferItem = {
 
 const WarehouseReceived = () => {
   const dispatch = useDispatch<any>();
+  const location = useLocation();
   const branchDdl = useSelector((s: any) => s.branchDdl);
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [listRefreshKey, setListRefreshKey] = useState(0);
+  // Set when arriving from the Transfer List "Receive" button: the receive is
+  // posted against this issue transfer so the backend can link and close it.
+  const [sourceTransferId, setSourceTransferId] = useState<number | null>(null);
   const [receiveDate, setReceiveDate] = useState<Date | null>(dayjs().toDate());
   const [isUpdatingLine, setIsUpdatingLine] = useState(false);
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
@@ -89,6 +95,52 @@ const WarehouseReceived = () => {
     dispatch(getDdlProtectedBranch());
     dispatch(getDdlAllBranch());
   }, [dispatch]);
+
+  // Arriving from a transfer's "Receive" button: pull that issue's items and
+  // pre-fill the form so the receiver only adjusts quantities before saving.
+  useEffect(() => {
+    const srcId = (location.state as any)?.sourceTransferId;
+    if (!srcId) return;
+
+    setSourceTransferId(Number(srcId));
+    dispatch(getBranchTransferDetails(srcId))
+      .unwrap()
+      .then((res: any) => {
+        const master = res?.master;
+        const details = Array.isArray(res?.details) ? res.details : [];
+        if (!master) return;
+
+        setFormData((prev) => ({
+          ...prev,
+          fromBranch: master.from_branch ? String(master.from_branch) : prev.fromBranch,
+          toBranch: master.to_branch ? String(master.to_branch) : prev.toBranch,
+          challanNumber: master.challan_number || '',
+          receiverName: master.receiver_name || '',
+          receiverMobileNumber: master.receiver_mobile_number || '',
+          transport: master.reference || '',
+          note: master.notes || '',
+          products: details.map((d: any, i: number) => ({
+            id: Date.now() + i,
+            productId: String(d.product_id ?? ''),
+            productName: d.product_name || '',
+            unit: '',
+            // Default to the issued quantity; the receiver trims it for any
+            // damage or shortage before saving.
+            quantity: String(d.issued_qty ?? d.stock_out ?? 0),
+            damagedQty: '0',
+            shortQty: '0',
+            // Rate is irrelevant to a receive (not sent to the API), but the
+            // line editor validates it, so seed 0 to keep quantity edits valid.
+            rate: '0',
+          })),
+        }));
+      })
+      .catch(() => {
+        toast.error('Could not load the transfer to receive.');
+      });
+    // Runs once for the transfer we navigated in with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   useEffect(() => {
     if (!toBranchOptions.length) return;
@@ -193,6 +245,7 @@ const WarehouseReceived = () => {
       products: [],
     });
     setReceiveDate(today.toDate());
+    setSourceTransferId(null);
     clearLineForm();
   };
 
@@ -317,7 +370,7 @@ const WarehouseReceived = () => {
       return;
     }
 
-    const payload = {
+    const payload: any = {
       to_branch_id: Number(formData.toBranch),
       from_branch_id: formData.fromBranch ? Number(formData.fromBranch) : null,
       challan_number: formData.challanNumber || null,
@@ -333,6 +386,12 @@ const WarehouseReceived = () => {
         short_qty: Number(item.shortQty || 0),
       })),
     };
+
+    // Links the receive to its issue transfer so the backend validates against
+    // the issued quantities and marks the transfer received.
+    if (sourceTransferId) {
+      payload.source_transfer_id = sourceTransferId;
+    }
 
     setSaveButtonLoading(true);
     dispatch(
