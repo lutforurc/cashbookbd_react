@@ -51,6 +51,18 @@ const AddCustomerSupplier = () => {
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
   const needNomineePhoto = String(branchSettings?.need_nominee_photo) === '1';
 
+  // Guarantor and nominee share one panel when both are on — stacked, the form
+  // ran too long to see either of them whole.
+  const guarantorEnabled = branchSettings?.have_is_guaranter === '1';
+  const nomineeEnabled = branchSettings?.have_customer_nominee === '1';
+  const showDetailsTabs = guarantorEnabled && nomineeEnabled;
+  const [detailsTab, setDetailsTab] = useState<'guarantor' | 'nominee'>('guarantor');
+  const activeDetailsTab = showDetailsTabs
+    ? detailsTab
+    : guarantorEnabled
+      ? 'guarantor'
+      : 'nominee';
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -242,6 +254,18 @@ const AddCustomerSupplier = () => {
       }
     },
   });
+
+  // An error in the tab that is out of view would be invisible, so bring its tab
+  // forward once the form has been submitted at least once.
+  useEffect(() => {
+    if (!formik.submitCount || !showDetailsTabs) return;
+
+    if (formik.errors.guarantors) {
+      setDetailsTab('guarantor');
+    } else if (formik.errors.nominees) {
+      setDetailsTab('nominee');
+    }
+  }, [formik.submitCount, formik.errors, showDetailsTabs]);
 
   const handleDuplicateContinue = async () => {
     if (!duplicateWarning) return;
@@ -703,11 +727,37 @@ const AddCustomerSupplier = () => {
               </p>
             </div>
           )}
-          {/* ================= GUARANTORS ================= */}
-          {settings?.data?.branch?.have_is_guaranter === '1' && (
-            <>
-              <h3 className="mt-4 mb-2 font-semibold">Guarantor Details</h3>
+          {/* ================= GUARANTOR / NOMINEE ================= */}
+          {(guarantorEnabled || nomineeEnabled) && (
+            <div className="mt-4">
+              {showDetailsTabs ? (
+                <div className="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700">
+                  {[
+                    { key: 'guarantor' as const, label: 'Guarantor Details', count: formik.values.guarantors.length },
+                    { key: 'nominee' as const, label: 'Nominee Details', count: formik.values.nominees.length },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setDetailsTab(tab.key)}
+                      className={`-mb-px rounded-t border-b-2 px-4 py-2 text-sm transition ${activeDetailsTab === tab.key
+                        ? 'border-blue-600 bg-blue-50 font-semibold text-blue-700 dark:border-blue-500 dark:bg-blue-500/15 dark:text-white'
+                        : 'border-transparent font-medium text-gray-500 hover:border-gray-300 hover:text-blue-500 dark:text-gray-400'
+                        }`}
+                    >
+                      {tab.label}
+                      {tab.count > 0 ? ` (${tab.count})` : ''}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <h3 className="mb-2 font-semibold">
+                  {guarantorEnabled ? 'Guarantor Details' : 'Nominee Details'}
+                </h3>
+              )}
 
+              <div className={showDetailsTabs ? 'border border-t-0 border-gray-200 p-3 dark:border-gray-700' : ''}>
+              {activeDetailsTab === 'guarantor' && guarantorEnabled && (
               <FieldArray name="guarantors">
                 {({ push, remove }) => (
                   <>
@@ -746,12 +796,9 @@ const AddCustomerSupplier = () => {
                   </>
                 )}
               </FieldArray>
-            </>
-          )}
+              )}
 
-          {settings?.data?.branch?.have_customer_nominee === '1' && (
-            <>
-              <h3 className="mt-4 mb-2 font-semibold">Nominee Details</h3>
+              {activeDetailsTab === 'nominee' && nomineeEnabled && (
               <FieldArray name="nominees">
                 {({ push, remove }) => (
                   <>
@@ -931,7 +978,9 @@ const AddCustomerSupplier = () => {
                   </>
                 )}
               </FieldArray>
-            </>
+              )}
+              </div>
+            </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
             <ButtonLoading

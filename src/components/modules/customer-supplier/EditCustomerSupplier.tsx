@@ -97,6 +97,16 @@ const EditCustomerSupplier = () => {
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
   const needNomineePhoto = String(branchSettings?.need_nominee_photo) === '1';
 
+  // Guarantor and nominee share one panel when both are on — stacked, the form
+  // ran too long to see either of them whole.
+  const showDetailsTabs = guarantorEnabled && nomineeEnabled;
+  const [detailsTab, setDetailsTab] = useState<'guarantor' | 'nominee'>('guarantor');
+  const activeDetailsTab = showDetailsTabs
+    ? detailsTab
+    : guarantorEnabled
+      ? 'guarantor'
+      : 'nominee';
+
   // Self-service portal password (set/reset separately from the profile update).
   const [portalPassword, setPortalPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
@@ -322,6 +332,16 @@ const EditCustomerSupplier = () => {
 
     if (Object.keys(errors).length > 0) {
       formik.setTouched(setNestedObjectValues(errors, true));
+
+      // The offending field may sit in the tab that is out of view.
+      if (showDetailsTabs) {
+        if ((errors as any).guarantors) {
+          setDetailsTab('guarantor');
+        } else if ((errors as any).nominees) {
+          setDetailsTab('nominee');
+        }
+      }
+
       toast.error(firstErrorMessage(errors) || "Please fix the highlighted fields.");
       return;
     }
@@ -672,13 +692,37 @@ const EditCustomerSupplier = () => {
             </div>
           )}
 
-          {/* ================= GUARANTORS ================= */}
-          {guarantorEnabled && (
-            <>
-              <h3 className="mt-4 mb-2 font-semibold">
-                Guarantor Details
-              </h3>
+          {/* ================= GUARANTOR / NOMINEE ================= */}
+          {(guarantorEnabled || nomineeEnabled) && (
+            <div className="mt-4">
+              {showDetailsTabs ? (
+                <div className="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700">
+                  {[
+                    { key: 'guarantor' as const, label: 'Guarantor Details', count: formik.values.guarantors.length },
+                    { key: 'nominee' as const, label: 'Nominee Details', count: formik.values.nominees.length },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setDetailsTab(tab.key)}
+                      className={`-mb-px rounded-t border-b-2 px-4 py-2 text-sm transition ${activeDetailsTab === tab.key
+                        ? 'border-blue-600 bg-blue-50 font-semibold text-blue-700 dark:border-blue-500 dark:bg-blue-500/15 dark:text-white'
+                        : 'border-transparent font-medium text-gray-500 hover:border-gray-300 hover:text-blue-500 dark:text-gray-400'
+                        }`}
+                    >
+                      {tab.label}
+                      {tab.count > 0 ? ` (${tab.count})` : ''}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <h3 className="mb-2 font-semibold">
+                  {guarantorEnabled ? 'Guarantor Details' : 'Nominee Details'}
+                </h3>
+              )}
 
+              <div className={showDetailsTabs ? 'border border-t-0 border-gray-200 p-3 dark:border-gray-700' : ''}>
+              {activeDetailsTab === 'guarantor' && guarantorEnabled && (
               <FieldArray name="guarantors">
                 {({ push, remove }) => (
                   <>
@@ -769,14 +813,9 @@ const EditCustomerSupplier = () => {
                   </>
                 )}
               </FieldArray>
-            </>
-          )}
+              )}
 
-          {/* ================= NOMINEES ================= */}
-          {nomineeEnabled && (
-            <>
-              <h3 className="mt-4 mb-2 font-semibold">Nominee Details</h3>
-
+              {activeDetailsTab === 'nominee' && nomineeEnabled && (
               <FieldArray name="nominees">
                 {({ push, remove }) => (
                   <>
@@ -968,7 +1007,9 @@ const EditCustomerSupplier = () => {
                   </>
                 )}
               </FieldArray>
-            </>
+              )}
+              </div>
+            </div>
           )}
 
           {/* ================= ACTIONS ================= */}

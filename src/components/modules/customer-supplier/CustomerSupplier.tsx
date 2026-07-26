@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiPlusSquare, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -15,6 +15,8 @@ import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
 import ConfirmModal from "../../utils/components/ConfirmModalProps";
 import { hasPermission } from "../../utils/permissionChecker";
+import httpService from "../../services/httpService";
+import { API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -32,6 +34,7 @@ const CustomerSupplier = () => {
   const [selectedNominees, setSelectedNominees] = useState<any[]>([]);
   const [deletingCustomerId, setDeletingCustomerId] = useState<number | null>(null);
   const [deleteConfirmRow, setDeleteConfirmRow] = useState<any | null>(null);
+  const [printingCustomerId, setPrintingCustomerId] = useState<number | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const customerPageData = customers?.customer || {};
@@ -186,6 +189,46 @@ const CustomerSupplier = () => {
   const handleDeleteRow = (row: any) => {
     if (!canDeleteCustomer) return;
     setDeleteConfirmRow(row);
+  };
+
+  /**
+   * The PDF is fetched with the auth header rather than linked to, so it comes
+   * back as a blob. The tab is opened on the click itself — opening it after the
+   * request returns gets caught by the popup blocker — and falls back to a plain
+   * download when the blocker takes it anyway.
+   */
+  const handlePrintRow = async (row: any) => {
+    if (printingCustomerId) return;
+
+    const printTab = window.open('', '_blank');
+    setPrintingCustomerId(row.id);
+
+    try {
+      const response = await httpService.get(`${API_CUSTOMER_PROFILE_PDF_URL}${row.id}`, {
+        responseType: 'blob',
+      });
+
+      const fileUrl = URL.createObjectURL(
+        new Blob([response.data], { type: 'application/pdf' }),
+      );
+
+      if (printTab) {
+        printTab.location.href = fileUrl;
+      } else {
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.download = `customer-${row.id}.pdf`;
+        link.click();
+      }
+
+      // Give the viewer time to load before dropping the blob.
+      setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+    } catch (error: any) {
+      printTab?.close();
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to build the PDF');
+    } finally {
+      setPrintingCustomerId(null);
+    }
   };
 
   const handleDeleteConfirmed = () => {
@@ -367,6 +410,18 @@ const CustomerSupplier = () => {
                 <FiBook size={16} />
               </button>
             )}
+          </div>
+
+          {/* ===== Print Slot ===== */}
+          <div className="w-4 flex justify-center">
+            <button
+              title="Print profile (PDF)"
+              className="text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:text-white"
+              disabled={printingCustomerId === row.id}
+              onClick={() => handlePrintRow(row)}
+            >
+              <FiPrinter size={15} />
+            </button>
           </div>
 
           {/* ===== Edit Slot ===== */}

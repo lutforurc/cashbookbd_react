@@ -536,6 +536,8 @@ export const API_CUSTOMER_VOUCHER_URL = `${API_CUSTOMER_BASE_URL}/voucher/`;
 
 // Admin-side: set/reset a customer's portal password
 export const API_CUSTOMER_SET_PASSWORD_URL = `${API_BASE_URL}/contact/customer/set-password/`;
+// Streams the printable customer profile sheet as a PDF.
+export const API_CUSTOMER_PROFILE_PDF_URL = `${API_BASE_URL}/contact/customer/pdf/`;
 
 
 
