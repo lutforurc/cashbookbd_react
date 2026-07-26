@@ -114,7 +114,13 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
 const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
 
 const AddBranch = () => {
-  const steps = ['Basic Info', 'Print Setup', 'Invoice Setup', 'Feature Controls'];
+  const steps = [
+    'Basic Info',
+    'Print Setup',
+    'Invoice Setup',
+    'Customer & Supplier Setup',
+    'Feature Controls',
+  ];
   const navigate = useNavigate();
   const branchEditData = useSelector((state: any) => state.branchList);
   const settings = useSelector((state: any) => state.settings);
@@ -383,7 +389,7 @@ const AddBranch = () => {
 
         <>
           <div>
-            <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-4">
+            <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-5">
               {steps.map((step, index) => {
                 const isActive = index === currentStep;
                 const isCompleted = index < currentStep;
@@ -418,7 +424,8 @@ const AddBranch = () => {
                   {currentStep === 0 && 'Branch identity, contact details, and status.'}
                   {currentStep === 1 && 'Print preferences, page size, and letterhead setup.'}
                   {currentStep === 2 && 'Invoice labels, notes, formatting, and invoice display options.'}
-                  {currentStep === 3 && 'Operational controls, sharing options, and SMS preferences.'}
+                  {currentStep === 3 && 'Customer and supplier related options for this branch.'}
+                  {currentStep === 4 && 'Operational controls, sharing options, and SMS preferences.'}
                 </p>
               </div>
 
@@ -719,6 +726,53 @@ const AddBranch = () => {
               )}
 
               {currentStep === 3 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                  <FormToggleField
+                    label="Use Customer Serial?"
+                    checked={Boolean(formData.have_customer_sl)}
+                    onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
+                  />
+                  <FormToggleField
+                    label="Customer Share with Other branch?"
+                    checked={Boolean(formData.share_customer_with_other_branch)}
+                    onChange={(checked) =>
+                      handleToggleFieldChange('share_customer_with_other_branch', checked)
+                    }
+                  />
+                  <FormToggleField
+                    label="Use Guarantor?"
+                    checked={Boolean(formData.have_is_guaranter)}
+                    onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
+                  />
+                  <FormToggleField
+                    label="Use Nominee?"
+                    checked={Boolean(formData.have_is_nominee)}
+                    onChange={(checked) => handleToggleFieldChange('have_is_nominee', checked)}
+                  />
+                  <FormToggleField
+                    label="Need Relation's Information?"
+                    checked={Boolean(formData.need_relation_info)}
+                    onChange={(checked) => handleToggleFieldChange('need_relation_info', checked)}
+                  />
+                  <FormToggleField
+                    label="Need Mother's Name?"
+                    checked={Boolean(formData.need_mother_name)}
+                    onChange={(checked) => handleToggleFieldChange('need_mother_name', checked)}
+                  />
+                  <FormToggleField
+                    label="Need Contact Person?"
+                    checked={Boolean(formData.need_contact_person)}
+                    onChange={(checked) => handleToggleFieldChange('need_contact_person', checked)}
+                  />
+                  <FormToggleField
+                    label="Use Bangla?"
+                    checked={Boolean(formData.use_bangla)}
+                    onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
+                  />
+                </div>
+              )}
+
+              {currentStep === 4 && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
@@ -754,25 +808,6 @@ const AddBranch = () => {
                       }
                     />
                     <FormToggleField
-                      label="Customer Share?"
-                      checked={Boolean(formData.share_customer_with_other_branch)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('share_customer_with_other_branch', checked)
-                      }
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
-                      label="Use Customer Serial?"
-                      checked={Boolean(formData.have_customer_sl)}
-                      onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
-                    />
-                    <FormToggleField
-                      label="Use Bangla?"
-                      checked={Boolean(formData.use_bangla)}
-                      onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
-                    />
-                    <FormToggleField
                       label="Opening ongoing?"
                       checked={Boolean(formData.is_opening)}
                       onChange={(checked) => handleToggleFieldChange('is_opening', checked)}
@@ -785,41 +820,10 @@ const AddBranch = () => {
                       onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
                     />
                     <FormToggleField
-                      label="Use Guarantor?"
-                      checked={Boolean(formData.have_is_guaranter)}
-                      onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
-                    />
-                    <FormToggleField
-                      label="Use Nominee?"
-                      checked={Boolean(formData.have_is_nominee)}
-                      onChange={(checked) => handleToggleFieldChange('have_is_nominee', checked)}
-                    />
-                    <FormToggleField
                       label="Need Demo Tutorial?"
                       checked={Boolean(formData.need_demo_tutorial)}
                       onChange={(checked) =>
                         handleToggleFieldChange('need_demo_tutorial', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Need Relation's Information?"
-                      checked={Boolean(formData.need_relation_info)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('need_relation_info', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Need Mother's Name?"
-                      checked={Boolean(formData.need_mother_name)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('need_mother_name', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Need Contact Person?"
-                      checked={Boolean(formData.need_contact_person)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('need_contact_person', checked)
                       }
                     />
                     <FormToggleField
