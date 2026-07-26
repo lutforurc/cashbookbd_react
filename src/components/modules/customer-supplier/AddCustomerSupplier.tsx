@@ -450,7 +450,7 @@ const AddCustomerSupplier = () => {
                       onChange={formik.handleChange}
                       defaultValue={formik.values.relation_id}
                       className="h-[2.1rem] bg-transparent"
-                      data={relationType}
+                      data={nomineeRelationType}
                     />
                   </div>
                   <div className="md:col-span-3">
