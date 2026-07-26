@@ -266,6 +266,7 @@ export const API_REPORT_SALES_LEDGER_URL = `${API_BASE_URL}/reports/sales/ledger
 
 // Stock Product url
 export const API_REPORT_PRODUCT_STOCK_URL = `${API_BASE_URL}/reports/product-stock`;
+export const API_REPORT_BRANCH_TRANSFER_URL = `${API_BASE_URL}/reports/branch-transfer`;
 export const API_REPORT_CLOSING_STOCK_URL = `${API_BASE_URL}/reports/closing-stock`;
 export const API_REPORT_STOCK_IMEI_DATA_URL = `${API_BASE_URL}/reports/stock-imei-data`;
 

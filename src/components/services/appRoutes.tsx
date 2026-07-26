@@ -124,6 +124,7 @@ const ROUTES = {
   report_date_wise_total: '/reports/date-wise-total-data',
   report_date_wise_in_out: '/reports/in-out/date-wise',
   report_product_stock: '/reports/product/stock',
+  report_branch_transfer: '/reports/branch-transfer',
   report_closing_stock: '/reports/closing-stock',
   somity_stock_details: '/somity-report/stock-details',
   report_imei_stock: '/reports/stock-imei',
