@@ -21,7 +21,17 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
     const challanDate = rawDate ? dayjs(rawDate).format('DD/MM/YYYY') : '';
     const rows = Array.isArray(details) ? details : [];
 
-    const totalQty = rows.reduce((sum, d) => sum + Number(d?.issued_qty ?? d?.stock_out ?? 0), 0);
+    // An issue detail fills issued_qty/stock_out; a receive detail fills
+    // received_qty/stock_in and leaves the other pair 0 — so pick the first
+    // non-zero of the four (|| skips both null and 0, unlike ??).
+    const lineQty = (d: any) =>
+      Number(d?.issued_qty) ||
+      Number(d?.received_qty) ||
+      Number(d?.stock_out) ||
+      Number(d?.stock_in) ||
+      0;
+
+    const totalQty = rows.reduce((sum, d) => sum + lineQty(d), 0);
     const totalDamaged = rows.reduce((sum, d) => sum + Number(d?.damaged_qty ?? 0), 0);
     const totalShort = rows.reduce((sum, d) => sum + Number(d?.short_qty ?? 0), 0);
 
@@ -84,7 +94,7 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
                   <td className="border border-black px-2 py-1 text-center">{i + 1}</td>
                   <td className="border border-black px-2 py-1 text-left">{d?.product_name || '-'}</td>
                   <td className="border border-black px-2 py-1 text-right">
-                    {thousandSeparator(Number(d?.issued_qty ?? d?.stock_out ?? 0))}
+                    {thousandSeparator(lineQty(d))}
                   </td>
                   <td className="border border-black px-2 py-1 text-right">
                     {thousandSeparator(Number(d?.damaged_qty ?? 0))}
