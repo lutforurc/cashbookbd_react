@@ -13,6 +13,7 @@ import { getDdlAllBranch, getDdlProtectedBranch } from '../branch/ddlBranchSlide
 import { storeBranchTransfer } from './warehouseTransferSlice';
 import TransferList from './TransferList';
 import InputDatePicker from '../../utils/fields/DatePicker';
+import { trxDateToDate, trxDateToIso } from '../../utils/utils-functions/transactionDate';
 
 type ProductOption = {
   value: string;
@@ -35,10 +36,20 @@ type TransferItem = {
 const BranchTransfer = () => {
   const dispatch = useDispatch<any>();
   const branchDdl = useSelector((s: any) => s.branchDdl);
+  const settings = useSelector((s: any) => s.settings);
+
+  // The challan must post on the branch's open transaction date, not today:
+  // the books stay on trx_dt until day close advances it. Fall back to today
+  // only while settings is still loading.
+  const trxDt = settings?.data?.trx_dt;
+  const defaultTransferIso = trxDateToIso(trxDt) || dayjs().format('YYYY-MM-DD');
+  const defaultTransferDate = trxDateToDate(trxDt) ?? dayjs().toDate();
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [listRefreshKey, setListRefreshKey] = useState(0);
-  const [transferDate, setTransferDate] = useState<Date | null>(dayjs().toDate());
+  const [transferDate, setTransferDate] = useState<Date | null>(defaultTransferDate);
+  // Once the user picks a date, stop overwriting it when settings refreshes.
+  const [transferDateTouched, setTransferDateTouched] = useState(false);
   const [isUpdatingLine, setIsUpdatingLine] = useState(false);
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
   const [lineItem, setLineItem] = useState({
@@ -51,7 +62,7 @@ const BranchTransfer = () => {
     rate: '',
   });
   const [formData, setFormData] = useState({
-    transferDate: dayjs().format('YYYY-MM-DD'),
+    transferDate: defaultTransferIso,
     fromBranch: '',
     toBranch: '',
     challanNumber: '',
@@ -136,12 +147,22 @@ const BranchTransfer = () => {
   };
 
   const handleTransferDateChange = (date: Date | null) => {
+    setTransferDateTouched(true);
     setTransferDate(date);
     setFormData((prev) => ({
       ...prev,
       transferDate: date ? dayjs(date).format('YYYY-MM-DD') : '',
     }));
   };
+
+  // trx_dt can arrive after first render; adopt it until the user picks a date.
+  useEffect(() => {
+    if (transferDateTouched) return;
+    const iso = trxDateToIso(trxDt);
+    if (!iso) return;
+    setTransferDate(trxDateToDate(trxDt));
+    setFormData((prev) => (prev.transferDate === iso ? prev : { ...prev, transferDate: iso }));
+  }, [trxDt, transferDateTouched]);
 
   const handleProductSelect = (option: ProductOption | null) => {
     if (!option) {
@@ -180,9 +201,8 @@ const BranchTransfer = () => {
   };
 
   const resetForm = () => {
-    const today = dayjs();
     setFormData({
-      transferDate: today.format('YYYY-MM-DD'),
+      transferDate: defaultTransferIso,
       fromBranch: '',
       toBranch: '',
       challanNumber: '',
@@ -192,7 +212,8 @@ const BranchTransfer = () => {
       note: '',
       products: [],
     });
-    setTransferDate(today.toDate());
+    setTransferDate(defaultTransferDate);
+    setTransferDateTouched(false);
     clearLineForm();
   };
 
