@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { FiSearch } from 'react-icons/fi';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -174,6 +175,7 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
             onClick={handleSearch}
             buttonLoading={searchLoading}
             label="Search"
+            icon={<FiSearch className="mr-2 h-4 w-4" />}
             className="whitespace-nowrap"
           />
         </div>
