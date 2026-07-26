@@ -126,6 +126,7 @@ const ROUTES = {
   report_product_stock: '/reports/product/stock',
   report_branch_transfer: '/reports/branch-transfer',
   report_branch_receive: '/reports/branch-receive',
+  report_branch_stock: '/reports/branch-stock',
   report_closing_stock: '/reports/closing-stock',
   somity_stock_details: '/somity-report/stock-details',
   report_imei_stock: '/reports/stock-imei',
