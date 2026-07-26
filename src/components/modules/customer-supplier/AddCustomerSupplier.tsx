@@ -42,6 +42,15 @@ const AddCustomerSupplier = () => {
   ];
   const area = useSelector((state: any) => state.area);
   const settings = useSelector((state: any) => state.settings);
+
+  // Branch switches from Branch > Customer & Supplier Setup.
+  const branchSettings = settings?.data?.branch;
+  const needDateOfBirth = String(branchSettings?.need_customer_date_of_birth) === '1';
+  const needOccupation = String(branchSettings?.need_customer_occupation) === '1';
+  const needPermanentAddress = String(branchSettings?.need_customer_permanent_address) === '1';
+  const needPhoto = String(branchSettings?.need_customer_photo) === '1';
+  const needNomineePhoto = String(branchSettings?.need_nominee_photo) === '1';
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -361,7 +370,7 @@ const AddCustomerSupplier = () => {
         </Link>
       </div>
       <FormikProvider value={formik}>
-        <form onSubmit={formik.handleSubmit} autoComplete="off">
+        <form className="customer-form" onSubmit={formik.handleSubmit} autoComplete="off">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div>
               <label className="dark:text-white text-sm text-gray-900">
@@ -449,7 +458,7 @@ const AddCustomerSupplier = () => {
                       label="Relation"
                       onChange={formik.handleChange}
                       defaultValue={formik.values.relation_id}
-                      className="h-[2.1rem] bg-transparent"
+                      className="h-[2.4rem] bg-transparent"
                       data={nomineeRelationType}
                     />
                   </div>
@@ -470,7 +479,7 @@ const AddCustomerSupplier = () => {
                 </>
               </div>
             )}
-            {settings?.data?.branch?.need_mother_name === '1' && (
+            {settings?.data?.branch?.need_customer_mother_name === '1' && (
               <div className="text-left flex flex-col">
                 <InputElement
                   id="mother_name"
@@ -489,49 +498,61 @@ const AddCustomerSupplier = () => {
           </div>
 
           {/* ================= DATE OF BIRTH + OCCUPATION ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <InputDatePicker
-              id="date_of_birth"
-              name="date_of_birth"
-              label="Date of Birth"
-              setCurrentDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
-              className="font-medium text-sm w-full h-8"
-              selectedDate={parsePickerDate(formik.values.date_of_birth)}
-              setSelectedDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
-            />
-            <InputElement
-              id="occupation"
-              name="occupation"
-              placeholder="Enter Occupation"
-              label="Occupation"
-              value={formik.values.occupation}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-          </div>
+          {(needDateOfBirth || needOccupation) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              {needDateOfBirth && (
+                <InputDatePicker
+                  id="date_of_birth"
+                  name="date_of_birth"
+                  label="Date of Birth"
+                  setCurrentDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
+                  className="font-medium text-sm w-full h-[2.4rem]"
+                  selectedDate={parsePickerDate(formik.values.date_of_birth)}
+                  setSelectedDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
+                />
+              )}
+              {needOccupation && (
+                <InputElement
+                  id="occupation"
+                  name="occupation"
+                  placeholder="Enter Occupation"
+                  label="Occupation"
+                  value={formik.values.occupation}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              )}
+            </div>
+          )}
 
           {/* ================= PERMANENT ADDRESS + PHOTO ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <InputElement
-              id="permanent_address"
-              name="permanent_address"
-              autoComplete="off"
-              placeholder="Enter Permanent Address"
-              label="Permanent Address"
-              value={formik.values.permanent_address}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-            <PhotoInput
-              id="photo"
-              name="photo"
-              label="Photo"
-              value={formik.values.photo}
-              onChange={(photo) => formik.setFieldValue('photo', photo)}
-            />
-          </div>
+          {(needPermanentAddress || needPhoto) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              {needPermanentAddress && (
+                <InputElement
+                  id="permanent_address"
+                  name="permanent_address"
+                  autoComplete="off"
+                  placeholder="Enter Permanent Address"
+                  label="Permanent Address"
+                  value={formik.values.permanent_address}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              )}
+              {needPhoto && (
+                <PhotoInput
+                  id="photo"
+                  name="photo"
+                  label="Photo"
+                  value={formik.values.photo}
+                  onChange={(photo) => formik.setFieldValue('photo', photo)}
+                />
+              )}
+            </div>
+          )}
 
-          {settings?.data?.branch?.need_contact_person === '1' && (
+          {settings?.data?.branch?.need_customer_contact_person === '1' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
               <div className="text-left flex flex-col">
                 <InputElement
@@ -649,7 +670,7 @@ const AddCustomerSupplier = () => {
               selectOption="Access Customer Login"
               onChange={formik.handleChange}
               value={formik.values.customerLogin.toString()}
-              className="h-[2.1rem] bg-transparent"
+              className="h-[2.4rem] bg-transparent"
               data={TrueFalse}
             />
           </div>
@@ -728,7 +749,7 @@ const AddCustomerSupplier = () => {
             </>
           )}
 
-          {settings?.data?.branch?.have_is_nominee === '1' && (
+          {settings?.data?.branch?.have_customer_nominee === '1' && (
             <>
               <h3 className="mt-4 mb-2 font-semibold">Nominee Details</h3>
               <FieldArray name="nominees">
@@ -750,7 +771,7 @@ const AddCustomerSupplier = () => {
                             label="Relation"
                             onChange={formik.handleChange}
                             value={n.relation || ''}
-                            className="h-[2.1rem] bg-transparent"
+                            className="h-[2.4rem] bg-transparent"
                             data={nomineeRelationType}
                           />
                           <InputElement
@@ -767,7 +788,7 @@ const AddCustomerSupplier = () => {
                             setCurrentDate={(date) =>
                               formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
                             }
-                            className="font-medium text-sm w-full h-8"
+                            className="font-medium text-sm w-full h-[2.4rem]"
                             selectedDate={parsePickerDate(n.date_of_birth)}
                             setSelectedDate={(date) =>
                               formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
@@ -845,16 +866,18 @@ const AddCustomerSupplier = () => {
                             label="Status"
                             onChange={formik.handleChange}
                             value={n.status || 'active'}
-                            className="h-[2.1rem] bg-transparent"
+                            className="h-[2.4rem] bg-transparent"
                             data={nomineeStatusOptions}
                           />
-                          <PhotoInput
-                            id={`nominees.${index}.photo`}
-                            name={`nominees.${index}.photo`}
-                            label="Photo"
-                            value={n.photo}
-                            onChange={(photo) => formik.setFieldValue(`nominees.${index}.photo`, photo)}
-                          />
+                          {needNomineePhoto && (
+                            <PhotoInput
+                              id={`nominees.${index}.photo`}
+                              name={`nominees.${index}.photo`}
+                              label="Photo"
+                              value={n.photo}
+                              onChange={(photo) => formik.setFieldValue(`nominees.${index}.photo`, photo)}
+                            />
+                          )}
                           <div className="md:col-span-3">
                             <InputElement
                               name={`nominees.${index}.remarks`}

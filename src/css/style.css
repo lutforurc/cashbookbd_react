@@ -70,6 +70,29 @@
     font-family: 'SutonnyMJ', serif;
   }
 
+  /* Customer form: text inputs, selects, the area search box, the date picker
+     and the photo picker each come with their own height, so the rows looked
+     ragged. Everything is levelled up to the tallest of them (the area search
+     box) rather than down, which read as cramped. */
+  .customer-form input:not([type='file']),
+  .customer-form select,
+  .customer-form .cash-react-select__control {
+    height: 2.4rem;
+    min-height: 2.4rem;
+  }
+
+  .customer-form input[type='file'] {
+    height: 2.4rem;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .customer-form .cash-react-select__value-container,
+  .customer-form .cash-react-select__indicators {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
   input[type='date'],
   input[type='time'],
   input[type='datetime-local'],

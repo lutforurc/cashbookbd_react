@@ -92,10 +92,10 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
           <img
             src={previewUrl}
             alt={label}
-            className="h-12 w-12 rounded-sm border border-gray-300 object-cover dark:border-gray-600"
+            className="h-[2.4rem] w-[2.4rem] shrink-0 rounded-sm border border-gray-300 object-cover dark:border-gray-600"
           />
         ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-sm border border-dashed border-gray-300 text-gray-400 dark:border-gray-600">
+          <div className="flex h-[2.4rem] w-[2.4rem] shrink-0 items-center justify-center rounded-sm border border-dashed border-gray-300 text-gray-400 dark:border-gray-600">
             <FiUpload />
           </div>
         )}
@@ -108,7 +108,7 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
             disabled={disabled}
             title="Remove photo"
             aria-label="Remove photo"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
+            className="flex h-[2.4rem] w-[2.4rem] shrink-0 items-center justify-center rounded-sm border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
           >
             <FiTrash2 size={20} />
           </button>
