@@ -705,6 +705,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname.includes('/reports/due-list') ||
                           pathname.includes('/reports/product/stock') ||
                           pathname.includes(routes.report_branch_transfer) ||
+                          pathname.includes(routes.report_branch_receive) ||
                           pathname.includes(routes.report_closing_stock) ||
                           pathname.includes(routes.somity_stock_details) ||
                           pathname.includes(routes.report_imei_stock) ||
@@ -1064,6 +1065,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Branch Transfer Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'branch.received.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.report_branch_receive}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch Receive Report
                               </NavLink>
                             </li>
                           )}

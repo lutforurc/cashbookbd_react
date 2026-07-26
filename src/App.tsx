@@ -175,6 +175,7 @@ import MonthlyReport from './components/modules/reports/somity/MonthlyReport';
 import BranchTransfer from './components/modules/warehouse-transfer/WarehouseTransfer';
 import WarehouseReceived from './components/modules/warehouse-received/WarehouseReceived';
 import BranchTransferReport from './components/modules/reports/branch-transfer-report/BranchTransferReport';
+import BranchReceiveReport from './components/modules/reports/branch-receive-report/BranchReceiveReport';
 import MaterialIssue from './components/modules/material-issue/MaterialIssue';
 import SendSms from './components/modules/sms/SendSms';
 import SmsTemplateList from './components/modules/sms/SmsTemplateList';
@@ -518,6 +519,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_branch_transfer} element={<BranchTransferReport user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create', 'inventory.received.create', 'product.received.create', 'product.stock.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_branch_receive} element={<BranchReceiveReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.out']} loading={permissionsLoading} />}>
               <Route path={routes.report_date_wise_in_out} element={<DateWiseInOut user={me} />} />
