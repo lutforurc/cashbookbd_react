@@ -9,7 +9,7 @@ import {
   status,
 } from '../../utils/fields/DataConstant';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import { FiArrowLeft, FiArrowRight, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiCheck, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -56,7 +56,7 @@ interface branchItem {
   share_customer_with_other_branch: boolean;
   have_customer_sl: boolean;
   have_is_guaranter: boolean;
-  have_is_nominee: boolean;
+  have_customer_nominee: boolean;
   stock_report_type: boolean;
   is_opening: boolean;
   use_bangla: boolean;
@@ -74,10 +74,15 @@ interface branchItem {
   show_description_in_invoice: boolean;
   show_spelling_of_money: boolean;
   need_demo_tutorial: boolean;
-  need_contact_person: boolean;
+  need_customer_contact_person: boolean;
   due_list_with_address: boolean;
   need_relation_info: boolean;
-  need_mother_name: boolean;
+  need_customer_mother_name: boolean;
+  need_customer_date_of_birth: boolean;
+  need_customer_occupation: boolean;
+  need_customer_permanent_address: boolean;
+  need_customer_photo: boolean;
+  need_nominee_photo: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -163,7 +168,7 @@ const AddBranch = () => {
     share_customer_with_other_branch: false,
     have_customer_sl: false,
     have_is_guaranter: false,
-    have_is_nominee: false,
+    have_customer_nominee: false,
     stock_report_type: false,
     is_opening: false,
     use_bangla: false,
@@ -181,10 +186,15 @@ const AddBranch = () => {
     show_description_in_invoice: false,
     show_spelling_of_money: false,
     need_demo_tutorial: false,
-    need_contact_person: false,
+    need_customer_contact_person: false,
     due_list_with_address: false,
     need_relation_info: false,
-    need_mother_name: false,
+    need_customer_mother_name: false,
+    need_customer_date_of_birth: false,
+    need_customer_occupation: false,
+    need_customer_permanent_address: false,
+    need_customer_photo: false,
+    need_nominee_photo: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -242,7 +252,7 @@ const AddBranch = () => {
         // 🔑 CHECKBOX FIX
         is_opening: toBooleanFlag(b.is_opening),
         have_is_guaranter: toBooleanFlag(b.have_is_guaranter),
-        have_is_nominee: toBooleanFlag(b.have_is_nominee),
+        have_customer_nominee: toBooleanFlag(b.have_customer_nominee),
         report_zero_bal: toBooleanFlag(b.report_zero_bal),
         manufactur_control: toBooleanFlag(b.manufactur_control),
         warranty_controll: toBooleanFlag(b.warranty_controll),
@@ -255,10 +265,15 @@ const AddBranch = () => {
         show_instalment_list: toBooleanFlag(b.show_instalment_list),
         show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
         need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
-        need_contact_person: toBooleanFlag(b.need_contact_person),
+        need_customer_contact_person: toBooleanFlag(b.need_customer_contact_person),
         due_list_with_address: toBooleanFlag(b.due_list_with_address),
         need_relation_info: toBooleanFlag(b.need_relation_info),
-        need_mother_name: toBooleanFlag(b.need_mother_name),
+        need_customer_mother_name: toBooleanFlag(b.need_customer_mother_name),
+        need_customer_date_of_birth: toBooleanFlag(b.need_customer_date_of_birth),
+        need_customer_occupation: toBooleanFlag(b.need_customer_occupation),
+        need_customer_permanent_address: toBooleanFlag(b.need_customer_permanent_address),
+        need_customer_photo: toBooleanFlag(b.need_customer_photo),
+        need_nominee_photo: toBooleanFlag(b.need_nominee_photo),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
         purchase_sms: toBooleanFlag(b.purchase_sms),
@@ -388,8 +403,9 @@ const AddBranch = () => {
         {branchEditData.isLoading == true ? <Loader /> : ''}
 
         <>
-          <div>
-            <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
+            {/* Step rail: a scrollable strip on phones, a sticky column from md up. */}
+            <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:mx-0 md:sticky md:top-24 md:flex-col md:self-start md:overflow-visible md:px-0 md:pb-0">
               {steps.map((step, index) => {
                 const isActive = index === currentStep;
                 const isCompleted = index < currentStep;
@@ -399,23 +415,38 @@ const AddBranch = () => {
                     key={step}
                     type="button"
                     onClick={() => setCurrentStep(index)}
-                    className={`rounded border px-4 py-3 text-left transition ${isActive
-                        ? 'border-blue-600 text-black-0 dark:text-white'
-                        : isCompleted
-                          ? 'border-green-500  text-green-700'
-                          : 'border-gray-300  text-gray-600 dark:bg-transparent dark:text-gray-300'
+                    className={`flex w-52 shrink-0 items-center gap-3 rounded border px-3 py-2.5 text-left transition md:w-full ${isActive
+                      ? 'border-blue-600 bg-blue-50 text-gray-900 dark:bg-blue-500/10 dark:text-white'
+                      : isCompleted
+                        ? 'border-green-500 text-green-700 dark:text-green-400'
+                        : 'border-gray-300 text-gray-600 hover:border-gray-400 dark:border-gray-700 dark:bg-transparent dark:text-gray-300'
                       }`}
                   >
-                    <span className="block text-xs font-semibold uppercase tracking-wide">
-                      Step {index + 1}
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${isActive
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : isCompleted
+                          ? 'border-green-500 text-green-600 dark:text-green-400'
+                          : 'border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400'
+                        }`}
+                    >
+                      {isCompleted ? <FiCheck /> : index + 1}
                     </span>
-                    <span className="block text-sm font-medium">{step}</span>
+                    <span className="min-w-0">
+                      <span className="block text-[11px] font-semibold uppercase tracking-wide opacity-70">
+                        Step {index + 1}
+                      </span>
+                      <span className="block text-sm font-medium leading-tight">{step}</span>
+                    </span>
                   </button>
                 );
               })}
-            </div>
+            </nav>
 
-            <div className="mb-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
+            {/* Viewport-tall column so the action bar lands in the same spot on
+                every step, however short that step's content is. */}
+            <div className="flex min-h-[calc(100vh-7rem)] min-w-0 flex-col">
+              <div className="mb-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
               <div className="mb-2">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                   {steps[currentStep]}
@@ -726,50 +757,90 @@ const AddBranch = () => {
               )}
 
               {currentStep === 3 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                  <FormToggleField
-                    label="Use Customer Serial?"
-                    checked={Boolean(formData.have_customer_sl)}
-                    onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
-                  />
-                  <FormToggleField
-                    label="Customer Share with Other branch?"
-                    checked={Boolean(formData.share_customer_with_other_branch)}
-                    onChange={(checked) =>
-                      handleToggleFieldChange('share_customer_with_other_branch', checked)
-                    }
-                  />
-                  <FormToggleField
-                    label="Use Guarantor?"
-                    checked={Boolean(formData.have_is_guaranter)}
-                    onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
-                  />
-                  <FormToggleField
-                    label="Use Nominee?"
-                    checked={Boolean(formData.have_is_nominee)}
-                    onChange={(checked) => handleToggleFieldChange('have_is_nominee', checked)}
-                  />
-                  <FormToggleField
-                    label="Need Relation's Information?"
-                    checked={Boolean(formData.need_relation_info)}
-                    onChange={(checked) => handleToggleFieldChange('need_relation_info', checked)}
-                  />
-                  <FormToggleField
-                    label="Need Mother's Name?"
-                    checked={Boolean(formData.need_mother_name)}
-                    onChange={(checked) => handleToggleFieldChange('need_mother_name', checked)}
-                  />
-                  <FormToggleField
-                    label="Need Contact Person?"
-                    checked={Boolean(formData.need_contact_person)}
-                    onChange={(checked) => handleToggleFieldChange('need_contact_person', checked)}
-                  />
-                  <FormToggleField
-                    label="Use Bangla?"
-                    checked={Boolean(formData.use_bangla)}
-                    onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
-                  />
-                </div>
+                <>
+                  {/* ---------- Customer ---------- */}
+                  <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Customer
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <FormToggleField
+                      label="Use Customer Serial?"
+                      checked={Boolean(formData.have_customer_sl)}
+                      onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
+                    />
+                    <FormToggleField
+                      label="Customer Share with Other branch?"
+                      checked={Boolean(formData.share_customer_with_other_branch)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('share_customer_with_other_branch', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Need Relation's Information?"
+                      checked={Boolean(formData.need_relation_info)}
+                      onChange={(checked) => handleToggleFieldChange('need_relation_info', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer Mother's Name?"
+                      checked={Boolean(formData.need_customer_mother_name)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_mother_name', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer Contact Person?"
+                      checked={Boolean(formData.need_customer_contact_person)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_contact_person', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer Date of Birth?"
+                      checked={Boolean(formData.need_customer_date_of_birth)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_date_of_birth', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer Occupation?"
+                      checked={Boolean(formData.need_customer_occupation)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_occupation', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer Permanent Address?"
+                      checked={Boolean(formData.need_customer_permanent_address)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_permanent_address', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer Photo?"
+                      checked={Boolean(formData.need_customer_photo)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_photo', checked)}
+                    />
+                    <FormToggleField
+                      label="Use Bangla?"
+                      checked={Boolean(formData.use_bangla)}
+                      onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
+                    />
+                  </div>
+
+                  {/* ---------- Nominee & Guarantor ---------- */}
+                  <div className="mt-4 border-t border-gray-200 pt-3 dark:border-gray-700">
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Nominee &amp; Guarantor
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Use Customer Nominee?"
+                        checked={Boolean(formData.have_customer_nominee)}
+                        onChange={(checked) => handleToggleFieldChange('have_customer_nominee', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Nominee Photo?"
+                        checked={Boolean(formData.need_nominee_photo)}
+                        onChange={(checked) => handleToggleFieldChange('need_nominee_photo', checked)}
+                      />
+                      <FormToggleField
+                        label="Use Guarantor?"
+                        checked={Boolean(formData.have_is_guaranter)}
+                        onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
+                      />
+                    </div>
+                  </div>
+                </>
               )}
 
               {currentStep === 4 && (
@@ -866,63 +937,76 @@ const AddBranch = () => {
 
                 </>
               )}
+              </div>
+
+              {/* Kept within reach on the long steps, so Save needs no scrolling back. */}
+              <div className="sticky bottom-0 z-20 mt-auto mb-2 rounded border border-gray-200 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur dark:border-strokedark dark:bg-boxdark/95">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="mr-1 whitespace-nowrap text-xs font-medium text-gray-500 dark:text-gray-400">
+                      Step {currentStep + 1} of {steps.length}
+                    </span>
+                    <Link
+                      to="/branch/branch-list"
+                      className="inline-flex items-center whitespace-nowrap rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition hover:border-blue-400 hover:text-blue-500 dark:border-gray-600 dark:text-gray-300"
+                    >
+                      <FiArrowLeft className="mr-2" /> Back
+                    </Link>
+                    <ButtonLoading
+                      onClick={() => {
+                        if (padHeaderPreview.startsWith('blob:')) {
+                          URL.revokeObjectURL(padHeaderPreview);
+                        }
+                        setFormData(initialBranch);
+                        setPadHeaderFile(null);
+                        setPadHeaderPreview('');
+                        setCurrentStep(0);
+                      }}
+                      buttonLoading={buttonLoading}
+                      label="Reset"
+                      className="whitespace-nowrap rounded px-4 py-1.5"
+                      icon={<FiRefreshCcw className="text-white text-base mr-2" />}
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ButtonLoading
+                      onClick={goToPreviousStep}
+                      buttonLoading={false}
+                      disabled={currentStep === 0}
+                      label="Previous"
+                      className="whitespace-nowrap rounded px-4 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
+                      icon={<FiArrowLeft className="text-white text-base mr-2" />}
+                    />
+                    {currentStep < steps.length - 1 ? (
+                      <ButtonLoading
+                        onClick={goToNextStep}
+                        buttonLoading={false}
+                        label="Next"
+                        className="whitespace-nowrap rounded !bg-blue-600 px-6 py-1.5 hover:!bg-blue-700"
+                        icon={<FiArrowRight className="text-white text-base mr-2" />}
+                      />
+                    ) : branchEditData.editData?.branch ? (
+                      <ButtonLoading
+                        onClick={handleBranchUpdate}
+                        buttonLoading={buttonLoading}
+                        label="Update"
+                        className="whitespace-nowrap rounded !bg-blue-600 px-6 py-1.5 hover:!bg-blue-700"
+                        icon={<FiSave className="text-white text-base mr-2" />}
+                      />
+                    ) : (
+                      <ButtonLoading
+                        onClick={handleBranchSave}
+                        buttonLoading={buttonLoading}
+                        label="Save"
+                        className="whitespace-nowrap rounded !bg-blue-600 px-6 py-1.5 hover:!bg-blue-700"
+                        icon={<FiSave className="text-white text-base mr-2" />}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="mb-2 grid grid-cols-2 gap-2 md:grid-cols-4">
-            <ButtonLoading
-              onClick={goToPreviousStep}
-              buttonLoading={false}
-              disabled={currentStep === 0}
-              label="Previous"
-              className="w-full whitespace-nowrap p-2 text-center disabled:cursor-not-allowed disabled:opacity-50"
-              icon={<FiArrowLeft className="text-white text-lg ml-2 mr-2" />}
-            />
-            {currentStep < steps.length - 1 ? (
-              <ButtonLoading
-                onClick={goToNextStep}
-                buttonLoading={false}
-                label="Next"
-                className="w-full whitespace-nowrap p-2 text-center"
-                icon={<FiArrowRight className="text-white text-lg ml-2 mr-2" />}
-              />
-            ) : branchEditData.editData?.branch ? (
-              <ButtonLoading
-                onClick={handleBranchUpdate}
-                buttonLoading={buttonLoading}
-                label="Update"
-                className="w-full whitespace-nowrap p-2 text-center"
-                icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
-              />
-            ) : (
-              <ButtonLoading
-                onClick={handleBranchSave}
-                buttonLoading={buttonLoading}
-                label="Save"
-                className="w-full whitespace-nowrap p-2 text-center"
-                icon={<FiSave className="text-white text-lg ml-2  mr-2" />}
-              />
-            )}
-            <ButtonLoading
-              onClick={() => {
-                if (padHeaderPreview.startsWith('blob:')) {
-                  URL.revokeObjectURL(padHeaderPreview);
-                }
-                setFormData(initialBranch);
-                setPadHeaderFile(null);
-                setPadHeaderPreview('');
-                setCurrentStep(0);
-              }}
-              buttonLoading={buttonLoading}
-              label="Reset"
-              className="w-full whitespace-nowrap p-2 text-center"
-              icon={<FiRefreshCcw className="text-white text-lg ml-2  mr-2" />}
-            />
-            <Link
-              to="/branch/branch-list"
-              className="flex w-full items-center justify-center text-nowrap rounded bg-gray-700 p-2 text-white transition hover:bg-blue-400 dark:hover:bg-blue-400"
-            >
-              <FiArrowLeft className="mr-2" /> Back
-            </Link>
           </div>
         </>
       </>
@@ -931,3 +1015,4 @@ const AddBranch = () => {
 };
 
 export default AddBranch;
+
