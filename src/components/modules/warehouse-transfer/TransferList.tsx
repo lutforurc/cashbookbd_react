@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiSearch } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
+import { FiPrinter, FiSearch } from 'react-icons/fi';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -8,7 +9,8 @@ import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { getBranchTransfers } from './warehouseTransferSlice';
+import { getBranchTransfers, getBranchTransferDetails } from './warehouseTransferSlice';
+import ChallanPrint from './ChallanPrint';
 
 interface TransferListProps {
   refreshKey?: number;
@@ -40,6 +42,26 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number | string>(10);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [printingId, setPrintingId] = useState<number | string | null>(null);
+
+  const printRef = useRef<HTMLDivElement>(null);
+  const printChallan = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: 'Delivery Challan',
+    removeAfterPrint: true,
+  });
+
+  // Fetch the transfer's lines by id, then print once the hidden component has
+  // re-rendered with them. The small delay mirrors the voucher print registry.
+  const handlePrint = (id: number | string) => {
+    if (printingId) return;
+    setPrintingId(id);
+    dispatch(getBranchTransferDetails(id))
+      .unwrap()
+      .then(() => setTimeout(() => printChallan(), 300))
+      .catch(() => {})
+      .finally(() => setTimeout(() => setPrintingId(null), 400));
+  };
 
   useEffect(() => {
     dispatch(getBranchTransfers({ page, perPage, search }));
@@ -161,6 +183,23 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
         return <span>{thousandSeparator(qty * rate)}</span>;
       },
     },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center w-20',
+      cellClass: 'text-center w-20',
+      render: (row: any) => (
+        <button
+          type="button"
+          title="Print challan"
+          disabled={printingId === row.id}
+          onClick={() => handlePrint(row.id)}
+          className="text-primary hover:opacity-80 disabled:opacity-40"
+        >
+          <FiPrinter className="inline h-4 w-4" />
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -193,6 +232,15 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
         ) : (
           ''
         )}
+      </div>
+
+      {/* Hidden — react-to-print pulls from this ref on demand. */}
+      <div className="hidden">
+        <ChallanPrint
+          ref={printRef}
+          master={transfer?.details?.master}
+          details={transfer?.details?.details || []}
+        />
       </div>
     </div>
   );

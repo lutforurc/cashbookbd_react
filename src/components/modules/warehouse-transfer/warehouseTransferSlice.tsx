@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
+  API_BRANCH_TRANSFER_DETAILS_URL,
   API_BRANCH_TRANSFER_LIST_URL,
   API_BRANCH_TRANSFER_STORE_URL,
 } from '../../services/apiRoutes';
@@ -8,8 +9,10 @@ import httpService from '../../services/httpService';
 interface BranchTransferState {
   isLoading: boolean;
   isSaving: boolean;
+  isLoadingDetails: boolean;
   errors: string | null;
   data: any[];
+  details: { master: any; details: any[] } | null;
   pagination: {
     total: number;
     lastPage: number;
@@ -33,8 +36,10 @@ interface BranchTransferStorePayload {
 const initialState: BranchTransferState = {
   isLoading: false,
   isSaving: false,
+  isLoadingDetails: false,
   errors: null,
   data: [],
+  details: null,
   pagination: {
     total: 0,
     lastPage: 1,
@@ -80,6 +85,36 @@ export const getBranchTransfers = createAsyncThunk<
       responseData?.error?.message ||
         responseData?.message ||
         'Failed to load branch transfers',
+    );
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message || err?.message || 'Something went wrong',
+    );
+  }
+});
+
+export const getBranchTransferDetails = createAsyncThunk<
+  { master: any; details: any[] },
+  number | string,
+  { rejectValue: string }
+>('branchTransfer/getBranchTransferDetails', async (id, thunkAPI) => {
+  try {
+    const res = await httpService.get(`${API_BRANCH_TRANSFER_DETAILS_URL}${id}`);
+    const responseData = res.data;
+
+    if (responseData?.success) {
+      // foundData wraps as { data: { data: {...}, transaction_date } }
+      const payload = responseData?.data?.data ?? responseData?.data ?? {};
+      return {
+        master: payload?.master ?? null,
+        details: Array.isArray(payload?.details) ? payload.details : [],
+      };
+    }
+
+    return thunkAPI.rejectWithValue(
+      responseData?.error?.message ||
+        responseData?.message ||
+        'Failed to load transfer details',
     );
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
@@ -148,6 +183,18 @@ const branchTransferSlice = createSlice({
       .addCase(getBranchTransfers.rejected, (state, action) => {
         state.isLoading = false;
         state.errors = action.payload || 'Failed to load branch transfers';
+      })
+      .addCase(getBranchTransferDetails.pending, (state) => {
+        state.isLoadingDetails = true;
+        state.errors = null;
+      })
+      .addCase(getBranchTransferDetails.fulfilled, (state, action) => {
+        state.isLoadingDetails = false;
+        state.details = action.payload;
+      })
+      .addCase(getBranchTransferDetails.rejected, (state, action) => {
+        state.isLoadingDetails = false;
+        state.errors = action.payload || 'Failed to load transfer details';
       })
       .addCase(storeBranchTransferThunk.pending, (state) => {
         state.isSaving = true;
