@@ -146,9 +146,10 @@ export const nomineeRelationType = [
   { id: 'father', name: 'Father' },
   { id: 'mother', name: 'Mother' },
   { id: 'husband', name: 'Husband' },
+  { id: 'wife', name: 'Wife' },
   { id: 'brother', name: 'Brother' },
   { id: 'sister', name: 'Sister' },
-  { id: 'grandmother', name: 'Grand Mother' },
-  { id: 'grandfather', name: 'Grand Father' },
+  { id: 'grand mother', name: 'Grand Mother' },
+  { id: 'grand father', name: 'Grand Father' },
   { id: 'other', name: 'Other' },
 ];
