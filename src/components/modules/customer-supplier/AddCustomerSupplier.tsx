@@ -16,6 +16,7 @@ import Link from '../../utils/others/Link';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
 import InputDatePicker from '../../utils/fields/DatePicker';
+import PhotoInput from '../../utils/fields/PhotoInput';
 import httpService from '../../services/httpService';
 import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
 
@@ -89,9 +90,13 @@ const AddCustomerSupplier = () => {
     name: Yup.string().required('Name is required'),
     father: Yup.string(),
     mother_name: Yup.string(),
+    occupation: Yup.string(),
+    date_of_birth: Yup.string(),
+    photo: Yup.string(),
     contact_person: Yup.string(),
     contact_number: Yup.string(),
     manual_address: Yup.string().required('Address is required'),
+    permanent_address: Yup.string(),
     mobile: Yup.string().required('Mobile number is required'),
     ledger_page: Yup.string(), // ✅ no `.required()`
     idfr_code: Yup.string(), // ✅ no `.required()` 
@@ -114,7 +119,8 @@ const AddCustomerSupplier = () => {
       Yup.object().shape({
         name: Yup.string().required('Nominee name required'),
         relation: Yup.string(),
-        relation_name: Yup.string(),
+        occupation: Yup.string(),
+        photo: Yup.string(),
         date_of_birth: Yup.string(),
         mobile: Yup.string(),
         present_address: Yup.string(),
@@ -142,10 +148,14 @@ const AddCustomerSupplier = () => {
     name: '',
     father: '',
     mother_name: '',
+    occupation: '',
+    date_of_birth: '',
+    photo: '',
     contact_person: '',
     contact_number: '',
     relation_id: '',
     manual_address: '',
+    permanent_address: '',
     mobile: '',
     ledger_page: '',
     idfr_code: '',
@@ -478,6 +488,49 @@ const AddCustomerSupplier = () => {
             )}
           </div>
 
+          {/* ================= DATE OF BIRTH + OCCUPATION ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            <InputDatePicker
+              id="date_of_birth"
+              name="date_of_birth"
+              label="Date of Birth"
+              setCurrentDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
+              className="font-medium text-sm w-full h-8"
+              selectedDate={parsePickerDate(formik.values.date_of_birth)}
+              setSelectedDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
+            />
+            <InputElement
+              id="occupation"
+              name="occupation"
+              placeholder="Enter Occupation"
+              label="Occupation"
+              value={formik.values.occupation}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+          </div>
+
+          {/* ================= PERMANENT ADDRESS + PHOTO ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            <InputElement
+              id="permanent_address"
+              name="permanent_address"
+              autoComplete="off"
+              placeholder="Enter Permanent Address"
+              label="Permanent Address"
+              value={formik.values.permanent_address}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            <PhotoInput
+              id="photo"
+              name="photo"
+              label="Photo"
+              value={formik.values.photo}
+              onChange={(photo) => formik.setFieldValue('photo', photo)}
+            />
+          </div>
+
           {settings?.data?.branch?.need_contact_person === '1' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
               <div className="text-left flex flex-col">
@@ -701,10 +754,10 @@ const AddCustomerSupplier = () => {
                             data={nomineeRelationType}
                           />
                           <InputElement
-                            name={`nominees.${index}.relation_name`}
-                            label="Relation's Name"
-                            placeholder="Enter Relation's Name"
-                            value={n.relation_name}
+                            name={`nominees.${index}.occupation`}
+                            label="Occupation"
+                            placeholder="Enter Occupation"
+                            value={n.occupation}
                             onChange={formik.handleChange}
                           />
                           <InputDatePicker
@@ -795,6 +848,13 @@ const AddCustomerSupplier = () => {
                             className="h-[2.1rem] bg-transparent"
                             data={nomineeStatusOptions}
                           />
+                          <PhotoInput
+                            id={`nominees.${index}.photo`}
+                            name={`nominees.${index}.photo`}
+                            label="Photo"
+                            value={n.photo}
+                            onChange={(photo) => formik.setFieldValue(`nominees.${index}.photo`, photo)}
+                          />
                           <div className="md:col-span-3">
                             <InputElement
                               name={`nominees.${index}.remarks`}
@@ -827,7 +887,8 @@ const AddCustomerSupplier = () => {
                         push({
                           name: '',
                           relation: '',
-                          relation_name: '',
+                          occupation: '',
+                          photo: '',
                           mother_name: '',
                           date_of_birth: '',
                           mobile: '',

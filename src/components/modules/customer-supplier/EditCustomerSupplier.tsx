@@ -28,6 +28,7 @@ import {
 } from "../../utils/fields/DataConstant";
 import DdlDynamicMultiline from "../../utils/utils-functions/DdlDynamicMultiline";
 import InputDatePicker from "../../utils/fields/DatePicker";
+import PhotoInput from "../../utils/fields/PhotoInput";
 import { getDdlArea } from "../area/areaSlice";
 import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
 import Link from "../../utils/others/Link";
@@ -188,9 +189,13 @@ const EditCustomerSupplier = () => {
         name: Yup.string().required("Name is required"),
         father: Yup.string().nullable(),
         mother_name: Yup.string().nullable(),
+        occupation: Yup.string().nullable(),
+        date_of_birth: Yup.string().nullable(),
+        photo: Yup.string().nullable(),
         contact_person: Yup.string().nullable(),
         contact_number: Yup.string().nullable(),
         manual_address: Yup.string().required("Address is required"),
+        permanent_address: Yup.string().nullable(),
         mobile: Yup.string().required("Mobile number is required"),
         ledger_page: Yup.string().nullable(),
         idfr_code: Yup.string().nullable(),
@@ -214,7 +219,8 @@ const EditCustomerSupplier = () => {
               Yup.object().shape({
                 name: Yup.string().required('Nominee name required'),
                 relation: Yup.string().nullable(),
-                relation_name: Yup.string().nullable(),
+                occupation: Yup.string().nullable(),
+                photo: Yup.string().nullable(),
                 mother_name: Yup.string().nullable(),
                 date_of_birth: Yup.string().nullable(),
                 mobile: Yup.string().nullable(),
@@ -253,10 +259,14 @@ const EditCustomerSupplier = () => {
       name: editCustomer?.name ?? "",
       father: editCustomer?.father ?? "",
       mother_name: editCustomer?.mother_name ?? "",
+      occupation: editCustomer?.occupation ?? "",
+      date_of_birth: editCustomer?.date_of_birth ?? "",
+      photo: editCustomer?.photo ?? "",
       contact_person: editCustomer?.contact_person ?? "",
       contact_number: editCustomer?.contact_number ?? "",
       relation_id: editCustomer?.relation_id ?? "",
       manual_address: editCustomer?.manual_address ?? "",
+      permanent_address: editCustomer?.permanent_address ?? "",
       mobile: editCustomer?.mobile ?? "",
       ledger_page: editCustomer?.ledger_page ?? "",
       idfr_code: editCustomer?.idfr_code ?? "",
@@ -464,6 +474,48 @@ const EditCustomerSupplier = () => {
                 )}
               </div>
             )}
+          </div>
+
+          {/* ================= DATE OF BIRTH + OCCUPATION ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            <InputDatePicker
+              id="date_of_birth"
+              name="date_of_birth"
+              label="Date of Birth"
+              setCurrentDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
+              className="font-medium text-sm w-full h-8"
+              selectedDate={parsePickerDate(formik.values.date_of_birth)}
+              setSelectedDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
+            />
+            <InputElement
+              id="occupation"
+              name="occupation"
+              placeholder="Enter Occupation"
+              label="Occupation"
+              value={formik.values.occupation}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+          </div>
+
+          {/* ================= PERMANENT ADDRESS + PHOTO ================= */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            <InputElement
+              id="permanent_address"
+              name="permanent_address"
+              placeholder="Enter Permanent Address"
+              label="Permanent Address"
+              value={formik.values.permanent_address}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            <PhotoInput
+              id="photo"
+              name="photo"
+              label="Photo"
+              value={formik.values.photo}
+              onChange={(photo) => formik.setFieldValue('photo', photo)}
+            />
           </div>
 
           {/* ================= CONTACT PERSON + NUMBER ================= */}
@@ -732,10 +784,10 @@ const EditCustomerSupplier = () => {
                             data={nomineeRelationType}
                           />
                           <InputElement
-                            name={`nominees.${index}.relation_name`}
-                            label="Relation's Name"
-                            placeholder="Enter Relation's Name"
-                            value={n.relation_name}
+                            name={`nominees.${index}.occupation`}
+                            label="Occupation"
+                            placeholder="Enter Occupation"
+                            value={n.occupation}
                             onChange={formik.handleChange}
                           />
                           <InputDatePicker
@@ -834,6 +886,13 @@ const EditCustomerSupplier = () => {
                             className="h-[2.1rem] bg-transparent"
                             data={nomineeStatusOptions}
                           />
+                          <PhotoInput
+                            id={`nominees.${index}.photo`}
+                            name={`nominees.${index}.photo`}
+                            label="Photo"
+                            value={n.photo}
+                            onChange={(photo) => formik.setFieldValue(`nominees.${index}.photo`, photo)}
+                          />
                           <div className="md:col-span-3">
                             <InputElement
                               name={`nominees.${index}.remarks`}
@@ -866,7 +925,8 @@ const EditCustomerSupplier = () => {
                         push({
                           name: '',
                           relation: '',
-                          relation_name: '',
+                          occupation: '',
+                          photo: '',
                           mother_name: '',
                           date_of_birth: '',
                           mobile: '',
