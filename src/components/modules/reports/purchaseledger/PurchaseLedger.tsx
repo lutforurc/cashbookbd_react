@@ -668,7 +668,7 @@ const PurchaseLedger = (user: any) => {
         return <div className="text-right">{thousandSeparator(balance)}</div>;
       },
     },
-    // Branch > Feature Controls > Show Voucher Image in Ledger.
+    // Branch > Feature Controls > Show Voucher Image.
     ...(showVoucherImage
       ? [
         {

@@ -916,7 +916,7 @@ const AddBranch = () => {
                       }
                     />
                     <FormToggleField
-                      label="Show Voucher Image in Ledger?"
+                      label="Show Voucher Image?"
                       checked={Boolean(formData.show_voucher_image)}
                       onChange={(checked) =>
                         handleToggleFieldChange('show_voucher_image', checked)

@@ -105,6 +105,7 @@ const CashBook = (user: any) => {
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const settings = useSelector((state: any) => state.settings);
+  const showVoucherImage = String(settings?.data?.branch?.show_voucher_image) === '1';
   const userPermissions = settings?.data?.permissions || [];
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
@@ -446,20 +447,25 @@ const CashBook = (user: any) => {
         </>
       ),
     },
-    {
-      key: 'voucher_image',
-      header: 'Voucher',
-      render: (row: any) => {
-        return (
-          <ImagePopup
-            title={row?.remarks || ''}
-            branchPad={row?.branchPad || ''}
-            voucher_image={row?.voucher_image || ''}
-            openPdfInNewTab
-          />
-        );
-      },
-    },
+    // Branch > Feature Controls > Show Voucher Image.
+    ...(showVoucherImage
+      ? [
+        {
+          key: 'voucher_image',
+          header: 'Voucher',
+          render: (row: any) => {
+            return (
+              <ImagePopup
+                title={row?.remarks || ''}
+                branchPad={row?.branchPad || ''}
+                voucher_image={row?.voucher_image || ''}
+                openPdfInNewTab
+              />
+            );
+          },
+        },
+      ]
+      : []),
     {
       key: 'action',
       header: 'Action',
