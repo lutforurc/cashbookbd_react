@@ -23,6 +23,11 @@ type ProductOption = {
   label_4?: string;
 };
 
+// "Self" means the stock did not come from another branch — an opening balance
+// or a purchase entered straight at the receiving branch. It posts with
+// from_branch_id null, which the receive API already accepts.
+const SELF_FROM_BRANCH = '';
+
 type TransferItem = {
   id: number;
   productId: string;
@@ -90,6 +95,15 @@ const WarehouseReceived = () => {
     }
     return [];
   }, [branchDdl?.data]);
+
+  // Self sits on top of the real branches in the dropdown only — the auto-select
+  // below still defaults to a real branch, so a plain transfer is unaffected.
+  const fromBranchSelectOptions = useMemo(
+    () => [{ id: SELF_FROM_BRANCH, name: 'Self Branch' }, ...fromBranchOptions],
+    [fromBranchOptions],
+  );
+
+  const isSelfReceive = formData.fromBranch === SELF_FROM_BRANCH;
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -174,6 +188,11 @@ const WarehouseReceived = () => {
 
   const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
+    // Switching the source to Self detaches the form from any issue transfer it
+    // was pre-filled from; there is nothing left to receive against.
+    if (name === 'fromBranch' && value === SELF_FROM_BRANCH) {
+      setSourceTransferId(null);
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -344,17 +363,25 @@ const WarehouseReceived = () => {
   };
 
   const handleSave = () => {
-    if (fromBranchOptions.length < 2) {
-      toast.error('At least two branches are required for receive');
+    if (!formData.toBranch) {
+      toast.error('Receive branch is required');
       return;
     }
-    if (!formData.fromBranch || !formData.toBranch) {
-      toast.error('From and To branch are required');
-      return;
-    }
-    if (formData.fromBranch === formData.toBranch) {
-      toast.error('From and To branch cannot be same');
-      return;
+    // A Self receive has no counterpart branch, so none of the two-branch rules
+    // below apply to it.
+    if (!isSelfReceive) {
+      if (fromBranchOptions.length < 2) {
+        toast.error('At least two branches are required for receive');
+        return;
+      }
+      if (!formData.fromBranch) {
+        toast.error('From and To branch are required');
+        return;
+      }
+      if (formData.fromBranch === formData.toBranch) {
+        toast.error('From and To branch cannot be same');
+        return;
+      }
     }
     const receiverMobile = formData.receiverMobileNumber.trim();
     if (receiverMobile && !/^\d+$/.test(receiverMobile)) {
@@ -372,7 +399,8 @@ const WarehouseReceived = () => {
 
     const payload: any = {
       to_branch_id: Number(formData.toBranch),
-      from_branch_id: formData.fromBranch ? Number(formData.fromBranch) : null,
+      from_branch_id:
+        isSelfReceive || !formData.fromBranch ? null : Number(formData.fromBranch),
       challan_number: formData.challanNumber || null,
       challan_date: formData.transferDate || null,
       receiver_name: formData.receiverName || null,
@@ -470,9 +498,10 @@ const WarehouseReceived = () => {
             id="fromBranch"
             name="fromBranch"
             className="p-2"
-            branchDdl={fromBranchOptions}
+            branchDdl={fromBranchSelectOptions}
             onChange={handleBranchChange}
             defaultValue={formData.fromBranch}
+            value={formData.fromBranch}
           />
         </div>
         <div>
