@@ -103,6 +103,7 @@ const SalesLedger = (user: any) => {
   const ledgerData = useSelector((state: any) => state.salesLedger);
   const settings = useSelector((state: any) => state.settings);
   const stockReportType = settings?.data?.branch?.stock_report_type;
+  const showVoucherImage = String(settings?.data?.branch?.show_voucher_image) === '1';
   const userPermissions = settings?.data?.permissions || [];
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -692,22 +693,27 @@ const SalesLedger = (user: any) => {
         return <div className="text-right">{thousandSeparator(balance)}</div>;
       },
     },
-    {
-      key: 'voucher_image',
-      header: 'Voucher',
-      width: '120px',
-      headerClass: 'text-center',
-      cellClass: 'flex justify-center',
-      render: (row: any) => {
-        return (
-          <ImagePopup
-            title={row?.remarks || ''}
-            branchPad={row?.branch_id?.toString().padStart(4, '0') || ''}
-            voucher_image={row?.voucher_image || ''}
-          />
-        );
-      },
-    },
+    // Branch > Feature Controls > Show Voucher Image in Ledger.
+    ...(showVoucherImage
+      ? [
+        {
+          key: 'voucher_image',
+          header: 'Voucher',
+          width: '120px',
+          headerClass: 'text-center',
+          cellClass: 'flex justify-center',
+          render: (row: any) => {
+            return (
+              <ImagePopup
+                title={row?.remarks || ''}
+                branchPad={row?.branch_id?.toString().padStart(4, '0') || ''}
+                voucher_image={row?.voucher_image || ''}
+              />
+            );
+          },
+        },
+      ]
+      : []),
     {
       key: 'action',
       header: 'Action',

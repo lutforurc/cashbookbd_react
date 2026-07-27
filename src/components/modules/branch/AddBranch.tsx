@@ -84,6 +84,7 @@ interface branchItem {
   need_customer_photo: boolean;
   need_nominee_photo: boolean;
   need_customer_area: boolean;
+  show_voucher_image: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -197,6 +198,7 @@ const AddBranch = () => {
     need_customer_photo: false,
     need_nominee_photo: false,
     need_customer_area: false,
+    show_voucher_image: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -277,6 +279,7 @@ const AddBranch = () => {
         need_customer_photo: toBooleanFlag(b.need_customer_photo),
         need_nominee_photo: toBooleanFlag(b.need_nominee_photo),
         need_customer_area: toBooleanFlag(b.need_customer_area),
+        show_voucher_image: toBooleanFlag(b.show_voucher_image),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
         purchase_sms: toBooleanFlag(b.purchase_sms),
@@ -910,6 +913,13 @@ const AddBranch = () => {
                       checked={Boolean(formData.due_list_with_address)}
                       onChange={(checked) =>
                         handleToggleFieldChange('due_list_with_address', checked)
+                      }
+                    />
+                    <FormToggleField
+                      label="Show Voucher Image in Ledger?"
+                      checked={Boolean(formData.show_voucher_image)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('show_voucher_image', checked)
                       }
                     />
                   </div>
