@@ -704,6 +704,12 @@ export const API_UNIT_SALE_STORE_URL = `${API_BASE_URL}/real-estate/unit/sales`;
 export const API_UNIT_SALE_DDL_URL = `${API_BASE_URL}/real-estate/unit-sale/ddl`;
 export const API_UNIT_SALE_SUMMARY_URL = `${API_BASE_URL}/real-estate/unit-sale/summary`;
 export const API_UNIT_SALE_SOLD_UNITS_URL = `${API_BASE_URL}/real-estate/unit-sale/sold-units`;
+
+// In-app pop-up messaging
+export const API_IN_APP_MESSAGE_SYNC_URL = `${API_BASE_URL}/in-app-messages/sync`;
+export const API_IN_APP_MESSAGE_EVENTS_URL = `${API_BASE_URL}/in-app-messages/events`;
+export const API_ADMIN_IN_APP_MESSAGE_URL = `${API_BASE_URL}/admin/in-app-messages`;
+export const API_ADMIN_IN_APP_MESSAGE_UPLOAD_URL = `${API_BASE_URL}/admin/in-app-messages/upload-image`;
 export const API_UNIT_SALE_INSTALLMENT_CREATE_URL = `${API_BASE_URL}/real-estate/unit-sale/installment-create`;
 export const API_UNIT_SALE_INSTALLMENT_UPDATE_URL = `${API_BASE_URL}/real-estate/unit-sale/installment-update`;
 

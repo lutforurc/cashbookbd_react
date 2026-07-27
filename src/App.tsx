@@ -190,6 +190,8 @@ import PaymentSubmit from './components/modules/subscription/PaymentSubmit';
 import BillingHistory from './components/modules/subscription/BillingHistory';
 import SubscriptionAdmin from './components/modules/subscription/SubscriptionAdmin';
 import AdminNotifications from './components/modules/admin-notifications/AdminNotifications';
+import AdminInAppMessages from './components/modules/in-app-messages/AdminInAppMessages';
+import AdminInAppMessageForm from './components/modules/in-app-messages/AdminInAppMessageForm';
 import InventorySystem from './components/modules/inventory-system/InventorySystem';
 import HighlightRules from './components/modules/highlight-rules/HighlightRules';
 import SubscriptionPlanList from './components/modules/subscription/SubscriptionPlanList';
@@ -285,6 +287,9 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.view', 'subscription.view', 'all.user.view']} loading={permissionsLoading} />}>
                 <Route path={routes.reseller_admin} element={<ResellerAdmin />} />
                 <Route path={routes.admin_notifications} element={<AdminNotifications />} />
+                <Route path={routes.admin_in_app_messages} element={<AdminInAppMessages />} />
+                <Route path={routes.admin_in_app_message_create} element={<AdminInAppMessageForm />} />
+                <Route path={routes.admin_in_app_message_edit} element={<AdminInAppMessageForm />} />
                 <Route path={routes.inventory_systems} element={<InventorySystem />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['highlight.rules']} loading={permissionsLoading} />}>

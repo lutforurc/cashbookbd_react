@@ -7,6 +7,7 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import ROUTES from '../components/services/appRoutes';
 import { fetchCurrentSubscription } from '../components/modules/subscription/subscriptionSlice';
 import SubscriptionStatusBanner from '../components/modules/subscription/SubscriptionStatusBanner';
+import InAppMessageHost from '../components/modules/in-app-messages/InAppMessageHost';
 import { isUserFeatureEnabled } from '../components/utils/userFeatureSettings';
 
 interface DefaultLayoutProps {
@@ -67,6 +68,9 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
         {/* <!-- ===== Content Area End ===== --> */}
       </div>
       {/* <!-- ===== Page Wrapper End ===== --> */}
+
+      {/* Admin-authored pop-up campaigns, above every screen. */}
+      <InAppMessageHost />
     </div>
   ) : (
     <Navigate to={ROUTES.login} replace state={{ from: location }} />
