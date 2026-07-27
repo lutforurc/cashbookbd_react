@@ -15,6 +15,7 @@ import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { getPurchaseLedger } from './purchaseLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ImagePopup from '../../../utils/others/ImagePopup';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import PurchaseLedgerPrint from './PurchaseLedgerPrint';
@@ -664,6 +665,22 @@ const PurchaseLedger = (user: any) => {
 
         const balance = total - payment - discount;
         return <div className="text-right">{thousandSeparator(balance)}</div>;
+      },
+    },
+    {
+      key: 'voucher_image',
+      header: 'Voucher',
+      width: '120px',
+      headerClass: 'text-center',
+      cellClass: 'flex justify-center',
+      render: (row: any) => {
+        return (
+          <ImagePopup
+            title={row?.remarks || ''}
+            branchPad={row?.branch_id?.toString().padStart(4, '0') || ''}
+            voucher_image={row?.voucher_image || ''}
+          />
+        );
       },
     },
     {

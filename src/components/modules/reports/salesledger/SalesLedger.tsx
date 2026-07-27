@@ -15,6 +15,7 @@ import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import { getSalesLedger } from './salesLedgerSlice';
 import dayjs from 'dayjs';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import ImagePopup from '../../../utils/others/ImagePopup';
 import SalesLedgerCalculator from '../../../utils/calculators/SalesLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import { useReactToPrint } from 'react-to-print';
@@ -689,6 +690,22 @@ const SalesLedger = (user: any) => {
         const balance = total - payment - discount;
 
         return <div className="text-right">{thousandSeparator(balance)}</div>;
+      },
+    },
+    {
+      key: 'voucher_image',
+      header: 'Voucher',
+      width: '120px',
+      headerClass: 'text-center',
+      cellClass: 'flex justify-center',
+      render: (row: any) => {
+        return (
+          <ImagePopup
+            title={row?.remarks || ''}
+            branchPad={row?.branch_id?.toString().padStart(4, '0') || ''}
+            voucher_image={row?.voucher_image || ''}
+          />
+        );
       },
     },
     {
