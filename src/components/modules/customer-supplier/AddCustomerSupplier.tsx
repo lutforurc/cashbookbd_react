@@ -50,6 +50,7 @@ const AddCustomerSupplier = () => {
   const needPermanentAddress = String(branchSettings?.need_customer_permanent_address) === '1';
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
   const needNomineePhoto = String(branchSettings?.need_nominee_photo) === '1';
+  const needArea = String(branchSettings?.need_customer_area) === '1';
 
   // Guarantor and nominee share one panel when both are on — stacked, the form
   // ran too long to see either of them whole.
@@ -396,25 +397,27 @@ const AddCustomerSupplier = () => {
       <FormikProvider value={formik}>
         <form className="customer-form" onSubmit={formik.handleSubmit} autoComplete="off">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div>
-              <label className="dark:text-white text-sm text-gray-900">
-                Select Area
-              </label>
-              <DdlDynamicMultiline
-                onSelect={(option: any) => {
-                  formik.setFieldValue('area_id', option?.value ?? '');
-                  formik.setFieldValue('areaName', option?.label ?? '');
-                }}
-                value={selectedArea || null}
-                defaultValue={selectedArea || null}
-                data={formattedAreaData}
-              />
-              {formik.errors.area_id && formik.touched.area_id && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.area_id}
-                </div>
-              )}
-            </div>
+            {needArea && (
+              <div>
+                <label className="dark:text-white text-sm text-gray-900">
+                  Select Area
+                </label>
+                <DdlDynamicMultiline
+                  onSelect={(option: any) => {
+                    formik.setFieldValue('area_id', option?.value ?? '');
+                    formik.setFieldValue('areaName', option?.label ?? '');
+                  }}
+                  value={selectedArea || null}
+                  defaultValue={selectedArea || null}
+                  data={formattedAreaData}
+                />
+                {formik.errors.area_id && formik.touched.area_id && (
+                  <div className="text-red-500 text-sm">
+                    {formik.errors.area_id}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="text-left flex flex-col">
               <DropdownCommon

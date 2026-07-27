@@ -83,6 +83,7 @@ interface branchItem {
   need_customer_permanent_address: boolean;
   need_customer_photo: boolean;
   need_nominee_photo: boolean;
+  need_customer_area: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -195,6 +196,7 @@ const AddBranch = () => {
     need_customer_permanent_address: false,
     need_customer_photo: false,
     need_nominee_photo: false,
+    need_customer_area: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -274,6 +276,7 @@ const AddBranch = () => {
         need_customer_permanent_address: toBooleanFlag(b.need_customer_permanent_address),
         need_customer_photo: toBooleanFlag(b.need_customer_photo),
         need_nominee_photo: toBooleanFlag(b.need_nominee_photo),
+        need_customer_area: toBooleanFlag(b.need_customer_area),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
         purchase_sms: toBooleanFlag(b.purchase_sms),
@@ -767,6 +770,11 @@ const AddBranch = () => {
                       label="Use Customer Serial?"
                       checked={Boolean(formData.have_customer_sl)}
                       onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer Area?"
+                      checked={Boolean(formData.need_customer_area)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_area', checked)}
                     />
                     <FormToggleField
                       label="Customer Share with Other branch?"
