@@ -467,7 +467,7 @@ const EditCustomerSupplier = () => {
                       onChange={formik.handleChange}
                       value={formik.values.relation_id}
                       className="h-[2.4rem] bg-transparent"
-                      data={relationType}
+                      data={nomineeRelationType}
                     />
                   </div>
                   <div className="md:col-span-3">
