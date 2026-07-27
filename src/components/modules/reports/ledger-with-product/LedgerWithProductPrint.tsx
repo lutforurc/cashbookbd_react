@@ -53,6 +53,32 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return chunks;
 };
 
+/** Rows' worth of height the summary bar takes off the last page. */
+const SUMMARY_ROW_ALLOWANCE = 1;
+
+/**
+ * The summary bar and the software line hold the foot of the page and never
+ * move. So the last page — the only one carrying the summary — has room for
+ * fewer rows than the rest: when its share is full, the rows that no longer fit
+ * are carried onto a page of their own instead of pushing the foot down the
+ * sheet and printing over it.
+ */
+const paginateRows = <T,>(data: T[], size: number): T[][] => {
+  const chunks = chunkRows(data, size);
+  if (size <= 0) return chunks;
+
+  const lastIndex = chunks.length - 1;
+  const lastPage = chunks[lastIndex] ?? [];
+  const lastPageLimit = Math.max(1, size - SUMMARY_ROW_ALLOWANCE);
+
+  if (lastPage.length > lastPageLimit) {
+    chunks[lastIndex] = lastPage.slice(0, lastPageLimit);
+    chunks.push(lastPage.slice(lastPageLimit));
+  }
+
+  return chunks;
+};
+
 const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
   (
     {
@@ -72,7 +98,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     },
     ref,
   ) => {
-    const pages = chunkRows(rows, rowsPerPage);
+    const pages = paginateRows(rows, rowsPerPage);
     const fs = Number.isFinite(fontSize) ? fontSize : 9;
     const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
     const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
@@ -100,8 +126,28 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             margin: 5mm;
           }
 
+          /*
+            Each page block fills the sheet, so the foot of it — summary bar,
+            software line, page number — sits at the same height on every sheet.
+            The height is a floor, not a ceiling, and nothing is clipped: a row
+            that will not fit carries onto the next sheet rather than being cut
+            away, which would hide it while it still counted in the totals.
+
+            The floor is the whole printable area (sheet less the 5mm page
+            margins) less the 8mm top and 2mm bottom padding print gives
+            .print-page, less 1mm so a sub-millimetre rounding cannot spill a
+            blank sheet. Subtracting 8mm at the foot, as this did before, left
+            16mm of the sheet unused and pushed rows onto the next page earlier
+            than they had to go.
+          */
           .print-page {
-            min-height: calc(210mm - 5mm - 5mm - 8mm - 8mm) !important;
+            box-sizing: border-box;
+            min-height: calc(210mm - 5mm - 5mm - 1mm) !important;
+          }
+
+          .print-page.ledger-break-after {
+            break-after: page;
+            page-break-after: always;
           }
 
           .print-page:last-child {
@@ -109,7 +155,10 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
           }
         `}</style>
         {pages.map((pageRows, pageIndex) => (
-          <div key={pageIndex} className="print-page">
+          <div
+            key={pageIndex}
+            className={`print-page ${pageIndex !== pages.length - 1 ? 'ledger-break-after' : ''}`}
+          >
             <PadPrinting />
             <div className="mb-1">
               <div className="text-center">
@@ -247,7 +296,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
             {pageIndex === pages.length - 1 ? (
               <div
-                className="mt-1 flex w-full flex-nowrap items-center justify-between gap-x-2 overflow-hidden border border-gray-900 px-2 py-1 font-bold text-gray-900"
+                className="mt-1 flex w-full shrink-0 flex-nowrap items-center justify-between gap-x-2 overflow-hidden border border-gray-900 px-2 py-1 font-bold text-gray-900"
                 style={{
                   fontSize: footerFs,
                   lineHeight: 1.15,
@@ -264,11 +313,19 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
               </div>
             ) : null}
 
-            <div className="mt-2 text-right text-xs">Page {pageIndex + 1} of {pages.length}</div>
-            {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
+            {/*
+              The software line sits here, in the page's normal flow, rather than
+              coming from a position:fixed footer — pinned outside the flow, it
+              was painted over the summary row whenever the rows reached the foot
+              of the page. mt-auto holds it at the bottom of the flex column, so
+              it keeps the same spot on every page and the rows stop above it.
+            */}
+            <div className="mt-auto flex shrink-0 items-end justify-between gap-4 border-t border-gray-400 pt-1 text-xs text-gray-600">
+              <ReportFooter inline />
+              <span className="whitespace-nowrap">Page {pageIndex + 1} of {pages.length}</span>
+            </div>
           </div>
         ))}
-        <ReportFooter />
       </div>
     );
   },
