@@ -1,0 +1,57 @@
+import type React from "react";
+import { SoldUnitLine, SoldUnitRow } from "./types";
+
+/**
+ * Each customer block in the report is outlined in its own colour so a buyer's
+ * units, parking and charge lines read as one group. Colours cycle by position.
+ */
+export const CUSTOMER_COLORS = [
+  { border: "#2563eb", tint: "rgba(37, 99, 235, 0.10)" }, // blue
+  { border: "#059669", tint: "rgba(5, 150, 105, 0.10)" }, // emerald
+  { border: "#d97706", tint: "rgba(217, 119, 6, 0.10)" }, // amber
+  { border: "#7c3aed", tint: "rgba(124, 58, 237, 0.10)" }, // violet
+  { border: "#db2777", tint: "rgba(219, 39, 119, 0.10)" }, // pink
+  { border: "#0891b2", tint: "rgba(8, 145, 178, 0.10)" }, // cyan
+  { border: "#65a30d", tint: "rgba(101, 163, 13, 0.10)" }, // lime
+  { border: "#e11d48", tint: "rgba(225, 29, 72, 0.10)" }, // rose
+];
+
+export const customerColor = (index: number) =>
+  CUSTOMER_COLORS[index % CUSTOMER_COLORS.length];
+
+/**
+ * Charge lines of one sale. A sale saved without stored line items still renders
+ * a single line built from its own unit/parking labels.
+ */
+export const saleLines = (unit: SoldUnitRow): SoldUnitLine[] =>
+  unit.lines?.length
+    ? unit.lines
+    : [
+        {
+          type: unit.is_parking_only ? "PARKING" : "UNIT_PRICE",
+          caption:
+            [unit.is_parking_only ? unit.parking_no : unit.unit_no, unit.floor_name]
+              .filter(Boolean)
+              .join(", ") || "-",
+          place: [unit.project_name, unit.building_name].filter(Boolean).join(", "),
+          amount: unit.total_amount,
+        },
+      ];
+
+type EdgeFlags = {
+  top?: boolean;
+  bottom?: boolean;
+  left?: boolean;
+  right?: boolean;
+};
+
+/** Colour only the edges of a cell that sit on the customer block's outline. */
+export const edgeStyle = (
+  color: string,
+  { top, bottom, left, right }: EdgeFlags
+): React.CSSProperties => ({
+  ...(top ? { borderTop: `2px solid ${color}` } : {}),
+  ...(bottom ? { borderBottom: `2px solid ${color}` } : {}),
+  ...(left ? { borderLeft: `4px solid ${color}` } : {}),
+  ...(right ? { borderRight: `2px solid ${color}` } : {}),
+});

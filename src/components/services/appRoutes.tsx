@@ -265,7 +265,8 @@ const ROUTES = {
   real_estate_unit_types_create: '/real-estate/unit-types/create',
   real_estate_charge_type_edit: '/real-estate/charge-types/edit',
   real_estate_unit_types_list: '/real-estate/unit-types/list',
-  real_estate_unit_sales: '/real-estate/unit-sales',  
+  real_estate_unit_sales: '/real-estate/unit-sales',
+  real_estate_sold_units: '/real-estate/sold-units',
   real_estate_installment_create: '/real-estate/installment-create',  
   
   // HRM

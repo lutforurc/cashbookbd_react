@@ -1281,6 +1281,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname === '/real-estate/project-activities' ||
                       pathname === '/real-estate/flat-layout' ||
                       pathname === '/real-estate/unit-sales' ||
+                      pathname === routes.real_estate_sold_units ||
                       pathname === routes.real_estate_installment_create ||
                       pathname.includes('forms')
                     }
@@ -1301,6 +1302,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               pathname === '/real-estate/building/floor' ||
                               pathname === '/real-estate/add-unit' ||
                               pathname === '/real-estate/unit-sales' ||
+                              pathname === routes.real_estate_sold_units ||
                               pathname === routes.real_estate_installment_create ||
                               pathname === routes.real_estate_unit_types_create ||
                               pathname === routes.real_estate_buildings_list ||
@@ -1433,6 +1435,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Unit Sales
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                to={routes.real_estate_sold_units}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Sold Units (Customer wise)
                               </NavLink>
                             </li>
                             <li>

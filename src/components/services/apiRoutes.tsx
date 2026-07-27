@@ -703,6 +703,7 @@ export const API_UNIT_CHARGE_TYPE_EDIT_URL = `${API_BASE_URL}/real-estate/units/
 export const API_UNIT_SALE_STORE_URL = `${API_BASE_URL}/real-estate/unit/sales`;
 export const API_UNIT_SALE_DDL_URL = `${API_BASE_URL}/real-estate/unit-sale/ddl`;
 export const API_UNIT_SALE_SUMMARY_URL = `${API_BASE_URL}/real-estate/unit-sale/summary`;
+export const API_UNIT_SALE_SOLD_UNITS_URL = `${API_BASE_URL}/real-estate/unit-sale/sold-units`;
 export const API_UNIT_SALE_INSTALLMENT_CREATE_URL = `${API_BASE_URL}/real-estate/unit-sale/installment-create`;
 export const API_UNIT_SALE_INSTALLMENT_UPDATE_URL = `${API_BASE_URL}/real-estate/unit-sale/installment-update`;
 

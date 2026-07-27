@@ -148,6 +148,7 @@ import AddProductUnit from './components/modules/product/unit/AddProductUnit';
 import ProductUnits from './components/modules/product/unit/ProductUnits';
 import EditCustomerSupplier from './components/modules/customer-supplier/EditCustomerSupplier';
 import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
+import SoldUnitList from './components/modules/real-estate/sales/SoldUnitList';
 import RequirePermission from "./components/auth/RequirePermission";
 import NoAccess from './components/modules/pages/NoAccess';
 import { MENU_PERMISSIONS } from './components/Sidebar/menuPermissions';
@@ -668,6 +669,7 @@ function App() {
 
               <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
               <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />
+              <Route path={routes.real_estate_sold_units} element={<SoldUnitList />} />
               <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
             </Route>
 
