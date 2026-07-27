@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
+import { FiPrinter } from 'react-icons/fi';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -7,6 +9,8 @@ import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import ChallanPrint from '../warehouse-transfer/ChallanPrint';
+import { getBranchTransferDetails } from '../warehouse-transfer/warehouseTransferSlice';
 import { getBranchReceived } from './warehouseReceivedSlice';
 
 interface ReceiveListProps {
@@ -25,12 +29,35 @@ const pickFirst = (row: any, keys: string[]) => {
 const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
   const dispatch = useDispatch<any>();
   const received = useSelector((s: any) => s.branchReceived);
+  // A receive is a row of inventory_transfer_masters like an issue is, so the
+  // transfer details endpoint serves the print for both.
+  const transferDetails = useSelector((s: any) => s.branchTransfer?.details);
 
   const [search, setSearchValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState<number | string>(10);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [printingId, setPrintingId] = useState<number | string | null>(null);
+
+  const printRef = useRef<HTMLDivElement>(null);
+  const printReceiveNote = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: 'Goods Receive Note',
+    removeAfterPrint: true,
+  });
+
+  // Fetch the receive's lines by id, then print once the hidden component has
+  // re-rendered with them. Mirrors the Transfer List challan print.
+  const handlePrint = (id: number | string) => {
+    if (printingId) return;
+    setPrintingId(id);
+    dispatch(getBranchTransferDetails(id))
+      .unwrap()
+      .then(() => setTimeout(() => printReceiveNote(), 300))
+      .catch(() => {})
+      .finally(() => setTimeout(() => setPrintingId(null), 400));
+  };
 
   useEffect(() => {
     dispatch(getBranchReceived({ page, perPage, search }));
@@ -137,6 +164,25 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
         return <span>{thousandSeparator(qty * rate)}</span>;
       },
     },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center w-24',
+      cellClass: 'text-center w-24',
+      render: (row: any) => (
+        <div className="flex items-center justify-center gap-3">
+          <button
+            type="button"
+            title="Print receive note"
+            disabled={printingId === row.id}
+            onClick={() => handlePrint(row.id)}
+            className="text-primary hover:opacity-80 disabled:opacity-40"
+          >
+            <FiPrinter className="inline h-4 w-4" />
+          </button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -168,6 +214,16 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
         ) : (
           ''
         )}
+      </div>
+
+      {/* Hidden — react-to-print pulls from this ref on demand. */}
+      <div className="hidden">
+        <ChallanPrint
+          ref={printRef}
+          master={transferDetails?.master}
+          details={transferDetails?.details || []}
+          title="Goods Receive Note"
+        />
       </div>
     </div>
   );

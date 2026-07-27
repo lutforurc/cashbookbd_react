@@ -7,12 +7,15 @@ type Props = {
   master: any;
   details: any[];
   fontSize?: number;
+  // The same layout prints both sides of a transfer, so the heading is passed
+  // in: a challan when goods leave, a receive note when they arrive.
+  title?: string;
 };
 
 // The transport column stores the transport input as `reference` and the note
 // as `notes` (see WarehouseTransferController::apiTransferDetails).
 const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ master, details, fontSize = 11 }, ref) => {
+  ({ master, details, fontSize = 11, title = 'Delivery Challan' }, ref) => {
     if (!master) {
       return <div ref={ref}>No challan data.</div>;
     }
@@ -62,7 +65,7 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
           className="text-center font-bold uppercase mt-3 mb-4"
           style={{ fontSize: fontSize + 6 }}
         >
-          Delivery Challan
+          {title}
         </h1>
 
         {/* Meta: challan/voucher/date on one side, branches on the other. */}
