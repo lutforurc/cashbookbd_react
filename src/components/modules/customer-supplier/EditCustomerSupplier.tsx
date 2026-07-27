@@ -379,8 +379,12 @@ const EditCustomerSupplier = () => {
 
       <FormikProvider value={formik}>
         <form className="customer-form" onSubmit={handleFormSubmit}>
-          {/* ================= TOP AREA + TYPE ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+          {/*
+            One grid for every field, one cell per field. Fixed two-field rows
+            left a hole whenever the branch switched a field off; here the rest
+            simply flow up into the gap.
+          */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 items-start">
             {needArea && (
               <div>
                 <label className="dark:text-white text-sm text-gray-900">
@@ -418,10 +422,7 @@ const EditCustomerSupplier = () => {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* ================= NAME + ADDRESS ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="text-left flex flex-col">
               <InputElement
                 id="name"
@@ -454,10 +455,7 @@ const EditCustomerSupplier = () => {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* ================= RELATION + MOTHER ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             {settings?.data?.branch?.need_relation_info === '1' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <>
@@ -505,65 +503,55 @@ const EditCustomerSupplier = () => {
                 )}
               </div>
             )}
-          </div>
 
-          {/* ================= DATE OF BIRTH + OCCUPATION ================= */}
-          {(needDateOfBirth || needOccupation) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-              {needDateOfBirth && (
-                <InputDatePicker
-                  id="date_of_birth"
-                  name="date_of_birth"
-                  label="Date of Birth"
-                  setCurrentDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
-                  className="font-medium text-sm w-full h-[2.4rem]"
-                  selectedDate={parsePickerDate(formik.values.date_of_birth)}
-                  setSelectedDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
-                />
-              )}
-              {needOccupation && (
-                <InputElement
-                  id="occupation"
-                  name="occupation"
-                  placeholder="Enter Occupation"
-                  label="Occupation"
-                  value={formik.values.occupation}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-              )}
-            </div>
-          )}
+            {needDateOfBirth && (
+              <InputDatePicker
+                id="date_of_birth"
+                name="date_of_birth"
+                label="Date of Birth"
+                setCurrentDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
+                className="font-medium text-sm w-full h-[2.4rem]"
+                selectedDate={parsePickerDate(formik.values.date_of_birth)}
+                setSelectedDate={(date) => formik.setFieldValue('date_of_birth', formatPickerDate(date))}
+              />
+            )}
 
-          {/* ================= PERMANENT ADDRESS + PHOTO ================= */}
-          {(needPermanentAddress || needPhoto) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-              {needPermanentAddress && (
-                <InputElement
-                  id="permanent_address"
-                  name="permanent_address"
-                  placeholder="Enter Permanent Address"
-                  label="Permanent Address"
-                  value={formik.values.permanent_address}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-              )}
-              {needPhoto && (
-                <PhotoInput
-                  id="photo"
-                  name="photo"
-                  label="Photo"
-                  value={formik.values.photo}
-                  onChange={(photo) => formik.setFieldValue('photo', photo)}
-                />
-              )}
-            </div>
-          )}
+            {needOccupation && (
+              <InputElement
+                id="occupation"
+                name="occupation"
+                placeholder="Enter Occupation"
+                label="Occupation"
+                value={formik.values.occupation}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+            )}
 
-          {/* ================= CONTACT PERSON + NUMBER ================= */}
-          {settings?.data?.branch?.need_customer_contact_person === '1' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            {needPermanentAddress && (
+              <InputElement
+                id="permanent_address"
+                name="permanent_address"
+                placeholder="Enter Permanent Address"
+                label="Permanent Address"
+                value={formik.values.permanent_address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+            )}
+
+            {needPhoto && (
+              <PhotoInput
+                id="photo"
+                name="photo"
+                label="Photo"
+                value={formik.values.photo}
+                onChange={(photo) => formik.setFieldValue('photo', photo)}
+              />
+            )}
+
+            {settings?.data?.branch?.need_customer_contact_person === '1' && (
+              <>
               <div className="text-left flex flex-col">
                 <InputElement
                   id="contact_person"
@@ -593,11 +581,9 @@ const EditCustomerSupplier = () => {
                   <div className="text-red-500 text-sm">{formik.errors.contact_number as any}</div>
                 )}
               </div>
-            </div>
-          )}
+              </>
+            )}
 
-          {/* ================= MOBILE + LEDGER ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="text-left flex flex-col">
               <InputElement
                 id="mobile"
@@ -623,34 +609,26 @@ const EditCustomerSupplier = () => {
               label="Ledger Page"
               onChange={formik.handleChange}
             />
-          </div>
 
-          {/* ================= NID + CUSTOMER NO + LOGIN ================= */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div
-              className={`grid grid-cols-1 ${settings?.data?.branch?.have_customer_sl === 1 ? 'md:grid-cols-2' : 'md:grid-cols-1'
-                } gap-2`}
-            >
+            <InputElement
+              id="national_id"
+              name="national_id"
+              value={formik.values.national_id}
+              placeholder="Enter National ID"
+              label="National ID"
+              onChange={formik.handleChange}
+            />
+
+            {settings?.data?.branch?.have_customer_sl === 1 && (
               <InputElement
-                id="national_id"
-                name="national_id"
-                value={formik.values.national_id}
-                placeholder="Enter National ID"
-                label="National ID"
+                id="idfr_code"
+                name="idfr_code"
+                value={formik.values.idfr_code}
+                placeholder="Enter Customer Number"
+                label="Customer Number"
                 onChange={formik.handleChange}
               />
-
-              {settings?.data?.branch?.have_customer_sl === 1 && (
-                <InputElement
-                  id="idfr_code"
-                  name="idfr_code"
-                  value={formik.values.idfr_code}
-                  placeholder="Enter Customer Number"
-                  label="Customer Number"
-                  onChange={formik.handleChange}
-                />
-              )}
-            </div>
+            )}
 
             <DropdownCommon
               id="customerLogin"
@@ -662,11 +640,10 @@ const EditCustomerSupplier = () => {
               className="h-[2.4rem] bg-transparent"
               data={TrueFalse}
             />
-          </div>
 
-          {/* ================= PORTAL PASSWORD (self-service login) ================= */}
-          {String(formik.values.customerLogin) === '1' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            {/* ================= PORTAL PASSWORD (self-service login) ================= */}
+            {String(formik.values.customerLogin) === '1' && (
+              <>
               <div className="flex items-end gap-2">
                 <div className="flex-1">
                   <InputElement
@@ -692,8 +669,9 @@ const EditCustomerSupplier = () => {
                 The customer logs in at <span className="font-medium">/customer/login</span> using their
                 mobile number and this password. Leave blank and it stays unchanged.
               </p>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
           {/* ================= GUARANTOR / NOMINEE ================= */}
           {(guarantorEnabled || nomineeEnabled) && (

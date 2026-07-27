@@ -4,8 +4,9 @@ import { FiTrash2, FiUpload } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 
-/** Kept below the API's 3 MB limit so an oversized file fails before upload. */
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+/** Matches the API's limit so an oversized file fails before the upload. */
+const MAX_PHOTO_KB = 150;
+const MAX_PHOTO_BYTES = MAX_PHOTO_KB * 1024;
 
 interface PhotoInputProps {
   id?: string;
@@ -60,7 +61,7 @@ const PhotoInput: React.FC<PhotoInputProps> = ({
     }
 
     if (file.size > MAX_PHOTO_BYTES) {
-      toast.error('The photo must be smaller than 2 MB.');
+      toast.error(`The photo must be smaller than ${MAX_PHOTO_KB} KB.`);
       clearFileInput();
       return;
     }
