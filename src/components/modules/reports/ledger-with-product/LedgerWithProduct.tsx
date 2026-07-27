@@ -114,7 +114,7 @@ const LedgerWithProduct = (user: any) => {
   const [productId, setProductId] = useState<number | null>(null);
   const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [transactionType, setTransactionType] = useState('');
-  const [rowsPerPage, setRowsPerPage] = useState<string>('11');
+  const [rowsPerPage, setRowsPerPage] = useState<string>('10');
   const [fontSize, setFontSize] = useState<string>('10');
   const [filterOpen, setFilterOpen] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
