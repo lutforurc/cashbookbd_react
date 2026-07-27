@@ -457,24 +457,7 @@ const AddCustomerSupplier = () => {
                 <div className="text-red-500 text-sm">{formik.errors.name}</div>
               )}
             </div>
-            <div className="text-left flex flex-col">
-              <InputElement
-                id="manual_address"
-                name="manual_address"
-                autoComplete="off"
-                placeholder="Enter Address"
-                label="Address"
-                value={formik.values.manual_address}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                onKeyDown={handleEnterNavigation('manual_address')}
-              />
-              {formik.touched.manual_address && formik.errors.manual_address && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.manual_address}
-                </div>
-              )}
-            </div>
+
 
             {settings?.data?.branch?.need_relation_info === '1' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
@@ -548,64 +531,53 @@ const AddCustomerSupplier = () => {
               />
             )}
 
-            {needPermanentAddress && (
-              <InputElement
-                id="permanent_address"
-                name="permanent_address"
-                autoComplete="off"
-                placeholder="Enter Permanent Address"
-                label="Permanent Address"
-                value={formik.values.permanent_address}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-            )}
-
-            {needPhoto && (
-              <PhotoInput
-                id="photo"
-                name="photo"
-                label="Photo"
-                value={formik.values.photo}
-                onChange={(photo) => formik.setFieldValue('photo', photo)}
-              />
-            )}
+            
 
             {settings?.data?.branch?.need_customer_contact_person === '1' && (
               <>
-              <div className="text-left flex flex-col">
-                <InputElement
-                  id="contact_person"
-                  name="contact_person"
-                  placeholder="Enter Contact Person"
-                  label="Contact Person"
-                  value={formik.values.contact_person}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  onKeyDown={handleEnterNavigation('contact_person')}
-                />
-                {formik.touched.contact_person && formik.errors.contact_person && (
-                  <div className="text-red-500 text-sm">{formik.errors.contact_person}</div>
-                )}
-              </div>
+                <div className="text-left flex flex-col">
+                  <InputElement
+                    id="contact_person"
+                    name="contact_person"
+                    placeholder="Enter Contact Person"
+                    label="Contact Person"
+                    value={formik.values.contact_person}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    onKeyDown={handleEnterNavigation('contact_person')}
+                  />
+                  {formik.touched.contact_person && formik.errors.contact_person && (
+                    <div className="text-red-500 text-sm">{formik.errors.contact_person}</div>
+                  )}
+                </div>
 
-              <div className="text-left flex flex-col">
-                <InputElement
-                  id="contact_number"
-                  name="contact_number"
-                  placeholder="Enter Contact Number"
-                  label="Contact Number"
-                  value={formik.values.contact_number}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  onKeyDown={handleEnterNavigation('contact_number')}
-                />
-                {formik.touched.contact_number && formik.errors.contact_number && (
-                  <div className="text-red-500 text-sm">{formik.errors.contact_number}</div>
-                )}
-              </div>
+                <div className="text-left flex flex-col">
+                  <InputElement
+                    id="contact_number"
+                    name="contact_number"
+                    placeholder="Enter Contact Number"
+                    label="Contact Number"
+                    value={formik.values.contact_number}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    onKeyDown={handleEnterNavigation('contact_number')}
+                  />
+                  {formik.touched.contact_number && formik.errors.contact_number && (
+                    <div className="text-red-500 text-sm">{formik.errors.contact_number}</div>
+                  )}
+                </div>
               </>
             )}
+            <InputElement
+              id="national_id"
+              name="national_id"
+              value={formik.values.national_id}
+              placeholder="Enter National ID"
+              label="National ID"
+              onChange={formik.handleChange}
+              onKeyDown={handleEnterNavigation('national_id')}
+            />
+
 
             <div className="text-left flex flex-col">
               <InputElement
@@ -645,6 +617,39 @@ const AddCustomerSupplier = () => {
                 <div className="text-red-500 text-sm">{mobileDuplicate.error}</div>
               ) : null}
             </div>
+
+            
+            <div className="text-left flex flex-col">
+              <InputElement
+                id="manual_address"
+                name="manual_address"
+                autoComplete="off"
+                placeholder="Enter Present Address"
+                label="Present Address"
+                value={formik.values.manual_address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                onKeyDown={handleEnterNavigation('manual_address')}
+              />
+              {formik.touched.manual_address && formik.errors.manual_address && (
+                <div className="text-red-500 text-sm">
+                  {formik.errors.manual_address}
+                </div>
+              )}
+            </div>
+            {needPermanentAddress && (
+              <InputElement
+                id="permanent_address"
+                name="permanent_address"
+                autoComplete="off"
+                placeholder="Enter Permanent Address"
+                label="Permanent Address"
+                value={formik.values.permanent_address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+            )}
+
             <InputElement
               id="ledger_page"
               name="ledger_page"
@@ -655,15 +660,7 @@ const AddCustomerSupplier = () => {
               onKeyDown={handleEnterNavigation('ledger_page')}
             />
 
-            <InputElement
-              id="national_id"
-              name="national_id"
-              value={formik.values.national_id}
-              placeholder="Enter National ID"
-              label="National ID"
-              onChange={formik.handleChange}
-              onKeyDown={handleEnterNavigation('national_id')}
-            />
+            
 
             {settings?.data?.branch?.have_customer_sl === 1 && (
               <InputElement
@@ -690,30 +687,39 @@ const AddCustomerSupplier = () => {
             {/* ================= PORTAL PASSWORD (self-service login) ================= */}
             {String(formik.values.customerLogin) === '1' && (
               <>
-              <div className="text-left flex flex-col">
-                <InputElement
-                  id="password"
-                  name="password"
-                  type="password"
-                  // Stops Chrome treating this as a login form and autofilling a
-                  // saved password here (and the saved email into Address).
-                  autoComplete="new-password"
-                  value={formik.values.password}
-                  placeholder="Set portal login password (optional)"
-                  label="Portal Password"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {formik.touched.password && formik.errors.password && (
-                  <div className="text-red-500 text-sm">{formik.errors.password}</div>
-                )}
-              </div>
-              <p className="text-xs text-gray-500 self-end pb-2">
-                If set, the customer can log in at{' '}
-                <span className="font-medium">/customer/login</span> using their mobile number and this
-                password. Leave blank to skip.
-              </p>
+                <div className="text-left flex flex-col">
+                  <InputElement
+                    id="password"
+                    name="password"
+                    type="password"
+                    // Stops Chrome treating this as a login form and autofilling a
+                    // saved password here (and the saved email into Address).
+                    autoComplete="new-password"
+                    value={formik.values.password}
+                    placeholder="Set portal login password (optional)"
+                    label="Portal Password"
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                  {formik.touched.password && formik.errors.password && (
+                    <div className="text-red-500 text-sm">{formik.errors.password}</div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 self-end pb-2">
+                  If set, the customer can log in at{' '}
+                  <span className="font-medium">/customer/login</span> using their mobile number and this
+                  password. Leave blank to skip.
+                </p>
               </>
+            )}
+            {needPhoto && (
+              <PhotoInput
+                id="photo"
+                name="photo"
+                label="Photo"
+                value={formik.values.photo}
+                onChange={(photo) => formik.setFieldValue('photo', photo)}
+              />
             )}
           </div>
           {/* ================= GUARANTOR / NOMINEE ================= */}
@@ -746,228 +752,222 @@ const AddCustomerSupplier = () => {
               )}
 
               <div className={showDetailsTabs ? 'border border-t-0 border-gray-200 p-3 dark:border-gray-700' : ''}>
-              {activeDetailsTab === 'guarantor' && guarantorEnabled && (
-              <FieldArray name="guarantors">
-                {({ push, remove }) => (
-                  <>
-                    {formik.values.guarantors.map((g: any, index: number) => (
-                      <div key={index} className="border p-3 mb-2 ">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                          <InputElement name={`guarantors.${index}.name`} label="Name" placeholder='Enter Name' value={g.name} onChange={formik.handleChange} />
-                          <InputElement name={`guarantors.${index}.father_name`} label="Father Name" placeholder='Enter Father Name' value={g.father_name} onChange={formik.handleChange} />
-                          <InputElement name={`guarantors.${index}.mobile`} label="Mobile" placeholder='Enter Mobile Number' value={g.mobile} onChange={formik.handleChange} />
-                          <InputElement name={`guarantors.${index}.national_id`} label="National ID" placeholder='Enter National ID' value={g.national_id} onChange={formik.handleChange} />
-                          <InputElement name={`guarantors.${index}.address`} label="Address" placeholder='Enter Address' value={g.address} onChange={formik.handleChange} />
-                        </div>
+                {activeDetailsTab === 'guarantor' && guarantorEnabled && (
+                  <FieldArray name="guarantors">
+                    {({ push, remove }) => (
+                      <>
+                        {formik.values.guarantors.map((g: any, index: number) => (
+                          <div key={index} className="border p-3 mb-2 ">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                              <InputElement name={`guarantors.${index}.name`} label="Name" placeholder='Enter Name' value={g.name} onChange={formik.handleChange} />
+                              <InputElement name={`guarantors.${index}.father_name`} label="Father Name" placeholder='Enter Father Name' value={g.father_name} onChange={formik.handleChange} />
+                              <InputElement name={`guarantors.${index}.mobile`} label="Mobile" placeholder='Enter Mobile Number' value={g.mobile} onChange={formik.handleChange} />
+                              <InputElement name={`guarantors.${index}.national_id`} label="National ID" placeholder='Enter National ID' value={g.national_id} onChange={formik.handleChange} />
+                              <InputElement name={`guarantors.${index}.address`} label="Address" placeholder='Enter Address' value={g.address} onChange={formik.handleChange} />
+                            </div>
 
-                        <button type="button" className="text-red-600 mt-2" onClick={() => remove(index)}>
-                          <div className='flex'> <FiTrash2 /> <span className='ml-2 -mt-1'>Remove</span></div>
-                        </button>
-                      </div>
-                    ))}
-
-                    <ButtonLoading
-                      type="button"
-                      label="Add Guarantor"
-                      className="flex items-center gap-2 text-blue-600 mb-4 p-2"
-                      onClick={() =>
-                        push({
-                          name: '',
-                          father_name: '',
-                          mobile: '',
-                          national_id: '',
-                          address: '',
-                        })
-                      }
-
-                      icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
-                    />
-                  </>
-                )}
-              </FieldArray>
-              )}
-
-              {activeDetailsTab === 'nominee' && nomineeEnabled && (
-              <FieldArray name="nominees">
-                {({ push, remove }) => (
-                  <>
-                    {formik.values.nominees.map((n: any, index: number) => (
-                      <div key={index} className="border p-3 mb-2">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                          <InputElement
-                            name={`nominees.${index}.name`}
-                            label="Name"
-                            placeholder="Enter Name"
-                            value={n.name}
-                            onChange={formik.handleChange}
-                          />
-                          <DropdownCommon
-                            id={`nominees.${index}.relation`}
-                            name={`nominees.${index}.relation`}
-                            label="Relation"
-                            onChange={formik.handleChange}
-                            value={n.relation || ''}
-                            className="h-[2.4rem] bg-transparent"
-                            data={nomineeRelationType}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.occupation`}
-                            label="Occupation"
-                            placeholder="Enter Occupation"
-                            value={n.occupation}
-                            onChange={formik.handleChange}
-                          />
-                          <InputDatePicker
-                            id={`nominees.${index}.date_of_birth`}
-                            name={`nominees.${index}.date_of_birth`}
-                            label="Date of Birth"
-                            setCurrentDate={(date) =>
-                              formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
-                            }
-                            className="font-medium text-sm w-full h-[2.4rem]"
-                            selectedDate={parsePickerDate(n.date_of_birth)}
-                            setSelectedDate={(date) =>
-                              formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
-                            }
-                          />
-                          <InputElement
-                            name={`nominees.${index}.mother_name`}
-                            label="Mother Name"
-                            placeholder="Enter Mother Name"
-                            value={n.mother_name}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.mobile`}
-                            label="Mobile"
-                            placeholder="Enter Mobile Number"
-                            value={n.mobile}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.present_address`}
-                            label="Present Address"
-                            placeholder="Enter Present Address"
-                            value={n.present_address}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.permanent_address`}
-                            label="Permanent Address"
-                            placeholder="Enter Permanent Address"
-                            value={n.permanent_address}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.national_id`}
-                            label="National ID"
-                            placeholder="Enter National ID"
-                            value={n.national_id}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.share_percentage`}
-                            label="Share Percentage"
-                            type="number"
-                            placeholder="Enter Share Percentage"
-                            value={n.share_percentage}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.priority_order`}
-                            label="Priority Order"
-                            type="number"
-                            placeholder="Enter Priority Order"
-                            value={n.priority_order}
-                            onChange={formik.handleChange}
-                          />
-
-                          <InputElement
-                            name={`nominees.${index}.guardian_name`}
-                            label="Guardian Name"
-                            placeholder="Enter Guardian Name"
-                            value={n.guardian_name}
-                            onChange={formik.handleChange}
-                          />
-                          <InputElement
-                            name={`nominees.${index}.guardian_mobile`}
-                            label="Guardian Mobile"
-                            placeholder="Enter Guardian Mobile"
-                            value={n.guardian_mobile}
-                            onChange={formik.handleChange}
-                          />
-                          <DropdownCommon
-                            id={`nominees.${index}.status`}
-                            name={`nominees.${index}.status`}
-                            label="Status"
-                            onChange={formik.handleChange}
-                            value={n.status || 'active'}
-                            className="h-[2.4rem] bg-transparent"
-                            data={nomineeStatusOptions}
-                          />
-                          {needNomineePhoto && (
-                            <PhotoInput
-                              id={`nominees.${index}.photo`}
-                              name={`nominees.${index}.photo`}
-                              label="Photo"
-                              value={n.photo}
-                              onChange={(photo) => formik.setFieldValue(`nominees.${index}.photo`, photo)}
-                            />
-                          )}
-                          <div className="md:col-span-3">
-                            <InputElement
-                              name={`nominees.${index}.remarks`}
-                              label="Remarks"
-                              placeholder="Enter Remarks"
-                              value={n.remarks}
-                              onChange={formik.handleChange}
-                            />
+                            <button type="button" className="text-red-600 mt-2" onClick={() => remove(index)}>
+                              <div className='flex'> <FiTrash2 /> <span className='ml-2 -mt-1'>Remove</span></div>
+                            </button>
                           </div>
-                        </div>
+                        ))}
 
-                        <button
+                        <ButtonLoading
                           type="button"
-                          className="text-red-600 mt-2"
-                          onClick={() => remove(index)}
-                        >
-                          <div className="flex">
-                            <FiTrash2 />
-                            <span className="ml-2 -mt-1">Remove</span>
-                          </div>
-                        </button>
-                      </div>
-                    ))}
+                          label="Add Guarantor"
+                          className="flex items-center gap-2 text-blue-600 mb-4 p-2"
+                          onClick={() =>
+                            push({
+                              name: '',
+                              father_name: '',
+                              mobile: '',
+                              national_id: '',
+                              address: '',
+                            })
+                          }
 
-                    <ButtonLoading
-                      type="button"
-                      label="Add Nominee"
-                      className="flex items-center gap-2 text-blue-600 mb-4 p-2"
-                      onClick={() =>
-                        push({
-                          name: '',
-                          relation: '',
-                          occupation: '',
-                          photo: '',
-                          mother_name: '',
-                          date_of_birth: '',
-                          mobile: '',
-                          present_address: '',
-                          permanent_address: '',
-                          national_id: '',
-                          share_percentage: '',
-                          priority_order: '',
-                          guardian_name: '',
-                          guardian_mobile: '',
-                          status: 'active',
-                          remarks: '',
-                        })
-                      }
-                      icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
-                    />
-                  </>
+                          icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+                        />
+                      </>
+                    )}
+                  </FieldArray>
                 )}
-              </FieldArray>
-              )}
+
+                {activeDetailsTab === 'nominee' && nomineeEnabled && (
+                  <FieldArray name="nominees">
+                    {({ push, remove }) => (
+                      <>
+                        {formik.values.nominees.map((n: any, index: number) => (
+                          <div key={index} className="border p-3 mb-2">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                              <InputElement
+                                name={`nominees.${index}.name`}
+                                label="Name"
+                                placeholder="Enter Name"
+                                value={n.name}
+                                onChange={formik.handleChange}
+                              />
+                              <DropdownCommon
+                                id={`nominees.${index}.relation`}
+                                name={`nominees.${index}.relation`}
+                                label="Relation"
+                                onChange={formik.handleChange}
+                                value={n.relation || ''}
+                                className="h-[2.4rem] bg-transparent"
+                                data={nomineeRelationType}
+                              />
+                              <InputElement
+                                name={`nominees.${index}.occupation`}
+                                label="Occupation"
+                                placeholder="Enter Occupation"
+                                value={n.occupation}
+                                onChange={formik.handleChange}
+                              />
+                              <InputDatePicker
+                                id={`nominees.${index}.date_of_birth`}
+                                name={`nominees.${index}.date_of_birth`}
+                                label="Date of Birth"
+                                setCurrentDate={(date) =>
+                                  formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
+                                }
+                                className="font-medium text-sm w-full h-[2.4rem]"
+                                selectedDate={parsePickerDate(n.date_of_birth)}
+                                setSelectedDate={(date) =>
+                                  formik.setFieldValue(`nominees.${index}.date_of_birth`, formatPickerDate(date))
+                                }
+                              />
+                              <InputElement
+                                name={`nominees.${index}.mother_name`}
+                                label="Mother Name"
+                                placeholder="Enter Mother Name"
+                                value={n.mother_name}
+                                onChange={formik.handleChange}
+                              />
+                              <InputElement
+                                name={`nominees.${index}.mobile`}
+                                label="Mobile"
+                                placeholder="Enter Mobile Number"
+                                value={n.mobile}
+                                onChange={formik.handleChange}
+                              />
+                              <InputElement
+                                name={`nominees.${index}.present_address`}
+                                label="Present Address"
+                                placeholder="Enter Present Address"
+                                value={n.present_address}
+                                onChange={formik.handleChange}
+                              />
+                              
+                              <InputElement
+                                name={`nominees.${index}.national_id`}
+                                label="National ID"
+                                placeholder="Enter National ID"
+                                value={n.national_id}
+                                onChange={formik.handleChange}
+                              />
+                              <InputElement
+                                name={`nominees.${index}.share_percentage`}
+                                label="Share Percentage"
+                                type="number"
+                                placeholder="Enter Share Percentage"
+                                value={n.share_percentage}
+                                onChange={formik.handleChange}
+                              />
+                              <InputElement
+                                name={`nominees.${index}.priority_order`}
+                                label="Priority Order"
+                                type="number"
+                                placeholder="Enter Priority Order"
+                                value={n.priority_order}
+                                onChange={formik.handleChange}
+                              />
+
+                              <InputElement
+                                name={`nominees.${index}.guardian_name`}
+                                label="Guardian Name"
+                                placeholder="Enter Guardian Name"
+                                value={n.guardian_name}
+                                onChange={formik.handleChange}
+                              />
+                              <InputElement
+                                name={`nominees.${index}.guardian_mobile`}
+                                label="Guardian Mobile"
+                                placeholder="Enter Guardian Mobile"
+                                value={n.guardian_mobile}
+                                onChange={formik.handleChange}
+                              />
+                              <DropdownCommon
+                                id={`nominees.${index}.status`}
+                                name={`nominees.${index}.status`}
+                                label="Status"
+                                onChange={formik.handleChange}
+                                value={n.status || 'active'}
+                                className="h-[2.4rem] bg-transparent"
+                                data={nomineeStatusOptions}
+                              />
+                              {needNomineePhoto && (
+                                <PhotoInput
+                                  id={`nominees.${index}.photo`}
+                                  name={`nominees.${index}.photo`}
+                                  label="Photo"
+                                  value={n.photo}
+                                  onChange={(photo) => formik.setFieldValue(`nominees.${index}.photo`, photo)}
+                                />
+                              )}
+                              <div className="md:col-span-3">
+                                <InputElement
+                                  name={`nominees.${index}.remarks`}
+                                  label="Remarks"
+                                  placeholder="Enter Remarks"
+                                  value={n.remarks}
+                                  onChange={formik.handleChange}
+                                />
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              className="text-red-600 mt-2"
+                              onClick={() => remove(index)}
+                            >
+                              <div className="flex">
+                                <FiTrash2 />
+                                <span className="ml-2 -mt-1">Remove</span>
+                              </div>
+                            </button>
+                          </div>
+                        ))}
+
+                        <ButtonLoading
+                          type="button"
+                          label="Add Nominee"
+                          className="flex items-center gap-2 text-blue-600 mb-4 p-2"
+                          onClick={() =>
+                            push({
+                              name: '',
+                              relation: '',
+                              occupation: '',
+                              photo: '',
+                              mother_name: '',
+                              date_of_birth: '',
+                              mobile: '',
+                              present_address: '',
+                              permanent_address: '',
+                              national_id: '',
+                              share_percentage: '',
+                              priority_order: '',
+                              guardian_name: '',
+                              guardian_mobile: '',
+                              status: 'active',
+                              remarks: '',
+                            })
+                          }
+                          icon={<FiPlus className="text-white text-lg ml-2 mr-2" />}
+                        />
+                      </>
+                    )}
+                  </FieldArray>
+                )}
               </div>
             </div>
           )}
