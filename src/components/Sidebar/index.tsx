@@ -1445,7 +1445,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   (isActive && 'text-gray-900 font-bold dark:text-white')
                                 }
                               >
-                                Sold Units (Customer wise)
+                                Sold Units
                               </NavLink>
                             </li>
                             <li>
