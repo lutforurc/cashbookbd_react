@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiPrinter, FiRefreshCcw, FiSearch } from "react-icons/fi";
+import { FiFileText, FiPrinter, FiRefreshCcw, FiSearch } from "react-icons/fi";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -12,6 +12,8 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import httpService from "../../../services/httpService";
+import { API_UNIT_SALE_ALLOTMENT_LETTER_URL } from "../../../services/apiRoutes";
 import { fetchSoldUnits } from "./unitSaleSlice";
 import { fetchProjectDdl } from "../project/projectSlice";
 import { fetchBuildingDdl } from "../buildings/buildingsSlice";
@@ -41,6 +43,7 @@ const SoldUnitList: React.FC = () => {
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [q, setQ] = useState("");
   const [dueOnly, setDueOnly] = useState(false);
+  const [letterSaleId, setLetterSaleId] = useState<number | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -112,6 +115,54 @@ const SoldUnitList: React.FC = () => {
     documentTitle: "Customer Wise Sold Unit List",
     removeAfterPrint: true,
   });
+
+  /**
+   * The allotment letter is built server side, so it is fetched with the auth
+   * header rather than linked to and comes back as a blob. The tab is opened on
+   * the click itself — opening it after the request returns gets caught by the
+   * popup blocker — and falls back to a plain download when it is blocked anyway.
+   */
+  const handleAllotmentLetter = async (saleId: number) => {
+    if (letterSaleId) return;
+
+    const letterTab = window.open("", "_blank");
+    setLetterSaleId(saleId);
+
+    try {
+      const response = await httpService.get(
+        `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}${saleId}`,
+        { responseType: "blob" }
+      );
+
+      // A refusal comes back as JSON on a 2xx, so it never reaches the catch —
+      // it has to be spotted by the blob's own type before it is shown as a PDF.
+      if (response.data?.type?.includes("json")) {
+        const message = JSON.parse(await response.data.text())?.message;
+        throw new Error(message || "Allotment letter is not available");
+      }
+
+      const fileUrl = URL.createObjectURL(
+        new Blob([response.data], { type: "application/pdf" })
+      );
+
+      if (letterTab) {
+        letterTab.location.href = fileUrl;
+      } else {
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.download = `allotment-letter-${saleId}.pdf`;
+        link.click();
+      }
+
+      // Give the viewer time to load before dropping the blob.
+      setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+    } catch (error: any) {
+      letterTab?.close();
+      toast.error(error?.message || "Failed to build the allotment letter");
+    } finally {
+      setLetterSaleId(null);
+    }
+  };
 
   const periodLabel = useMemo(() => {
     if (!dateFrom && !dateTo) return "All dates";
@@ -245,7 +296,7 @@ const SoldUnitList: React.FC = () => {
 
       {/* CUSTOMER WISE TABLE */}
       <div className="overflow-x-auto bg-white dark:bg-boxdark">
-        <table className="w-full min-w-[860px] border-collapse">
+        <table className="w-full min-w-[960px] border-collapse">
           <thead>
             <tr className="bg-gray-2 text-left text-sm dark:bg-meta-4">
               <th className={`${cellBase} w-12 text-center`}>Sl</th>
@@ -255,6 +306,7 @@ const SoldUnitList: React.FC = () => {
               <th className={`${cellBase} w-32 text-right`}>Total</th>
               <th className={`${cellBase} w-32 text-right`}>Received</th>
               <th className={`${cellBase} w-32 text-right`}>Due</th>
+              <th className={`${cellBase} w-20 text-center`}>Action</th>
             </tr>
           </thead>
 
@@ -262,7 +314,7 @@ const SoldUnitList: React.FC = () => {
             {customers.length === 0 && !soldUnitsLoading && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className={`${cellBase} py-6 text-center text-gray-500 dark:text-gray-400`}
                 >
                   No sold unit found
@@ -394,10 +446,28 @@ const SoldUnitList: React.FC = () => {
                                 style={edgeStyle(color, {
                                   top: isFirstRow,
                                   bottom: saleEndsBlock,
-                                  right: true,
                                 })}
                               >
                                 {money(unit.due_amount)}
+                              </td>
+                              <td
+                                rowSpan={lines.length}
+                                className={`${cellBase} text-center align-middle`}
+                                style={edgeStyle(color, {
+                                  top: isFirstRow,
+                                  bottom: saleEndsBlock,
+                                  right: true,
+                                })}
+                              >
+                                <button
+                                  type="button"
+                                  title="Print Allotment Letter"
+                                  disabled={letterSaleId === unit.sale_id}
+                                  onClick={() => handleAllotmentLetter(unit.sale_id)}
+                                  className="mx-auto flex h-7 w-7 items-center justify-center rounded border border-stroke text-primary hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-meta-4"
+                                >
+                                  <FiFileText className="text-base" />
+                                </button>
                               </td>
                             </>
                           )}
@@ -427,6 +497,7 @@ const SoldUnitList: React.FC = () => {
                 <td className={`${cellBase} text-right`}>
                   {money(totals?.due_amount)}
                 </td>
+                <td className={cellBase}></td>
               </tr>
             </tfoot>
           )}
