@@ -37,6 +37,9 @@ const EditCompany = () => {
     name: '',
     contact_person: '',
     phone: '',
+    email: '',
+    address: '',
+    notes: '',
     company_logo: '',
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -57,6 +60,9 @@ const EditCompany = () => {
       name: editData.name || editData.company_name || '',
       contact_person: editData.contact_person || '',
       phone: editData.phone || editData.mobile || '',
+      email: editData.email || '',
+      address: editData.address || '',
+      notes: editData.notes || '',
       company_logo: editData.company_logo || '',
     });
     setLogoFile(null);
@@ -155,6 +161,44 @@ const EditCompany = () => {
               type="text"
               value={formData.phone}
               onChange={(event) => handleChange('phone', event.target.value)}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Email
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(event) => handleChange('email', event.target.value)}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Address
+            </label>
+            <textarea
+              rows={2}
+              value={formData.address}
+              onChange={(event) => handleChange('address', event.target.value)}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+            />
+          </div>
+
+          {/* Printed under the company name on letterheads, so it is worth a
+              couple of lines rather than a single-line input. */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Notes
+            </label>
+            <textarea
+              rows={2}
+              value={formData.notes}
+              onChange={(event) => handleChange('notes', event.target.value)}
               className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
             />
           </div>
