@@ -142,6 +142,14 @@ export const relationType = [
   { id: 'husband', name: 'Husband' },
   { id: 'other', name: 'Other' },
 ];
+
+// Blank first, so a customer whose sex was never asked for stays that way.
+export const sexType = [
+  { id: '', name: 'Select Sex' },
+  { id: 'male', name: 'Male' },
+  { id: 'female', name: 'Female' },
+  { id: 'other', name: 'Other' },
+];
 export const nomineeRelationType = [
   { id: 'father', name: 'Father' },
   { id: 'mother', name: 'Mother' },

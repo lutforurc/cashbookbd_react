@@ -8,7 +8,7 @@ import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
-import { ClientType, nomineeRelationType, relationType, TrueFalse } from '../../utils/fields/DataConstant';
+import { ClientType, nomineeRelationType, relationType, sexType, TrueFalse } from '../../utils/fields/DataConstant';
 import DdlDynamicMultiline from '../../utils/utils-functions/DdlDynamicMultiline';
 import { getDdlArea } from '../area/areaSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -46,6 +46,7 @@ const AddCustomerSupplier = () => {
   // Branch switches from Branch > Customer & Supplier Setup.
   const branchSettings = settings?.data?.branch;
   const needDateOfBirth = String(branchSettings?.need_customer_date_of_birth) === '1';
+  const needSex = String(branchSettings?.need_customer_sex) === '1';
   const needOccupation = String(branchSettings?.need_customer_occupation) === '1';
   const needPermanentAddress = String(branchSettings?.need_customer_permanent_address) === '1';
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
@@ -171,6 +172,7 @@ const AddCustomerSupplier = () => {
     father: '',
     mother_name: '',
     occupation: '',
+    sex: '',
     date_of_birth: '',
     photo: '',
     contact_person: '',
@@ -504,6 +506,21 @@ const AddCustomerSupplier = () => {
                 {formik.touched.mother_name && formik.errors.mother_name && (
                   <div className="text-red-500 text-sm">{formik.errors.mother_name}</div>
                 )}
+              </div>
+            )}
+
+            {needSex && (
+              <div className="text-left flex flex-col">
+                <DropdownCommon
+                  id="sex"
+                  name="sex"
+                  label="Sex"
+                  onChange={formik.handleChange}
+                  // Controlled, so Reset actually clears it back to blank.
+                  value={formik.values.sex ?? ''}
+                  className="h-[2.4rem] bg-transparent"
+                  data={sexType}
+                />
               </div>
             )}
 

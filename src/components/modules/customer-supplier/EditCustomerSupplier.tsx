@@ -24,6 +24,7 @@ import {
   ClientType,
   nomineeRelationType,
   relationType,
+  sexType,
   TrueFalse,
 } from "../../utils/fields/DataConstant";
 import DdlDynamicMultiline from "../../utils/utils-functions/DdlDynamicMultiline";
@@ -92,6 +93,7 @@ const EditCustomerSupplier = () => {
   // Branch switches from Branch > Customer & Supplier Setup.
   const branchSettings = settings?.data?.branch;
   const needDateOfBirth = String(branchSettings?.need_customer_date_of_birth) === '1';
+  const needSex = String(branchSettings?.need_customer_sex) === '1';
   const needOccupation = String(branchSettings?.need_customer_occupation) === '1';
   const needPermanentAddress = String(branchSettings?.need_customer_permanent_address) === '1';
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
@@ -279,6 +281,7 @@ const EditCustomerSupplier = () => {
       father: editCustomer?.father ?? "",
       mother_name: editCustomer?.mother_name ?? "",
       occupation: editCustomer?.occupation ?? "",
+      sex: editCustomer?.sex ?? "",
       date_of_birth: editCustomer?.date_of_birth ?? "",
       photo: editCustomer?.photo ?? "",
       contact_person: editCustomer?.contact_person ?? "",
@@ -501,6 +504,22 @@ const EditCustomerSupplier = () => {
                 {formik.touched.mother_name && formik.errors.mother_name && (
                   <div className="text-red-500 text-sm">{formik.errors.mother_name as any}</div>
                 )}
+              </div>
+            )}
+
+            {needSex && (
+              <div className="text-left flex flex-col">
+                <DropdownCommon
+                  id="sex"
+                  name="sex"
+                  label="Sex"
+                  onChange={formik.handleChange}
+                  // Controlled, not defaultValue: the customer arrives after the
+                  // first render, and an uncontrolled select would never catch up.
+                  value={formik.values.sex ?? ''}
+                  className="h-[2.4rem] bg-transparent"
+                  data={sexType}
+                />
               </div>
             )}
 

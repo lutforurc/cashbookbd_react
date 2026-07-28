@@ -78,6 +78,10 @@ interface branchItem {
   due_list_with_address: boolean;
   need_relation_info: boolean;
   need_customer_mother_name: boolean;
+  need_customer_sex: boolean;
+  salutation_male: string;
+  salutation_female: string;
+  salutation_other: string;
   need_customer_date_of_birth: boolean;
   need_customer_occupation: boolean;
   need_customer_permanent_address: boolean;
@@ -192,6 +196,10 @@ const AddBranch = () => {
     due_list_with_address: false,
     need_relation_info: false,
     need_customer_mother_name: false,
+    need_customer_sex: false,
+    salutation_male: '',
+    salutation_female: '',
+    salutation_other: '',
     need_customer_date_of_birth: false,
     need_customer_occupation: false,
     need_customer_permanent_address: false,
@@ -273,6 +281,10 @@ const AddBranch = () => {
         due_list_with_address: toBooleanFlag(b.due_list_with_address),
         need_relation_info: toBooleanFlag(b.need_relation_info),
         need_customer_mother_name: toBooleanFlag(b.need_customer_mother_name),
+        need_customer_sex: toBooleanFlag(b.need_customer_sex),
+        salutation_male: b.salutation_male ? String(b.salutation_male) : '',
+        salutation_female: b.salutation_female ? String(b.salutation_female) : '',
+        salutation_other: b.salutation_other ? String(b.salutation_other) : '',
         need_customer_date_of_birth: toBooleanFlag(b.need_customer_date_of_birth),
         need_customer_occupation: toBooleanFlag(b.need_customer_occupation),
         need_customer_permanent_address: toBooleanFlag(b.need_customer_permanent_address),
@@ -638,6 +650,39 @@ const AddBranch = () => {
                     </div>
                   )}
 
+                  {/* Letter greetings, picked by the customer's sex when a
+                      document is printed. Blank falls back to the wording
+                      built into the software. */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <InputElement
+                      id="salutation_male"
+                      name="salutation_male"
+                      value={formData.salutation_male || ''}
+                      placeholder={'Dear Sir,'}
+                      label={'Salutation (Male)'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <InputElement
+                      id="salutation_female"
+                      name="salutation_female"
+                      value={formData.salutation_female || ''}
+                      placeholder={'Dear Madam,'}
+                      label={'Salutation (Female)'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                    <InputElement
+                      id="salutation_other"
+                      name="salutation_other"
+                      value={formData.salutation_other || ''}
+                      placeholder={'Dear Sir/Madam,'}
+                      label={'Salutation (Other / Not Set)'}
+                      className={''}
+                      onChange={handleOnChange}
+                    />
+                  </div>
+
                 </>
               )}
 
@@ -795,6 +840,11 @@ const AddBranch = () => {
                       label="Need Customer Mother's Name?"
                       checked={Boolean(formData.need_customer_mother_name)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_mother_name', checked)}
+                    />
+                    <FormToggleField
+                      label="Need Customer Sex?"
+                      checked={Boolean(formData.need_customer_sex)}
+                      onChange={(checked) => handleToggleFieldChange('need_customer_sex', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Contact Person?"
