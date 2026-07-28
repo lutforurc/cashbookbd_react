@@ -126,6 +126,16 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
 
 const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
 
+/**
+ * What the allotment letter signs off with when a branch has saved nothing —
+ * seeded into the editor so it can be reworded rather than typed from scratch.
+ * Kept in step with the fallback in pdf/allotment-letter.blade.php.
+ */
+const defaultSignatureBlock = (companyName = '') =>
+  '<p><strong>Authorized Signatory and Company Seal</strong></p>' +
+  '<p>Managing Director / Chief Executive Officer</p>' +
+  (companyName ? `<p>${companyName}</p>` : '');
+
 const AddBranch = () => {
   const steps = [
     'Basic Info',
@@ -202,7 +212,7 @@ const AddBranch = () => {
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
-    letter_signature: '',
+    letter_signature: defaultSignatureBlock(settings?.data?.company?.name || ''),
     need_customer_date_of_birth: false,
     need_customer_occupation: false,
     need_customer_permanent_address: false,
@@ -288,7 +298,9 @@ const AddBranch = () => {
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
-        letter_signature: b.letter_signature ? String(b.letter_signature) : '',
+        letter_signature: b.letter_signature
+          ? String(b.letter_signature)
+          : defaultSignatureBlock(settings?.data?.company?.name || ''),
         need_customer_date_of_birth: toBooleanFlag(b.need_customer_date_of_birth),
         need_customer_occupation: toBooleanFlag(b.need_customer_occupation),
         need_customer_permanent_address: toBooleanFlag(b.need_customer_permanent_address),
