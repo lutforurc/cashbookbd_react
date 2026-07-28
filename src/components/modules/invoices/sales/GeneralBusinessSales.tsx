@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
@@ -15,6 +15,7 @@ import {
   FiEdit2,
   FiHome,
   FiPlus,
+  FiPrinter,
   FiRefreshCcw,
   FiSave,
   FiSearch,
@@ -38,6 +39,8 @@ import QuickCustomerModal from './QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_SALES_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 
 interface Product {
   id: number;
@@ -86,6 +89,9 @@ const GeneralBusinessSales = () => {
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
 
   const [permissions, setPermissions] = useState<any>([]);
+
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   useEffect(() => {
     // dispatch(userCurrentBranch());
@@ -425,6 +431,22 @@ const GeneralBusinessSales = () => {
     } catch (error) {
       toast.error('Failed to save invoice!');
     }
+  };
+
+  /**
+   * Prints whichever invoice the screen is currently holding: the one just
+   * saved, or the one pulled up through Search Invoice. A save leaves the
+   * voucher at the root of the slice, an edit nests it under `transaction`.
+   */
+  const handleInvoicePrint = () => {
+    const voucher = sales?.data?.transaction ?? sales?.data;
+
+    if (!voucher?.id || !voucher?.vr_no) {
+      toast.info('Save the invoice first, or search one to print.');
+      return;
+    }
+
+    handleVoucherPrint({ ...voucher, mtm_id: voucher.id });
   };
 
   const handleInvoiceUpdate = async () => {
@@ -780,7 +802,7 @@ const GeneralBusinessSales = () => {
                 onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
               />
             </div>
-            <div className="grid grid-cols-4 gap-x-1 gap-y-1">
+            <div className="grid grid-cols-5 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProduct}
@@ -837,6 +859,15 @@ const GeneralBusinessSales = () => {
                   <FiRefreshCcw className="text-white text-lg ml-2  mr-2  h-8" />
                 }
               />
+
+              <ButtonLoading
+                onClick={handleInvoicePrint}
+                buttonLoading={buttonLoading}
+                label="Print"
+                className="whitespace-nowrap text-center mr-0 h-8"
+                icon={<FiPrinter className="text-white text-lg ml-2 mr-2" />}
+              />
+
               <Link to="/dashboard" className="text-nowrap justify-center mr-0  h-8">
                 <FiHome className="text-white text-lg ml-2  mr-2" />
                 <span className="hidden md:block">{'Home'}</span>
@@ -929,6 +960,13 @@ const GeneralBusinessSales = () => {
               ))}
           </tbody>
         </table>
+      </div>
+      <div className="hidden">
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={12}
+          fontSize={12}
+        />
       </div>
       <QuickCustomerModal
         isOpen={showCustomerModal}
