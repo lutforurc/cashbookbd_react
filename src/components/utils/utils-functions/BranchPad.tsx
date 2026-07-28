@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 import { chartDateTime } from './formatDate';
-import { PrintBranch, hasPrintBranch } from './printBranch';
+import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 
 const loadedImageUrls = new Set<string>();
 const imageLoadPromises = new Map<string, Promise<string>>();
@@ -87,10 +87,11 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
   // A report pulled for another branch heads the page with that branch's own
   // details. Address and phone come from the override too — falling back to the
   // session branch's would put one branch's name over another's address.
-  const overridden = hasPrintBranch(printBranch);
-  const headingName = overridden ? printBranch?.name : branch?.name;
-  const headingAddress = overridden ? printBranch?.address : branch?.address;
-  const headingPhone = overridden ? printBranch?.phone : branch?.phone;
+  const resolvedBranch = usePrintBranch(printBranch);
+  const overridden = hasPrintBranch(resolvedBranch);
+  const headingName = overridden ? resolvedBranch?.name : branch?.name;
+  const headingAddress = overridden ? resolvedBranch?.address : branch?.address;
+  const headingPhone = overridden ? resolvedBranch?.phone : branch?.phone;
 
 
   const imagePath =

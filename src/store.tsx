@@ -8,6 +8,7 @@ import lowStockSlice from './components/modules/product/lowStockSlice';
 import stockAlertSlice from './components/modules/product/stockAlertSlice';
 import dateWiseTotalReducer from './components/modules/reports/datewisedata/dateWiseDataSlice';
 import branchDdlReducer from './components/modules/branch/ddlBranchSlider';
+import printBranchReducer from './components/utils/utils-functions/printBranchSlice';
 import categoryReducer from './components/modules/category/categorySlice';
 import cashBookReducer from './components/modules/reports/cashbook/cashBookSlice';
 import bankBookReducer from './components/modules/reports/bankbook/bankBookSlice';
@@ -98,6 +99,7 @@ const store = configureStore({
     category: categoryReducer,
     dateWiseTotal: dateWiseTotalReducer,
     branchDdl: branchDdlReducer,
+    printBranch: printBranchReducer,
     cashBook: cashBookReducer,
     bankBook: bankBookReducer,
     profitLoss: profitLossSlice,

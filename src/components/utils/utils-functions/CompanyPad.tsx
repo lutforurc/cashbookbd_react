@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { chartDateTime } from './formatDate';
-import { PrintBranch, hasPrintBranch } from './printBranch';
+import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 
 type Props = {
   /** The branch the report is about; falls back to the logged-in user's. */
@@ -11,11 +11,12 @@ type Props = {
 const CompanyPad: React.FC<Props> = ({ branch }) => {
   const settings = useSelector((state: any) => state.settings.data);
 
-  // When a report names its own branch, that branch's details win outright: the
-  // address must not fall back to the session's, which belongs to another branch.
-  const overridden = hasPrintBranch(branch);
-  const branchName = overridden ? branch?.name : settings?.branch?.name;
-  const branchAddress = overridden ? branch?.address : settings?.branch?.address;
+  // The report's own branch wins outright: the address must not fall back to the
+  // session's, which belongs to a different branch.
+  const printBranch = usePrintBranch(branch);
+  const overridden = hasPrintBranch(printBranch);
+  const branchName = overridden ? printBranch?.name : settings?.branch?.name;
+  const branchAddress = overridden ? printBranch?.address : settings?.branch?.address;
 
   return (
     <div>

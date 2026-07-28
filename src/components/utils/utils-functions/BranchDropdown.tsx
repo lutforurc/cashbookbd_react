@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { clearPrintBranch, setPrintBranchId } from './printBranchSlice';
 
 interface SelectOptionProps {
   name?: string;
@@ -22,6 +24,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
   value,
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>(defaultValue || '');
+  const dispatch = useDispatch();
 
   // Update selected value when defaultValue changes
   useEffect(() => {
@@ -35,6 +38,18 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
       setSelectedValue(value);
     }
   }, [value]);
+
+  // Publish the selection so the shared print pad can head the page with the
+  // branch this screen is reporting on, not the logged-in user's own branch.
+  useEffect(() => {
+    dispatch(setPrintBranchId(selectedValue || null));
+  }, [dispatch, selectedValue]);
+
+  // Leaving the screen drops the selection, so a report without a branch
+  // selector does not inherit the previous screen's branch.
+  useEffect(() => () => {
+    dispatch(clearPrintBranch());
+  }, [dispatch]);
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedValue(event.target.value);
