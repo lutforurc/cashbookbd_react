@@ -10,7 +10,8 @@
       "PowerShell($lines = Get-Content \"D:\\\\www\\\\cashbook_api\\\\routes\\\\api.php\"; $depth = 0; for \\($i = 120; $i -lt 830; $i++\\) { $line = $lines[$i]; $open = \\([regex]::Matches\\($line, '\\\\{'\\)\\).Count; $close = \\([regex]::Matches\\($line, '\\\\}'\\)\\).Count; $depth += $open - $close; if \\($i -eq 120\\) { Write-Host \"line 121 start depth after: $depth\" }; if \\($depth -le 0 -and $i -gt 120\\) { Write-Host \"group starting at 121 closes at line $\\($i+1\\): $line\"; break } }; Write-Host \"depth at end of scan \\(line 830\\): $depth\")"
     ],
     "additionalDirectories": [
-      "D:\\www\\cashbook_api\\resources\\views\\pdf"
+      "D:\\www\\cashbook_api\\resources\\views\\pdf",
+      "D:\\www\\cashbook_api\\app\\Http\\Controllers\\Company"
     ]
   }
 }
