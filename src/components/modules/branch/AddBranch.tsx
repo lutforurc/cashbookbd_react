@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import InputElement from '../../utils/fields/InputElement';
+import RichTextEditor from '../../utils/fields/RichTextEditor';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import {
@@ -82,6 +83,7 @@ interface branchItem {
   salutation_male: string;
   salutation_female: string;
   salutation_other: string;
+  letter_signature: string;
   need_customer_date_of_birth: boolean;
   need_customer_occupation: boolean;
   need_customer_permanent_address: boolean;
@@ -200,6 +202,7 @@ const AddBranch = () => {
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
+    letter_signature: '',
     need_customer_date_of_birth: false,
     need_customer_occupation: false,
     need_customer_permanent_address: false,
@@ -285,6 +288,7 @@ const AddBranch = () => {
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
+        letter_signature: b.letter_signature ? String(b.letter_signature) : '',
         need_customer_date_of_birth: toBooleanFlag(b.need_customer_date_of_birth),
         need_customer_occupation: toBooleanFlag(b.need_customer_occupation),
         need_customer_permanent_address: toBooleanFlag(b.need_customer_permanent_address),
@@ -681,6 +685,23 @@ const AddBranch = () => {
                       className={''}
                       onChange={handleOnChange}
                     />
+                  </div>
+
+                  <div className="mb-2">
+                    <label className="text-black dark:text-white">
+                      Letter Signature Block
+                    </label>
+                    <RichTextEditor
+                      value={formData.letter_signature || ''}
+                      placeholder="Authorized Signatory and Company Seal"
+                      onChange={(html) =>
+                        setFormData((prev) => ({ ...prev, letter_signature: html }))
+                      }
+                    />
+                    <span className="mt-1 block text-xs text-gray-500">
+                      Prints at the foot of the allotment letter. Leave it empty and
+                      the letter signs off with the company name.
+                    </span>
                   </div>
 
                 </>
