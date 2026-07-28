@@ -859,14 +859,28 @@ const Orders = () => {
           <span className="block">Trx. Qty</span>
         </p>
       ),
-      render: (data: any) => (
-        <p>
-          <span className="block">{data.product_name}</span>
-          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
-            {formatNumberOrDash(data.trx_quantity)}
-          </span>
-        </p>
-      ),
+      render: (data: any) => {
+        // A multi-product order lists its products one per line, so the quantity
+        // column beside it lines up row for row. One product renders as before.
+        const items = Array.isArray(data.items) ? data.items : [];
+
+        return (
+          <p>
+            {items.length > 1 ? (
+              items.map((item: any, index: number) => (
+                <span key={item.id ?? index} className="block">
+                  {item.product_name || '-'}
+                </span>
+              ))
+            ) : (
+              <span className="block">{data.product_name}</span>
+            )}
+            <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+              {formatNumberOrDash(data.trx_quantity)}
+            </span>
+          </p>
+        );
+      },
     },
 
     {
@@ -893,7 +907,12 @@ const Orders = () => {
           ) : (
             <span className="block">{data.order_number}</span>
           )}
-          <span className="block">Tk. {formatNumberOrDash(data.order_rate)}</span>
+          <span className="block">
+            {/* One rate across different products would be meaningless. */}
+            {Number(data.product_count ?? 1) > 1
+              ? `${data.product_count} products`
+              : `Tk. ${formatNumberOrDash(data.order_rate)}`}
+          </span>
           <span className="block">{data.order_date}</span>
         </p>
       ),
@@ -907,22 +926,43 @@ const Orders = () => {
           <span className="block">Remaining Qty</span>
         </p>
       ),
-      render: (data: any) => (
-        <p className="text-right">
-          
-          <span className="block">
-            {data.contract_order_qty != null && data.contract_order_qty !== ''
-              ? formatNumberOrDash(data.contract_order_qty)
-              : '-'}
-          </span>
-          <span className="block">
-            {formatNumberOrDash(data.total_order)}
-          </span>
-          <span className="block text-green-500 dark:text-yellow-300 font-semibold">
-            {formatNumberOrDash((Number(data.total_order) - Number(data.trx_quantity)))}
-          </span>
-        </p>
-      ),
+      render: (data: any) => {
+        const items = Array.isArray(data.items) ? data.items : [];
+
+        // Multi-product: one ordered quantity per line, matching the product
+        // column beside it, then the order's remaining below.
+        if (items.length > 1) {
+          return (
+            <p className="text-right">
+              {items.map((item: any, index: number) => (
+                <span key={item.id ?? index} className="block">
+                  {formatNumberOrDash(item.total_order)}
+                </span>
+              ))}
+              <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+                {formatNumberOrDash(Number(data.total_order) - Number(data.trx_quantity))}
+              </span>
+            </p>
+          );
+        }
+
+        return (
+          <p className="text-right">
+
+            <span className="block">
+              {data.contract_order_qty != null && data.contract_order_qty !== ''
+                ? formatNumberOrDash(data.contract_order_qty)
+                : '-'}
+            </span>
+            <span className="block">
+              {formatNumberOrDash(data.total_order)}
+            </span>
+            <span className="block text-green-500 dark:text-yellow-300 font-semibold">
+              {formatNumberOrDash((Number(data.total_order) - Number(data.trx_quantity)))}
+            </span>
+          </p>
+        );
+      },
     },
     {
       key: 'linked_summary',

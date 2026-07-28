@@ -26,7 +26,20 @@ type OrderRow = {
   order_details_text?: string;
   notes?: string;
   unit?: string;
+  /** One entry per ordered product; a single-product order has exactly one. */
+  items?: PrintOrderItem[];
+  product_count?: number;
   transaction_rows?: PrintTransactionRow[];
+};
+
+type PrintOrderItem = {
+  product_id?: number;
+  product_name?: string;
+  order_rate?: number | string;
+  total_order?: number | string;
+  contract_order_qty?: number | string;
+  line_amount?: number | string;
+  unit?: string;
 };
 
 export type PrintTransactionRow = {
@@ -152,6 +165,14 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
 
     const totals = calculateTransactionTotals(transactionRows);
     const computedOrderAmount = toNumber(order?.order_amount) || (toNumber(order?.total_order) * toNumber(order?.order_rate));
+    // The ordered products. Older payloads carry none, in which case the single
+    // product on the order itself still describes it.
+    const orderItems = Array.isArray(order?.items) ? order.items : [];
+    const orderItemsAmount = orderItems.reduce(
+      (sum, item) =>
+        sum + (toNumber(item.line_amount) || toNumber(item.total_order) * toNumber(item.order_rate)),
+      0,
+    );
     const orderDetailsText =
       order?.order_details_text ||
       `Order Qty: ${thousandSeparator(toNumber(order?.total_order))} , Rate: ${thousandSeparator(toNumber(order?.order_rate))}`;
@@ -203,6 +224,54 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div>
               </div>
 
+              {/* Several products cannot be described by one rate and one
+                  quantity, so they are listed instead. One product keeps the
+                  original block, unchanged. */}
+              {orderItems.length > 1 ? (
+                <div className="justify-self-end w-[330px] text-left">
+                  <table className="w-full border-collapse">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th style={{ fontSize: fs }} className="border border-black px-1 py-1 text-left">Product</th>
+                        <th style={{ fontSize: fs }} className="border border-black px-1 py-1 text-right">Qty</th>
+                        <th style={{ fontSize: fs }} className="border border-black px-1 py-1 text-right">Rate</th>
+                        <th style={{ fontSize: fs }} className="border border-black px-1 py-1 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orderItems.map((item, index) => (
+                        <tr key={item.product_id ?? index}>
+                          <td style={{ fontSize: fs }} className="border border-black px-1 py-1">
+                            {item.product_name || '-'}
+                          </td>
+                          <td style={{ fontSize: fs }} className="border border-black px-1 py-1 text-right">
+                            {thousandSeparator(toNumber(item.total_order))}
+                          </td>
+                          <td style={{ fontSize: fs }} className="border border-black px-1 py-1 text-right">
+                            {thousandSeparator(toNumber(item.order_rate))}
+                          </td>
+                          <td style={{ fontSize: fs }} className="border border-black px-1 py-1 text-right">
+                            {thousandSeparator(
+                              toNumber(item.line_amount) ||
+                              toNumber(item.total_order) * toNumber(item.order_rate),
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-gray-100 font-bold">
+                        <td style={{ fontSize: fs }} className="border border-black px-1 py-1 text-right" colSpan={3}>
+                          Total
+                        </td>
+                        <td style={{ fontSize: fs }} className="border border-black px-1 py-1 text-right">
+                          Tk. {thousandSeparator(orderItemsAmount)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              ) : (
               <div className="justify-self-end w-[200px] space-y-1 text-left">
                 <div className="flex flex-wrap leading-4">
                   <span className="w-24 shrink-0">Product Name:</span>
@@ -234,6 +303,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                   </span>
                 </div>
               </div>
+              )}
             </div>
 
             <div className="mb-2 text-center text-base font-bold ">

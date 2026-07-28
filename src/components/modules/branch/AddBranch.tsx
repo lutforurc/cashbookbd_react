@@ -16,7 +16,7 @@ import { editBranch, storeBranch, updateBranch } from './branchSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../common/Loader';
 import Link from '../../utils/others/Link';
-import { getBranchSettings } from '../settings/settingsSlice';
+import { getBranchSettings, getSettings } from '../settings/settingsSlice';
 import { toast } from 'react-toastify';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
@@ -91,6 +91,7 @@ interface branchItem {
   need_nominee_photo: boolean;
   need_customer_area: boolean;
   show_voucher_image: boolean;
+  multi_product_order: boolean;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -220,6 +221,7 @@ const AddBranch = () => {
     need_nominee_photo: false,
     need_customer_area: false,
     show_voucher_image: false,
+    multi_product_order: false,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -308,6 +310,7 @@ const AddBranch = () => {
         need_nominee_photo: toBooleanFlag(b.need_nominee_photo),
         need_customer_area: toBooleanFlag(b.need_customer_area),
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
+        multi_product_order: toBooleanFlag(b.multi_product_order),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
         purchase_sms: toBooleanFlag(b.purchase_sms),
@@ -397,6 +400,11 @@ const AddBranch = () => {
         setButtonLoading(false);
         if (res?.success) {
           toast.success(res?.message || 'Branch updated successfully');
+          // Several of these switches (multi-product orders, voucher image, …)
+          // are read from the session settings, which are otherwise only loaded
+          // at login. Refetch them so a saved switch takes effect at once
+          // instead of after the next sign-in.
+          dispatch(getSettings(undefined) as any);
           navigate('/branch/branch-list');
           return;
         }
@@ -1005,6 +1013,25 @@ const AddBranch = () => {
                         handleToggleFieldChange('show_voucher_image', checked)
                       }
                     />
+                  </div>
+
+                  {/* Its own section: this one switch changes the whole Create
+                      Order form, so it should not be lost among the others. */}
+                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Order
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <FormToggleField
+                      label="Multi Product Order?"
+                      checked={Boolean(formData.multi_product_order)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('multi_product_order', checked)
+                      }
+                    />
+                    <p className="self-center text-xs text-gray-500 dark:text-gray-400 md:col-span-2">
+                      On: one order can carry several products. Off: the original
+                      single-product order form.
+                    </p>
                   </div>
                   {settings?.data?.user?.id === 1 && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">

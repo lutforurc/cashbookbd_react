@@ -16,6 +16,7 @@ import { editOrder, storeOrder, updateOrder } from './ordersSlice'
 import OrderTypes from '../../utils/utils-functions/OrderTypes'
 import { toast } from 'react-toastify'
 import OrderDropdown from '../../utils/utils-functions/OrderDropdown'
+import OrderItemsGrid, { OrderLine, makeOrderLine } from './OrderItemsGrid'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import useCtrlS from '../../utils/hooks/useCtrlS'
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon'
@@ -47,6 +48,12 @@ const AddOrder = (user: any) => {
     const locationOrder = (location.state as any)?.order;
     // const [branchId, setBranchId] = useState<number | null>(null);
     const branchDdlData = useSelector((state) => state.branchDdl);
+    const settings = useSelector((state: any) => state.settings);
+    // Branch-level setting: this branch puts several products on one order.
+    // Off (the default) keeps the original single-product form exactly as it was.
+    const multiProductOrder =
+        Number(settings?.data?.branch?.multi_product_order) === 1;
+    const [items, setItems] = useState<OrderLine[]>([makeOrderLine()]);
     const [dropdownData, setDropdownData] = useState<any[]>([]);
     const [orderDate, setOrderDate] = useState<Date | null>(null); // Define state with type
     const [lastDeliveryDate, setLastDeliveryDate] = useState<Date | null>(null); // Define state with type
@@ -318,6 +325,33 @@ const AddOrder = (user: any) => {
         });
 
 
+        // Product lines. An order saved before the split, or by a single-product
+        // branch, comes back with exactly one — which is a valid grid too.
+        const savedItems = Array.isArray(editData?.items) ? editData.items : [];
+        setItems(
+            savedItems.length
+                ? savedItems.map((item: any) =>
+                    makeOrderLine({
+                        id: Number(item.id) || undefined,
+                        product_id: item.product_id?.toString?.() ?? '',
+                        product_name: item.product_name ?? '',
+                        order_rate: item.order_rate?.toString?.() ?? '',
+                        total_order: item.total_order?.toString?.() ?? '',
+                        contract_order_qty: item.contract_order_qty?.toString?.() ?? '',
+                        delivered_qty: Number(item.delivered_qty) || 0,
+                    }),
+                )
+                : [
+                    makeOrderLine({
+                        product_id: editData?.product_id?.toString?.() ?? '',
+                        product_name: editData?.product_name ?? '',
+                        order_rate: editData?.order_rate?.toString?.() ?? '',
+                        total_order: editData?.total_order?.toString?.() ?? '',
+                        contract_order_qty: editData?.contract_order_qty?.toString?.() ?? '',
+                    }),
+                ],
+        );
+
         setOrderDate(toValidDate(editData?.order_date));
         setLastDeliveryDate(toValidDate(editData?.last_delivery_date));
     }, [isEditMode, ordersState?.editData]);
@@ -417,6 +451,7 @@ const AddOrder = (user: any) => {
             notes: '',
             status: '1',
         });
+        setItems([makeOrderLine()]);
         setOrderDate(null);
         setLastDeliveryDate(null);
     };
@@ -472,6 +507,29 @@ const AddOrder = (user: any) => {
             return;
         }
 
+        // Multi-product branches send their grid; single-product branches send
+        // exactly the payload they always have, so nothing changes for them.
+        const filledLines = items.filter((line) => line.product_id);
+
+        if (multiProductOrder) {
+            if (!filledLines.length) {
+                toast.error('Please add at least one product.');
+                return;
+            }
+
+            const emptyQty = filledLines.find((line) => !(Number(line.total_order) > 0));
+            if (emptyQty) {
+                toast.error(`Order quantity is required for ${emptyQty.product_name || 'every product'}.`);
+                return;
+            }
+
+            const productIds = filledLines.map((line) => line.product_id);
+            if (new Set(productIds).size !== productIds.length) {
+                toast.error('The same product cannot be added twice on one order.');
+                return;
+            }
+        }
+
         const payload = {
             ...(isEditMode ? { id } : {}),
             branch_id: formData.branch_id,
@@ -488,6 +546,16 @@ const AddOrder = (user: any) => {
             order_type: formData.order_type,
             status: formData.status || '1',
             notes: formData.notes,
+            ...(multiProductOrder
+                ? {
+                    items: filledLines.map((line) => ({
+                        product_id: line.product_id,
+                        order_rate: line.order_rate || 0,
+                        total_order: line.total_order,
+                        contract_order_qty: line.contract_order_qty || null,
+                    })),
+                }
+                : {}),
         };
 
         setButtonLoading(true);
@@ -528,8 +596,12 @@ const AddOrder = (user: any) => {
     return (
         <div>
             <HelmetTitle title={isEditMode ? 'Edit Order' : 'Create Order'} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
-                <div>
+            {/* The whole order header is one four-column grid. Most fields take
+                half the width (span 2); the four that used to sit two-to-a-half
+                take a quarter (span 1). Hidden fields are simply not rendered,
+                so the grid closes up instead of leaving a hole. */}
+            <div className="grid grid-cols-1 gap-x-4 gap-y-3 mb-3 md:grid-cols-4">
+                <div className="md:col-span-2">
                     <div>
                         {' '}
                         <label htmlFor="">Select Branch</label>
@@ -539,7 +611,7 @@ const AddOrder = (user: any) => {
                         <BranchDropdown
                             id="branch_id"
                             onChange={handleBranchChange}
-                            className="w-60 font-medium text-sm p-2 "
+                            className="w-full font-medium text-sm px-2 h-10"
                             branchDdl={dropdownData}
                             value={formData.branch_id}
                             onKeyDown={(e) => {
@@ -551,9 +623,10 @@ const AddOrder = (user: any) => {
                         />
                     </div>
                 </div>
-                <div className=''>
+                <div className='md:col-span-2'>
                     <label htmlFor="">Order For</label>
                     <DdlMultiline id="order_for" onSelect={selectedLedgerOptionHandler} acType={''} value={selectedOrderFor}
+                        className='h-10'
 
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -563,75 +636,79 @@ const AddOrder = (user: any) => {
 
                     />
                 </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
-                <div>
-                    <label htmlFor="">Select Product</label>
-                    <ProductDropdown onSelect={selectedProductOptionHandler}
-                        value={selectedProduct} id='product_id' name='product_id'
+                {/* In multi-product mode the products live in the grid below, so
+                    this cell is not rendered at all and the grid closes up. */}
+                {multiProductOrder ? null : (
+                    <div className="md:col-span-2">
+                        <label htmlFor="">Select Product</label>
+                        <ProductDropdown onSelect={selectedProductOptionHandler}
+                            value={selectedProduct} id='product_id' name='product_id'
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    focusNextField('order_number');
+                                }
+                            }}
+                            className='h-10'
+                        />
+
+                    </div>
+                )}
+                <div className="md:col-span-2">
+                    <InputElement id="order_number"
+                        value={formData.order_number}
+                        name="order_number"
+                        placeholder={'Enter Order Number'}
+                        label={'Enter Order Number'}
+                        className={'h-10'}
+                        list="order-number-suggestions"
+                        autoComplete="off"
+                        onChange={handleOrderChange}
+
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                focusNextField('order_number');
+                                focusNextField('delivery_location');
                             }
                         }}
-                        className='h-10'
+
                     />
-
                 </div>
-                <InputElement id="order_number"
-                    value={formData.order_number}
-                    name="order_number"
-                    placeholder={'Enter Order Number'}
-                    label={'Enter Order Number'}
-                    className={'py-1.5'}
-                    list="order-number-suggestions"
-                    autoComplete="off"
-                    onChange={handleOrderChange}
-
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            focusNextField('delivery_location');
-                        }
-                    }}
-
-                />
                 <datalist id="order-number-suggestions">
                     {orderFieldSuggestions.order_number.map((item) => (
                         <option key={item} value={item} />
                     ))}
                 </datalist>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
-                <InputElement id="delivery_location"
-                    value={formData.delivery_location || ''}
+                <div className="md:col-span-2">
+                    <InputElement id="delivery_location"
+                        value={formData.delivery_location || ''}
 
-                    name="delivery_location"
-                    placeholder={'Delivery Location'}
-                    label={'Delivery Location'}
-                    className={'py-1.5'}
-                    list="order-delivery-location-suggestions"
-                    autoComplete="off"
-                    onChange={handleOrderChange}
+                        name="delivery_location"
+                        placeholder={'Delivery Location'}
+                        label={'Delivery Location'}
+                        className={'h-10'}
+                        list="order-delivery-location-suggestions"
+                        autoComplete="off"
+                        onChange={handleOrderChange}
 
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            focusNextField('order_date');
-                        }
-                    }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                focusNextField('order_date');
+                            }
+                        }}
 
-                />
+                    />
+                </div>
                 <datalist id="order-delivery-location-suggestions">
                     {orderFieldSuggestions.delivery_location.map((item) => (
                         <option key={item} value={item} />
                     ))}
                 </datalist>
-                <div className='w-full'>
+                <div className='w-full md:col-span-2'>
                     <label htmlFor="">Order Date</label>
                     <InputDatePicker
                         id='order_date'
                         name='order_date'
                         setCurrentDate={handleOrderDate}
-                        className=" w-full p-1.5"
+                        className=" w-full px-1.5 h-10"
                         selectedDate={orderDate}
                         setSelectedDate={setOrderDate}
                         onKeyDown={(e) => {
@@ -644,15 +721,13 @@ const AddOrder = (user: any) => {
                         }}
                     />
                 </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
-                <div className='w-full'>
+                <div className='w-full md:col-span-2'>
                     <label htmlFor="">Last Delivery Date</label>
                     <InputDatePicker
                         id='last_delivery_date'
                         name='last_delivery_date'
                         setCurrentDate={handleLastDeliveryDate}
-                        className=" w-full p-1.5"
+                        className=" w-full px-1.5 h-10"
                         selectedDate={lastDeliveryDate}
                         setSelectedDate={setLastDeliveryDate}
                         onKeyDown={(e) => {
@@ -665,44 +740,46 @@ const AddOrder = (user: any) => {
                         }}
                     />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-                    <InputElement id="total_order"
-                        value={formData.total_order || ""}
-                        name="total_order"
-                        placeholder={'Total Order Qty'}
-                        label={'Total Order Qty'}
-                        className={'py-1.5'}
-                        onChange={handleOrderChange}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                focusNextField('order_rate');
-                            }
-                        }}
-                    />
-                    <InputElement id="order_rate"
-                        value={formData.order_rate || ''}
-                        name="order_rate"
-                        placeholder={'Order Rate'}
-                        label={'Order Rate'}
-                        className={'py-1.5'}
-                        onChange={handleOrderChange}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                focusNextField('contract_order_qty');
-                            }
-                        }}
-                    />
+                {multiProductOrder ? null : (
+                    // A fragment, not a wrapper: both fields stay cells of the
+                    // outer grid rather than sharing one.
+                    <>
+                        <InputElement id="total_order"
+                            value={formData.total_order || ""}
+                            name="total_order"
+                            placeholder={'Total Order Qty'}
+                            label={'Total Order Qty'}
+                            className={'h-10'}
+                            onChange={handleOrderChange}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    focusNextField('order_rate');
+                                }
+                            }}
+                        />
+                        <InputElement id="order_rate"
+                            value={formData.order_rate || ''}
+                            name="order_rate"
+                            placeholder={'Order Rate'}
+                            label={'Order Rate'}
+                            className={'h-10'}
+                            onChange={handleOrderChange}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    focusNextField('contract_order_qty');
+                                }
+                            }}
+                        />
 
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+                    </>
+                )}
+                {multiProductOrder ? null : (
                     <InputElement id="contract_order_qty"
                         value={formData.contract_order_qty || ""}
                         name="contract_order_qty"
                         placeholder={'Contract Order Qty'}
                         label={'Contract Order Qty'}
-                        className={'py-1.5'}
+                        className={'h-10'}
                         onChange={handleOrderChange}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -710,54 +787,57 @@ const AddOrder = (user: any) => {
                             }
                         }}
                     />
+                )}
 
-                    <div>
-                        <label className='mb-0 block'>Order Type</label>
-                        <OrderTypes
-                            onChange={handleSelectChange}
-                            className='h-9 w-full'
-                            value={formData.order_type}
-                            id='order_type'
-                            name='order_type'
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    e.currentTarget.blur();
-                                    focusNextField('notes');
-                                }
-                            }}
-                        />
-                    </div>
+                {/* Single-product mode pairs this with Contract Order Qty, so it
+                    takes a quarter. With the product fields gone it would leave
+                    a gap beside Note, so it widens to a half. */}
+                <div className={multiProductOrder ? 'md:col-span-2' : ''}>
+                    <label className='mb-0 block'>Order Type</label>
+                    <OrderTypes
+                        onChange={handleSelectChange}
+                        className='h-10 w-full'
+                        value={formData.order_type}
+                        id='order_type'
+                        name='order_type'
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.blur();
+                                focusNextField('notes');
+                            }
+                        }}
+                    />
                 </div>
-                <InputElement 
-                    id="notes"
-                    value={formData.notes || ''}
-                    name="notes"
-                    placeholder={'Note'}
-                    label={'Note'}
-                    className={'py-1.5'}
-                    list="order-note-suggestions"
-                    autoComplete="off"
-                    onChange={handleOrderChange}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            e.currentTarget.blur();
-                            focusNextField('ref_order_id');
-                            setReferenceOrderFocusTrigger((prev) => prev + 1);
-                        }
-                    }}
-                />
+                <div className="md:col-span-2">
+                    <InputElement
+                        id="notes"
+                        value={formData.notes || ''}
+                        name="notes"
+                        placeholder={'Note'}
+                        label={'Note'}
+                        className={'h-10'}
+                        list="order-note-suggestions"
+                        autoComplete="off"
+                        onChange={handleOrderChange}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.blur();
+                                focusNextField('ref_order_id');
+                                setReferenceOrderFocusTrigger((prev) => prev + 1);
+                            }
+                        }}
+                    />
+                </div>
                 <datalist id="order-note-suggestions">
                     {orderFieldSuggestions.notes.map((item) => (
                         <option key={item} value={item} />
                     ))}
                 </datalist>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-3">
-                <div>
+                <div className="md:col-span-2">
                     <label htmlFor="">Reference Order</label>
                     <OrderDropdown
                         id="ref_order_id"
@@ -771,6 +851,7 @@ const AddOrder = (user: any) => {
                                 }
                                 : null
                         }
+                        heightPx="2.5rem"
                         orderType={referenceOrderType}
                         refDirection="reference"
                         isDisabled={!referenceOrderType}
@@ -785,13 +866,13 @@ const AddOrder = (user: any) => {
                         }}
                     />
                 </div>
-                <div>
+                <div className="md:col-span-2">
                     <DropdownCommon
                         id="status"
                         name={'status'}
                         label="Order Status"
                         onChange={handleOnSelectChange}
-                        className="h-[2.1rem] bg-transparent"
+                        className="h-10 bg-transparent"
                         value={formData?.status?.toString() ?? ''}
                         data={ORDER_STATUS}
                         onKeyDown={(e) => {
@@ -806,6 +887,16 @@ const AddOrder = (user: any) => {
 
                 </div>
             </div>
+
+            {multiProductOrder ? (
+                <OrderItemsGrid
+                    lines={items}
+                    onChange={setItems}
+                    disabled={buttonLoading}
+                    focusNextField={focusNextField}
+                />
+            ) : null}
+
             <div className="grid grid-cols-3 gap-x-1 gap-y-1 w-2/4 md:w-2/5 mx-auto">
                 <ButtonLoading
                     id='save_btn'
