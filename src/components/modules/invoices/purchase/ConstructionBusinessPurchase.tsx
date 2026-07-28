@@ -509,8 +509,10 @@ const ConstructionBusinessPurchase = () => {
     }
 
     dispatch(
-      constructionPurchaseStore(formData, function (message) {
-        if (message) {
+      constructionPurchaseStore(formData, function (message, success) {
+        // A saved invoice announces itself through the voucher number effect
+        // below, so only a real failure is worth a toast here.
+        if (message && !success) {
           toast.error(message);
         }
         setTimeout(() => {
@@ -976,6 +978,7 @@ const ConstructionBusinessPurchase = () => {
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
                 />
@@ -985,6 +988,7 @@ const ConstructionBusinessPurchase = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
                   onKeyDown={(e) => {
@@ -1004,6 +1008,7 @@ const ConstructionBusinessPurchase = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
                 />
@@ -1012,6 +1017,7 @@ const ConstructionBusinessPurchase = () => {
                   onClick={handlePurchaseInvoiceSave}
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                   disabled={saveButtonLoading}
@@ -1023,6 +1029,7 @@ const ConstructionBusinessPurchase = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
                 />
@@ -1031,6 +1038,7 @@ const ConstructionBusinessPurchase = () => {
                   onClick={handlePurchaseInvoiceSave}
                   buttonLoading={buttonLoading}
                   label="Save"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                 />
@@ -1040,6 +1048,7 @@ const ConstructionBusinessPurchase = () => {
                 onClick={resetProducts}
                 buttonLoading={buttonLoading}
                 label="Reset"
+                responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
                 icon={
                   <FiRefreshCcw className="text-white text-lg ml-2  mr-2" />
@@ -1050,13 +1059,14 @@ const ConstructionBusinessPurchase = () => {
                 onClick={handleInvoicePrint}
                 buttonLoading={buttonLoading}
                 label="Print"
+                responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
                 icon={<FiPrinter className="text-white text-lg ml-2 mr-2" />}
               />
 
               <Link to="/dashboard" className="text-nowrap justify-center mr-0">
                 <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
+                <span className="hidden xl:block">{'Home'}</span>
               </Link>
             </div>
           </div>

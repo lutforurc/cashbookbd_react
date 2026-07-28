@@ -28,7 +28,10 @@ interface formData {
   products: Product[];
 }
 
-export const generalSalesStore = (data: formData, callback?: (message: string) => void) => (dispatch: any) => {
+// The callback is told whether the save worked, because a successful save
+// answers with a message of its own ("Vr. No. ...") and the caller would
+// otherwise have no way to tell it apart from a failure.
+export const generalSalesStore = (data: formData, callback?: (message: string, success: boolean) => void) => (dispatch: any) => {
   dispatch({ type: SALES_TRADING_STORE_PENDING });
   httpService.post(API_TRADING_SALES_STORE_URL, data)
     .then((res) => {
@@ -39,7 +42,7 @@ export const generalSalesStore = (data: formData, callback?: (message: string) =
           payload: _data.data.data,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data.message, true);
         }
       } else {
         dispatch({
@@ -47,7 +50,7 @@ export const generalSalesStore = (data: formData, callback?: (message: string) =
           payload: _data.error.message,
         });
         if ('function' == typeof callback) {
-          callback(_data.message);
+          callback(_data.message, false);
         }
       }
     })
@@ -57,7 +60,7 @@ export const generalSalesStore = (data: formData, callback?: (message: string) =
         payload: 'Something went wrong.',
       });
       if ('function' == typeof callback) {
-        callback(err.message);
+        callback(err.message, false);
       }
     });
 };

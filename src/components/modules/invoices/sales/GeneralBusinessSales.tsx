@@ -422,8 +422,10 @@ const GeneralBusinessSales = () => {
 
     try {
       dispatch(
-        generalSalesStore(formData, function (message) {
-          if (message) {
+        generalSalesStore(formData, function (message, success) {
+          // A saved invoice announces itself through the voucher number effect
+          // below, so only a real failure is worth a toast here.
+          if (message && !success) {
             toast.error(message);
           }
         }),
@@ -808,6 +810,7 @@ const GeneralBusinessSales = () => {
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5 h-8"
                   icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
                 />
@@ -817,6 +820,7 @@ const GeneralBusinessSales = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 h-8"
                   icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
                   onKeyDown={(e) => {
@@ -837,6 +841,7 @@ const GeneralBusinessSales = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-white text-lg ml-2 mr-2  h-8" />}
                 />
@@ -845,6 +850,7 @@ const GeneralBusinessSales = () => {
                   onClick={handleSalesInvoiceSave}
                   buttonLoading={buttonLoading}
                   label="Save"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 h-8"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                 />
@@ -854,6 +860,7 @@ const GeneralBusinessSales = () => {
                 onClick={resetProducts}
                 buttonLoading={buttonLoading}
                 label="Reset"
+                responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
                 icon={
                   <FiRefreshCcw className="text-white text-lg ml-2  mr-2  h-8" />
@@ -864,13 +871,14 @@ const GeneralBusinessSales = () => {
                 onClick={handleInvoicePrint}
                 buttonLoading={buttonLoading}
                 label="Print"
+                responsiveLabel
                 className="whitespace-nowrap text-center mr-0 h-8"
                 icon={<FiPrinter className="text-white text-lg ml-2 mr-2" />}
               />
 
               <Link to="/dashboard" className="text-nowrap justify-center mr-0  h-8">
                 <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
+                <span className="hidden xl:block">{'Home'}</span>
               </Link>
             </div>
           </div>

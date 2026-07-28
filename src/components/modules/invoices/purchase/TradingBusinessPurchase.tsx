@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import InputElement from '../../../utils/fields/InputElement';
@@ -17,6 +17,7 @@ import {
   FiEdit2,
   FiHome,
   FiPlus,
+  FiPrinter,
   FiRefreshCcw,
   FiSave,
   FiSearch,
@@ -54,6 +55,8 @@ import {
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getDdlProduct } from '../../product/productSlice';
 import { getToken } from '../../../../features/authReducer';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../../vouchers';
 interface Product {
   id: number;
   product: number;
@@ -111,6 +114,9 @@ const TradingBusinessPurchase = () => {
   const [isPaymentAmtManuallyEdited, setIsPaymentAmtManuallyEdited] = useState(false);
   const [vehicleSuggestions, setVehicleSuggestions] = useState<string[]>([]);
   const [noteSuggestions, setNoteSuggestions] = useState<string[]>([]);
+
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   dayjs.extend(utc); 
       
@@ -794,6 +800,22 @@ const TradingBusinessPurchase = () => {
     );
   };
 
+  /**
+   * Prints whichever invoice the screen is currently holding: the one just
+   * saved, or the one pulled up through Search Invoice. A save leaves the
+   * voucher at the root of the slice, an edit nests it under `transaction`.
+   */
+  const handleInvoicePrint = () => {
+    const voucher = purchase?.data?.transaction ?? purchase?.data;
+
+    if (!voucher?.id || !voucher?.vr_no) {
+      toast.info('Save the invoice first, or search one to print.');
+      return;
+    }
+
+    handleVoucherPrint({ ...voucher, mtm_id: voucher.id });
+  };
+
   const handleInvoiceUpdate = async () => {
     // Check Required fields are not empty
     const validationMessages = validateForm(formData, invoiceMessage);
@@ -1277,12 +1299,13 @@ const TradingBusinessPurchase = () => {
                 <span className="absolute top-8 right-3 z-50">{lineTotal}</span>
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-x-1 gap-y-1">
+            <div className="grid grid-cols-5 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
                   onClick={editProduct}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiEdit2 className="text-white text-lg ml-2  mr-2" />}
                 />
@@ -1293,6 +1316,7 @@ const TradingBusinessPurchase = () => {
                   onClick={addProduct}
                   buttonLoading={buttonLoading}
                   label="Add New"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={<FiPlus className="text-white text-lg ml-2  mr-2" />}
                   onKeyDown={(e) => {
@@ -1312,6 +1336,7 @@ const TradingBusinessPurchase = () => {
                   onClick={handleInvoiceUpdate}
                   buttonLoading={buttonLoading}
                   label="Update"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiEdit className="text-white text-lg ml-2  mr-2" />}
                 />
@@ -1320,6 +1345,7 @@ const TradingBusinessPurchase = () => {
                   onClick={handlePurchaseInvoiceSave}
                   buttonLoading={buttonLoading}
                   label="Save"
+                  responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
                   icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
                 />
@@ -1329,14 +1355,25 @@ const TradingBusinessPurchase = () => {
                 onClick={resetProducts}
                 buttonLoading={buttonLoading}
                 label="Reset"
+                responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
                 icon={
                   <FiRefreshCcw className="text-white text-lg ml-2  mr-2" />
                 }
               />
+
+              <ButtonLoading
+                onClick={handleInvoicePrint}
+                buttonLoading={buttonLoading}
+                label="Print"
+                responsiveLabel
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiPrinter className="text-white text-lg ml-2 mr-2" />}
+              />
+
               <Link to="/dashboard" className="text-nowrap justify-center mr-0">
                 <FiHome className="text-white text-lg ml-2  mr-2" />
-                <span className="hidden md:block">{'Home'}</span>
+                <span className="hidden xl:block">{'Home'}</span>
               </Link>
             </div>
           </div>
@@ -1437,6 +1474,13 @@ const TradingBusinessPurchase = () => {
               ))}
           </tbody>
         </table>
+      </div>
+      <div className="hidden">
+        <VoucherPrintRegistry
+          ref={voucherRegistryRef}
+          rowsPerPage={12}
+          fontSize={12}
+        />
       </div>
       <QuickCustomerModal
         isOpen={showCustomerModal}

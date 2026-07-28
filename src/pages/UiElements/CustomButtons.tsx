@@ -13,6 +13,11 @@ interface ButtonProps {
   buttonLoading?: boolean;
   icon?: React.ReactNode;
   onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void; // ✅ FIXED
+  /**
+   * Drops to the icon alone below xl. For button rows that sit in a half-width
+   * column, where the labels stop fitting long before the screen is small.
+   */
+  responsiveLabel?: boolean;
 }
 // Button component definition
 
@@ -27,11 +32,19 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
   icon,
   onKeyDown,
   buttonLoading = false,
+  responsiveLabel = false,
 }) => {
   const safeLabel = typeof label === 'string' || typeof label === 'number' ? String(label) : '';
 
   const resolvedIcon = icon ? icon : <FiArrowRightCircle className="h-5 w-5" />;
   const hasLabel = safeLabel.trim().length > 0;
+
+  // Without a label on show, the button only has to hold its icon — and the
+  // name it lost is worth keeping as a tooltip.
+  const paddingClass = responsiveLabel ? 'px-2 xl:px-5' : 'px-5';
+  const labelClass = responsiveLabel ? 'hidden xl:inline' : '';
+  const iconSpacing = hasLabel ? (responsiveLabel ? 'xl:mr-2' : 'mr-2') : '';
+
   return (
     <button
       id={id}
@@ -40,18 +53,19 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       onKeyDown={onKeyDown}
-      className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm px-5 text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center ${className}`}
+      title={responsiveLabel && hasLabel ? safeLabel : undefined}
+      className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm ${paddingClass} text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center ${className}`}
     >
       <span className="flex items-center">
         {buttonLoading ? (
           <>
             <Spinner />
-            {safeLabel}
+            {hasLabel ? <span className={labelClass}>{safeLabel}</span> : null}
           </>
         ) : (
           <>
-            <span className={hasLabel ? 'mr-2 inline-flex items-center' : 'inline-flex items-center'}>{resolvedIcon}</span>
-            {hasLabel ? <span>{safeLabel}</span> : null}
+            <span className={`${iconSpacing} inline-flex items-center`}>{resolvedIcon}</span>
+            {hasLabel ? <span className={labelClass}>{safeLabel}</span> : null}
           </>
         )}
       </span>
