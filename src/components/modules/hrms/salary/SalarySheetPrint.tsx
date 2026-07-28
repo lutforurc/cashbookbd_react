@@ -1,6 +1,7 @@
 import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatDate, formatPaymentMonth } from '../../../utils/utils-functions/formatDate';
@@ -48,6 +49,8 @@ type Props = {
   rowsPerPage?: number;
   fontSize?: number;
   branchName?: string;
+  /** The branch this sheet belongs to, which may not be the printer's own. */
+  printBranch?: PrintBranch;
   vr_no?: string | number;
   vr_date?: string;
 };
@@ -173,6 +176,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
       rowsPerPage = 5,
       fontSize = 10,
       branchName,
+      printBranch,
       vr_no,
       vr_date,
     },
@@ -184,6 +188,13 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
     const lastPageIndex = pages.length - 1;
     const hasMultiplePages = pages.length > 1;
     const metaInfo = getMeta(meta);
+
+    // Head the page with the branch the sheet was generated for. The sheet's own
+    // meta is the most reliable source; the selected branch is the fallback.
+    const headerBranch: PrintBranch = {
+      ...(printBranch ?? {}),
+      name: metaInfo.branch_name || printBranch?.name || branchName,
+    };
 
     /* Grand totals */
     const grandMonthlyBasic = sum(safeRows.map((r) => {
@@ -252,7 +263,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
           return (
             <React.Fragment key={pageIndex}>
               {/* ===== Page Header ===== */}
-              <PadPrinting />
+              <PadPrinting branch={headerBranch} />
               {/* <div className="text-center">
                     <span>{ vr_no } {vr_date}</span>
                    <h1 className="text-xl font-bold">{title}</h1>

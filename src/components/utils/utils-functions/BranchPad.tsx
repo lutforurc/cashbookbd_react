@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 import { chartDateTime } from './formatDate';
+import { PrintBranch, hasPrintBranch } from './printBranch';
 
 const loadedImageUrls = new Set<string>();
 const imageLoadPromises = new Map<string, Promise<string>>();
@@ -72,11 +73,24 @@ const preloadImage = (url: string) => {
   return loadPromise;
 };
 
-const BranchPad = () => {
+type Props = {
+  /** The branch the report is about; falls back to the logged-in user's. */
+  branch?: PrintBranch;
+};
+
+const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
   const settings = useSelector((state: any) => state.settings.data);
   const branch = settings?.branch;
   const useCustomImage = Number(branch?.pad_heading_print) === 3;
   const [cachedImageSrc, setCachedImageSrc] = useState('');
+
+  // A report pulled for another branch heads the page with that branch's own
+  // details. Address and phone come from the override too — falling back to the
+  // session branch's would put one branch's name over another's address.
+  const overridden = hasPrintBranch(printBranch);
+  const headingName = overridden ? printBranch?.name : branch?.name;
+  const headingAddress = overridden ? printBranch?.address : branch?.address;
+  const headingPhone = overridden ? printBranch?.phone : branch?.phone;
 
 
   const imagePath =
@@ -158,19 +172,19 @@ const BranchPad = () => {
         <div className="mb-4">
           <img
             src={cachedImageSrc}
-            alt={branch?.name || 'Pad header'}
+            alt={headingName || 'Pad header'}
             className="mx-auto max-h-32 w-full object-contain"
           />
         </div>
       ) : (
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-center uppercase">{branch?.name}</h1>
+          <h1 className="text-2xl font-bold text-center uppercase">{headingName}</h1>
           <div className="mt-2 text-center">
             <div>
-              <span>{branch?.address}</span>
+              <span>{headingAddress}</span>
             </div>
             <div>
-              <span>{branch?.phone}</span>
+              <span>{headingPhone}</span>
             </div>
           </div>
         </div>

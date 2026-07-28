@@ -63,6 +63,9 @@ const SalarySheet = ({ user }: any) => {
   const [yearId, setYearId] = useState<string>("");
   const [shouldPrint, setShouldPrint] = useState(false);
   const printSalarySheetType = getSalarySheetType(Array.isArray(tableData) ? tableData : []);
+  // The branch this sheet is for. A head-office user can pull any branch, so the
+  // printed page must be headed with this one rather than the user's own branch.
+  const selectedBranch = dropdownData?.find((b: any) => b.id == branchId);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -485,7 +488,8 @@ const SalarySheet = ({ user }: any) => {
               meta={meta}
               rowsPerPage={perPage}
               fontSize={fontSize}
-              branchName={dropdownData?.find((b: any) => b.id == branchId)?.name}
+              branchName={selectedBranch?.name}
+              printBranch={selectedBranch}
               vr_no={salary?.salarySheet?.vr_no}
               vr_date={salary?.salarySheet?.vr_date}
             />
@@ -496,7 +500,8 @@ const SalarySheet = ({ user }: any) => {
               meta={meta}
               rowsPerPage={perPage}
               fontSize={fontSize}
-              branchName={dropdownData?.find((b: any) => b.id == branchId)?.name}
+              branchName={selectedBranch?.name}
+              printBranch={selectedBranch}
               vr_no={salary?.salarySheet?.vr_no}
               vr_date={salary?.salarySheet?.vr_date}
             />

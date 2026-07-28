@@ -1,6 +1,7 @@
 import React from 'react';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import ReportFooter from '../../../utils/utils-functions/ReportFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatDate, formatPaymentMonth } from '../../../utils/utils-functions/formatDate';
@@ -40,6 +41,8 @@ type Props = {
   rowsPerPage?: number;
   fontSize?: number;
   branchName?: string;
+  /** The branch this sheet belongs to, which may not be the printer's own. */
+  printBranch?: PrintBranch;
   vr_no?: string | number;
   vr_date?: string;
 };
@@ -47,6 +50,7 @@ type Props = {
 type Meta = {
   month_id?: string;
   level_name?: string;
+  branch_name?: string;
 };
 
 const chunkRows = <T,>(data: T[], size: number): T[][] => {
@@ -135,13 +139,20 @@ const otAmount = (row: EmployeeRow) => Number(row.overtime_amount || getHistory(
 const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
 
 const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ rows, meta, rowsPerPage = 5, fontSize = 10, vr_no, vr_date }, ref) => {
+  ({ rows, meta, rowsPerPage = 5, fontSize = 10, branchName, printBranch, vr_no, vr_date }, ref) => {
     const safeRows: EmployeeRow[] = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(safeRows, rowsPerPage);
     const fs = fontSize;
     const lastPageIndex = pages.length - 1;
     const hasMultiplePages = pages.length > 1;
     const metaInfo = getMeta(meta);
+
+    // Head the page with the branch the sheet was generated for, not the
+    // printer's own branch — a head-office user can pull any branch's sheet.
+    const headerBranch: PrintBranch = {
+      ...(printBranch ?? {}),
+      name: metaInfo.branch_name || printBranch?.name || branchName,
+    };
 
     const grandMonthlyBasic = sum(safeRows.map((r) => {
       const history = getHistory(r.history);
@@ -185,7 +196,7 @@ const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
 
           return (
             <React.Fragment key={pageIndex}>
-              <PadPrinting />
+              <PadPrinting branch={headerBranch} />
               <div className="grid grid-cols-3 items-center w-full">
                 <span className="justify-self-start text-sm">
                   <span className="font-semibold !text-xs">Vr. No. & Date:</span>
