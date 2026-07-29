@@ -722,6 +722,53 @@ const AddBranch = () => {
                     />
                   </div>
 
+                  {/* ---------- Pad Head ---------- */}
+                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Pad Head
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <div>
+                      <DropdownCommon
+                        id="pad_print_mode"
+                        name={'pad_print_mode'}
+                        label="Pad Head Printing"
+                        onChange={handleOnSelectChange}
+                        value={formData?.pad_print_mode || ''}
+                        className="h-[2.1rem] bg-transparent"
+                        data={padPrintModes}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Software generated draws the heading chosen above.
+                        Pre-printed draws none, for paper that comes from the
+                        press with the letterhead already on it.
+                      </p>
+                    </div>
+                    {/* Always on show, so the paper can be measured before the
+                        branch switches over -- it just has nothing to do while
+                        the software draws the heading itself. */}
+                    <div>
+                      <InputElement
+                        id="preprinted_pad_height"
+                        value={formData.preprinted_pad_height ?? ''}
+                        name="preprinted_pad_height"
+                        type="number"
+                        min={0}
+                        max={600}
+                        step="1"
+                        placeholder={'Enter Blank Space (px)'}
+                        label={'Blank Space at Top (px)'}
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!usesPreprintedPad}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {usesPreprintedPad
+                          ? 'How deep the printed pad head is, so nothing prints on top of it. 96 px is about an inch of paper.'
+                          : 'Used only when Pre-printed Pad is chosen.'}
+                      </p>
+                    </div>
+                  </div>
+
                   {Number(formData?.pad_heading_print) === 3 && !usesPreprintedPad && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <div className="flex flex-col">
@@ -807,7 +854,10 @@ const AddBranch = () => {
                     />
                     <span className="mt-1 block text-xs text-gray-500">
                       Prints at the foot of the allotment letter. Leave it empty and
-                      the letter signs off with the company name.
+                      the letter signs off with the company name. The table button
+                      lays three signatories across the page; each row is a line,
+                      so add a row for the name under a signature, and add or drop
+                      a column to sign with more or fewer than three.
                     </span>
                   </div>
 
@@ -1119,52 +1169,6 @@ const AddBranch = () => {
                     </div>
                   </div>
 
-                  {/* ---------- Pad Head ---------- */}
-                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Pad Head
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <div>
-                      <DropdownCommon
-                        id="pad_print_mode"
-                        name={'pad_print_mode'}
-                        label="Pad Head Printing"
-                        onChange={handleOnSelectChange}
-                        value={formData?.pad_print_mode || ''}
-                        className="h-[2.1rem] bg-transparent"
-                        data={padPrintModes}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Software generated draws the heading chosen in Print
-                        Setup. Pre-printed draws none, for paper that comes from
-                        the press with the letterhead already on it.
-                      </p>
-                    </div>
-                    {/* Always on show, so the paper can be measured before the
-                        branch switches over -- it just has nothing to do while
-                        the software draws the heading itself. */}
-                    <div>
-                      <InputElement
-                        id="preprinted_pad_height"
-                        value={formData.preprinted_pad_height ?? ''}
-                        name="preprinted_pad_height"
-                        type="number"
-                        min={0}
-                        max={600}
-                        step="1"
-                        placeholder={'Enter Blank Space (px)'}
-                        label={'Blank Space at Top (px)'}
-                        className={''}
-                        onChange={handleOnNumberChange}
-                        disabled={!usesPreprintedPad}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {usesPreprintedPad
-                          ? 'How deep the printed pad head is, so nothing prints on top of it. 96 px is about an inch of paper.'
-                          : 'Used only when Pre-printed Pad is chosen.'}
-                      </p>
-                    </div>
-                  </div>
                 </>
               )}
 

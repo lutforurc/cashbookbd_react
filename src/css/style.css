@@ -156,6 +156,103 @@ html:not(.dark) .native-date-time-input::-webkit-calendar-picker-indicator {
   filter: none;
 }
 
+/* ---------------------------------------------------------------------------
+   Rich text editor
+
+   Quill's snow theme, dressed to sit with the rest of the form. The sheet keeps
+   its own white in either theme, because what is written on it prints on paper;
+   only the frame around it follows the app.
+   --------------------------------------------------------------------------- */
+.rich-text-editor {
+  overflow: hidden;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.rich-text-editor:focus-within {
+  border-color: rgb(59 130 246);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.12);
+}
+
+.rich-text-editor .ql-toolbar.ql-snow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 0;
+  border-bottom: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  font-family: inherit;
+}
+
+/* A hairline between groups reads better than the wide gaps snow ships with. */
+.rich-text-editor .ql-toolbar.ql-snow .ql-formats {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 5px 0 0;
+  padding-right: 7px;
+  border-right: 1px solid rgb(226 232 240);
+}
+
+.rich-text-editor .ql-toolbar.ql-snow .ql-formats:last-child {
+  margin-right: 0;
+  padding-right: 0;
+  border-right: 0;
+}
+
+.rich-text-editor .ql-toolbar.ql-snow button {
+  width: 27px;
+  height: 27px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 120ms ease;
+}
+
+.rich-text-editor .ql-toolbar.ql-snow button:hover {
+  background: rgb(226 232 240);
+}
+
+.rich-text-editor .ql-toolbar.ql-snow button.ql-active {
+  background: rgb(219 234 254);
+}
+
+.rich-text-editor .ql-toolbar.ql-snow button.ql-active .ql-stroke {
+  stroke: rgb(37 99 235);
+}
+
+.rich-text-editor .ql-toolbar.ql-snow button.ql-active .ql-fill {
+  fill: rgb(37 99 235);
+}
+
+.rich-text-editor .ql-container.ql-snow {
+  border: 0;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+/* Starts at the height asked for and grows with the writing, rather than
+   scrolling inside a fixed box. */
+.rich-text-editor .ql-editor {
+  min-height: var(--rte-height, 140px);
+  padding: 12px 14px;
+  line-height: 1.6;
+}
+
+/* A table here is a layout -- signatories side by side -- so the guides are
+   only for the person writing. The letter prints the columns without rules. */
+.rich-text-editor .ql-editor table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin: 4px 0;
+}
+
+.rich-text-editor .ql-editor td {
+  padding: 5px 7px;
+  border: 1px dashed rgb(203 213 225);
+  vertical-align: top;
+}
+
 @layer utilities {
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
