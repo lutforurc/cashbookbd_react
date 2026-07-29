@@ -4,9 +4,8 @@ import dayjs from "dayjs";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import ReportFooter from "../../../utils/utils-functions/ReportFooter";
-import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { SoldUnitCustomer, SoldUnitTotals } from "./types";
-import { customerColor, edgeStyle, saleLines } from "./soldUnitReport";
+import { customerColor, edgeStyle, money, saleLines } from "./soldUnitReport";
 
 type Props = {
   customers: SoldUnitCustomer[];
@@ -14,11 +13,6 @@ type Props = {
   period?: string;
   title?: string;
   fontSize?: number;
-};
-
-const money = (value: any) => {
-  const amount = Number(value ?? 0);
-  return amount ? thousandSeparator(amount) : "-";
 };
 
 const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(

@@ -1,5 +1,67 @@
 import type React from "react";
-import { SoldUnitLine, SoldUnitRow } from "./types";
+import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import {
+  SoldUnitCustomer,
+  SoldUnitLine,
+  SoldUnitRow,
+  SoldUnitTotals,
+} from "./types";
+
+/**
+ * An amount in whole taka. The paisa is dropped rather than rounded — a unit
+ * priced at 2,50,000.80 reads as 2,50,000 — and dropped toward zero, so a
+ * discount of -36,000.80 reads as -36,000 rather than being pushed out to
+ * -36,001 and deepening a refund nobody gave.
+ *
+ * Kept in step with the allotment letter, which prints these same figures.
+ */
+export const wholeTaka = (value: any) => Math.trunc(Number(value ?? 0));
+
+export const money = (value: any) => {
+  const amount = wholeTaka(value);
+  return amount ? thousandSeparator(amount) : "-";
+};
+
+/**
+ * Report totals added up from the figures the report actually shows.
+ *
+ * The API totals the exact amounts and hands back one number, but every amount
+ * on the page has had its paisa dropped first — so four parkings at 2,50,000.80
+ * read as 10,00,000 down the column while the API's total reads 10,00,003.
+ * Adding the same whole taka the reader can see keeps the column and its total
+ * telling the same story.
+ *
+ * Counts come straight from the API; only money is re-added here.
+ */
+export const reportTotals = (
+  customers: SoldUnitCustomer[],
+  totals?: SoldUnitTotals
+): SoldUnitTotals => {
+  const summed = {
+    unit_price_amount: 0,
+    parking_amount: 0,
+    total_amount: 0,
+    received_amount: 0,
+    due_amount: 0,
+  };
+
+  customers.forEach((customer) => {
+    (customer.units ?? []).forEach((unit) => {
+      summed.unit_price_amount += wholeTaka(unit.unit_price_amount);
+      summed.parking_amount += wholeTaka(unit.parking_amount);
+      summed.total_amount += wholeTaka(unit.total_amount);
+      summed.received_amount += wholeTaka(unit.received_amount);
+      summed.due_amount += wholeTaka(unit.due_amount);
+    });
+  });
+
+  return {
+    customer_count: totals?.customer_count ?? customers.length,
+    unit_count: totals?.unit_count ?? 0,
+    parking_count: totals?.parking_count ?? 0,
+    ...summed,
+  };
+};
 
 /**
  * Each customer block in the report is outlined in its own colour so a buyer's

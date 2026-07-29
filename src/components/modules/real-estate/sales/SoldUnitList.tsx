@@ -11,20 +11,20 @@ import InputElement from "../../../utils/fields/InputElement";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
-import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import httpService from "../../../services/httpService";
 import { API_UNIT_SALE_ALLOTMENT_LETTER_URL } from "../../../services/apiRoutes";
 import { fetchSoldUnits } from "./unitSaleSlice";
 import { fetchProjectDdl } from "../project/projectSlice";
 import { fetchBuildingDdl } from "../buildings/buildingsSlice";
 import { SoldUnitCustomer } from "./types";
-import { customerColor, edgeStyle, saleLines } from "./soldUnitReport";
+import {
+  customerColor,
+  edgeStyle,
+  money,
+  reportTotals,
+  saleLines,
+} from "./soldUnitReport";
 import SoldUnitListPrint from "./SoldUnitListPrint";
-
-const money = (value: any) => {
-  const amount = Number(value ?? 0);
-  return amount ? thousandSeparator(amount) : "-";
-};
 
 const cellBase = "border border-stroke px-2 py-1.5 dark:border-strokedark";
 
@@ -48,7 +48,12 @@ const SoldUnitList: React.FC = () => {
   const printRef = useRef<HTMLDivElement>(null);
 
   const customers: SoldUnitCustomer[] = soldUnits?.data ?? [];
-  const totals = soldUnits?.totals;
+  // Re-added from the whole taka on the page, so the cards and the grand total
+  // agree with the column above them.
+  const totals = useMemo(
+    () => reportTotals(customers, soldUnits?.totals),
+    [customers, soldUnits?.totals]
+  );
 
   const projectOptions = useMemo(
     () => [
@@ -286,9 +291,7 @@ const SoldUnitList: React.FC = () => {
               {card.label}
             </div>
             <div className="text-base font-semibold">
-              {card.plain
-                ? card.value
-                : thousandSeparator(Number(card.value ?? 0))}
+              {card.plain ? card.value : money(card.value)}
             </div>
           </div>
         ))}
