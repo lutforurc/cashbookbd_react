@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiFileText, FiPrinter, FiRefreshCcw, FiSearch } from "react-icons/fi";
+import { FiFilePlus, FiFileText, FiPrinter, FiRefreshCcw, FiSearch } from "react-icons/fi";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -495,18 +495,23 @@ const SoldUnitList: React.FC = () => {
                                 })}
                               >
                                 <div className="flex flex-col items-center gap-1">
-                                  <button
-                                    type="button"
+                                  {/* The page's own button, the same one the
+                                      Search and Print controls above use. */}
+                                  <ButtonLoading
+                                    size="sm"
+                                    label="Generate"
                                     title="Issue a new allotment letter and keep the copy"
+                                    buttonLoading={busySaleId === unit.sale_id}
                                     disabled={busySaleId === unit.sale_id}
                                     onClick={() => handleGenerateLetter(unit.sale_id)}
-                                    className="w-full rounded bg-primary px-2 py-1 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
-                                  >
-                                    Generate
-                                  </button>
+                                    icon={<FiFilePlus className="text-sm" />}
+                                    className="w-full whitespace-nowrap rounded disabled:opacity-50"
+                                  />
 
                                   {/* One button per issued letter. These print the
-                                      stored copy, not a fresh calculation. */}
+                                      stored copy, not a fresh calculation. Each
+                                      carries its own surface, so the chips read as
+                                      buttons on the white card and on the dark one. */}
                                   <div className="flex flex-wrap justify-center gap-1">
                                     {Array.from(
                                       { length: Number(unit.letter_count) || 0 },
@@ -518,7 +523,7 @@ const SoldUnitList: React.FC = () => {
                                         title={`Print letter L-${version} as it was issued`}
                                         disabled={busySaleId === unit.sale_id}
                                         onClick={() => handlePrintLetter(unit.sale_id, version)}
-                                        className="rounded border border-stroke px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-meta-4"
+                                        className="rounded border border-stroke bg-white px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:bg-meta-4 dark:text-secondary dark:hover:bg-form-strokedark"
                                       >
                                         L-{version}
                                       </button>
@@ -530,7 +535,7 @@ const SoldUnitList: React.FC = () => {
                                     title="Preview only — built from today's data, not saved"
                                     disabled={busySaleId === unit.sale_id}
                                     onClick={() => handleAllotmentLetter(unit.sale_id)}
-                                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary disabled:opacity-50 dark:text-gray-400"
+                                    className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
                                   >
                                     <FiFileText /> DEMO
                                   </button>
