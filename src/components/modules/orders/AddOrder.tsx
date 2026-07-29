@@ -517,9 +517,11 @@ const AddOrder = (user: any) => {
                 return;
             }
 
-            const emptyQty = filledLines.find((line) => !(Number(line.total_order) > 0));
-            if (emptyQty) {
-                toast.error(`Order quantity is required for ${emptyQty.product_name || 'every product'}.`);
+            // Zero is a legitimate quantity — an order can be raised against a
+            // contract before the figure is agreed. Only a negative one is not.
+            const badQty = filledLines.find((line) => Number(line.total_order) < 0);
+            if (badQty) {
+                toast.error(`Order quantity cannot be negative for ${badQty.product_name || 'a product'}.`);
                 return;
             }
 
