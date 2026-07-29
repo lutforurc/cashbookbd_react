@@ -109,7 +109,7 @@ interface branchItem {
   down_payment_percent: NumberField;
   /** What that share is taken on: 'total' or 'net_payable'. */
   down_payment_base: string;
-  /** Monthly late-payment rate the allotment letter quotes, as a percentage. */
+  /** Yearly late-payment rate the allotment letter quotes, as a percentage. */
   delay_charge_percent: NumberField;
 }
 
@@ -1108,12 +1108,13 @@ const AddBranch = () => {
                         max={100}
                         step="0.01"
                         placeholder={'Enter Delay Charge (%)'}
-                        label={'Delay Charge (% per month)'}
+                        label={'Delay Charge (% per annum)'}
                         className={''}
                         onChange={handleOnNumberChange}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        The monthly charge the letter states on an overdue amount.
+                        The yearly rate the letter states on an overdue amount,
+                        charged for the actual period of delay.
                       </p>
                     </div>
                   </div>
