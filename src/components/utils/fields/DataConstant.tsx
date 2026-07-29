@@ -55,6 +55,16 @@ export const printerSettings = [
 ];
 
 /**
+ * Whether a printed page draws its own letterhead or leaves the top of the
+ * paper blank for stationery that already carries one. The ids are the values
+ * the pad_print_mode meta is read for.
+ */
+export const padPrintModes = [
+  { id: 'software', name: 'Software Generated Pad Head' },
+  { id: 'preprinted', name: 'Pre-printed Pad (leave blank space)' },
+];
+
+/**
  * What the allotment letter's down payment rate is a share of. The ids are the
  * values the down_payment_base meta is read for in UnitSaleController.
  */

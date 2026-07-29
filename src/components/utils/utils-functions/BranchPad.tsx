@@ -81,7 +81,13 @@ type Props = {
 const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
   const settings = useSelector((state: any) => state.settings.data);
   const branch = settings?.branch;
-  const useCustomImage = Number(branch?.pad_heading_print) === 3;
+  // Stationery that already carries the letterhead: the report draws none and
+  // reserves the depth the branch measured, so nothing lands on top of it.
+  const usesPreprintedPad = branch?.pad_print_mode === 'preprinted';
+  const measuredPadHeight = Number(branch?.preprinted_pad_height);
+  const paddingForPreprintedPad =
+    Number.isFinite(measuredPadHeight) && measuredPadHeight >= 0 ? measuredPadHeight : 150;
+  const useCustomImage = !usesPreprintedPad && Number(branch?.pad_heading_print) === 3;
   const [cachedImageSrc, setCachedImageSrc] = useState('');
 
   // A report pulled for another branch heads the page with that branch's own
@@ -169,7 +175,9 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
 
   return (
     <div>
-      {useCustomImage && cachedImageSrc ? (
+      {usesPreprintedPad ? (
+        <div style={{ height: `${paddingForPreprintedPad}px` }} />
+      ) : useCustomImage && cachedImageSrc ? (
         <div className="mb-4">
           <img
             src={cachedImageSrc}
@@ -190,7 +198,8 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
           </div>
         </div>
       )}
-      <div className='border-t-2 border-gray-900 -mt-4'></div>
+      {/* The rule belongs to the letterhead, so printed stationery draws it. */}
+      {!usesPreprintedPad && <div className='border-t-2 border-gray-900 -mt-4'></div>}
       <div className='flex justify-between'>
        <div></div>
         <div >

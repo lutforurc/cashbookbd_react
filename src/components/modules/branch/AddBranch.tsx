@@ -6,6 +6,7 @@ import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import {
   downPaymentBases,
   moneySpellFormat,
+  padPrintModes,
   printerSettings,
   printPadHeading,
   status,
@@ -36,6 +37,10 @@ interface branchItem {
   inventory_system_id: string | number;
   email: string;
   pad_heading_print: string;
+  /** Whether a print draws its own pad head or leaves room for a printed one. */
+  pad_print_mode: string;
+  /** How much of the page top a pre-printed pad head takes, in px. */
+  preprinted_pad_height: string;
   address: string;
   print_size: string;
   contact_person: string;
@@ -148,6 +153,12 @@ const defaultSignatureBlock = (companyName = '') =>
  * The rates the allotment letter has always quoted, kept as the values a branch
  * starts from. Match the fallbacks in UnitSaleController.
  */
+/**
+ * How much of the page top a pre-printed pad head is assumed to take when a
+ * branch has saved no measurement -- about the depth of the software one.
+ */
+const defaultPreprintedPadHeight = '150';
+
 const defaultDownPaymentPercent = '30';
 const defaultDownPaymentBase = 'total';
 const defaultDelayChargePercent = '10';
@@ -190,6 +201,8 @@ const AddBranch = () => {
     inventory_system_id: 1, // default: General Inventory
     email: '',
     pad_heading_print: '',
+    pad_print_mode: 'software',
+    preprinted_pad_height: defaultPreprintedPadHeight,
     address: '',
     print_size: '',
     contact_person: '',
@@ -294,6 +307,8 @@ const AddBranch = () => {
         ...prev,
         ...b,
         pad_heading_print: b.pad_heading_print != null ? String(b.pad_heading_print) : '',
+        pad_print_mode: metaTextOr(b.pad_print_mode, 'software'),
+        preprinted_pad_height: metaTextOr(b.preprinted_pad_height, defaultPreprintedPadHeight),
         paper_size: b.paper_size != null ? String(b.paper_size) : '',
         device_identifier_text:
           b.device_identifier_text == null ||
@@ -369,6 +384,10 @@ const AddBranch = () => {
   }, [branchEditData?.editData?.branch]);
 
   const [formData, setFormData] = useState<branchItem>(initialBranch);
+
+  // Stationery that already carries the letterhead: nothing here draws one, so
+  // the heading choice and its image have nothing to say.
+  const usesPreprintedPad = formData?.pad_print_mode === 'preprinted';
 
   useEffect(() => {
     return () => {
@@ -667,7 +686,7 @@ const AddBranch = () => {
                     />
                   </div>
 
-                  {Number(formData?.pad_heading_print) === 3 && (
+                  {Number(formData?.pad_heading_print) === 3 && !usesPreprintedPad && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <div className="flex flex-col">
                         <label
@@ -996,8 +1015,9 @@ const AddBranch = () => {
                         className=""
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        On: one order can carry several products. Off: the original
-                        single-product order form.
+                        <strong>On:</strong> one order can carry several products. 
+                        <br/>
+                        <strong>Off:</strong> the original single-product order form.
                       </p>
                     </div>
                   </div>
@@ -1007,6 +1027,21 @@ const AddBranch = () => {
                     Allotment Letter
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <div>
+                      <DropdownCommon
+                        id="down_payment_base"
+                        name={'down_payment_base'}
+                        label="Down Payment Calculated On"
+                        onChange={handleOnSelectChange}
+                        value={formData?.down_payment_base || ''}
+                        className="h-[2.1rem] bg-transparent"
+                        data={downPaymentBases}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        On the net payable balance the booking money is already
+                        out, so it is not adjusted against the down payment again.
+                      </p>
+                    </div>
                     <div>
                       <InputElement
                         id="down_payment_percent"
@@ -1026,21 +1061,7 @@ const AddBranch = () => {
                         records no down payment.
                       </p>
                     </div>
-                    <div>
-                      <DropdownCommon
-                        id="down_payment_base"
-                        name={'down_payment_base'}
-                        label="Down Payment Calculated On"
-                        onChange={handleOnSelectChange}
-                        value={formData?.down_payment_base || ''}
-                        className="h-[2.1rem] bg-transparent"
-                        data={downPaymentBases}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        On the net payable balance the booking money is already
-                        out, so it is not adjusted against the down payment again.
-                      </p>
-                    </div>
+                    
                     <div>
                       <InputElement
                         id="delay_charge_percent"
@@ -1057,6 +1078,53 @@ const AddBranch = () => {
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         The monthly charge the letter states on an overdue amount.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ---------- Pad Head ---------- */}
+                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Pad Head
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <div>
+                      <DropdownCommon
+                        id="pad_print_mode"
+                        name={'pad_print_mode'}
+                        label="Pad Head Printing"
+                        onChange={handleOnSelectChange}
+                        value={formData?.pad_print_mode || ''}
+                        className="h-[2.1rem] bg-transparent"
+                        data={padPrintModes}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Software generated draws the heading chosen in Print
+                        Setup. Pre-printed draws none, for paper that comes from
+                        the press with the letterhead already on it.
+                      </p>
+                    </div>
+                    {/* Always on show, so the paper can be measured before the
+                        branch switches over -- it just has nothing to do while
+                        the software draws the heading itself. */}
+                    <div>
+                      <InputElement
+                        id="preprinted_pad_height"
+                        value={formData.preprinted_pad_height ?? ''}
+                        name="preprinted_pad_height"
+                        type="number"
+                        min={0}
+                        max={600}
+                        step="1"
+                        placeholder={'Enter Blank Space (px)'}
+                        label={'Blank Space at Top (px)'}
+                        className={''}
+                        onChange={handleOnChange}
+                        disabled={!usesPreprintedPad}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {usesPreprintedPad
+                          ? 'How deep the printed pad head is, so nothing prints on top of it. 96 px is about an inch of paper.'
+                          : 'Used only when Pre-printed Pad is chosen.'}
                       </p>
                     </div>
                   </div>

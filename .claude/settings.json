@@ -11,7 +11,8 @@
     ],
     "additionalDirectories": [
       "D:\\www\\cashbook_api\\resources\\views\\pdf",
-      "D:\\www\\cashbook_api\\app\\Http\\Controllers\\Company"
+      "D:\\www\\cashbook_api\\app\\Http\\Controllers\\Company",
+      "D:\\www\\cashbook_api\\resources\\views\\reports\\pad-heading"
     ]
   }
 }
