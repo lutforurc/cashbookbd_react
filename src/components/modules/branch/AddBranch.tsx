@@ -4,6 +4,7 @@ import RichTextEditor from '../../utils/fields/RichTextEditor';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import {
+  downPaymentBases,
   moneySpellFormat,
   printerSettings,
   printPadHeading,
@@ -92,6 +93,12 @@ interface branchItem {
   need_customer_area: boolean;
   show_voucher_image: boolean;
   multi_product_order: boolean;
+  /** Share of the property value the allotment letter asks for up front, as a percentage. */
+  down_payment_percent: string;
+  /** What that share is taken on: 'total' or 'net_payable'. */
+  down_payment_base: string;
+  /** Monthly late-payment rate the allotment letter quotes, as a percentage. */
+  delay_charge_percent: string;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -137,12 +144,30 @@ const defaultSignatureBlock = (companyName = '') =>
   '<p>Managing Director / Chief Executive Officer</p>' +
   (companyName ? `<p>${companyName}</p>` : '');
 
+/**
+ * The rates the allotment letter has always quoted, kept as the values a branch
+ * starts from. Match the fallbacks in UnitSaleController.
+ */
+const defaultDownPaymentPercent = '30';
+const defaultDownPaymentBase = 'total';
+const defaultDelayChargePercent = '10';
+
+/**
+ * A saved rate as the form's own text. Unset metas come back false, but a saved
+ * 0 is a real answer -- a branch that asks for nothing -- so it stays.
+ */
+const metaTextOr = (value: unknown, fallback: string) =>
+  value === null || value === undefined || value === '' || value === false
+    ? fallback
+    : String(value);
+
 const AddBranch = () => {
   const steps = [
     'Basic Info',
     'Print Setup',
     'Invoice Setup',
-    'Customer & Supplier Setup',
+    'Customer Setup',
+    'Real Estate Setup',
     'Feature Controls',
   ];
   const navigate = useNavigate();
@@ -222,6 +247,9 @@ const AddBranch = () => {
     need_customer_area: false,
     show_voucher_image: false,
     multi_product_order: false,
+    down_payment_percent: defaultDownPaymentPercent,
+    down_payment_base: defaultDownPaymentBase,
+    delay_charge_percent: defaultDelayChargePercent,
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -311,6 +339,9 @@ const AddBranch = () => {
         need_customer_area: toBooleanFlag(b.need_customer_area),
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
         multi_product_order: toBooleanFlag(b.multi_product_order),
+        down_payment_percent: metaTextOr(b.down_payment_percent, defaultDownPaymentPercent),
+        down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
+        delay_charge_percent: metaTextOr(b.delay_charge_percent, defaultDelayChargePercent),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
         purchase_sms: toBooleanFlag(b.purchase_sms),
@@ -498,7 +529,8 @@ const AddBranch = () => {
                   {currentStep === 1 && 'Print preferences, page size, and letterhead setup.'}
                   {currentStep === 2 && 'Invoice labels, notes, formatting, and invoice display options.'}
                   {currentStep === 3 && 'Customer and supplier related options for this branch.'}
-                  {currentStep === 4 && 'Operational controls, sharing options, and SMS preferences.'}
+                  {currentStep === 4 && 'Real estate options for this branch.'}
+                  {currentStep === 5 && 'Operational controls, sharing options, and SMS preferences.'}
                 </p>
               </div>
 
@@ -947,6 +979,92 @@ const AddBranch = () => {
 
               {currentStep === 4 && (
                 <>
+                  {/* ---------- Order ---------- */}
+                  <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Order
+                  </h4>
+                  {/* Each note sits in its own column, directly under the control
+                      it explains -- never spilling under a neighbouring field. */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <div>
+                      <FormToggleField
+                        label="Multi Product Order?"
+                        checked={Boolean(formData.multi_product_order)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('multi_product_order', checked)
+                        }
+                        className=""
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        On: one order can carry several products. Off: the original
+                        single-product order form.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ---------- Allotment Letter ---------- */}
+                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Allotment Letter
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <div>
+                      <InputElement
+                        id="down_payment_percent"
+                        value={formData.down_payment_percent ?? ''}
+                        name="down_payment_percent"
+                        type="number"
+                        min={0}
+                        max={100}
+                        step="0.01"
+                        placeholder={'Enter Down Payment (%)'}
+                        label={'Down Payment (%)'}
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        What the payment terms ask for when the sale itself
+                        records no down payment.
+                      </p>
+                    </div>
+                    <div>
+                      <DropdownCommon
+                        id="down_payment_base"
+                        name={'down_payment_base'}
+                        label="Down Payment Calculated On"
+                        onChange={handleOnSelectChange}
+                        value={formData?.down_payment_base || ''}
+                        className="h-[2.1rem] bg-transparent"
+                        data={downPaymentBases}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        On the net payable balance the booking money is already
+                        out, so it is not adjusted against the down payment again.
+                      </p>
+                    </div>
+                    <div>
+                      <InputElement
+                        id="delay_charge_percent"
+                        value={formData.delay_charge_percent ?? ''}
+                        name="delay_charge_percent"
+                        type="number"
+                        min={0}
+                        max={100}
+                        step="0.01"
+                        placeholder={'Enter Delay Charge (%)'}
+                        label={'Delay Charge (% per month)'}
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        The monthly charge the letter states on an overdue amount.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {currentStep === 5 && (
+                <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
                       label="Stock With Zero?"
@@ -1015,24 +1133,6 @@ const AddBranch = () => {
                     />
                   </div>
 
-                  {/* Its own section: this one switch changes the whole Create
-                      Order form, so it should not be lost among the others. */}
-                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Order
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <FormToggleField
-                      label="Multi Product Order?"
-                      checked={Boolean(formData.multi_product_order)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('multi_product_order', checked)
-                      }
-                    />
-                    <p className="self-center text-xs text-gray-500 dark:text-gray-400 md:col-span-2">
-                      On: one order can carry several products. Off: the original
-                      single-product order form.
-                    </p>
-                  </div>
                   {settings?.data?.user?.id === 1 && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <FormToggleField

@@ -54,6 +54,15 @@ export const printerSettings = [
   { id: 2, name: 'POS Printer' },
 ];
 
+/**
+ * What the allotment letter's down payment rate is a share of. The ids are the
+ * values the down_payment_base meta is read for in UnitSaleController.
+ */
+export const downPaymentBases = [
+  { id: 'total', name: 'Total Property Value' },
+  { id: 'net_payable', name: 'Net Payable Balance after Booking Money' },
+];
+
 export const status = [
   { id: "", name: 'Select Status' },
   { id: "0", name: 'Inactive' },
