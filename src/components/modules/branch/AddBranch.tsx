@@ -1114,7 +1114,7 @@ const AddBranch = () => {
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         The yearly rate the letter states on an overdue amount,
-                        charged for the actual period of delay.
+                        charged for the actual number of days of delay.
                       </p>
                     </div>
                   </div>
