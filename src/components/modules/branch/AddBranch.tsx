@@ -27,6 +27,13 @@ const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook
   API_REMOTE_URL,
 );
 
+/**
+ * What a number field holds: the number itself, never the text the box happens
+ * to show. Empty is its own state -- a cleared box, or a decimal mid-typing --
+ * so the field can be retyped without snapping back to zero.
+ */
+type NumberField = number | '';
+
 interface branchItem {
   id: string | number;
   branch_id?: string | number;
@@ -40,7 +47,7 @@ interface branchItem {
   /** Whether a print draws its own pad head or leaves room for a printed one. */
   pad_print_mode: string;
   /** How much of the page top a pre-printed pad head takes, in px. */
-  preprinted_pad_height: string;
+  preprinted_pad_height: NumberField;
   address: string;
   print_size: string;
   contact_person: string;
@@ -99,11 +106,11 @@ interface branchItem {
   show_voucher_image: boolean;
   multi_product_order: boolean;
   /** Share of the property value the allotment letter asks for up front, as a percentage. */
-  down_payment_percent: string;
+  down_payment_percent: NumberField;
   /** What that share is taken on: 'total' or 'net_payable'. */
   down_payment_base: string;
   /** Monthly late-payment rate the allotment letter quotes, as a percentage. */
-  delay_charge_percent: string;
+  delay_charge_percent: NumberField;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -150,27 +157,40 @@ const defaultSignatureBlock = (companyName = '') =>
   (companyName ? `<p>${companyName}</p>` : '');
 
 /**
- * The rates the allotment letter has always quoted, kept as the values a branch
- * starts from. Match the fallbacks in UnitSaleController.
- */
-/**
  * How much of the page top a pre-printed pad head is assumed to take when a
  * branch has saved no measurement -- about the depth of the software one.
  */
-const defaultPreprintedPadHeight = '150';
-
-const defaultDownPaymentPercent = '30';
-const defaultDownPaymentBase = 'total';
-const defaultDelayChargePercent = '10';
+const defaultPreprintedPadHeight = 150;
 
 /**
- * A saved rate as the form's own text. Unset metas come back false, but a saved
- * 0 is a real answer -- a branch that asks for nothing -- so it stays.
+ * The rates the allotment letter has always quoted, kept as the values a branch
+ * starts from. Match the fallbacks in UnitSaleController.
+ */
+const defaultDownPaymentPercent = 30;
+const defaultDownPaymentBase = 'total';
+const defaultDelayChargePercent = 10;
+
+/**
+ * A saved choice as the form's own text. Unset metas come back false, so only
+ * a real answer is kept.
  */
 const metaTextOr = (value: unknown, fallback: string) =>
   value === null || value === undefined || value === '' || value === false
     ? fallback
     : String(value);
+
+/**
+ * A saved rate as the number it is. Unset metas come back false, but a saved 0
+ * is a real answer -- a branch that asks for nothing -- so it stays.
+ */
+const metaNumberOr = (value: unknown, fallback: number): number => {
+  if (value === null || value === undefined || value === '' || typeof value === 'boolean') {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
 
 const AddBranch = () => {
   const steps = [
@@ -308,7 +328,7 @@ const AddBranch = () => {
         ...b,
         pad_heading_print: b.pad_heading_print != null ? String(b.pad_heading_print) : '',
         pad_print_mode: metaTextOr(b.pad_print_mode, 'software'),
-        preprinted_pad_height: metaTextOr(b.preprinted_pad_height, defaultPreprintedPadHeight),
+        preprinted_pad_height: metaNumberOr(b.preprinted_pad_height, defaultPreprintedPadHeight),
         paper_size: b.paper_size != null ? String(b.paper_size) : '',
         device_identifier_text:
           b.device_identifier_text == null ||
@@ -354,9 +374,9 @@ const AddBranch = () => {
         need_customer_area: toBooleanFlag(b.need_customer_area),
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
         multi_product_order: toBooleanFlag(b.multi_product_order),
-        down_payment_percent: metaTextOr(b.down_payment_percent, defaultDownPaymentPercent),
+        down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
-        delay_charge_percent: metaTextOr(b.delay_charge_percent, defaultDelayChargePercent),
+        delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
         purchase_sms: toBooleanFlag(b.purchase_sms),
@@ -407,6 +427,22 @@ const AddBranch = () => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: inputValue,
+    }));
+  };
+
+  /**
+   * For the rates and measurements: what lands in state is the number, not the
+   * text the box holds. A number input reports an empty string both for a
+   * cleared box and for a half-typed decimal, and that empty is kept as it is
+   * -- rounding it to 0 would swallow the keystroke and make "1.5" untypable.
+   */
+  const handleOnNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const parsed = Number(value);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value === '' || !Number.isFinite(parsed) ? '' : parsed,
     }));
   };
 
@@ -1054,7 +1090,7 @@ const AddBranch = () => {
                         placeholder={'Enter Down Payment (%)'}
                         label={'Down Payment (%)'}
                         className={''}
-                        onChange={handleOnChange}
+                        onChange={handleOnNumberChange}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         What the payment terms ask for when the sale itself
@@ -1074,7 +1110,7 @@ const AddBranch = () => {
                         placeholder={'Enter Delay Charge (%)'}
                         label={'Delay Charge (% per month)'}
                         className={''}
-                        onChange={handleOnChange}
+                        onChange={handleOnNumberChange}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         The monthly charge the letter states on an overdue amount.
@@ -1118,7 +1154,7 @@ const AddBranch = () => {
                         placeholder={'Enter Blank Space (px)'}
                         label={'Blank Space at Top (px)'}
                         className={''}
-                        onChange={handleOnChange}
+                        onChange={handleOnNumberChange}
                         disabled={!usesPreprintedPad}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
