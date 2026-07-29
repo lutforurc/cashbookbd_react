@@ -124,10 +124,21 @@ const TradingCashReceived = () => {
   };
 
   useEffect(() => {
-    // cashReceived.data is the API's success sentence, which carries the
-    // voucher number in inconsistent wording — show just the number.
-    const voucherNo = extractVoucherNo(cashReceived.data);
-    toast.success(voucherNo ? `Voucher No. ${voucherNo}` : cashReceived.data);
+    // The same slice field holds two different things: the API's success
+    // sentence after a save, and the voucher object loaded for editing. Only
+    // the sentence has something to announce -- the object printed itself as
+    // "[object Object]", and the empty initial state announced nothing at all.
+    if (!cashReceived?.data) {
+      return;
+    }
+
+    if (typeof cashReceived.data === 'string') {
+      // The success string carries the voucher number in inconsistent
+      // wording — show just the number.
+      const voucherNo = extractVoucherNo(cashReceived.data);
+      toast.success(voucherNo ? `Voucher No. ${voucherNo}` : cashReceived.data);
+    }
+
     setFormData({
       id: formData.id,
       mtmId: '',
