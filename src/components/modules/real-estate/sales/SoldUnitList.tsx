@@ -16,7 +16,8 @@ import { API_UNIT_SALE_ALLOTMENT_LETTER_URL } from "../../../services/apiRoutes"
 import { fetchSoldUnits } from "./unitSaleSlice";
 import { fetchProjectDdl } from "../project/projectSlice";
 import { fetchBuildingDdl } from "../buildings/buildingsSlice";
-import { SoldUnitCustomer } from "./types";
+import ConfirmModal from "../../../utils/components/ConfirmModalProps";
+import { SoldUnitCustomer, SoldUnitRow } from "./types";
 import {
   customerColor,
   edgeStyle,
@@ -45,6 +46,9 @@ const SoldUnitList: React.FC = () => {
   const [dueOnly, setDueOnly] = useState(false);
   // The sale whose letter is being issued or printed — one at a time.
   const [busySaleId, setBusySaleId] = useState<number | null>(null);
+  // The sale waiting on the confirmation. Issuing a letter is not undoable —
+  // every click adds a version that stays on the record for good.
+  const [confirmUnit, setConfirmUnit] = useState<SoldUnitRow | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -143,8 +147,10 @@ const SoldUnitList: React.FC = () => {
    * Issues a letter. The server renders it once and appends the copy, so the
    * list only has to learn that one more version now exists.
    */
-  const handleGenerateLetter = async (saleId: number) => {
-    if (busySaleId) return;
+  const handleGenerateLetter = async () => {
+    const saleId = confirmUnit?.sale_id;
+    if (!saleId || busySaleId) return;
+
     setBusySaleId(saleId);
 
     try {
@@ -152,6 +158,7 @@ const SoldUnitList: React.FC = () => {
         `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}generate/${saleId}`,
       );
       toast.success(response?.data?.message || "Allotment letter generated");
+      setConfirmUnit(null);
       loadData();
     } catch (error: any) {
       toast.error(
@@ -503,7 +510,7 @@ const SoldUnitList: React.FC = () => {
                                     title="Issue a new allotment letter and keep the copy"
                                     buttonLoading={busySaleId === unit.sale_id}
                                     disabled={busySaleId === unit.sale_id}
-                                    onClick={() => handleGenerateLetter(unit.sale_id)}
+                                    onClick={() => setConfirmUnit(unit)}
                                     icon={<FiFilePlus className="text-sm" />}
                                     className="w-full whitespace-nowrap rounded disabled:opacity-50"
                                   />
@@ -585,6 +592,37 @@ const SoldUnitList: React.FC = () => {
           period={periodLabel}
         />
       </div>
+
+      {/* Issuing a letter cannot be taken back — the version stays on the sale
+          for good — so the unit and the version about to be created are named
+          before it happens. */}
+      <ConfirmModal
+        show={Boolean(confirmUnit)}
+        title="Confirm Letter Generation"
+        message={
+          <>
+            Are you sure you want to generate allotment letter
+            <span className="mt-1 block font-bold">
+              L-{Number(confirmUnit?.letter_count ?? 0) + 1} for{" "}
+              {confirmUnit?.unit_no || confirmUnit?.parking_no || "this unit"} ?
+            </span>
+            {Number(confirmUnit?.letter_count ?? 0) > 0 ? (
+              <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                The earlier letter
+                {Number(confirmUnit?.letter_count) > 1 ? "s stay" : " stays"} on
+                record and can still be printed.
+              </span>
+            ) : null}
+          </>
+        }
+        confirmLabel="Generate"
+        // DeleteButton carries no colour of its own, so an unstyled confirm
+        // renders white on white. Green because this creates, not destroys.
+        className="bg-green-600 hover:bg-green-700"
+        loading={busySaleId === confirmUnit?.sale_id}
+        onCancel={() => setConfirmUnit(null)}
+        onConfirm={handleGenerateLetter}
+      />
     </>
   );
 };
