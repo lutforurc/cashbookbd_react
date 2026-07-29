@@ -65,6 +65,8 @@ export interface SoldUnitRow {
   parking_amount: number;
   other_amount: number;
   receipt_no: string | null;
+  /** How many allotment letters have been issued — one L-n button each. */
+  letter_count?: number;
   total_amount: number;
   booking_amount: number;
   downpayment_amount: number;

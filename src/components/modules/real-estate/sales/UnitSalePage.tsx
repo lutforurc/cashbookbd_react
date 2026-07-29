@@ -68,6 +68,14 @@ const safeNumber = (v: any) => {
   return Number.isFinite(n) ? n : 0;
 };
 
+/**
+ * Size x rate rarely lands on a whole taka (1,229.6 sqft at 203.32 gives
+ * 249,999.6). Money here is billed, receipted and reported in whole taka, so
+ * the paisa is dropped at the point the figure is born rather than rounded away
+ * later in each report -- that way the lines still add up to the total shown.
+ */
+const wholeTaka = (size: number, rate: number) => Math.floor(size * rate);
+
 /* ================= PAGE ================= */
 
 export default function UnitSalePage() {
@@ -110,7 +118,7 @@ export default function UnitSalePage() {
 
     const size = Number(option.label_0 || 0);
     const rate = Number(option.label_1 || 0);
-    const amount = size * rate;
+    const amount = wholeTaka(size, rate);
 
     setItems((prev) => {
       const exists = prev.find((x) => x.type === "UNIT_PRICE");
@@ -200,7 +208,7 @@ export default function UnitSalePage() {
 
     const size = Number(option.label_0 || 0);
     const rate = Number(option.label_1 || 0);
-    const amount = size * rate;
+    const amount = wholeTaka(size, rate);
 
     setItems((prev) => {
       const exists = prev.find((x) => x.type === "PARKING");
@@ -258,7 +266,8 @@ export default function UnitSalePage() {
       return;
     }
 
-    const amt = safeNumber(chargeAmount);
+    // Whole taka only, here as everywhere else on this page: 100.99 is 100.
+    const amt = Math.floor(safeNumber(chargeAmount));
     if (amt <= 0) {
       toast.info("Amount must be greater than 0.");
       return;
@@ -310,7 +319,7 @@ export default function UnitSalePage() {
   };
 
   const saveEdit = (it: PriceItem) => {
-    const val = Number(draftValue);
+    const val = Math.floor(Number(draftValue));
     if (Number.isNaN(val) || val <= 0) return;
 
     setItems((p) => p.map((x) => (x.id === it.id ? { ...x, amount: Math.abs(val) } : x)));

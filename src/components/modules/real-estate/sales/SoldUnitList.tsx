@@ -43,7 +43,8 @@ const SoldUnitList: React.FC = () => {
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [q, setQ] = useState("");
   const [dueOnly, setDueOnly] = useState(false);
-  const [letterSaleId, setLetterSaleId] = useState<number | null>(null);
+  // The sale whose letter is being issued or printed — one at a time.
+  const [busySaleId, setBusySaleId] = useState<number | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -127,17 +128,48 @@ const SoldUnitList: React.FC = () => {
    * the click itself — opening it after the request returns gets caught by the
    * popup blocker — and falls back to a plain download when it is blocked anyway.
    */
-  const handleAllotmentLetter = async (saleId: number) => {
-    if (letterSaleId) return;
+  const handleAllotmentLetter = (saleId: number) =>
+    openLetterPdf(saleId, `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}${saleId}`, `demo-${saleId}`);
 
-    const letterTab = window.open("", "_blank");
-    setLetterSaleId(saleId);
+  /** Prints an issued letter back from the copy stored on the sale. */
+  const handlePrintLetter = (saleId: number, version: number) =>
+    openLetterPdf(
+      saleId,
+      `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}${saleId}/print/${version}`,
+      `${saleId}-L${version}`,
+    );
+
+  /**
+   * Issues a letter. The server renders it once and appends the copy, so the
+   * list only has to learn that one more version now exists.
+   */
+  const handleGenerateLetter = async (saleId: number) => {
+    if (busySaleId) return;
+    setBusySaleId(saleId);
 
     try {
-      const response = await httpService.get(
-        `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}${saleId}`,
-        { responseType: "blob" }
+      const response = await httpService.post(
+        `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}generate/${saleId}`,
       );
+      toast.success(response?.data?.message || "Allotment letter generated");
+      loadData();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || "Could not generate the letter",
+      );
+    } finally {
+      setBusySaleId(null);
+    }
+  };
+
+  const openLetterPdf = async (saleId: number, url: string, fileTag: string) => {
+    if (busySaleId) return;
+
+    const letterTab = window.open("", "_blank");
+    setBusySaleId(saleId);
+
+    try {
+      const response = await httpService.get(url, { responseType: "blob" });
 
       // A refusal comes back as JSON on a 2xx, so it never reaches the catch —
       // it has to be spotted by the blob's own type before it is shown as a PDF.
@@ -155,7 +187,7 @@ const SoldUnitList: React.FC = () => {
       } else {
         const link = document.createElement("a");
         link.href = fileUrl;
-        link.download = `allotment-letter-${saleId}.pdf`;
+        link.download = `allotment-letter-${fileTag}.pdf`;
         link.click();
       }
 
@@ -165,7 +197,7 @@ const SoldUnitList: React.FC = () => {
       letterTab?.close();
       toast.error(error?.message || "Failed to build the allotment letter");
     } finally {
-      setLetterSaleId(null);
+      setBusySaleId(null);
     }
   };
 
@@ -462,15 +494,47 @@ const SoldUnitList: React.FC = () => {
                                   right: true,
                                 })}
                               >
-                                <button
-                                  type="button"
-                                  title="Print Allotment Letter"
-                                  disabled={letterSaleId === unit.sale_id}
-                                  onClick={() => handleAllotmentLetter(unit.sale_id)}
-                                  className="mx-auto flex h-7 w-7 items-center justify-center rounded border border-stroke text-primary hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-meta-4"
-                                >
-                                  <FiFileText className="text-base" />
-                                </button>
+                                <div className="flex flex-col items-center gap-1">
+                                  <button
+                                    type="button"
+                                    title="Issue a new allotment letter and keep the copy"
+                                    disabled={busySaleId === unit.sale_id}
+                                    onClick={() => handleGenerateLetter(unit.sale_id)}
+                                    className="w-full rounded bg-primary px-2 py-1 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                                  >
+                                    Generate
+                                  </button>
+
+                                  {/* One button per issued letter. These print the
+                                      stored copy, not a fresh calculation. */}
+                                  <div className="flex flex-wrap justify-center gap-1">
+                                    {Array.from(
+                                      { length: Number(unit.letter_count) || 0 },
+                                      (_, i) => i + 1,
+                                    ).map((version) => (
+                                      <button
+                                        key={version}
+                                        type="button"
+                                        title={`Print letter L-${version} as it was issued`}
+                                        disabled={busySaleId === unit.sale_id}
+                                        onClick={() => handlePrintLetter(unit.sale_id, version)}
+                                        className="rounded border border-stroke px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-meta-4"
+                                      >
+                                        L-{version}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    title="Preview only — built from today's data, not saved"
+                                    disabled={busySaleId === unit.sale_id}
+                                    onClick={() => handleAllotmentLetter(unit.sale_id)}
+                                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary disabled:opacity-50 dark:text-gray-400"
+                                  >
+                                    <FiFileText /> DEMO
+                                  </button>
+                                </div>
                               </td>
                             </>
                           )}
