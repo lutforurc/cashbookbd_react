@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import InputElement from '../../utils/fields/InputElement';
+import InputDatePicker from '../../utils/fields/DatePicker';
 import RichTextEditor from '../../utils/fields/RichTextEditor';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
@@ -190,6 +191,32 @@ const metaTextOr = (value: unknown, fallback: string) =>
   value === null || value === undefined || value === '' || value === false
     ? fallback
     : String(value);
+
+/**
+ * A stored 'YYYY-MM-DD' as a date on the calendar.
+ *
+ * Read out by hand rather than handed to `new Date`, which reads that shape as
+ * UTC midnight — east of Greenwich that is still the day before, and the picker
+ * would open on it.
+ */
+const parseIsoDate = (value: string): Date | null => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
+
+  if (!parts) {
+    return null;
+  }
+
+  const date = new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+/** And back again, off the local parts for the same reason. */
+const toIsoDate = (date: Date | null) =>
+  date && !Number.isNaN(date.getTime())
+    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+        date.getDate(),
+      ).padStart(2, '0')}`
+    : '';
 
 /**
  * A saved rate as the number it is. Unset metas come back false, but a saved 0
@@ -392,8 +419,8 @@ const AddBranch = () => {
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
         delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
         letter_ref_prefix: metaTextOr(b.letter_ref_prefix, ''),
-        // A native date input only accepts YYYY-MM-DD; anything else it silently
-        // shows as empty, so a stored value of another shape is cut back to it.
+        // Held as YYYY-MM-DD whatever the picker shows, so a stored value that
+        // came with a time on it is cut back to the day.
         letter_ref_date: metaTextOr(b.letter_ref_date, '').slice(0, 10),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
@@ -469,6 +496,17 @@ const AddBranch = () => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: value,
+    }));
+  };
+
+  /**
+   * The picker deals in dates, the meta in text. Cleared, it saves nothing —
+   * which is what makes each letter offer the day it is issued.
+   */
+  const handleRefDateChange = (date: Date | null) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      letter_ref_date: toIsoDate(date),
     }));
   };
 
@@ -1198,22 +1236,22 @@ const AddBranch = () => {
                         onChange={handleOnChange}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        The year and the sale's serial are added to it —
-                        BST/ALLOT/2026/036. Left blank, the letter falls back to
-                        the project's initials. The clerk issuing a letter can
-                        still write any reference over it.
+                        Offered as written when a letter is issued — nothing is
+                        added to it. Left blank, the letter falls back to the
+                        project's initials. The clerk issuing a letter finishes
+                        or replaces it against the register.
                       </p>
                     </div>
 
                     <div>
-                      <InputElement
+                      <InputDatePicker
                         id="letter_ref_date"
-                        value={formData.letter_ref_date ?? ''}
                         name="letter_ref_date"
-                        type="date"
-                        label={'Reference Date'}
-                        className={''}
-                        onChange={handleOnChange}
+                        label="Reference Date"
+                        className="h-[2.1rem] w-full text-sm"
+                        selectedDate={parseIsoDate(formData.letter_ref_date)}
+                        setSelectedDate={handleRefDateChange}
+                        setCurrentDate={handleRefDateChange}
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         The date letters are dated with. Left blank, each letter
