@@ -37,6 +37,16 @@ const SoldUnitList: React.FC = () => {
   );
   const projectDdl = useSelector((state: any) => state.realEstateProjects?.projectDdl);
   const buildingDdl = useSelector((state: any) => state.buildings?.buildingDdl);
+  // The branch's own numbering, e.g. 'BST/ALLOT'. Unset, this screen suggests
+  // nothing and the server falls back to the project's initials.
+  const letterRefPrefix = String(
+    useSelector((state: any) => state.settings?.data?.branch?.letter_ref_prefix) ?? ""
+  ).trim();
+  // The date the branch dates its letters. Unset, a letter is offered the day it
+  // is being issued.
+  const letterRefDate = String(
+    useSelector((state: any) => state.settings?.data?.branch?.letter_ref_date) ?? ""
+  ).trim();
 
   const [projectId, setProjectId] = useState<string>("");
   const [buildingId, setBuildingId] = useState<string>("");
@@ -49,6 +59,15 @@ const SoldUnitList: React.FC = () => {
   // The sale waiting on the confirmation. Issuing a letter is not undoable —
   // every click adds a version that stays on the record for good.
   const [confirmUnit, setConfirmUnit] = useState<SoldUnitRow | null>(null);
+  // What the letter about to be issued will be headed with. Both are the
+  // office's to write: the reference has to match whatever the paper register
+  // already says, and a letter sent late carries the day it went out, not the
+  // day of the sale.
+  const [refNo, setRefNo] = useState("");
+  const [refDate, setRefDate] = useState<Date | null>(null);
+  // The number this screen offered, kept so a changed date can update it while
+  // leaving a reference the clerk typed themselves alone.
+  const [suggestedRefNo, setSuggestedRefNo] = useState("");
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -144,6 +163,49 @@ const SoldUnitList: React.FC = () => {
     );
 
   /**
+   * The number this screen offers for a letter: the branch's prefix, the year of
+   * the letter's own date and the sale's serial. Blank when the branch has set
+   * no prefix — the server then derives one, and blank says so honestly rather
+   * than guessing at the rule in a second place.
+   */
+  const suggestRefNo = (unit: SoldUnitRow, on: Date) =>
+    letterRefPrefix
+      ? `${letterRefPrefix.replace(/\/+$/, "")}/${dayjs(on).format("YYYY")}/${String(
+          unit.sale_id
+        ).padStart(3, "0")}`
+      : "";
+
+  /**
+   * Opens the confirmation with the reference and date it will be headed with.
+   *
+   * The branch's date is used when it has set one, and today's when it has not.
+   * Either is only an offer -- it is shown in the dialog so a date left behind in
+   * the settings is seen and corrected rather than printed unnoticed.
+   */
+  const askToGenerate = (unit: SoldUnitRow) => {
+    const parsed = letterRefDate ? dayjs(letterRefDate) : null;
+    const on = parsed?.isValid() ? parsed.toDate() : new Date();
+    const suggestion = suggestRefNo(unit, on);
+
+    setConfirmUnit(unit);
+    setRefDate(on);
+    setRefNo(suggestion);
+    setSuggestedRefNo(suggestion);
+  };
+
+  /** The year belongs to the reference, so it follows the date -- unless the
+   *  clerk has already written a reference of their own. */
+  const handleRefDateChange = (date: Date | null) => {
+    setRefDate(date);
+
+    if (!confirmUnit || !date) return;
+
+    const next = suggestRefNo(confirmUnit, date);
+    setRefNo((current) => (current === suggestedRefNo ? next : current));
+    setSuggestedRefNo(next);
+  };
+
+  /**
    * Issues a letter. The server renders it once and appends the copy, so the
    * list only has to learn that one more version now exists.
    */
@@ -156,6 +218,11 @@ const SoldUnitList: React.FC = () => {
     try {
       const response = await httpService.post(
         `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}generate/${saleId}`,
+        {
+          // Left out when empty, so the server keeps deriving what it always did.
+          ref_no: refNo.trim() || undefined,
+          ref_date: refDate ? dayjs(refDate).format("YYYY-MM-DD") : undefined,
+        },
       );
       toast.success(response?.data?.message || "Allotment letter generated");
       setConfirmUnit(null);
@@ -510,7 +577,7 @@ const SoldUnitList: React.FC = () => {
                                     title="Issue a new allotment letter and keep the copy"
                                     buttonLoading={busySaleId === unit.sale_id}
                                     disabled={busySaleId === unit.sale_id}
-                                    onClick={() => setConfirmUnit(unit)}
+                                    onClick={() => askToGenerate(unit)}
                                     icon={<FiFilePlus className="text-sm" />}
                                     className="w-full whitespace-nowrap rounded disabled:opacity-50"
                                   />
@@ -613,6 +680,43 @@ const SoldUnitList: React.FC = () => {
                 record and can still be printed.
               </span>
             ) : null}
+
+            {/* Both head the letter, and both are written here rather than
+                derived, because only the office knows what its register says
+                and which day the letter is going out on. */}
+            <span className="mt-3 block">
+              <label className="block text-sm" htmlFor="letter_ref_no">
+                Reference No
+              </label>
+              <InputElement
+                id="letter_ref_no"
+                name="letter_ref_no"
+                type="text"
+                value={refNo}
+                placeholder={letterRefPrefix ? "" : "Left blank, the letter numbers itself"}
+                className="h-8.5 w-full text-sm"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setRefNo(e.target.value)
+                }
+              />
+            </span>
+
+            <span className="mt-2 block">
+              <label className="block text-sm">
+                Reference Date
+                {letterRefDate ? (
+                  <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
+                    (from branch settings)
+                  </span>
+                ) : null}
+              </label>
+              <InputDatePicker
+                setCurrentDate={handleRefDateChange}
+                className="h-8.5 w-full text-sm font-medium"
+                selectedDate={refDate}
+                setSelectedDate={handleRefDateChange}
+              />
+            </span>
           </>
         }
         confirmLabel="Generate"

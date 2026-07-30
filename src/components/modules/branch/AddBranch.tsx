@@ -111,6 +111,18 @@ interface branchItem {
   down_payment_base: string;
   /** Yearly late-payment rate the allotment letter quotes, as a percentage. */
   delay_charge_percent: NumberField;
+  /**
+   * What an allotment letter's reference number starts with, e.g. 'BST/ALLOT'.
+   * The year and the sale's serial are added to it to suggest a number, which
+   * the clerk issuing the letter can still overwrite.
+   */
+  letter_ref_prefix: string;
+  /**
+   * The date the branch's allotment letters carry, as YYYY-MM-DD. Left empty,
+   * the screen issuing a letter offers today. Either way it is only what the
+   * clerk is shown -- they can write another date over it before issuing.
+   */
+  letter_ref_date: string;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -283,6 +295,8 @@ const AddBranch = () => {
     down_payment_percent: defaultDownPaymentPercent,
     down_payment_base: defaultDownPaymentBase,
     delay_charge_percent: defaultDelayChargePercent,
+    letter_ref_prefix: '',
+    letter_ref_date: '',
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -377,6 +391,10 @@ const AddBranch = () => {
         down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
         delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
+        letter_ref_prefix: metaTextOr(b.letter_ref_prefix, ''),
+        // A native date input only accepts YYYY-MM-DD; anything else it silently
+        // shows as empty, so a stored value of another shape is cut back to it.
+        letter_ref_date: metaTextOr(b.letter_ref_date, '').slice(0, 10),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
         purchase_sms: toBooleanFlag(b.purchase_sms),
@@ -1165,6 +1183,42 @@ const AddBranch = () => {
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         The yearly rate the letter states on an overdue amount,
                         charged for the actual number of days of delay.
+                      </p>
+                    </div>
+
+                    <div>
+                      <InputElement
+                        id="letter_ref_prefix"
+                        value={formData.letter_ref_prefix ?? ''}
+                        name="letter_ref_prefix"
+                        type="text"
+                        placeholder={'e.g. BST/ALLOT'}
+                        label={'Reference No Prefix'}
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        The year and the sale's serial are added to it —
+                        BST/ALLOT/2026/036. Left blank, the letter falls back to
+                        the project's initials. The clerk issuing a letter can
+                        still write any reference over it.
+                      </p>
+                    </div>
+
+                    <div>
+                      <InputElement
+                        id="letter_ref_date"
+                        value={formData.letter_ref_date ?? ''}
+                        name="letter_ref_date"
+                        type="date"
+                        label={'Reference Date'}
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        The date letters are dated with. Left blank, each letter
+                        is offered the day it is issued — which is the safer of
+                        the two, since a date set here stays until it is changed.
                       </p>
                     </div>
                   </div>
