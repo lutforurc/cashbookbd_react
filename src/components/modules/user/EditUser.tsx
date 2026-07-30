@@ -16,6 +16,7 @@ import { authCheck } from '../../../features/authReducer';
 import MultiSelectDropdown from '../../utils/utils-functions/MultiSelectDropdown';
 import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
+import { hasPermission } from '../../utils/permissionChecker';
 
 type MultiOption = {
     value: string | number;
@@ -27,8 +28,18 @@ const EditUser = (user: any) => {
     const branchDdlData = useSelector((state: any) => state.branchDdl);
     const roles = useSelector((state: any) => state.roles);
     const showUser = useSelector((state: any) => state.users);
+    const settings = useSelector((state: any) => state.settings);
     const [dropdownData, setDropdownData] = useState<any[]>([]);
     const [selectedRoles, setSelectedRoles] = useState<MultiOption[]>([]);
+
+    // Setting somebody else's password is how this office recovers an account a
+    // user can no longer get into, so it stays -- but only for those trusted with
+    // it. Without the permission the two fields are not shown, and nothing about
+    // a password is sent even if the browser has filled them in.
+    const canChangePassword = hasPermission(
+        settings?.data?.permissions || [],
+        'user.password.change',
+    );
 
     const { id } = useParams<{ id: string }>();
 
@@ -176,6 +187,14 @@ const EditUser = (user: any) => {
             role_ids: roleIds,
         };
 
+        // Cleared rather than merely hidden. A password manager fills a hidden
+        // field as readily as a shown one, and submitting that would quietly set
+        // this user's password to whatever the browser had saved.
+        if (!canChangePassword) {
+            payload.password = '';
+            payload.confirmPassword = '';
+        }
+
         dispatch(updateUser(payload) as any);
     };
 
@@ -264,24 +283,28 @@ const EditUser = (user: any) => {
                     className={'py-2'}
                     onChange={handleOnChange}
                 />
-                <PasswordElement
-                    id="password"
-                    value={formData.password}
-                    name="password"
-                    placeholder={'Enter password'}
-                    label={'Password'}
-                    className={''}
-                    onChange={handleOnChange}
-                />
-                <PasswordElement
-                    id="confirmPassword"
-                    value={formData.confirmPassword}
-                    name="confirmPassword"
-                    placeholder={'Enter confirm password'}
-                    label={'Confirm Password'}
-                    className={''}
-                    onChange={handleOnChange}
-                />
+                {canChangePassword ? (
+                    <>
+                        <PasswordElement
+                            id="password"
+                            value={formData.password}
+                            name="password"
+                            placeholder={'Enter password'}
+                            label={'Password'}
+                            className={''}
+                            onChange={handleOnChange}
+                        />
+                        <PasswordElement
+                            id="confirmPassword"
+                            value={formData.confirmPassword}
+                            name="confirmPassword"
+                            placeholder={'Enter confirm password'}
+                            label={'Confirm Password'}
+                            className={''}
+                            onChange={handleOnChange}
+                        />
+                    </>
+                ) : null}
 
                 <div className="md:col-span-2 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
                     <div className="mb-4">
