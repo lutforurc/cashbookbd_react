@@ -3,6 +3,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import {
   SoldUnitCustomer,
   SoldUnitLine,
+  SoldUnitReceipt,
   SoldUnitRow,
   SoldUnitTotals,
 } from "./types";
@@ -99,6 +100,24 @@ export const saleLines = (unit: SoldUnitRow): SoldUnitLine[] =>
           amount: unit.total_amount,
         },
       ];
+
+/**
+ * The booking receipts of one sale. A sale saved before receipts were reported
+ * per payment falls back to the single number kept on the sale itself, so an
+ * older row still shows the receipt it has rather than none at all.
+ */
+export const saleReceipts = (unit: SoldUnitRow): SoldUnitReceipt[] =>
+  unit.receipts?.length
+    ? unit.receipts
+    : unit.receipt_no
+    ? [
+        {
+          receipt_no: unit.receipt_no,
+          payment_date: unit.sale_date,
+          amount: 0,
+        },
+      ]
+    : [];
 
 type EdgeFlags = {
   top?: boolean;

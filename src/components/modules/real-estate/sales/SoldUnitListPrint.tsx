@@ -5,7 +5,13 @@ import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import { SoldUnitCustomer, SoldUnitTotals } from "./types";
-import { customerColor, edgeStyle, money, saleLines } from "./soldUnitReport";
+import {
+  customerColor,
+  edgeStyle,
+  money,
+  saleLines,
+  saleReceipts,
+} from "./soldUnitReport";
 
 type Props = {
   customers: SoldUnitCustomer[];
@@ -185,7 +191,6 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                                       {unit.sale_date
                                         ? dayjs(unit.sale_date).format("DD/MM/YYYY")
                                         : ""}
-                                      {unit.receipt_no ? ` | ${unit.receipt_no}` : ""}
                                     </div>
                                   </td>
                                   <td
@@ -199,7 +204,18 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                                     }}
                                     className={`${cell} text-right align-middle`}
                                   >
-                                    {money(unit.received_amount)}
+                                    <div>{money(unit.received_amount)}</div>
+                                    {saleReceipts(unit).map((receipt, index) => (
+                                      <div
+                                        key={`${receipt.receipt_no ?? "mr"}-${index}`}
+                                        className="text-[8px]"
+                                      >
+                                        {receipt.payment_date
+                                          ? dayjs(receipt.payment_date).format("DD/MM/YYYY")
+                                          : ""}
+                                        {receipt.receipt_no ? ` | ${receipt.receipt_no}` : ""}
+                                      </div>
+                                    ))}
                                   </td>
                                   <td
                                     rowSpan={lines.length}

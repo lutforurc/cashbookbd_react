@@ -24,6 +24,7 @@ import {
   money,
   reportTotals,
   saleLines,
+  saleReceipts,
 } from "./soldUnitReport";
 import SoldUnitListPrint from "./SoldUnitListPrint";
 
@@ -65,9 +66,6 @@ const SoldUnitList: React.FC = () => {
   // day of the sale.
   const [refNo, setRefNo] = useState("");
   const [refDate, setRefDate] = useState<Date | null>(null);
-  // The number this screen offered, kept so a changed date can update it while
-  // leaving a reference the clerk typed themselves alone.
-  const [suggestedRefNo, setSuggestedRefNo] = useState("");
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -163,20 +161,12 @@ const SoldUnitList: React.FC = () => {
     );
 
   /**
-   * The number this screen offers for a letter: the branch's prefix, the year of
-   * the letter's own date and the sale's serial. Blank when the branch has set
-   * no prefix — the server then derives one, and blank says so honestly rather
-   * than guessing at the rule in a second place.
-   */
-  const suggestRefNo = (unit: SoldUnitRow, on: Date) =>
-    letterRefPrefix
-      ? `${letterRefPrefix.replace(/\/+$/, "")}/${dayjs(on).format("YYYY")}/${String(
-          unit.sale_id
-        ).padStart(3, "0")}`
-      : "";
-
-  /**
    * Opens the confirmation with the reference and date it will be headed with.
+   *
+   * The reference offered is the branch's own, exactly as it was written; the
+   * clerk finishes it against the paper register. Blank when the branch has set
+   * none — the server then derives one, and blank says so honestly rather than
+   * guessing at the rule in a second place.
    *
    * The branch's date is used when it has set one, and today's when it has not.
    * Either is only an offer -- it is shown in the dialog so a date left behind in
@@ -184,25 +174,10 @@ const SoldUnitList: React.FC = () => {
    */
   const askToGenerate = (unit: SoldUnitRow) => {
     const parsed = letterRefDate ? dayjs(letterRefDate) : null;
-    const on = parsed?.isValid() ? parsed.toDate() : new Date();
-    const suggestion = suggestRefNo(unit, on);
 
     setConfirmUnit(unit);
-    setRefDate(on);
-    setRefNo(suggestion);
-    setSuggestedRefNo(suggestion);
-  };
-
-  /** The year belongs to the reference, so it follows the date -- unless the
-   *  clerk has already written a reference of their own. */
-  const handleRefDateChange = (date: Date | null) => {
-    setRefDate(date);
-
-    if (!confirmUnit || !date) return;
-
-    const next = suggestRefNo(confirmUnit, date);
-    setRefNo((current) => (current === suggestedRefNo ? next : current));
-    setSuggestedRefNo(next);
+    setRefDate(parsed?.isValid() ? parsed.toDate() : new Date());
+    setRefNo(letterRefPrefix);
   };
 
   /**
@@ -536,7 +511,6 @@ const SoldUnitList: React.FC = () => {
                                   {unit.sale_date
                                     ? dayjs(unit.sale_date).format("DD/MM/YYYY")
                                     : ""}
-                                  {unit.receipt_no ? ` | ${unit.receipt_no}` : ""}
                                 </div>
                               </td>
                               <td
@@ -547,7 +521,21 @@ const SoldUnitList: React.FC = () => {
                                   bottom: saleEndsBlock,
                                 })}
                               >
-                                {money(unit.received_amount)}
+                                <div>{money(unit.received_amount)}</div>
+                                {/* One line per booking receipt, so a buyer who
+                                    booked in more than one payment is read
+                                    receipt by receipt rather than as one sum. */}
+                                {saleReceipts(unit).map((receipt, index) => (
+                                  <div
+                                    key={`${receipt.receipt_no ?? "mr"}-${index}`}
+                                    className="text-[10px] text-gray-500 dark:text-gray-400"
+                                  >
+                                    {receipt.payment_date
+                                      ? dayjs(receipt.payment_date).format("DD/MM/YYYY")
+                                      : ""}
+                                    {receipt.receipt_no ? ` | ${receipt.receipt_no}` : ""}
+                                  </div>
+                                ))}
                               </td>
                               <td
                                 rowSpan={lines.length}
@@ -711,10 +699,10 @@ const SoldUnitList: React.FC = () => {
                 ) : null}
               </label>
               <InputDatePicker
-                setCurrentDate={handleRefDateChange}
+                setCurrentDate={setRefDate}
                 className="h-8.5 w-full text-sm font-medium"
                 selectedDate={refDate}
-                setSelectedDate={handleRefDateChange}
+                setSelectedDate={setRefDate}
               />
             </span>
           </>

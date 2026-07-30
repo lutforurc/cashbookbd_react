@@ -43,6 +43,13 @@ export interface SoldUnitLine {
   amount: number;
 }
 
+/** One confirmed booking receipt against a sale. */
+export interface SoldUnitReceipt {
+  receipt_no: string | null;
+  payment_date: string | null;
+  amount: number;
+}
+
 export interface SoldUnitRow {
   serial_no: number;
   lines: SoldUnitLine[];
@@ -65,6 +72,8 @@ export interface SoldUnitRow {
   parking_amount: number;
   other_amount: number;
   receipt_no: string | null;
+  /** The booking receipts, in the order the money came in. */
+  receipts: SoldUnitReceipt[];
   /** How many allotment letters have been issued — one L-n button each. */
   letter_count?: number;
   total_amount: number;
