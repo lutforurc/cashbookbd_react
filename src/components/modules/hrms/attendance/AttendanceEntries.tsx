@@ -212,6 +212,8 @@ const AttendanceEntries = ({ user }: any) => {
   const [bulkApproveLoading, setBulkApproveLoading] = useState(false);
   const [bulkClearLoading, setBulkClearLoading] = useState(false);
   const [showBulkClearConfirm, setShowBulkClearConfirm] = useState(false);
+  const [deleteConfirmRow, setDeleteConfirmRow] = useState<any | null>(null);
+  const [deletingAttendanceId, setDeletingAttendanceId] = useState<number | null>(null);
   const [bulkLoadedKey, setBulkLoadedKey] = useState('');
   const [pendingRows, setPendingRows] = useState<Record<string, any>>({});
   const [employeeMeta, setEmployeeMeta] = useState<any>(null);
@@ -571,7 +573,7 @@ const AttendanceEntries = ({ user }: any) => {
     }
   };
 
-  const handleDelete = async (row: any) => {
+  const handleDelete = (row: any) => {
     if (row.__pending) {
       toast.info('Pending attendance can be removed before save by resetting the list');
       return;
@@ -587,18 +589,24 @@ const AttendanceEntries = ({ user }: any) => {
       return;
     }
 
-    const confirmed = window.confirm(`Delete attendance for ${row.employee_name || 'this employee'} on ${chartDate(row.attendance_date)}?`);
-    if (!confirmed) return;
+    setDeleteConfirmRow(row);
+  };
 
+  const handleDeleteConfirmed = async () => {
+    if (!deleteConfirmRow?.id) return;
+
+    setDeletingAttendanceId(deleteConfirmRow.id);
     try {
-      const response = await dispatch(deleteAttendanceEntry({ id: row.id })).unwrap();
+      const response = await dispatch(deleteAttendanceEntry({ id: deleteConfirmRow.id })).unwrap();
       toast.success(response?.message || 'Attendance deleted successfully');
+      setDeleteConfirmRow(null);
       loadEntries();
     } catch (error: any) {
       toast.error(error || 'Attendance delete failed');
+    } finally {
+      setDeletingAttendanceId(null);
     }
   };
-
   const handleBulkApprove = async () => {
     const approvableEntries = displayEntries.filter((row: any) => row?.id && row?.approval_status !== 'approved');
 
@@ -1003,6 +1011,27 @@ const AttendanceEntries = ({ user }: any) => {
         confirmLabel="Confirm"
         onCancel={() => setShowBulkClearConfirm(false)}
         onConfirm={handleBulkClearApprovedEntries}
+        className="bg-red-600 hover:bg-red-700"
+      />
+      <ConfirmModal
+        show={Boolean(deleteConfirmRow)}
+        title="Confirm Deletion"
+        message={
+          <>
+            Delete attendance for
+            <span className="mt-1 block font-bold">
+              {deleteConfirmRow?.employee_name || 'this employee'}
+            </span>
+            <span className="mt-1 block">
+              on {deleteConfirmRow?.attendance_date ? chartDate(deleteConfirmRow.attendance_date) : 'this date'} ?
+            </span>
+          </>
+        }
+        loading={deletingAttendanceId === deleteConfirmRow?.id}
+        cancelLabel="Cancel"
+        confirmLabel="Confirm"
+        onCancel={() => setDeleteConfirmRow(null)}
+        onConfirm={handleDeleteConfirmed}
         className="bg-red-600 hover:bg-red-700"
       />
     </div>
