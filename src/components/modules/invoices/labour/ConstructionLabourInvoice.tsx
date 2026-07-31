@@ -87,6 +87,7 @@ type Action =
   | { type: "UPDATE_PRODUCT"; index: number; product: Product }
   | { type: "REMOVE_PRODUCT"; id: number }
   | { type: "RESET" }
+  | { type: "RESET_AFTER_SAVE" }
   | { type: "LOAD_EDIT"; payload: Partial<FormState> };
 
 function reducer(state: FormState, action: Action): FormState {
@@ -108,10 +109,29 @@ function reducer(state: FormState, action: Action): FormState {
       return { ...state, ...action.payload };
     case "RESET":
       return { ...initialFormState };
+    case "RESET_AFTER_SAVE":
+      return {
+        ...initialFormState,
+        account: state.account,
+        accountName: state.accountName,
+      };
     default:
       return state;
   }
 }
+
+const findVoucherNo = (value: any): string => {
+  if (!value || typeof value !== "object") return "";
+  if (value.vr_no) return String(value.vr_no);
+  if (value.voucher_no) return String(value.voucher_no);
+
+  for (const nestedValue of Object.values(value)) {
+    const voucherNo = findVoucherNo(nestedValue);
+    if (voucherNo) return voucherNo;
+  }
+
+  return "";
+};
 
 /* -------------------------
    Component
@@ -156,6 +176,16 @@ function ConstructionLabourInvoice(): JSX.Element {
 
   const resetForm = useCallback(() => {
     localDispatch({ type: "RESET" });
+    setIsUpdateButton(false);
+    setIsUpdating(false);
+    setUpdateIndex(null);
+    setIsInvoiceUpdate(false);
+    setProductData({});
+    setStartDate(null);
+  }, []);
+
+  const resetAfterSave = useCallback(() => {
+    localDispatch({ type: "RESET_AFTER_SAVE" });
     setIsUpdateButton(false);
     setIsUpdating(false);
     setUpdateIndex(null);
@@ -319,18 +349,18 @@ function ConstructionLabourInvoice(): JSX.Element {
     try {
       setSaveButtonLoading(true);
       const res = await dispatch(labourInvoiceStore(state as any)).unwrap();
-      // res expected to contain data and message
-      toast.success(res?.message || "Invoice saved");
+      const voucherNo = findVoucherNo(res);
+      toast.success(voucherNo ? `Vr. No. ${voucherNo}` : res?.message || "Saved successfully.");
       // Reset after small delay so user sees toast
       setTimeout(() => {
-        resetForm();
+        resetAfterSave();
         setSaveButtonLoading(false);
       }, 600);
     } catch (err: any) {
       toast.error(err?.message || "Something went wrong!");
       setSaveButtonLoading(false);
     }
-  }, [dispatch, state, resetForm]);
+  }, [dispatch, state, resetAfterSave]);
 
   const handleInvoiceUpdate = useCallback(async () => {
     const validationMessages = validateForm(state as any, invoiceMessage);
