@@ -16,6 +16,8 @@ import {
   FiAlertTriangle,
   FiGrid,
   FiFileText,
+  FiPhone,
+  FiMapPin,
 } from 'react-icons/fi';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import formatDate from '../../../utils/utils-functions/formatDate';
@@ -30,6 +32,8 @@ interface CustomerProfile {
   name: string;
   phone: string;
   address: string;
+  /** Absolute URL built by the API, or '' when the customer has no photo. */
+  photoUrl: string;
 }
 interface Summary {
   totalInstallments: number;
@@ -72,7 +76,12 @@ const CustomerDashboard: React.FC = () => {
     name: '',
     phone: '',
     address: '',
+    photoUrl: '',
   });
+
+  // A photo that 404s falls back to the initials rather than leaving a broken
+  // image in the header -- the file can go missing while the path stays.
+  const [photoFailed, setPhotoFailed] = useState(false);
 
 
   const [summary, setSummary] = useState<Summary>({
@@ -112,7 +121,11 @@ const CustomerDashboard: React.FC = () => {
         name: currentCustomer.name,
         phone: currentCustomer.mobile,
         address: currentCustomer.address || '',
+        // The API resolves this to an absolute URL; the portal never has to
+        // work out where the file lives.
+        photoUrl: customer?.me?.data?.photo_url || '',
       });
+      setPhotoFailed(false);
     }
     const summeries = customer?.me.data?.payments?.original?.data?.data.summary;
     if (summeries) {
@@ -271,82 +284,145 @@ const allPayments = paymentList.map((pay: any) => ({
   const money = (n: number) => thousandSeparator(Number(n || 0).toFixed(2));
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-boxdark-2 transition-colors">
-      <div className="max-w-5xl mx-auto px-3 py-4 sm:px-6 sm:py-6 space-y-5">
+    <div className="min-h-screen bg-gray-100 transition-colors dark:bg-boxdark-2">
+      {/* Widened to the app's own container. The statement and payment tables
+          inside the tabs are the real beneficiaries -- at 5xl they scrolled
+          sideways on a screen with room to spare. */}
+      <div className="mx-auto w-full max-w-screen-2xl space-y-4 px-3 py-4 sm:space-y-5 sm:px-6 sm:py-6">
         {/* ===== Hero header ===== */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full bg-primary text-lg sm:text-xl font-bold text-white">
-                {initials}
+        <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark sm:p-6">
+          {/* Wraps rather than truncates on a phone: the address is the line
+              that used to be cut, and it is the one worth reading. */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+              {/* The ring keeps a light photo from bleeding into the white
+                  card, and holds the circle's edge whichever it is. */}
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-gray-100 dark:ring-strokedark sm:h-14 sm:w-14">
+                {profile.photoUrl && !photoFailed ? (
+                  <img
+                    src={profile.photoUrl}
+                    alt={profile.name || 'Customer'}
+                    onError={() => setPhotoFailed(true)}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-primary text-lg font-bold text-white sm:text-xl">
+                    {initials}
+                  </div>
+                )}
               </div>
               <div className="min-w-0">
                 <p className="text-xs text-gray-500 dark:text-bodydark">Welcome back 👋</p>
-                <h1 className="truncate text-lg sm:text-2xl font-bold text-gray-800 dark:text-white">
+                <h1 className="truncate text-lg font-bold text-gray-800 dark:text-white sm:text-2xl">
                   {profile.name || 'Customer'}
                 </h1>
-                <p className="mt-0.5 flex flex-wrap gap-x-3 text-xs sm:text-sm text-gray-500 dark:text-bodydark">
-                  {profile.phone && <span>📞 {profile.phone}</span>}
-                  {profile.address && <span className="truncate">📍 {profile.address}</span>}
-                </p>
+                <div className="mt-1 flex flex-col gap-x-4 gap-y-0.5 text-xs text-gray-500 dark:text-bodydark sm:flex-row sm:flex-wrap sm:text-sm">
+                  {profile.phone && (
+                    <span className="flex items-center gap-1.5">
+                      <FiPhone className="h-3.5 w-3.5 shrink-0" />
+                      {profile.phone}
+                    </span>
+                  )}
+                  {profile.address && (
+                    <span className="flex items-start gap-1.5">
+                      <FiMapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span>{profile.address}</span>
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
               <button
                 onClick={() => setIsDark((prev) => !prev)}
                 title="Toggle theme"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-strokedark transition-colors"
+                aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-strokedark"
               >
                 {isDark ? <FaSun /> : <FaMoon />}
               </button>
               <button
                 onClick={() => dispatch(logout() as any)}
-                className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-opacity-90 transition-colors"
+                className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-opacity-90"
               >
                 <FiLogOut />
-                <span className="hidden sm:inline">Logout</span>
+                <span>Logout</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* ===== KPI cards ===== */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
-            <div className="flex items-center justify-between">
+        {/* ===== KPI cards =====
+            Balance is the figure a customer opens this page for, so it leads:
+            wider on a large screen and set larger, with the other two reading as
+            the workings behind it. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-sm text-gray-500 dark:text-bodydark">Total Received</span>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
                 <FiShoppingBag />
               </span>
             </div>
             <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-white">৳ {money(totalDebit)}</p>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
-            <div className="flex items-center justify-between">
+          <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-sm text-gray-500 dark:text-bodydark">Total Payment</span>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                 <FiCreditCard />
               </span>
             </div>
             <p className="mt-2 text-2xl font-bold text-gray-800 dark:text-white">৳ {money(totalCredit)}</p>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-strokedark dark:bg-boxdark">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500 dark:text-bodydark">{balance > 0 ? 'Balance Due' : 'Balance'}</span>
-              <span className={`flex h-9 w-9 items-center justify-center rounded-full ${balance > 0 ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}`}>
+          <div
+            className={`rounded-lg border bg-white p-4 shadow-sm dark:bg-boxdark sm:col-span-2 ${
+              balance > 0
+                ? 'border-rose-200 dark:border-rose-900/60'
+                : 'border-gray-200 dark:border-strokedark'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm text-gray-500 dark:text-bodydark">
+                {balance > 0 ? 'Balance Due' : 'Balance'}
+              </span>
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                  balance > 0
+                    ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400'
+                    : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                }`}
+              >
                 <FiTrendingUp />
               </span>
             </div>
-            <p className={`mt-2 text-2xl font-bold ${balance > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-800 dark:text-white'}`}>৳ {money(balance)}</p>
+            <p
+              className={`mt-2 text-3xl font-bold sm:text-4xl ${
+                balance > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-800 dark:text-white'
+              }`}
+            >
+              ৳ {money(balance)}
+            </p>
+            {balance > 0 && (
+              <p className="mt-1 text-xs text-gray-500 dark:text-bodydark">
+                Received less payment. See the Due tab for what falls when.
+              </p>
+            )}
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="rounded-2xl border border-gray-200 bg-white dark:border-strokedark dark:bg-boxdark shadow-md">
-          <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 px-2 dark:border-strokedark sm:gap-2 sm:px-3">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
+          {/* The row scrolls on a phone rather than wrapping into two rows that
+              push the content down. */}
+          <nav
+            role="tablist"
+            aria-label="Account sections"
+            className="flex gap-1 overflow-x-auto border-b border-gray-200 px-2 dark:border-strokedark sm:gap-2 sm:px-3"
+          >
             {[
               { key: 'overview', label: 'Overview', icon: <FiGrid /> },
               { key: 'statement', label: 'Statement', icon: <FiFileText /> },
@@ -358,8 +434,10 @@ const allPayments = paymentList.map((pay: any) => ({
               return (
                 <button
                   key={tab.key}
+                  role="tab"
+                  aria-selected={active}
                   onClick={() => setActiveTab(tab.key as any)}
-                  className={`relative flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors
+                  className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors
                     ${
                       active
                         ? 'border-primary text-primary'
@@ -372,12 +450,12 @@ const allPayments = paymentList.map((pay: any) => ({
               );
             })}
           </nav>
-          <div className="p-4">
+          <div className="p-3 sm:p-4">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-5">
                 {summary.earlyPaymentMessage && (
-                  <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-200">
+                  <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-200">
                     <span>🎁</span>
                     <span>{summary.earlyPaymentMessage}</span>
                   </div>
@@ -387,32 +465,72 @@ const allPayments = paymentList.map((pay: any) => ({
                   <h2 className="mb-3 text-base font-semibold text-gray-800 dark:text-gray-100">
                     Installment Summary
                   </h2>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* The count itself stays in ordinary ink and the coloured
+                      chip beside it carries the state, so a number is never
+                      told apart by its colour alone. Overdue is the exception
+                      the rule allows: a genuine warning, and it keeps its red
+                      only while there is something to warn about -- alongside
+                      an icon and the word, never colour by itself. */}
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     {[
-                      { label: 'Total', value: summary.totalInstallments, icon: <FiLayers />, tone: 'text-slate-600 dark:text-slate-300', ring: 'bg-slate-100 dark:bg-slate-700' },
-                      { label: 'Paid', value: summary.paid, icon: <FiCheckCircle />, tone: 'text-emerald-600 dark:text-emerald-400', ring: 'bg-emerald-100 dark:bg-emerald-900/40' },
-                      { label: 'Due', value: summary.due, icon: <FiClock />, tone: 'text-blue-600 dark:text-blue-400', ring: 'bg-blue-100 dark:bg-blue-900/40' },
-                      { label: 'Overdue', value: summary.overdue, icon: <FiAlertTriangle />, tone: 'text-rose-600 dark:text-rose-400', ring: 'bg-rose-100 dark:bg-rose-900/40' },
-                    ].map((s) => (
-                      <div
-                        key={s.label}
-                        className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-strokedark dark:bg-gray-700/40"
-                      >
-                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg ${s.ring} ${s.tone}`}>
-                          {s.icon}
-                        </span>
-                        <div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
-                          <p className={`text-xl font-bold ${s.tone}`}>{s.value}</p>
+                      { label: 'Total', value: summary.totalInstallments, icon: <FiLayers />, tone: 'text-slate-600 dark:text-slate-300', ring: 'bg-slate-100 dark:bg-slate-700', alert: false },
+                      { label: 'Paid', value: summary.paid, icon: <FiCheckCircle />, tone: 'text-emerald-600 dark:text-emerald-400', ring: 'bg-emerald-100 dark:bg-emerald-900/40', alert: false },
+                      { label: 'Due', value: summary.due, icon: <FiClock />, tone: 'text-blue-600 dark:text-blue-400', ring: 'bg-blue-100 dark:bg-blue-900/40', alert: false },
+                      { label: 'Overdue', value: summary.overdue, icon: <FiAlertTriangle />, tone: 'text-rose-600 dark:text-rose-400', ring: 'bg-rose-100 dark:bg-rose-900/40', alert: true },
+                    ].map((s) => {
+                      const raised = s.alert && Number(s.value) > 0;
+
+                      return (
+                        <div
+                          key={s.label}
+                          className={`flex items-center gap-3 rounded-md border p-3 ${
+                            raised
+                              ? 'border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-900/10'
+                              : 'border-gray-100 bg-gray-50 dark:border-strokedark dark:bg-gray-700/40'
+                          }`}
+                        >
+                          <span
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg ${s.ring} ${s.tone}`}
+                          >
+                            {s.icon}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="truncate text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
+                            <p
+                              className={`text-xl font-bold ${
+                                raised ? s.tone : 'text-gray-800 dark:text-white'
+                              }`}
+                            >
+                              {s.value}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-dashed border-gray-200 dark:border-strokedark p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  Use the <span className="font-medium text-blue-600 dark:text-blue-400">Statement</span> and{' '}
-                  <span className="font-medium text-blue-600 dark:text-blue-400">Due</span> tabs above for full details.
+                {/* These two read as links, so now they behave as them. Text
+                    painted link-blue that does nothing when tapped is a small
+                    lie the page was telling. */}
+                <div className="rounded-md border border-dashed border-gray-200 p-4 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
+                  Use the{' '}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('statement')}
+                    className="font-medium text-primary underline-offset-2 hover:underline"
+                  >
+                    Statement
+                  </button>{' '}
+                  and{' '}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('due')}
+                    className="font-medium text-primary underline-offset-2 hover:underline"
+                  >
+                    Due
+                  </button>{' '}
+                  tabs for full details.
                 </div>
               </div>
             )}
@@ -430,16 +548,15 @@ const allPayments = paymentList.map((pay: any) => ({
             {/* Due Tab */}
             {activeTab === 'due' && <CustomerDue />}
 
-            {/* Installments Tab */}
+            {/* Installments Tab
+                No card of its own: this already sits inside one, and the second
+                border and shadow only drew a box around a box. */}
             {activeTab === 'installments' && (
-              <div
-                className="bg-white dark:bg-boxdark dark:border dark:border-strokedark 
-                              shadow rounded p-4 transition-colors"
-              >
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
+              <div>
+                <h2 className="mb-3 text-base font-semibold text-gray-800 dark:text-gray-100">
                   Installment Information
                 </h2>
-                <div className="overflow-x-auto">
+                <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
                   <Table columns={columns} data={installments || []} />
                 </div>
               </div>
@@ -447,29 +564,22 @@ const allPayments = paymentList.map((pay: any) => ({
 
             {/* Payments Tab */}
             {activeTab === 'payments' && (
-              <div
-                className="bg-white dark:bg-boxdark dark:border dark:border-strokedark 
-                              shadow rounded p-4 transition-colors"
-              >
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
+              <div>
+                <h2 className="mb-3 text-base font-semibold text-gray-800 dark:text-gray-100">
                   Payment History
                 </h2>
-                <div className="overflow-x-auto">
+                <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
                   <Table columns={paymentsColumns} data={allPayments || []} />
                 </div>
               </div>
             )}
 
-            {/* Payments Tab */}
             {activeTab === 'others' && (
-              <div
-                className="bg-white dark:bg-boxdark dark:border dark:border-strokedark 
-                              shadow rounded p-4 transition-colors"
-              >
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
+              <div>
+                <h2 className="mb-3 text-base font-semibold text-gray-800 dark:text-gray-100">
                   Payment History
                 </h2>
-                <div className="overflow-x-auto">
+                <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
                   <Table columns={paymentsColumns} data={allPayments || []} />
                 </div>
               </div>
