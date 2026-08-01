@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import RichTextEditor from '../../utils/fields/RichTextEditor';
@@ -21,8 +21,11 @@ import Loader from '../../../common/Loader';
 import Link from '../../utils/others/Link';
 import { getBranchSettings, getSettings } from '../settings/settingsSlice';
 import { toast } from 'react-toastify';
-import { API_REMOTE_URL } from '../../services/apiRoutes';
+import { API_BRANCH_CLEAR_OPENING_URL, API_REMOTE_URL } from '../../services/apiRoutes';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
+import httpService from '../../services/httpService';
+import { hasPermission } from '../../utils/permissionChecker';
 
 const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
   API_REMOTE_URL,
@@ -333,8 +336,93 @@ const AddBranch = () => {
 
   const { id } = useParams();
 
+  // Clearing an opening is only meaningful for a branch that already exists,
+  // and only for those trusted with it. The branch must also still be taking
+  // its openings -- see showClearOpening below.
+  const canClearOpening =
+    Boolean(id) &&
+    hasPermission(settings?.data?.permissions || [], 'branch.opening.clear');
+  const [confirmClearOpening, setConfirmClearOpening] = useState(false);
+  const [clearingOpening, setClearingOpening] = useState(false);
 
+  // null while nothing is being cleared, 0-100 while the bar is on screen.
+  const [clearProgress, setClearProgress] = useState<number | null>(null);
+  const clearProgressTick = useRef<ReturnType<typeof setInterval> | null>(null);
+  const clearProgressHide = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Leaving the page mid-clear would otherwise leave both timers running against
+  // a component that no longer exists.
+  useEffect(
+    () => () => {
+      if (clearProgressTick.current) clearInterval(clearProgressTick.current);
+      if (clearProgressHide.current) clearTimeout(clearProgressHide.current);
+    },
+    [],
+  );
+
+  /**
+   * Clearing an opening wipes figures that are kept nowhere else, so it should
+   * not feel like a button that does nothing. The bar is deliberately unhurried:
+   * it creeps up while the request is in flight, easing off so it never reaches
+   * the end on its own, and a fast answer is still held for MIN_VISIBLE_MS
+   * before it completes. What the user reads is "this took some doing", which is
+   * the truth of what just happened to their data.
+   */
+  const handleClearOpening = async () => {
+    if (!id || clearingOpening) return;
+
+    const MIN_VISIBLE_MS = 2600;
+    const startedAt = Date.now();
+
+    setClearingOpening(true);
+    // The dialog goes first, so the bar it would otherwise dim is in plain view.
+    setConfirmClearOpening(false);
+    setClearProgress(4);
+
+    if (clearProgressHide.current) clearTimeout(clearProgressHide.current);
+    if (clearProgressTick.current) clearInterval(clearProgressTick.current);
+
+    clearProgressTick.current = setInterval(() => {
+      setClearProgress((current) => {
+        const value = current ?? 0;
+        if (value >= 92) return value;
+        // Each step covers a twelfth of what is left, so it slows as it goes.
+        return Math.min(92, value + Math.max(1, (92 - value) / 12));
+      });
+    }, 320);
+
+    try {
+      const response = await httpService.post(API_BRANCH_CLEAR_OPENING_URL, {
+        branch_id: id,
+      });
+
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < MIN_VISIBLE_MS) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_VISIBLE_MS - elapsed),
+        );
+      }
+
+      toast.success(response?.data?.message || 'Opening cleared');
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          'Could not clear the opening',
+      );
+    } finally {
+      if (clearProgressTick.current) {
+        clearInterval(clearProgressTick.current);
+        clearProgressTick.current = null;
+      }
+
+      setClearProgress(100);
+      setClearingOpening(false);
+
+      // Long enough for the bar to visibly reach the end before it disappears.
+      clearProgressHide.current = setTimeout(() => setClearProgress(null), 700);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -453,6 +541,12 @@ const AddBranch = () => {
   // Stationery that already carries the letterhead: nothing here draws one, so
   // the heading choice and its image have nothing to say.
   const usesPreprintedPad = formData?.pad_print_mode === 'preprinted';
+
+  // Both conditions, not either: the permission says who may clear an opening,
+  // and "Opening ongoing?" says the branch is still in the period where an
+  // opening is being entered. Once that is switched off the figures have been
+  // settled and traded against, so wiping them is no longer a correction.
+  const showClearOpening = canClearOpening && Boolean(formData.is_opening);
 
   useEffect(() => {
     return () => {
@@ -583,6 +677,25 @@ const AddBranch = () => {
   return (
     <>
       <HelmetTitle title={formData?.id ? 'Edit Branch' : 'Add New Branch'} />
+
+      {/* Pinned to the top of the window rather than to the form, so it stays in
+          view wherever the page happens to be scrolled. Above the modal layer,
+          because the dialog is still fading out as the bar starts moving. */}
+      {clearProgress !== null && (
+        <div
+          className="fixed inset-x-0 top-0 z-999999 h-1 bg-danger/20"
+          role="progressbar"
+          aria-label="Clearing opening balances"
+          aria-valuenow={Math.round(clearProgress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full bg-danger transition-all duration-500 ease-out"
+            style={{ width: `${clearProgress}%` }}
+          />
+        </div>
+      )}
       <>
         {branchEditData.isLoading == true ? <Loader /> : ''}
 
@@ -631,11 +744,13 @@ const AddBranch = () => {
                 every step, however short that step's content is. */}
             <div className="flex min-h-[calc(100vh-7rem)] min-w-0 flex-col">
               <div className="mb-4 rounded border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-transparent">
-              <div className="mb-2">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+              {/* Ruled off, so the step's own heading reads apart from the
+                  fields under it rather than as the first line of them. */}
+              <div className="mb-3 border-b border-gray-200 pb-1.5 dark:border-strokedark">
+                <h2 className="text-base font-semibold leading-tight text-gray-800 dark:text-white">
                   {steps[currentStep]}
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="mt-0.5 text-xs leading-snug text-gray-500">
                   {currentStep === 0 && 'Branch identity, contact details, and status.'}
                   {currentStep === 1 && 'Print preferences, page size, and letterhead setup.'}
                   {currentStep === 2 && 'Invoice labels, notes, formatting, and invoice display options.'}
@@ -1266,27 +1381,26 @@ const AddBranch = () => {
 
               {currentStep === 5 && (
                 <>
+                  {/* One grid, not four. Four of them each broke into rows of
+                      their own, which left a toggle stranded on a row with two
+                      empty cells beside it whenever a group did not divide by
+                      three. Flowing them together fills every column in turn. */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
                       label="Stock With Zero?"
                       checked={Boolean(formData.report_zero_bal)}
                       onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
-                      className="mb-4 mt-3 md:mt-7"
                     />
                     <FormToggleField
                       label="Control Manufacture?"
                       checked={Boolean(formData.manufactur_control)}
                       onChange={(checked) => handleToggleFieldChange('manufactur_control', checked)}
-                      className="mb-4 md:mt-7"
                     />
                     <FormToggleField
                       label="Warranty Control?"
                       checked={Boolean(formData.warranty_controll)}
                       onChange={(checked) => handleToggleFieldChange('warranty_controll', checked)}
-                      className="mb-4 md:mt-7"
                     />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
                       label="Multiple Warehouse?"
                       checked={Boolean(formData.have_warehouse)}
@@ -1304,8 +1418,25 @@ const AddBranch = () => {
                       checked={Boolean(formData.is_opening)}
                       onChange={(checked) => handleToggleFieldChange('is_opening', checked)}
                     />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+
+                    {/* Sits in a grid cell of its own, so it lines up with the
+                        toggles rather than interrupting their rhythm. Red,
+                        because it destroys figures that are kept nowhere else. */}
+                    {showClearOpening && (
+                      <div className="flex items-center">
+                        <ButtonLoading
+                          type="button"
+                          label="Clear Opening"
+                          title="Set every opening balance in this branch back to zero"
+                          icon={<FiRefreshCcw size={15} />}
+                          buttonLoading={clearingOpening}
+                          disabled={clearingOpening}
+                          onClick={() => setConfirmClearOpening(true)}
+                          className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-opacity-90"
+                        />
+                      </div>
+                    )}
+
                     <FormToggleField
                       label="Stock: Brand->Category->Item"
                       checked={Boolean(formData.stock_report_type)}
@@ -1332,38 +1463,39 @@ const AddBranch = () => {
                         handleToggleFieldChange('show_voucher_image', checked)
                       }
                     />
+
+                    {/* A fragment, so these stay children of the grid above and
+                        flow on from the last toggle instead of starting a row. */}
+                    {settings?.data?.user?.id === 1 && (
+                      <>
+                        <FormToggleField
+                          label="SMS Service"
+                          checked={Boolean(formData.sms_service)}
+                          onChange={(checked) => handleToggleFieldChange('sms_service', checked)}
+                        />
+                        <FormToggleField
+                          label="Received SMS"
+                          checked={Boolean(formData.received_sms)}
+                          onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
+                        />
+                        <FormToggleField
+                          label="Sales SMS"
+                          checked={Boolean(formData.sales_sms)}
+                          onChange={(checked) => handleToggleFieldChange('sales_sms', checked)}
+                        />
+                        <FormToggleField
+                          label="Purchase SMS"
+                          checked={Boolean(formData.purchase_sms)}
+                          onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
+                        />
+                        <FormToggleField
+                          label="Payment SMS"
+                          checked={Boolean(formData.payment_sms)}
+                          onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
+                        />
+                      </>
+                    )}
                   </div>
-
-                  {settings?.data?.user?.id === 1 && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                      <FormToggleField
-                        label="SMS Service"
-                        checked={Boolean(formData.sms_service)}
-                        onChange={(checked) => handleToggleFieldChange('sms_service', checked)}
-                      />
-                      <FormToggleField
-                        label="Received SMS"
-                        checked={Boolean(formData.received_sms)}
-                        onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
-                      />
-                      <FormToggleField
-                        label="Sales SMS"
-                        checked={Boolean(formData.sales_sms)}
-                        onChange={(checked) => handleToggleFieldChange('sales_sms', checked)}
-                      />
-                      <FormToggleField
-                        label="Purchase SMS"
-                        checked={Boolean(formData.purchase_sms)}
-                        onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
-                      />
-                      <FormToggleField
-                        label="Payment SMS"
-                        checked={Boolean(formData.payment_sms)}
-                        onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
-                      />
-                    </div>
-                  )}
-
                 </>
               )}
               </div>
@@ -1437,6 +1569,32 @@ const AddBranch = () => {
               </div>
             </div>
           </div>
+
+          {/* Named plainly, because the figures cannot be recovered from here --
+              they have to be typed in again. What is left alone is said too, so
+              nobody expects the accounts to move. */}
+          <ConfirmModal
+            show={confirmClearOpening}
+            title="Clear Opening Balances"
+            message={
+              <>
+                Set every opening balance in this branch back to zero?
+                <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                  Products and customers/suppliers both. The figures are not kept
+                  anywhere else, so they will have to be entered again.
+                </span>
+                <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                  The journal and stock entries already posted are left as they
+                  are.
+                </span>
+              </>
+            }
+            confirmLabel="Clear Opening"
+            className="bg-danger hover:bg-opacity-90"
+            loading={clearingOpening}
+            onCancel={() => setConfirmClearOpening(false)}
+            onConfirm={handleClearOpening}
+          />
         </>
       </>
     </>

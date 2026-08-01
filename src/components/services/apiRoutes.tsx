@@ -217,6 +217,7 @@ export const API_BRANCH_LIST_URL = `${API_BASE_URL}/branch/branch-list`;
 export const API_BRANCH_EDIT_URL = `${API_BASE_URL}/branch/branch-edit/`;
 export const API_BRANCH_UPDATE_URL = `${API_BASE_URL}/branch/branch-update`;
 export const API_BRANCH_STORE_URL = `${API_BASE_URL}/branch/branch-store`;
+export const API_BRANCH_CLEAR_OPENING_URL = `${API_BASE_URL}/branch/clear-opening`;
 export const API_BRANCH_STATUS_URL = `${API_BASE_URL}/branch/branch-status`;
 export const API_SEND_SMS_URL = `${API_BASE_URL}/admin/sms/sent-list`;
 export const API_SMS_TEMPLATE_LIST_URL = `${API_BASE_URL}/admin/sms/templates`;
