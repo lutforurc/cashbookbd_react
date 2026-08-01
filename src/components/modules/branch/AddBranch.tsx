@@ -1437,6 +1437,42 @@ const AddBranch = () => {
                       </div>
                     )}
 
+                    {/* The bar pinned to the top of the window is easy to miss
+                        from down here, where the eye already is. This one spans
+                        the row directly under the button that started the work,
+                        and says what is being cleared while it runs. */}
+                    {clearProgress !== null && (
+                      <div className="col-span-1 md:col-span-3">
+                        <div className="rounded border border-danger/30 bg-danger/5 px-3 py-2.5">
+                          <div className="mb-1.5 flex items-center justify-between gap-2 text-xs font-medium text-danger">
+                            <span className="flex items-center gap-1.5">
+                              <FiRefreshCcw
+                                size={13}
+                                className={clearingOpening ? 'animate-spin' : ''}
+                              />
+                              {clearingOpening
+                                ? 'Clearing opening balances...'
+                                : 'Opening cleared'}
+                            </span>
+                            <span>{Math.round(clearProgress)}%</span>
+                          </div>
+                          <div
+                            className="h-1.5 w-full overflow-hidden rounded-full bg-danger/20"
+                            role="progressbar"
+                            aria-label="Clearing opening balances"
+                            aria-valuenow={Math.round(clearProgress)}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                          >
+                            <div
+                              className="h-full rounded-full bg-danger transition-all duration-500 ease-out"
+                              style={{ width: `${clearProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <FormToggleField
                       label="Stock: Brand->Category->Item"
                       checked={Boolean(formData.stock_report_type)}
