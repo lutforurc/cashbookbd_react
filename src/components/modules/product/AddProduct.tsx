@@ -31,6 +31,10 @@ interface productItem {
   warranty_days: string;
   order_level: string | number;
   warranty_type: string | number;
+  /** Opening stock, taken only while creating and only where the branch asks. */
+  opening_qty?: string | number;
+  opening_rate?: string | number;
+  opening_serial_no?: string;
 }
 
 const AddProduct = () => {
@@ -61,8 +65,19 @@ const AddProduct = () => {
     warranty_days: '',
     order_level: '',
     warranty_type: '0', // Default to 'Not Applicable'
+    opening_qty: '',
+    opening_rate: '',
+    opening_serial_no: '',
   };
+
+  // The same branch switch the product list reads before showing its
+  // IMEI / Qty / Rate columns, so a branch takes openings in both places or in
+  // neither. Editing an existing product never offers it: the list is where a
+  // stocked product's opening is corrected.
+  const isOpeningEnabled = String(settings?.data?.branch?.is_opening) === '1';
   const [formData, setFormData] = useState<productItem>(initialProduct);
+  // Whether the quantity is being counted rather than typed.
+  const hasOpeningSerials = String(formData.opening_serial_no ?? '').trim() !== '';
   const { id } = useParams();
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
@@ -186,6 +201,24 @@ const AddProduct = () => {
         ...formData,
         warranty_type: value,
         warranty_days: '',
+      });
+      return;
+    }
+
+    // One serial is one unit, so the quantity is not asked for twice -- it is
+    // counted here as they are typed, split the same way the server splits them.
+    // Emptied entirely, the field is handed back so a product without serials
+    // can still be given a quantity by hand.
+    if (name === 'opening_serial_no') {
+      const counted = String(value ?? '')
+        .split(/[\r\n,]+/)
+        .map((entry) => entry.trim())
+        .filter(Boolean).length;
+
+      setFormData({
+        ...formData,
+        opening_serial_no: value,
+        opening_qty: counted > 0 ? counted : '',
       });
       return;
     }
@@ -437,6 +470,81 @@ console.log('====================================');
           onChange={handleOnChange}
         />
       </div>
+
+      {/* Only while creating: an existing product's opening is corrected from
+          the list, where the stock it already carries is in view. */}
+      {isOpeningEnabled && !id && (
+        <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Opening Stock
+          </h4>
+          <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+            Optional. Left empty the product is created with no stock. Given, it
+            is received exactly as the product list receives one — stock, and
+            the purchase entry behind it.
+          </p>
+
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+            {/* First, and a box rather than a line: serials are entered one to a
+                row and there is no telling how many. It can be dragged taller
+                for a long list without pushing the rest of the form about. */}
+            <div className="md:col-span-3">
+              <label
+                htmlFor="opening_serial_no"
+                className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                IMEI / Serial
+              </label>
+              <textarea
+                id="opening_serial_no"
+                name="opening_serial_no"
+                rows={3}
+                value={formData.opening_serial_no ?? ''}
+                onChange={handleOnChange}
+                placeholder={'One IMEI / serial per line'}
+                className="block w-full resize-y rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                One per line. The quantity below counts them as you type.
+              </p>
+            </div>
+
+            <div>
+              <InputElement
+                id="opening_qty"
+                name="opening_qty"
+                type="number"
+                value={formData.opening_qty ? formData.opening_qty.toString() : ''}
+                placeholder={'Enter Quantity'}
+                label={'Quantity'}
+                className={''}
+                onChange={handleOnChange}
+                // Counted from the serials while there are any. Left editable it
+                // could be made to disagree with them, and the server would
+                // ignore it anyway -- the serials decide.
+                disabled={hasOpeningSerials}
+              />
+              {hasOpeningSerials && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Counted from the serials above.
+                </p>
+              )}
+            </div>
+            <InputElement
+              id="opening_rate"
+              name="opening_rate"
+              type="number"
+              step="0.01"
+              value={formData.opening_rate ? formData.opening_rate.toString() : ''}
+              placeholder={'Defaults to the purchase price'}
+              label={'Rate'}
+              className={''}
+              onChange={handleOnChange}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="flex mt-4 justify-center items-center">
         {id ? (
           <ButtonLoading
