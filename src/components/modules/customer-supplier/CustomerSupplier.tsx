@@ -294,6 +294,40 @@ const CustomerSupplier = () => {
         />
       ),
     },
+    {
+      // Beside the field they act on. At the far right of the row the clerk had
+      // to cross every other column to save the figure just typed, and on a
+      // narrow screen scroll to reach it at all.
+      key: 'opening_action',
+      header: '',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      width: '150px',
+      render: (row: any) => {
+        const dirty = isRowDirty(row);
+
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <ButtonLoading
+              className="py-1 px-2"
+              label="Save"
+              type="button"
+              disabled={!dirty}
+              onClick={() => handleSaveRow(row)}
+              icon={<FiCheckSquare size={15} />}
+            />
+            <ButtonLoading
+              icon={<FiX />}
+              className="py-1 px-2"
+              label="Cancel"
+              type="button"
+              disabled={!editedRows[row.id]}
+              onClick={() => handleCancelRow(row)}
+            />
+          </div>
+        );
+      },
+    },
   ]
 
   const columns = [
@@ -356,30 +390,10 @@ const CustomerSupplier = () => {
       header: "Action",
       headerClass: 'text-center', 
       render: (row: any) => {
-        const dirty = isRowDirty(row);
-
 	        return (
 	        <div className="flex justify-center items-center gap-2">
-	          {isOpeningEnabled && (
-	            <>
-	              <ButtonLoading
-	                className="py-1 px-2"
-	                label="Save"
-	                type="button"
-	                disabled={!dirty}
-	                onClick={() => handleSaveRow(row)}
-	                icon={<FiCheckSquare size={15} />}
-	              />
-	              <ButtonLoading
-	                icon={<FiX />}
-	                className="py-1 px-2"
-	                label="Cancel"
-	                type="button"
-	                disabled={!editedRows[row.id]}
-	                onClick={() => handleCancelRow(row)}
-	              />
-	            </>
-	          )}
+	          {/* Save and Cancel used to sit here; they now travel with the
+	              Opening column, next to the field they belong to. */}
 
 	          {/* ===== Guarantor Slot (fixed) ===== */}
           <div className="w-4 flex justify-center">
