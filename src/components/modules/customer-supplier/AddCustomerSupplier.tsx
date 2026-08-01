@@ -52,6 +52,8 @@ const AddCustomerSupplier = () => {
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
   const needNomineePhoto = String(branchSettings?.need_nominee_photo) === '1';
   const needArea = String(branchSettings?.need_customer_area) === '1';
+  // The same switch the customer list reads before showing its Opening column.
+  const isOpeningEnabled = String(branchSettings?.is_opening) === '1';
 
   // Guarantor and nominee share one panel when both are on — stacked, the form
   // ran too long to see either of them whole.
@@ -122,6 +124,10 @@ const AddCustomerSupplier = () => {
     permanent_address: Yup.string(),
     mobile: Yup.string().required('Mobile number is required'),
     ledger_page: Yup.string(), // ✅ no `.required()`
+    openingbalance: Yup.number()
+      .typeError('Opening must be a number')
+      .nullable()
+      .transform((value, original) => (String(original).trim() === '' ? null : value)),
     idfr_code: Yup.string(), // ✅ no `.required()` 
     type_id: Yup.string().required('Customer or Supplier type is required'),
     area_id: Yup.string(), //.required('Area is required'),
@@ -182,6 +188,7 @@ const AddCustomerSupplier = () => {
     permanent_address: '',
     mobile: '',
     ledger_page: '',
+    openingbalance: '',
     idfr_code: '',
     national_id: '',
     type_id: '',
@@ -362,6 +369,9 @@ const AddCustomerSupplier = () => {
     'contact_number',
     'mobile',
     'ledger_page',
+    // Only rendered when the branch is taking openings; focusNextField walks
+    // past any id it cannot find, so listing it here is safe either way.
+    'openingbalance',
     'national_id',
     'customer_supplier_save_button',
   ];
@@ -677,7 +687,37 @@ const AddCustomerSupplier = () => {
               onKeyDown={handleEnterNavigation('ledger_page')}
             />
 
-            
+            {/* Shown on the same branch setting as the Opening column of the
+                customer list, so a branch either takes openings in both places
+                or in neither. */}
+            {isOpeningEnabled && (
+              <div>
+                <InputElement
+                  id="openingbalance"
+                  name="openingbalance"
+                  type="number"
+                  step="0.01"
+                  value={formik.values.openingbalance}
+                  placeholder="Enter Opening"
+                  label="Opening"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  onKeyDown={handleEnterNavigation('openingbalance')}
+                />
+                {formik.touched.openingbalance && formik.errors.openingbalance ? (
+                  <div className="mt-1 text-sm text-danger">
+                    {formik.errors.openingbalance as string}
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Entered once. Afterwards it can only be changed by clearing
+                    the branch's opening.
+                  </p>
+                )}
+              </div>
+            )}
+
+
 
             {settings?.data?.branch?.have_customer_sl === 1 && (
               <InputElement
