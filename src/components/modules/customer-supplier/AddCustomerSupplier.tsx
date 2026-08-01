@@ -699,7 +699,7 @@ const AddCustomerSupplier = () => {
                   step="0.01"
                   value={formik.values.openingbalance}
                   placeholder="Enter Opening"
-                  label="Opening"
+                  label="Opening Balance (Optional)"
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   onKeyDown={handleEnterNavigation('openingbalance')}
