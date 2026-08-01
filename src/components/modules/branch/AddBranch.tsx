@@ -127,6 +127,12 @@ interface branchItem {
    * clerk is shown -- they can write another date over it before issuing.
    */
   letter_ref_date: string;
+  /** Announce a new company registration to this branch. */
+  registration_alert: boolean;
+  /** Also text the numbers below when one registers. */
+  registration_alert_sms: boolean;
+  /** Comma-separated mobile numbers the alert texts. */
+  registration_alert_mobile: string;
 }
 
 const resolveImageUrl = (path?: string) => {
@@ -235,6 +241,29 @@ const metaNumberOr = (value: unknown, fallback: number): number => {
 };
 
 const AddBranch = () => {
+  const navigate = useNavigate();
+  const branchEditData = useSelector((state: any) => state.branchList);
+  const settings = useSelector((state: any) => state.settings);
+
+  /**
+   * The SaaS step belongs to whoever runs the platform, not to a branch.
+   *
+   * Listed rather than tested once, because this step is expected to grow: the
+   * next setting brings its own permission, and the step should appear for
+   * anyone who can reach at least one of the things on it.
+   *
+   * Hiding it is only tidiness — anyone reading the bundle can see the test.
+   * The permission is what decides: BranchController drops each platform
+   * setting from the save for a caller who lacks its permission, so a request
+   * posted straight at the endpoint changes nothing.
+   */
+  const SAAS_PERMISSIONS = ['registration.alert.manage'];
+  const isPlatformOwner = SAAS_PERMISSIONS.some((permission) =>
+    hasPermission(settings?.data?.permissions || [], permission),
+  );
+
+  // Built rather than fixed, so the step numbering and the "of N" count stay
+  // right for everyone who does not see the extra one.
   const steps = [
     'Basic Info',
     'Print Setup',
@@ -242,10 +271,9 @@ const AddBranch = () => {
     'Customer Setup',
     'Real Estate Setup',
     'Feature Controls',
+    ...(isPlatformOwner ? ['SaaS Setup'] : []),
   ];
-  const navigate = useNavigate();
-  const branchEditData = useSelector((state: any) => state.branchList);
-  const settings = useSelector((state: any) => state.settings);
+  const SAAS_STEP = steps.indexOf('SaaS Setup');
   const paperSizeOptions = [
     { id: '', name: 'Select Invoice Page Size' },
     ...((settings?.branchSettings?.paperSize || []).map((item: any) => ({
@@ -327,6 +355,9 @@ const AddBranch = () => {
     delay_charge_percent: defaultDelayChargePercent,
     letter_ref_prefix: '',
     letter_ref_date: '',
+    registration_alert: false,
+    registration_alert_sms: false,
+    registration_alert_mobile: '',
   };
   const [buttonLoading, setButtonLoading] = useState(false);
   const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
@@ -510,6 +541,9 @@ const AddBranch = () => {
         // Held as YYYY-MM-DD whatever the picker shows, so a stored value that
         // came with a time on it is cut back to the day.
         letter_ref_date: metaTextOr(b.letter_ref_date, '').slice(0, 10),
+        registration_alert: toBooleanFlag(b.registration_alert),
+        registration_alert_sms: toBooleanFlag(b.registration_alert_sms),
+        registration_alert_mobile: metaTextOr(b.registration_alert_mobile, ''),
         sms_service: toBooleanFlag(b.sms_service),
         received_sms: toBooleanFlag(b.received_sms),
         purchase_sms: toBooleanFlag(b.purchase_sms),
@@ -757,6 +791,8 @@ const AddBranch = () => {
                   {currentStep === 3 && 'Customer and supplier related options for this branch.'}
                   {currentStep === 4 && 'Real estate options for this branch.'}
                   {currentStep === 5 && 'Operational controls, sharing options, and SMS preferences.'}
+                  {currentStep === SAAS_STEP &&
+                    'Platform settings. Only this account sees them.'}
                 </p>
               </div>
 
@@ -1531,6 +1567,71 @@ const AddBranch = () => {
                         />
                       </>
                     )}
+                  </div>
+                </>
+              )}
+
+              {/* SaaS Setup — the platform operator's own step. Guarded on the
+                  index rather than a number, so it stays right if a step is
+                  ever added above it. */}
+              {SAAS_STEP >= 0 && currentStep === SAAS_STEP && (
+                <>
+                  <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    New Company Registration
+                  </h4>
+                  <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                    What happens when someone signs up for a new company. These
+                    belong to the branch that runs the platform — setting them on
+                    a customer's branch does nothing.
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                    <div>
+                      <FormToggleField
+                        label="Notify on registration?"
+                        checked={Boolean(formData.registration_alert)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('registration_alert', checked)
+                        }
+                        className=""
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Puts a notice in this branch's bell, on the web and in the
+                        app. Costs nothing and cannot fail.
+                      </p>
+                    </div>
+
+                    <div>
+                      <FormToggleField
+                        label="Also send SMS?"
+                        checked={Boolean(formData.registration_alert_sms)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('registration_alert_sms', checked)
+                        }
+                        className=""
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Reaches you without opening anything, and is charged per
+                        message.
+                      </p>
+                    </div>
+
+                    <div>
+                      <InputElement
+                        id="registration_alert_mobile"
+                        value={formData.registration_alert_mobile ?? ''}
+                        name="registration_alert_mobile"
+                        type="text"
+                        placeholder={'01712345678, 01911111111'}
+                        label={'Alert Mobile Number(s)'}
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Separate several with commas. Left empty, no SMS is sent
+                        however the switch is set.
+                      </p>
+                    </div>
                   </div>
                 </>
               )}
