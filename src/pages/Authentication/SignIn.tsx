@@ -154,7 +154,7 @@ const SignIn: React.FC = () => {
                 <br />
                 Inventory and{' '}
                 <span className="bg-gradient-to-r from-meta-3 to-secondary bg-clip-text text-transparent">
-                  HR
+                  HRM
                 </span>
               </h1>
 
