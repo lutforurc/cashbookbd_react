@@ -39,6 +39,14 @@ interface TableProps {
   headerRows?: TableHeaderCell[][];
   footerRows?: TableFooterCell[][];
   tableStyle?: React.CSSProperties;
+  /**
+   * Extra content shown directly beneath a row, spanning every column.
+   *
+   * Return null for rows with nothing to add. Used for a row that opens to
+   * reveal detail — a company's users under their owner — where putting the
+   * detail at the foot of the table would lose which row it belonged to.
+   */
+  renderRowExpansion?: (row: any, index: number) => React.ReactNode;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -57,6 +65,7 @@ const Table: React.FC<TableProps> = ({
   headerRows,
   footerRows,
   tableStyle,
+  renderRowExpansion,
 }) => {
   const [page, setPage] = React.useState(1);
   const rows = Array.isArray(data) ? data : [];
@@ -127,29 +136,42 @@ const Table: React.FC<TableProps> = ({
           {Array.isArray(visibleData) && visibleData.length > 0 ? (
             visibleData.map((row, rowIndex) => {
               const absoluteIndex = startIndex + rowIndex;
+              const expansion = renderRowExpansion?.(row, absoluteIndex);
+              const rowKey = getRowKey ? getRowKey(row, absoluteIndex) : absoluteIndex;
 
               return (
-                <tr
-                  key={getRowKey ? getRowKey(row, absoluteIndex) : absoluteIndex}
-                  {...(getRowProps ? getRowProps(row, absoluteIndex) : {})}
-                  onClick={() => onRowClick?.(row, absoluteIndex)}
-                  className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
-                    onRowClick ? "cursor-pointer " : ""
-                  }${
-                    typeof rowClassName === 'function'
-                      ? rowClassName(row, absoluteIndex)
-                      : rowClassName || ''
-                  }`}
-                >
-                  {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className={`truncate px-3 py-2 ${col.cellClass || ""}`}
-                    >
-                      {col.render ? col.render(row, absoluteIndex) : row[col.key]}
-                    </td>
-                  ))}
-                </tr>
+                <React.Fragment key={rowKey}>
+                  <tr
+                    {...(getRowProps ? getRowProps(row, absoluteIndex) : {})}
+                    onClick={() => onRowClick?.(row, absoluteIndex)}
+                    className={`transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700 ${
+                      onRowClick ? "cursor-pointer " : ""
+                    }${
+                      typeof rowClassName === 'function'
+                        ? rowClassName(row, absoluteIndex)
+                        : rowClassName || ''
+                    }`}
+                  >
+                    {columns.map((col) => (
+                      <td
+                        key={col.key}
+                        className={`truncate px-3 py-2 ${col.cellClass || ""}`}
+                      >
+                        {col.render ? col.render(row, absoluteIndex) : row[col.key]}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* No hover tint and no row click: this is a panel that happens
+                      to live in a table, not another record to act on. */}
+                  {expansion ? (
+                    <tr>
+                      <td colSpan={columns.length} className="p-0">
+                        {expansion}
+                      </td>
+                    </tr>
+                  ) : null}
+                </React.Fragment>
               );
             })
           ) : (
