@@ -62,14 +62,18 @@ interface userListParam {
   perPage: number;
   search: string;
   ownersOnly?: boolean;
+  /** Every user of every tenant company, not one owner each. */
+  allTenantUsers?: boolean;
 }
 
 export const getUser =
-  ({ page, perPage, search = '', ownersOnly = false }: userListParam) =>
+  ({ page, perPage, search = '', ownersOnly = false, allTenantUsers = false }: userListParam) =>
   (dispatch: any) => {
     dispatch({ type: USER_LIST_PENDING });
     httpService.get(
-      API_USER_LIST_URL + `?page=${page}&per_page=${perPage}&search=${search}&owners_only=${ownersOnly ? 1 : 0}`,
+      API_USER_LIST_URL +
+        `?page=${page}&per_page=${perPage}&search=${search}` +
+        `&owners_only=${ownersOnly ? 1 : 0}&all_tenant_users=${allTenantUsers ? 1 : 0}`,
     )
       .then((res) => {
         let _data = res.data;
