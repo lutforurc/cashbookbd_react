@@ -51,6 +51,9 @@ const AddCustomerSupplier = () => {
   const needPermanentAddress = String(branchSettings?.need_customer_permanent_address) === '1';
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
   const needNomineePhoto = String(branchSettings?.need_nominee_photo) === '1';
+  // Unlike the switches above it, this one is a column on the branch rather
+  // than a meta, so it arrives as a number and not as the string '1'.
+  const usesBangla = String(branchSettings?.use_bangla) === '1';
   const needArea = String(branchSettings?.need_customer_area) === '1';
   // The same switch the customer list reads before showing its Opening column.
   const isOpeningEnabled = String(branchSettings?.is_opening) === '1';
@@ -175,6 +178,7 @@ const AddCustomerSupplier = () => {
 
   const initialCustomerValues = {
     name: '',
+    bangla: '',
     father: '',
     mother_name: '',
     occupation: '',
@@ -470,6 +474,23 @@ const AddCustomerSupplier = () => {
               )}
             </div>
 
+            {/* The branch keeps its ledgers in Bangla, so the name is written
+                twice -- the English one for the software, this one for what is
+                read out at the counter. */}
+            {usesBangla && (
+              <div className="text-left flex flex-col">
+                <InputElement
+                  id="bangla"
+                  name="bangla"
+                  placeholder="নাম লিখুন"
+                  label="Name (Bangla)"
+                  value={formik.values.bangla}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  onKeyDown={handleEnterNavigation('bangla')}
+                />
+              </div>
+            )}
 
             {settings?.data?.branch?.need_relation_info === '1' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2">

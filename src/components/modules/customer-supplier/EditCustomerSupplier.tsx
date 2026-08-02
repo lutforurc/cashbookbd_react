@@ -98,6 +98,9 @@ const EditCustomerSupplier = () => {
   const needPermanentAddress = String(branchSettings?.need_customer_permanent_address) === '1';
   const needPhoto = String(branchSettings?.need_customer_photo) === '1';
   const needNomineePhoto = String(branchSettings?.need_nominee_photo) === '1';
+  // Unlike the switches above it, this one is a column on the branch rather
+  // than a meta, so it arrives as a number and not as the string '1'.
+  const usesBangla = String(branchSettings?.use_bangla) === '1';
   const needArea = String(branchSettings?.need_customer_area) === '1';
 
   // Guarantor and nominee share one panel when both are on — stacked, the form
@@ -278,6 +281,7 @@ const EditCustomerSupplier = () => {
     initialValues: {
       // ----- keep same fields as Add page -----
       name: editCustomer?.name ?? "",
+      bangla: editCustomer?.bangla ?? "",
       father: editCustomer?.father ?? "",
       mother_name: editCustomer?.mother_name ?? "",
       occupation: editCustomer?.occupation ?? "",
@@ -442,6 +446,22 @@ const EditCustomerSupplier = () => {
                 </div>
               )}
             </div>
+            {/* The branch keeps its ledgers in Bangla, so the name is written
+                twice -- the English one for the software, this one for what is
+                read out at the counter. */}
+            {usesBangla && (
+              <div className="text-left flex flex-col">
+                <InputElement
+                  id="bangla"
+                  name="bangla"
+                  placeholder="নাম লিখুন"
+                  label="Name (Bangla)"
+                  value={formik.values.bangla}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </div>
+            )}
             <div className="text-left flex flex-col">
               <InputElement
                 id="manual_address"
