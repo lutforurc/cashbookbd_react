@@ -181,6 +181,8 @@ export const API_ITEM_COMPARE_CHART_URL = `${API_BASE_URL}/dashboard/branch/tran
 // User Routes
 export const API_USER_LIST_URL = `${API_BASE_URL}/user/user-list`;
 export const API_ONLINE_USERS_URL = `${API_BASE_URL}/user/online-users`;
+// Login history: who signed in, when, and from where.
+export const API_USER_LOGIN_LOG_URL = `${API_BASE_URL}/user/login-log`;
 export const API_USER_ADD_URL = `${API_BASE_URL}/user/add-user`;
 export const API_USER_STORE_URL = `${API_BASE_URL}/user/store`;
 export const API_USER_EDIT_URL = `${API_BASE_URL}/user/user-edit/`;

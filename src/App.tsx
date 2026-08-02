@@ -18,6 +18,7 @@ import routes from './components/services/appRoutes';
 import BranchList from './components/modules/branch/BranchList';
 import UserList from './components/modules/user/UserList';
 import OnlineUsers from './components/modules/user/OnlineUsers';
+import LoginLogReport from './components/modules/user/LoginLogReport';
 import CompanyUsers from './components/modules/user/CompanyUsers';
 import CompanyList from './components/modules/company/CompanyList';
 import EditCompany from './components/modules/company/EditCompany';
@@ -347,6 +348,7 @@ function App() {
 	            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view']} loading={permissionsLoading} />}>
 	              <Route path={routes.user_list} element={<UserList />} />
 	              <Route path={routes.online_users} element={<OnlineUsers />} />
+	              <Route path={routes.user_login_log} element={<LoginLogReport />} />
 	              <Route path={routes.company_user_list} element={<CompanyUsers />} />
 	              <Route path={routes.user_edit} element={<EditUser user={me} />} />
 	            </Route>
