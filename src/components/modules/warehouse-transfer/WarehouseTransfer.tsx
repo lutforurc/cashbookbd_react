@@ -113,8 +113,10 @@ const BranchTransfer = () => {
   }, [branchDdl?.data]);
 
   useEffect(() => {
-    dispatch(getDdlProtectedBranch());
-    dispatch(getDdlAllBranch());
+    // Own company only: a transfer between two companies' branches is not a
+    // transfer, and offering one is how it gets posted by mistake.
+    dispatch(getDdlProtectedBranch(true));
+    dispatch(getDdlAllBranch(true));
   }, [dispatch]);
 
   useEffect(() => {
@@ -132,9 +134,13 @@ const BranchTransfer = () => {
   useEffect(() => {
     if (!toBranchOptions.length || !formData.fromBranch) return;
 
-    const preferredToBranch = toBranchOptions.find(
-      (branch: any) => String(branch?.id) !== String(formData.fromBranch),
-    );
+    // A company with a single branch has nothing else to offer, so show that
+    // one on both sides rather than leaving To Branch blank -- an empty
+    // dropdown reads as a broken screen, not as "there is nowhere to send it".
+    const preferredToBranch =
+      toBranchOptions.find(
+        (branch: any) => String(branch?.id) !== String(formData.fromBranch),
+      ) || toBranchOptions[0];
 
     if (!preferredToBranch) return;
 

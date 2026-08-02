@@ -107,8 +107,9 @@ const WarehouseReceived = () => {
   const isSelfReceive = formData.fromBranch === SELF_FROM_BRANCH;
 
   useEffect(() => {
-    dispatch(getDdlProtectedBranch());
-    dispatch(getDdlAllBranch());
+    // Own company only, same as the issue form.
+    dispatch(getDdlProtectedBranch(true));
+    dispatch(getDdlAllBranch(true));
   }, [dispatch]);
 
   // Arriving from a transfer's "Receive" button: pull that issue's items and

@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { FiArrowLeft, FiPrinter } from "react-icons/fi";
+import { FiArrowLeft, FiCheckCircle, FiPrinter } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import Checkbox from "../../../utils/fields/Checkbox";
@@ -317,6 +317,10 @@ const SalaryPaymentSelectionModal = ({
               buttonLoading={loading}
               disabled={loading || hasInvalidSelection}
               label="Pay Selected"
+              // ButtonLoading falls back to a circled right arrow, which reads
+              // as "next" on what is the last step. A tick says what pressing
+              // this actually does: confirm the marked rows and pay them.
+              icon={<FiCheckCircle className="h-4 w-4" />}
               className="whitespace-nowrap bg-emerald-600 px-4 py-2 hover:bg-emerald-700"
             />
           </div>

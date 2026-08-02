@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { FiArrowLeft, FiPrinter } from "react-icons/fi";
+import { FiArrowLeft, FiCheckCircle, FiPrinter } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import Checkbox from "../../../utils/fields/Checkbox";
@@ -304,6 +304,8 @@ const FestivalBonusPaymentSelectionModal = ({
               buttonLoading={loading}
               disabled={loading || hasInvalidSelection}
               label="Pay Selected"
+              // Same tick as the salary modal -- it is the same last step.
+              icon={<FiCheckCircle className="h-4 w-4" />}
               className="whitespace-nowrap bg-emerald-600 px-4 py-2 hover:bg-emerald-700"
             />
           </div>

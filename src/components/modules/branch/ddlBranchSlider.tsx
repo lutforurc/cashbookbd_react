@@ -12,9 +12,15 @@ import {
 } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 
-export const getDdlAllBranch = () => (dispatch: any) => {
+// ownCompany keeps the list inside the caller's own company even for a
+// privileged user, who can otherwise see every company's branches. The transfer
+// screens ask for it: stock cannot move between two companies' books.
+const scoped = (url: string, ownCompany?: boolean) =>
+  ownCompany ? `${url}?own_company=1` : url;
+
+export const getDdlAllBranch = (ownCompany = false) => (dispatch: any) => {
   dispatch({ type: ALL_BRANCH_LIST_PENDING });
-  httpService.get(API_ALL_DDL_BRANCH_URL)
+  httpService.get(scoped(API_ALL_DDL_BRANCH_URL, ownCompany))
     .then((res) => {
       let _data = res.data;
       if (_data.success) {
@@ -38,11 +44,11 @@ export const getDdlAllBranch = () => (dispatch: any) => {
     });
 };
 
-export const getDdlProtectedBranch = () => (dispatch: any) => {
+export const getDdlProtectedBranch = (ownCompany = false) => (dispatch: any) => {
   dispatch({ type: DDL_PROTECTED_BRANCH_LIST_PENDING });
 
   httpService
-    .get(API_ALL_DDL_PROTECTED_BRANCH_URL)
+    .get(scoped(API_ALL_DDL_PROTECTED_BRANCH_URL, ownCompany))
     .then((res) => {
       let _data = res.data;
       if (_data.success) {
