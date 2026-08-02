@@ -125,6 +125,17 @@ const statusClassName = (code?: string) => {
   }
 };
 
+/**
+ * The branch a day was marked at, when that is not the branch reading the
+ * sheet — otherwise nothing. Staff lent to another site keep drawing their pay
+ * here, so their days there belong on this sheet; naming the site is what
+ * stops the reader taking them for days worked at home.
+ */
+const elsewhereBranchName = (entry?: any): string => {
+  if (!entry?.is_other_branch) return '';
+  return entry.attendance_branch_name || entry.branch_name || 'another branch';
+};
+
 const statusGlyph = (code?: string): React.ReactNode => {
   switch (code) {
     case '✓':
@@ -310,16 +321,33 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         const code = employee.dates[dateKey] || '';
         const entry = employee.dateRows?.[dateKey];
         const isEditable = !!entry && entry.approval_status !== 'approved';
+        // Marked at another site. The day counts here all the same — this
+        // branch pays for it — so it is flagged rather than hidden.
+        const elsewhere = elsewhereBranchName(entry);
 
         return (
           <button
             type="button"
-            title={entry?.approval_status === 'approved' ? 'Approved attendance cannot be changed' : code ? 'Click to update manual attendance' : ''}
+            title={
+              elsewhere
+                ? `Attendance given at ${elsewhere}`
+                : entry?.approval_status === 'approved'
+                ? 'Approved attendance cannot be changed'
+                : code
+                ? 'Click to update manual attendance'
+                : ''
+            }
             onClick={() => openManualAttendance(employee, dateKey, code)}
             disabled={!code}
             className={`group flex min-h-9 w-full items-center justify-center px-1 py-1 text-center ${code ? cellTintClass(code) : ''} ${isEditable ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-125' : 'cursor-default'}`}
           >
-            {code ? <span className={`attendance-mark ${statusClassName(code)}`}>{statusGlyph(code)}</span> : null}
+            {code ? (
+              <span
+                className={`attendance-mark ${statusClassName(code)}${elsewhere ? ' mark-other-branch' : ''}`}
+              >
+                {statusGlyph(code)}
+              </span>
+            ) : null}
           </button>
         );
       },
@@ -541,6 +569,16 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             .attendance-monthly-screen .status-leave { background: #ca8a04; color: #ffffff; }
             .attendance-monthly-screen .status-half-day { background: #7c3aed; color: #ffffff; }
 
+            /* Marked at another branch. The status colour still says what the
+               day was; the ring says where it was given. */
+            .attendance-monthly-screen .mark-other-branch {
+              box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #0ea5e9;
+            }
+
+            .dark .attendance-monthly-screen .mark-other-branch {
+              box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px #38bdf8;
+            }
+
             .dark .attendance-monthly-screen .status-present { background: #22c55e; }
             .dark .attendance-monthly-screen .status-late { background: #f59e0b; }
             .dark .attendance-monthly-screen .status-absent { background: #ef4444; }
@@ -743,6 +781,10 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
           <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>
           <span className="legend-chip"><span className="legend-mark legend-total">T</span> Present days</span>
+          <span className="legend-chip">
+            <span className="legend-mark status-present mark-other-branch">{statusGlyph('✓')}</span>
+            Another branch — hover to see which
+          </span>
         </div>
       </div>
 

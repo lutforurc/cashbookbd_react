@@ -26,6 +26,26 @@ const statusTotalValue = (code?: string) => {
 
 const formatTotal = (value: number) => (Number.isInteger(value) ? String(value) : value.toFixed(1));
 
+/**
+ * The other branches this sheet has days from, named once each.
+ *
+ * On screen a boxed day can be hovered to see where it was given; paper has no
+ * hovering, so the names are gathered and printed under the legend instead.
+ */
+const otherBranchNames = (reportRows: any[]): string[] => {
+  const names = new Set<string>();
+
+  reportRows.forEach((employee) => {
+    Object.values(employee.dateRows ?? {}).forEach((entry: any) => {
+      if (entry?.is_other_branch) {
+        names.add(entry.attendance_branch_name || entry.branch_name || 'another branch');
+      }
+    });
+  });
+
+  return Array.from(names).sort();
+};
+
 const statusClassName = (code?: string) => {
   switch (code) {
     case '✓':
@@ -120,6 +140,13 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
             border: 1px solid #cbd5e1;
             font-size: 11px;
             font-weight: 700;
+          }
+
+          /* A day marked at another branch. Boxed rather than tinted, so it
+             survives a printer with no colour in it. */
+          .attendance-monthly-print .cell-other-branch {
+            outline: 2px solid #0f172a;
+            outline-offset: -3px;
           }
 
           @media print {
@@ -277,8 +304,14 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
                   {days.map((day) => {
                     const dateKey = toDateString(year, monthIndex, day);
                     const code = employee.dates[dateKey] || '';
+                    // Marked at another site. On paper there is no hovering, so
+                    // the day is boxed and the branches are named underneath.
+                    const elsewhere = employee.dateRows?.[dateKey]?.is_other_branch ? ' cell-other-branch' : '';
                     return (
-                      <td key={dateKey} className={`day-cell border border-slate-900 px-1 py-1 text-center ${statusClassName(code)}`}>
+                      <td
+                        key={dateKey}
+                        className={`day-cell border border-slate-900 px-1 py-1 text-center ${statusClassName(code)}${elsewhere}`}
+                      >
                         {code}
                       </td>
                     );
@@ -318,6 +351,15 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
           <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>
           <span className="legend-chip"><span className="legend-mark total-cell">T</span> Present days</span>
+          <span className="legend-chip">
+            <span className="legend-mark cell-other-branch">✓</span> Another branch
+          </span>
+          {otherBranchNames(reportRows).length > 0 && (
+            <div className="mt-1">
+              Days marked at: {otherBranchNames(reportRows).join(', ')} — counted here,
+              as this branch pays for them.
+            </div>
+          )}
         </div>
       </div>
       <ReportFooter />
