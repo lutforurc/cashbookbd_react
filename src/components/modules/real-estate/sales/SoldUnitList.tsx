@@ -744,9 +744,13 @@ const SoldUnitList: React.FC = () => {
                                   </button>
 
                                   {/* The scanned deed and nominee papers. One
-                                      PDF per sale: attaching again replaces it,
-                                      so the row shows either "attach" or the
-                                      pair "open / remove", never both states. */}
+                                      PDF per sale, and one action at a time:
+                                      before there is a deed the row offers only
+                                      attach, and once there is one only remove.
+                                      Replacing is remove and attach again --
+                                      an upload icon sitting next to the deed
+                                      that is already there reads as "add
+                                      another", which the sale cannot hold. */}
                                   <div className="flex items-center gap-2 border-t border-stroke pt-1 dark:border-strokedark">
                                     {unit.has_document ? (
                                       <>
@@ -758,15 +762,6 @@ const SoldUnitList: React.FC = () => {
                                           className="flex items-center gap-1 text-xs text-meta-3 hover:opacity-80 disabled:opacity-50"
                                         >
                                           <FiPaperclip /> DEED
-                                        </button>
-                                        <button
-                                          type="button"
-                                          title="Replace the scanned deed"
-                                          disabled={busySaleId === unit.sale_id}
-                                          onClick={() => openFilePicker(unit.sale_id)}
-                                          className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
-                                        >
-                                          <FiUpload />
                                         </button>
                                         <button
                                           type="button"
@@ -784,9 +779,9 @@ const SoldUnitList: React.FC = () => {
                                         title="Attach the scanned deed and nominee papers (PDF, max 1.5 MB)"
                                         disabled={busySaleId === unit.sale_id}
                                         onClick={() => openFilePicker(unit.sale_id)}
-                                        className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                        className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
                                       >
-                                        <FiUpload /> DEED
+                                        <FiUpload />
                                       </button>
                                     )}
                                   </div>
