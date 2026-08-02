@@ -2,7 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
-import { FiInbox, FiPrinter, FiSearch } from 'react-icons/fi';
+import { FiInbox, FiMinus, FiPlus, FiPrinter, FiSearch } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import httpService from '../../services/httpService';
+import { API_BRANCH_TRANSFER_COMPARISON_URL } from '../../services/apiRoutes';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -12,6 +15,7 @@ import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getBranchTransfers, getBranchTransferDetails } from './warehouseTransferSlice';
 import ChallanPrint from './ChallanPrint';
+import ComparisonPanel from './ComparisonPanel';
 import ROUTES from '../../services/appRoutes';
 
 // transfer_status: 1 = issued/in transit (still receivable), 3 = fully received.
@@ -50,6 +54,35 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
   const [perPage, setPerPage] = useState<number | string>(10);
   const [searchLoading, setSearchLoading] = useState(false);
   const [printingId, setPrintingId] = useState<number | string | null>(null);
+  // One challan compared at a time — two open at once and it stops being clear
+  // which set of figures belongs to which voucher.
+  const [comparedTransferId, setComparedTransferId] = useState<number | null>(null);
+  const [comparison, setComparison] = useState<any | null>(null);
+  const [comparingId, setComparingId] = useState<number | null>(null);
+
+  /** Opens what was sent against what arrived, for one challan. */
+  const toggleComparison = async (transferId: number) => {
+    if (comparedTransferId === transferId) {
+      setComparedTransferId(null);
+      setComparison(null);
+      return;
+    }
+
+    setComparingId(transferId);
+    try {
+      const response = await httpService.get(
+        `${API_BRANCH_TRANSFER_COMPARISON_URL}${transferId}`,
+      );
+      setComparison(response?.data?.data?.data ?? null);
+      setComparedTransferId(transferId);
+    } catch {
+      toast.error('Could not load the issued versus received figures.');
+      setComparedTransferId(null);
+      setComparison(null);
+    } finally {
+      setComparingId(null);
+    }
+  };
 
   const printRef = useRef<HTMLDivElement>(null);
   const printChallan = useReactToPrint({
@@ -99,10 +132,44 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
 
   const columns = [
     {
+      // Ahead of the serial, in the Action icons' blue: what was sent against
+      // what arrived is a question about the whole challan, not about a column
+      // of it.
+      key: 'compare',
+      header: '',
+      headerClass: 'text-center !pl-0',
+      // Table writes px-3 on every cell and appends cellClass after it; the
+      // later stylesheet rule wins rather than the later name, so the padding
+      // has to be marked important to take effect.
+      cellClass: 'text-center w-8 !px-1',
+      render: (row: any) => {
+        const id = Number(row?.id || 0);
+        if (!id) return null;
+        const isOpen = comparedTransferId === id;
+
+        return (
+          <button
+            type="button"
+            title={isOpen ? 'Hide issued vs received' : 'Show issued vs received'}
+            onClick={() => toggleComparison(id)}
+            className="inline-flex h-6 w-6 items-center justify-center rounded border border-blue-500/40 text-blue-500 transition hover:border-blue-500 hover:bg-blue-500/10"
+          >
+            {comparingId === id ? (
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-blue-500/30 border-t-blue-500" />
+            ) : isOpen ? (
+              <FiMinus className="cursor-pointer w-4 h-4" />
+            ) : (
+              <FiPlus className="cursor-pointer w-4 h-4" />
+            )}
+          </button>
+        );
+      },
+    },
+    {
       key: 'sl',
       header: 'Sl',
-      headerClass: 'text-center w-16',
-      cellClass: 'text-center w-16',
+      headerClass: 'text-center !pl-0',
+      cellClass: 'text-center w-16 !pl-0',
       render: (_row: any, index: number) => <span>{index + 1}</span>,
     },
     {
@@ -254,7 +321,19 @@ const TransferList = ({ refreshKey = 0 }: TransferListProps) => {
 
       <div className="relative overflow-x-auto">
         {transfer?.isLoading ? <Loader /> : ''}
-        <Table columns={columns} data={tableData} className="" />
+        <Table
+          columns={columns}
+          data={tableData}
+          className=""
+          renderRowExpansion={(row: any) =>
+            comparedTransferId === Number(row?.id) && comparison ? (
+              <ComparisonPanel
+                comparison={comparison}
+                onClose={() => toggleComparison(Number(row?.id))}
+              />
+            ) : null
+          }
+        />
         {totalPages > 1 ? (
           <Pagination
             currentPage={currentPage}

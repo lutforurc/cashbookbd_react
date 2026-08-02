@@ -83,7 +83,8 @@ const BranchTransfer = () => {
     challanNumber: '',
     receiverName: '',
     receiverMobileNumber: '',
-    transport: '',
+    driverName: '',
+    driverMobile: '',
     note: '',
     products: [] as TransferItem[],
   });
@@ -223,7 +224,8 @@ const BranchTransfer = () => {
       challanNumber: '',
       receiverName: '',
       receiverMobileNumber: '',
-      transport: '',
+      driverName: '',
+      driverMobile: '',
       note: '',
       products: [],
     });
@@ -400,7 +402,8 @@ const BranchTransfer = () => {
       receiver_name: formData.receiverName || null,
       receiver_mobile_number: receiverMobile || null,
       note: formData.note || null,
-      transport: formData.transport || null,
+      driver_name: formData.driverName || null,
+      driver_mobile: formData.driverMobile || null,
       table_data: formData.products.map((item) => ({
         code: Number(item.productId),
         qty: Number(item.quantity),
@@ -452,79 +455,110 @@ const BranchTransfer = () => {
     <div>
       <HelmetTitle title="Branch Transfer" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 mb-4">
-        <InputDatePicker
-          id="transferDate"
-          name="transferDate"
-          label="Challan Date"
-          selectedDate={transferDate}
-          setSelectedDate={setTransferDate}
-          setCurrentDate={handleTransferDateChange}
-          className="w-full h-8.5"
-        />
-        <InputElement
-          id="challanNumber"
-          name="challanNumber"
-          label="Challan Number"
-          placeholder="Enter challan number"
-          value={formData.challanNumber}
-          onChange={handleFormInput}
-        />
-        <InputElement
-          id="receiverName"
-          name="receiverName"
-          label="Receiver Name"
-          placeholder="Enter receiver name"
-          value={formData.receiverName}
-          onChange={handleFormInput}
-        />
-        <InputElement
-          id="receiverMobileNumber"
-          name="receiverMobileNumber"
-          type="tel"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          label="Receiver Mobile"
-          placeholder="Enter mobile number"
-          value={formData.receiverMobileNumber}
-          onChange={handleFormInput}
-        />
-        <InputElement
-          id="transport"
-          name="transport"
-          label="Transport"
-          placeholder="Enter transport"
-          value={formData.transport}
-          onChange={handleFormInput}
-        />
-        <InputElement
-          id="note"
-          name="note"
-          label="Note"
-          placeholder="Transfer note"
-          value={formData.note}
-          onChange={handleFormInput}
-        />
-        <div>
-          <label className="text-black dark:text-white">From Branch</label>
-          <BranchDropdown
-            id="fromBranch"
-            name="fromBranch"
-            className="p-2"
-            branchDdl={fromBranchOptions}
-            onChange={handleBranchChange}
-            defaultValue={formData.fromBranch}
+      {/* Rows sit closer than they did: at gap-4 the eight fields read as eight
+          separate things rather than one form. */}
+      <div className="grid grid-cols-1 gap-x-4 gap-y-2 mb-4 md:grid-cols-2">
+        {/* First, because it is the first thing decided: which way the stock
+            moves. Everything below only describes a transfer already scoped. */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-black dark:text-white">From Branch</label>
+            <BranchDropdown
+              id="fromBranch"
+              name="fromBranch"
+              className="p-2"
+              branchDdl={fromBranchOptions}
+              onChange={handleBranchChange}
+              defaultValue={formData.fromBranch}
+            />
+          </div>
+          <div>
+            <label className="text-black dark:text-white">To Branch</label>
+            <BranchDropdown
+              id="toBranch"
+              name="toBranch"
+              className="p-2"
+              branchDdl={toBranchOptions}
+              onChange={handleBranchChange}
+              defaultValue={formData.toBranch}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <InputDatePicker
+            id="transferDate"
+            name="transferDate"
+            label="Challan Date"
+            selectedDate={transferDate}
+            setSelectedDate={setTransferDate}
+            setCurrentDate={handleTransferDateChange}
+            className="w-full h-8.5"
+          />
+          <InputElement
+            id="challanNumber"
+            name="challanNumber"
+            label="Challan Number"
+            placeholder="Enter challan number"
+            value={formData.challanNumber}
+            onChange={handleFormInput}
           />
         </div>
-        <div>
-          <label className="text-black dark:text-white">To Branch</label>
-          <BranchDropdown
-            id="toBranch"
-            name="toBranch"
-            className="p-2"
-            branchDdl={toBranchOptions}
-            onChange={handleBranchChange}
-            defaultValue={formData.toBranch}
+        {/* Paired like the driver below: a name and the number to reach it on
+            are one fact about one person, not two fields that happen to adjoin. */}
+        <div className="grid grid-cols-2 gap-2">
+          <InputElement
+            id="receiverName"
+            name="receiverName"
+            label="Receiver Name"
+            placeholder="Enter receiver name"
+            value={formData.receiverName}
+            onChange={handleFormInput}
+          />
+          <InputElement
+            id="receiverMobileNumber"
+            name="receiverMobileNumber"
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            label="Receiver Mobile"
+            placeholder="Enter mobile number"
+            value={formData.receiverMobileNumber}
+            onChange={handleFormInput}
+          />
+        </div>
+        {/* The single Transport box held whatever the clerk chose to write in
+            it. Split, so the driver can actually be reached about a consignment
+            in transit -- but sharing one column between them, since together
+            they are one thing, and spread across a full row they left the last
+            field of the form stranded on a row of its own. */}
+        <div className="grid grid-cols-2 gap-2">
+          <InputElement
+            id="driverName"
+            name="driverName"
+            label="Driver Name"
+            placeholder="Enter driver name"
+            value={formData.driverName}
+            onChange={handleFormInput}
+          />
+          <InputElement
+            id="driverMobile"
+            name="driverMobile"
+            label="Driver Mobile"
+            placeholder="Enter driver mobile"
+            value={formData.driverMobile}
+            onChange={handleFormInput}
+          />
+        </div>
+        {/* Spans both columns: it is free text about the whole consignment, and
+            the last row is its own anyway now that everything else is paired. */}
+        <div className="md:col-span-2">
+          <InputElement
+            id="note"
+            name="note"
+            label="Note"
+            placeholder="Transfer note"
+            value={formData.note}
+            onChange={handleFormInput}
           />
         </div>
 

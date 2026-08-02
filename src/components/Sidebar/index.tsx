@@ -16,6 +16,7 @@ import {
   FiServer,
   FiShoppingCart,
   FiTrendingUp,
+  FiTruck,
   FiUsers,
 } from 'react-icons/fi';
 import { FaBluetooth, FaGear, FaRegStar } from 'react-icons/fa6';
@@ -453,9 +454,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/invoice/purchase' ||
                     pathname === routes.inv_purchase_import ||
                     pathname === '/invoice/sales' ||
-                    pathname === routes.branch_transfer ||
-                    pathname === routes.branch_received ||
-                    pathname === routes.material_issue ||
                     pathname.includes('forms')
                   }
                   menuId="invoice"
@@ -473,9 +471,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname === '/invoice/sales' ||
                           pathname === '/invoice/sales-return' ||
                           pathname === '/invoice/labour-invoice' ||
-                          pathname === routes.branch_transfer ||
-                          pathname === routes.branch_received ||
-                          pathname === routes.material_issue ||
                           pathname.includes('/invoice/sales')) &&
                           'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                           }`}
@@ -604,11 +599,82 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {/* {(hasPermission(permissions, 'branch.received.create') ||
-                            hasPermission(permissions, 'inventory.received.create') ||
-                            hasPermission(permissions, 'product.received.create') ||
-                            hasPermission(permissions, 'branch.transfer.create') ||
-                            hasPermission(permissions, 'inventory.transfer.create')) && ( */}
+                          {/* Branch Issue and Branch Receive moved to the
+                              Branch Transfer menu, next to the reports that
+                              read them back. */}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
+
+              {/* Branch Transfer — the two forms and the two reports that read
+                  them back, gathered in one place. They were split between the
+                  entry menu and the reports menu, so following a consignment
+                  from issue to arrival meant crossing the sidebar. */}
+              {(hasPermission(permissions, 'branch.issue.create') ||
+                hasPermission(permissions, 'branch.received.create') ||
+                hasPermission(permissions, 'inventory.received.create') ||
+                hasPermission(permissions, 'product.received.create')) && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === routes.branch_transfer ||
+                    pathname === routes.branch_received ||
+                    pathname === routes.material_issue ||
+                    pathname.includes(routes.report_branch_transfer) ||
+                    pathname.includes(routes.report_branch_receive) ||
+                    pathname.includes(routes.report_branch_stock)
+                  }
+                  menuId="branch-transfer"
+                  open={openMenu === 'branch-transfer'}
+                  handleClick={() => handleMenuClick('branch-transfer')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(pathname === routes.branch_transfer ||
+                          pathname === routes.branch_received ||
+                          pathname === routes.material_issue ||
+                          pathname.includes(routes.report_branch_transfer) ||
+                          pathname.includes(routes.report_branch_receive) ||
+                          pathname.includes(routes.report_branch_stock)) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiTruck />
+                        Branch Transfer
+                        <FiChevronRight
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
+                            }`}
+                        />
+                      </NavLink>
+
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {/* Issue first, then receive, then what each looks
+                              like afterwards -- the order a consignment moves. */}
+                          {hasPermission(permissions, 'branch.issue.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.branch_transfer}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch Issue
+                              </NavLink>
+                            </li>
+                          )}
                           {(hasPermission(permissions, 'branch.received.create') ||
                             hasPermission(permissions, 'inventory.received.create') ||
                             hasPermission(permissions, 'product.received.create')) && (
@@ -624,21 +690,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {/* // )} */}
-                          {(hasPermission(permissions, 'branch.issue.create')) && (
-                            <li>
-                              <NavLink
-                                to={routes.branch_transfer}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Branch Issue
-                              </NavLink>
-                            </li>
-                          )}
-                          {(hasPermission(permissions, 'material.issue.create')) && (
+                          {hasPermission(permissions, 'material.issue.create') && (
                             <li>
                               <NavLink
                                 to={routes.material_issue}
@@ -648,6 +700,45 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Material Issue
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'branch.transfer.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.report_branch_transfer}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch Transfer Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'branch.received.create') && (
+                            <li>
+                              <NavLink
+                                to={routes.report_branch_receive}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch Receive Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.stock.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.report_branch_stock}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Branch Stock
                               </NavLink>
                             </li>
                           )}
@@ -704,9 +795,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname === '/reports/due-installments' ||
                           pathname.includes('/reports/due-list') ||
                           pathname.includes('/reports/product/stock') ||
-                          pathname.includes(routes.report_branch_transfer) ||
-                          pathname.includes(routes.report_branch_receive) ||
-                          pathname.includes(routes.report_branch_stock) ||
                           pathname.includes(routes.report_closing_stock) ||
                           pathname.includes(routes.somity_stock_details) ||
                           pathname.includes(routes.report_imei_stock) ||
@@ -1056,45 +1144,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'branch.transfer.create') && (
-                            <li>
-                              <NavLink
-                                to={routes.report_branch_transfer}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Branch Transfer Report
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'branch.received.create') && (
-                            <li>
-                              <NavLink
-                                to={routes.report_branch_receive}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Branch Receive Report
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.stock.view') && (
-                            <li>
-                              <NavLink
-                                to={routes.report_branch_stock}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Branch Stock
-                              </NavLink>
-                            </li>
-                          )}
+                          {/* The two branch transfer reports moved to the
+                              Branch Transfer menu, beside the forms they read. */}
                           {hasPermission(permissions, 'imei.stock') && (
                             <li>
                               <NavLink

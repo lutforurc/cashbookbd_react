@@ -235,6 +235,7 @@ export const API_ALL_DDL_PROTECTED_BRANCH_URL = `${API_BASE_URL}/branch/ddl/prot
 export const ACTIVE_WAREHOUSE_DDL_URL = `${API_BASE_URL}/active/warehouse`;
 export const API_BRANCH_TRANSFER_LIST_URL = `${API_BASE_URL}/warehouse/transfer/list`;
 export const API_BRANCH_TRANSFER_DETAILS_URL = `${API_BASE_URL}/warehouse/transfer/details/`;
+export const API_BRANCH_TRANSFER_COMPARISON_URL = `${API_BASE_URL}/warehouse/transfer/comparison/`;
 export const API_BRANCH_RECEIVED_LIST_URL = `${API_BASE_URL}/warehouse/received/list`;
 export const API_BRANCH_TRANSFER_STORE_URL = `${API_BASE_URL}/warehouse/transfer/issue`;
 export const API_BRANCH_RECEIVED_STORE_URL = `${API_BASE_URL}/warehouse/transfer/receive`;

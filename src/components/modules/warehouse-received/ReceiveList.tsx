@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
-import { FiPrinter } from 'react-icons/fi';
+import { FiMinus, FiPlus, FiPrinter } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import httpService from '../../services/httpService';
+import { API_BRANCH_TRANSFER_COMPARISON_URL } from '../../services/apiRoutes';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -10,6 +13,7 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import ChallanPrint from '../warehouse-transfer/ChallanPrint';
+import ComparisonPanel from '../warehouse-transfer/ComparisonPanel';
 import { getBranchTransferDetails } from '../warehouse-transfer/warehouseTransferSlice';
 import { getBranchReceived } from './warehouseReceivedSlice';
 
@@ -39,6 +43,40 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
   const [perPage, setPerPage] = useState<number | string>(10);
   const [searchLoading, setSearchLoading] = useState(false);
   const [printingId, setPrintingId] = useState<number | string | null>(null);
+  // One receive compared at a time, as on the Transfer List.
+  const [comparedReceiveId, setComparedReceiveId] = useState<number | null>(null);
+  const [comparison, setComparison] = useState<any | null>(null);
+  const [comparingId, setComparingId] = useState<number | null>(null);
+
+  /**
+   * Opens what was sent against what arrived.
+   *
+   * Handed a receive, the endpoint answers about the issue behind it, so the
+   * receiving branch sees the same figures the issuing one does -- including
+   * anything received against that issue on another note.
+   */
+  const toggleComparison = async (receiveId: number) => {
+    if (comparedReceiveId === receiveId) {
+      setComparedReceiveId(null);
+      setComparison(null);
+      return;
+    }
+
+    setComparingId(receiveId);
+    try {
+      const response = await httpService.get(
+        `${API_BRANCH_TRANSFER_COMPARISON_URL}${receiveId}`,
+      );
+      setComparison(response?.data?.data?.data ?? null);
+      setComparedReceiveId(receiveId);
+    } catch {
+      toast.error('Could not load the issued versus received figures.');
+      setComparedReceiveId(null);
+      setComparison(null);
+    } finally {
+      setComparingId(null);
+    }
+  };
 
   const printRef = useRef<HTMLDivElement>(null);
   const printReceiveNote = useReactToPrint({
@@ -88,10 +126,40 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
 
   const columns = [
     {
+      // Ahead of the serial, in the Action icons' blue -- same place and same
+      // look as the Transfer List, so it reads as one feature seen twice.
+      key: 'compare',
+      header: '',
+      headerClass: 'text-center !pl-0',
+      cellClass: 'text-center w-8 !px-1',
+      render: (row: any) => {
+        const id = Number(row?.id || 0);
+        if (!id) return null;
+        const isOpen = comparedReceiveId === id;
+
+        return (
+          <button
+            type="button"
+            title={isOpen ? 'Hide issued vs received' : 'Show issued vs received'}
+            onClick={() => toggleComparison(id)}
+            className="inline-flex h-6 w-6 items-center justify-center rounded border border-blue-500/40 text-blue-500 transition hover:border-blue-500 hover:bg-blue-500/10"
+          >
+            {comparingId === id ? (
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-blue-500/30 border-t-blue-500" />
+            ) : isOpen ? (
+              <FiMinus className="cursor-pointer w-4 h-4" />
+            ) : (
+              <FiPlus className="cursor-pointer w-4 h-4" />
+            )}
+          </button>
+        );
+      },
+    },
+    {
       key: 'sl',
       header: 'Sl',
-      headerClass: 'text-center w-16',
-      cellClass: 'text-center w-16',
+      headerClass: 'text-center w-16 !pl-0',
+      cellClass: 'text-center w-16 !pl-0',
       render: (_row: any, index: number) => <span>{index + 1}</span>,
     },
     {
@@ -204,7 +272,19 @@ const ReceiveList = ({ refreshKey = 0 }: ReceiveListProps) => {
 
       <div className="relative overflow-x-auto">
         {received?.isLoading ? <Loader /> : ''}
-        <Table columns={columns} data={tableData} className="" />
+        <Table
+          columns={columns}
+          data={tableData}
+          className=""
+          renderRowExpansion={(row: any) =>
+            comparedReceiveId === Number(row?.id) && comparison ? (
+              <ComparisonPanel
+                comparison={comparison}
+                onClose={() => toggleComparison(Number(row?.id))}
+              />
+            ) : null
+          }
+        />
         {totalPages > 1 ? (
           <Pagination
             currentPage={currentPage}

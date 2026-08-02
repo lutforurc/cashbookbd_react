@@ -1,0 +1,107 @@
+import React from 'react';
+import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+
+/**
+ * What was sent against what arrived, for one challan.
+ *
+ * Shared by the Transfer List and the Receive List: the question is the same
+ * from either end -- "against what was sent" -- and the endpoint answers about
+ * the issue whichever of the two you hand it.
+ *
+ * The difference is the column worth reading, so it is the one that carries
+ * colour: red where less landed than left, amber where more did, and plain ink
+ * where the two agree -- which is every line nobody needs to look into.
+ */
+const ComparisonPanel = ({
+  comparison,
+  onClose,
+}: {
+  comparison: any;
+  onClose: () => void;
+}) => {
+  const rows: any[] = Array.isArray(comparison?.rows) ? comparison.rows : [];
+  const totals = comparison?.totals ?? {};
+
+  const difference = (value: number) => {
+    const n = Number(value || 0);
+    if (n === 0) return <span className="text-body dark:text-bodydark">0</span>;
+    return (
+      <span className={n < 0 ? 'font-semibold text-danger' : 'font-semibold text-meta-6'}>
+        {n > 0 ? `+${thousandSeparator(n)}` : thousandSeparator(n)}
+      </span>
+    );
+  };
+
+  const cell = 'border border-stroke px-2 py-1.5 dark:border-strokedark';
+
+  return (
+    <div className="border-y border-blue-500/30 bg-gray-2 px-3 py-3 dark:bg-meta-4">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-black dark:text-white">
+          Issued vs Received
+          {!comparison?.is_received && (
+            <span className="ml-2 text-xs font-normal text-danger">
+              nothing received against this challan yet
+            </span>
+          )}
+        </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-xs text-blue-500 underline-offset-2 hover:underline"
+        >
+          Close
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] border-collapse text-sm">
+          <thead>
+            <tr className="bg-gray-3 text-left dark:bg-boxdark">
+              <th className={cell}>Product</th>
+              <th className={`${cell} w-28 text-right`}>Issued</th>
+              <th className={`${cell} w-28 text-right`}>Received</th>
+              <th className={`${cell} w-24 text-right`}>Damaged</th>
+              <th className={`${cell} w-24 text-right`}>Short</th>
+              <th className={`${cell} w-28 text-right`}>Difference</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={6} className={`${cell} py-4 text-center text-body dark:text-bodydark`}>
+                  No product on this challan
+                </td>
+              </tr>
+            ) : (
+              rows.map((row) => (
+                <tr key={row.product_id}>
+                  <td className={cell}>{row.product_name}</td>
+                  <td className={`${cell} text-right`}>{thousandSeparator(row.issued_qty)}</td>
+                  <td className={`${cell} text-right`}>{thousandSeparator(row.received_qty)}</td>
+                  <td className={`${cell} text-right`}>{thousandSeparator(row.damaged_qty)}</td>
+                  <td className={`${cell} text-right`}>{thousandSeparator(row.short_qty)}</td>
+                  <td className={`${cell} text-right`}>{difference(row.difference)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+          {rows.length > 0 && (
+            <tfoot>
+              <tr className="bg-gray-3 font-semibold dark:bg-boxdark">
+                <td className={`${cell} text-right`}>Total</td>
+                <td className={`${cell} text-right`}>{thousandSeparator(totals.issued_qty)}</td>
+                <td className={`${cell} text-right`}>{thousandSeparator(totals.received_qty)}</td>
+                <td className={`${cell} text-right`}>{thousandSeparator(totals.damaged_qty)}</td>
+                <td className={`${cell} text-right`}>{thousandSeparator(totals.short_qty)}</td>
+                <td className={`${cell} text-right`}>{difference(totals.difference)}</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default ComparisonPanel;

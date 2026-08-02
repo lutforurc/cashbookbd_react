@@ -68,7 +68,8 @@ const WarehouseReceived = () => {
     challanNumber: '',
     receiverName: '',
     receiverMobileNumber: '',
-    transport: '',
+    driverName: '',
+    driverMobile: '',
     note: '',
     products: [] as TransferItem[],
   });
@@ -131,7 +132,10 @@ const WarehouseReceived = () => {
           challanNumber: master.challan_number || '',
           receiverName: master.receiver_name || '',
           receiverMobileNumber: master.receiver_mobile_number || '',
-          transport: master.reference || '',
+          // Carried over from the issue: the same lorry usually arrives, and a
+          // challan raised before the split has its driver in `reference`.
+          driverName: master.driver_name || master.reference || '',
+          driverMobile: master.driver_mobile || '',
           note: master.notes || '',
           products: details.map((d: any, i: number) => ({
             id: Date.now() + i,
@@ -259,7 +263,8 @@ const WarehouseReceived = () => {
       challanNumber: '',
       receiverName: '',
       receiverMobileNumber: '',
-      transport: '',
+      driverName: '',
+      driverMobile: '',
       note: '',
       products: [],
     });
@@ -406,7 +411,8 @@ const WarehouseReceived = () => {
       receiver_name: formData.receiverName || null,
       receiver_mobile_number: receiverMobile || null,
       note: formData.note || null,
-      transport: formData.transport || null,
+      driver_name: formData.driverName || null,
+      driver_mobile: formData.driverMobile || null,
       table_data: formData.products.map((item) => ({
         code: Number(item.productId),
         qty: Number(item.quantity),
@@ -439,80 +445,105 @@ const WarehouseReceived = () => {
     <div>
       <HelmetTitle title="Branch Receive" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 mb-4">
-        <InputDatePicker
-          id="transferDate"
-          name="transferDate"
-          label="Receive Date"
-          selectedDate={receiveDate}
-          setSelectedDate={setReceiveDate}
-          setCurrentDate={handleTransferDateChange}
-          className="w-full h-8.5"
-        />
-        <InputElement
-          id="challanNumber"
-          name="challanNumber"
-          label="Challan Number"
-          placeholder="Enter challan number"
-          value={formData.challanNumber}
-          onChange={handleFormInput}
-        />
-        <InputElement
-          id="receiverName"
-          name="receiverName"
-          label="Receiver Name"
-          placeholder="Enter receiver name"
-          value={formData.receiverName}
-          onChange={handleFormInput}
-        />
-        <InputElement
-          id="receiverMobileNumber"
-          name="receiverMobileNumber"
-          type="tel"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          label="Receiver Mobile"
-          placeholder="Enter mobile number"
-          value={formData.receiverMobileNumber}
-          onChange={handleFormInput}
-        />
-        <InputElement
-          id="transport"
-          name="transport"
-          label="Transport"
-          placeholder="Enter transport"
-          value={formData.transport}
-          onChange={handleFormInput}
-        />
-        <InputElement
-          id="note"
-          name="note"
-          label="Note"
-          placeholder="Receive note"
-          value={formData.note}
-          onChange={handleFormInput}
-        />
-        <div>
-          <label className="text-black dark:text-white">From Branch</label>
-          <BranchDropdown
-            id="fromBranch"
-            name="fromBranch"
-            className="p-2"
-            branchDdl={fromBranchSelectOptions}
-            onChange={handleBranchChange}
-            defaultValue={formData.fromBranch}
-            value={formData.fromBranch}
+      {/* Same spacing as the transfer form it mirrors. */}
+      <div className="grid grid-cols-1 gap-x-4 gap-y-2 mb-4 md:grid-cols-2">
+        {/* First, as on the transfer form: which way the stock moved is what the
+            rest of the entry hangs off. */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-black dark:text-white">From Branch</label>
+            <BranchDropdown
+              id="fromBranch"
+              name="fromBranch"
+              className="p-2"
+              branchDdl={fromBranchSelectOptions}
+              onChange={handleBranchChange}
+              defaultValue={formData.fromBranch}
+              value={formData.fromBranch}
+            />
+          </div>
+          <div>
+            <label className="text-black dark:text-white">Receive Branch</label>
+            <BranchDropdown
+              id="toBranch"
+              name="toBranch"
+              className="p-2"
+              branchDdl={toBranchOptions}
+              onChange={handleBranchChange}
+              defaultValue={formData.toBranch}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <InputDatePicker
+            id="transferDate"
+            name="transferDate"
+            label="Receive Date"
+            selectedDate={receiveDate}
+            setSelectedDate={setReceiveDate}
+            setCurrentDate={handleTransferDateChange}
+            className="w-full h-8.5"
+          />
+          <InputElement
+            id="challanNumber"
+            name="challanNumber"
+            label="Challan Number"
+            placeholder="Enter challan number"
+            value={formData.challanNumber}
+            onChange={handleFormInput}
           />
         </div>
-        <div>
-          <label className="text-black dark:text-white">Receive Branch</label>
-          <BranchDropdown
-            id="toBranch"
-            name="toBranch"
-            className="p-2"
-            branchDdl={toBranchOptions}
-            onChange={handleBranchChange}
-            defaultValue={formData.toBranch}
+        <div className="grid grid-cols-2 gap-2">
+          <InputElement
+            id="receiverName"
+            name="receiverName"
+            label="Receiver Name"
+            placeholder="Enter receiver name"
+            value={formData.receiverName}
+            onChange={handleFormInput}
+          />
+          <InputElement
+            id="receiverMobileNumber"
+            name="receiverMobileNumber"
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            label="Receiver Mobile"
+            placeholder="Enter mobile number"
+            value={formData.receiverMobileNumber}
+            onChange={handleFormInput}
+          />
+        </div>
+        {/* Split from the old single Transport box, so the driver who brought
+            the consignment can be reached about it. Sharing one column: together
+            they are one thing, and the transfer form pairs them the same way. */}
+        <div className="grid grid-cols-2 gap-2">
+          <InputElement
+            id="driverName"
+            name="driverName"
+            label="Driver Name"
+            placeholder="Enter driver name"
+            value={formData.driverName}
+            onChange={handleFormInput}
+          />
+          <InputElement
+            id="driverMobile"
+            name="driverMobile"
+            label="Driver Mobile"
+            placeholder="Enter driver mobile"
+            value={formData.driverMobile}
+            onChange={handleFormInput}
+          />
+        </div>
+        {/* Spans both columns, same as the transfer form. */}
+        <div className="md:col-span-2">
+          <InputElement
+            id="note"
+            name="note"
+            label="Note"
+            placeholder="Receive note"
+            value={formData.note}
+            onChange={handleFormInput}
           />
         </div>
 

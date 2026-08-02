@@ -38,10 +38,18 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
     const totalDamaged = rows.reduce((sum, d) => sum + Number(d?.damaged_qty ?? 0), 0);
     const totalShort = rows.reduce((sum, d) => sum + Number(d?.short_qty ?? 0), 0);
 
-    const Meta = ({ label, value }: { label: string; value: any }) => (
+    // Fixed label width, so every value starts on the same vertical line instead
+    // of wherever its own label happened to end. In em, not px, so it still holds
+    // when the challan is printed at a larger fontSize.
+    const Meta = ({ label, value, sub }: { label: string; value: any; sub?: any }) => (
       <div className="flex gap-1">
-        <span className="font-semibold whitespace-nowrap">{label}:</span>
-        <span>{value || '-'}</span>
+        <span className="font-semibold whitespace-nowrap shrink-0" style={{ width: '9.5em' }}>
+          {label}:
+        </span>
+        <span>
+          {value || '-'}
+          {sub ? <span className="block">{sub}</span> : null}
+        </span>
       </div>
     );
 
@@ -71,12 +79,23 @@ const ChallanPrint = React.forwardRef<HTMLDivElement, Props>(
         {/* Meta: challan/voucher/date on one side, branches on the other. */}
         <div className="grid grid-cols-2 gap-x-8 gap-y-1 mb-3">
           <Meta label="Challan No" value={master?.challan_number} />
-          <Meta label="From Branch" value={master?.from_branch_name} />
+          <Meta
+            label="From Branch"
+            value={master?.from_branch_name}
+            sub={master?.from_branch_address}
+          />
           <Meta label="Voucher No" value={master?.vr_no} />
-          <Meta label="To Branch" value={master?.to_branch_name} />
+          <Meta
+            label="To Branch"
+            value={master?.to_branch_name}
+            sub={master?.to_branch_address}
+          />
           <Meta label="Date" value={challanDate} />
-          <Meta label="Transport" value={master?.reference} />
+          {/* Falls back to the old single Transport box, which is all an entry
+              made before the split has. */}
+          <Meta label="Driver" value={master?.driver_name || master?.reference} />
           <Meta label="Receiver" value={master?.receiver_name} />
+          <Meta label="Driver Mobile" value={master?.driver_mobile} />
           <Meta label="Receiver Mobile" value={master?.receiver_mobile_number} />
         </div>
 
