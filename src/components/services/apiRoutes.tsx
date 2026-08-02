@@ -709,6 +709,9 @@ export const API_UNIT_SALE_DDL_URL = `${API_BASE_URL}/real-estate/unit-sale/ddl`
 export const API_UNIT_SALE_SUMMARY_URL = `${API_BASE_URL}/real-estate/unit-sale/summary`;
 export const API_UNIT_SALE_SOLD_UNITS_URL = `${API_BASE_URL}/real-estate/unit-sale/sold-units`;
 export const API_UNIT_SALE_ALLOTMENT_LETTER_URL = `${API_BASE_URL}/real-estate/unit-sale/allotment-letter/`;
+// The scanned deed of one sale: POST to attach or replace, GET to read, DELETE
+// to remove. Suffix the sale id, then '/documents'.
+export const API_UNIT_SALE_DOCUMENTS_URL = `${API_BASE_URL}/real-estate/unit-sale/`;
 
 // In-app pop-up messaging
 export const API_IN_APP_MESSAGE_SYNC_URL = `${API_BASE_URL}/in-app-messages/sync`;

@@ -1,6 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiFilePlus, FiFileText, FiPrinter, FiRefreshCcw, FiSearch } from "react-icons/fi";
+import {
+  FiFilePlus,
+  FiFileText,
+  FiPaperclip,
+  FiPrinter,
+  FiRefreshCcw,
+  FiSearch,
+  FiTrash2,
+  FiUpload,
+} from "react-icons/fi";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -12,7 +21,10 @@ import InputDatePicker from "../../../utils/fields/DatePicker";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import httpService from "../../../services/httpService";
-import { API_UNIT_SALE_ALLOTMENT_LETTER_URL } from "../../../services/apiRoutes";
+import {
+  API_UNIT_SALE_ALLOTMENT_LETTER_URL,
+  API_UNIT_SALE_DOCUMENTS_URL,
+} from "../../../services/apiRoutes";
 import { fetchSoldUnits } from "./unitSaleSlice";
 import { fetchProjectDdl } from "../project/projectSlice";
 import { fetchBuildingDdl } from "../buildings/buildingsSlice";
@@ -29,6 +41,9 @@ import {
 import SoldUnitListPrint from "./SoldUnitListPrint";
 
 const cellBase = "border border-stroke px-2 py-1.5 dark:border-strokedark";
+
+/** 1.5 MB, the same ceiling SaleDocumentController enforces. */
+const MAX_DOCUMENT_BYTES = 1.5 * 1024 * 1024;
 
 const SoldUnitList: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -66,8 +81,15 @@ const SoldUnitList: React.FC = () => {
   // day of the sale.
   const [refNo, setRefNo] = useState("");
   const [refDate, setRefDate] = useState<Date | null>(null);
+  // The sale whose deed is about to be removed. Asked first: there is no second
+  // copy of a scanned deed anywhere in the system.
+  const [confirmDeleteUnit, setConfirmDeleteUnit] = useState<SoldUnitRow | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
+  // One picker, re-pointed at whichever row was clicked. A file input per row
+  // would put hundreds of them on a page where one is used at a time.
+  const filePickerRef = useRef<HTMLInputElement>(null);
+  const pickingSaleId = useRef<number | null>(null);
 
   const customers: SoldUnitCustomer[] = soldUnits?.data ?? [];
   // Re-added from the whole taka on the page, so the cards and the grand total
@@ -245,6 +267,125 @@ const SoldUnitList: React.FC = () => {
     } catch (error: any) {
       letterTab?.close();
       toast.error(error?.message || "Failed to build the allotment letter");
+    } finally {
+      setBusySaleId(null);
+    }
+  };
+
+  const documentsUrl = (saleId: number) =>
+    `${API_UNIT_SALE_DOCUMENTS_URL}${saleId}/documents`;
+
+  const openFilePicker = (saleId: number) => {
+    if (busySaleId) return;
+    pickingSaleId.current = saleId;
+    // Cleared first, so choosing the same file twice still fires onChange.
+    if (filePickerRef.current) filePickerRef.current.value = "";
+    filePickerRef.current?.click();
+  };
+
+  /**
+   * Attaches the scanned deed, or replaces the one already there.
+   *
+   * The picker is opened from a ref rather than a visible file input: a bare
+   * "Choose file" box in a report column is noise on every row, including the
+   * hundreds nobody is filing today.
+   */
+  const handleDocumentPick = async (saleId: number, file?: File | null) => {
+    if (!file || busySaleId) return;
+
+    if (file.type !== "application/pdf") {
+      toast.error("The deed must be a PDF.");
+      return;
+    }
+
+    // Checked here as well as on the server: an oversized scan is refused
+    // before it is uploaded, rather than after the wait.
+    if (file.size > MAX_DOCUMENT_BYTES) {
+      toast.error(
+        `The document must be 1.5 MB or smaller — this one is ${(
+          file.size /
+          (1024 * 1024)
+        ).toFixed(1)} MB.`,
+      );
+      return;
+    }
+
+    setBusySaleId(saleId);
+    const body = new FormData();
+    body.append("file", file);
+
+    try {
+      // httpService defaults POST to application/json, which would send the
+      // form as an empty body and the server would answer "the file field is
+      // required". Naming multipart lets axios set the boundary itself.
+      const response = await httpService.post(documentsUrl(saleId), body, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success(response?.data?.message || "Document saved");
+      loadData();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || "Could not save the document",
+      );
+    } finally {
+      setBusySaleId(null);
+    }
+  };
+
+  /** Opens the stored deed. Fetched with the auth header, so it arrives as a blob. */
+  const handleViewDocument = async (saleId: number) => {
+    if (busySaleId) return;
+
+    const docTab = window.open("", "_blank");
+    setBusySaleId(saleId);
+
+    try {
+      const response = await httpService.get(documentsUrl(saleId), { responseType: "blob" });
+
+      // A refusal comes back as JSON on a 2xx, so it never reaches the catch.
+      if (response.data?.type?.includes("json")) {
+        const message = JSON.parse(await response.data.text())?.message;
+        throw new Error(message || "The document is not available");
+      }
+
+      const fileUrl = URL.createObjectURL(
+        new Blob([response.data], { type: "application/pdf" }),
+      );
+
+      if (docTab) {
+        docTab.location.href = fileUrl;
+      } else {
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.download = `sale-${saleId}-documents.pdf`;
+        link.click();
+      }
+
+      setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+    } catch (error: any) {
+      docTab?.close();
+      toast.error(error?.message || "Failed to open the document");
+    } finally {
+      setBusySaleId(null);
+    }
+  };
+
+  /** Removes the stored deed. Asked first -- there is no copy to fall back on. */
+  const handleDeleteDocument = async () => {
+    const saleId = confirmDeleteUnit?.sale_id;
+    if (!saleId || busySaleId) return;
+
+    setBusySaleId(saleId);
+
+    try {
+      const response = await httpService.delete(documentsUrl(saleId));
+      toast.success(response?.data?.message || "Document removed");
+      setConfirmDeleteUnit(null);
+      loadData();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || "Could not remove the document",
+      );
     } finally {
       setBusySaleId(null);
     }
@@ -601,6 +742,54 @@ const SoldUnitList: React.FC = () => {
                                   >
                                     <FiFileText /> DEMO
                                   </button>
+
+                                  {/* The scanned deed and nominee papers. One
+                                      PDF per sale: attaching again replaces it,
+                                      so the row shows either "attach" or the
+                                      pair "open / remove", never both states. */}
+                                  <div className="flex items-center gap-2 border-t border-stroke pt-1 dark:border-strokedark">
+                                    {unit.has_document ? (
+                                      <>
+                                        <button
+                                          type="button"
+                                          title="Open the scanned deed"
+                                          disabled={busySaleId === unit.sale_id}
+                                          onClick={() => handleViewDocument(unit.sale_id)}
+                                          className="flex items-center gap-1 text-xs text-meta-3 hover:opacity-80 disabled:opacity-50"
+                                        >
+                                          <FiPaperclip /> DEED
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title="Replace the scanned deed"
+                                          disabled={busySaleId === unit.sale_id}
+                                          onClick={() => openFilePicker(unit.sale_id)}
+                                          className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                        >
+                                          <FiUpload />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title="Remove the scanned deed"
+                                          disabled={busySaleId === unit.sale_id}
+                                          onClick={() => setConfirmDeleteUnit(unit)}
+                                          className="text-xs text-danger hover:opacity-80 disabled:opacity-50"
+                                        >
+                                          <FiTrash2 />
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        title="Attach the scanned deed and nominee papers (PDF, max 1.5 MB)"
+                                        disabled={busySaleId === unit.sale_id}
+                                        onClick={() => openFilePicker(unit.sale_id)}
+                                        className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                      >
+                                        <FiUpload /> DEED
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               </td>
                             </>
@@ -714,6 +903,45 @@ const SoldUnitList: React.FC = () => {
         loading={busySaleId === confirmUnit?.sale_id}
         onCancel={() => setConfirmUnit(null)}
         onConfirm={handleGenerateLetter}
+      />
+
+      {/* Nothing else in the system holds a copy of a scanned deed, so removing
+          one is the end of it. */}
+      <ConfirmModal
+        show={Boolean(confirmDeleteUnit)}
+        title="Remove Document"
+        message={
+          <>
+            Remove the scanned deed of
+            <span className="mt-1 block font-bold">
+              {confirmDeleteUnit?.unit_no || confirmDeleteUnit?.parking_no || "this unit"} ?
+            </span>
+            <span className="mt-2 block text-xs text-body dark:text-bodydark">
+              No copy is kept anywhere else. It will have to be scanned again.
+            </span>
+          </>
+        }
+        confirmLabel="Remove"
+        // Red, for the same reason the letter's confirm is green: the button
+        // carries no colour of its own, and this one destroys.
+        className="bg-red-600 hover:bg-red-700"
+        loading={busySaleId === confirmDeleteUnit?.sale_id}
+        onCancel={() => setConfirmDeleteUnit(null)}
+        onConfirm={handleDeleteDocument}
+      />
+
+      {/* One picker for the whole page; openFilePicker points it at a row. */}
+      <input
+        ref={filePickerRef}
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        onChange={(e) => {
+          const saleId = pickingSaleId.current;
+          const file = e.target.files?.[0];
+          pickingSaleId.current = null;
+          if (saleId) handleDocumentPick(saleId, file);
+        }}
       />
     </>
   );

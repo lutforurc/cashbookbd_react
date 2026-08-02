@@ -18,9 +18,19 @@ import {
  */
 export const wholeTaka = (value: any) => Math.trunc(Number(value ?? 0));
 
+/**
+ * A negative amount prints as `(-) 36,000`, not `-36,000`.
+ *
+ * The bare minus is one thin stroke against a column of digits and is missed
+ * exactly where it matters — a discount read as a charge turns a rebate into an
+ * addition. The parenthesised form is what the office already writes by hand.
+ */
 export const money = (value: any) => {
   const amount = wholeTaka(value);
-  return amount ? thousandSeparator(amount) : "-";
+  if (!amount) return "-";
+  return amount < 0
+    ? `(-) ${thousandSeparator(Math.abs(amount))}`
+    : thousandSeparator(amount);
 };
 
 /**
