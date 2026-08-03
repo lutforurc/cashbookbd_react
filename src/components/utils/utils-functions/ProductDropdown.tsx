@@ -1,9 +1,10 @@
 import React, { useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import AsyncSelect from 'react-select/async';
 import { getDdlProduct } from '../../modules/product/productSlice';
 import { StylesConfig } from 'react-select';
 import useLocalStorage from '../../../hooks/useLocalStorage';
+import { hasPermission } from '../permissionChecker';
 
 interface OptionType {
   value: string;
@@ -56,6 +57,12 @@ const ProductDropdown: React.FC<DropdownProps> = ({
     value ?? defaultValue ?? null,
   );
   const dispatch = useDispatch();
+  // What a product cost the company is not everyone's business, and this list
+  // is open on the sales counter. The price still travels with the option --
+  // the purchase screens fill their rate from it -- so this hides the line,
+  // and only the line.
+  const permissions = useSelector((state: any) => state.settings?.data?.permissions) || [];
+  const canSeePurchasePrice = hasPermission(permissions, 'product.purchase.price.view');
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
   const controlHeight = getControlHeightFromClassName(className);
@@ -227,7 +234,7 @@ const ProductDropdown: React.FC<DropdownProps> = ({
                     Category: {option.label_2}
                   </div>
                 )}
-                {option.label_3 && (
+                {canSeePurchasePrice && option.label_3 && (
                   <div className="text-gray-600 dark:text-white text-sm">
                     Purchase Price: {option.label_3}
                   </div>
