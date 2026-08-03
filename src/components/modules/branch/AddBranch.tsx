@@ -269,11 +269,22 @@ const AddBranch = () => {
     'Print Setup',
     'Invoice Setup',
     'Customer Setup',
+    'Product Setup',
     'Real Estate Setup',
     'Feature Controls',
     ...(isPlatformOwner ? ['SaaS Setup'] : []),
   ];
-  const SAAS_STEP = steps.indexOf('SaaS Setup');
+
+  /**
+   * Which panel to show, asked by name.
+   *
+   * The panels used to be keyed by the number they happened to sit at, so
+   * inserting a step in the middle silently renamed every one after it --
+   * Real Estate's fields appearing under the Feature Controls heading and so
+   * on. Names do not shift when the list grows.
+   */
+  const stepIndex = (title: string) => steps.indexOf(title);
+  const SAAS_STEP = stepIndex('SaaS Setup');
   const paperSizeOptions = [
     { id: '', name: 'Select Invoice Page Size' },
     ...((settings?.branchSettings?.paperSize || []).map((item: any) => ({
@@ -785,18 +796,19 @@ const AddBranch = () => {
                   {steps[currentStep]}
                 </h2>
                 <p className="mt-0.5 text-xs leading-snug text-gray-500">
-                  {currentStep === 0 && 'Branch identity, contact details, and status.'}
-                  {currentStep === 1 && 'Print preferences, page size, and letterhead setup.'}
-                  {currentStep === 2 && 'Invoice labels, notes, formatting, and invoice display options.'}
-                  {currentStep === 3 && 'Customer and supplier related options for this branch.'}
-                  {currentStep === 4 && 'Real estate options for this branch.'}
-                  {currentStep === 5 && 'Operational controls, sharing options, and SMS preferences.'}
+                  {currentStep === stepIndex('Basic Info') && 'Branch identity, contact details, and status.'}
+                  {currentStep === stepIndex('Print Setup') && 'Print preferences, page size, and letterhead setup.'}
+                  {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
+                  {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
+                  {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
+                  {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
+                  {currentStep === stepIndex('Feature Controls') && 'Operational controls, sharing options, and SMS preferences.'}
                   {currentStep === SAAS_STEP &&
                     'Platform settings. Only this account sees them.'}
                 </p>
               </div>
 
-              {currentStep === 0 && (
+              {currentStep === stepIndex('Basic Info') && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <InputElement
@@ -897,7 +909,7 @@ const AddBranch = () => {
                 </>
               )}
 
-              {currentStep === 1 && (
+              {currentStep === stepIndex('Print Setup') && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <DropdownCommon
@@ -1071,7 +1083,7 @@ const AddBranch = () => {
                 </>
               )}
 
-              {currentStep === 2 && (
+              {currentStep === stepIndex('Invoice Setup') && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <InputElement
@@ -1192,7 +1204,7 @@ const AddBranch = () => {
                 </>
               )}
 
-              {currentStep === 3 && (
+              {currentStep === stepIndex('Customer Setup') && (
                 <>
                   {/* ---------- Customer ---------- */}
                   <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -1289,7 +1301,7 @@ const AddBranch = () => {
                 </>
               )}
 
-              {currentStep === 4 && (
+              {currentStep === stepIndex('Product Setup') && (
                 <>
                   {/* ---------- Order ---------- */}
                   <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -1308,13 +1320,46 @@ const AddBranch = () => {
                         className=""
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        <strong>On:</strong> one order can carry several products. 
+                        <strong>On:</strong> one order can carry several products.
                         <br/>
                         <strong>Off:</strong> the original single-product order form.
                       </p>
                     </div>
                   </div>
 
+                  {/* ---------- Stock ---------- */}
+                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Stock
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <FormToggleField
+                      label="Stock With Zero?"
+                      checked={Boolean(formData.report_zero_bal)}
+                      onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
+                    />
+                    <FormToggleField
+                      label="Stock: Brand->Category->Item"
+                      checked={Boolean(formData.stock_report_type)}
+                      onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
+                    />
+                    <FormToggleField
+                      label="Warranty Control?"
+                      checked={Boolean(formData.warranty_controll)}
+                      onChange={(checked) => handleToggleFieldChange('warranty_controll', checked)}
+                    />
+                    <FormToggleField
+                      label="Product Share?"
+                      checked={Boolean(formData.share_product_with_other_branch)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('share_product_with_other_branch', checked)
+                      }
+                    />
+                  </div>
+                </>
+              )}
+
+              {currentStep === stepIndex('Real Estate Setup') && (
+                <>
                   {/* ---------- Allotment Letter ---------- */}
                   <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Allotment Letter
@@ -1415,7 +1460,7 @@ const AddBranch = () => {
                 </>
               )}
 
-              {currentStep === 5 && (
+              {currentStep === stepIndex('Feature Controls') && (
                 <>
                   {/* One grid, not four. Four of them each broke into rows of
                       their own, which left a toggle stranded on a row with two
@@ -1423,31 +1468,14 @@ const AddBranch = () => {
                       three. Flowing them together fills every column in turn. */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
-                      label="Stock With Zero?"
-                      checked={Boolean(formData.report_zero_bal)}
-                      onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
-                    />
-                    <FormToggleField
                       label="Control Manufacture?"
                       checked={Boolean(formData.manufactur_control)}
                       onChange={(checked) => handleToggleFieldChange('manufactur_control', checked)}
                     />
                     <FormToggleField
-                      label="Warranty Control?"
-                      checked={Boolean(formData.warranty_controll)}
-                      onChange={(checked) => handleToggleFieldChange('warranty_controll', checked)}
-                    />
-                    <FormToggleField
                       label="Multiple Warehouse?"
                       checked={Boolean(formData.have_warehouse)}
                       onChange={(checked) => handleToggleFieldChange('have_warehouse', checked)}
-                    />
-                    <FormToggleField
-                      label="Product Share?"
-                      checked={Boolean(formData.share_product_with_other_branch)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('share_product_with_other_branch', checked)
-                      }
                     />
                     <FormToggleField
                       label="Opening ongoing?"
@@ -1509,11 +1537,6 @@ const AddBranch = () => {
                       </div>
                     )}
 
-                    <FormToggleField
-                      label="Stock: Brand->Category->Item"
-                      checked={Boolean(formData.stock_report_type)}
-                      onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
-                    />
                     <FormToggleField
                       label="Need Demo Tutorial?"
                       checked={Boolean(formData.need_demo_tutorial)}
