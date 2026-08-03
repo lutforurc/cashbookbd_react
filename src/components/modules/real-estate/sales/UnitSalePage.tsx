@@ -25,6 +25,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import DropdownCommon from "../../../utils/utils-functions/DropdownCommon";
 import { UNIT_SALE_PAYMENT_MODES } from "../../../constant/constant/variables";
+import httpService from "../../../services/httpService";
+import { API_UNIT_SALE_CUSTOMER_NOMINEES_URL } from "../../../services/apiRoutes";
 
 /* ================= TYPES ================= */
 
@@ -47,6 +49,24 @@ type PriceItem = {
   amount: number;
   note?: string;
   editMode: EditMode;
+};
+
+/** One person on the buyer's nominee list, as the customer screen saved them. */
+type CustomerNominee = {
+  id: number;
+  name: string;
+  relation: string | null;
+  mobile: string | null;
+  national_id: string | null;
+  /** The buyer's own default, offered here and overridable per property. */
+  share_percentage: string | number | null;
+  priority_order: number | null;
+};
+
+/** What this sale says about one of them: ticked, and for how much. */
+type NomineePick = {
+  checked: boolean;
+  share: string;
 };
 
 /* ================= HELPERS ================= */
@@ -76,6 +96,18 @@ const safeNumber = (v: any) => {
  */
 const wholeTaka = (size: number, rate: number) => Math.floor(size * rate);
 
+/**
+ * "wife" reads as Wife, "grand father" as Grand Father. Relations are stored as
+ * the dropdown's own lowercase values, which is right for a stored value and
+ * wrong on a line somebody reads.
+ */
+const titleCase = (value?: string | null) =>
+  (value ?? "")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
 /* ================= PAGE ================= */
 
 export default function UnitSalePage() {
@@ -101,9 +133,112 @@ export default function UnitSalePage() {
   const [bookingMoney, setBookingMoney] = useState<string>("");
   const [note, setNote] = useState<string>("");
 
+  /* ================= NOMINEES =================
+     Who the buyer leaves THIS property to. The list of people comes off the
+     customer, but the choice is made per sale: one buyer holding three flats
+     may leave each of them to somebody different. */
+  const [customerNominees, setCustomerNominees] = useState<CustomerNominee[]>([]);
+  const [nomineePicks, setNomineePicks] = useState<Record<number, NomineePick>>({});
+  const [nomineesLoading, setNomineesLoading] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+
+  /**
+   * Loads the buyer's nominee list whenever the buyer changes.
+   *
+   * Nothing is ticked to begin with. The customer screen's list is an address
+   * book, not a decision about this property, and pre-ticking it would put
+   * people on a booking form nobody chose to put there.
+   */
+  useEffect(() => {
+    const coa4Id = selectedCustomer?.value;
+
+    setNomineePicks({});
+
+    if (!coa4Id) {
+      setCustomerNominees([]);
+      return;
+    }
+
+    let cancelled = false;
+    setNomineesLoading(true);
+
+    (async () => {
+      try {
+        const response = await httpService.get(
+          `${API_UNIT_SALE_CUSTOMER_NOMINEES_URL}${coa4Id}/nominees`,
+        );
+        // foundData() wraps twice: { data: { data: <payload> } }.
+        const list = response?.data?.data?.data?.available ?? [];
+        if (!cancelled) setCustomerNominees(Array.isArray(list) ? list : []);
+      } catch {
+        // A customer with no nominees answers 404, and so does one whose branch
+        // never captures them. Neither is an error worth a toast on a screen
+        // whose job is the pricing.
+        if (!cancelled) setCustomerNominees([]);
+      } finally {
+        if (!cancelled) setNomineesLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCustomer?.value]);
+
+  const toggleNominee = (id: number, nominee: CustomerNominee) =>
+    setNomineePicks((prev) => {
+      const next = { ...prev };
+
+      if (next[id]?.checked) {
+        delete next[id];
+        return next;
+      }
+
+      next[id] = {
+        checked: true,
+        // The customer-level share as the starting point; the buyer decides
+        // per property, and most of the time it is the same figure.
+        share:
+          nominee.share_percentage === null || nominee.share_percentage === ""
+            ? ""
+            : String(nominee.share_percentage),
+      };
+
+      return next;
+    });
+
+  const setNomineeShare = (id: number, share: string) =>
+    setNomineePicks((prev) =>
+      prev[id] ? { ...prev, [id]: { ...prev[id], share } } : prev
+    );
+
+  const pickedNominees = useMemo(
+    () =>
+      customerNominees
+        .filter((n) => nomineePicks[n.id]?.checked)
+        .map((n, index) => ({
+          nominee_id: n.id,
+          share_percentage: nomineePicks[n.id]?.share?.trim()
+            ? Number(nomineePicks[n.id].share)
+            : null,
+          // The order they are ticked in on screen is the order they print in.
+          priority_order: index + 1,
+        })),
+    [customerNominees, nomineePicks]
+  );
+
+  /** Only the shares actually filled in; a blank is a nomination, not a zero. */
+  const shareTotal = useMemo(
+    () =>
+      pickedNominees.reduce(
+        (sum, n) => sum + (n.share_percentage === null ? 0 : n.share_percentage),
+        0
+      ),
+    [pickedNominees]
+  );
 
   /* ================= UNIT ================= */
 
@@ -356,6 +491,11 @@ export default function UnitSalePage() {
     bank_name: showBankFields ? bankName : null,
     branch_name: showBankFields ? branchName : null,
 
+    // Who inherits this property. Empty is allowed: plenty of bookings are
+    // signed before the buyer has settled on a nominee, and the sold-units
+    // report is where one is added afterwards.
+    nominees: pickedNominees,
+
     items: items.map((it) => ({
       id: it.id,
       type: it.type,
@@ -389,6 +529,21 @@ export default function UnitSalePage() {
       return;
     }
 
+    // The same two rules the server enforces, said here so the clerk is not
+    // told after the voucher has been attempted. A share left blank is a
+    // nomination whose division is left to law, which is allowed.
+    const shared = pickedNominees.filter((n) => n.share_percentage !== null);
+    if (shared.length && shareTotal > 100) {
+      toast.info(`Nominee shares add up to ${shareTotal}%, which is more than the property.`);
+      return;
+    }
+    if (shared.length && shared.length === pickedNominees.length && Math.abs(shareTotal - 100) > 0.01) {
+      toast.info(
+        `Every nominee carries a share, so they must add up to 100% — they add up to ${shareTotal}%.`,
+      );
+      return;
+    }
+
     const response: any = await dispatch(storeSalePricing(apiPayload) as any);
 
 
@@ -404,6 +559,9 @@ export default function UnitSalePage() {
 
       // ✅ clear only the table part + inputs
       setItems([]);
+      // The customer stays selected for the next flat, so their nominee list
+      // stays loaded -- but the ticks do not: the next sale is a fresh decision.
+      setNomineePicks({});
       setBookingMoney("");
       setChargeType(null);
       setChargeAmount("");
@@ -518,6 +676,99 @@ export default function UnitSalePage() {
               <FiPlus className="text-gray-900 dark:text-gray-100" />
               Add Charge
             </button>
+
+            {/* Who this property is left to. Only shown once a buyer is chosen:
+                the list is theirs, and an empty box before that explains
+                nothing. People are added on the customer screen -- this screen
+                only decides which of them stand against THIS property. */}
+            {selectedCustomer && (
+              <div className="mt-3 border-t border-gray-300 pt-2 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold">Nominee for this property</label>
+                  {pickedNominees.length > 0 && (
+                    <span
+                      className={`text-xs ${
+                        shareTotal > 100 ? "text-red-500" : "text-gray-500 dark:text-gray-400"
+                      }`}
+                    >
+                      {pickedNominees.length} selected
+                      {shareTotal > 0 ? ` · ${shareTotal}%` : ""}
+                    </span>
+                  )}
+                </div>
+
+                {nomineesLoading ? (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Loading…</p>
+                ) : customerNominees.length === 0 ? (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    This customer has no nominee on file. Add them on the customer
+                    screen, then they can be named here.
+                  </p>
+                ) : (
+                  <div className="mt-1 max-h-44 space-y-1 overflow-y-auto pr-1">
+                    {customerNominees.map((nominee) => {
+                      const pick = nomineePicks[nominee.id];
+
+                      return (
+                        <div
+                          key={nominee.id}
+                          className="flex items-center gap-2 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            id={`nominee-${nominee.id}`}
+                            checked={Boolean(pick?.checked)}
+                            onChange={() => toggleNominee(nominee.id, nominee)}
+                            className="h-4 w-4 shrink-0"
+                          />
+                          <label
+                            htmlFor={`nominee-${nominee.id}`}
+                            className="flex-1 cursor-pointer truncate"
+                            title={[nominee.name, nominee.relation, nominee.mobile]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          >
+                            {nominee.name}
+                            {nominee.relation ? (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {" "}
+                                ({titleCase(nominee.relation)})
+                              </span>
+                            ) : null}
+                          </label>
+
+                          {/* Only for the ticked ones: a share against somebody
+                              who is not a nominee of this flat means nothing. */}
+                          {pick?.checked && (
+                            <div className="flex items-center gap-1">
+                              <InputElement
+                                id={`nominee-share-${nominee.id}`}
+                                name={`nominee-share-${nominee.id}`}
+                                type="number"
+                                label=""
+                                placeholder="%"
+                                className="h-7 w-16 text-right text-xs"
+                                value={pick.share}
+                                onChange={(e: any) =>
+                                  setNomineeShare(nominee.id, e.target.value)
+                                }
+                              />
+                              <span className="text-xs text-gray-500 dark:text-gray-400">%</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {pickedNominees.length > 1 && shareTotal === 0 && (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Shares left blank — the property is left to them jointly.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="rounded  bg-white dark:bg-gray-800 pt-1 py-2 px-4">

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  FiClipboard,
   FiFilePlus,
   FiFileText,
   FiPaperclip,
@@ -9,6 +10,7 @@ import {
   FiSearch,
   FiTrash2,
   FiUpload,
+  FiUsers,
 } from "react-icons/fi";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
@@ -23,6 +25,7 @@ import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
 import httpService from "../../../services/httpService";
 import {
   API_UNIT_SALE_ALLOTMENT_LETTER_URL,
+  API_UNIT_SALE_BOOKING_FORM_URL,
   API_UNIT_SALE_DOCUMENTS_URL,
 } from "../../../services/apiRoutes";
 import { fetchSoldUnits } from "./unitSaleSlice";
@@ -39,6 +42,7 @@ import {
   saleReceipts,
 } from "./soldUnitReport";
 import SoldUnitListPrint from "./SoldUnitListPrint";
+import SaleNomineeModal from "./SaleNomineeModal";
 
 const cellBase = "border border-stroke px-2 py-1.5 dark:border-strokedark";
 
@@ -75,6 +79,9 @@ const SoldUnitList: React.FC = () => {
   // The sale waiting on the confirmation. Issuing a letter is not undoable —
   // every click adds a version that stays on the record for good.
   const [confirmUnit, setConfirmUnit] = useState<SoldUnitRow | null>(null);
+  // Which paper that confirmation is about. The two are issued the same way and
+  // headed the same way, so they share the dialog rather than duplicating it.
+  const [confirmKind, setConfirmKind] = useState<"LETTER" | "BOOKING">("LETTER");
   // What the letter about to be issued will be headed with. Both are the
   // office's to write: the reference has to match whatever the paper register
   // already says, and a letter sent late carries the day it went out, not the
@@ -84,6 +91,9 @@ const SoldUnitList: React.FC = () => {
   // The sale whose deed is about to be removed. Asked first: there is no second
   // copy of a scanned deed anywhere in the system.
   const [confirmDeleteUnit, setConfirmDeleteUnit] = useState<SoldUnitRow | null>(null);
+  // The sale whose nominees are being named. Done here as well as at booking:
+  // most buyers settle on a nominee after the money has been taken.
+  const [nomineeUnit, setNomineeUnit] = useState<SoldUnitRow | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
   // One picker, re-pointed at whichever row was clicked. A file input per row
@@ -172,14 +182,18 @@ const SoldUnitList: React.FC = () => {
    * popup blocker — and falls back to a plain download when it is blocked anyway.
    */
   const handleAllotmentLetter = (saleId: number) =>
-    openLetterPdf(saleId, `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}${saleId}`, `demo-${saleId}`);
+    openSalePdf(
+      saleId,
+      `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}${saleId}`,
+      `allotment-letter-demo-${saleId}`,
+    );
 
   /** Prints an issued letter back from the copy stored on the sale. */
   const handlePrintLetter = (saleId: number, version: number) =>
-    openLetterPdf(
+    openSalePdf(
       saleId,
       `${API_UNIT_SALE_ALLOTMENT_LETTER_URL}${saleId}/print/${version}`,
-      `${saleId}-L${version}`,
+      `allotment-letter-${saleId}-L${version}`,
     );
 
   /**
@@ -194,12 +208,16 @@ const SoldUnitList: React.FC = () => {
    * Either is only an offer -- it is shown in the dialog so a date left behind in
    * the settings is seen and corrected rather than printed unnoticed.
    */
-  const askToGenerate = (unit: SoldUnitRow) => {
+  const askToGenerate = (unit: SoldUnitRow, kind: "LETTER" | "BOOKING" = "LETTER") => {
     const parsed = letterRefDate ? dayjs(letterRefDate) : null;
 
     setConfirmUnit(unit);
+    setConfirmKind(kind);
     setRefDate(parsed?.isValid() ? parsed.toDate() : new Date());
-    setRefNo(letterRefPrefix);
+    // The letter's own prefix is not offered for a booking form: the two are
+    // numbered in separate series, and BST/ALLOT on a booking form would be
+    // wrong in a way nobody notices until the register is reconciled.
+    setRefNo(kind === "LETTER" ? letterRefPrefix : "");
   };
 
   /**
@@ -233,7 +251,66 @@ const SoldUnitList: React.FC = () => {
     }
   };
 
-  const openLetterPdf = async (saleId: number, url: string, fileTag: string) => {
+  /**
+   * The booking form: the buyer's own papers, the property, and the nominees
+   * standing against it. Issued and reprinted exactly as the letter is, on its
+   * own B-n series.
+   */
+  const handleBookingFormDemo = (saleId: number) =>
+    openSalePdf(
+      saleId,
+      `${API_UNIT_SALE_BOOKING_FORM_URL}${saleId}`,
+      `booking-form-demo-${saleId}`,
+      "booking form",
+    );
+
+  const handlePrintBookingForm = (saleId: number, version: number) =>
+    openSalePdf(
+      saleId,
+      `${API_UNIT_SALE_BOOKING_FORM_URL}${saleId}/print/${version}`,
+      `booking-form-${saleId}-B${version}`,
+      "booking form",
+    );
+
+  const handleGenerateBookingForm = async () => {
+    const saleId = confirmUnit?.sale_id;
+    if (!saleId || busySaleId) return;
+
+    setBusySaleId(saleId);
+
+    try {
+      const response = await httpService.post(
+        `${API_UNIT_SALE_BOOKING_FORM_URL}generate/${saleId}`,
+        {
+          ref_no: refNo.trim() || undefined,
+          ref_date: refDate ? dayjs(refDate).format("YYYY-MM-DD") : undefined,
+        },
+      );
+      toast.success(response?.data?.message || "Booking form generated");
+      setConfirmUnit(null);
+      loadData();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || "Could not generate the booking form",
+      );
+    } finally {
+      setBusySaleId(null);
+    }
+  };
+
+  /**
+   * Fetches a server-built PDF and shows it.
+   *
+   * @param label what to call the paper when something goes wrong -- this opens
+   *              allotment letters and booking forms alike, and an error naming
+   *              the wrong one sends the clerk looking in the wrong place.
+   */
+  const openSalePdf = async (
+    saleId: number,
+    url: string,
+    fileTag: string,
+    label = "allotment letter",
+  ) => {
     if (busySaleId) return;
 
     const letterTab = window.open("", "_blank");
@@ -246,7 +323,7 @@ const SoldUnitList: React.FC = () => {
       // it has to be spotted by the blob's own type before it is shown as a PDF.
       if (response.data?.type?.includes("json")) {
         const message = JSON.parse(await response.data.text())?.message;
-        throw new Error(message || "Allotment letter is not available");
+        throw new Error(message || `The ${label} is not available`);
       }
 
       const fileUrl = URL.createObjectURL(
@@ -258,7 +335,7 @@ const SoldUnitList: React.FC = () => {
       } else {
         const link = document.createElement("a");
         link.href = fileUrl;
-        link.download = `allotment-letter-${fileTag}.pdf`;
+        link.download = `${fileTag}.pdf`;
         link.click();
       }
 
@@ -266,7 +343,7 @@ const SoldUnitList: React.FC = () => {
       setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
     } catch (error: any) {
       letterTab?.close();
-      toast.error(error?.message || "Failed to build the allotment letter");
+      toast.error(error?.message || `Failed to build the ${label}`);
     } finally {
       setBusySaleId(null);
     }
@@ -743,6 +820,82 @@ const SoldUnitList: React.FC = () => {
                                     <FiFileText /> DEMO
                                   </button>
 
+                                  {/* The booking form: the buyer's own papers,
+                                      this property, and the nominees standing
+                                      against it. Its own B-n series, because a
+                                      sale can be on its third form and its
+                                      first letter. */}
+                                  <div className="flex flex-wrap items-center justify-center gap-1 border-t border-stroke pt-1 dark:border-strokedark">
+                                    {/* Who this property is left to. Named at
+                                        booking when the buyer has decided, and
+                                        here when they decide later -- which is
+                                        most of the time. */}
+                                    <button
+                                      type="button"
+                                      title={
+                                        unit.nominee_count
+                                          ? `${unit.nominee_count} nominee${
+                                              unit.nominee_count > 1 ? "s" : ""
+                                            } named — change them`
+                                          : "Name who this property is left to"
+                                      }
+                                      disabled={busySaleId === unit.sale_id}
+                                      onClick={() => setNomineeUnit(unit)}
+                                      className={`flex items-center gap-1 text-xs disabled:opacity-50 ${
+                                        unit.nominee_count
+                                          ? "text-meta-3 hover:opacity-80"
+                                          : "text-body hover:text-primary dark:text-bodydark dark:hover:text-secondary"
+                                      }`}
+                                    >
+                                      <FiUsers />
+                                      {unit.nominee_count ? unit.nominee_count : "+"}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      title={
+                                        unit.nominee_count
+                                          ? `Issue a booking form (${unit.nominee_count} nominee${
+                                              unit.nominee_count > 1 ? "s" : ""
+                                            })`
+                                          : "Issue a booking form — no nominee named yet"
+                                      }
+                                      disabled={busySaleId === unit.sale_id}
+                                      onClick={() => askToGenerate(unit, "BOOKING")}
+                                      className="flex items-center gap-1 text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                    >
+                                      <FiClipboard /> BOOKING
+                                    </button>
+
+                                    {Array.from(
+                                      { length: Number(unit.booking_form_count) || 0 },
+                                      (_, i) => i + 1,
+                                    ).map((version) => (
+                                      <button
+                                        key={version}
+                                        type="button"
+                                        title={`Print booking form B-${version} as it was issued`}
+                                        disabled={busySaleId === unit.sale_id}
+                                        onClick={() =>
+                                          handlePrintBookingForm(unit.sale_id, version)
+                                        }
+                                        className="rounded border border-stroke bg-white px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:bg-meta-4 dark:text-secondary dark:hover:bg-form-strokedark"
+                                      >
+                                        B-{version}
+                                      </button>
+                                    ))}
+
+                                    <button
+                                      type="button"
+                                      title="Preview the booking form — built from today's data, not saved"
+                                      disabled={busySaleId === unit.sale_id}
+                                      onClick={() => handleBookingFormDemo(unit.sale_id)}
+                                      className="text-xs text-body hover:text-primary disabled:opacity-50 dark:text-bodydark dark:hover:text-secondary"
+                                    >
+                                      <FiFileText />
+                                    </button>
+                                  </div>
+
                                   {/* The scanned deed and nominee papers. One
                                       PDF per sale, and one action at a time:
                                       before there is a deed the row offers only
@@ -837,19 +990,43 @@ const SoldUnitList: React.FC = () => {
           before it happens. */}
       <ConfirmModal
         show={Boolean(confirmUnit)}
-        title="Confirm Letter Generation"
+        title={
+          confirmKind === "BOOKING"
+            ? "Confirm Booking Form Generation"
+            : "Confirm Letter Generation"
+        }
         message={
           <>
-            Are you sure you want to generate allotment letter
+            Are you sure you want to generate{" "}
+            {confirmKind === "BOOKING" ? "booking form" : "allotment letter"}
             <span className="mt-1 block font-bold">
-              L-{Number(confirmUnit?.letter_count ?? 0) + 1} for{" "}
-              {confirmUnit?.unit_no || confirmUnit?.parking_no || "this unit"} ?
+              {confirmKind === "BOOKING"
+                ? `B-${Number(confirmUnit?.booking_form_count ?? 0) + 1}`
+                : `L-${Number(confirmUnit?.letter_count ?? 0) + 1}`}{" "}
+              for {confirmUnit?.unit_no || confirmUnit?.parking_no || "this unit"} ?
             </span>
-            {Number(confirmUnit?.letter_count ?? 0) > 0 ? (
+            {(confirmKind === "BOOKING"
+              ? Number(confirmUnit?.booking_form_count ?? 0)
+              : Number(confirmUnit?.letter_count ?? 0)) > 0 ? (
               <span className="mt-2 block text-xs text-body dark:text-bodydark">
-                The earlier letter
-                {Number(confirmUnit?.letter_count) > 1 ? "s stay" : " stays"} on
-                record and can still be printed.
+                The earlier{" "}
+                {confirmKind === "BOOKING" ? "form" : "letter"}
+                {(confirmKind === "BOOKING"
+                  ? Number(confirmUnit?.booking_form_count)
+                  : Number(confirmUnit?.letter_count)) > 1
+                  ? "s stay"
+                  : " stays"}{" "}
+                on record and can still be printed.
+              </span>
+            ) : null}
+
+            {/* Said plainly rather than refused: a form is sometimes signed
+                before the buyer has settled on a nominee, and the office knows
+                whether this is one of those. */}
+            {confirmKind === "BOOKING" && !confirmUnit?.nominee_count ? (
+              <span className="mt-2 block text-xs font-medium text-danger">
+                No nominee is named against this property yet — the form will
+                print with the nominee section empty.
               </span>
             ) : null}
 
@@ -865,7 +1042,13 @@ const SoldUnitList: React.FC = () => {
                 name="letter_ref_no"
                 type="text"
                 value={refNo}
-                placeholder={letterRefPrefix ? "" : "Left blank, the letter numbers itself"}
+                placeholder={
+                  confirmKind === "BOOKING"
+                    ? "Left blank, the form numbers itself"
+                    : letterRefPrefix
+                      ? ""
+                      : "Left blank, the letter numbers itself"
+                }
                 className="h-8.5 w-full text-sm"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setRefNo(e.target.value)
@@ -897,7 +1080,9 @@ const SoldUnitList: React.FC = () => {
         className="bg-green-600 hover:bg-green-700"
         loading={busySaleId === confirmUnit?.sale_id}
         onCancel={() => setConfirmUnit(null)}
-        onConfirm={handleGenerateLetter}
+        onConfirm={
+          confirmKind === "BOOKING" ? handleGenerateBookingForm : handleGenerateLetter
+        }
       />
 
       {/* Nothing else in the system holds a copy of a scanned deed, so removing
@@ -923,6 +1108,14 @@ const SoldUnitList: React.FC = () => {
         loading={busySaleId === confirmDeleteUnit?.sale_id}
         onCancel={() => setConfirmDeleteUnit(null)}
         onConfirm={handleDeleteDocument}
+      />
+
+      {/* Naming who a sold property is left to. Reloads the report on save, so
+          the nominee count and the booking form's warning stay true. */}
+      <SaleNomineeModal
+        unit={nomineeUnit}
+        onClose={() => setNomineeUnit(null)}
+        onSaved={() => loadData()}
       />
 
       {/* One picker for the whole page; openFilePicker points it at a row. */}

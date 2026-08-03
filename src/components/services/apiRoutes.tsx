@@ -709,8 +709,15 @@ export const API_UNIT_SALE_DDL_URL = `${API_BASE_URL}/real-estate/unit-sale/ddl`
 export const API_UNIT_SALE_SUMMARY_URL = `${API_BASE_URL}/real-estate/unit-sale/summary`;
 export const API_UNIT_SALE_SOLD_UNITS_URL = `${API_BASE_URL}/real-estate/unit-sale/sold-units`;
 export const API_UNIT_SALE_ALLOTMENT_LETTER_URL = `${API_BASE_URL}/real-estate/unit-sale/allotment-letter/`;
+// One buyer's nominee list while the booking is still being typed — suffix the
+// customer's chart-of-account id, the same value the sale is saved with.
+export const API_UNIT_SALE_CUSTOMER_NOMINEES_URL = `${API_BASE_URL}/real-estate/unit-sale/customer/`;
+// The booking form of one sale, versioned on its own series: suffix the sale id
+// for the DEMO, 'generate/<id>' to issue, '<id>/print/<n>' to reprint B-n.
+export const API_UNIT_SALE_BOOKING_FORM_URL = `${API_BASE_URL}/real-estate/unit-sale/booking-form/`;
 // The scanned deed of one sale: POST to attach or replace, GET to read, DELETE
-// to remove. Suffix the sale id, then '/documents'.
+// to remove. Suffix the sale id, then '/documents'. Also the stem for a sale's
+// nominees -- suffix the sale id, then '/nominees'.
 export const API_UNIT_SALE_DOCUMENTS_URL = `${API_BASE_URL}/real-estate/unit-sale/`;
 
 // In-app pop-up messaging

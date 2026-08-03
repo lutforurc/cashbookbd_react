@@ -76,6 +76,10 @@ export interface SoldUnitRow {
   receipts: SoldUnitReceipt[];
   /** How many allotment letters have been issued — one L-n button each. */
   letter_count?: number;
+  /** How many booking forms have been issued — one B-n button each. */
+  booking_form_count?: number;
+  /** How many people this particular property is left to. */
+  nominee_count?: number;
   /** Whether the scanned deed is on file. The path itself never leaves the server. */
   has_document?: boolean;
   total_amount: number;
