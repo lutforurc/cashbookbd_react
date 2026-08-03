@@ -11,6 +11,7 @@ import {
   FiTrash2,
   FiUpload,
   FiUsers,
+  FiX,
 } from "react-icons/fi";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
@@ -32,6 +33,7 @@ import { fetchSoldUnits } from "./unitSaleSlice";
 import { fetchProjectDdl } from "../project/projectSlice";
 import { fetchBuildingDdl } from "../buildings/buildingsSlice";
 import ConfirmModal from "../../../utils/components/ConfirmModalProps";
+import { hasPermission } from "../../../utils/permissionChecker";
 import { SoldUnitCustomer, SoldUnitRow } from "./types";
 import {
   customerColor,
@@ -67,6 +69,11 @@ const SoldUnitList: React.FC = () => {
   const letterRefDate = String(
     useSelector((state: any) => state.settings?.data?.branch?.letter_ref_date) ?? ""
   ).trim();
+  // Withdrawing an issued paper is its own permission, granted separately from
+  // issuing one. Without it the chips print and nothing more.
+  const permissions = useSelector((state: any) => state.settings?.data?.permissions) ?? [];
+  const canDeleteLetter = hasPermission(permissions, "allotment.letter.delete");
+  const canDeleteBookingForm = hasPermission(permissions, "booking.form.delete");
 
   const [projectId, setProjectId] = useState<string>("");
   const [buildingId, setBuildingId] = useState<string>("");
@@ -94,6 +101,13 @@ const SoldUnitList: React.FC = () => {
   // The sale whose nominees are being named. Done here as well as at booking:
   // most buyers settle on a nominee after the money has been taken.
   const [nomineeUnit, setNomineeUnit] = useState<SoldUnitRow | null>(null);
+  // The issued paper waiting to be withdrawn. Asked first, and named in full in
+  // the question: this removes a copy that may already have been handed over.
+  const [confirmWithdraw, setConfirmWithdraw] = useState<{
+    unit: SoldUnitRow;
+    kind: "LETTER" | "BOOKING";
+    version: number;
+  } | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
   // One picker, re-pointed at whichever row was clicked. A file input per row
@@ -297,6 +311,54 @@ const SoldUnitList: React.FC = () => {
       setBusySaleId(null);
     }
   };
+
+  /**
+   * Withdraws one issued letter or booking form.
+   *
+   * The number is not reused afterwards -- the server issues past the highest
+   * ever used -- so the chips can go from L-1 L-2 L-3 to L-1 L-3, and never to
+   * two different papers both called L-2.
+   */
+  const handleWithdraw = async () => {
+    if (!confirmWithdraw || busySaleId) return;
+
+    const { unit, kind, version } = confirmWithdraw;
+    const stem =
+      kind === "LETTER" ? API_UNIT_SALE_ALLOTMENT_LETTER_URL : API_UNIT_SALE_BOOKING_FORM_URL;
+
+    setBusySaleId(unit.sale_id);
+
+    try {
+      const response = await httpService.delete(`${stem}${unit.sale_id}/${version}`);
+
+      // The API answers a missing version with success:false on a 2xx, so the
+      // catch below never sees it.
+      if (response?.data?.success === false) {
+        throw new Error(response?.data?.message || "Could not remove it");
+      }
+
+      toast.success(response?.data?.message || "Removed");
+      setConfirmWithdraw(null);
+      loadData();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || "Could not remove it",
+      );
+    } finally {
+      setBusySaleId(null);
+    }
+  };
+
+  /**
+   * The numbers to put on the chips.
+   *
+   * The report sends the versions that exist; a count is the fallback for a
+   * server that has not been updated yet, where 1..n is still true.
+   */
+  const issuedVersions = (versions?: number[], count?: number) =>
+    Array.isArray(versions) && versions.length
+      ? versions
+      : Array.from({ length: Number(count) || 0 }, (_, i) => i + 1);
 
   /**
    * Fetches a server-built PDF and shows it.
@@ -791,23 +853,41 @@ const SoldUnitList: React.FC = () => {
                                   {/* One button per issued letter. These print the
                                       stored copy, not a fresh calculation. Each
                                       carries its own surface, so the chips read as
-                                      buttons on the white card and on the dark one. */}
+                                      buttons on the white card and on the dark one.
+                                      The × beside it withdraws that copy, and
+                                      only shows for whoever may do that. */}
                                   <div className="flex flex-wrap justify-center gap-1">
-                                    {Array.from(
-                                      { length: Number(unit.letter_count) || 0 },
-                                      (_, i) => i + 1,
-                                    ).map((version) => (
-                                      <button
-                                        key={version}
-                                        type="button"
-                                        title={`Print letter L-${version} as it was issued`}
-                                        disabled={busySaleId === unit.sale_id}
-                                        onClick={() => handlePrintLetter(unit.sale_id, version)}
-                                        className="rounded border border-stroke bg-white px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:bg-meta-4 dark:text-secondary dark:hover:bg-form-strokedark"
-                                      >
-                                        L-{version}
-                                      </button>
-                                    ))}
+                                    {issuedVersions(unit.letter_versions, unit.letter_count).map(
+                                      (version) => (
+                                        <span
+                                          key={version}
+                                          className="inline-flex items-stretch overflow-hidden rounded border border-stroke bg-white dark:border-strokedark dark:bg-meta-4"
+                                        >
+                                          <button
+                                            type="button"
+                                            title={`Print letter L-${version} as it was issued`}
+                                            disabled={busySaleId === unit.sale_id}
+                                            onClick={() => handlePrintLetter(unit.sale_id, version)}
+                                            className="px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:text-secondary dark:hover:bg-form-strokedark"
+                                          >
+                                            L-{version}
+                                          </button>
+                                          {canDeleteLetter && (
+                                            <button
+                                              type="button"
+                                              title={`Withdraw letter L-${version}`}
+                                              disabled={busySaleId === unit.sale_id}
+                                              onClick={() =>
+                                                setConfirmWithdraw({ unit, kind: "LETTER", version })
+                                              }
+                                              className="border-l border-stroke px-1 text-xs text-danger hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-form-strokedark"
+                                            >
+                                              <FiX />
+                                            </button>
+                                          )}
+                                        </span>
+                                      ),
+                                    )}
                                   </div>
 
                                   <button
@@ -867,22 +947,39 @@ const SoldUnitList: React.FC = () => {
                                       <FiClipboard /> BOOKING
                                     </button>
 
-                                    {Array.from(
-                                      { length: Number(unit.booking_form_count) || 0 },
-                                      (_, i) => i + 1,
+                                    {issuedVersions(
+                                      unit.booking_form_versions,
+                                      unit.booking_form_count,
                                     ).map((version) => (
-                                      <button
+                                      <span
                                         key={version}
-                                        type="button"
-                                        title={`Print booking form B-${version} as it was issued`}
-                                        disabled={busySaleId === unit.sale_id}
-                                        onClick={() =>
-                                          handlePrintBookingForm(unit.sale_id, version)
-                                        }
-                                        className="rounded border border-stroke bg-white px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:bg-meta-4 dark:text-secondary dark:hover:bg-form-strokedark"
+                                        className="inline-flex items-stretch overflow-hidden rounded border border-stroke bg-white dark:border-strokedark dark:bg-meta-4"
                                       >
-                                        B-{version}
-                                      </button>
+                                        <button
+                                          type="button"
+                                          title={`Print booking form B-${version} as it was issued`}
+                                          disabled={busySaleId === unit.sale_id}
+                                          onClick={() =>
+                                            handlePrintBookingForm(unit.sale_id, version)
+                                          }
+                                          className="px-2 py-0.5 text-xs font-semibold text-primary hover:bg-gray-2 disabled:opacity-50 dark:text-secondary dark:hover:bg-form-strokedark"
+                                        >
+                                          B-{version}
+                                        </button>
+                                        {canDeleteBookingForm && (
+                                          <button
+                                            type="button"
+                                            title={`Withdraw booking form B-${version}`}
+                                            disabled={busySaleId === unit.sale_id}
+                                            onClick={() =>
+                                              setConfirmWithdraw({ unit, kind: "BOOKING", version })
+                                            }
+                                            className="border-l border-stroke px-1 text-xs text-danger hover:bg-gray-2 disabled:opacity-50 dark:border-strokedark dark:hover:bg-form-strokedark"
+                                          >
+                                            <FiX />
+                                          </button>
+                                        )}
+                                      </span>
                                     ))}
 
                                     <button
@@ -1083,6 +1180,40 @@ const SoldUnitList: React.FC = () => {
         onConfirm={
           confirmKind === "BOOKING" ? handleGenerateBookingForm : handleGenerateLetter
         }
+      />
+
+      {/* Withdrawing an issued paper. Named in full in the question, because
+          the copy being removed may already be in the buyer's hands. */}
+      <ConfirmModal
+        show={Boolean(confirmWithdraw)}
+        title={
+          confirmWithdraw?.kind === "BOOKING"
+            ? "Withdraw Booking Form"
+            : "Withdraw Allotment Letter"
+        }
+        message={
+          <>
+            Remove
+            <span className="mt-1 block font-bold">
+              {confirmWithdraw?.kind === "BOOKING" ? "B-" : "L-"}
+              {confirmWithdraw?.version} of{" "}
+              {confirmWithdraw?.unit.unit_no ||
+                confirmWithdraw?.unit.parking_no ||
+                "this unit"}{" "}
+              ?
+            </span>
+            <span className="mt-2 block text-xs text-body dark:text-bodydark">
+              The stored copy goes with it and cannot be printed again. The
+              number is not reused — the next one issued carries the next number
+              up, so nothing else is renamed.
+            </span>
+          </>
+        }
+        confirmLabel="Withdraw"
+        className="bg-red-600 hover:bg-red-700"
+        loading={busySaleId === confirmWithdraw?.unit.sale_id}
+        onCancel={() => setConfirmWithdraw(null)}
+        onConfirm={handleWithdraw}
       />
 
       {/* Nothing else in the system holds a copy of a scanned deed, so removing

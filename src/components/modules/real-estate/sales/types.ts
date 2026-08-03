@@ -76,8 +76,15 @@ export interface SoldUnitRow {
   receipts: SoldUnitReceipt[];
   /** How many allotment letters have been issued — one L-n button each. */
   letter_count?: number;
+  /**
+   * The issued letters by their own numbers, e.g. [1, 3] after L-2 was
+   * withdrawn. Counting 1..n would offer a letter that no longer exists.
+   */
+  letter_versions?: number[];
   /** How many booking forms have been issued — one B-n button each. */
   booking_form_count?: number;
+  /** The issued booking forms by their own numbers, as with the letters. */
+  booking_form_versions?: number[];
   /** How many people this particular property is left to. */
   nominee_count?: number;
   /** Whether the scanned deed is on file. The path itself never leaves the server. */
