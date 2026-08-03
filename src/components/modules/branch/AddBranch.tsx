@@ -21,7 +21,11 @@ import Loader from '../../../common/Loader';
 import Link from '../../utils/others/Link';
 import { getBranchSettings, getSettings } from '../settings/settingsSlice';
 import { toast } from 'react-toastify';
-import { API_BRANCH_CLEAR_OPENING_URL, API_REMOTE_URL } from '../../services/apiRoutes';
+import {
+  API_BRANCH_CLEAR_OPENING_URL,
+  API_BRANCH_CLEAR_TRANSACTION_URL,
+  API_REMOTE_URL,
+} from '../../services/apiRoutes';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import httpService from '../../services/httpService';
@@ -387,8 +391,20 @@ const AddBranch = () => {
   const [confirmClearOpening, setConfirmClearOpening] = useState(false);
   const [clearingOpening, setClearingOpening] = useState(false);
 
+  // Clearing a branch's transactions takes every voucher it holds out of the
+  // books, so it carries a permission of its own rather than riding along on
+  // the one that clears openings.
+  const canClearTransactions =
+    Boolean(id) &&
+    hasPermission(settings?.data?.permissions || [], 'branch.transaction.clear');
+  const [confirmClearTransactions, setConfirmClearTransactions] = useState(false);
+  const [clearingTransactions, setClearingTransactions] = useState(false);
+
   // null while nothing is being cleared, 0-100 while the bar is on screen.
   const [clearProgress, setClearProgress] = useState<number | null>(null);
+  // What the bar says while it runs and once it is done. Only one clear can be
+  // in flight at a time, so a single pair covers both buttons.
+  const [clearLabel, setClearLabel] = useState({ running: '', done: '' });
   const clearProgressTick = useRef<ReturnType<typeof setInterval> | null>(null);
   const clearProgressHide = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -403,22 +419,34 @@ const AddBranch = () => {
   );
 
   /**
-   * Clearing an opening wipes figures that are kept nowhere else, so it should
-   * not feel like a button that does nothing. The bar is deliberately unhurried:
-   * it creeps up while the request is in flight, easing off so it never reaches
-   * the end on its own, and a fast answer is still held for MIN_VISIBLE_MS
-   * before it completes. What the user reads is "this took some doing", which is
-   * the truth of what just happened to their data.
+   * A clear destroys or withdraws figures that are kept nowhere else, so it
+   * should not feel like a button that does nothing. The bar is deliberately
+   * unhurried: it creeps up while the request is in flight, easing off so it
+   * never reaches the end on its own, and a fast answer is still held for
+   * MIN_VISIBLE_MS before it completes. What the user reads is "this took some
+   * doing", which is the truth of what just happened to their data.
+   *
+   * Both clears run this way, so the choreography lives here once and each
+   * caller supplies only the endpoint and the words.
    */
-  const handleClearOpening = async () => {
-    if (!id || clearingOpening) return;
+  const runClear = async (options: {
+    url: string;
+    setBusy: (busy: boolean) => void;
+    closeDialog: () => void;
+    running: string;
+    done: string;
+    successFallback: string;
+    errorFallback: string;
+  }) => {
+    if (!id) return;
 
     const MIN_VISIBLE_MS = 2600;
     const startedAt = Date.now();
 
-    setClearingOpening(true);
+    options.setBusy(true);
     // The dialog goes first, so the bar it would otherwise dim is in plain view.
-    setConfirmClearOpening(false);
+    options.closeDialog();
+    setClearLabel({ running: options.running, done: options.done });
     setClearProgress(4);
 
     if (clearProgressHide.current) clearTimeout(clearProgressHide.current);
@@ -434,7 +462,7 @@ const AddBranch = () => {
     }, 320);
 
     try {
-      const response = await httpService.post(API_BRANCH_CLEAR_OPENING_URL, {
+      const response = await httpService.post(options.url, {
         branch_id: id,
       });
 
@@ -445,12 +473,12 @@ const AddBranch = () => {
         );
       }
 
-      toast.success(response?.data?.message || 'Opening cleared');
+      toast.success(response?.data?.message || options.successFallback);
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          'Could not clear the opening',
+          options.errorFallback,
       );
     } finally {
       if (clearProgressTick.current) {
@@ -459,11 +487,39 @@ const AddBranch = () => {
       }
 
       setClearProgress(100);
-      setClearingOpening(false);
+      options.setBusy(false);
 
       // Long enough for the bar to visibly reach the end before it disappears.
       clearProgressHide.current = setTimeout(() => setClearProgress(null), 700);
     }
+  };
+
+  const handleClearOpening = () => {
+    if (clearingOpening || clearingTransactions) return;
+
+    return runClear({
+      url: API_BRANCH_CLEAR_OPENING_URL,
+      setBusy: setClearingOpening,
+      closeDialog: () => setConfirmClearOpening(false),
+      running: 'Clearing opening balances...',
+      done: 'Opening cleared',
+      successFallback: 'Opening cleared',
+      errorFallback: 'Could not clear the opening',
+    });
+  };
+
+  const handleClearTransactions = () => {
+    if (clearingOpening || clearingTransactions) return;
+
+    return runClear({
+      url: API_BRANCH_CLEAR_TRANSACTION_URL,
+      setBusy: setClearingTransactions,
+      closeDialog: () => setConfirmClearTransactions(false),
+      running: 'Clearing transactions...',
+      done: 'Transactions cleared',
+      successFallback: 'Transactions cleared',
+      errorFallback: 'Could not clear the transactions',
+    });
   };
 
   useEffect(() => {
@@ -592,6 +648,15 @@ const AddBranch = () => {
   // opening is being entered. Once that is switched off the figures have been
   // settled and traded against, so wiping them is no longer a correction.
   const showClearOpening = canClearOpening && Boolean(formData.is_opening);
+
+  // Gated on the same two conditions as Clear Opening. Withdrawing every
+  // voucher a branch holds belongs to the period where its books are still
+  // being set up; once "Opening ongoing?" is switched off the branch is trading
+  // for real and a wholesale clear is no longer a correction.
+  const showClearTransactions = canClearTransactions && Boolean(formData.is_opening);
+
+  // One bar serves both buttons, and it spins while either is working.
+  const clearInFlight = clearingOpening || clearingTransactions;
 
   useEffect(() => {
     return () => {
@@ -1494,8 +1559,26 @@ const AddBranch = () => {
                           title="Set every opening balance in this branch back to zero"
                           icon={<FiRefreshCcw size={15} />}
                           buttonLoading={clearingOpening}
-                          disabled={clearingOpening}
+                          disabled={clearInFlight}
                           onClick={() => setConfirmClearOpening(true)}
+                          className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-opacity-90"
+                        />
+                      </div>
+                    )}
+
+                    {/* Its own cell beside Clear Opening, and red for the same
+                        reason: it takes every voucher the branch holds out of
+                        the books in one stroke. */}
+                    {showClearTransactions && (
+                      <div className="flex items-center">
+                        <ButtonLoading
+                          type="button"
+                          label="Transaction Clear"
+                          title="Withdraw every voucher in this branch from the books"
+                          icon={<FiRefreshCcw size={15} />}
+                          buttonLoading={clearingTransactions}
+                          disabled={clearInFlight}
+                          onClick={() => setConfirmClearTransactions(true)}
                           className="h-8.5 whitespace-nowrap rounded bg-danger hover:bg-opacity-90"
                         />
                       </div>
@@ -1512,18 +1595,16 @@ const AddBranch = () => {
                             <span className="flex items-center gap-1.5">
                               <FiRefreshCcw
                                 size={13}
-                                className={clearingOpening ? 'animate-spin' : ''}
+                                className={clearInFlight ? 'animate-spin' : ''}
                               />
-                              {clearingOpening
-                                ? 'Clearing opening balances...'
-                                : 'Opening cleared'}
+                              {clearInFlight ? clearLabel.running : clearLabel.done}
                             </span>
                             <span>{Math.round(clearProgress)}%</span>
                           </div>
                           <div
                             className="h-1.5 w-full overflow-hidden rounded-full bg-danger/20"
                             role="progressbar"
-                            aria-label="Clearing opening balances"
+                            aria-label={clearLabel.running}
                             aria-valuenow={Math.round(clearProgress)}
                             aria-valuemin={0}
                             aria-valuemax={100}
@@ -1754,6 +1835,32 @@ const AddBranch = () => {
             loading={clearingOpening}
             onCancel={() => setConfirmClearOpening(false)}
             onConfirm={handleClearOpening}
+          />
+
+          {/* Says plainly what survives: the vouchers are not erased, they stop
+              counting. That is the difference between this and a deletion, and
+              it is the thing somebody approving it needs to know. */}
+          <ConfirmModal
+            show={confirmClearTransactions}
+            title="Clear Transactions"
+            message={
+              <>
+                Withdraw every voucher in this branch from the books?
+                <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                  Every voucher this branch holds is marked inactive at once, so
+                  it stops showing in reports, ledgers and balances.
+                </span>
+                <span className="mt-2 block text-xs text-body dark:text-bodydark">
+                  Nothing is deleted -- the entries stay on record -- but there
+                  is no button here to bring them back.
+                </span>
+              </>
+            }
+            confirmLabel="Transaction Clear"
+            className="bg-danger hover:bg-opacity-90"
+            loading={clearingTransactions}
+            onCancel={() => setConfirmClearTransactions(false)}
+            onConfirm={handleClearTransactions}
           />
         </>
       </>
