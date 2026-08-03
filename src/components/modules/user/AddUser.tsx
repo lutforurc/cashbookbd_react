@@ -281,11 +281,13 @@ const AddUser = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <FormToggleField
               label="Sidebar Menu"
+              description="Gives this user the sidebar menu to move around by."
               checked={Boolean(formData.sidebar_menu)}
               onChange={(checked) => handleToggleFieldChange('sidebar_menu', checked)}
             />
             <FormToggleField
               label="Use Filter Parameter"
+              description="Shows the filter panel above reports and order lists, so this user can narrow what they see."
               checked={Boolean(formData.use_filter_parameter)}
               onChange={(checked) =>
                 handleToggleFieldChange('use_filter_parameter', checked)

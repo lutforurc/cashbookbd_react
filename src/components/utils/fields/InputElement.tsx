@@ -22,6 +22,12 @@ interface InputElementProps {
   min?: string | number;
   max?: string | number;
   step?: string | number;
+  /**
+   * A line under the box saying what the value is for. Unlike `title`, which
+   * hides in a tooltip until hovered, this is read without being looked for --
+   * which is what a setting somebody meets once a year needs.
+   */
+  description?: React.ReactNode;
 }
 
 const InputElement: React.FC<InputElementProps> = ({
@@ -46,6 +52,7 @@ const InputElement: React.FC<InputElementProps> = ({
   min,
   max,
   step,
+  description,
 }) => {
   const nativeDateTimeClass = ['date', 'time', 'datetime-local', 'month'].includes(type)
     ? 'native-date-time-input'
@@ -99,6 +106,12 @@ const InputElement: React.FC<InputElementProps> = ({
           </div>
         ) : null}
       </div>
+
+      {description ? (
+        <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
+          {description}
+        </p>
+      ) : null}
     </div>
   );
 };

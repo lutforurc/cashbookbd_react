@@ -11,6 +11,8 @@ interface SelectOptionProps {
   onKeyDown?: (event: React.KeyboardEvent<HTMLSelectElement>) => void;
   className?: string;
   data: { id: number | string; name: string }[];
+  /** A line under the box saying what the choice decides. */
+  description?: React.ReactNode;
 }
 
 const DropdownCommon: React.FC<SelectOptionProps> = ({
@@ -22,8 +24,9 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
   onChange,
   onBlur,
   onKeyDown,
-  className, 
+  className,
   data = [],
+  description,
 }) => {
   return (
     <div className="w-full">
@@ -52,6 +55,12 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
           </option>
         ))}
       </select>
+
+      {description ? (
+        <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
+          {description}
+        </p>
+      ) : null}
     </div>
   );
 };

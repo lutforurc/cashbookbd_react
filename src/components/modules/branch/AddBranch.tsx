@@ -882,6 +882,7 @@ const AddBranch = () => {
                       name="name"
                       placeholder={'Enter Branch Name'}
                       label={'Enter Branch Name'}
+                      description="How the branch is named everywhere it is listed, and on its printed papers."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -889,6 +890,7 @@ const AddBranch = () => {
                       id="branch_types_id"
                       name={'branch_types_id'}
                       label="Select Branch Type"
+                      description="Head office or an ordinary branch. The head office sees company-wide figures and lists the others do not."
                       onChange={handleOnSelectChange}
                       value={formData?.branch_types_id || ''}
                       className="h-[2.1rem] bg-transparent"
@@ -898,6 +900,7 @@ const AddBranch = () => {
                       id="business_type_id"
                       name={'business_type_id'}
                       label="Select Business Type"
+                      description="The trade the branch is in. It decides which dashboard the branch opens on."
                       onChange={handleOnSelectChange}
                       value={formData?.business_type_id || ''}
                       className="h-[2.1rem] bg-transparent"
@@ -907,6 +910,7 @@ const AddBranch = () => {
                       id="inventory_system_id"
                       name={'inventory_system_id'}
                       label="Select Inventory System"
+                      description="Which purchase and sales screens the branch works with -- electronics, construction or trading."
                       onChange={handleOnSelectChange}
                       value={formData?.inventory_system_id || ''}
                       className="h-[2.1rem] bg-transparent"
@@ -920,6 +924,7 @@ const AddBranch = () => {
                       name="email"
                       placeholder={'Enter Branch Email'}
                       label={'Enter Branch Email'}
+                      description="The branch's own address, printed on its papers so customers can write back."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -929,6 +934,7 @@ const AddBranch = () => {
                       name="phone"
                       placeholder={'Enter Branch Phone'}
                       label={'Enter Branch Phone'}
+                      description="The number printed on invoices and letters from this branch."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -938,6 +944,7 @@ const AddBranch = () => {
                       name="contact_person"
                       placeholder={'Enter Contact Person'}
                       label={'Enter Contact Person'}
+                      description="Who to ask for at this branch -- the manager or whoever answers for it."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -949,6 +956,7 @@ const AddBranch = () => {
                       name="address"
                       placeholder={'Enter Branch Address'}
                       label={'Enter Branch Address'}
+                      description="Where the branch sits. It goes under the heading on its printed papers."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -958,6 +966,7 @@ const AddBranch = () => {
                       name="notes"
                       placeholder={'Enter notes'}
                       label={'Enter notes'}
+                      description="For the office's own remarks about this branch. Nothing here is printed."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -965,6 +974,7 @@ const AddBranch = () => {
                       id="status"
                       name={'status'}
                       label="Select Status"
+                      description="An inactive branch stays on record with all its figures, but nobody can work in it."
                       onChange={handleOnSelectChange}
                       className="h-[2.1rem] bg-transparent"
                       value={formData?.status?.toString() ?? ''}
@@ -981,6 +991,7 @@ const AddBranch = () => {
                       id="pad_heading_print"
                       name={'pad_heading_print'}
                       label="Select Print Heading"
+                      description="Whose letterhead the software draws at the top -- this branch's, the company's, or an uploaded image."
                       onChange={handleOnSelectChange}
                       value={formData?.pad_heading_print || ''}
                       className="h-[2.1rem] bg-transparent"
@@ -990,6 +1001,7 @@ const AddBranch = () => {
                       id="print_size"
                       name={'print_size'}
                       label="Select Printer Settings"
+                      description="A normal printer prints a full page; a POS printer prints the narrow roll used at a counter."
                       onChange={handleOnSelectChange}
                       className="h-[2.1rem] bg-transparent"
                       value={formData?.print_size || ''}
@@ -999,6 +1011,7 @@ const AddBranch = () => {
                       id="paper_size"
                       name={'paper_size'}
                       label="Invoice Page Size"
+                      description="The paper an invoice is laid out for, so it fills the sheet the branch actually prints on."
                       onChange={handleOnSelectChange}
                       className="h-[2.1rem] bg-transparent"
                       value={formData?.paper_size || ''}
@@ -1102,6 +1115,7 @@ const AddBranch = () => {
                       value={formData.salutation_male || ''}
                       placeholder={'Dear Sir,'}
                       label={'Salutation (Male)'}
+                      description="How a letter greets a male customer. Left blank, the software's own wording is used."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1111,6 +1125,7 @@ const AddBranch = () => {
                       value={formData.salutation_female || ''}
                       placeholder={'Dear Madam,'}
                       label={'Salutation (Female)'}
+                      description="How a letter greets a female customer. Left blank, the software's own wording is used."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1120,6 +1135,7 @@ const AddBranch = () => {
                       value={formData.salutation_other || ''}
                       placeholder={'Dear Sir/Madam,'}
                       label={'Salutation (Other / Not Set)'}
+                      description="Used when the customer's sex is not recorded, so a letter never goes out addressed wrongly."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1157,6 +1173,7 @@ const AddBranch = () => {
                       name="purchase_note"
                       placeholder={'Purchase Invoice Note'}
                       label={'Purchase Invoice Note'}
+                      description="Standing wording printed at the foot of every purchase invoice -- terms, conditions, whatever the branch always says."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1166,6 +1183,7 @@ const AddBranch = () => {
                       name="sales_note"
                       placeholder={'Sales Invoice Note'}
                       label={'Sales Invoice Note'}
+                      description="The same, printed at the foot of every sales invoice."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1173,6 +1191,7 @@ const AddBranch = () => {
                       id="money_format"
                       name={'money_format'}
                       label="Select Money Format"
+                      description="Where the word Taka sits when the amount is written out -- before the words, after them, or wrapped in Only."
                       onChange={handleOnSelectChange}
                       className="h-[2.1rem] bg-transparent"
                       value={formData?.money_format || ''}
@@ -1186,6 +1205,7 @@ const AddBranch = () => {
                       name="invoice_label"
                       placeholder={'Enter Invoice Label'}
                       label={'Enter Invoice Label'}
+                      description="What the paper calls itself at the top -- Invoice, Cash Memo, Bill, whatever the branch issues."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1195,6 +1215,7 @@ const AddBranch = () => {
                       name="device_identifier_text"
                       placeholder={'Device Identifier Text'}
                       label={'Device Identifier Text'}
+                      description="The word printed before a serial number on the invoice, such as IMEI or Engine No. Left blank, the number stands alone."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1204,6 +1225,7 @@ const AddBranch = () => {
                       name="decimal_places"
                       placeholder={'Enter Decimal Places'}
                       label={'Decimal Places'}
+                      description="How many digits after the point every amount is shown with. 0 rounds to whole Taka."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1215,6 +1237,7 @@ const AddBranch = () => {
                       name="dashboard_top_sales_days"
                       placeholder={'Dashboard Top Sales Days'}
                       label={'Dashboard Top Sales Days'}
+                      description="How many days back the dashboard's top-selling list counts. 1 means today alone; left empty it looks back 7 days."
                       className={''}
                       onChange={handleOnChange}
                     />
@@ -1223,6 +1246,7 @@ const AddBranch = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
                       label="Show spelling of money in invoice?"
+                      description="Prints the invoice total in words beneath the figure."
                       checked={Boolean(formData.show_spelling_of_money)}
                       onChange={(checked) =>
                         handleToggleFieldChange('show_spelling_of_money', checked)
@@ -1230,6 +1254,7 @@ const AddBranch = () => {
                     />
                     <FormToggleField
                       label="Show Instalment List in Invoice"
+                      description="Prints the instalment schedule, with its dates and amounts, on an instalment sale."
                       checked={Boolean(formData.show_instalment_list)}
                       onChange={(checked) =>
                         handleToggleFieldChange('show_instalment_list', checked)
@@ -1237,6 +1262,7 @@ const AddBranch = () => {
                     />
                     <FormToggleField
                       label="Show description in invoice?"
+                      description="Prints each item's description line under its name."
                       checked={Boolean(formData.show_description_in_invoice)}
                       onChange={(checked) =>
                         handleToggleFieldChange('show_description_in_invoice', checked)
@@ -1246,6 +1272,7 @@ const AddBranch = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
                       label="Show Brand in Invoice?"
+                      description="Prints the brand of each item beside its name."
                       checked={Boolean(formData.show_brand_in_invoice)}
                       onChange={(checked) =>
                         handleToggleFieldChange('show_brand_in_invoice', checked)
@@ -1253,6 +1280,7 @@ const AddBranch = () => {
                     />
                     <FormToggleField
                       label="Show Category in Invoice?"
+                      description="Prints the category of each item beside its name."
                       checked={Boolean(formData.show_category_in_invoice)}
                       onChange={(checked) =>
                         handleToggleFieldChange('show_category_in_invoice', checked)
@@ -1260,6 +1288,7 @@ const AddBranch = () => {
                     />
                     <FormToggleField
                       label="Show combined invoice note?"
+                      description="Offers a note box on the combined trading entry, so one remark covers the whole invoice."
                       checked={Boolean(formData.combined_invoice_note)}
                       onChange={(checked) =>
                         handleToggleFieldChange('combined_invoice_note', checked)
@@ -1276,18 +1305,24 @@ const AddBranch = () => {
                     Customer
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    {/* The "Need ..." switches all do the same thing: each one
+                        puts its field on the Add and Edit Customer forms. Said
+                        once here would be missed, so each says it for itself. */}
                     <FormToggleField
                       label="Use Customer Serial?"
+                      description="Gives every customer a serial number of its own on the customer form."
                       checked={Boolean(formData.have_customer_sl)}
                       onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Area?"
+                      description="Adds the area field to the customer form, so customers can be grouped by locality."
                       checked={Boolean(formData.need_customer_area)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_area', checked)}
                     />
                     <FormToggleField
                       label="Customer Share with Other branch?"
+                      description="Customers entered anywhere in the company can be picked here. Off, this branch sees only its own."
                       checked={Boolean(formData.share_customer_with_other_branch)}
                       onChange={(checked) =>
                         handleToggleFieldChange('share_customer_with_other_branch', checked)
@@ -1295,46 +1330,55 @@ const AddBranch = () => {
                     />
                     <FormToggleField
                       label="Need Relation's Information?"
+                      description="Adds the father's/husband's name and relation fields to the customer form."
                       checked={Boolean(formData.need_relation_info)}
                       onChange={(checked) => handleToggleFieldChange('need_relation_info', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Mother's Name?"
+                      description="Adds the mother's name field to the customer form."
                       checked={Boolean(formData.need_customer_mother_name)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_mother_name', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Sex?"
+                      description="Adds the sex field, which also decides which salutation a letter uses for the customer."
                       checked={Boolean(formData.need_customer_sex)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_sex', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Contact Person?"
+                      description="Adds a contact person and their number, for customers reached through someone else."
                       checked={Boolean(formData.need_customer_contact_person)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_contact_person', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Date of Birth?"
+                      description="Adds the date of birth field to the customer form."
                       checked={Boolean(formData.need_customer_date_of_birth)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_date_of_birth', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Occupation?"
+                      description="Adds the occupation field to the customer form."
                       checked={Boolean(formData.need_customer_occupation)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_occupation', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Permanent Address?"
+                      description="Adds a permanent address alongside the present one, as deeds and letters usually want both."
                       checked={Boolean(formData.need_customer_permanent_address)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_permanent_address', checked)}
                     />
                     <FormToggleField
                       label="Need Customer Photo?"
+                      description="Adds the photo upload to the customer form."
                       checked={Boolean(formData.need_customer_photo)}
                       onChange={(checked) => handleToggleFieldChange('need_customer_photo', checked)}
                     />
                     <FormToggleField
                       label="Use Bangla?"
+                      description="Adds Bangla name fields beside the English ones, for papers that have to carry both."
                       checked={Boolean(formData.use_bangla)}
                       onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
                     />
@@ -1348,16 +1392,19 @@ const AddBranch = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <FormToggleField
                         label="Use Customer Nominee?"
+                        description="Opens the nominee section on the customer form -- who inherits the customer's claim."
                         checked={Boolean(formData.have_customer_nominee)}
                         onChange={(checked) => handleToggleFieldChange('have_customer_nominee', checked)}
                       />
                       <FormToggleField
                         label="Need Nominee Photo?"
+                        description="Asks for the nominee's photograph as well as their particulars."
                         checked={Boolean(formData.need_nominee_photo)}
                         onChange={(checked) => handleToggleFieldChange('need_nominee_photo', checked)}
                       />
                       <FormToggleField
                         label="Use Guarantor?"
+                        description="Opens the guarantor section on the customer form -- who stands behind the customer's dues."
                         checked={Boolean(formData.have_is_guaranter)}
                         onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
                       />
@@ -1399,21 +1446,25 @@ const AddBranch = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
                       label="Stock With Zero?"
+                      description="Keeps items with no balance on the stock report, so what has run out is still visible."
                       checked={Boolean(formData.report_zero_bal)}
                       onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
                     />
                     <FormToggleField
                       label="Stock: Brand->Category->Item"
+                      description="Groups the stock report by brand, then category, then item, instead of listing items straight."
                       checked={Boolean(formData.stock_report_type)}
                       onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
                     />
                     <FormToggleField
                       label="Warranty Control?"
+                      description="Products carry a warranty period, asked for when the product is set up and tracked from the sale."
                       checked={Boolean(formData.warranty_controll)}
                       onChange={(checked) => handleToggleFieldChange('warranty_controll', checked)}
                     />
                     <FormToggleField
                       label="Product Share?"
+                      description="Products entered anywhere in the company can be picked here. Off, this branch sees only its own."
                       checked={Boolean(formData.share_product_with_other_branch)}
                       onChange={(checked) =>
                         handleToggleFieldChange('share_product_with_other_branch', checked)
@@ -1534,16 +1585,19 @@ const AddBranch = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
                       label="Control Manufacture?"
+                      description="Opens the production side, so an item can be built from other items instead of only bought and sold."
                       checked={Boolean(formData.manufactur_control)}
                       onChange={(checked) => handleToggleFieldChange('manufactur_control', checked)}
                     />
                     <FormToggleField
                       label="Multiple Warehouse?"
+                      description="Vouchers say which warehouse stock moved in or out of. Off, everything sits in one."
                       checked={Boolean(formData.have_warehouse)}
                       onChange={(checked) => handleToggleFieldChange('have_warehouse', checked)}
                     />
                     <FormToggleField
                       label="Opening ongoing?"
+                      description="The branch is still entering its opening figures, so products and parties can take an opening balance. Switch off once the books are settled."
                       checked={Boolean(formData.is_opening)}
                       onChange={(checked) => handleToggleFieldChange('is_opening', checked)}
                     />
@@ -1620,6 +1674,7 @@ const AddBranch = () => {
 
                     <FormToggleField
                       label="Need Demo Tutorial?"
+                      description="Offers the guided walkthrough to users of this branch. Turn off once the staff know their way around."
                       checked={Boolean(formData.need_demo_tutorial)}
                       onChange={(checked) =>
                         handleToggleFieldChange('need_demo_tutorial', checked)
@@ -1627,6 +1682,7 @@ const AddBranch = () => {
                     />
                     <FormToggleField
                       label="Report Due List with Address?"
+                      description="Prints each party's address and mobile beside the name on the Due List, so the sheet can be worked from in the field."
                       checked={Boolean(formData.due_list_with_address)}
                       onChange={(checked) =>
                         handleToggleFieldChange('due_list_with_address', checked)
@@ -1634,6 +1690,7 @@ const AddBranch = () => {
                     />
                     <FormToggleField
                       label="Show Voucher Image?"
+                      description="Shows the image attached to a voucher in the Cash Book, Sales Ledger and Purchase Ledger."
                       checked={Boolean(formData.show_voucher_image)}
                       onChange={(checked) =>
                         handleToggleFieldChange('show_voucher_image', checked)
@@ -1646,26 +1703,31 @@ const AddBranch = () => {
                       <>
                         <FormToggleField
                           label="SMS Service"
+                          description="The master switch for this branch. Off, none of the messages below go out however they are set."
                           checked={Boolean(formData.sms_service)}
                           onChange={(checked) => handleToggleFieldChange('sms_service', checked)}
                         />
                         <FormToggleField
                           label="Received SMS"
+                          description="Texts the party when money received from them is posted."
                           checked={Boolean(formData.received_sms)}
                           onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
                         />
                         <FormToggleField
                           label="Sales SMS"
+                          description="Texts the customer when a sale is invoiced to them."
                           checked={Boolean(formData.sales_sms)}
                           onChange={(checked) => handleToggleFieldChange('sales_sms', checked)}
                         />
                         <FormToggleField
                           label="Purchase SMS"
+                          description="Texts the supplier when a purchase is posted against them."
                           checked={Boolean(formData.purchase_sms)}
                           onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
                         />
                         <FormToggleField
                           label="Payment SMS"
+                          description="Texts the party when money paid to them is posted."
                           checked={Boolean(formData.payment_sms)}
                           onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
                         />
