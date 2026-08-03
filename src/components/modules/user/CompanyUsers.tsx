@@ -50,6 +50,9 @@ const UserList = () => {
   const [expandedCompanyId, setExpandedCompanyId] = useState<number | null>(null);
   const [expandedUsers, setExpandedUsers] = useState<any[]>([]);
   const [expandingCompanyId, setExpandingCompanyId] = useState<number | null>(null);
+  // Declared up here with the other state: both tables' Action columns read it,
+  // and the expanded one is built further down this file.
+  const [temporaryPasswordLoadingId, setTemporaryPasswordLoadingId] = useState<string | null>(null);
 
   /** Opens a company's people under its owner, or closes them again. */
   const toggleCompany = async (companyId: number) => {
@@ -138,8 +141,43 @@ const UserList = () => {
         );
       },
     },
+    {
+      // The same two the owner's row above offers, on the same rows they act on.
+      // A company's people were reachable here but not editable, so a forgotten
+      // password meant leaving this list, finding the user somewhere else and
+      // coming back -- for the row that was already under the cursor.
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center w-28',
+      render: (row: any) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleEditUser(row.user_id)}
+            className="text-blue-500"
+            title="Edit user"
+          >
+            <FiEdit2 className="cursor-pointer w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleGenerateTemporaryPassword(row.user_id)}
+            className="text-blue-500"
+            title="Generate temporary password"
+            disabled={temporaryPasswordLoadingId === row.user_id}
+          >
+            <FiKey
+              className={`cursor-pointer w-5 h-5 ${
+                temporaryPasswordLoadingId === row.user_id ? 'opacity-50' : ''
+              }`}
+            />
+          </button>
+        </div>
+      ),
+    },
   ];
-  const [temporaryPasswordLoadingId, setTemporaryPasswordLoadingId] = useState<string | null>(null);
   const maxUsers = subscription?.current?.max_users;
   const currentUsers = Number(userList?.data?.total || 0);
   const userLimitReached = typeof maxUsers === 'number' && maxUsers > 0 && currentUsers >= maxUsers;
