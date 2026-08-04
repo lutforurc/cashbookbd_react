@@ -26,9 +26,16 @@ const CustomerChangePassword = () => {
   const [formError, setFormError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const initialValues = { password: "", password_confirmation: "" };
+  const initialValues = { current_password: "", password: "", password_confirmation: "" };
 
   const validationSchema = Yup.object({
+    // The old password is asked for only when the customer already has a real
+    // one. On the default (forced-change) they arrived here having just signed
+    // in with the mobile number, so there is nothing to re-enter -- and the API
+    // agrees, requiring current_password only in the same case.
+    ...(mustChange
+      ? {}
+      : { current_password: Yup.string().required("Current password is required") }),
     password: Yup.string()
       .min(MIN_LENGTH, `Password must be at least ${MIN_LENGTH} characters`)
       .required("New password is required"),
@@ -45,6 +52,8 @@ const CustomerChangePassword = () => {
     setFormError("");
     dispatch(
       changeCustomerPassword({
+        // Left out on the forced-change path, where the field is not shown.
+        current_password: mustChange ? undefined : values.current_password,
         password: values.password,
         password_confirmation: values.password_confirmation,
         callback: () => {
@@ -107,6 +116,47 @@ const CustomerChangePassword = () => {
 
               return (
                 <Form>
+                  {/* Shown only for a voluntary change -- on the forced first
+                      change there is no old password worth re-entering. */}
+                  {!mustChange && (
+                    <div className="mb-4">
+                      <label
+                        htmlFor="current_password"
+                        className="mb-2.5 block font-medium text-black dark:text-white"
+                      >
+                        Current Password
+                      </label>
+                      <div className="relative">
+                        <FiLock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-body dark:text-bodydark2" />
+                        <Field
+                          id="current_password"
+                          name="current_password"
+                          type={showPassword ? "text" : "password"}
+                          autoComplete="current-password"
+                          placeholder="Enter your current password"
+                          className={fieldClass}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((shown) => !shown)}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:opacity-80"
+                        >
+                          {showPassword ? (
+                            <FiEyeOff className="h-5 w-5" />
+                          ) : (
+                            <FiEye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
+                      <ErrorMessage
+                        name="current_password"
+                        component="div"
+                        className="mt-1.5 text-sm text-danger"
+                      />
+                    </div>
+                  )}
+
                   <div className="mb-4">
                     <label
                       htmlFor="password"

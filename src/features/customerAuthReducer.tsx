@@ -114,7 +114,10 @@ export const customerCheck = (): any => (dispatch: Dispatch<AnyAction>) => {
 
 // Change the customer's portal password (also clears the forced-change flag).
 export const changeCustomerPassword =
-  ({ password, password_confirmation, callback, onError }: {
+  ({ current_password, password, password_confirmation, callback, onError }: {
+    // Omitted while the account is still on its default (mobile) password; the
+    // API asks for it only once a real password is set. See CustomerChangePassword.
+    current_password?: string;
     password: string;
     password_confirmation: string;
     callback?: () => void;
@@ -122,7 +125,7 @@ export const changeCustomerPassword =
   }) =>
     (dispatch: any) => {
       customerHttpService
-        .post(API_CUSTOMER_CHANGE_PASSWORD_URL, { password, password_confirmation })
+        .post(API_CUSTOMER_CHANGE_PASSWORD_URL, { current_password, password, password_confirmation })
         .then((response) => {
           if (response.status === 200 && response.data.success) {
             dispatch({ type: 'AUTH/CUSTOMER/passwordChanged' });
