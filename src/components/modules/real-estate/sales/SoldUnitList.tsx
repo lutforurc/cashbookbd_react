@@ -1267,3 +1267,5 @@ const SoldUnitList: React.FC = () => {
 };
 
 export default SoldUnitList;
+
+
