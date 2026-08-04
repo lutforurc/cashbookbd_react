@@ -306,14 +306,14 @@ const InstallmentDetails = () => {
               type="button"
               onClick={() => handleInstallments(row.payments)}
               title="View payment details"
-              className="inline-flex min-w-[76px] items-center justify-center gap-1 rounded-full border border-slate-400/60 bg-slate-700/45 px-3 py-1 text-xs font-semibold text-white transition hover:border-blue-400 hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
+              className="inline-flex min-w-[76px] items-center justify-center gap-1 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400/60 dark:border-slate-400/60 dark:bg-slate-700/45 dark:text-white"
             >
-              <span className="text-blue-300">#</span>
+              <span className="text-blue-600 dark:text-blue-300">#</span>
               <span>{row.installment_no ?? ''}</span>
-              <span className="text-[10px] font-medium uppercase text-slate-300">Details</span>
+              <span className="text-[10px] font-medium uppercase text-slate-500 dark:text-slate-300">Details</span>
             </button>
           ) : (
-            <span className="inline-flex min-w-[38px] justify-center px-3 py-1 text-sm font-semibold text-slate-100">
+            <span className="inline-flex min-w-[38px] justify-center px-3 py-1 text-sm font-semibold text-slate-700 dark:text-slate-100">
               {row.installment_no}
             </span>
           )}
