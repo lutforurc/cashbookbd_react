@@ -12,6 +12,7 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
+import { formatDateUsdToBd } from '../../../utils/utils-functions/formatDate';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   approveLeaveApplication,
@@ -127,8 +128,10 @@ const LeaveApplications = ({ user }: any) => {
   };
 
   const columns = [
-    { key: 'from_date', header: 'From' },
-    { key: 'to_date', header: 'To' },
+    // The API answers in YYYY-MM-DD; the office reads dates the other way round,
+    // the same way the pickers above this table show them.
+    { key: 'from_date', header: 'From', render: (row: any) => formatDateUsdToBd(row.from_date) },
+    { key: 'to_date', header: 'To', render: (row: any) => formatDateUsdToBd(row.to_date) },
     { key: 'employee_name', header: 'Employee' },
     { key: 'leave_type_name', header: 'Leave Type' },
     { key: 'requested_days', header: 'Days' },
