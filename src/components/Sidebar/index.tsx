@@ -2264,7 +2264,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'voucher.changes') && (
+                          {hasPermission(permissions, 'log.changes') && (
                             <li>
                               <NavLink
                                 to={routes.voucher_activity}
