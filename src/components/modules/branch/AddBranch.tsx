@@ -1386,6 +1386,20 @@ const AddBranch = () => {
                       checked={Boolean(formData.use_bangla)}
                       onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
                     />
+                    {/* Unlike the switches above, this one does not add a field to
+                        the customer form -- it decides what the Due List prints.
+                        It sits here all the same: what it prints is the customer's
+                        own address and mobile, so it is looked for with the rest
+                        of the customer's particulars rather than among the
+                        operational switches. */}
+                    <FormToggleField
+                      label="Report Due List with Address?"
+                      description="Prints each party's address and mobile beside the name on the Due List, so the sheet can be worked from in the field."
+                      checked={Boolean(formData.due_list_with_address)}
+                      onChange={(checked) =>
+                        handleToggleFieldChange('due_list_with_address', checked)
+                      }
+                    />
                   </div>
 
                   {/* ---------- Nominee & Guarantor ---------- */}
@@ -1689,14 +1703,6 @@ const AddBranch = () => {
                       checked={Boolean(formData.need_demo_tutorial)}
                       onChange={(checked) =>
                         handleToggleFieldChange('need_demo_tutorial', checked)
-                      }
-                    />
-                    <FormToggleField
-                      label="Report Due List with Address?"
-                      description="Prints each party's address and mobile beside the name on the Due List, so the sheet can be worked from in the field."
-                      checked={Boolean(formData.due_list_with_address)}
-                      onChange={(checked) =>
-                        handleToggleFieldChange('due_list_with_address', checked)
                       }
                     />
                     <FormToggleField
