@@ -1,6 +1,199 @@
 প্রজেক্টে “Company & Product-wise Bill, Cash Received and Cash Payment
 Tracking System” implement করতে হবে।
 
+Companion file: docs/company-product-financial-tracking-schema.sql
+
+এই document বাস্তব codebase inspect করে লেখা হয়েছে। এখানে যেসব table, column
+ও ID উল্লেখ আছে সেগুলো যাচাই করা — অনুমান নয়।
+
+Frontend : f:\All_Database\cashbookbd_react
+Backend  : F:\All_Database\www\cashbook_api
+
+============================================================
+০. INSPECTION RESULT — যা যাচাই করা হয়েছে
+============================================================
+
+০.১ Company / Branch / Product
+------------------------------
+
+Company ও tenant একই entity।
+
+    com_companies       id INT UNSIGNED (PK)
+    com_branches        id INT UNSIGNED (PK), company_id
+    product_items       id INT UNSIGNED (PK), company_id
+    users               id INT UNSIGNED (PK), company_id, branch_id
+    acc_coa_level4s     id INT UNSIGNED (PK), company_id      -- party/account
+
+Authenticated user-এর Company সরাসরি `auth()->user()->company_id` থেকে পাওয়া
+যায় — এটাই পুরো codebase-এর প্রতিষ্ঠিত pattern। Client থেকে পাঠানো company_id
+কোথাও ব্যবহার করা হবে না।
+
+Product ownership `product_items.company_id` দিয়ে নির্ধারিত। তাই একই নামের
+Product এক Company-তে tracked এবং অন্য Company-তে untracked রাখা সম্ভব।
+
+০.২ Cash Received / Payment — save chain
+-----------------------------------------
+
+    main_trx_master              voucher master
+        id, company_id, branch_id, vr_no, vr_sl, vr_date,
+        transaction_type, status
+        transaction_type : 1 = Received, 2 = Payment, 5 = Journal
+        status           : 1 = live, 0 = cancelled/void
+        │
+        └── acc_transaction_master
+                id, company_id, branch_id, main_trx_id, note
+                │
+                └── acc_transaction_details        ← প্রতিটি "Add New" row
+                        id, trx_mstr_id, coa4_id, remarks,
+                        debit, credit, pay_branch, status
+                        coa4_id = 17 → Cash contra row
+
+Received ও Payment একই table ব্যবহার করে। পার্থক্য
+`main_trx_master.transaction_type` দিয়ে।
+
+API endpoints (routes/api.php):
+
+    POST accounts/received                ReceivedController@apiAccountsCashReceivedStore
+    POST accounts/received/api-edit       ReceivedController@apiAccountsCashReceivedEdit
+    POST accounts/received/api-update     ReceivedController@apiAccountsCashReceivedUpdate
+    POST accounts/payment                 PaymentController@apiAccountsCashPaymentStore
+    POST accounts/payment/api-edit        PaymentController@apiAccountsCashPaymentEdit
+    POST accounts/payment/api-update      PaymentController@apiAccountsCashPaymentUpdate
+
+০.৩ ⚠ Individual row-এর permanent unique ID নেই
+------------------------------------------------
+
+এটি এই feature-এর সবচেয়ে গুরুত্বপূর্ণ finding।
+
+    main_trx_master           update হয়            → id স্থায়ী ✅
+    acc_transaction_master    update হয়            → id স্থায়ী ✅
+    acc_transaction_details   delete → re-insert   → id স্থায়ী নয় ❌
+    inventory_sales_details   delete → re-insert   → id স্থায়ী নয় ❌
+    inventory_purchase_details delete → re-insert  → id স্থায়ী নয় ❌
+
+প্রমাণ:
+    ReceivedController.php:1420   AccTransactionDetails::where('trx_mstr_id',...)->delete()
+    ReceivedController.php:1266   একই pattern (trading)
+    TradingCombinedController.php:596  inventory_sales_details delete
+    TradingCombinedController.php:553  inventory_purchase_details delete
+
+অর্থাৎ detail row-এর id প্রতি edit-এ বদলে যায়। সেটিকে mapping key বানালে
+একবার voucher edit করলেই mapping অনাথ হয়ে যেত, Product-এর Cash Received
+কমে যেত এবং Receivable মিথ্যাভাবে বেড়ে যেত।
+
+সিদ্ধান্ত: স্থায়ী anchor হবে
+
+    (company_id, transaction_type, main_trx_id, row_seq)
+
+row_seq = ঐ voucher-এর party row গুলোর (coa4_id <> 17) ১-ভিত্তিক ক্রমিক
+নম্বর, controller যে ক্রমে save করে সেই একই ক্রম।
+
+০.৪ Invoice chain
+------------------
+
+    inventory_sales_masters       id, main_trx_id, branch_id, customer_id,
+                                  total, discount, netpayment, status
+        └── inventory_sales_details    id, sal_mstr_id, product_id, quantity,
+                                       sales_price, weight_variance,
+                                       variance_type, is_return
+
+    inventory_purchase_masters    id, main_trx_id, branch_id, supplier_id,
+                                  invoice_number, invoice_date,
+                                  total, discount, netpayment
+        └── inventory_purchase_details id, pur_mstr_id, product_id, quantity,
+                                       purchase_price, weight_variance,
+                                       variance_type, is_return
+
+    inventory_sales_return_masters      id, main_trx_id, branch_id, customer_id,
+                                        total, discount, netpayment, status
+        └── inventory_sales_return_details    sal_mstr_id, product_id, quantity,
+                                              return_price, return_pct,
+                                              line_net_total
+
+    inventory_purchase_return_masters   id, main_trx_id, branch_id, supplier_id,
+                                        total, discount, netpayment, status
+        └── inventory_purchase_return_details pur_return_mstr_id, product_id,
+                                              quantity, return_price,
+                                              return_pct, line_net_total, is_return
+
+লক্ষণীয়: sales return-এর FK `sal_mstr_id`, কিন্তু purchase return-এর FK
+`pur_return_mstr_id` — নাম আলাদা।
+
+০.৫ ⚠ Invoice line-এ "net amount" column নেই
+---------------------------------------------
+
+Sales/Purchase detail table-এ শুধু quantity ও rate আছে। এগুলো নেই:
+
+    line-level discount     নেই
+    tax / VAT               নেই
+    additional charge       নেই
+    rounding                নেই
+    net amount              নেই
+
+Discount শুধু master level-এ (`inventory_*_masters.discount`), এবং
+`master.total` = ঐ invoice-এর সব line-এর gross যোগফল (controller নিজেই এভাবে
+হিসাব করে রাখে)।
+
+তাই "existing accounting rule অনুযায়ী tax/charge/rounding বিবেচনা করা হবে" —
+এই দাবি এই system-এ প্রযোজ্য নয়। প্রকৃত formula §১২-তে দেওয়া হলো।
+
+০.৬ ⚠ Return-এর `line_net_total` সব writer populate করে না
+-----------------------------------------------------------
+
+    CommissionSalesMaster.php    line_net_total লেখে ✅
+    PurchaseReturn.php:63-73     line_net_total লেখে না ❌
+
+তাই return net amount-এ COALESCE fallback দরকার (§১২ দ্রষ্টব্য)।
+
+০.৭ ⚠ ইতিমধ্যে প্রায় একই feature বিদ্যমান
+-------------------------------------------
+
+Frontend : src/components/modules/reports/ledger-with-product/
+           (LedgerWithProduct.tsx, Print, slice, types, utils)
+Backend  : routes/api.php:297 → ReportsController@apiCustomerSupplierStatement
+           ReportsController.php:2792 → ledgerWithProductOpeningBalance()
+
+এটি এখনই party + product ভিত্তিক statement দেয় — opening balance, received,
+payment ও running balance সহ। Product filter করে invoice detail-এর
+`whereExists` দিয়ে।
+
+সীমাবদ্ধতা: invoice-এ Product থাকলে **পুরো voucher amount** ঐ Product-এর ধরে
+নেয়। এটাই সেই ambiguity যা নতুন mapping দূর করবে।
+
+সিদ্ধান্ত: নতুন সমান্তরাল report বানানো হবে না। এই বিদ্যমান report-কেই
+upgrade করা হবে — mapping থাকলে exact হিসাব, না থাকলে বর্তমান আচরণ অক্ষত।
+
+০.৮ ⚠ Journal ও Bank voucher বাদ দেওয়া যাবে না
+-----------------------------------------------
+
+`ledgerWithProductOpeningBalance()` transaction_type = 5 (Journal)-কেও
+received/payment হিসেবে গোনে। এছাড়া BankReceivedController ও
+BankPaymentController আলাদাভাবে বিদ্যমান।
+
+শুধু cash ধরলে Product Receivable/Payable overstate হবে। তাই mapping-এ
+cash, bank ও journal — তিনটিই অন্তর্ভুক্ত।
+
+০.৯ Voucher delete flow
+------------------------
+
+`ReceivedController::destroy()` খালি। বাস্তব delete/cancel হয়
+`main_trx_master.status` পরিবর্তন করে এবং VoucherModificationController দিয়ে।
+Audit-এর জন্য MainTransactionObserver + MainTransactionHistory (old/new
+snapshot) ইতিমধ্যে আছে।
+
+তাই mapping cleanup hook status পরিবর্তনের জায়গায় বসাতে হবে — শুধু
+destroy() নয়।
+
+০.১০ নাম সংঘাত — সাবধান
+------------------------
+
+Cash Received/Payment form-এর row interface-এ ইতিমধ্যেই `currentProduct`
+নামে একটি field আছে (GeneralCashReceived.tsx:43, GeneralCashPayment.tsx:51)।
+কিন্তু সেটি Product নয় — account dropdown-এর suggestion object, যা remarks ও
+amount pre-fill করে।
+
+নতুন field-এর নাম আলাদা রাখতে হবে: `trackedProductId`।
+
 ============================================================
 ১. BUSINESS OBJECTIVE
 ============================================================
@@ -8,13 +201,13 @@ Tracking System” implement করতে হবে।
 শুধু নির্দিষ্ট Company এবং সেই Company-এর নির্দিষ্ট কিছু Product-এর জন্য
 নিচের হিসাব রাখতে হবে:
 
-1. Productটির বিপরীতে কত টাকার Sales Bill/Invoice দেওয়া হয়েছে।
-2. Productটির বিপরীতে কত টাকার Purchase Bill/Invoice পাওয়া হয়েছে।
-3. Productটির বিপরীতে কত টাকা Cash Received হয়েছে।
-4. Productটির বিপরীতে কত টাকা Cash Payment হয়েছে।
+1. Productটির বিপরীতে কত টাকার Sales Bill/Invoice দেওয়া হয়েছে।
+2. Productটির বিপরীতে কত টাকার Purchase Bill/Invoice পাওয়া হয়েছে।
+3. Productটির বিপরীতে কত টাকা Received হয়েছে।
+4. Productটির বিপরীতে কত টাকা Payment হয়েছে।
 5. Productটির বর্তমান Receivable কত।
 6. Productটির বর্তমান Payable কত।
-7. Date range অনুযায়ী opening, bill, received/payment এবং closing balance।
+7. Date range অনুযায়ী opening, bill, received/payment এবং closing balance।
 
 এটি সব Company বা সব Product-এর জন্য হবে না।
 
@@ -24,7 +217,7 @@ Tracking System” implement করতে হবে।
 - Company B + Rice Product → tracking বন্ধ
 - Company C + Wheat Product → tracking চালু
 
-অর্থাৎ Company এবং Product combination অনুযায়ী featureটি opt-in হবে।
+অর্থাৎ Company এবং Product combination অনুযায়ী featureটি opt-in হবে।
 
 ============================================================
 ২. NON-NEGOTIABLE DATABASE RULE
@@ -35,7 +228,7 @@ Tracking System” implement করতে হবে।
 বিশেষভাবে:
 - Existing transaction table পরিবর্তন করা যাবে না।
 - Existing product table পরিবর্তন করা যাবে না।
-- Existing company/tenant/branch table পরিবর্তন করা যাবে না।
+- Existing company/branch table পরিবর্তন করা যাবে না।
 - Existing Sales/Purchase invoice table পরিবর্তন করা যাবে না।
 - Existing invoice detail/items table পরিবর্তন করা যাবে না।
 - Existing ledger/account/voucher table পরিবর্তন করা যাবে না।
@@ -44,224 +237,206 @@ Tracking System” implement করতে হবে।
 - Existing financial data rewrite করা যাবে না।
 - Existing migration modify করা যাবে না।
 
-প্রয়োজনীয় configuration, mapping, allocation ও audit data শুধু নতুন dedicated
-table তৈরি করে রাখতে হবে।
+প্রয়োজনীয় configuration, mapping ও audit data শুধু নতুন dedicated table
+তৈরি করে রাখতে হবে।
 
-নতুন migrationগুলো পরীক্ষা করতে হবে:
-- CREATE TABLE থাকতে পারবে।
-- Existing table-এর ওপর Schema::table বা ALTER TABLE থাকতে পারবে না।
+READ-ONLY VIEW তৈরি করা অনুমোদিত — view শুধু SELECT করে, কোনো legacy table
+পরিবর্তন করে না।
 
-============================================================
-৩. EXISTING SYSTEM INSPECTION
-============================================================
+স্মর্তব্য: এই project-এ schema পরিবর্তন সরাসরি SQL দিয়ে হয়, Laravel migration
+দিয়ে নয়। তাই আসল deliverable হলো
+docs/company-product-financial-tracking-schema.sql ফাইলটি।
 
-Implementation শুরুর আগে frontend এবং backend সম্পূর্ণ inspect করে নির্ভুলভাবে
-নিচের বিষয়গুলো শনাক্ত করতে হবে:
-
-1. Company ও tenant একই entity কি না।
-2. Authenticated user থেকে company/tenant কীভাবে নির্ধারিত হয়।
-3. Branch ownership কীভাবে নির্ধারিত হয়।
-4. Product master table ও Product primary key।
-5. Productটি কোন Company-এর তা নির্ধারণের নিয়ম।
-6. Cash Received form-এর প্রতিটি Add New row কোথায় save হয়।
-7. Cash Payment form-এর প্রতিটি Add New row কোথায় save হয়।
-8. Individual Received/Payment row-এর permanent unique ID কোনটি।
-9. Received ও Payment একই table ব্যবহার করে নাকি আলাদা table।
-10. Transaction type কীভাবে শনাক্ত করা হয়।
-11. Sales Invoice master ও detail/items tables।
-12. Purchase Invoice master ও detail/items tables।
-13. Invoice item-এর quantity, rate, discount, tax, return ও net amount
-    কীভাবে হিসাব করা হয়।
-14. Invoice edit/delete/return/cancel flow।
-15. Existing Ledger query ও opening balance calculation।
-16. Voucher search, edit, update, delete ও print flow।
-17. Order selection-এর সঙ্গে invoice/product relationship।
-18. Global form ও tenant form একই component/API ব্যবহার করে কি না।
-
-Schema বা relationship অনুমান করে implementation করা যাবে না। Inspection-এর
-ফলাফলের ভিত্তিতে actual table এবং field ব্যবহার করতে হবে।
+যাচাই: ঐ ফাইলে ALTER TABLE / UPDATE / DELETE / DROP / TRUNCATE একটিও থাকবে না।
 
 ============================================================
-৪. ACCOUNTING DEFINITIONS
+৩. ACCOUNTING DEFINITIONS
 ============================================================
 
-“Sales Bill Given” বলতে নির্দিষ্ট Product-এর Sales Invoice detail-এর net
-amount বোঝাবে।
+“Sales Bill Given” = নির্দিষ্ট Product-এর Sales Invoice line-এর net amount
+(§১২-এর formula অনুযায়ী হিসাব করা, কারণ এমন কোনো column নেই)।
 
-“Purchase Bill Received” বলতে নির্দিষ্ট Product-এর Purchase Invoice detail-এর
-net amount বোঝাবে।
+“Purchase Bill Received” = নির্দিষ্ট Product-এর Purchase Invoice line-এর
+net amount (একই formula)।
 
-“Cash Received” বলতে Cash Received transaction-এর যে amount নতুন mapping
-table দিয়ে Productটির সঙ্গে যুক্ত করা হয়েছে, তার মোট বোঝাবে।
+“Received” = Cash/Bank/Journal Received transaction-এর যে amount নতুন mapping
+table দিয়ে Productটির সঙ্গে যুক্ত করা হয়েছে, তার মোট।
 
-“Cash Payment” বলতে Cash Payment transaction-এর যে amount নতুন mapping
-table দিয়ে Productটির সঙ্গে যুক্ত করা হয়েছে, তার মোট বোঝাবে।
+“Payment” = Cash/Bank/Journal Payment transaction-এর যে amount নতুন mapping
+table দিয়ে Productটির সঙ্গে যুক্ত করা হয়েছে, তার মোট।
 
 মূল হিসাব:
 
-Product Receivable =
-    Sales Bill
-  - Sales Return
-  - Cash Received
-  - Sales-side adjustment/discount, যদি existing accounting rule-এ প্রযোজ্য হয়
+    Product Receivable = Sales Bill − Sales Return − Received
+    Product Payable    = Purchase Bill − Purchase Return − Payment
 
-Product Payable =
-    Purchase Bill
-  - Purchase Return
-  - Cash Payment
-  - Purchase-side adjustment/discount, যদি existing accounting rule-এ প্রযোজ্য হয়
+⚠ গুরুত্বপূর্ণ ঘোষণা — এই report General Ledger-এর সঙ্গে মিলবে না
 
-Sales/Purchase return, invoice discount, line discount, tax, transport charge,
-rounding এবং cancellation কীভাবে ধরা হবে তা existing accounting convention
-inspect করে নির্ধারণ করতে হবে। নতুন করে ভিন্ন accounting rule বানানো যাবে না।
+Cash mapping opt-in, তাই unmapped টাকা এই statement-এ দেখানো হয় না (§২১.৭)।
+এটি ইচ্ছাকৃত design — অনুমান করে টাকা দেখানোর চেয়ে না দেখানো নিরাপদ।
 
-Report-এ Gross Bill এবং Net Bill আলাদা দেখানো সম্ভব হলে দেখাতে হবে এবং কোন
-formula ব্যবহার হয়েছে তা document করতে হবে।
+তাই print/screen-এ স্পষ্টভাবে লিখতে হবে:
+
+    "Product Financial Statement — memo statement.
+     এটি General Ledger-এর সঙ্গে মেলানোর জন্য নয়।"
+
+এবং প্রতিটি report-এ একটি "Unmapped Received/Payment (এই period)" ঘর দেখাতে
+হবে, যাতে ব্যবহারকারী ফাঁকটা দেখতে পান।
 
 ============================================================
-৫. NEW TABLE: TRACKING CONFIGURATION
+৪. NEW TABLE: TRACKING CONFIGURATION
 ============================================================
 
-একটি নতুন table তৈরি করতে হবে। Suggested name:
+Table: company_product_tracking_settings
 
-company_product_tracking_settings
+Fields:
 
-Suggested fields:
+    id
+    company_id          INT UNSIGNED   -- com_companies.id
+    branch_id           INT UNSIGNED   -- 0 = সব branch
+    product_id          INT UNSIGNED   -- product_items.id (type মিলানো)
+    track_sales_bill    default 1
+    track_purchase_bill default 1
+    track_cash_received default 1
+    track_cash_payment  default 1
+    is_active           default 1
+    effective_from      DATE nullable
+    effective_to        DATE nullable
+    created_by, updated_by, created_at, updated_at
 
-- id
-- company_id/tenant_id
-- product_id
-- branch_id nullable
-- track_sales_bill boolean default true
-- track_purchase_bill boolean default true
-- track_cash_received boolean default true
-- track_cash_payment boolean default true
-- is_active boolean default true
-- effective_from nullable
-- effective_to nullable
-- created_by nullable
-- updated_by nullable
-- created_at
-- updated_at
+UNIQUE (company_id, branch_id, product_id)
 
-Actual project naming convention অনুযায়ী tenant_id অথবা company_id ব্যবহার
-করতে হবে।
+BRANCH SCOPE নিয়ম:
 
-একই Company + Product + Branch scope duplicate হওয়া যাবে না। নতুন table-এর
-মধ্যে composite unique index দিতে হবে।
+    branch_id = 0  → ঐ Company-র সব branch-এ প্রযোজ্য
+    branch_id > 0  → শুধু ঐ branch-এ প্রযোজ্য
+    দুটোই থাকলে branch-specific row জেতে; না থাকলে 0-row fallback।
 
-Company A-এর Rice tracking চালু থাকলেও Company B-এর Rice স্বয়ংক্রিয়ভাবে
-tracking চালু হবে না।
+EFFECTIVE PERIOD নিয়ম:
 
-Setting-এর company এবং product ownership backend থেকে validate করতে হবে।
+    effective_from / effective_to শুধু *নতুন mapping তৈরি* নিয়ন্ত্রণ করে।
+    Report সবসময় সম্পূর্ণ history পড়বে।
 
-Client থেকে পাঠানো company_id/tenant_id বিশ্বাস করা যাবে না। Authenticated
-user/context এবং authorized admin scope থেকে company নির্ধারণ করতে হবে।
+    কারণ: পুরোনো bill বাদ দিয়ে পুরোনো cash রেখে দিলে Opening Receivable
+    ঋণাত্মক হয়ে যেত। Opening ও closing-এর মধ্যে অসঙ্গতি তৈরি হতো।
 
-Platform/global admin অন্য Company-এর setting manage করতে পারলে existing
-platform-admin authorization অনুসরণ করতে হবে।
+Setting-এর company ও product ownership backend থেকে validate করতে হবে।
+Client-এর পাঠানো company_id বিশ্বাস করা যাবে না।
 
-Tenant admin শুধু নিজের Company-এর settings manage করতে পারবে।
+Tenant admin শুধু নিজের Company-এর settings manage করবে। Platform admin
+existing platform-admin authorization অনুসরণ করবে।
 
 ============================================================
-৬. NEW TABLE: TRANSACTION–PRODUCT MAPPING
+৫. NEW TABLE: TRANSACTION–PRODUCT MAPPING
 ============================================================
 
-একটি নতুন mapping table তৈরি করতে হবে। Suggested name:
+Table: transaction_product_maps
 
-transaction_product_maps
+এই table ledger-ready — amount, date ও party এখানেই denormalized আছে।
+কারণ acc_transaction_details প্রতি edit-এ মুছে যায় (§০.৩), তাই report-কে
+সেখানে ফিরে যেতে দেওয়া যাবে না।
 
-Suggested fields:
+Fields:
 
-- id
-- company_id/tenant_id
-- branch_id nullable
-- transaction_type
-- transaction_id
-- transaction_row_id, শুধু actual structure অনুযায়ী প্রয়োজন হলে
-- product_id
-- source_type nullable
-- source_id nullable
-- mapping_method
-- created_by nullable
-- updated_by nullable
-- created_at
-- updated_at
+    id
+    company_id        INT UNSIGNED
+    branch_id         INT UNSIGNED
+    product_id        INT UNSIGNED
 
-transaction_type-এর সম্ভাব্য value:
+    -- stable anchor
+    main_trx_id       INT UNSIGNED       -- main_trx_master.id
+    row_seq           SMALLINT UNSIGNED  -- party row-এর ক্রমিক নম্বর
 
-- cash_received
-- cash_payment
+    -- informational only, volatile, join করা নিষিদ্ধ
+    trx_mstr_id       INT UNSIGNED nullable
+    trx_detail_id     INT UNSIGNED nullable
 
-source_type-এর সম্ভাব্য value:
+    transaction_type  VARCHAR(30)
+    direction         TINYINT            -- 1 = received, -1 = payment
 
-- sales_invoice
-- purchase_invoice
-- sales_order
-- purchase_order
-- manual
-- historical
+    -- ledger projection
+    vr_date           DATE
+    vr_no             VARCHAR(64)
+    coa4_id           INT UNSIGNED       -- party account
+    mapped_amount     DECIMAL(20,4)
+    remarks           VARCHAR(255)
 
-mapping_method-এর সম্ভাব্য value:
+    source_type       VARCHAR(30) nullable
+    source_id         INT UNSIGNED nullable
+    mapping_method    VARCHAR(40)
 
-- manual
-- automatic_single_tracked_product
-- historical_backfill
-- reconciliation
+    created_by, updated_by, created_at, updated_at
 
-একটি Cash Received/Payment row-এর সঙ্গে সর্বোচ্চ একটি Product যুক্ত করার
-বর্তমান business rule থাকবে।
+UNIQUE (company_id, transaction_type, main_trx_id, row_seq)
 
-তাই company/tenant + transaction_type + permanent transaction row ID-এর ওপর
-composite unique index দিতে হবে।
+transaction_type-এর মান:
 
-যদি existing system-এ Received এবং Payment ID collision হতে পারে, তাহলে
-transaction_type অবশ্যই unique key ও query join-এর অংশ হবে।
+    cash_received      cash_payment
+    bank_received      bank_payment
+    journal_received   journal_payment
 
-Existing transaction table-এর ওপর কোনো foreign key বা index দেওয়া যাবে না।
-নতুন mapping table-এর references indexed থাকবে।
+source_type-এর মান:
 
-Product table-এর দিকে foreign key দেওয়া হলেও delete cascade দিয়ে financial
-transaction delete করা যাবে না। সন্দেহ থাকলে application-level reference
-ব্যবহার করতে হবে।
+    sales_invoice  purchase_invoice  sales_order  purchase_order
+    manual         historical
+
+mapping_method-এর মান:
+
+    manual  automatic_single_tracked_product
+    historical_backfill  reconciliation
+
+REWRITE CONTRACT (অলঙ্ঘনীয়):
+
+    voucher store   → mapping insert
+    voucher update  → ঐ main_trx_id-এর সব mapping delete + নতুন করে insert
+    voucher delete/cancel → ঐ main_trx_id-এর সব mapping delete
+
+    তিনটিই voucher-এর নিজের DB transaction-এর ভিতরে হতে হবে।
+
+একটি voucher row-এর সঙ্গে সর্বোচ্চ একটি Product যুক্ত হবে।
+
+Existing table-এর উপর কোনো foreign key বা index দেওয়া যাবে না। নতুন mapping
+table-এর reference গুলো application-level, সব index নতুন table-এর ভিতরে।
 
 ============================================================
-৭. OPTIONAL AUDIT/RECONCILIATION TABLE
+৬. AUDIT TABLE
 ============================================================
 
-Historical ও ambiguous mapping audit করার জন্য প্রয়োজনে নতুন table:
+Table: product_tracking_reconciliation_logs
 
-product_tracking_reconciliation_logs
+এটি append-only audit trail — প্রতিটি mapping সিদ্ধান্তের ইতিহাস। এতে কোনো
+UNIQUE KEY নেই, কারণ একই transaction একাধিকবার সংশোধিত হতে পারে।
 
-Suggested fields:
+Fields:
 
-- id
-- company_id/tenant_id
-- branch_id nullable
-- transaction_type
-- transaction_id
-- source_type nullable
-- source_id nullable
-- suggested_product_id nullable
-- resolved_product_id nullable
-- status
-- reason nullable
-- metadata JSON nullable
-- resolved_by nullable
-- resolved_at nullable
-- created_at
-- updated_at
+    id, company_id, branch_id
+    main_trx_id, row_seq, transaction_type
+    source_type, source_id
+    previous_product_id, suggested_product_id, resolved_product_id
+    mapped_amount
+    action, reason, metadata JSON
+    acted_by, created_at
 
-Possible status:
+action-এর মান:
 
-- pending
-- auto_mapped
-- manually_mapped
-- ambiguous
-- source_not_found
-- ignored
+    auto_mapped  manually_mapped  remapped  cleared
+    ambiguous    source_not_found  ignored
 
-এই table optional; কিন্তু auditability বজায় রাখতে recommended।
+“Unmapped queue” আলাদা table নয় — সেটি একটি query: যেসব live voucher row-এর
+বিপরীতে transaction_product_maps-এ কোনো row নেই, সেগুলোই pending।
+
+============================================================
+৭. READ-ONLY VIEWS
+============================================================
+
+SQL ফাইলে তিনটি view আছে। এগুলো legacy table স্পর্শ করে না।
+
+    v_product_bill_lines     Sales/Purchase Bill ও Return, product-wise
+    v_product_cash_lines     mapped Received/Payment
+    v_product_ledger_lines   উপরের দুটির UNION — statement-এর row source
+
+Report query এই view গুলোর উপর দাঁড়াবে, যাতে formula এক জায়গায় থাকে এবং
+test করা যায়।
 
 ============================================================
 ৮. COMPANY–PRODUCT TRACKING SETTINGS UI
@@ -269,34 +444,20 @@ Possible status:
 
 একটি নতুন permission-protected settings screen তৈরি করতে হবে।
 
-Suggested UI:
+    Company: [Select Company]      (tenant admin হলে auto, dropdown নেই)
 
-Company:
-[Select Company]
+    | Product | Sales Bill | Purchase Bill | Received | Payment | Branch | Active |
 
-Products:
-| Product | Sales Bill | Purchase Bill | Cash Received | Cash Payment | Active |
+    Actions: Add tracked product / Edit / Activate-Deactivate / Search / Filter / Pagination
 
-Actions:
-- Add tracked product
-- Edit setting
-- Activate/deactivate
-- Search
-- Filter
-- Pagination
-
-Tenant admin হলে Company dropdown দেখানোর প্রয়োজন না-ও হতে পারে; authenticated
-Company স্বয়ংক্রিয়ভাবে ব্যবহার করতে হবে।
-
-Platform/global admin হলে authorized Company নির্বাচন করা যাবে।
-
-Product dropdown-এ শুধু selected Company-এর Product দেখাতে হবে।
+Product dropdown-এ শুধু selected Company-এর Product দেখাবে
+(product_items.company_id দিয়ে filter)।
 
 Setting deactivate করলে:
-- নতুন mapping বা tracking বন্ধ হবে।
+- নতুন mapping বন্ধ হবে।
 - পুরোনো mapping delete হবে না।
 - Historical report অক্ষত থাকবে।
-- প্রয়োজন হলে report-এ inactive tracked Product নির্বাচন করা যাবে।
+- Report-এ inactive tracked Product নির্বাচন করা যাবে (include_inactive)।
 
 ============================================================
 ৯. CASH RECEIVED FORM
@@ -305,522 +466,411 @@ Setting deactivate করলে:
 Existing Cash Received form-এর কোনো বর্তমান field, behaviour, shortcut,
 validation, table, save action বা accounting logic পরিবর্তন করা যাবে না।
 
-প্রতিটি Add New transaction row-এর জন্য শুধু একটি নতুন field যোগ করতে হবে:
+প্রতিটি Add New transaction row-এর জন্য শুধু একটি নতুন field:
 
-Select Product (Optional)
+    Select Product (Optional)      → state key: trackedProductId
+
+(নাম `currentProduct` ব্যবহার করা যাবে না — §০.১০)
 
 Rules:
 
-1. Dropdown-এ শুধু current Company-এর active track_cash_received products
-   দেখাবে।
+1. Dropdown-এ শুধু current Company-এর active track_cash_received products।
 2. অন্য Company-এর Product দেখানো যাবে না।
-3. Branch-specific configuration থাকলে selected/current Branch অনুযায়ী
-   filter করতে হবে।
-4. Product নির্বাচন না করলে existing Cash Received flow আগের মতো চলবে।
-5. Product নির্বাচিত হলে product_id existing transaction table-এ save করা
-   যাবে না।
-6. প্রথমে existing logic দিয়ে Cash Received transaction save করতে হবে।
-7. Saved individual transaction row ID পাওয়ার পরে নতুন mapping table-এ
-   product relation save করতে হবে।
-8. Transaction এবং mapping save একই database transaction-এর মধ্যে করতে হবে।
+3. Branch scope অনুযায়ী filter (§৪-এর precedence নিয়ম)।
+4. Product নির্বাচন না করলে existing flow হুবহু আগের মতো।
+5. product_id existing transaction table-এ save করা যাবে না।
+6. প্রথমে existing logic দিয়ে transaction save হবে।
+7. main_trx_id ও row_seq পাওয়ার পর mapping table-এ save হবে।
+8. Transaction ও mapping একই DB transaction-এর মধ্যে।
 9. Product current Company-এর এবং tracking active কি না backend validate করবে।
-10. Order/Invoice selected থাকলে selected Product ঐ Order/Invoice-এর Product
-    কি না validate করতে হবে।
-11. Add New দিয়ে একই voucher-এর বিভিন্ন row-তে বিভিন্ন Product দেওয়া যাবে।
-12. Edit করার সময় mapping table থেকে selected Product load করতে হবে।
-13. Product পরিবর্তন করলে mapping update করতে হবে।
-14. Product clear করলে শুধু mapping row delete করতে হবে।
-15. Cash Received financial row পরিবর্তন বা delete করা যাবে না শুধু mapping
-    clear করার কারণে।
-16. Voucher delete হলে related mapping application-level cleanup করতে হবে।
-17. Existing API client product_id না পাঠালে request আগের মতো সফল হবে।
+10. Order/Invoice selected থাকলে Product ঐ Order/Invoice-এর কি না validate হবে।
+11. একই voucher-এর বিভিন্ন row-তে বিভিন্ন Product দেওয়া যাবে।
+12. Edit-এ mapping table থেকে selected Product load হবে (main_trx_id + row_seq)।
+13. Update-এ ঐ voucher-এর সব mapping মুছে নতুন করে লেখা হবে (REWRITE CONTRACT)।
+14. Product clear করলে শুধু ঐ row-এর mapping বাদ যাবে।
+15. Mapping clear করার কারণে financial row পরিবর্তন বা delete হবে না।
+16. Voucher delete/cancel (status পরিবর্তন) হলে mapping cleanup হবে — §০.৯।
+17. Existing API client trackedProductId না পাঠালে request আগের মতোই সফল হবে।
 
 ============================================================
 ১০. CASH PAYMENT FORM
 ============================================================
 
-Existing Cash Payment form-এর কোনো বর্তমান অংশ পরিবর্তন করা যাবে না।
+Cash Received-এর অনুরূপ। Dropdown-এ শুধু active track_cash_payment products।
 
-প্রতিটি Add New transaction row-এর জন্য শুধু:
-
-Select Product (Optional)
-
-যোগ করতে হবে।
-
-Rules:
-
-1. Dropdown-এ শুধু current Company-এর active track_cash_payment products
-   দেখাবে।
-2. Product নির্বাচন না করলে existing Cash Payment flow অপরিবর্তিত থাকবে।
-3. Product relation শুধু নতুন transaction_product_maps table-এ save হবে।
-4. Purchase Order/Invoice selected থাকলে Product relationship backend থেকে
-   validate করতে হবে।
-5. Create, edit, update, clear ও delete behaviour Cash Received-এর মতো হবে।
-6. Mapping operation existing financial transaction-এর সঙ্গে database
-   transaction-এর মধ্যে হতে হবে।
-7. অন্য Company/tenant-এর Product map করা যাবে না।
+Create, edit, update, clear ও delete lifecycle সম্পূর্ণ একই নিয়মে।
+অন্য Company-এর Product map করা যাবে না।
 
 ============================================================
-১১. SALES AND PURCHASE INVOICE
+১১. BANK ও JOURNAL VOUCHER
 ============================================================
 
-Existing Sales Invoice এবং Purchase Invoice form/table/schema পরিবর্তন করা
-যাবে না।
+BankReceived, BankPayment এবং Journal (transaction_type = 5) — এগুলোও
+Product Receivable/Payable-কে প্রভাবিত করে (§০.৮)। তাই:
 
-কারণ invoice item/detail rows-এ Product, quantity, rate এবং amount আগে থেকেই
-রয়েছে। Product-wise Bill সেই existing invoice detail data থেকেই হিসাব হবে।
+- BankReceived / BankPayment form-এ একই optional Product field যোগ হবে
+  (transaction_type: bank_received / bank_payment)।
+- Journal voucher-এর যে row party account-কে প্রভাবিত করে, সেখানেও একই field
+  (journal_received / journal_payment; direction debit/credit থেকে নির্ধারিত)।
 
-Sales Invoice থেকে:
-
-- Product-wise Sales Bill
-- Quantity sold
-- Gross/net sales amount
-- Sales return, যদি প্রযোজ্য
-
-Purchase Invoice থেকে:
-
-- Product-wise Purchase Bill
-- Quantity purchased
-- Gross/net purchase amount
-- Purchase return, যদি প্রযোজ্য
-
-তবে invoice form-এ Received Amount অথবা Payment Amount field থাকলে save flow
-inspect করতে হবে।
-
-যদি invoice save-এর সময় automatic Cash Received/Payment transaction তৈরি হয়:
-
-1. Invoice-এ ঠিক একটি active tracked Product থাকলে এবং generated cash amount
-   পুরোপুরি সেই Product-এর জন্য বলে নিশ্চিত হওয়া গেলে mapping auto-create করা
-   যাবে।
-2. Invoice-এ একাধিক tracked Product থাকলে অনুমান করে mapping করা যাবে না।
-3. Tracked ও untracked Product মিশ্রিত invoice হলে পুরো received/payment amount
-   tracked Product-এর নামে map করা যাবে না।
-4. Ambiguous payment mapping ছাড়া থাকবে অথবা reconciliation queue-তে যাবে।
-5. Invoice form-এ নতুন allocation UI যোগ করা যাবে না, যদি আলাদাভাবে অনুমোদন
-   দেওয়া না হয়।
-6. Invoice update/delete/cancel হলে report existing invoice state অনুসরণ করবে।
-7. Auto-created mapping থাকলে invoice/transaction lifecycle অনুযায়ী safeভাবে
-   sync/cleanup করতে হবে।
-8. কোনো invoice বা invoice detail row rewrite করা যাবে না।
+এগুলো বাদ দিলে Product Receivable overstate হবে।
 
 ============================================================
 ১২. PRODUCT-WISE BILL CALCULATION
 ============================================================
 
-Bill হিসাব transaction mapping থেকে নেওয়া যাবে না। Bill নিতে হবে existing
-invoice detail/items থেকে।
+Bill mapping table থেকে নেওয়া হবে না। Bill আসবে existing invoice detail থেকে।
 
-Product tracking setting active হলে report query selected Company, Product,
-Branch ও date range অনুযায়ী existing invoice detail data পড়বে।
+এই system-এ line-level discount, tax/VAT, additional charge বা rounding-এর
+কোনো column নেই (§০.৫)। Discount শুধু master level-এ। প্রকৃত formula:
 
-Sales Bill:
-- Sales Invoice item net amount
-- Cancelled/void invoice বাদ
-- Sales return existing rule অনুযায়ী বাদ
-- Line discount/tax existing rule অনুযায়ী apply
+    gross_amount   = quantity × rate
+                     (sales_price অথবা purchase_price)
 
-Purchase Bill:
-- Purchase Invoice item net amount
-- Cancelled/void invoice বাদ
-- Purchase return existing rule অনুযায়ী বাদ
-- Line discount/tax existing rule অনুযায়ী apply
+    discount_share = master.discount × gross_amount / master.total
+                     (master.total = ঐ invoice-এর সব line-এর gross যোগফল)
 
-এক invoice-এ একাধিক Product থাকলেও bill হিসাব করা সম্ভব, কারণ invoice detail-এ
+    net_amount     = gross_amount − discount_share
+
+Return line-এর জন্য:
+
+    net_amount = COALESCE(
+        line_net_total,
+        quantity × return_price
+          − (quantity × return_price × COALESCE(return_pct, 0) / 100)
+    )
+
+COALESCE লাগছে কারণ PurchaseReturn.php `line_net_total` লেখে না (§০.৬)।
+
+Cancelled/void বাদ দেওয়ার শর্ত: `main_trx_master.status = 1`
+
+এক invoice-এ একাধিক Product থাকলেও হিসাব সম্ভব, কারণ invoice detail-এ
 প্রতিটি Product-এর আলাদা row ও amount আছে।
 
-Invoice-level discount/charge যদি Product row-এ ভাগ করা না থাকে, existing
-business rule inspect করতে হবে। Product-wise net bill-এর জন্য প্রয়োজন হলে
-proportionate calculation শুধু report query/service layer-এ করা যাবে; existing
-invoice data update করা যাবে না। Formula document এবং test করতে হবে।
+এই formula v_product_bill_lines view-এ implement করা আছে এবং সেখানেই
+test করতে হবে।
 
 ============================================================
-১৩. PRODUCT-WISE LEDGER/REPORT
+১৩. SALES এবং PURCHASE INVOICE
 ============================================================
 
-Existing Ledger form-এর কোনো field বাদ বা পরিবর্তন করা যাবে না।
+Existing Sales/Purchase Invoice form, table ও schema পরিবর্তন করা যাবে না।
 
-শুধু একটি নতুন optional dropdown যোগ করতে হবে:
+Invoice save-এর সময় Received Amount / Payment Amount থেকে automatic cash
+transaction তৈরি হলে (`inventory_*_masters.netpayment`):
 
-Select Product (Optional)
-
-Dropdown-এ selected Company-এর configured products দেখাবে। Historical report
-দেখানোর জন্য inactive configured Product অন্তর্ভুক্ত করার option রাখা যায়।
-
-Product selected না হলে existing Ledger API, query, opening, rows, total,
-balance এবং print হুবহু আগের মতো চলবে।
-
-Product selected হলে একটি dedicated Product Financial Statement দেখাতে হবে।
-
-Suggested summary:
-
-- Opening Sales Receivable
-- Sales Bill Given
-- Sales Return
-- Cash Received
-- Closing Sales Receivable
-
-- Opening Purchase Payable
-- Purchase Bill Received
-- Purchase Return
-- Cash Payment
-- Closing Purchase Payable
-
-Detailed rows:
-
-| Date | Voucher | Type | Description | Bill Debit | Bill Credit |
-| Cash Received | Cash Payment | Balance | Action |
-
-অথবা পরিষ্কারভাবে দুটি statement:
-
-A. Product Receivable Statement
-- Sales Bill
-- Sales Return
-- Cash Received
-- Receivable Balance
-
-B. Product Payable Statement
-- Purchase Bill
-- Purchase Return
-- Cash Payment
-- Payable Balance
-
-Existing account ledger-এর debit/credit convention অন্ধভাবে reuse না করে
-existing accounting rules inspect করে product statement-এর labels পরিষ্কার
-রাখতে হবে।
+1. Invoice-এ ঠিক একটি active tracked Product থাকলে এবং generated cash amount
+   পুরোপুরি সেই Product-এর বলে নিশ্চিত হলে mapping auto-create করা যাবে।
+2. একাধিক tracked Product থাকলে অনুমান করে mapping করা যাবে না।
+3. Tracked ও untracked মিশ্রিত invoice হলে পুরো amount tracked Product-এর
+   নামে map করা যাবে না।
+4. Ambiguous mapping ছাড়া থাকবে; audit log-এ `ambiguous` লেখা হবে।
+5. Invoice form-এ নতুন allocation UI যোগ করা যাবে না।
+6. Invoice update/delete/cancel হলে REWRITE CONTRACT অনুযায়ী mapping sync হবে।
+7. কোনো invoice বা invoice detail row rewrite করা যাবে না।
 
 ============================================================
-১৪. OPENING AND CLOSING CALCULATION
+১৪. PRODUCT-WISE LEDGER / REPORT
 ============================================================
 
-Selected start date-এর আগের সব applicable tracked data দিয়ে opening হিসাব
-করতে হবে।
+⚠ নতুন সমান্তরাল report তৈরি করা হবে না।
 
-Opening Receivable:
+বিদ্যমান report upgrade হবে (§০.৭):
 
-Previous Sales Bills
-- Previous Sales Returns
-- Previous Cash Received
-- Previous applicable sales adjustments
+    Frontend : src/components/modules/reports/ledger-with-product/
+    Backend  : ReportsController@apiCustomerSupplierStatement
+               ReportsController::ledgerWithProductOpeningBalance()
 
-Opening Payable:
+পরিবর্তনের নিয়ম:
 
-Previous Purchase Bills
-- Previous Purchase Returns
-- Previous Cash Payments
-- Previous applicable purchase adjustments
+- Product নির্বাচন না করলে query, opening, rows, debit/credit, balance ও
+  print হুবহু আগের মতো চলবে।
+- Product নির্বাচন করলে এবং ঐ Company+Product tracked হলে → mapping-ভিত্তিক
+  exact হিসাব ব্যবহার হবে।
+- Product নির্বাচন করলে কিন্তু tracked না হলে → বর্তমান whereExists heuristic
+  আচরণ অপরিবর্তিত থাকবে (backward compatible)।
 
-Date range closing:
+Product Financial Statement summary:
+
+    Opening Sales Receivable
+    Sales Bill Given
+    Sales Return
+    Received
+    Closing Sales Receivable
+
+    Opening Purchase Payable
+    Purchase Bill Received
+    Purchase Return
+    Payment
+    Closing Purchase Payable
+
+    Unmapped Received / Payment (এই period)        ← §৩ অনুযায়ী বাধ্যতামূলক
+
+Detail rows:
+
+    | Date | Voucher | Type | Party | Description | Qty | Rate |
+    | Sales Bill | Purchase Bill | Received | Payment | Balance | Action |
+
+Row source: v_product_ledger_lines
+
+সম্ভব report সমূহ (একই view থেকে):
+
+1. Product Financial Statement (ledger, running balance সহ)
+2. Product-wise Receivable/Payable summary (সব tracked product এক তালিকায়)
+3. Product + Party statement (কোন পার্টির কাছে কোন পণ্যের কত পাওনা)
+4. Product-wise Received/Payment register (দৈনিক/মাসিক)
+5. Bill vs Collection (আদায়ের হার %)
+6. Branch × Product summary
+7. Unmapped transaction report (reconciliation gap)
+
+Invoice-wise aging শুধু তখনই সম্ভব যখন mapping-এ source_type/source_id
+পূরণ থাকে — না থাকলে aging দেখানো যাবে না।
+
+============================================================
+১৫. OPENING AND CLOSING CALCULATION
+============================================================
+
+Opening Receivable =
+      Previous Sales Bills − Previous Sales Returns − Previous Received
+
+Opening Payable =
+      Previous Purchase Bills − Previous Purchase Returns − Previous Payments
 
 Closing Receivable =
-Opening Receivable
-+ Range Sales Bill
-- Range Sales Return
-- Range Cash Received
-- Range applicable adjustments
+      Opening Receivable + Range Sales Bill − Range Sales Return − Range Received
 
 Closing Payable =
-Opening Payable
-+ Range Purchase Bill
-- Range Purchase Return
-- Range Cash Payment
-- Range applicable adjustments
+      Opening Payable + Range Purchase Bill − Range Purchase Return − Range Payment
 
-Product filter শুধু displayed rows-এ প্রয়োগ করে existing unfiltered opening
-ব্যবহার করা যাবে না। Opening, range totals এবং closing—সব জায়গায় একই Company,
-Product, Branch ও date filter প্রয়োগ করতে হবে।
+Opening, range totals এবং closing — তিন জায়গায় হুবহু একই company_id,
+branch_id, product_id filter প্রয়োগ করতে হবে। শুধু displayed rows filter করে
+unfiltered opening ব্যবহার করা যাবে না।
+
+effective_from opening-এ প্রভাব ফেলবে না (§৪)।
 
 ============================================================
-১৫. HISTORICAL DATA
+১৬. HISTORICAL DATA
 ============================================================
 
 কোনো legacy table/data পরিবর্তন করা যাবে না।
 
-Historical Product Bill:
-- Existing Sales/Purchase invoice detail থেকে সরাসরি পাওয়া যাবে।
-- শুধু configured Company + Product combination-এর data report করতে হবে।
-- Setting-এর effective_from থাকলে তার আগের data defaultভাবে বাদ দেওয়া যায়;
-  তবে “Include historical data” policy requirement অনুযায়ী নির্ধারণ করতে হবে।
+Historical Product Bill: existing invoice detail থেকে সরাসরি পাওয়া যাবে।
 
-Historical Cash Received/Payment:
-- পুরোনো transaction-এ product mapping না থাকলে নিশ্চিতভাবে Product বলা যায় না।
-- শুধু নিরাপদ ও deterministic case mapping করা যাবে।
+Historical Received/Payment: পুরোনো transaction-এ mapping না থাকলে নিশ্চিতভাবে
+Product বলা যায় না। শুধু deterministic case-এ mapping হবে।
 
-একটি dry-run capable backfill command তৈরি করতে হবে:
+    php artisan product-tracking:backfill --dry-run
 
-php artisan product-tracking:backfill --dry-run
+Dry run দেখাবে: eligible transactions, automatically mappable, multiple
+tracked products, source not found, already mapped, cross-company invalid,
+ambiguous।
 
-Dry run দেখাবে:
-
-- Eligible tracked-company/product transactions
-- Automatically mappable
-- Multiple tracked products
-- Source/order/invoice not found
-- Already mapped
-- Cross-company invalid references
-- Ambiguous transactions
-
-Review-এর পর:
-
-php artisan product-tracking:backfill
+    php artisan product-tracking:backfill
 
 Backfill rules:
 
 1. শুধু configured Company + Product combinations process করবে।
 2. Untracked Product ignore করবে।
-3. Invoice/order-এ একটি মাত্র distinct active tracked Product থাকলে এবং cash
-   transactionটি তার সঙ্গে নিশ্চিতভাবে related হলে map করবে।
+3. Invoice/order-এ একটিমাত্র distinct active tracked Product থাকলে এবং cash
+   transactionটি নিশ্চিতভাবে তার সঙ্গে related হলে map করবে।
 4. একাধিক tracked Product হলে auto-map করবে না।
-5. Tracked এবং untracked Product mixed invoice হলে amount-এর Product নিশ্চিত
-   না হলে auto-map করবে না।
-6. Invoice/order reference না থাকলে party/date দেখে অনুমান করে map করবে না।
-7. Duplicate mapping তৈরি করবে না।
-8. Command পুনরায় চালানো নিরাপদ/idempotent হবে।
+5. Mixed invoice-এ amount নিশ্চিত না হলে auto-map করবে না।
+6. Invoice/order reference না থাকলে party/date দেখে অনুমান করবে না।
+7. Duplicate mapping তৈরি করবে না (UNIQUE key এটি নিশ্চিত করে)।
+8. পুনরায় চালানো নিরাপদ/idempotent হবে।
 9. Legacy transaction বা invoice row update করবে না।
-10. Ambiguous record manual reconciliation-এর জন্য রাখবে।
+10. প্রতিটি সিদ্ধান্ত audit log-এ লিখবে।
 
 ============================================================
-১৬. MANUAL RECONCILIATION
+১৭. MANUAL RECONCILIATION
 ============================================================
 
-Ambiguous historical transaction-এর জন্য permission-protected screen:
+Permission-protected screen।
 
-Filters:
-- Company
-- Branch
-- Received/Payment
-- Date range
-- Account/party
-- Voucher
-- Only unmapped
-- Tracked Product
+Filters: Company, Branch, Received/Payment, Date range, Party, Voucher,
+Only unmapped, Tracked Product।
 
 Table:
 
-| Date | Voucher | Party | Type | Amount | Invoice/Order |
-| Eligible Tracked Products | Selected Product | Status | Action |
+    | Date | Voucher | Party | Type | Amount | Invoice/Order |
+    | Eligible Tracked Products | Selected Product | Status | Action |
 
 Rules:
 
-1. শুধু transaction-এর Company-এর configured Product দেখাবে।
+1. শুধু ঐ transaction-এর Company-এর configured Product দেখাবে।
 2. Order/Invoice থাকলে শুধু তার eligible Product দেখাবে।
-3. Manual mapping audit information সংরক্ষণ করবে।
+3. প্রতিটি সিদ্ধান্ত audit log-এ যাবে।
 4. Financial transaction edit করবে না।
-5. Wrong mapping correction শুধু mapping table-এ হবে।
+5. ভুল mapping সংশোধন শুধু mapping table-এ হবে।
 6. Bulk mapping অনুমানভিত্তিক হবে না।
-7. Cross-company mapping সম্পূর্ণ নিষিদ্ধ হবে।
+7. Cross-company mapping সম্পূর্ণ নিষিদ্ধ।
 
 ============================================================
-১৭. API REQUIREMENTS
+১৮. API REQUIREMENTS
 ============================================================
 
-Actual project conventions অনুসারে endpoints তৈরি করো। Suggested endpoints:
+Route file: routes/api.php
+Middleware group: ['auth:sanctum', 'ensure.user', LastUserActivity::class]
 
-Tracking settings:
-GET    /product-tracking/settings
-POST   /product-tracking/settings
-PUT    /product-tracking/settings/{id}
-DELETE অথবা PATCH deactivate /product-tracking/settings/{id}
+    GET    product-tracking/settings
+    POST   product-tracking/settings
+    PUT    product-tracking/settings/{id}
+    PATCH  product-tracking/settings/{id}/deactivate
 
-Dropdown:
-GET /product-tracking/products?company_id=&branch_id=&context=received
-GET /product-tracking/products?company_id=&branch_id=&context=payment
-GET /product-tracking/products?company_id=&branch_id=&context=ledger
+    GET    product-tracking/products?branch_id=&context=received|payment|ledger
 
-Mapping:
-GET  /transactions/{type}/{id}/product-map
-POST /transactions/{type}/{id}/product-map
-DELETE /transactions/{type}/{id}/product-map
+    GET    product-tracking/map/{mainTrxId}
+    POST   product-tracking/map/{mainTrxId}
+    DELETE product-tracking/map/{mainTrxId}/{rowSeq}
 
-Report:
-GET /reports/product-financial-statement
+    GET    reports/product-financial-statement
+           ?branch_id=&product_id=&start_date=&end_date=&include_inactive=
 
-Suggested query:
-- company_id, শুধু platform admin context-এ
-- branch_id
-- product_id
-- start_date
-- end_date
-- include_inactive
+    GET    product-tracking/reconciliation
+    POST   product-tracking/reconciliation/resolve
 
-Reconciliation:
-GET  /product-tracking/reconciliation
-POST /product-tracking/reconciliation/{transaction}/resolve
+company_id কোনো request-এ নেওয়া হবে না — auth থেকে আসবে। Platform admin-এর
+ক্ষেত্রে existing platform-admin authorization pattern অনুসরণ করতে হবে।
 
-Existing Cash Received/Payment request-এ optional product_id নেওয়া যেতে পারে,
-কিন্তু existing transaction table-এ save করা যাবে না। Backend save service
-transaction ID পাওয়ার পরে mapping table-এ save করবে।
+Existing Received/Payment request-এ optional trackedProductId নেওয়া যাবে,
+কিন্তু existing transaction table-এ save করা যাবে না।
 
-API response existing response envelope/convention অনুসরণ করবে।
+API response existing envelope (foundData / notFound) অনুসরণ করবে।
+
+⚠ Route যোগ করার পর `php artisan route:clear` চালাতে হবে, নইলে 404 আসবে।
 
 ============================================================
-১৮. SECURITY AND TENANT ISOLATION
+১৯. SECURITY AND TENANT ISOLATION
 ============================================================
 
 প্রতিটি request-এ backend নিশ্চিত করবে:
 
-1. User requested Company access করতে পারে।
-2. Product requested Company-এর।
-3. Company + Product tracking setting আছে।
-4. Requested operation-এর flag active:
-   - Received-এর জন্য track_cash_received
-   - Payment-এর জন্য track_cash_payment
-   - Sales bill-এর জন্য track_sales_bill
-   - Purchase bill-এর জন্য track_purchase_bill
-5. Branch selected Company-এর।
-6. Transaction selected Company/Branch-এর।
-7. Invoice/order selected Company-এর।
+1. Company সবসময় auth()->user()->company_id থেকে — client থেকে নয়।
+2. Product ঐ Company-এর (product_items.company_id)।
+3. Company + Product tracking setting আছে এবং active।
+4. Requested operation-এর flag active
+   (track_cash_received / track_cash_payment / track_sales_bill / track_purchase_bill)।
+5. Branch ঐ Company-এর (com_branches.company_id)।
+6. Voucher ঐ Company/Branch-এর (main_trx_master.company_id, branch_id)।
+7. Invoice/order ঐ Company-এর।
 8. Product invoice/order-এর item হলে relationship valid।
-9. Client-supplied tenant/company ownership blindly trust করা হবে না।
-10. Platform admin ও tenant admin permission আলাদা হবে।
-11. IDOR/cross-tenant access test করতে হবে।
+9. Platform admin ও tenant admin permission আলাদা।
+10. IDOR/cross-tenant access test করতে হবে।
 
 ============================================================
-১৯. PERFORMANCE AND INDEXING
+২০. PERFORMANCE AND INDEXING
 ============================================================
 
-শুধু নতুন tables-এর মধ্যে প্রয়োজনীয় index দিতে হবে।
+শুধু নতুন table-এর ভিতরে index — SQL ফাইলে সংজ্ঞায়িত।
 
-Suggested indexes:
+Existing table-এ নতুন index যোগ করা যাবে না। বিদ্যমান invoice/report query
+ধীর হলে আগে EXPLAIN করে দেখাতে হবে; অনুমতি ছাড়া legacy table alter নয়।
 
-company_product_tracking_settings:
-- unique company/tenant + branch + product
-- company/tenant + is_active
-- product_id
-
-transaction_product_maps:
-- unique company/tenant + transaction_type + transaction ID
-- company/tenant + product_id + transaction_type
-- product_id + created_at
-- source_type + source_id
-- branch_id + product_id
-
-Existing tables-এ নতুন index যোগ করা যাবে না। Existing invoice/report query
-performance সমস্যা হলে আগে explain করতে হবে; অনুমতি ছাড়া legacy table alter
-করা যাবে না।
-
-Report pagination ব্যবহার করবে এবং বড় data memory-তে load করবে না।
-
-============================================================
-২০. PRINT AND EXPORT
-============================================================
-
-Product Financial Statement-এর print/export-এ দেখাতে হবে:
-
-- Company
-- Branch
-- Product
-- Date range
-- Opening Receivable
-- Sales Bill
-- Cash Received
-- Closing Receivable
-- Opening Payable
-- Purchase Bill
-- Cash Payment
-- Closing Payable
-
-Detailed voucher/invoice references দেখাতে হবে।
-
-Existing Ledger print layout পরিবর্তন না করে product-selected অবস্থায় আলাদা
-header/section ব্যবহার করা যায়।
+Report pagination ব্যবহার করবে এবং বড় data memory-তে load করবে না।
 
 ============================================================
 ২১. BACKWARD COMPATIBILITY
 ============================================================
 
-1. কোনো Product tracking setting না থাকলে পুরো system আগের মতো চলবে।
-2. Cash Received/Payment request-এ product_id না থাকলে আগের মতো save হবে।
+1. কোনো tracking setting না থাকলে পুরো system আগের মতো চলবে।
+2. Received/Payment request-এ trackedProductId না থাকলে আগের মতো save হবে।
 3. Existing mobile/web clients ভাঙবে না।
 4. Existing invoice save/edit/print অপরিবর্তিত থাকবে।
-5. Product filter ছাড়া existing Ledger result অপরিবর্তিত থাকবে।
-6. Legacy transaction mapping না থাকলেও general ledger-এ থাকবে।
-7. Unmapped transaction Product Financial Statement-এ Product cash movement
-   হিসেবে দেখানো যাবে না।
-8. Existing accounting permissions অপরিবর্তিত থাকবে; নতুন feature-এর জন্য
-   নতুন permissions যোগ করা যাবে, কিন্তু existing permission table alter নয়।
-9. কোনো unrelated code change করা যাবে না।
+5. Product filter ছাড়া existing Ledger result অপরিবর্তিত থাকবে।
+6. Product নির্বাচন করলেও, Product untracked হলে বর্তমান heuristic আচরণ
+   অপরিবর্তিত থাকবে।
+7. Unmapped transaction Product Financial Statement-এ cash movement হিসেবে
+   দেখানো যাবে না, তবে "Unmapped" ঘরে গণনা হবে।
+8. Tracking deactivate করলে historical mapping delete হবে না।
+9. Existing accounting permissions অপরিবর্তিত; নতুন permission যোগ করা যাবে
+   কিন্তু existing permission table alter নয়।
+10. কোনো unrelated code change করা যাবে না।
 
 ============================================================
 ২২. TEST REQUIREMENTS
 ============================================================
 
-Backend tests:
+Backend:
 
-1. Company A + Rice tracked।
-2. Company A + Pen untracked।
-3. Company B + Rice untracked।
-4. Received dropdown-এ শুধু track_cash_received Product আসে।
-5. Payment dropdown-এ শুধু track_cash_payment Product আসে।
-6. Cross-company Product mapping reject হয়।
-7. Untracked Product mapping reject হয়।
-8. Optional Product ছাড়া existing transaction save হয়।
-9. Mapping create/update/delete হয়।
-10. Duplicate transaction mapping হয় না।
-11. Sales Bill সঠিক invoice items থেকে আসে।
-12. Purchase Bill সঠিক invoice items থেকে আসে।
-13. Cancelled invoice বাদ যায়।
-14. Sales/Purchase return সঠিকভাবে adjust হয়।
-15. Cash Received শুধু mapped transaction থেকে আসে।
-16. Cash Payment শুধু mapped transaction থেকে আসে।
-17. Opening calculation সঠিক।
-18. Closing Receivable/Payable সঠিক।
-19. Branch filter সঠিক।
-20. Date filter সঠিক।
-21. Product filter ছাড়া legacy Ledger response অপরিবর্তিত।
-22. Backfill command idempotent।
-23. Multi-product ambiguous transaction auto-map হয় না।
-24. Unauthorized admin settings পরিবর্তন করতে পারে না।
-25. Legacy tables alter হয়নি।
+1. Company A + Rice tracked, Company A + Pen untracked, Company B + Rice untracked।
+2. Received dropdown-এ শুধু track_cash_received Product আসে।
+3. Payment dropdown-এ শুধু track_cash_payment Product আসে।
+4. Cross-company Product mapping reject হয়।
+5. Untracked Product mapping reject হয়।
+6. Product ছাড়া existing transaction আগের মতো save হয়।
+7. Mapping create/update/delete কাজ করে।
+8. Duplicate mapping হয় না।
+9. ⚠ Voucher edit করার পরেও mapping টিকে থাকে এবং সঠিক row-এর সঙ্গে থাকে
+   (§০.৩-এর regression test — সবচেয়ে গুরুত্বপূর্ণ)।
+10. Voucher cancel (status=0) করলে ঐ mapping report থেকে বাদ যায়।
+11. Sales Bill সঠিক invoice line থেকে আসে, master discount apportioned।
+12. Purchase Bill একইভাবে।
+13. Cancelled invoice বাদ যায়।
+14. Sales/Purchase return সঠিকভাবে adjust হয়, line_net_total না থাকলেও।
+15. Received শুধু mapped transaction থেকে আসে।
+16. Payment শুধু mapped transaction থেকে আসে।
+17. Bank ও Journal voucher-ও গণনায় আসে।
+18. Opening calculation সঠিক এবং effective_from তাতে প্রভাব ফেলে না।
+19. Closing Receivable/Payable সঠিক।
+20. Branch scope precedence (branch-specific > branch_id 0) সঠিক।
+21. Date filter সঠিক।
+22. Product filter ছাড়া legacy ledger response byte-for-byte অপরিবর্তিত।
+23. Untracked Product নির্বাচন করলে পুরোনো heuristic আচরণ অপরিবর্তিত।
+24. Backfill idempotent।
+25. Ambiguous transaction auto-map হয় না।
+26. Unauthorized admin settings পরিবর্তন করতে পারে না।
+27. কোনো legacy table alter হয়নি।
 
-Frontend tests/typecheck:
+Frontend:
 
-1. Company অনুযায়ী Product dropdown।
-2. Received/Payment context অনুযায়ী dropdown।
+1. Company অনুযায়ী Product dropdown।
+2. Received/Payment context অনুযায়ী dropdown।
 3. Product optional behaviour।
 4. Add New row-এ Product state সংরক্ষণ।
 5. Edit load-এ selected Product।
 6. Product clear behaviour।
-7. Product statement filters।
-8. Loading/error/empty states।
-9. Print header।
-10. Production build/typecheck।
+7. `currentProduct` field-এর সঙ্গে সংঘাত হয়নি।
+8. Product statement filters।
+9. Loading/error/empty states।
+10. Print header ও "memo statement" ঘোষণা।
+11. Production build ও typecheck।
 
 ============================================================
 ২৩. IMPLEMENTATION PROCESS
 ============================================================
 
-Implementation-এর আগে:
+শুরুর আগে:
 
-1. git status দেখো এবং existing user changes preserve করো।
-2. Relevant schema, controllers, services, forms ও reports inspect করো।
-3. কোন legacy table modify করা হবে না—তার তালিকা তৈরি করো।
-4. Proposed নতুন tables ও relationship ব্যাখ্যা করো।
-5. Invoice bill calculation formula নিশ্চিত করো।
+1. git status দেখে existing user changes preserve করো।
+2. docs/company-product-financial-tracking-schema.sql চালানোর আগে §০.৬-এর
+   column verification query গুলো চালাও।
 
-তারপর implementation করো:
+Implementation ক্রম:
 
-1. শুধু নতুন table migrations।
-2. Models/repositories/services।
+1. নতুন table ও view তৈরি (SQL ফাইল)।
+2. Models / repositories / ProductTrackingService।
 3. Settings API ও UI।
-4. Received/Payment optional Product integration।
-5. Product mapping lifecycle।
-6. Product Bill queries।
-7. Product Financial Statement।
-8. Historical dry-run/backfill।
-9. Manual reconciliation।
-10. Print/export।
-11. Tests।
-12. Build/typecheck।
+4. Received/Payment optional Product integration + REWRITE CONTRACT।
+5. Bank ও Journal integration।
+6. Voucher delete/cancel hook-এ mapping cleanup।
+7. Bill query (view-ভিত্তিক)।
+8. ledger-with-product report upgrade।
+9. Historical dry-run/backfill।
+10. Manual reconciliation।
+11. Print/export।
+12. Tests।
+13. Build/typecheck।
+14. php artisan route:clear
 
-Implementation শেষে বাংলায় report করবে:
+শেষে বাংলায় report করতে হবে:
 
 - Inspect করা actual legacy tables এবং IDs
-- কোন existing table অপরিবর্তিত রাখা হয়েছে
-- তৈরি হওয়া নতুন tables
+- কোন existing table অপরিবর্তিত রাখা হয়েছে (প্রমাণসহ)
+- তৈরি হওয়া নতুন tables ও views
 - তৈরি/পরিবর্তিত files
 - Company–Product configuration flow
 - Sales/Purchase Bill calculation formula
-- Cash Received/Payment mapping flow
+- Received/Payment mapping flow ও REWRITE CONTRACT
 - Historical data strategy
 - API contract
 - Permissions/security
@@ -833,36 +883,37 @@ Implementation শেষে বাংলায় report করবে:
 ২৪. FINAL ACCEPTANCE CRITERIA
 ============================================================
 
-Featureটি complete তখনই হবে যখন:
-
-1. নির্দিষ্ট Company + নির্দিষ্ট Product combination configure করা যায়।
-2. অন্য Company বা untracked Product প্রভাবিত হয় না।
-3. Product-wise Sales Bill দেখা যায়।
-4. Product-wise Purchase Bill দেখা যায়।
-5. Product-wise Cash Received দেখা যায়।
-6. Product-wise Cash Payment দেখা যায়।
-7. Product-wise Receivable ও Payable সঠিক দেখা যায়।
-8. Opening ও closing balance সঠিক।
-9. Historical bills existing invoice items থেকে আসে।
-10. Historical cash mapping শুধু নিশ্চিত transaction-এর ক্ষেত্রে হয়।
-11. Ambiguous data manual reconciliation করা যায়।
-12. Existing forms ও accounting flow backward-compatible থাকে।
-13. Product filter ছাড়া Ledger আগের মতো থাকে।
-14. কোনো legacy table ALTER হয়নি।
+1. নির্দিষ্ট Company + নির্দিষ্ট Product combination configure করা যায়।
+2. অন্য Company বা untracked Product প্রভাবিত হয় না।
+3. Product-wise Sales Bill, Purchase Bill, Received, Payment দেখা যায়।
+4. Product-wise Receivable ও Payable সঠিক দেখা যায়।
+5. Opening ও closing balance সঠিক।
+6. ⚠ Voucher edit করার পরেও হিসাব অপরিবর্তিত থাকে।
+7. Bank ও Journal voucher হিসাবে আসে।
+8. Historical bills existing invoice items থেকে আসে।
+9. Historical cash mapping শুধু নিশ্চিত transaction-এর ক্ষেত্রে হয়।
+10. Ambiguous data manual reconciliation করা যায়।
+11. Product filter ছাড়া Ledger আগের মতো থাকে।
+12. Untracked Product নির্বাচনে পুরোনো আচরণ অক্ষত থাকে।
+13. Report-এ "memo statement" ঘোষণা ও Unmapped ঘর আছে।
+14. কোনো legacy table ALTER হয়নি।
 15. Tenant/company isolation tests pass করে।
 
+============================================================
+সংক্ষেপে মূল ধারণা
+============================================================
 
+    Product bill
+        = Existing Sales/Purchase invoice line
+          (qty × rate − apportioned master discount)
 
-মূল ধারণাটি সংক্ষেপে:
-Product bill
-    = Existing Sales/Purchase invoice item data
+    Product cash movement
+        = Existing Received/Payment/Journal voucher row
+          + নতুন transaction_product_maps relation
+          anchor: main_trx_id + row_seq  (detail row id নয়)
 
-Product cash movement
-    = Existing Cash Received/Payment transaction
-      + নতুন transaction_product_maps relation
+    কোন Company-এর কোন Product track হবে
+        = নতুন company_product_tracking_settings
 
-কোন Company-এর কোন Product track হবে
-    = নতুন company_product_tracking_settings
-
-পুরোনো কোনো table
-    = অপরিবর্তিত
+    পুরোনো কোনো table
+        = অপরিবর্তিত
