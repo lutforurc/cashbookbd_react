@@ -189,12 +189,14 @@ const ProductTrackingSummary = () => {
           />
         </div>
 
-        <div className="flex gap-2">
+        {/* h-10 রাখা হয়েছে যাতে বোতামগুলো পাশের input ও dropdown-এর সমান
+            উচ্চতার হয় — নইলে ফিল্টার সারিতে বেঁটে দেখাত। */}
+        <div className="flex items-end gap-2 xl:col-span-2">
           <ButtonLoading
             onClick={apply}
             buttonLoading={loading}
             label="Apply"
-            className="whitespace-nowrap"
+            className="h-10 whitespace-nowrap"
             icon={<FiSearch className="text-white text-lg ml-2 mr-2" />}
           />
           {data ? (
@@ -202,7 +204,7 @@ const ProductTrackingSummary = () => {
               onClick={handlePrint}
               buttonLoading={false}
               label="Print"
-              className="whitespace-nowrap"
+              className="h-10 whitespace-nowrap"
               icon={<FiPrinter className="text-white text-lg ml-2 mr-2" />}
             />
           ) : null}
