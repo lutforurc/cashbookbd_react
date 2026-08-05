@@ -113,6 +113,8 @@ interface branchItem {
   need_customer_area: boolean;
   show_voucher_image: boolean;
   multi_product_order: boolean;
+  /** Whether the cash forms ask which product a receipt or payment was for. */
+  product_tracking: boolean;
   /** Share of the property value the allotment letter asks for up front, as a percentage. */
   down_payment_percent: NumberField;
   /** What that share is taken on: 'total' or 'net_payable'. */
@@ -365,6 +367,7 @@ const AddBranch = () => {
     need_customer_area: false,
     show_voucher_image: false,
     multi_product_order: false,
+    product_tracking: false,
     down_payment_percent: defaultDownPaymentPercent,
     down_payment_base: defaultDownPaymentBase,
     delay_charge_percent: defaultDelayChargePercent,
@@ -601,6 +604,7 @@ const AddBranch = () => {
         need_customer_area: toBooleanFlag(b.need_customer_area),
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
         multi_product_order: toBooleanFlag(b.multi_product_order),
+        product_tracking: toBooleanFlag(b.product_tracking),
         down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
         delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
@@ -1469,6 +1473,12 @@ const AddBranch = () => {
                       onChange={(checked) =>
                         handleToggleFieldChange('share_product_with_other_branch', checked)
                       }
+                    />
+                    <FormToggleField
+                      label="Product Tracking?"
+                      description="Cash Received and Payment ask which product the money was for, and the Product Statement reports on it. Off, those forms stay exactly as they were."
+                      checked={Boolean(formData.product_tracking)}
+                      onChange={(checked) => handleToggleFieldChange('product_tracking', checked)}
                     />
                   </div>
                 </>
