@@ -282,7 +282,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Layout"
               value={form.layout}
               onChange={(e) => set('layout', e.target.value)}
-              className="mt-1 h-[2.1rem] bg-transparent"
+              className="h-8.5 bg-transparent"
               data={LAYOUTS}
             />
 
@@ -292,7 +292,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Trigger"
               value={form.trigger_event}
               onChange={(e) => set('trigger_event', e.target.value)}
-              className="mt-1 h-[2.1rem] bg-transparent"
+              className="h-8.5 bg-transparent"
               data={TRIGGERS}
             />
 
@@ -394,7 +394,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Audience"
               value={form.audience_type}
               onChange={(e) => set('audience_type', e.target.value)}
-              className="mt-1 h-[2.1rem] bg-transparent"
+              className="h-8.5 bg-transparent"
               data={AUDIENCES}
             />
             {needed ? (
@@ -417,7 +417,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Platform"
               value={form.platform}
               onChange={(e) => set('platform', e.target.value)}
-              className="mt-1 h-[2.1rem] bg-transparent"
+              className="h-8.5 bg-transparent"
               data={PLATFORMS}
             />
             <DropdownCommon
@@ -426,7 +426,7 @@ const AdminInAppMessageForm: React.FC = () => {
               label="Status"
               value={form.status}
               onChange={(e) => set('status', e.target.value)}
-              className="mt-1 h-[2.1rem] bg-transparent"
+              className="h-8.5 bg-transparent"
               data={STATUSES}
             />
 
