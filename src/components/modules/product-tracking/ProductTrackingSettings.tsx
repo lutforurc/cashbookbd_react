@@ -8,6 +8,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
+import FormToggleField from '../../utils/utils-functions/FormToggleField';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import {
   SettingPayload,
@@ -28,13 +29,15 @@ const emptyForm: SettingPayload = {
 };
 
 /**
- * এখানেই ঠিক হয় কোন Product-এর Bill/Received/Payment আলাদা করে হিসাব রাখা হবে।
+ * Where it is decided which products have their bills, receipts and payments
+ * counted separately.
  *
- * যোগ না করা পর্যন্ত Cash Received/Payment ফর্মে ঐ Product দেখাবে না — এটাই
- * opt-in নিয়ম, যাতে ভুল Product-এ টাকা বসে না যায়।
+ * Until a product is added here it does not appear on the Cash Received and
+ * Cash Payment forms -- that is the opt-in rule, so money is never posted
+ * against a product nobody meant to track.
  *
- * নিষ্ক্রিয় করলে নতুন mapping বন্ধ হয়, কিন্তু পুরোনো hisab ও report অক্ষত
- * থাকে — তাই এখানে কোনো "Delete" নেই।
+ * Deactivating stops new mappings but leaves the figures and reports already
+ * recorded untouched, which is why there is no Delete here.
  */
 const ProductTrackingSettings = () => {
   const { settings, loading, saving, error, search, setSearch, create, update, toggle } =
@@ -52,8 +55,8 @@ const ProductTrackingSettings = () => {
     dispatch(getDdlProtectedBranch() as any);
   }, [dispatch]);
 
-  // "All Branch" এখানে একটি বাস্তব বিকল্প (id = 0), শাখা বাছার অনুপস্থিতি নয় —
-  // তাই তালিকার একেবারে উপরে বসানো হয়েছে।
+  // "All Branch" is a real choice here (id = 0), not the absence of one, so it
+  // sits at the very top of the list.
   const branchOptions = useMemo(
     () => [
       { id: '0', name: 'All Branch' },
@@ -65,8 +68,9 @@ const ProductTrackingSettings = () => {
     [branchDdl?.protectedData?.data],
   );
 
-  // সম্পাদনার সময় ঐ Product নিজেই তালিকায় থাকে না (already configured),
-  // তাই তাকে হাতে করে ঢোকাতে হয় — নইলে dropdown ফাঁকা দেখাত।
+  // While editing, the product being edited is itself absent from the list (it
+  // is already configured), so it has to be put back by hand -- otherwise the
+  // dropdown would show empty.
   const productOptions = useMemo(() => {
     const options = availableProducts.map((p) => ({ id: p.id, name: p.name }));
 
@@ -103,14 +107,14 @@ const ProductTrackingSettings = () => {
 
   const submit = async () => {
     if (!form.product_id) {
-      toast.error('একটি Product বাছুন।');
+      toast.error('Select a product.');
       return;
     }
 
     const result = editingId ? await update(editingId, form) : await create(form);
 
     if (result.ok) {
-      toast.success(result.message || 'সংরক্ষিত হয়েছে।');
+      toast.success(result.message || 'Saved.');
       cancelEdit();
     } else {
       toast.error(result.message);
@@ -123,7 +127,7 @@ const ProductTrackingSettings = () => {
   };
 
   const flag = (on: boolean) => (
-    <span className={on ? 'text-green-600' : 'text-gray-400'}>{on ? 'হ্যাঁ' : 'না'}</span>
+    <span className={on ? 'text-green-600' : 'text-gray-400'}>{on ? 'Yes' : 'No'}</span>
   );
 
   return (
@@ -131,32 +135,41 @@ const ProductTrackingSettings = () => {
       <HelmetTitle title="Product Tracking" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* ------------------ যোগ / সম্পাদনা ------------------ */}
+        {/* ------------------ Add / Edit ------------------ */}
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
           <h3 className="mb-3 text-lg font-semibold text-black dark:text-white">
-            {editingId ? 'Setting সম্পাদনা' : 'নতুন Product যোগ করুন'}
+            {editingId ? 'Edit Setting' : 'Add New Product'}
           </h3>
 
           <div className="grid grid-cols-1 gap-3">
+            {/* h-9 to stand level with the Branch select below it. Both are
+                native selects on dark:bg-boxdark, so the height was the only
+                thing setting them apart. */}
             <DropdownCommon
               id="product_id"
               name="product_id"
               label="Product"
+              className="h-9"
               value={String(form.product_id)}
               data={productOptions}
               onChange={(e) => setForm({ ...form, product_id: Number(e.target.value) })}
-              description="যে পণ্যের বিপরীতে আলাদা করে বিল, আদায় ও পরিশোধের হিসাব রাখতে চান।"
+              description="The product you want billing, receipts and payments counted separately for."
             />
 
             <div>
               <label className="dark:text-white text-left text-sm text-gray-900" htmlFor="coa4_id">
                 Customer / Supplier
               </label>
+              {/* This one is a react-select, and its own styles paint the box a
+                  darker grey than the native selects above and below it. The
+                  classes land on the control (DdlMultiline forwards className
+                  there), and the ! is what beats the library's own colour, so
+                  all three boxes on this form read as one set. */}
               <DdlMultiline
                 id="coa4_id"
                 name="coa4_id"
-                className="h-9"
-                placeholder="সব পার্টির জন্য"
+                className="h-9 !bg-white dark:!bg-boxdark !border-gray-300 dark:!border-gray-600"
+                placeholder="For all parties"
                 value={form.coa4_id ? { value: String(form.coa4_id), label: partyName } : null}
                 onSelect={(selected) => {
                   setForm({ ...form, coa4_id: selected ? Number(selected.value) : 0 });
@@ -164,8 +177,8 @@ const ProductTrackingSettings = () => {
                 }}
               />
               <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                কোন Customer/Supplier-এর জন্য এই পণ্যের হিসাব রাখবেন। খালি রাখলে সব পার্টির
-                জন্য প্রযোজ্য হবে। নির্দিষ্ট পার্টির সেটিং থাকলে সেটিই আগে গণ্য হয়।
+                Which customer or supplier this product is tracked for. Left empty it applies to
+                every party. A setting made for one party wins over this.
               </p>
             </div>
 
@@ -182,60 +195,55 @@ const ProductTrackingSettings = () => {
                 onChange={(e) => setForm({ ...form, branch_id: Number(e.target.value) })}
               />
               <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                All Branch দিলে এই কোম্পানির সব শাখায় প্রযোজ্য হবে। নির্দিষ্ট শাখার সেটিং
-                থাকলে সেটিই আগে গণ্য হয়।
+                All Branch applies this to every branch of the company. A setting made for one
+                branch wins over it.
               </p>
             </div>
 
             {[
-              ['track_sales_bill', 'Sales Bill', 'বিক্রয় ইনভয়েস থেকে এই পণ্যের বিল হিসাব হবে'],
-              ['track_purchase_bill', 'Purchase Bill', 'ক্রয় ইনভয়েস থেকে এই পণ্যের বিল হিসাব হবে'],
-              ['track_cash_received', 'Cash Received', 'Cash Received ফর্মে এই পণ্য বাছা যাবে'],
-              ['track_cash_payment', 'Cash Payment', 'Cash Payment ফর্মে এই পণ্য বাছা যাবে'],
-              ['is_active', 'Active', 'বন্ধ করলে নতুন mapping হবে না, পুরোনো হিসাব অক্ষত থাকবে'],
+              ['track_sales_bill', 'Sales Bill', 'Bills for this product are counted from sales invoices'],
+              ['track_purchase_bill', 'Purchase Bill', 'Bills for this product are counted from purchase invoices'],
+              ['track_cash_received', 'Cash Received', 'This product can be chosen on the Cash Received form'],
+              ['track_cash_payment', 'Cash Payment', 'This product can be chosen on the Cash Payment form'],
+              ['is_active', 'Active', 'Switching this off stops new mappings; figures already recorded stay as they are'],
             ].map(([key, label, hint]) => (
-              <label key={key} className="flex items-start gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  className="mt-1"
-                  checked={Boolean((form as any)[key])}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.checked })}
-                />
-                <span>
-                  <span className="text-black dark:text-white">{label}</span>
-                  <span className="block text-xs text-gray-500 dark:text-gray-400">{hint}</span>
-                </span>
-              </label>
+              // The same switch the branch setup screen uses for its settings,
+              // so a setting reads the same wherever it is met. No bottom margin
+              // of its own -- the grid above already spaces these rows.
+              <FormToggleField
+                key={key}
+                label={label}
+                description={hint}
+                className=""
+                checked={Boolean((form as any)[key])}
+                onChange={(checked) => setForm({ ...form, [key]: checked })}
+              />
             ))}
 
+            {/* Left as ButtonLoading's own shape -- no height class, and the icon
+                carries no margins of its own, because the button already spaces
+                it. This is the Add Branch button, and these two should not be
+                two different buttons. */}
             <div className="flex gap-2">
               <ButtonLoading
                 onClick={submit}
                 buttonLoading={saving}
                 label={editingId ? 'Update' : 'Add'}
-                className="whitespace-nowrap"
-                icon={
-                  editingId ? (
-                    <FiEdit2 className="text-white text-lg ml-2 mr-2" />
-                  ) : (
-                    <FiPlus className="text-white text-lg ml-2 mr-2" />
-                  )
-                }
+                icon={editingId ? <FiEdit2 size={15} /> : <FiPlus size={15} />}
               />
               {editingId ? (
                 <ButtonLoading
                   onClick={cancelEdit}
                   buttonLoading={false}
                   label="Cancel"
-                  className="whitespace-nowrap"
-                  icon={<FiX className="text-white text-lg ml-2 mr-2" />}
+                  icon={<FiX size={15} />}
                 />
               ) : null}
             </div>
           </div>
         </div>
 
-        {/* ------------------ তালিকা ------------------ */}
+        {/* ------------------ List ------------------ */}
         <div className="lg:col-span-2 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h3 className="text-lg font-semibold text-black dark:text-white">
@@ -244,7 +252,7 @@ const ProductTrackingSettings = () => {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Product খুঁজুন"
+              placeholder="Search product"
               className="w-56 rounded-xs border border-gray-300 p-1 text-sm outline-none dark:border-gray-600 dark:bg-boxdark dark:text-white"
             />
           </div>
@@ -259,8 +267,8 @@ const ProductTrackingSettings = () => {
 
           {!loading && !error && settings.length === 0 ? (
             <p className="p-4 text-sm text-gray-500 dark:text-gray-400">
-              এখনো কোনো Product যোগ করা হয়নি। বাঁ পাশের ফর্ম দিয়ে যোগ করুন — যোগ করার আগ
-              পর্যন্ত Cash Received/Payment ফর্মে Product dropdown দেখা যাবে না।
+              No product has been added yet. Add one with the form on the left — until you do, the
+              Product dropdown does not appear on the Cash Received and Cash Payment forms.
             </p>
           ) : null}
 
@@ -291,7 +299,7 @@ const ProductTrackingSettings = () => {
                       </td>
                       <td className="px-2 py-2">
                         {row.coa4_id === 0 ? (
-                          <span className="text-gray-400">সব পার্টি</span>
+                          <span className="text-gray-400">All parties</span>
                         ) : (
                           row.party_name ?? row.coa4_id
                         )}

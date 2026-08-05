@@ -44,7 +44,7 @@ type SummaryData = {
 
 const money = (value: number) => (value ? thousandSeparator(Number(value)) : '-');
 
-/** স্থানীয় তারিখ — toISOString() UTC-তে নেয় বলে GMT+6-এ একদিন পিছিয়ে যেত */
+/** Local date. toISOString() converts to UTC, which in GMT+6 slipped a day back. */
 const toIsoDate = (value: any): string => {
   if (!value) return '';
   if (typeof value === 'string') return value.slice(0, 10);
@@ -58,10 +58,10 @@ const toIsoDate = (value: any): string => {
 };
 
 /**
- * সব tracked Product এক তালিকায় — কোনটিতে কত পাওনা, কোনটিতে কত দেনা।
+ * Every tracked product in one list -- what is receivable on each, what is payable.
  *
- * Product Statement একবারে একটি পণ্য দেখায়; এটি তার উল্টো দিক। কোনো সারিতে
- * ক্লিক করলে ঐ পণ্যের পূর্ণ statement-এ যাওয়া যায়।
+ * The Product Statement shows one product at a time; this is the other way
+ * round. Clicking a row opens that product's full statement.
  */
 const ProductTrackingSummary = () => {
   const dispatch = useDispatch();
@@ -104,8 +104,8 @@ const ProductTrackingSummary = () => {
     const start = toIsoDate(startDate);
     const end = toIsoDate(endDate);
 
-    if (!start || !end) return toast.error('তারিখ পরিসর দিন।');
-    if (start > end) return toast.error('শুরুর তারিখ শেষ তারিখের পরে হতে পারে না।');
+    if (!start || !end) return toast.error('Give a date range.');
+    if (start > end) return toast.error('The start date cannot be after the end date.');
 
     setLoading(true);
     setError(null);
@@ -125,8 +125,8 @@ const ProductTrackingSummary = () => {
         setData(null);
         setError(
           e?.response?.status === 403
-            ? 'এই report দেখার অনুমতি নেই (product.tracking.report.view)।'
-            : e?.response?.data?.message ?? 'Report আনা যায়নি।',
+            ? 'You are not allowed to view this report (product.tracking.report.view).'
+            : e?.response?.data?.message ?? 'The report could not be loaded.',
         );
       })
       .finally(() => setLoading(false));
@@ -160,7 +160,7 @@ const ProductTrackingSummary = () => {
             id="coa4_id"
             name="coa4_id"
             className="h-10"
-            placeholder="সব পার্টি"
+            placeholder="All parties"
             value={coa4Id ? { value: String(coa4Id), label: partyName } : null}
             onSelect={(selected) => {
               setCoa4Id(selected ? Number(selected.value) : 0);
@@ -189,8 +189,8 @@ const ProductTrackingSummary = () => {
           />
         </div>
 
-        {/* h-10 রাখা হয়েছে যাতে বোতামগুলো পাশের input ও dropdown-এর সমান
-            উচ্চতার হয় — নইলে ফিল্টার সারিতে বেঁটে দেখাত। */}
+        {/* h-10 keeps the buttons level with the input and dropdown beside them;
+            without it they sat short in the filter row. */}
         <div className="flex items-end gap-2 xl:col-span-2">
           <ButtonLoading
             onClick={apply}
@@ -218,7 +218,7 @@ const ProductTrackingSummary = () => {
           onChange={(e) => setIncludeInactive(e.target.checked)}
         />
         <span className="text-gray-600 dark:text-gray-300">
-          নিষ্ক্রিয় করা Product-ও দেখান (পুরোনো হিসাব মেলাতে)
+          Show deactivated products too (to reconcile older figures)
         </span>
       </label>
 
@@ -232,7 +232,7 @@ const ProductTrackingSummary = () => {
 
       {!loading && !data && !error ? (
         <p className="p-4 text-sm text-gray-500 dark:text-gray-400">
-          তারিখ পরিসর বেছে <b>Apply</b> চাপুন।
+          Choose a date range, then press <b>Apply</b>.
         </p>
       ) : null}
 
@@ -257,9 +257,9 @@ const ProductTrackingSummary = () => {
             {data.notice}
             {data.unmapped.rows_count > 0 ? (
               <>
-                {' '}এই পরিসরে Product ছাড়া <b>{data.unmapped.rows_count}</b> টি লেনদেন আছে —
-                Received {thousandSeparator(data.unmapped.received)} ও Payment{' '}
-                {thousandSeparator(data.unmapped.payment)}।
+                {' '}This range holds <b>{data.unmapped.rows_count}</b> entries with no product --
+                Received {thousandSeparator(data.unmapped.received)} and Payment{' '}
+                {thousandSeparator(data.unmapped.payment)}.
               </>
             ) : null}
           </p>
@@ -269,8 +269,8 @@ const ProductTrackingSummary = () => {
               <thead className="bg-gray-300 uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                 <tr>
                   <th rowSpan={2} className="px-2 py-2 align-bottom">Product</th>
-                  <th colSpan={5} className="border-l px-2 py-1 text-center">Receivable (বিক্রয়)</th>
-                  <th colSpan={5} className="border-l px-2 py-1 text-center">Payable (ক্রয়)</th>
+                  <th colSpan={5} className="border-l px-2 py-1 text-center">Receivable (Sales)</th>
+                  <th colSpan={5} className="border-l px-2 py-1 text-center">Payable (Purchase)</th>
                 </tr>
                 <tr>
                   <th className="border-l px-2 py-1 text-right">Opening</th>
@@ -289,7 +289,7 @@ const ProductTrackingSummary = () => {
                 {data.rows.length === 0 ? (
                   <tr>
                     <td colSpan={11} className="px-2 py-4 text-center text-gray-500">
-                      কোনো Product configure করা নেই। Settings → Product Tracking থেকে যোগ করুন।
+                      No product is configured. Add one from Settings → Product Tracking.
                     </td>
                   </tr>
                 ) : null}

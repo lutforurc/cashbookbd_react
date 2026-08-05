@@ -31,11 +31,11 @@ const LINE_LABELS: Record<string, string> = {
 const money = (value: number) => (value ? thousandSeparator(Number(value)) : '-');
 
 /**
- * Date picker যা দেয় তা থেকে YYYY-MM-DD.
+ * YYYY-MM-DD out of whatever the date picker hands over.
  *
- * toISOString() ব্যবহার করা যাবে না — সেটি UTC-তে নেয়, আর GMT+6-এ স্থানীয়
- * মধ্যরাত UTC-তে আগের দিন সন্ধ্যা। ফলে ২৮/০৭ বাছলে report চাইত ২৭/০৭-এর,
- * অর্থাৎ পুরো পরিসর এক দিন পিছিয়ে যেত।
+ * toISOString() cannot be used: it converts to UTC, and in GMT+6 local midnight
+ * is the previous evening in UTC. Picking 28/07 would then ask the report for
+ * 27/07 -- the whole range slipping back by a day.
  */
 const toIsoDate = (value: any): string => {
   if (!value) return '';
@@ -53,9 +53,10 @@ const toIsoDate = (value: any): string => {
 /**
  * Product Financial Statement.
  *
- * ⚠ এটি memo statement — General Ledger-এর সঙ্গে মিলবে না, কারণ কোন টাকা কোন
- *   পণ্যের বিপরীতে তা ব্যবহারকারী নিজে বেছে দেন (opt-in)। যেসব লেনদেনে
- *   Product দেওয়া হয়নি সেগুলো এখানে আসে না, তাই সেই ফাঁকটা আলাদা করে দেখানো হয়।
+ * ⚠ This is a memo statement -- it will not agree with the General Ledger,
+ *   because which money went against which product is chosen by the user
+ *   (opt-in). Entries left without a product never reach this page, so that
+ *   gap is reported separately rather than quietly left out.
  */
 const ProductFinancialStatement = () => {
   const dispatch = useDispatch();
@@ -69,7 +70,7 @@ const ProductFinancialStatement = () => {
   const [startDate, setStartDate] = useState<any>(null);
   const [endDate, setEndDate] = useState<any>(null);
 
-  // ledger context — নিষ্ক্রিয় Product-ও আসে, যাতে পুরোনো hisab দেখা যায়
+  // ledger context -- deactivated products come through too, so older figures stay readable
   const { products } = useTrackedProducts('ledger', branchId || undefined, true, coa4Id || undefined);
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -106,9 +107,9 @@ const ProductFinancialStatement = () => {
     const start = toIsoDate(startDate);
     const end = toIsoDate(endDate);
 
-    if (!productId) return toast.error('একটি Product বাছুন।');
-    if (!start || !end) return toast.error('তারিখ পরিসর দিন।');
-    if (start > end) return toast.error('শুরুর তারিখ শেষ তারিখের পরে হতে পারে না।');
+    if (!productId) return toast.error('Select a product.');
+    if (!start || !end) return toast.error('Give a date range.');
+    if (start > end) return toast.error('The start date cannot be after the end date.');
 
     load({ product_id: productId, branch_id: branchId, coa4_id: coa4Id, start_date: start, end_date: end });
   };
@@ -150,7 +151,7 @@ const ProductFinancialStatement = () => {
             id="coa4_id"
             name="coa4_id"
             className="h-10"
-            placeholder="সব পার্টি"
+            placeholder="All parties"
             value={coa4Id ? { value: String(coa4Id), label: partyName } : null}
             onSelect={(selected) => {
               setCoa4Id(selected ? Number(selected.value) : 0);
@@ -191,8 +192,8 @@ const ProductFinancialStatement = () => {
           />
         </div>
 
-        {/* h-10 রাখা হয়েছে যাতে বোতামগুলো পাশের input ও dropdown-এর সমান
-            উচ্চতার হয় — নইলে ফিল্টার সারিতে বেঁটে দেখাত। */}
+        {/* h-10 keeps the buttons level with the input and dropdown beside them;
+            without it they sat short in the filter row. */}
         <div className="flex items-end gap-2 xl:col-span-2">
           <ButtonLoading
             onClick={apply}
@@ -223,7 +224,7 @@ const ProductFinancialStatement = () => {
 
       {!loading && !data && !error ? (
         <p className="p-4 text-sm text-gray-500 dark:text-gray-400">
-          Product ও তারিখ পরিসর বেছে <b>Apply</b> চাপুন।
+          Choose a product and a date range, then press <b>Apply</b>.
         </p>
       ) : null}
 
@@ -248,16 +249,16 @@ const ProductFinancialStatement = () => {
             {data.notice}
             {data.unmapped.rows_count > 0 ? (
               <>
-                {' '}এই পরিসরে Product ছাড়া <b>{data.unmapped.rows_count}</b> টি লেনদেন আছে —
-                Received {thousandSeparator(data.unmapped.received)} ও Payment{' '}
-                {thousandSeparator(data.unmapped.payment)} — যা নিচের হিসাবে ধরা হয়নি।
+                {' '}This range holds <b>{data.unmapped.rows_count}</b> entries with no product --
+                Received {thousandSeparator(data.unmapped.received)} and Payment{' '}
+                {thousandSeparator(data.unmapped.payment)} -- none of which is counted below.
               </>
             ) : null}
           </p>
 
           <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="rounded-sm border border-stroke p-3 text-sm dark:border-strokedark">
-              <h3 className="mb-2 font-semibold text-black dark:text-white">Receivable (বিক্রয়)</h3>
+              <h3 className="mb-2 font-semibold text-black dark:text-white">Receivable (Sales)</h3>
               {cell('Opening Receivable', s!.opening_receivable)}
               {cell('Sales Bill', s!.sales_bill)}
               {cell('Sales Return', -s!.sales_return)}
@@ -267,7 +268,7 @@ const ProductFinancialStatement = () => {
             </div>
 
             <div className="rounded-sm border border-stroke p-3 text-sm dark:border-strokedark">
-              <h3 className="mb-2 font-semibold text-black dark:text-white">Payable (ক্রয়)</h3>
+              <h3 className="mb-2 font-semibold text-black dark:text-white">Payable (Purchase)</h3>
               {cell('Opening Payable', s!.opening_payable)}
               {cell('Purchase Bill', s!.purchase_bill)}
               {cell('Purchase Return', -s!.purchase_return)}
@@ -299,7 +300,7 @@ const ProductFinancialStatement = () => {
                 {data.rows.length === 0 ? (
                   <tr>
                     <td colSpan={12} className="px-2 py-4 text-center text-gray-500">
-                      এই পরিসরে কোনো লেনদেন নেই।
+                      No transactions in this range.
                     </td>
                   </tr>
                 ) : null}

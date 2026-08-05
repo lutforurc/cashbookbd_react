@@ -56,10 +56,10 @@ export type StatementParams = {
 };
 
 /**
- * Product Financial Statement-এর data layer।
+ * Data layer for the Product Financial Statement.
  *
- * Report নিজে থেকে চলে না — ব্যবহারকারী Apply চাপলে তবেই। বড় hisab, তাই
- * প্রতিটি filter বদলে বারবার query করা হয় না।
+ * The report does not run by itself -- only when the user presses Apply. These
+ * are large figures, so it is not re-queried on every change of a filter.
  */
 export function useProductStatement() {
   const [data, setData] = useState<StatementData | null>(null);
@@ -77,8 +77,8 @@ export function useProductStatement() {
       setData(null);
       setError(
         e?.response?.status === 403
-          ? 'এই report দেখার অনুমতি নেই (product.tracking.report.view)।'
-          : e?.response?.data?.message ?? 'Report আনা যায়নি।',
+          ? 'You are not allowed to view this report (product.tracking.report.view).'
+          : e?.response?.data?.message ?? 'The report could not be loaded.',
       );
     } finally {
       setLoading(false);

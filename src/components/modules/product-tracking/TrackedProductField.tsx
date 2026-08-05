@@ -15,17 +15,17 @@ interface Props {
 type Option = { value: string; label: string };
 
 /**
- * "Select Product (Optional)" — Cash Received / Cash Payment row-এর জন্য।
+ * "Select Product (Optional)" -- for a Cash Received / Cash Payment row.
  *
- * চেহারা ইচ্ছাকৃতভাবে পাশের Select Order ও Select Account-এর মতো: একই
- * react-select, একই উচ্চতা, একই dark-mode রং। native <select> দেখতে আলাদা
- * লাগত এবং ফর্মটি অসম্পূর্ণ মনে হতো।
+ * It deliberately looks like the Select Order and Select Account beside it:
+ * the same react-select, the same height, the same dark-mode colours. A native
+ * <select> looked different and left the form feeling half-finished.
  *
- * কোনো tracked product না থাকলে কিছুই render হয় না, তাই যেসব Company এই
- * feature ব্যবহার করে না তাদের ফর্ম হুবহু আগের মতোই থাকে।
+ * With no tracked product it renders nothing, so a company not using this
+ * feature keeps exactly the form it had before.
  *
- * নাম `trackedProductId` — ফর্মে আগে থেকে থাকা `currentProduct` field-এর
- * সঙ্গে গুলিয়ে ফেলা যাবে না; সেটি account suggestion object, product নয়।
+ * The name is `trackedProductId` -- not to be confused with the form's existing
+ * `currentProduct` field, which is an account suggestion object, not a product.
  */
 const TrackedProductField: React.FC<Props> = ({
   id = 'trackedProductId',
@@ -104,9 +104,16 @@ const TrackedProductField: React.FC<Props> = ({
       <label htmlFor={id} className="dark:text-white text-left text-sm text-gray-900">
         {label}
       </label>
+      {/* The container class and the prefix are what put this box on the same
+          react-select skin as Select Order and Select Account beside it -- the
+          rules for it live in css/style.css under .cash-react-select-container.
+          Without them this was the one field on the row styling itself alone,
+          and it sat on a visibly different background. */}
       <Select<Option, false>
         inputId={id}
         name={id}
+        className="cash-react-select-container w-full"
+        classNamePrefix="cash-react-select"
         options={options}
         value={selected}
         isClearable
@@ -117,7 +124,7 @@ const TrackedProductField: React.FC<Props> = ({
         onChange={(option) => onChange(option ? Number(option.value) : null)}
       />
       <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
-        এই টাকা কোন পণ্যের বিপরীতে। খালি রাখলে হিসাব আগের মতোই থাকবে।
+        Which product this money is against. Left empty, the figures stay as they were.
       </p>
     </div>
   );

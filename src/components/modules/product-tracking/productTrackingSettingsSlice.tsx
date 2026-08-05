@@ -41,10 +41,10 @@ export type SettingPayload = {
 };
 
 /**
- * Product Tracking settings screen-এর data layer।
+ * Data layer for the Product Tracking settings screen.
  *
- * Redux-এ রাখা হয়নি — এই তালিকা শুধু একটি screen-ই ব্যবহার করে, তাই
- * component-local state যথেষ্ট এবং store হালকা থাকে।
+ * Deliberately not in Redux: only one screen reads this list, so component
+ * local state is enough and the store stays light.
  */
 export function useProductTrackingSettings() {
   const [settings, setSettings] = useState<TrackingSetting[]>([]);
@@ -60,7 +60,7 @@ export function useProductTrackingSettings() {
     httpService
       .get(API_PRODUCT_TRACKING_SETTINGS_URL, { params: { search: search || undefined } })
       .then((response) => {
-        // paginate() মোড়কটা data.data.data-এর ভেতরে থাকে
+        // the paginate() wrapper sits inside data.data.data
         const payload = response?.data?.data?.data;
         setSettings(payload?.data ?? []);
       })
@@ -68,8 +68,8 @@ export function useProductTrackingSettings() {
         setSettings([]);
         setError(
           e?.response?.status === 403
-            ? 'এই স্ক্রিন দেখার অনুমতি নেই (product.tracking.settings.view)।'
-            : 'তালিকা আনা যায়নি।',
+            ? 'You are not allowed to view this screen (product.tracking.settings.view).'
+            : 'The list could not be loaded.',
         );
       })
       .finally(() => setLoading(false));
@@ -87,7 +87,7 @@ export function useProductTrackingSettings() {
         load();
         return { ok: response?.data?.success === true, message: response?.data?.message ?? '' };
       } catch (e: any) {
-        return { ok: false, message: e?.response?.data?.message ?? 'যোগ করা যায়নি।' };
+        return { ok: false, message: e?.response?.data?.message ?? 'Could not be added.' };
       } finally {
         setSaving(false);
       }
@@ -103,7 +103,7 @@ export function useProductTrackingSettings() {
         load();
         return { ok: response?.data?.success === true, message: response?.data?.message ?? '' };
       } catch (e: any) {
-        return { ok: false, message: e?.response?.data?.message ?? 'সংরক্ষণ করা যায়নি।' };
+        return { ok: false, message: e?.response?.data?.message ?? 'Could not be saved.' };
       } finally {
         setSaving(false);
       }
@@ -121,7 +121,7 @@ export function useProductTrackingSettings() {
         load();
         return { ok: true, message: '' };
       } catch (e: any) {
-        return { ok: false, message: e?.response?.data?.message ?? 'পরিবর্তন করা যায়নি।' };
+        return { ok: false, message: e?.response?.data?.message ?? 'Could not be changed.' };
       } finally {
         setSaving(false);
       }
@@ -133,9 +133,9 @@ export function useProductTrackingSettings() {
 }
 
 /**
- * Add form-এর dropdown — এই (branch + party) scope-এ যেসব Product এখনো
- * configure করা হয়নি। একই Product অন্য পার্টির জন্য আবার যোগ করা যায়, তাই
- * তালিকাটি party বদলালে বদলায়।
+ * The Add form's dropdown -- the products not yet configured for this
+ * (branch + party) scope. The same product can be added again for another
+ * party, which is why the list changes when the party does.
  */
 export function useAvailableProducts(branchId: number, coa4Id: number) {
   const [products, setProducts] = useState<AvailableProduct[]>([]);

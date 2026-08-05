@@ -15,15 +15,15 @@ export type TrackedProduct = {
 export type TrackedProductContext = 'received' | 'payment' | 'ledger';
 
 /**
- * Cash Received / Cash Payment / Ledger form-এর "Select Product (Optional)"
- * dropdown-এর data.
+ * Data for the "Select Product (Optional)" dropdown on the Cash Received,
+ * Cash Payment and Ledger forms.
  *
- * coa4Id = নির্বাচিত Customer/Supplier। Tracking party-ভিত্তিক, তাই Account
- * বদলালে তালিকাও বদলায় — ঐ পার্টির জন্য নির্দিষ্ট Product গুলো, এবং যেগুলো
- * "সব পার্টি" হিসেবে যোগ করা আছে সেগুলো।
+ * coa4Id is the chosen Customer/Supplier. Tracking is per party, so changing
+ * the account changes the list: the products set for that party, plus the ones
+ * added for "all parties".
  *
- * Account না বাছা পর্যন্ত শুধু "সব পার্টি" Product দেখাবে; কিছুই না থাকলে
- * তালিকা খালি থাকে এবং form আগের মতোই চলে।
+ * Until an account is chosen only the "all parties" products show; if there are
+ * none the list stays empty and the form behaves exactly as it did before.
  */
 export function useTrackedProducts(
   context: TrackedProductContext,
@@ -52,8 +52,8 @@ export function useTrackedProducts(
         setProducts(response?.data?.data?.data ?? []);
       })
       .catch(() => {
-        // Tracking configure করা না থাকলে বা permission না থাকলে dropdown
-        // নিঃশব্দে লুকিয়ে যাবে — existing form কখনো ভাঙবে না।
+        // With tracking unconfigured, or the permission missing, the dropdown
+        // simply hides. The existing form is never broken by it.
         setProducts([]);
         setError('unavailable');
       })
@@ -69,7 +69,7 @@ export function useTrackedProducts(
     loading,
     error,
     reload: load,
-    /** কোনো tracked product না থাকলে field দেখানোরই দরকার নেই */
+    /** With no tracked product there is no reason to show the field at all */
     enabled: products.length > 0,
   };
 }
