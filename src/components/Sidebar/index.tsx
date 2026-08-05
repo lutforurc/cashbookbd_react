@@ -1014,6 +1014,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
+                          {hasPermission(permissions, 'product.tracking.report.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_financial_statement}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product Statement
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'ledger.details') && (
                             <li>
                               <NavLink

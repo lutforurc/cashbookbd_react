@@ -30,6 +30,8 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import TrackedProductField from '../../product-tracking/TrackedProductField';
+import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { extractVoucherNo } from '../extractVoucherNo';
 
 const normalizeSuggestionItems = (items: any) =>
@@ -49,6 +51,10 @@ interface ReceivedItem {
   remarks: string;
   amount: string | number;
   currentProduct?: { [key: string]: any } | null;
+  // এই row-এর টাকা কোন tracked Product-এর বিপরীতে। legacy transaction
+  // table-এ যায় না — শুধু transaction_product_maps-এ যায়।
+  // `currentProduct` (account suggestion) থেকে সম্পূর্ণ আলাদা জিনিস।
+  trackedProductId?: number | null;
 }
 
 interface ReceivedMetaItem {
@@ -85,11 +91,20 @@ const HeadOfficeCashReceived = () => {
       remarks: '',
       amount: '',
       currentProduct: undefined,
+      trackedProductId: null,
     }),
     [branchId, branchName],
   );
 
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
+  // Account বাছলে ঐ পার্টির tracked Product গুলো আসে; কিছু না থাকলে
+  // dropdown render-ই হয় না, তাই form আগের মতোই থাকে।
+  const { products: trackedProducts } = useTrackedProducts(
+    'received',
+    branchId || undefined,
+    false,
+    formData.account,
+  );
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -315,6 +330,7 @@ const HeadOfficeCashReceived = () => {
         remarks: '',
         amount: '',
         currentProduct: null,
+        trackedProductId: null,
       }));
       return;
     }
@@ -352,6 +368,7 @@ const HeadOfficeCashReceived = () => {
       currentProduct: product
         ? { ...product, index: productIndex }
         : prevState.currentProduct || null,
+      trackedProductId: product?.trackedProductId ?? null,
     }));
 
     setIsUpdating(true);
@@ -373,6 +390,7 @@ const HeadOfficeCashReceived = () => {
       branchName: formData.branchName || branchName,
       remarks: formData.remarks || '',
       amount: Number(formData.amount) || 0,
+      trackedProductId: formData.trackedProductId ?? null,
     };
 
     const updatedTableData = tableData.map((item, index) =>
@@ -615,6 +633,15 @@ const HeadOfficeCashReceived = () => {
               onChange={handleOnChange}
               onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
             />
+            {/* কোনো Product tracked না থাকলে এটি render-ই হয় না */}
+            <TrackedProductField
+              value={formData.trackedProductId}
+              products={trackedProducts}
+              onChange={(productId) =>
+                setFormData((prev) => ({ ...prev, trackedProductId: productId }))
+              }
+              onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
+            />
             <div className="grid grid-cols-3 gap-x-1 gap-y-1">
               {isUpdating ? (
                 <ButtonLoading
@@ -697,6 +724,12 @@ const HeadOfficeCashReceived = () => {
                   {' '}
                   Remarks{' '}
                 </th>
+                {trackedProducts.length > 0 ? (
+                  <th scope="col" className={`px-2 py-2 `}>
+                    {' '}
+                    Product{' '}
+                  </th>
+                ) : null}
                 <th scope="col" className={`px-2 py-2 text-right`}>
                   {' '}
                   Amount{' '}
@@ -727,6 +760,13 @@ const HeadOfficeCashReceived = () => {
                   >
                     {row.remarks}
                   </td>
+                  {trackedProducts.length > 0 ? (
+                    <td
+                      className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white `}
+                    >
+                      {trackedProducts.find((p) => p.id === row.trackedProductId)?.name ?? ''}
+                    </td>
+                  ) : null}
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >
