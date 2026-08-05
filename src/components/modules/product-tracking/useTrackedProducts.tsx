@@ -12,7 +12,11 @@ export type TrackedProduct = {
   is_active: boolean;
 };
 
-export type TrackedProductContext = 'received' | 'payment' | 'ledger';
+// 'sales' and 'purchase' are the invoice screens. They read the same settings
+// row as the voucher contexts, but through track_sales_bill / track_purchase_bill
+// rather than the cash flags, so a product can be tracked on bills without being
+// offered on a receipt -- which is the point of having four switches.
+export type TrackedProductContext = 'received' | 'payment' | 'sales' | 'purchase' | 'ledger';
 
 /**
  * Data for the "Select Product (Optional)" dropdown on the Cash Received,

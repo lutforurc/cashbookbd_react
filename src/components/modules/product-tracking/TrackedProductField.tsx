@@ -10,6 +10,12 @@ interface Props {
   onChange: (productId: number | null) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLElement>) => void;
   label?: string;
+  /**
+   * The line under the box. A voucher row asks which product the money is
+   * against; an invoice asks which product the invoice is against. Same field,
+   * different sentence, so the caller supplies it.
+   */
+  helpText?: string;
 }
 
 type Option = { value: string; label: string };
@@ -34,6 +40,7 @@ const TrackedProductField: React.FC<Props> = ({
   onChange,
   onKeyDown,
   label = 'Select Product (Optional)',
+  helpText = 'Which product this money is against. Left empty, the figures stay as they were.',
 }) => {
   const [darkMode] = useLocalStorage('color-theme', 'light');
   const isDark = darkMode === 'dark';
@@ -124,7 +131,7 @@ const TrackedProductField: React.FC<Props> = ({
         onChange={(option) => onChange(option ? Number(option.value) : null)}
       />
       <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
-        Which product this money is against. Left empty, the figures stay as they were.
+        {helpText}
       </p>
     </div>
   );

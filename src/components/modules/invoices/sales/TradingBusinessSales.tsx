@@ -56,6 +56,8 @@ import { getDdlProduct } from '../../product/productSlice';
 import { getToken } from '../../../../features/authReducer';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
+import TrackedProductField from '../../product-tracking/TrackedProductField';
+import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 
 interface Product {
   id: number;
@@ -166,6 +168,14 @@ const TradingBusinessSales = () => {
     notes: string;
     currentProduct: { index?: number } | null; // Initialize `currentProduct` with optional index
     searchInvoice: string;
+    /**
+     * The one product this whole invoice is against, chosen by hand. It is
+     * invoice-level, never per line, so it sits here beside `account` and not
+     * inside `products[]`. Nothing legacy reads it -- the API writes it to
+     * transaction_product_maps only -- so leaving it null saves exactly what
+     * this screen has always saved.
+     */
+    trackedProductId: number | null;
     products: Product[];
   }
 
@@ -183,10 +193,24 @@ const TradingBusinessSales = () => {
     notes: '',
     currentProduct: null,
     searchInvoice: '',
+    trackedProductId: null,
     products: [],
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  /**
+   * Tracking is configured per party, so the list follows the customer: the
+   * products set up for them, plus the ones set up for "all parties". With
+   * none configured the list comes back empty and TrackedProductField renders
+   * nothing at all, which is why a company not using this sees no change.
+   */
+  const { products: trackedProducts } = useTrackedProducts(
+    'sales',
+    undefined,
+    false,
+    formData.account,
+  );
 
   useEffect(() => {
     const fetchSuggestions = async (
@@ -245,6 +269,13 @@ const TradingBusinessSales = () => {
       [key]: option.value,
       [accountName]: option.label,
       receivedAmt: isCashCustomer ? formData.receivedAmt : '',
+      // Cleared on ANY change of customer, not only when the new one is cash.
+      // Tracking is per party, so the dropdown reloads for whoever was just
+      // chosen; a product tracked for the old customer need not be tracked for
+      // the new one. Kept, it would sit in state while the field itself hides
+      // for want of options -- and the save would then be refused by
+      // assertMappable for a product the screen never showed as chosen.
+      trackedProductId: null,
     });
   };
 
@@ -369,6 +400,10 @@ const TradingBusinessSales = () => {
         discountAmt:
           parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
+        // Sibling key on the edit envelope, not part of `transaction` -- the
+        // API reads it back from the product map, so an untracked invoice
+        // simply comes back null and clears whatever was on screen before.
+        trackedProductId: sales.data.trackedProductId ?? null,
         products: products || [],
       };
 
@@ -583,6 +618,10 @@ const TradingBusinessSales = () => {
                 notes: '',
                 invoice_no: '',
                 invoice_date: '',
+                // This reset names its fields one by one, so the product has
+                // to be named too -- otherwise the one chosen on the invoice
+                // just saved silently attaches itself to the next one.
+                trackedProductId: null,
                 products: [],
               }));
               setSaveButtonLoading(false);
@@ -771,6 +810,10 @@ const TradingBusinessSales = () => {
         discountAmt:
           parseFloat(sales.data.transaction.sales_master.discount) || 0,
         notes: sales.data.transaction.sales_master.notes || '',
+        // This effect is the twin of the one further up and runs after it, so
+        // it is the one that decides what the form ends up holding. Missing it
+        // here would leave the previous invoice's product on screen.
+        trackedProductId: sales.data.trackedProductId ?? null,
         products: products || [],
       };
 
@@ -1251,9 +1294,16 @@ const TradingBusinessSales = () => {
                   if (e.key === 'Enter') {
                     // Delay to allow react-select to complete selection
                     setTimeout(() => {
-                      const input = document.querySelector(
-                        '#products',
-                      ) as HTMLInputElement | null;
+                      // The tracking field sits between Notes and the line
+                      // entry, but only when it renders. With nothing tracked,
+                      // or on a cash sale, Enter must still land on the product
+                      // dropdown exactly as it always did.
+                      const input = (document.querySelector(
+                        '#trackedProductId',
+                      ) ??
+                        document.querySelector(
+                          '#products',
+                        )) as HTMLInputElement | null;
                       if (input) input.focus();
                       if (input) input.select();
                     }, 150);
@@ -1272,6 +1322,23 @@ const TradingBusinessSales = () => {
                   <option key={item} value={item} />
                 ))}
               </datalist>
+              {/* Invoice-level, so it belongs on this row with the money and
+                  the note -- not in the line-entry panel opposite, where it
+                  would read as a field of the row being typed. Hidden for the
+                  cash customer because such a sale leaves nothing owing to
+                  track. */}
+              {Number(formData.account) !== 17 && (
+                <TrackedProductField
+                  id="trackedProductId"
+                  value={formData.trackedProductId}
+                  products={trackedProducts}
+                  helpText="Which product this invoice is against. Left empty, the figures stay as they were."
+                  onChange={(productId) =>
+                    setFormData((prev) => ({ ...prev, trackedProductId: productId }))
+                  }
+                  onKeyDown={(e) => handleInputKeyDown(e, 'products')}
+                />
+              )}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">

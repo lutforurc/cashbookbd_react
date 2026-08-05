@@ -189,6 +189,7 @@ CREATE TABLE IF NOT EXISTS `company_product_tracking_settings` (
 --      cash_received     cash_payment
 --      bank_received     bank_payment
 --      journal_received  journal_payment
+--      sales_bill        purchase_bill     ← invoice-এর header-এ বাছা Product
 --
 --  source_type মান:
 --      sales_invoice  purchase_invoice  sales_order  purchase_order
@@ -311,108 +312,79 @@ CREATE TABLE IF NOT EXISTS `product_tracking_reconciliation_logs` (
 
 -- ============================================================================
 --  VIEW 1 : v_product_bill_lines
---  Product-wise Sales/Purchase Bill ও Return — existing invoice data থেকে
+--  Product-wise Sales/Purchase Bill — শুধু হাতে বাছাই করা Product
 -- ============================================================================
 --
---  BILL FORMULA (এই system-এ line-level discount/tax/charge column নেই)
---  --------------------------------------------------------------------
---      gross_amount   = quantity × rate
---      discount_share = master.discount × gross_amount / master.total
---                       (master.total = ঐ invoice-এর সব line-এর gross যোগফল,
---                        controller নিজেই এভাবে হিসাব করে রাখে)
---      net_amount     = gross_amount − discount_share
+--  মূল নিয়ম
+--  ---------
+--      যে transaction-এ Product হাতে বাছাই করা হয়েছে কেবল সেটিই Product
+--      Financial Statement ও Product-wise Receivable/Payable-এ আসবে।
+--      Cash/Bank Received ও Payment-এ এটি শুরু থেকেই সত্য। Invoice-ও এখন
+--      একই নিয়মে চলে: sales/purchase invoice-এর header-এ নিজস্ব
+--      "Select Product (Optional)" field আছে, আর সেটি পূরণ করা invoice
+--      ছাড়া কিছুই এখানে আসে না।
 --
---  Return line-এ line_net_total ব্যবহার করা হয়, কিন্তু সব writer সেটি
---  populate করে না (PurchaseReturn.php করে না, CommissionSalesMaster.php করে)।
---  তাই COALESCE দিয়ে fallback হিসাব রাখা হয়েছে।
+--      আগে এই view inventory_sales_details / inventory_purchase_details
+--      থেকে প্রতিটি line ধরে product_id বের করত — অর্থাৎ track করা হোক বা
+--      না হোক, প্রতিটি product। সেটাই এখানে বদলানো হয়েছে। উৎস এখন একটাই:
+--      transaction_product_maps, অর্থাৎ user নিজে যা map করেছে।
+--
+--  RETURN এই feature-এর বাইরে
+--  ---------------------------
+--      sales_return ও purchase_return arm আর নেই, তাই ঐ দুটি line_type
+--      এই view থেকে আর তৈরিই হতে পারে না। v_product_ledger_lines-এ column
+--      দুটি তবু থেকে যায় (CASE কখনো মেলে না, ফলে সর্বদা 0) — controller,
+--      JSON payload, TS type ও UI সবই ওগুলো নাম ধরে পড়ে, তাই column সরালে
+--      downstream ভেঙে যেত।
+--
+--          Receivable = sales_bill    − received
+--          Payable    = purchase_bill − payment
+--
+--  quantity / rate = NULL
+--  ----------------------
+--      Product invoice-এর header-এ হাতে বাছা হয়, কোনো line থেকে নয় — তাই
+--      map row-এ quantity বা rate বলে কিছু নেই। Statement-এ ঐ দুই ঘরে '-'
+--      দেখাবে, ঠিক যেভাবে cash line-এ শুরু থেকেই দেখায়। Column দুটি তবু
+--      রাখতেই হবে, কারণ v_product_ledger_lines নাম ধরে সেগুলো SELECT করে;
+--      CAST() declared type ঠিক রাখে।
+--
+--      bill_sign সবসময় 1 — "1 = bill, -1 = return" ছিল, return-ই আর নেই।
+--      gross_amount / discount_share এখন mapped_amount থেকেই আসে; line-ভিত্তিক
+--      discount ভাগাভাগির আর কিছু অবশিষ্ট নেই।
+--
+--  main_trx_master.transaction_type দিয়ে bill চেনা যাবে না
+--  -------------------------------------------------------
+--      Sales invoice type 1 (Cash Received-এর মতোই), purchase invoice type 2
+--      (Payment-এর মতোই)। একমাত্র নির্ভরযোগ্য discriminator
+--      transaction_product_maps.transaction_type।
 --
 --  Cancelled/void voucher বাদ:  main_trx_master.status = 1
+--      Invoice delete এই system-এ শুধু main_trx_master.status = 0 — কোথাও
+--      mapping cleanup hook নেই। এই JOIN থাকায় delete ও restore দুটোই
+--      আপনাআপনি কাজ করে, mapping অক্ষত থাকে।
 -- ============================================================================
 CREATE OR REPLACE VIEW `v_product_bill_lines` AS
-
-    -- ---------- Sales Bill ----------
     SELECT
-        m.company_id                                                   AS company_id,
-        m.branch_id                                                    AS branch_id,
-        d.product_id                                                   AS product_id,
-        m.id                                                           AS main_trx_id,
-        m.vr_no                                                        AS vr_no,
-        m.vr_date                                                      AS vr_date,
-        'sales_bill'                                                   AS line_type,
-        1                                                              AS bill_sign,
-        'sales_invoice'                                                AS source_type,
-        s.id                                                           AS source_id,
-        s.customer_id                                                  AS coa4_id,
-        d.quantity                                                     AS quantity,
-        d.sales_price                                                  AS rate,
-        ROUND(d.quantity * d.sales_price, 4)                           AS gross_amount,
-        ROUND(COALESCE(s.discount, 0) * (d.quantity * d.sales_price)
-              / NULLIF(s.total, 0), 4)                                 AS discount_share,
-        ROUND(d.quantity * d.sales_price
-              - COALESCE(s.discount, 0) * (d.quantity * d.sales_price)
-                / NULLIF(s.total, 0), 4)                               AS net_amount
-    FROM `main_trx_master` m
-    JOIN `inventory_sales_masters`  s ON s.main_trx_id = m.id
-    JOIN `inventory_sales_details`  d ON d.sal_mstr_id = s.id
+        t.company_id                          AS company_id,
+        t.branch_id                           AS branch_id,
+        t.product_id                          AS product_id,
+        t.main_trx_id                         AS main_trx_id,
+        t.vr_no                               AS vr_no,
+        t.vr_date                             AS vr_date,
+        t.transaction_type                    AS line_type,
+        1                                     AS bill_sign,
+        t.source_type                         AS source_type,
+        t.source_id                           AS source_id,
+        t.coa4_id                             AS coa4_id,
+        CAST(NULL AS DECIMAL(12,2))           AS quantity,
+        CAST(NULL AS DECIMAL(18,2))           AS rate,
+        t.mapped_amount                       AS gross_amount,
+        0                                     AS discount_share,
+        t.mapped_amount                       AS net_amount
+    FROM `transaction_product_maps` t
+    JOIN `main_trx_master` m ON m.id = t.main_trx_id
     WHERE m.status = 1
-      AND COALESCE(d.is_return, 0) = 0
-
-    UNION ALL
-
-    -- ---------- Sales Return ----------
-    SELECT
-        m.company_id, m.branch_id, rd.product_id, m.id, m.vr_no, m.vr_date,
-        'sales_return', -1, 'sales_return', rm.id, rm.customer_id,
-        rd.quantity, rd.return_price,
-        ROUND(rd.quantity * rd.return_price, 4),
-        0,
-        ROUND(COALESCE(
-            rd.line_net_total,
-            rd.quantity * rd.return_price
-              - (rd.quantity * rd.return_price * COALESCE(rd.return_pct, 0) / 100)
-        ), 4)
-    FROM `main_trx_master` m
-    JOIN `inventory_sales_return_masters` rm ON rm.main_trx_id = m.id
-    JOIN `inventory_sales_return_details` rd ON rd.sal_mstr_id = rm.id
-    WHERE m.status = 1
-
-    UNION ALL
-
-    -- ---------- Purchase Bill ----------
-    SELECT
-        m.company_id, m.branch_id, pd.product_id, m.id, m.vr_no, m.vr_date,
-        'purchase_bill', 1, 'purchase_invoice', p.id, p.supplier_id,
-        pd.quantity, pd.purchase_price,
-        ROUND(pd.quantity * pd.purchase_price, 4),
-        ROUND(COALESCE(p.discount, 0) * (pd.quantity * pd.purchase_price)
-              / NULLIF(p.total, 0), 4),
-        ROUND(pd.quantity * pd.purchase_price
-              - COALESCE(p.discount, 0) * (pd.quantity * pd.purchase_price)
-                / NULLIF(p.total, 0), 4)
-    FROM `main_trx_master` m
-    JOIN `inventory_purchase_masters` p  ON p.main_trx_id = m.id
-    JOIN `inventory_purchase_details` pd ON pd.pur_mstr_id = p.id
-    WHERE m.status = 1
-      AND COALESCE(pd.is_return, 0) = 0
-
-    UNION ALL
-
-    -- ---------- Purchase Return ----------
-    SELECT
-        m.company_id, m.branch_id, prd.product_id, m.id, m.vr_no, m.vr_date,
-        'purchase_return', -1, 'purchase_return', prm.id, prm.supplier_id,
-        prd.quantity, prd.return_price,
-        ROUND(prd.quantity * prd.return_price, 4),
-        0,
-        ROUND(COALESCE(
-            prd.line_net_total,
-            prd.quantity * prd.return_price
-              - (prd.quantity * prd.return_price * COALESCE(prd.return_pct, 0) / 100)
-        ), 4)
-    FROM `main_trx_master` m
-    JOIN `inventory_purchase_return_masters` prm ON prm.main_trx_id = m.id
-    JOIN `inventory_purchase_return_details` prd ON prd.pur_return_mstr_id = prm.id
-    WHERE m.status = 1;
+      AND t.transaction_type IN ('sales_bill', 'purchase_bill');
 
 
 -- ============================================================================
@@ -421,6 +393,20 @@ CREATE OR REPLACE VIEW `v_product_bill_lines` AS
 -- ============================================================================
 --  Unmapped voucher row এখানে আসে না — এটি ইচ্ছাকৃত।
 --  Product statement কখনো অনুমান করে টাকা দেখাবে না।
+--
+--  transaction_type whitelist অপরিহার্য
+--  ------------------------------------
+--      transaction_product_maps এখন invoice-এর sales_bill / purchase_bill
+--      row-ও ধরে রাখে। filter না থাকলে ঐ row গুলো একই সঙ্গে bill view-তেও
+--      আসত, আবার এখানেও — direction অনুযায়ী sales_bill (+1) হতো
+--      cash_received আর purchase_bill (-1) হতো cash_payment। তখন প্রতিটি
+--      invoice একই সঙ্গে bill এবং তার নিজেরই settlement হয়ে যেত, ফলে
+--      Receivable ও Payable শূন্যে নেমে আসত।
+--
+--      Blacklist নয়, whitelist: পরে আরও type যোগ হলে সেটা চুপচাপ cash হয়ে
+--      যাওয়ার চেয়ে report থেকে বাদ পড়া নিরাপদ। এই view আর
+--      v_product_bill_lines নির্মাণগতভাবেই পরস্পরবিচ্ছিন্ন, আর দুটো মিলে
+--      সব type ঢাকে — এই দুটি শর্ত সবসময় একসঙ্গে রক্ষা করতে হবে।
 --
 --  main_trx_master.status = 1 filter অপরিহার্য: voucher delete এই system-এ
 --  soft delete (status = 0, delete_at সেট), আর restore সেটাকে 1-এ ফিরিয়ে আনে।
@@ -447,7 +433,12 @@ CREATE OR REPLACE VIEW `v_product_cash_lines` AS
         CASE WHEN t.direction = -1 THEN t.mapped_amount ELSE 0 END AS payment_amount
     FROM `transaction_product_maps` t
     JOIN `main_trx_master` m ON m.id = t.main_trx_id
-    WHERE m.status = 1;
+    WHERE m.status = 1
+      AND t.transaction_type IN (
+          'cash_received',    'cash_payment',
+          'bank_received',    'bank_payment',
+          'journal_received', 'journal_payment'
+      );
 
 
 -- ============================================================================
@@ -459,8 +450,16 @@ CREATE OR REPLACE VIEW `v_product_cash_lines` AS
 --      Range    → WHERE vr_date BETWEEN :start_date AND :end_date
 --      দুটোতেই একই company_id / branch_id / product_id filter দিতে হবে।
 --
---  Receivable = SUM(sales_bill) − SUM(sales_return) − SUM(*_received)
---  Payable    = SUM(purchase_bill) − SUM(purchase_return) − SUM(*_payment)
+--  Receivable = SUM(sales_bill)    − SUM(*_received)
+--  Payable    = SUM(purchase_bill) − SUM(*_payment)
+--
+--  sales_return / purchase_return column দুটি এখানে থেকে যায়, কিন্তু বিল arm
+--  আর ঐ line_type তৈরি করে না বলে CASE কখনো মেলে না — মান সবসময় 0। তাই
+--  ProductFinancialStatementController-এ ওগুলো বিয়োগ করা থাকলেও ফল একই,
+--  আর response shape অপরিবর্তিত থাকায় frontend-এ কিছু বদলাতে হয় না।
+--
+--  দুই arm-এর type গুলো পরস্পরবিচ্ছিন্ন হওয়া বাধ্যতামূলক (VIEW 1 ও VIEW 2-এর
+--  IN তালিকা দেখুন), নইলে একই row দু'বার গোনা হবে।
 -- ============================================================================
 CREATE OR REPLACE VIEW `v_product_ledger_lines` AS
 
@@ -513,7 +512,14 @@ SELECT TABLE_NAME, TABLE_TYPE
 --   grep -inE "alter table|^update |^delete |drop |truncate" \
 --        docs/company-product-financial-tracking-schema.sql
 --
--- deploy-এর আগে যাচাই করতে হবে (writer-ভেদে column ভিন্ন থাকায়):
---   SHOW COLUMNS FROM inventory_purchase_return_details LIKE 'pur_return_mstr_id';
---   SHOW COLUMNS FROM inventory_purchase_return_details LIKE 'line_net_total';
---   SHOW COLUMNS FROM inventory_sales_return_details    LIKE 'sal_mstr_id';
+-- VIEW গুলো এখন শুধু transaction_product_maps + main_trx_master পড়ে, তাই
+-- invoice বা return table-এর column নিয়ে deploy-এর আগে আর যাচাইয়ের কিছু নেই।
+--
+-- যা যাচাই করা দরকার — দুটি view-এর type তালিকা যেন পরস্পরবিচ্ছিন্ন থাকে
+-- এবং একসঙ্গে সব type ঢাকে (কোনো row বাদও যাবে না, দু'বারও গোনা হবে না):
+--
+--   SELECT transaction_type, COUNT(*)
+--     FROM transaction_product_maps
+--    GROUP BY transaction_type;
+--
+--   SELECT COUNT(*) FROM v_product_ledger_lines;   -- = উপরের মোট (live voucher)
