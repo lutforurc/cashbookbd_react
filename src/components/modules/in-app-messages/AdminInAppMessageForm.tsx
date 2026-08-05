@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Loader from '../../../common/Loader';
 import InputElement from '../../utils/fields/InputElement';
+import InputDatePicker from '../../utils/fields/DatePicker';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import routes from '../../services/appRoutes';
@@ -16,6 +17,31 @@ import {
   uploadInAppMessageImage,
 } from './inAppMessageService';
 import { InAppMessage } from './types';
+
+/**
+ * The schedule fields are held as "YYYY-MM-DDTHH:mm" — what the API is sent
+ * and what the browser's datetime input used to produce. These two convert
+ * between that and the Date the calendar works in.
+ *
+ * Both read and write the local clock. toISOString() would shift a campaign
+ * six hours in this timezone: a 9am start would go out saved as 3am.
+ */
+const parseLocalDateTime = (value: string): Date | null => {
+  if (!value) return null;
+
+  const parsed = new Date(value);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatLocalDateTime = (date: Date | null): string => {
+  if (!date || Number.isNaN(date.getTime())) return '';
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+    + `T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 const LAYOUTS = [
   { id: 'MODAL', name: 'Modal (centre pop-up)' },
@@ -404,24 +430,27 @@ const AdminInAppMessageForm: React.FC = () => {
               data={STATUSES}
             />
 
-            <div>
-              <label className="block text-sm">Starts at</label>
-              <input
-                type="datetime-local"
-                value={form.starts_at}
-                onChange={(e) => set('starts_at', e.target.value)}
-                className="h-8.5 w-full rounded-xs border border-gray-300 p-1 text-sm dark:border-gray-600 dark:bg-boxdark dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm">Ends at</label>
-              <input
-                type="datetime-local"
-                value={form.ends_at}
-                onChange={(e) => set('ends_at', e.target.value)}
-                className="h-8.5 w-full rounded-xs border border-gray-300 p-1 text-sm dark:border-gray-600 dark:bg-boxdark dark:text-white"
-              />
-            </div>
+            {/* The app's own calendar rather than the browser's, so these read
+                like every other date on the screen. The stored value keeps its
+                YYYY-MM-DDTHH:mm shape, which is what the API is given. */}
+            <InputDatePicker
+              label="Starts at"
+              showTime
+              placeholder="dd/mm/yyyy hh:mm"
+              className="h-8.5 w-full text-sm"
+              selectedDate={parseLocalDateTime(form.starts_at)}
+              setSelectedDate={(date) => set('starts_at', formatLocalDateTime(date))}
+              setCurrentDate={() => undefined}
+            />
+            <InputDatePicker
+              label="Ends at"
+              showTime
+              placeholder="dd/mm/yyyy hh:mm"
+              className="h-8.5 w-full text-sm"
+              selectedDate={parseLocalDateTime(form.ends_at)}
+              setSelectedDate={(date) => set('ends_at', formatLocalDateTime(date))}
+              setCurrentDate={() => undefined}
+            />
 
             <InputElement
               id="display_limit"

@@ -13,10 +13,12 @@ interface DatePickerProps {
   label?: string; // Label for the date picker component
   placeholder?: string; // Placeholder text for the date picker input
   month?: boolean; // Show month/year picker instead of date picker
+  /** Also pick a time — for fields that schedule something, not just date it. */
+  showTime?: boolean;
   disabled?: boolean;
 }
 
-const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, disabled = false }) => {
+const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, showTime = false, disabled = false }) => {
   const datePickerRef = React.useRef<DatePicker>(null);
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
@@ -24,7 +26,12 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
     setCurrentDate(date);
-    datePickerRef.current?.setOpen(false);
+
+    // With a time to pick as well, closing on the first click would end the
+    // job halfway — the calendar stays open until the clock is set too.
+    if (!showTime) {
+      datePickerRef.current?.setOpen(false);
+    }
   };
 
   const openCalendar = () => {
@@ -56,7 +63,11 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         onChange={handleDateChange} // Update state when a new date is selected
         onFocus={openCalendar}
         onInputClick={openCalendar}
-        dateFormat={month ? 'MMM yyyy' : 'dd/MM/yyyy'} // Format for the date
+        dateFormat={month ? 'MMM yyyy' : showTime ? 'dd/MM/yyyy HH:mm' : 'dd/MM/yyyy'} // Format for the date
+        showTimeSelect={showTime}
+        timeFormat="HH:mm"
+        timeIntervals={15}
+        timeCaption="Time"
         peekNextMonth
         placeholderText={placeholder ? placeholder : 'Enter Valid date'}
         wrapperClassName="w-full"
@@ -131,6 +142,27 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
 
             .dark .react-datepicker__day--disabled {
               color: #5a6472;
+            }
+
+            /* The time column that appears beside the calendar when a field
+               schedules something rather than just dating it. */
+            .dark .react-datepicker__time-container,
+            .dark .react-datepicker__time-container .react-datepicker__time {
+              background-color: #24303f;
+              border-left-color: #3d4d60;
+            }
+
+            .dark .react-datepicker__time-list-item {
+              color: #e5e7eb;
+            }
+
+            .dark .react-datepicker__time-list-item:hover {
+              background-color: #3d4d60 !important;
+            }
+
+            .dark .react-datepicker__time-list-item--selected {
+              background-color: rgb(59 130 246) !important;
+              color: #fff;
             }
 
             /* The month and year selects sit inside the header and would
