@@ -30,6 +30,8 @@ import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown
 import httpService from '../../../services/httpService';
 import { API_CASH_RECEIVED_SUGGESTIONS_URL } from '../../../services/apiRoutes';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
+import TrackedProductField from '../../product-tracking/TrackedProductField';
+import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { hasPermission } from '../../../utils/permissionChecker';
 
 const normalizeSuggestionItems = (items: any) =>
@@ -49,6 +51,10 @@ interface PaymentItem {
   purchaseOrderNumber?: string; // Add this line
   purchaseOrderText?: string; // Add this line
   currentProduct?: { [key: string]: any } | null; // Allow null
+  // এই row-এর টাকা কোন tracked Product-এর বিপরীতে। legacy transaction
+  // table-এ যায় না — শুধু transaction_product_maps-এ যায়।
+  // `currentProduct` (account suggestion) থেকে সম্পূর্ণ আলাদা জিনিস।
+  trackedProductId?: number | null;
 }
 
 const initialPaymentItem: PaymentItem = {
@@ -61,6 +67,7 @@ const initialPaymentItem: PaymentItem = {
   purchaseOrderNumber: '',
   purchaseOrderText: '',
   currentProduct: undefined, // Use undefined instead of null
+  trackedProductId: null,
 };
 
 const TradingCashPayment = () => {
@@ -68,6 +75,9 @@ const TradingCashPayment = () => {
   const cashPayment = useSelector((state: any) => state.cashPayment);
   const settings = useSelector((state: any) => state.settings);
   const [formData, setFormData] = useState<PaymentItem>(initialPaymentItem);
+  // এই Company-তে কোনো Product tracked না থাকলে খালি তালিকা আসে এবং
+  // dropdown render-ই হয় না — form তখন হুবহু আগের মতো।
+  const { products: trackedProducts } = useTrackedProducts('payment', undefined, false, formData.account);
 
   const [tableData, setTableData] = useState<PaymentItem[]>([]);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -222,6 +232,7 @@ const TradingCashPayment = () => {
         purchaseOrderNumber: formData.purchaseOrderNumber,
         purchaseOrderText: formData.purchaseOrderText,
         currentProduct: null,
+        trackedProductId: null,
       }); // Reset form
     }
   };
@@ -262,6 +273,7 @@ const TradingCashPayment = () => {
       currentProduct: product
         ? { ...product, index: productIndex }
         : prevState.currentProduct || null,
+      trackedProductId: product?.trackedProductId ?? null,
     }));
     setIsUpdating(true);
     setIsUpdating(true);
@@ -283,6 +295,7 @@ const TradingCashPayment = () => {
       accountName: paymentVoucher.accountName || '',
       remarks: paymentVoucher.remarks || '',
       amount: Number(paymentVoucher.amount) || 0,
+      trackedProductId: paymentVoucher.trackedProductId ?? null,
       purchaseOrderNumber: paymentVoucher.purchaseOrderNumber || '',
       purchaseOrderText: paymentVoucher.purchaseOrderText || '',
     };
@@ -511,6 +524,15 @@ const TradingCashPayment = () => {
               onChange={handleOnChange}
               onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
             />
+            {/* কোনো Product tracked না থাকলে এটি render-ই হয় না */}
+            <TrackedProductField
+              value={formData.trackedProductId}
+              products={trackedProducts}
+              onChange={(productId) =>
+                setFormData((prev) => ({ ...prev, trackedProductId: productId }))
+              }
+              onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
+            />
             <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
               {isUpdating ? (
                 <ButtonLoading
@@ -587,6 +609,12 @@ const TradingCashPayment = () => {
                   {' '}
                   Remarks{' '}
                 </th>
+                {trackedProducts.length > 0 ? (
+                  <th scope="col" className={`px-2 py-2 `}>
+                    {' '}
+                    Product{' '}
+                  </th>
+                ) : null}
                 <th scope="col" className={`px-2 py-2 text-right`}>
                   {' '}
                   Amount{' '}
@@ -612,6 +640,13 @@ const TradingCashPayment = () => {
                   >
                     {row.remarks}
                   </td>
+                  {trackedProducts.length > 0 ? (
+                    <td
+                      className={`px-2 py-2 font-medium text-gray-900 dark:text-white `}
+                    >
+                      {trackedProducts.find((p) => p.id === row.trackedProductId)?.name ?? ''}
+                    </td>
+                  ) : null}
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right `}
                   >

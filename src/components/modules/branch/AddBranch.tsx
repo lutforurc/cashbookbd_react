@@ -113,6 +113,8 @@ interface branchItem {
   need_customer_area: boolean;
   show_voucher_image: boolean;
   multi_product_order: boolean;
+  /** Whether the cash forms ask which product a receipt or payment was for. */
+  product_tracking: boolean;
   /** Share of the property value the allotment letter asks for up front, as a percentage. */
   down_payment_percent: NumberField;
   /** What that share is taken on: 'total' or 'net_payable'. */
@@ -365,6 +367,7 @@ const AddBranch = () => {
     need_customer_area: false,
     show_voucher_image: false,
     multi_product_order: false,
+    product_tracking: false,
     down_payment_percent: defaultDownPaymentPercent,
     down_payment_base: defaultDownPaymentBase,
     delay_charge_percent: defaultDelayChargePercent,
@@ -601,6 +604,7 @@ const AddBranch = () => {
         need_customer_area: toBooleanFlag(b.need_customer_area),
         show_voucher_image: toBooleanFlag(b.show_voucher_image),
         multi_product_order: toBooleanFlag(b.multi_product_order),
+        product_tracking: toBooleanFlag(b.product_tracking),
         down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
         down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
         delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
@@ -1020,7 +1024,7 @@ const AddBranch = () => {
                   </div>
 
                   {/* ---------- Pad Head ---------- */}
-                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
                     Pad Head
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1440,7 +1444,7 @@ const AddBranch = () => {
                   </div>
 
                   {/* ---------- Stock ---------- */}
-                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
                     Stock
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1470,6 +1474,12 @@ const AddBranch = () => {
                         handleToggleFieldChange('share_product_with_other_branch', checked)
                       }
                     />
+                    <FormToggleField
+                      label="Product Tracking?"
+                      description="Cash Received and Payment ask which product the money was for, and the Product Statement reports on it. Off, those forms stay exactly as they were."
+                      checked={Boolean(formData.product_tracking)}
+                      onChange={(checked) => handleToggleFieldChange('product_tracking', checked)}
+                    />
                   </div>
                 </>
               )}
@@ -1477,7 +1487,7 @@ const AddBranch = () => {
               {currentStep === stepIndex('Real Estate Setup') && (
                 <>
                   {/* ---------- Allotment Letter ---------- */}
-                  <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
                     Allotment Letter
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
@@ -1578,10 +1588,11 @@ const AddBranch = () => {
 
               {currentStep === stepIndex('Feature Controls') && (
                 <>
-                  {/* One grid, not four. Four of them each broke into rows of
-                      their own, which left a toggle stranded on a row with two
-                      empty cells beside it whenever a group did not divide by
-                      three. Flowing them together fills every column in turn. */}
+                  {/* One grid for the operational switches, not one per theme.
+                      A grid each broke into rows of its own and left a toggle
+                      stranded beside two empty cells whenever a group did not
+                      divide by three. SMS is the one exception below: it is
+                      ruled off because it answers a different question. */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <FormToggleField
                       label="Control Manufacture?"
@@ -1697,10 +1708,18 @@ const AddBranch = () => {
                       }
                     />
 
-                    {/* A fragment, so these stay children of the grid above and
-                        flow on from the last toggle instead of starting a row. */}
-                    {settings?.data?.user?.id === 1 && (
-                      <>
+                  </div>
+
+                  {/* SMS used to flow on inside the grid above so no toggle sat
+                      alone on a half-empty row. It reads better ruled off: these
+                      decide what leaves the branch as a text message, which is a
+                      different question from the operational switches above. */}
+                  {settings?.data?.user?.id === 1 && (
+                    <>
+                      <h4 className="mb-2 mt-4 border-t border-gray-200 pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:border-strokedark dark:text-gray-400">
+                        SMS
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                         <FormToggleField
                           label="SMS Service"
                           description="The master switch for this branch. Off, none of the messages below go out however they are set."
@@ -1731,9 +1750,9 @@ const AddBranch = () => {
                           checked={Boolean(formData.payment_sms)}
                           onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
                         />
-                      </>
-                    )}
-                  </div>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
