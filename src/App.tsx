@@ -344,8 +344,17 @@ function App() {
                 <Route path={routes.branch_list} element={<BranchList />} />
                 <Route path={routes.branch_add} element={<AddBranch />} />
                 <Route path={routes.branch_edit} element={<AddBranch />} />
-                <Route path={routes.company_list} element={<CompanyList />} />
                 <Route path={routes.company_edit} element={<EditCompany />} />
+              </Route>
+              {/* The sidebar offers these two on their own permissions, so the
+                  guard has to take them or the menu entry only led to
+                  /no-access. They are guarded apart from the branch screens
+                  above rather than added to that list, which would have handed
+                  'company.view' the branch editor as well. */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.view', 'company.view']} loading={permissionsLoading} />}>
+                <Route path={routes.company_list} element={<CompanyList />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.view', 'software.information']} loading={permissionsLoading} />}>
                 <Route path={routes.software_info} element={<SoftwareInfo />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.tracking.settings.view']} loading={permissionsLoading} />}>
@@ -357,11 +366,21 @@ function App() {
               </Route>
 	            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view']} loading={permissionsLoading} />}>
 	              <Route path={routes.user_list} element={<UserList />} />
-	              <Route path={routes.online_users} element={<OnlineUsers />} />
-	              <Route path={routes.user_login_log} element={<LoginLogReport />} />
-	              <Route path={routes.company_user_list} element={<CompanyUsers />} />
 	              <Route path={routes.user_edit} element={<EditUser user={me} />} />
 	            </Route>
+              {/* Read-only user reports, each on the permission its menu entry
+                  checks. Kept out of the block above on purpose: that one also
+                  holds user_edit, so widening it would have let somebody whose
+                  only permission is 'online.users' edit accounts. */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view', 'online.users']} loading={permissionsLoading} />}>
+                <Route path={routes.online_users} element={<OnlineUsers />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view', 'user.login.log']} loading={permissionsLoading} />}>
+                <Route path={routes.user_login_log} element={<LoginLogReport />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view', 'company.user']} loading={permissionsLoading} />}>
+                <Route path={routes.company_user_list} element={<CompanyUsers />} />
+              </Route>
             <Route
               element={
                 <RequirePermission
@@ -433,7 +452,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'purchase.create']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'purchase.create', 'branch.issue.create']} loading={permissionsLoading} />}>
               <Route path={routes.branch_transfer} element={<BranchTransfer />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['material.issue.create', 'inventory.issue.create', 'purchase.create']} loading={permissionsLoading} />}>
@@ -446,17 +465,32 @@ function App() {
             {/* Products */}
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view']} loading={permissionsLoading} />}>
               <Route path={routes.product_list} element={<Product user={me} />} />
-              <Route path={routes.product_low_stock} element={<LowStockProducts />} />
-              <Route path={routes.product_negative_stock} element={<NegativeStockProducts />} />
-              <Route path={routes.product_slow_moving} element={<SlowMovingProducts />} />
-              <Route path={routes.product_warehouse_difference} element={<WarehouseDifferenceProducts />} />
               <Route path={routes.product_create} element={<AddProduct />} />
               <Route path={routes.product_edit} element={<AddProduct />} />
               <Route path={routes.brand_create} element={<AddBranding />} />
               <Route path={routes.brand_list} element={<Brands />} />
-              <Route path={routes.product_unit_list} element={<ProductUnits />} />
               <Route path={routes.product_unit_create} element={<AddProductUnit />} />
               <Route path={routes.product_unit_edit} element={<AddProductUnit />} />
+            </Route>
+            {/* The stock reports and the unit list are offered by the sidebar on
+                a permission of their own. They are guarded one screen at a time
+                rather than folded into the block above, which also creates and
+                edits products -- 'low.stock' is meant to show a report, not to
+                open the product editor. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view', 'low.stock']} loading={permissionsLoading} />}>
+              <Route path={routes.product_low_stock} element={<LowStockProducts />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view', 'negative.stock']} loading={permissionsLoading} />}>
+              <Route path={routes.product_negative_stock} element={<NegativeStockProducts />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view', 'slow.moving']} loading={permissionsLoading} />}>
+              <Route path={routes.product_slow_moving} element={<SlowMovingProducts />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view', 'warehouse.difference']} loading={permissionsLoading} />}>
+              <Route path={routes.product_warehouse_difference} element={<WarehouseDifferenceProducts />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['products.view', 'product.unit']} loading={permissionsLoading} />}>
+              <Route path={routes.product_unit_list} element={<ProductUnits />} />
             </Route>
 
             {/* Reports */}
@@ -465,7 +499,13 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
+            </Route>
+            {/* Each of these is offered by its own sidebar permission. Guarded
+                separately so 'bank.book' opens the bank book and nothing else. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'bank.book']} loading={permissionsLoading} />}>
               <Route path={routes.report_bankbook} element={<BankBook user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'cash.bank.summery']} loading={permissionsLoading} />}>
               <Route path={routes.cash_bank_received_payment} element={<CashBankReceivedPayment user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'profit.loss']} loading={permissionsLoading} />}>
@@ -489,7 +529,11 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit']} loading={permissionsLoading} />}>
               <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.customer']} loading={permissionsLoading} />}>
+            {/* Both names are real permissions. The sidebar offers this screen on
+                'ledger.details' (the one named for it), so the guard has to admit
+                it or that menu entry only ever led to /no-access. 'ledger.customer'
+                stays alongside it so nobody who could open this loses it. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['ledger.customer', 'ledger.details']} loading={permissionsLoading} />}>
               <Route path={routes.customer_supplier_statement} element={<LedgerWithProduct user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['installment.create']} loading={permissionsLoading} />}>
@@ -524,7 +568,7 @@ function App() {
               <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
               <Route path={routes.group_report_setup} element={<GroupReportSetup />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report', 'ledger.due.view', 'cashbook.view']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report', 'ledger.due.view', 'cashbook.view', 'collection.sheet']} loading={permissionsLoading} />}>
               <Route path={routes.somity_collection_sheet} element={<CollectionSheet user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['monthly.report']} loading={permissionsLoading} />}>
@@ -533,7 +577,11 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_product_stock} element={<ProductStockIndex user={me} />} />
               <Route path={routes.report_closing_stock} element={<ClosingStockReport user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'product.stock.details']} loading={permissionsLoading} />}>
               <Route path={routes.somity_stock_details} element={<ClosingStockReport user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view', 'imei.stock']} loading={permissionsLoading} />}>
               <Route path={routes.report_imei_stock} element={<ImeiStock />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'product.stock.view']} loading={permissionsLoading} />}>
@@ -573,8 +621,13 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.approval']} loading={permissionsLoading} />}>
               <Route path={routes.admin_voucher_approval} element={<VoucherApproval />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.approval', 'attendance.view']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.approval', 'attendance.view', 'approval.center']} loading={permissionsLoading} />}>
               <Route path={routes.approval_center} element={<ApprovalCenter user={me} />} />
+            </Route>
+            {/* The audit trail stays on the original pair: 'approval.center' is
+                what the menu grants for the centre itself, not for the log of
+                everything that has been approved. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.approval', 'attendance.view']} loading={permissionsLoading} />}>
               <Route path={routes.approval_center_audit} element={<ApprovalAudit user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['remove.approval']} loading={permissionsLoading} />}>
@@ -620,7 +673,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.history']} loading={permissionsLoading} />}>
               <Route path={routes.voucher_history} element={<ChangeHistory user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['voucher.changes']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['log.changes']} loading={permissionsLoading} />}>
               <Route path={routes.voucher_activity} element={<ChangeList user={me} />} />
             </Route>
             {/* voucher_activity: '/vr-settings/voucher-activity', */}
@@ -632,19 +685,19 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_purchase} element={<PurchaseIndex />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create', 'purchase.import']} loading={permissionsLoading} />}>
               <Route path={routes.inv_purchase_import} element={<TradingPurchaseImport />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.create', 'purchase.return.view']} loading={permissionsLoading} />}>
               <Route path={routes.inv_purchase_return} element={<ConstructionBusinessPurchaseReturn />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales} element={<SalesIndex />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create', 'sales.import']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales_import} element={<TradingSalesImport />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.create', 'sales.return']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales_return} element={<GeneralBusinessSalesReturn />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.invoice.create']} loading={permissionsLoading} />}>

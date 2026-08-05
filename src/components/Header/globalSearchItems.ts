@@ -68,7 +68,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Bank Information', path: routes.bank_information, group: 'Reports', permissions: ['bank.information'] },
   { title: 'Connected Member', path: routes.connected_member, group: 'Reports', permissions: ['connected.member.view'] },
   { title: 'Product Profit Loss', path: routes.product_profit_loss, group: 'Reports', permissions: ['productwise.profit'] },
-  { title: 'Customer Supplier Statement', path: routes.customer_supplier_statement, group: 'Reports', permissions: ['ledger.customer'] },
+  { title: 'Customer Supplier Statement', path: routes.customer_supplier_statement, group: 'Reports', permissions: ['ledger.customer', 'ledger.details'] },
   { title: 'Due Installments', path: routes.due_installment_list, group: 'Reports', permissions: ['installment.create'] },
   { title: 'Employee Installments', path: routes.employee_wise_installment, group: 'Reports', permissions: ['installment.create'] },
   { title: 'Due List', path: routes.report_due_list, group: 'Reports', permissions: ['due.list', 'ledger.due.view'] },
@@ -115,7 +115,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Installment Delete', path: routes.installment_delete, group: 'VR Settings', permissions: ['installment.delete'] },
   { title: 'Recycle Bin', path: routes.recyclebin, group: 'VR Settings', permissions: ['voucher.recycle'] },
   { title: 'Voucher History', path: routes.voucher_history, group: 'VR Settings', permissions: ['voucher.history'] },
-  { title: 'Voucher Activity', path: routes.voucher_activity, group: 'VR Settings', permissions: ['voucher.changes'] },
+  { title: 'Voucher Activity', path: routes.voucher_activity, group: 'VR Settings', permissions: ['log.changes'] },
 
   { title: 'Employees', path: routes.hrms_employee_list, group: 'HRM', permissions: ['employee.view'] },
   { title: 'Designation Levels', path: routes.hrms_designation_level_list, group: 'HRM', permissions: ['employee.view'] },

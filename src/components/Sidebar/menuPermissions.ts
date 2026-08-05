@@ -20,6 +20,11 @@ export const MENU_PERMISSIONS = {
     'ledger.view',
     'ledger.labour',
     'ledger.due.view',
+    // Ledger Details (Customer Supplier Statement) hangs off this menu on
+    // either of these, so both have to open the parent -- otherwise the only
+    // permission a user holds gates a screen they can never reach the menu for.
+    'ledger.customer',
+    'ledger.details',
     'date.wise.total',
     'product.stock.view',
     'product.in.out',
@@ -53,11 +58,14 @@ export const MENU_PERMISSIONS = {
   voucher_settings: [
     'voucher.delete',
     'installment.delete',
-    'voucher.delete',
     'voucher.date.change',
     'voucher.recycle',
     'voucher.history',
-    'voucher.changes',
+    // The Log Changes screen. The permission the backend actually creates is
+    // 'log.changes' (Voucher Modification group); 'voucher.changes' was never
+    // one, so a user holding only this was kept out of the parent menu here
+    // and bounced to /no-access by the route guard.
+    'log.changes',
   ],
   hrm: [
     'employee.view',
