@@ -16,6 +16,18 @@
   body {
     @apply font-satoshi font-normal text-base text-body bg-whiten relative z-1;
   }
+
+  /* Date and time inputs are drawn by the browser, not by us. On a dark page
+     they kept their light palette: a near-white calendar icon well, dark
+     placeholder text on a dark field, and a light popup. Telling the browser
+     the scheme lets it draw its own controls to match. */
+  .dark input[type='date'],
+  .dark input[type='datetime-local'],
+  .dark input[type='month'],
+  .dark input[type='time'],
+  .dark input[type='week'] {
+    color-scheme: dark;
+  }
 }
 
 /* @layer components {

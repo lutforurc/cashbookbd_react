@@ -79,6 +79,91 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
               z-index: 9999;
             }
 
+            /* react-datepicker ships a light-only stylesheet, so on a dark page
+               the calendar opened as a white card with black text — the one
+               bright rectangle on the screen. Tailwind runs in class mode, so
+               these hang off html.dark and leave the light theme untouched. */
+            .dark .react-datepicker {
+              background-color: #24303f;
+              border-color: #3d4d60;
+              color: #e5e7eb;
+            }
+
+            .dark .react-datepicker__header {
+              background-color: #1d2a39;
+              border-bottom-color: #3d4d60;
+            }
+
+            .dark .react-datepicker__current-month,
+            .dark .react-datepicker-time__header,
+            .dark .react-datepicker__day-name,
+            .dark .react-datepicker__day,
+            .dark .react-datepicker__month-text,
+            .dark .react-datepicker__time-name {
+              color: #e5e7eb;
+            }
+
+            /* Days spilling in from the neighbouring month stay legible but
+               clearly not part of this month. */
+            .dark .react-datepicker__day--outside-month {
+              color: #7b8794;
+            }
+
+            .dark .react-datepicker__day:hover,
+            .dark .react-datepicker__month-text:hover {
+              background-color: #3d4d60;
+              color: #fff;
+            }
+
+            .dark .react-datepicker__day--selected,
+            .dark .react-datepicker__day--keyboard-selected,
+            .dark .react-datepicker__month-text--selected,
+            .dark .react-datepicker__month-text--keyboard-selected {
+              background-color: rgb(59 130 246);
+              color: #fff;
+            }
+
+            .dark .react-datepicker__day--today,
+            .dark .react-datepicker__month-text--today {
+              font-weight: 700;
+              color: #93c5fd;
+            }
+
+            .dark .react-datepicker__day--disabled {
+              color: #5a6472;
+            }
+
+            /* The month and year selects sit inside the header and would
+               otherwise render as white boxes on the dark card. */
+            .dark .react-datepicker__month-select,
+            .dark .react-datepicker__year-select,
+            .dark .react-datepicker__month-year-select {
+              background-color: #24303f;
+              border: 1px solid #3d4d60;
+              color: #e5e7eb;
+            }
+
+            .dark .react-datepicker__navigation-icon::before,
+            .dark .react-datepicker__year-read-view--down-arrow,
+            .dark .react-datepicker__month-read-view--down-arrow {
+              border-color: #9aa5b1;
+            }
+
+            .dark .react-datepicker__navigation:hover *::before {
+              border-color: #fff;
+            }
+
+            /* The little arrow joining the popup to the input. */
+            .dark .react-datepicker__triangle::before {
+              border-bottom-color: #3d4d60 !important;
+              border-top-color: #3d4d60 !important;
+            }
+
+            .dark .react-datepicker__triangle::after {
+              border-bottom-color: #1d2a39 !important;
+              border-top-color: #24303f !important;
+            }
+
             .cashbook-month-picker {
               width: 320px;
               border-radius: 2px;
