@@ -310,6 +310,7 @@ export const API_PRODUCT_TRACKING_SETTINGS_URL = `${API_BASE_URL}/product-tracki
 export const API_PRODUCT_TRACKING_AVAILABLE_PRODUCTS_URL = `${API_BASE_URL}/product-tracking/available-products`;
 export const API_PRODUCT_TRACKING_PRODUCTS_URL = `${API_BASE_URL}/product-tracking/products`;
 export const API_PRODUCT_FINANCIAL_STATEMENT_URL = `${API_BASE_URL}/reports/product-financial-statement`;
+export const API_PRODUCT_TRACKING_SUMMARY_URL = `${API_BASE_URL}/reports/product-tracking-summary`;
 // Date Wise Report url
 export const API_DATE_WISE_TOTAL_URL = `${API_BASE_URL}/reports/date-wise-total-data`;
 export const API_SOMITY_COLLECTION_SHEET_URL = `${API_BASE_URL}/somity-report/collection-sheet`;

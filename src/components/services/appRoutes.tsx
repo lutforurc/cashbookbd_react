@@ -77,6 +77,7 @@ const ROUTES = {
   // Company & Product-wise financial tracking
   product_tracking_settings: '/settings/product-tracking',
   product_financial_statement: '/reports/product-financial-statement',
+  product_tracking_summary: '/reports/product-receivable-payable',
 
   // Branch routes
   branch_list: '/branch/branch-list',

@@ -25,6 +25,7 @@ import EditCompany from './components/modules/company/EditCompany';
 import SoftwareInfo from './components/modules/settings/SoftwareInfo';
 import ProductTrackingSettings from './components/modules/product-tracking/ProductTrackingSettings';
 import ProductFinancialStatement from './components/modules/product-tracking/ProductFinancialStatement';
+import ProductTrackingSummary from './components/modules/product-tracking/ProductTrackingSummary';
 import AddUser from './components/modules/user/AddUser';
 import Product from './components/modules/product/Product';
 import LowStockProducts from './components/modules/product/LowStockProducts';
@@ -352,6 +353,7 @@ function App() {
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.tracking.report.view']} loading={permissionsLoading} />}>
                 <Route path={routes.product_financial_statement} element={<ProductFinancialStatement />} />
+                <Route path={routes.product_tracking_summary} element={<ProductTrackingSummary />} />
               </Route>
 	            <Route element={<RequirePermission permissions={userPermissions} anyOf={['all.user.view', 'user.view']} loading={permissionsLoading} />}>
 	              <Route path={routes.user_list} element={<UserList />} />

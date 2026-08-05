@@ -30,11 +30,24 @@ const LINE_LABELS: Record<string, string> = {
 
 const money = (value: number) => (value ? thousandSeparator(Number(value)) : '-');
 
+/**
+ * Date picker যা দেয় তা থেকে YYYY-MM-DD.
+ *
+ * toISOString() ব্যবহার করা যাবে না — সেটি UTC-তে নেয়, আর GMT+6-এ স্থানীয়
+ * মধ্যরাত UTC-তে আগের দিন সন্ধ্যা। ফলে ২৮/০৭ বাছলে report চাইত ২৭/০৭-এর,
+ * অর্থাৎ পুরো পরিসর এক দিন পিছিয়ে যেত।
+ */
 const toIsoDate = (value: any): string => {
   if (!value) return '';
   if (typeof value === 'string') return value.slice(0, 10);
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+
+  return `${d.getFullYear()}-${month}-${day}`;
 };
 
 /**
