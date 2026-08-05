@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import {API_BANK_GENERAL_EDIT_URL, API_BANK_GENERAL_UPDATE_URL, API_BANK_PAYMENT_URL, API_BANK_RECEIVED_LIST_URL, API_BANK_RECEIVED_URL, } from '../../../services/apiRoutes';
+import {API_BANK_PAYMENT_EDIT_URL, API_BANK_PAYMENT_UPDATE_URL, API_BANK_PAYMENT_URL, API_BANK_RECEIVED_LIST_URL, } from '../../../services/apiRoutes';
 import httpService from '../../../services/httpService';
 
 // ---------------- Interfaces ----------------
@@ -68,7 +68,12 @@ export const saveBankPayment = createAsyncThunk<PaymentItem, SaveBankPaymentResp
 // 📌 Edit Bank Payment
 export const editBankPayment = createAsyncThunk<PaymentItem,PaymentItem,{ rejectValue: string }>('bankPayment/editBankPayment', async (payload, thunkAPI) => {
   try {
-    const response = await httpService.get(`${API_BANK_GENERAL_EDIT_URL}/${payload.id}`,);
+    // The bank PAYMENT endpoints, not the received ones. Routes and URL
+    // constants for these have existed all along; this screen simply never
+    // pointed at them, so editing a payment loaded it through the received
+    // controller -- which then rewrote the contra row as a receipt and stamped
+    // the product map with TYPE_BANK_RECEIVED, turning money out into money in.
+    const response = await httpService.get(`${API_BANK_PAYMENT_EDIT_URL}/${payload.id}`,);
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
@@ -80,7 +85,7 @@ export const editBankPayment = createAsyncThunk<PaymentItem,PaymentItem,{ reject
 // 📌 Update Bank Payment
 export const updateBankPayment = createAsyncThunk<PaymentItem,PaymentItem,{ rejectValue: string }>('bankPayment/updateBankPayment', async (payload, thunkAPI) => {
   try {
-    const response = await httpService.post(API_BANK_GENERAL_UPDATE_URL, payload);
+    const response = await httpService.post(API_BANK_PAYMENT_UPDATE_URL, payload);
     return response.data;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(

@@ -24,6 +24,8 @@ import { toast } from 'react-toastify';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
 import Loader from '../../../../common/Loader';
 import { Navigate, useNavigate } from 'react-router-dom';
+import TrackedProductField from '../../product-tracking/TrackedProductField';
+import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 
 interface TransactionList {
   id: string | number;
@@ -31,6 +33,11 @@ interface TransactionList {
   accountName: string;
   remarks: string;
   amount: number | string;
+  // Which tracked product this row's money is against. It never reaches the
+  // legacy transaction tables -- only transaction_product_maps. It lives on the
+  // row rather than the header because the backend matches products to rows by
+  // their position in the posted `transactions` array.
+  trackedProductId?: number | null;
 }
 
 interface ReceivedItem {
@@ -64,6 +71,16 @@ const BankReceived = () => {
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [updatingLoading, setUpdatingLoading] = useState(false);
   const [formData, setFormData] = useState<ReceivedItem>(initialReceivedItem);
+  // Tracking is per party, so the list follows the selected transaction account
+  // -- not `bankReceivedAccount`, which is the bank ledger and never a party.
+  // With no product tracked for this company the list comes back empty and the
+  // dropdown does not render at all, so the form stays exactly as it was.
+  const { products: trackedProducts } = useTrackedProducts(
+    'received',
+    undefined,
+    false,
+    formData.transactionList?.[0]?.account,
+  );
   const [tableData, setTableData] = useState<ReceivedItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
@@ -92,6 +109,14 @@ const BankReceived = () => {
 
   const transactionAccountHandler = (option: any) => {
     const currentTransaction = formData.transactionList?.[0];
+    // A product is configured against a particular party, so one picked for the
+    // previous account is not necessarily offered for this one. Carrying it over
+    // would leave the dropdown looking empty while the old id was still posted,
+    // and the API answers that by rolling back the whole voucher. Keep the
+    // selection only while the account itself has not changed.
+    const isSameAccount =
+      String(currentTransaction?.account ?? '') === String(option.value ?? '');
+
     setFormData({
       ...formData,
       transactionList: [
@@ -101,6 +126,9 @@ const BankReceived = () => {
           accountName: option.label,
           remarks: currentTransaction?.remarks || '',
           amount: currentTransaction?.amount || 0,
+          trackedProductId: isSameAccount
+            ? currentTransaction?.trackedProductId ?? null
+            : null,
         },
       ],
     });
@@ -163,6 +191,10 @@ const BankReceived = () => {
         accountName: item.coa_l4?.name,
         remarks: item.remarks,
         amount: item.credit,
+        // The bank contra row is written last and carries no product, which is
+        // why slicing it off above keeps these rows in the order the mapping
+        // was saved in.
+        trackedProductId: item.trackedProductId ?? null,
       })),
     };
   };
@@ -257,6 +289,9 @@ const BankReceived = () => {
       accountName: receivedVoucher.accountName || '',
       remarks: receivedVoucher.remarks || '',
       amount: Number(receivedVoucher.amount) || 0,
+      // Without this line the spread above would keep the row's old product and
+      // quietly discard the one just chosen in the form.
+      trackedProductId: receivedVoucher.trackedProductId ?? null,
     };
 
 
@@ -401,12 +436,16 @@ const BankReceived = () => {
         mtmId: formData.mtmId,
         bankReceivedAccount: formData.bankReceivedAccount,
         bankReceivedAccountName: formData.bankReceivedAccountName,
+        // This projection lists every key it sends, and an update rewrites the
+        // voucher's product mappings from scratch. Dropping trackedProductId
+        // here would not leave the saved product alone -- it would erase it.
         transactions: transactions.map((t) => ({
           id: t.id,
           account: t.account,
           accountName: t.accountName,
           remarks: t.remarks,
           amount: Number(t.amount),
+          trackedProductId: t.trackedProductId ?? null,
         })),
       };
 
@@ -541,6 +580,7 @@ const BankReceived = () => {
                     accountName: '',
                     remarks: '',
                     amount: 0,
+                    trackedProductId: null,
                   };
                   const updated = { ...current, remarks: e.target.value };
                   setFormData({
@@ -564,6 +604,7 @@ const BankReceived = () => {
                     accountName: '',
                     remarks: '',
                     amount: 0,
+                    trackedProductId: null,
                   };
                   const updated = { ...current, amount: e.target.value };
                   setFormData({
@@ -571,6 +612,33 @@ const BankReceived = () => {
                     transactionList: [updated],
                   });
                 }}
+                onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
+              />
+              {/* Renders nothing when no product is tracked, so the form stays
+                  exactly as it was. The value sits one level down here, on the
+                  transaction row, so the change rebuilds that row rather than
+                  writing onto the header. */}
+              <TrackedProductField
+                value={formData.transactionList?.[0]?.trackedProductId}
+                products={trackedProducts}
+                onChange={(productId) =>
+                  setFormData((prev) => {
+                    const current = prev.transactionList?.[0] || {
+                      id: Date.now(),
+                      account: '',
+                      accountName: '',
+                      remarks: '',
+                      amount: 0,
+                      trackedProductId: null,
+                    };
+                    return {
+                      ...prev,
+                      transactionList: [
+                        { ...current, trackedProductId: productId },
+                      ],
+                    };
+                  })
+                }
                 onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
               />
             </div>
@@ -660,6 +728,12 @@ const BankReceived = () => {
                   {' '}
                   Remarks{' '}
                 </th>
+                {trackedProducts.length > 0 ? (
+                  <th scope="col" className={`px-2 py-2 `}>
+                    {' '}
+                    Product{' '}
+                  </th>
+                ) : null}
                 <th scope="col" className={`px-2 py-2 text-right`}>
                   {' '}
                   Amount{' '}
@@ -682,6 +756,12 @@ const BankReceived = () => {
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                       {t.remarks}
                     </td>
+                    {trackedProducts.length > 0 ? (
+                      <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {trackedProducts.find((p) => p.id === t.trackedProductId)
+                          ?.name ?? ''}
+                      </td>
+                    ) : null}
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
                       {t.amount}
                     </td>
@@ -707,7 +787,7 @@ const BankReceived = () => {
               <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td
                   className={`px-2 py-2 font-bold text-gray-900 whitespace-nowrap dark:text-white `}
-                  colSpan={2}
+                  colSpan={trackedProducts.length > 0 ? 3 : 2}
                 >
                   Received Total
                 </td>

@@ -17,6 +17,8 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { toast } from 'react-toastify';
 import { editBankPayment, saveBankPayment, updateBankPayment } from './bankPaymentSlice';
 import { useNavigate } from 'react-router-dom';
+import TrackedProductField from '../../product-tracking/TrackedProductField';
+import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 
 interface TransactionList {
   id: string | number;
@@ -24,6 +26,11 @@ interface TransactionList {
   accountName: string;
   remarks: string;
   amount: number | string;
+  // Which tracked Product this row's money is against. It never reaches the
+  // legacy transaction tables -- only transaction_product_maps. The backend
+  // pairs a map to a row by position in the `transactions` array, so this has
+  // to live on the row, not on the voucher header.
+  trackedProductId?: number | null;
 }
 
 
@@ -58,6 +65,16 @@ const BankPayment = () => {
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [updatingLoading, setUpdatingLoading] = useState(false);
   const [formData, setFormData] = useState<PaymentItem>(initialPaymentItem);
+  // The party is the row account, not `bankPaymentAccount` -- that one is the
+  // bank ledger itself and no product is ever tracked against it. With no
+  // Product tracked for this company the list comes back empty and the
+  // dropdown does not render at all, leaving the form exactly as it was.
+  const { products: trackedProducts } = useTrackedProducts(
+    'payment',
+    undefined,
+    false,
+    formData.transactionList?.[0]?.account,
+  );
   const [tableData, setTableData] = useState<PaymentItem[]>([]);
   const [bankId, setBankId] = useState<number | string | null>(null);
   const [ddlBankList, setDdlBankList] = useState<any[]>([]);
@@ -87,6 +104,8 @@ const BankPayment = () => {
 
   const transactionAccountHandler = (option: any) => {
     const currentTransaction = formData.transactionList?.[0];
+    // This rebuilds the row from scratch, so every field the user may already
+    // have filled in has to be carried over by hand or it is silently lost.
     setFormData({
       ...formData,
       transactionList: [
@@ -96,6 +115,7 @@ const BankPayment = () => {
           accountName: option.label,
           remarks: currentTransaction?.remarks || '',
           amount: currentTransaction?.amount || 0,
+          trackedProductId: currentTransaction?.trackedProductId ?? null,
         },
       ],
     });
@@ -113,7 +133,7 @@ const BankPayment = () => {
       setIsLoading(true);
       const response = await dispatch(editBankPayment({ id: search })).unwrap();
 
-      const mapped = mapReceivedData(response);
+      const mapped = mapPaymentData(response);
       setPaymentData(mapped);
       setTableData([mapped]);
       setFormData({ ...mapped, transactionList: [] }); // âœ… Payment set à¦•à¦°à§à¦¨, transactionList à¦–à¦¾à¦²à¦¿ à¦°à¦¾à¦–à§à¦¨ (fields à¦«à¦¾à¦à¦•à¦¾)
@@ -139,6 +159,9 @@ const BankPayment = () => {
     const details = data.acc_transaction_master[0].acc_transaction_details;
 
 
+    // The bank contra row is always written last, so dropping the tail leaves
+    // exactly the party rows -- and in the order they were saved, which is what
+    // the backend's row-position based product mapping is keyed on.
     const filteredDetails = details.slice(0, -1);
 
 
@@ -157,6 +180,7 @@ const BankPayment = () => {
         accountName: item.coa_l4?.name,
         remarks: item.remarks,
         amount: item.credit,
+        trackedProductId: item.trackedProductId ?? null,
       })),
     };
   };
@@ -251,6 +275,9 @@ const BankPayment = () => {
       accountName: paymentVoucher.accountName || '',
       remarks: paymentVoucher.remarks || '',
       amount: Number(paymentVoucher.amount) || 0,
+      // Without this the spread above keeps the row's old product and quietly
+      // throws away whatever the user just picked in the form.
+      trackedProductId: paymentVoucher.trackedProductId ?? null,
     };
 
 
@@ -394,12 +421,17 @@ const BankPayment = () => {
         mtmId: formData.mtmId,
         bankPaymentAccount: formData.bankPaymentAccount,
         bankPaymentAccountName: formData.bankPaymentAccountName,
+        // This projection whitelists keys, so anything left out is stripped.
+        // An update rewrites the voucher's product maps from scratch rather
+        // than patching them, so omitting trackedProductId here would not
+        // leave the saved product alone -- it would erase it.
         transactions: transactions.map((t) => ({
           id: t.id,
           account: t.account,
           accountName: t.accountName,
           remarks: t.remarks,
           amount: Number(t.amount),
+          trackedProductId: t.trackedProductId ?? null,
         })),
       };
 
@@ -536,6 +568,7 @@ const BankPayment = () => {
                     accountName: '',
                     remarks: '',
                     amount: 0,
+                    trackedProductId: null,
                   };
                   const updated = { ...current, remarks: e.target.value };
                   setFormData({
@@ -559,6 +592,7 @@ const BankPayment = () => {
                     accountName: '',
                     remarks: '',
                     amount: 0,
+                    trackedProductId: null,
                   };
                   const updated = { ...current, amount: e.target.value };
                   setFormData({
@@ -566,6 +600,33 @@ const BankPayment = () => {
                     transactionList: [updated],
                   });
                 }}
+                onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
+              />
+              {/* Renders nothing when no Product is tracked, so the form stays
+                  exactly as it was. The product belongs to the row, so the
+                  single-entry transactionList has to be rebuilt here rather
+                  than setting a field on the header. */}
+              <TrackedProductField
+                value={formData.transactionList?.[0]?.trackedProductId}
+                products={trackedProducts}
+                onChange={(productId) =>
+                  setFormData((prev) => {
+                    const current = prev.transactionList?.[0] || {
+                      id: Date.now(),
+                      account: '',
+                      accountName: '',
+                      remarks: '',
+                      amount: 0,
+                      trackedProductId: null,
+                    };
+                    return {
+                      ...prev,
+                      transactionList: [
+                        { ...current, trackedProductId: productId },
+                      ],
+                    };
+                  })
+                }
                 onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')}
               />
             </div>
@@ -652,6 +713,12 @@ const BankPayment = () => {
                   {' '}
                   Remarks{' '}
                 </th>
+                {trackedProducts.length > 0 ? (
+                  <th scope="col" className={`px-2 py-2 `}>
+                    {' '}
+                    Product{' '}
+                  </th>
+                ) : null}
                 <th scope="col" className={`px-2 py-2 text-right`}>
                   {' '}
                   Amount{' '}
@@ -674,6 +741,12 @@ const BankPayment = () => {
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                       {t.remarks}
                     </td>
+                    {trackedProducts.length > 0 ? (
+                      <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {trackedProducts.find((p) => p.id === t.trackedProductId)
+                          ?.name ?? ''}
+                      </td>
+                    ) : null}
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-right">
                       {thousandSeparator(Number(t.amount))}
                     </td>
@@ -699,7 +772,7 @@ const BankPayment = () => {
               <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td
                   className={`px-2 py-2 font-bold text-gray-900 whitespace-nowrap dark:text-white `}
-                  colSpan={2}
+                  colSpan={trackedProducts.length > 0 ? 3 : 2}
                 >
                   Received Total
                 </td>
