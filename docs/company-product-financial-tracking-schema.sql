@@ -125,6 +125,8 @@ CREATE TABLE IF NOT EXISTS `company_product_tracking_settings` (
     `company_id`            INT UNSIGNED NOT NULL,
     -- com_branches.id ; 0 = সব branch
     `branch_id`             INT UNSIGNED NOT NULL DEFAULT 0,
+    -- acc_coa_level4s.id (Customer/Supplier) ; 0 = সব পার্টি
+    `coa4_id`               INT UNSIGNED NOT NULL DEFAULT 0,
     -- product_items.id (INT UNSIGNED) — type মিলিয়ে রাখা হয়েছে
     `product_id`            INT UNSIGNED NOT NULL,
 
@@ -144,11 +146,13 @@ CREATE TABLE IF NOT EXISTS `company_product_tracking_settings` (
 
     PRIMARY KEY (`id`),
 
-    -- একই Company + Branch scope + Product দুইবার configure করা যাবে না
-    UNIQUE KEY `uq_cpts_scope` (`company_id`, `branch_id`, `product_id`),
+    -- একই Company + Branch + Party scope + Product দুইবার configure করা যাবে না
+    UNIQUE KEY `uq_cpts_scope` (`company_id`, `branch_id`, `coa4_id`, `product_id`),
 
     -- dropdown ও settings list-এর প্রধান query path
     KEY `idx_cpts_company_active` (`company_id`, `is_active`, `branch_id`),
+    -- Received/Payment form-এ Account বাছলে ঐ পার্টির Product খোঁজা
+    KEY `idx_cpts_party` (`company_id`, `coa4_id`, `is_active`),
     -- product ownership validation ও reverse lookup
     KEY `idx_cpts_product` (`company_id`, `product_id`, `is_active`)
 ) ENGINE=InnoDB
@@ -417,6 +421,12 @@ CREATE OR REPLACE VIEW `v_product_bill_lines` AS
 -- ============================================================================
 --  Unmapped voucher row এখানে আসে না — এটি ইচ্ছাকৃত।
 --  Product statement কখনো অনুমান করে টাকা দেখাবে না।
+--
+--  main_trx_master.status = 1 filter অপরিহার্য: voucher delete এই system-এ
+--  soft delete (status = 0, delete_at সেট), আর restore সেটাকে 1-এ ফিরিয়ে আনে।
+--  Filter এখানে থাকায় delete ও restore দুটোই আপনাআপনি কাজ করে এবং
+--  VoucherModificationController-এ কোনো cleanup hook বসাতে হয় না —
+--  mapping অক্ষত থাকে, শুধু report থেকে বাদ যায়।
 -- ============================================================================
 CREATE OR REPLACE VIEW `v_product_cash_lines` AS
     SELECT
@@ -435,7 +445,9 @@ CREATE OR REPLACE VIEW `v_product_cash_lines` AS
         t.mapped_amount                       AS net_amount,
         CASE WHEN t.direction = 1  THEN t.mapped_amount ELSE 0 END AS received_amount,
         CASE WHEN t.direction = -1 THEN t.mapped_amount ELSE 0 END AS payment_amount
-    FROM `transaction_product_maps` t;
+    FROM `transaction_product_maps` t
+    JOIN `main_trx_master` m ON m.id = t.main_trx_id
+    WHERE m.status = 1;
 
 
 -- ============================================================================

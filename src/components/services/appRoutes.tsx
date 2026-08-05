@@ -74,6 +74,9 @@ const ROUTES = {
   company_edit: '/company/company-edit/:id',
   software_info: '/settings/software-info',
 
+  // Company & Product-wise financial tracking
+  product_tracking_settings: '/settings/product-tracking',
+
   // Branch routes
   branch_list: '/branch/branch-list',
   branch_add: '/branch/add-branch',

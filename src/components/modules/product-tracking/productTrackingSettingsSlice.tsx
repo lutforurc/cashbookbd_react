@@ -1,0 +1,160 @@
+import { useCallback, useEffect, useState } from 'react';
+import httpService from '../../services/httpService';
+import {
+  API_PRODUCT_TRACKING_AVAILABLE_PRODUCTS_URL,
+  API_PRODUCT_TRACKING_SETTINGS_URL,
+} from '../../services/apiRoutes';
+
+export type TrackingSetting = {
+  id: number;
+  product_id: number;
+  product_name: string | null;
+  product_bangla: string | null;
+  product_barcode: string | null;
+  branch_id: number;
+  branch_name: string | null;
+  coa4_id: number;
+  party_name: string | null;
+  track_sales_bill: boolean;
+  track_purchase_bill: boolean;
+  track_cash_received: boolean;
+  track_cash_payment: boolean;
+  is_active: boolean;
+};
+
+export type AvailableProduct = {
+  id: number;
+  name: string;
+  bangla: string | null;
+  barcode: string | null;
+};
+
+export type SettingPayload = {
+  product_id: number;
+  branch_id: number;
+  coa4_id: number;
+  track_sales_bill: boolean;
+  track_purchase_bill: boolean;
+  track_cash_received: boolean;
+  track_cash_payment: boolean;
+  is_active: boolean;
+};
+
+/**
+ * Product Tracking settings screen-এর data layer।
+ *
+ * Redux-এ রাখা হয়নি — এই তালিকা শুধু একটি screen-ই ব্যবহার করে, তাই
+ * component-local state যথেষ্ট এবং store হালকা থাকে।
+ */
+export function useProductTrackingSettings() {
+  const [settings, setSettings] = useState<TrackingSetting[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setError(null);
+
+    httpService
+      .get(API_PRODUCT_TRACKING_SETTINGS_URL, { params: { search: search || undefined } })
+      .then((response) => {
+        // paginate() মোড়কটা data.data.data-এর ভেতরে থাকে
+        const payload = response?.data?.data?.data;
+        setSettings(payload?.data ?? []);
+      })
+      .catch((e) => {
+        setSettings([]);
+        setError(
+          e?.response?.status === 403
+            ? 'এই স্ক্রিন দেখার অনুমতি নেই (product.tracking.settings.view)।'
+            : 'তালিকা আনা যায়নি।',
+        );
+      })
+      .finally(() => setLoading(false));
+  }, [search]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const create = useCallback(
+    async (payload: SettingPayload) => {
+      setSaving(true);
+      try {
+        const response = await httpService.post(API_PRODUCT_TRACKING_SETTINGS_URL, payload);
+        load();
+        return { ok: response?.data?.success === true, message: response?.data?.message ?? '' };
+      } catch (e: any) {
+        return { ok: false, message: e?.response?.data?.message ?? 'যোগ করা যায়নি।' };
+      } finally {
+        setSaving(false);
+      }
+    },
+    [load],
+  );
+
+  const update = useCallback(
+    async (id: number, payload: SettingPayload) => {
+      setSaving(true);
+      try {
+        const response = await httpService.put(`${API_PRODUCT_TRACKING_SETTINGS_URL}/${id}`, payload);
+        load();
+        return { ok: response?.data?.success === true, message: response?.data?.message ?? '' };
+      } catch (e: any) {
+        return { ok: false, message: e?.response?.data?.message ?? 'সংরক্ষণ করা যায়নি।' };
+      } finally {
+        setSaving(false);
+      }
+    },
+    [load],
+  );
+
+  const toggle = useCallback(
+    async (id: number, isActive: boolean) => {
+      setSaving(true);
+      try {
+        await httpService.patch(`${API_PRODUCT_TRACKING_SETTINGS_URL}/${id}/toggle`, {
+          is_active: isActive ? 1 : 0,
+        });
+        load();
+        return { ok: true, message: '' };
+      } catch (e: any) {
+        return { ok: false, message: e?.response?.data?.message ?? 'পরিবর্তন করা যায়নি।' };
+      } finally {
+        setSaving(false);
+      }
+    },
+    [load],
+  );
+
+  return { settings, loading, saving, error, search, setSearch, reload: load, create, update, toggle };
+}
+
+/**
+ * Add form-এর dropdown — এই (branch + party) scope-এ যেসব Product এখনো
+ * configure করা হয়নি। একই Product অন্য পার্টির জন্য আবার যোগ করা যায়, তাই
+ * তালিকাটি party বদলালে বদলায়।
+ */
+export function useAvailableProducts(branchId: number, coa4Id: number) {
+  const [products, setProducts] = useState<AvailableProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    httpService
+      .get(API_PRODUCT_TRACKING_AVAILABLE_PRODUCTS_URL, {
+        params: { branch_id: branchId, coa4_id: coa4Id },
+      })
+      .then((response) => setProducts(response?.data?.data?.data ?? []))
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, [branchId, coa4Id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { products, loading, reload: load };
+}
