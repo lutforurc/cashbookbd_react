@@ -26,6 +26,10 @@ export const MENU_PERMISSIONS = {
     'ledger.customer',
     'ledger.details',
     'date.wise.total',
+    // The Expense Report is only ever reached through this menu, so the
+    // permission that shows the entry has to open the parent group too --
+    // otherwise a user holding just this one never sees Reports at all.
+    'expense.report',
     'product.stock.view',
     'product.in.out',
     'purchase.ledger',

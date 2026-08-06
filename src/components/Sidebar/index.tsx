@@ -763,6 +763,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === routes.balance_sheet ||
                     pathname === routes.trial_balance_level3 ||
                     pathname === routes.trial_balance_level4 ||
+                    pathname === routes.expense_report ||
                     pathname === routes.customer_supplier_statement ||
                     pathname === routes.product_ledger_data ||
                     pathname === '/reports/employee-installment' ||
@@ -815,6 +816,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           pathname.includes(routes.balance_sheet) ||
                           pathname.includes(routes.trial_balance_level3) ||
                           pathname.includes(routes.trial_balance_level4) ||
+                          pathname.includes(routes.expense_report) ||
                           pathname.includes(routes.customer_supplier_statement) ||
                           pathname.includes(routes.product_ledger_data) ||
                           pathname.includes('reports/ledger')) &&
@@ -971,6 +973,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Trial Balance Details
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'expense.report') && (
+                            <li>
+                              <NavLink
+                                to={routes.expense_report}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Expense Report
                               </NavLink>
                             </li>
                           )}

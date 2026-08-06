@@ -174,6 +174,7 @@ import ConnectedMember from './components/modules/reports/connected-member/Conne
 import BalanceSheet from './components/modules/reports/balance-sheet/BalanceSheet';
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
+import ExpenseReport from './components/modules/reports/expense-report/ExpenseReport';
 import LedgerWithProduct from './components/modules/reports/ledger-with-product/LedgerWithProduct';
 import CollectionSheet from './components/modules/reports/somity/CollectionSheet';
 import MonthlyReport from './components/modules/reports/somity/MonthlyReport';
@@ -519,6 +520,12 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'trial.balance.l4']} loading={permissionsLoading} />}>
               <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
+            </Route>
+            {/* The Expense Report reads the trial balance shape narrowed to the
+                expense heads. Offered on its own 'expense.report' permission, the
+                same name the sidebar entry tests, so the menu and the guard agree. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'expense.report']} loading={permissionsLoading} />}>
+              <Route path={routes.expense_report} element={<ExpenseReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.information']} loading={permissionsLoading} />}>
               <Route path={routes.bank_information} element={<BankInformation />} />

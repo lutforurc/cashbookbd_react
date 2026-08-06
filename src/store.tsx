@@ -71,6 +71,7 @@ import electronicsPurchaseSlice from './components/modules/invoices/purchase/ele
 import profitLossSlice from './components/modules/reports/profit-loss/profitLossSlice';
 import balanceSheetSlice from './components/modules/reports/balance-sheet/balanceSheetSlice';
 import trialBalanceLevel3Slice from './components/modules/reports/trial-balance-level3/trialBalanceLevel3Slice';
+import expenseReportSlice from './components/modules/reports/expense-report/expenseReportSlice';
 import trialBalanceLevel4Slice from './components/modules/reports/trial-balance-level4/trialBalanceLevel4Slice';
 import ledgerWithProductSlice from './components/modules/reports/ledger-with-product/ledgerWithProductSlice';
 import unitSalePaymentsSlice from './components/modules/real-estate/checks/unitSalePaymentsSlice';
@@ -105,6 +106,7 @@ const store = configureStore({
     profitLoss: profitLossSlice,
     balanceSheet: balanceSheetSlice,
     trialBalanceLevel3: trialBalanceLevel3Slice,
+    expenseReport: expenseReportSlice,
     trialBalanceLevel4: trialBalanceLevel4Slice,
     customerSupplierStatement: ledgerWithProductSlice,
     ledger: ledgerReducer,

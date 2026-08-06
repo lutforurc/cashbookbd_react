@@ -302,6 +302,10 @@ export const API_REPORT_CONNECTED_MEMBER_DATA_URL = `${API_BASE_URL}/reports/con
 export const API_REPORT_TRIAL_BALANCE_LEVEL3_URL = `${API_BASE_URL}/reports/trialbalance-level3`;
 // Trial Balance Details url
 export const API_REPORT_TRIAL_BALANCE_LEVEL4_URL = `${API_BASE_URL}/reports/trialbalance-level4`;
+// Expense Report url
+export const API_REPORT_EXPENSE_URL = `${API_BASE_URL}/reports/expense-report`;
+// Expense Report details url
+export const API_REPORT_EXPENSE_DETAILS_URL = `${API_BASE_URL}/reports/expense-report-details`;
 // Cash Book url
 export const API_REPORT_DUE_LIST_URL = `${API_BASE_URL}/reports/duelist`;
 export const API_REPORT_CUSTOMER_SUPPLIER_STATEMENT_URL = `${API_BASE_URL}/reports/ledger-with-product`;
