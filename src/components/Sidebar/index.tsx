@@ -15,6 +15,7 @@ import {
   FiPieChart,
   FiServer,
   FiShoppingCart,
+  FiTag,
   FiTrendingUp,
   FiTruck,
   FiUsers,
@@ -1029,32 +1030,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {hasPermission(permissions, 'product.tracking.report.view') && (
-                            <li>
-                              <NavLink
-                                to={routes.product_financial_statement}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Product Statement
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.tracking.report.view') && (
-                            <li>
-                              <NavLink
-                                to={routes.product_tracking_summary}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Product Receivable / Payable
-                              </NavLink>
-                            </li>
-                          )}
+                          {/* Product Statement and Product Receivable / Payable
+                              moved out to the Product Tracking menu, next to the
+                              settings screen that decides what they report on. */}
                           {hasPermission(permissions, 'ledger.details') && (
                             <li>
                               <NavLink
@@ -1279,6 +1257,92 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
 
               {/* Requisition */}
+              {/* Product Tracking. The three screens used to sit apart -- the
+                  settings under Admin, the two reports under Reports -- so
+                  setting a product up and then reading it back meant crossing
+                  the sidebar. They are one subject, and now one menu. */}
+              {hasMenuPermission(permissions, 'product_tracking') && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === routes.product_tracking_settings ||
+                    pathname === routes.product_financial_statement ||
+                    pathname === routes.product_tracking_summary
+                  }
+                  menuId="product_tracking"
+                  open={openMenu === 'product_tracking'}
+                  handleClick={() => handleMenuClick('product_tracking')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${(
+                          pathname === routes.product_tracking_settings ||
+                          pathname === routes.product_financial_statement ||
+                          pathname === routes.product_tracking_summary) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiTag />
+                        Product Tracking
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'product.tracking.settings.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_tracking_settings}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product Tracking
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.tracking.report.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_financial_statement}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product Statement
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'product.tracking.report.view') && (
+                            <li>
+                              <NavLink
+                                to={routes.product_tracking_summary}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Product Receivable / Payable
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
+
               {hasMenuPermission(permissions, 'requisition') && (
                 <SidebarLinkGroup
                   activeCondition={
@@ -1829,19 +1893,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.tracking.settings.view') && (
-                            <li>
-                              <NavLink
-                                to={routes.product_tracking_settings}
-                                className={({ isActive }) =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  (isActive && 'text-gray-900 font-bold dark:text-white')
-                                }
-                              >
-                                Product Tracking
-                              </NavLink>
-                            </li>
-                          )}
+                          {/* Product Tracking moved out to its own menu, with the
+                              two reports that read what is configured here. */}
                           {hasPermission(permissions, 'software.information') && (
                             <li>
                               <NavLink

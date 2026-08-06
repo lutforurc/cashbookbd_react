@@ -39,6 +39,13 @@ export const MENU_PERMISSIONS = {
     'productwise.profit',
   ],
   requisition: ['requisition.view', 'requisition.create', 'requisition.comparison'],
+  // Opens on any of the three: the settings screen and the two reports each
+  // stand on their own permission, and holding just one has to be enough to
+  // reach the menu, or that permission gates a screen its holder cannot see.
+  product_tracking: [
+    'product.tracking.settings.view',
+    'product.tracking.report.view',
+  ],
   products: ['products.view'],
   admin: [
     'check.register.view',
