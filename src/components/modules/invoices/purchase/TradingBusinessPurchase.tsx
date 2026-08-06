@@ -380,7 +380,11 @@ const TradingBusinessPurchase = () => {
       setSelectedSupplierOption(fallbackSupplierOption);
     }
 
-    if (fallbackSupplierName) {
+    // Only when the order did not give a party id. The search below matches on
+    // substrings and keeps the first hit, so "Trade Link" also finds "N S Trade
+    // Link"; running it over a good id would swap the right party for whichever
+    // of the two comes back first.
+    if (!fallbackSupplierId && fallbackSupplierName) {
       try {
         const token = getToken();
         const response = await fetch(

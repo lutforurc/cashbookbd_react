@@ -463,7 +463,11 @@ const TradingCombinedEntry = () => {
       name: fallbackSupplierName,
     };
 
-    if (fallbackSupplierName) {
+    // Only search by name when the order did not name the party by id. The
+    // search below matches on substrings and takes the first hit, so "Trade
+    // Link" also finds "N S Trade Link" -- running it over a good id would
+    // replace the right party with whichever of the two sorts first.
+    if (!fallbackSupplierId && fallbackSupplierName) {
       try {
         const response = await httpService.get(API_CHART_OF_ACCOUNTS_DDL_L4_URL, {
           params: {
@@ -568,7 +572,9 @@ const TradingCombinedEntry = () => {
       name: fallbackCustomerName,
     };
 
-    if (fallbackCustomerName) {
+    // Same as the supplier side: the name search is the fallback, not the
+    // first move. With an id in hand it can only do harm.
+    if (!fallbackCustomerId && fallbackCustomerName) {
       try {
         const response = await httpService.get(API_CHART_OF_ACCOUNTS_DDL_L4_URL, {
           params: {
