@@ -1183,21 +1183,6 @@ const TradingBusinessPurchase = () => {
                   <option key={item} value={item} />
                 ))}
               </datalist>
-              {/* One product for the whole invoice, picked by hand -- it belongs
-                  with the invoice-level amounts on this side, never in the
-                  line-entry panel opposite, where it would read as a line. */}
-              {Number(formData.account) !== 17 && (
-                <TrackedProductField
-                  id="trackedProductId"
-                  value={formData.trackedProductId}
-                  products={trackedProducts}
-                  helpText="Which product this invoice is against. Left empty, the figures stay as they were."
-                  onChange={(productId) =>
-                    setFormData((prev) => ({ ...prev, trackedProductId: productId }))
-                  }
-                  onKeyDown={(e) => handleInputKeyDown(e, 'product')}
-                />
-              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
               <div className="mt-4 ">
@@ -1247,6 +1232,26 @@ const TradingBusinessPurchase = () => {
                 </>
               )}
             </div>
+
+            {/* One product for the whole invoice, picked by hand. It sits below
+                the totals rather than among the fields above because it is not
+                part of entering the invoice -- it says what the invoice should
+                be counted against afterwards. It never belongs in the
+                line-entry panel opposite, where it would read as a line. */}
+            {Number(formData.account) !== 17 && (
+              <div className="mt-3">
+                <TrackedProductField
+                  id="trackedProductId"
+                  value={formData.trackedProductId}
+                  products={trackedProducts}
+                  helpText="Which product this invoice is against. Left empty, the figures stay as they were."
+                  onChange={(productId) =>
+                    setFormData((prev) => ({ ...prev, trackedProductId: productId }))
+                  }
+                  onKeyDown={(e) => handleInputKeyDown(e, 'product')}
+                />
+              </div>
+            )}
           </div>
         </div>
         <div className="">

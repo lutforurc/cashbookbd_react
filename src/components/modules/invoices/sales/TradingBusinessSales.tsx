@@ -1322,23 +1322,6 @@ const TradingBusinessSales = () => {
                   <option key={item} value={item} />
                 ))}
               </datalist>
-              {/* Invoice-level, so it belongs on this row with the money and
-                  the note -- not in the line-entry panel opposite, where it
-                  would read as a field of the row being typed. Hidden for the
-                  cash customer because such a sale leaves nothing owing to
-                  track. */}
-              {Number(formData.account) !== 17 && (
-                <TrackedProductField
-                  id="trackedProductId"
-                  value={formData.trackedProductId}
-                  products={trackedProducts}
-                  helpText="Which product this invoice is against. Left empty, the figures stay as they were."
-                  onChange={(productId) =>
-                    setFormData((prev) => ({ ...prev, trackedProductId: productId }))
-                  }
-                  onKeyDown={(e) => handleInputKeyDown(e, 'products')}
-                />
-              )}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
@@ -1391,6 +1374,27 @@ const TradingBusinessSales = () => {
               </>
             )}
           </div>
+
+          {/* One product for the whole invoice, picked by hand. It sits below
+              the totals rather than among the fields above because it is not
+              part of entering the invoice -- it says what the invoice should be
+              counted against afterwards. Hidden for the cash customer, whose
+              sale leaves nothing owing to track, and never in the line-entry
+              panel opposite, where it would read as a line. */}
+          {Number(formData.account) !== 17 && (
+            <div className="mt-3">
+              <TrackedProductField
+                id="trackedProductId"
+                value={formData.trackedProductId}
+                products={trackedProducts}
+                helpText="Which product this invoice is against. Left empty, the figures stay as they were."
+                onChange={(productId) =>
+                  setFormData((prev) => ({ ...prev, trackedProductId: productId }))
+                }
+                onKeyDown={(e) => handleInputKeyDown(e, 'products')}
+              />
+            </div>
+          )}
         </div>
         <div className="">
           <div className="grid grid-cols-1 gap-y-1">
