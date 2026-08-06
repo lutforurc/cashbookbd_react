@@ -107,8 +107,6 @@ const DateWisePrint = React.forwardRef<HTMLDivElement, Props>(
             {pIdx < pages.length - 1 && <div className="page-break" />}
           </div>
         ))}
-
-        <div className="mt-2 text-xs">* This report is system generated.</div>
         <ReportFooter />
       </div>
     );

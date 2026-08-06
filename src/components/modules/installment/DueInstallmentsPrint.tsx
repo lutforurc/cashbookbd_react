@@ -308,9 +308,6 @@ const DueInstallmentsPrint = React.forwardRef<HTMLDivElement, Props>(
         </div>
 
         {/* Optional note */}
-        <div style={{ fontSize: fs }} className="mt-4 text-xs text-gray-900">
-          * This document is system generated.
-        </div>
         <ReportFooter />
       </div>
     );

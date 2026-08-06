@@ -511,11 +511,6 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
             </div>
           );
         })}
-
-        <div className="mt-2 text-xs text-gray-900">
-          * This document is system generated. Printed:{" "}
-          {dayjs().format("DD-MMM-YYYY hh:mm A")}
-        </div>
         <ReportFooter />
       </div>
     );

@@ -1,3 +1,4 @@
+import React from "react";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import ReportFooter from "../../../utils/utils-functions/ReportFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
@@ -16,10 +17,11 @@ type TrialBalancePrintRow = {
 };
 
 type TrialBalanceLevel3PrintProps = {
-  branchName: string;
+  branchName?: string;
   startDate: string;
   endDate: string;
   fontSize?: number;
+  rowsPerPage?: number;
   rows: TrialBalancePrintRow[];
   totals: {
     openingDebit: number;
@@ -31,26 +33,49 @@ type TrialBalanceLevel3PrintProps = {
   };
 };
 
-const formatAmount = (amount: number) => {
-  const formatted = thousandSeparator(Math.abs(amount));
-  return amount < 0 ? `(${formatted})` : formatted;
+const chunkRows = <T,>(data: T[], size: number): T[][] => {
+  if (size <= 0) return [data];
+  const out: T[][] = [];
+  for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
+  return out;
 };
 
-const TrialBalanceLevel3Print = ({
-  branchName,
+/**
+ * The printed Trial Balance (Group).
+ *
+ * Pages are cut here rather than left to the browser. Rendered as one block the
+ * letterhead and the heading appeared once and the rest was broken wherever the
+ * paper ran out, so a sheet from the middle of the stack said nothing about
+ * what it was or where it came in the run. Every page now carries the
+ * letterhead, the title, the period and its own number.
+ */
+const TrialBalanceLevel3Print = React.forwardRef<
+  HTMLDivElement,
+  TrialBalanceLevel3PrintProps
+>(({
   startDate,
   endDate,
   fontSize,
+  rowsPerPage = 20,
   rows,
   totals,
-}: TrialBalanceLevel3PrintProps) => {
+}, ref) => {
   const fs = Number.isFinite(fontSize) ? Number(fontSize) : 12;
   const totalFs = Math.max(fs - 1, 8);
 
+  const rowsArr = Array.isArray(rows) ? rows : [];
+  const pages = chunkRows(rowsArr, rowsPerPage);
+  const pageCount = pages.length || 1;
+
   return (
-    <div className="bg-white p-6 text-slate-900 print-root">
+    <div ref={ref} className="bg-white p-6 text-slate-900 print-root">
       <PrintStyles />
-      <div className="print-page">
+      {(pages.length ? pages : [[]]).map((pageRows, pIdx) => {
+        const isLastPage = pIdx === pageCount - 1;
+        const serialOffset = pIdx * rowsPerPage;
+
+        return (
+      <div key={pIdx} className="print-page">
         <PadPrinting />
 
         <div className="mb-4 text-center" style={{ fontSize: `${fs}px` }}>
@@ -122,10 +147,10 @@ const TrialBalanceLevel3Print = ({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
+            {pageRows.map((row, index) => (
               <tr key={row.key}>
                 <td className="border border-gray-900 px-1 py-0.5 text-center align-middle">
-                  {index + 1}
+                  {serialOffset + index + 1}
                 </td>
                 <td className="border border-gray-900 px-2 py-0.5 align-middle whitespace-nowrap">{row.name}</td>
                 <td className="border border-gray-900 px-1 py-0.5 text-right">
@@ -149,6 +174,9 @@ const TrialBalanceLevel3Print = ({
               </tr>
             ))}
           </tbody>
+          {/* The total closes the report, so it belongs on the sheet that ends
+              it -- repeated per page it would read as a running subtotal. */}
+          {isLastPage && (
           <tfoot>
             <tr className="bg-gray-100 font-semibold">
               <td colSpan={2}
@@ -195,11 +223,21 @@ const TrialBalanceLevel3Print = ({
               </td>
             </tr>
           </tfoot>
+          )}
         </table>
+
+        <div style={{ fontSize: `${fs}px` }} className="mt-auto text-right text-xs">
+          Page {pIdx + 1} of {pageCount}
+        </div>
+
+        {!isLastPage && <div className="page-break" />}
       </div>
+        );
+      })}
       <ReportFooter />
     </div>
   );
-};
+});
 
+TrialBalanceLevel3Print.displayName = "TrialBalanceLevel3Print";
 export default TrialBalanceLevel3Print;

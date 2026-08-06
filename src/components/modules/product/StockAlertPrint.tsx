@@ -210,8 +210,6 @@ const StockAlertPrint = React.forwardRef<HTMLDivElement, Props>(
             {pageIndex !== pages.length - 1 ? <div className="page-break" /> : null}
           </div>
         ))}
-
-        <div className="mt-2 text-xs text-gray-900">* This document is system generated.</div>
         <ReportFooter />
       </div>
     );

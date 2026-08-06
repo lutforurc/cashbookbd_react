@@ -272,10 +272,6 @@ const GroupReportPrint = React.forwardRef<HTMLDivElement, Props>(
             <div className="mt-6 text-center text-sm text-gray-500">No data found</div>
           </div>
         )}
-
-        <div className="mt-2 text-xs text-gray-900">
-          * This document is system generated.
-        </div>
         <ReportFooter />
       </div>
     );

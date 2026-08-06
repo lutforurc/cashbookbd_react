@@ -137,10 +137,6 @@ const BankInformationPrint = forwardRef<HTMLDivElement, BankInformationPrintProp
             </div>
           );
         })}
-
-        <div className="mt-2 text-xs text-gray-900">
-          * This document is system generated.
-        </div>
         <ReportFooter />
       </div>
     );

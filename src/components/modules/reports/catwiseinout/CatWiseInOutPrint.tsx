@@ -259,8 +259,6 @@ const CatWiseInOutPrint = React.forwardRef<HTMLDivElement, Props>(
                         {pageIndex !== pages.length - 1 && <div className="page-break" />}
                     </div>
                 ))}
-
-                <div className="text-xs mt-1">* This document is system generated.</div>
                 <ReportFooter />
             </div>
         );

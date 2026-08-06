@@ -417,6 +417,9 @@ const OrderWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                 ) : null}
               </tfoot>
             </table>
+            <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
+              Page {pageIndex + 1} of {pages.length > 0 ? pages.length : 1}
+            </div>
           </div>
         ))}
         <ReportFooter />

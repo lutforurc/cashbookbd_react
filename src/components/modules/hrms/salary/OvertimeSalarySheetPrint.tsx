@@ -323,8 +323,6 @@ const OvertimeSalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
             </React.Fragment>
           );
         })}
-
-        <div className="text-xs mt-2">* This document is system generated</div>
         <ReportFooter />
       </div>
     );

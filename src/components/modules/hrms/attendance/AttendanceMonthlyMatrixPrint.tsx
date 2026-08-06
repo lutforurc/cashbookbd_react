@@ -13,6 +13,15 @@ type AttendanceMonthlyMatrixPrintProps = {
   reportRows: any[];
   dayTotals: number[];
   grandTotal: number;
+  /** Employees per printed sheet. */
+  rowsPerPage?: number;
+};
+
+const chunkRows = <T,>(data: T[], size: number): T[][] => {
+  if (size <= 0) return [data];
+  const out: T[][] = [];
+  for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
+  return out;
 };
 
 const pad = (value: number) => String(value).padStart(2, '0');
@@ -66,7 +75,14 @@ const statusClassName = (code?: string) => {
 };
 
 const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, AttendanceMonthlyMatrixPrintProps>(
-  ({ monthName, year, monthIndex, days, daysInMonth, reportRows, dayTotals, grandTotal }, ref) => (
+  ({ monthName, year, monthIndex, days, daysInMonth, reportRows, dayTotals, grandTotal, rowsPerPage = 25 }, ref) => {
+    // Cut into sheets here rather than leaving it to the browser: a run of
+    // employees broken mid-table left the following pages with no column
+    // headings and nothing saying which sheet of the month they were.
+    const pages = chunkRows(reportRows || [], rowsPerPage);
+    const pageCount = pages.length || 1;
+
+    return (
     <div ref={ref} className="attendance-monthly-print bg-white text-slate-950">
       <PrintStyles />
       <style>
@@ -272,7 +288,12 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
           }
         `}
       </style>
-      <div className="print-page">
+      {(pages.length ? pages : [[]]).map((pageRows, pIdx) => {
+      const isLastPage = pIdx === pageCount - 1;
+      const serialOffset = pIdx * rowsPerPage;
+
+      return (
+      <div key={pIdx} className="print-page">
         <PadPrinting />
         <div className="report-heading mb-1 flex w-full items-center justify-center gap-3 text-center text-sm text-slate-950">
           <div>Attendance for the Month of <span>{monthName} {year}</span></div>
@@ -291,7 +312,7 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
             </tr>
           </thead>
           <tbody>
-            {reportRows.map((employee, index) => {
+            {pageRows.map((employee, index) => {
               const employeeTotal = days.reduce((total, day) => {
                 const dateKey = toDateString(year, monthIndex, day);
                 return total + statusTotalValue(employee.dates[dateKey]);
@@ -299,7 +320,7 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
 
               return (
                 <tr key={employee.employee_id || employee.employee_name}>
-                  <td className="serial-cell border border-slate-900 px-1 py-1 text-center">{index + 1}</td>
+                  <td className="serial-cell border border-slate-900 px-1 py-1 text-center">{serialOffset + index + 1}</td>
                   <td className="name-cell border border-slate-900 px-1 py-1 text-left">{employee.employee_name || '-'}</td>
                   {days.map((day) => {
                     const dateKey = toDateString(year, monthIndex, day);
@@ -328,7 +349,10 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
               </tr>
             )}
           </tbody>
-          {reportRows.length > 0 && (
+          {/* The month's totals close the report, so they go on the sheet that
+              ends it -- on every sheet they would read as a subtotal for the
+              employees listed there, which they are not. */}
+          {reportRows.length > 0 && isLastPage && (
             <tfoot>
               <tr>
                 <td colSpan={2} className="border border-slate-900 px-1 py-1 text-center font-semibold">Total</td>
@@ -343,6 +367,7 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
           )}
         </table>
 
+        {/* The key explains the marks above it, so it repeats on every sheet. */}
         <div className="print-legend mt-2 text-xs text-slate-600">
           <span className="legend-chip"><span className="legend-mark status-present">✓</span> Present</span>
           <span className="legend-chip"><span className="legend-mark status-late">!</span> Late</span>
@@ -361,10 +386,19 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
             </div>
           )}
         </div>
+
+        <div className="mt-auto text-right text-xs">
+          Page {pIdx + 1} of {pageCount}
+        </div>
+
+        {!isLastPage && <div className="page-break" />}
       </div>
+      );
+      })}
       <ReportFooter />
     </div>
-  ),
+    );
+  },
 );
 
 AttendanceMonthlyMatrixPrint.displayName = 'AttendanceMonthlyMatrixPrint';

@@ -1055,17 +1055,19 @@ const TrialBalanceLevel3 = (user: any) => {
         )}
       </div>
 
+      {/* The ref goes on the print component itself now that it cuts its own
+          pages, and rowsPerPage is the same Rows setting the screen uses. */}
       <div className="hidden">
-        <div ref={printRef}>
-          <TrialBalanceLevel3Print
-            branchName={branchName}
-            startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
-            endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
-            rows={rows}
-            fontSize={Number(fontSize)}
-            totals={totals}
-          />
-        </div>
+        <TrialBalanceLevel3Print
+          ref={printRef}
+          branchName={branchName}
+          startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : "-"}
+          endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : "-"}
+          rows={rows}
+          rowsPerPage={Number(perPage)}
+          fontSize={Number(fontSize)}
+          totals={totals}
+        />
       </div>
     </>
   );

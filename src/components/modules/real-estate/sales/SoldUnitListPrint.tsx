@@ -19,6 +19,18 @@ type Props = {
   period?: string;
   title?: string;
   fontSize?: number;
+  /**
+   * Customers per sheet, not rows -- a customer's units are boxed together and
+   * splitting that box across a fold is what the outline exists to prevent.
+   */
+  customersPerPage?: number;
+};
+
+const chunk = <T,>(data: T[], size: number): T[][] => {
+  if (size <= 0) return [data];
+  const out: T[][] = [];
+  for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
+  return out;
 };
 
 const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
@@ -29,12 +41,18 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
       period,
       title = "Customer Wise Sold Unit List",
       fontSize = 10,
+      customersPerPage = 8,
     },
     ref
   ) => {
     const rows = Array.isArray(customers) ? customers : [];
     const fs = fontSize;
     const cell = "border border-gray-900 px-2 py-1";
+
+    // Cut into sheets here. Left to the browser, the second page onward carried
+    // no column headings and nothing saying which sheet it was.
+    const pages = chunk(rows, customersPerPage);
+    const pageCount = pages.length || 1;
 
     return (
       <div ref={ref} className="sold-unit-print p-8 text-gray-900 print-root">
@@ -50,7 +68,12 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
             }`}
         </style>
 
-        <div className="print-page">
+        {(pages.length ? pages : [[]]).map((pageRows, pIdx) => {
+        const isLastPage = pIdx === pageCount - 1;
+        const serialOffset = pIdx * customersPerPage;
+
+        return (
+        <div key={pIdx} className="print-page">
           <PadPrinting />
 
           <div className="mb-4 text-center">
@@ -74,8 +97,11 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
             </thead>
 
             <tbody>
-              {rows.length ? (
-                rows.map((customer, customerIndex) => {
+              {pageRows.length ? (
+                pageRows.map((customer, pageCustomerIndex) => {
+                  // Colour and serial follow the customer's place in the whole
+                  // report, not on this sheet, so neither restarts at a fold.
+                  const customerIndex = serialOffset + pageCustomerIndex;
                   const color = customerColor(customerIndex).border;
                   const tint = customerColor(customerIndex).tint;
                   const sales = customer.units.map((unit) => ({
@@ -249,7 +275,8 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
               )}
             </tbody>
 
-            {rows.length ? (
+            {/* The report's total, so it goes on the sheet that ends it. */}
+            {rows.length && isLastPage ? (
               <tfoot>
                 <tr className="bg-gray-100 font-bold">
                   <td style={{ fontSize: fs }} className={`${cell} text-right`} colSpan={4}>
@@ -268,11 +295,15 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
               </tfoot>
             ) : null}
           </table>
-        </div>
 
-        <div className="mt-2 text-xs text-gray-900">
-          * This document is system generated.
+          <div style={{ fontSize: fs }} className="mt-auto text-right text-xs">
+            Page {pIdx + 1} of {pageCount}
+          </div>
+
+          {!isLastPage && <div className="page-break" />}
         </div>
+        );
+        })}
         <ReportFooter />
       </div>
     );

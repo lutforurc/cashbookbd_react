@@ -117,29 +117,53 @@ type PrintButtonProps = {
   className?: string; // optional
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
+  /** Passed straight through to ButtonLoading -- see ButtonProps above. */
+  size?: 'sm' | 'md';
+  responsiveLabel?: boolean;
+  title?: string;
 };
 
+/**
+ * Print, drawn by ButtonLoading rather than beside it.
+ *
+ * This used to be its own copy of the same markup, and the copy had drifted.
+ * The printer icon carried no size, so where every other button showed a 20px
+ * icon this one showed a 1em icon that shrank with the type size. The label sat
+ * as a bare text node instead of the span its neighbours wrap it in, which puts
+ * it in the flex row as an anonymous item and lines it up by different rules.
+ * And the size, responsive-label and tooltip behaviour that was added to
+ * ButtonLoading never reached here, so Print stayed at full width on a narrow
+ * screen while the buttons either side of it collapsed to their icons.
+ *
+ * Delegating settles all of it at once across the sixty-odd places this is
+ * used, and leaves nothing to drift apart again.
+ *
+ * The opacity is the one thing added rather than inherited: Print is routinely
+ * disabled until a report has data, and a cursor change alone left the button
+ * looking ready when it was not.
+ */
 export const PrintButton: React.FC<PrintButtonProps> = ({
   label = '',
   onClick = () => { },
   className = '',
   type = 'button',
   disabled = false,
-}) => {
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`text-white bg-gray-700 hover:bg-blue-400 focus:outline-none font-medium text-sm px-5 text-center dark:hover:bg-blue-400 focus:bg-blue-400 inline-flex justify-center items-center
-                  disabled:cursor-not-allowed
-                  ${className}`}
-    >
-      <span className="mr-2 inline-flex items-center"><FiPrinter /></span>
-      {label}
-    </button>
-  );
-};
+  size,
+  responsiveLabel,
+  title,
+}) => (
+  <ButtonLoading
+    label={label}
+    onClick={onClick}
+    type={type}
+    disabled={disabled}
+    icon={<FiPrinter className="h-5 w-5" />}
+    size={size}
+    responsiveLabel={responsiveLabel}
+    title={title}
+    className={`disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+  />
+);
 
 interface DeleteButtonProps {
   label?: string;
