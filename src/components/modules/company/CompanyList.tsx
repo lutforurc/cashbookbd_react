@@ -81,38 +81,53 @@ const CompanyList = () => {
       key: 'name',
       header: 'Name of Company',
     },
+    // Both columns apply the sidebar's fallback — each theme variant falls
+    // back to the other — and each chip sits on the background its mode
+    // renders against, so the list previews both modes whatever theme it is
+    // viewed in.
     {
       key: 'company_logo',
       header: 'Logo',
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => {
-        const logoUrl = resolveAssetUrl(row?.company_logo, environment);
-        const logoDarkUrl = resolveAssetUrl(row?.company_logo_dark, environment);
+        const logoUrl = resolveAssetUrl(
+          row?.company_logo || row?.company_logo_dark,
+          environment,
+        );
 
-        if (!logoUrl && !logoDarkUrl) return '-';
+        return logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={row?.name || 'Company logo'}
+            title="Light mode logo"
+            className="mx-auto h-10 w-16 rounded border border-slate-200 bg-white object-contain p-1 dark:border-gray-700"
+          />
+        ) : (
+          '-'
+        );
+      },
+    },
+    {
+      key: 'company_logo_dark',
+      header: 'Logo Dark',
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => {
+        const logoDarkUrl = resolveAssetUrl(
+          row?.company_logo_dark || row?.company_logo,
+          environment,
+        );
 
-        // Each variant sits on the background it is designed for, so both
-        // stay visible whatever theme the list itself is in.
-        return (
-          <div className="flex items-center justify-center gap-1.5">
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={row?.name || 'Company logo'}
-                title="Light mode logo"
-                className="h-10 w-16 rounded border border-slate-200 bg-white object-contain p-1 dark:border-gray-700"
-              />
-            ) : null}
-            {logoDarkUrl ? (
-              <img
-                src={logoDarkUrl}
-                alt={row?.name ? `${row.name} (dark mode)` : 'Company logo (dark mode)'}
-                title="Dark mode logo"
-                className="h-10 w-16 rounded border border-slate-200 bg-slate-800 object-contain p-1 dark:border-gray-600"
-              />
-            ) : null}
-          </div>
+        return logoDarkUrl ? (
+          <img
+            src={logoDarkUrl}
+            alt={row?.name ? `${row.name} (dark mode)` : 'Company logo (dark mode)'}
+            title="Dark mode logo"
+            className="mx-auto h-10 w-16 rounded border border-slate-200 bg-slate-800 object-contain p-1 dark:border-gray-600"
+          />
+        ) : (
+          '-'
         );
       },
     },
