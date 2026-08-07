@@ -1,15 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FiArrowLeft, FiSave } from 'react-icons/fi';
+import { FiArrowLeft, FiClock, FiList, FiSave } from 'react-icons/fi';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import routes from '../../services/appRoutes';
 import {
   clearSubscriptionFeedback,
+  fetchCurrentSubscription,
   fetchSubscriptionPlans,
   submitManualSubscriptionPayment,
 } from './subscriptionSlice';
@@ -30,9 +31,16 @@ const PaymentSubmit: React.FC = () => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { plans, submittingPayment, submitSuccessMessage, error } = useSelector(
+  const { plans, current, submittingPayment, submitSuccessMessage, error } = useSelector(
     (state: any) => state.subscription,
   );
+
+  /**
+   * Whether the plan has been settled -- by the URL, by the plan already held,
+   * or by the person choosing one. Guards the fallback below so a plan that
+   * arrives late cannot overwrite a choice already made.
+   */
+  const planSettled = useRef(false);
 
   const selectedPlanFromQuery = useMemo(() => {
     const query = new URLSearchParams(location.search);
@@ -54,6 +62,7 @@ const PaymentSubmit: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchSubscriptionPlans());
+    dispatch(fetchCurrentSubscription());
     return () => {
       dispatch(clearSubscriptionFeedback());
     };
@@ -61,9 +70,23 @@ const PaymentSubmit: React.FC = () => {
 
   useEffect(() => {
     if (selectedPlanFromQuery > 0) {
+      planSettled.current = true;
       setForm((prev) => ({ ...prev, plan_id: selectedPlanFromQuery }));
     }
   }, [selectedPlanFromQuery]);
+
+  // Only the pricing page names a plan in the URL. Reached from My Subscription,
+  // the status banner or the menu it carries none, and the plan already held is
+  // the one being renewed -- so it is filled in once the subscription loads,
+  // and only while nothing else has settled the field.
+  useEffect(() => {
+    const currentPlanId = Number(current?.plan_id || 0);
+
+    if (planSettled.current || selectedPlanFromQuery > 0 || currentPlanId <= 0) return;
+
+    planSettled.current = true;
+    setForm((prev) => (Number(prev.plan_id) > 0 ? prev : { ...prev, plan_id: currentPlanId }));
+  }, [current?.plan_id, selectedPlanFromQuery]);
 
   useEffect(() => {
     const selectedPlan = plans.find((plan: any) => Number(plan.id) === Number(form.plan_id));
@@ -107,6 +130,7 @@ const PaymentSubmit: React.FC = () => {
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = event.target;
+    if (name === 'plan_id') planSettled.current = true;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -350,6 +374,7 @@ const PaymentSubmit: React.FC = () => {
             buttonLoading={false}
             label="Plans"
             className="w-full whitespace-nowrap p-2 text-center"
+            icon={<FiList className="text-white text-lg ml-2 mr-2" />}
           />
           <ButtonLoading
             type="button"
@@ -357,6 +382,7 @@ const PaymentSubmit: React.FC = () => {
             buttonLoading={false}
             label="History"
             className="w-full whitespace-nowrap p-2 text-center"
+            icon={<FiClock className="text-white text-lg ml-2 mr-2" />}
           />
           <button
             type="button"

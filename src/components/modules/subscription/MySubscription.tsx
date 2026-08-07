@@ -120,8 +120,10 @@ const MySubscription: React.FC = () => {
               approval.
             </p>
             <div className="mt-5 space-y-3">
+              {/* Renewal is nearly always for the plan already held, so it is
+                  named in the link and the payment form opens with it chosen. */}
               <Link
-                to={routes.subscription_payment_submit}
+                to={`${routes.subscription_payment_submit}?plan_id=${current.plan_id}`}
                 className="flex w-full items-center justify-center whitespace-nowrap p-3 h-10"
               >
                 Submit Payment
