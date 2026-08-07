@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
-import { FiArrowLeft, FiSave } from 'react-icons/fi';
+import { FiSave } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -7,8 +7,18 @@ import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { getSettings } from '../settings/settingsSlice';
 import { resolveAssetUrl } from '../../services/resolveAssetUrl';
+import InputElement from '../../utils/fields/InputElement';
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import Link from '../../utils/others/Link';
 import { editCompany, updateCompany } from './companySlice';
+
+/** Matches the textarea in the product form, so both read as the same field. */
+const TEXTAREA_CLASS =
+  'block w-full resize-y rounded-xs border border-gray-300 bg-white p-2 text-sm text-gray-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-boxdark dark:text-white dark:focus:border-blue-400';
+
+/** Matches PhotoInput, which is how every other upload in the app is drawn. */
+const FILE_INPUT_CLASS =
+  'w-full text-sm text-black file:mr-2 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1 file:text-white dark:text-white';
 
 const buildCompanyFormData = (data: any, logoFile: File | null, logoDarkFile: File | null) => {
   const payload = new FormData();
@@ -128,158 +138,158 @@ const EditCompany = () => {
     <div>
       <HelmetTitle title="Edit Company" />
 
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => navigate('/company/company-list')}
-          className="inline-flex items-center gap-2 rounded bg-slate-200 px-3 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-        >
-          <FiArrowLeft />
-          Back
-        </button>
-      </div>
+      {company?.isLoading ? <Loader /> : null}
 
-      <div className="relative max-w-3xl">
-        {company?.isLoading ? <Loader /> : null}
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputElement
+            id="name"
+            name="name"
+            label="Name of Company"
+            placeholder="Enter company name"
+            value={formData.name}
+            className=""
+            onChange={(event) => handleChange('name', event.target.value)}
+          />
+          <InputElement
+            id="contact_person"
+            name="contact_person"
+            label="Contact Person"
+            placeholder="Enter contact person"
+            value={formData.contact_person}
+            className=""
+            onChange={(event) => handleChange('contact_person', event.target.value)}
+          />
+          <InputElement
+            id="phone"
+            name="phone"
+            label="Phone/Mobile"
+            placeholder="Enter phone / mobile"
+            value={formData.phone}
+            className=""
+            onChange={(event) => handleChange('phone', event.target.value)}
+          />
+          <InputElement
+            id="email"
+            name="email"
+            type="email"
+            label="Email"
+            placeholder="Enter email"
+            value={formData.email}
+            className=""
+            onChange={(event) => handleChange('email', event.target.value)}
+          />
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 rounded-sm border border-slate-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-        >
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Name of Company
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(event) => handleChange('name', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Contact Person
-            </label>
-            <input
-              type="text"
-              value={formData.contact_person}
-              onChange={(event) => handleChange('contact_person', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Phone/Mobile
-            </label>
-            <input
-              type="text"
-              value={formData.phone}
-              onChange={(event) => handleChange('phone', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Email
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(event) => handleChange('email', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+          <div className="text-left flex flex-col">
+            <label htmlFor="address" className="text-black dark:text-white">
               Address
             </label>
             <textarea
+              id="address"
+              name="address"
               rows={2}
               value={formData.address}
               onChange={(event) => handleChange('address', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              placeholder="Enter address"
+              className={TEXTAREA_CLASS}
             />
           </div>
 
           {/* Printed under the company name on letterheads, so it is worth a
               couple of lines rather than a single-line input. */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+          <div className="text-left flex flex-col">
+            <label htmlFor="notes" className="text-black dark:text-white">
               Notes
             </label>
             <textarea
+              id="notes"
+              name="notes"
               rows={2}
               value={formData.notes}
               onChange={(event) => handleChange('notes', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              placeholder="Enter notes"
+              className={TEXTAREA_CLASS}
             />
           </div>
+        </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Company Logo (Light Mode)
-            </label>
-            <div className="flex flex-wrap items-center gap-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleLogoChange}
-                className="block w-full max-w-md rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 file:mr-3 file:rounded file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:file:bg-gray-700 dark:file:text-white"
-              />
-              {/* Previewed on a white chip regardless of theme, since this
-                  logo is shown against light backgrounds. */}
-              {logoPreview ? (
+        {/* Boxed off the way the product form boxes its opening stock: the two
+            uploads belong together and neither is required to save. */}
+        <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
+          <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Company Logo
+          </h4>
+          <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+            Optional. The dark-mode logo is shown while the app is in dark mode —
+            leave it empty to use the light-mode logo everywhere.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="text-left flex flex-col">
+              <label htmlFor="company_logo" className="text-black dark:text-white">
+                Light Mode
+              </label>
+              <div className="flex items-center gap-2">
+                {/* Previewed on a white chip regardless of theme, since this
+                    logo is shown against light backgrounds. */}
                 <img
-                  src={logoPreview}
+                  src={logoPreview || undefined}
                   alt="Company logo"
-                  className="h-16 w-28 rounded border border-slate-200 bg-white object-contain p-1 dark:border-gray-700"
+                  className={`h-[2.4rem] w-[4.2rem] shrink-0 rounded-sm border border-gray-300 bg-white object-contain p-0.5 dark:border-gray-600 ${
+                    logoPreview ? '' : 'hidden'
+                  }`}
                 />
-              ) : null}
+                <input
+                  id="company_logo"
+                  name="company_logo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className={FILE_INPUT_CLASS}
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Company Logo (Dark Mode)
-            </label>
-            <div className="flex flex-wrap items-center gap-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleLogoDarkChange}
-                className="block w-full max-w-md rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 file:mr-3 file:rounded file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:file:bg-gray-700 dark:file:text-white"
-              />
-              {/* Previewed on a dark chip regardless of theme, since this
-                  logo is shown against dark backgrounds. */}
-              {logoDarkPreview ? (
+            <div className="text-left flex flex-col">
+              <label htmlFor="company_logo_dark" className="text-black dark:text-white">
+                Dark Mode
+              </label>
+              <div className="flex items-center gap-2">
+                {/* Previewed on a dark chip regardless of theme, since this
+                    logo is shown against dark backgrounds. */}
                 <img
-                  src={logoDarkPreview}
+                  src={logoDarkPreview || undefined}
                   alt="Company logo (dark mode)"
-                  className="h-16 w-28 rounded border border-slate-200 bg-slate-800 object-contain p-1 dark:border-gray-700"
+                  className={`h-[2.4rem] w-[4.2rem] shrink-0 rounded-sm border border-gray-300 bg-slate-800 object-contain p-0.5 dark:border-gray-600 ${
+                    logoDarkPreview ? '' : 'hidden'
+                  }`}
                 />
-              ) : null}
+                <input
+                  id="company_logo_dark"
+                  name="company_logo_dark"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoDarkChange}
+                  className={FILE_INPUT_CLASS}
+                />
+              </div>
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Optional. Shown when the app is in dark mode; leave empty to use the light-mode logo everywhere.
-            </p>
           </div>
+        </div>
 
-          <div className="flex justify-end">
-            <ButtonLoading
-              buttonLoading={company?.isSaving}
-              label="Update"
-              icon={<FiSave />}
-              type="submit"
-              className="h-9"
-            />
-          </div>
-        </form>
-      </div>
+        <div className="flex mt-4 justify-center items-center">
+          <ButtonLoading
+            buttonLoading={company?.isSaving}
+            label="Update"
+            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            type="submit"
+            className="whitespace-nowrap mr-2 py-1.5"
+          />
+          <Link to="/company/company-list" className="text-nowrap py-1.5">
+            Go to back
+          </Link>
+        </div>
+      </form>
     </div>
   );
 };
