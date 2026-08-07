@@ -219,6 +219,7 @@ function App() {
   const companyName = currentBranch?.currentBranch?.company?.name;
   const settings = useSelector((s: any) => s.settings);
   const companyLogo = settings?.data?.company?.company_logo;
+  const companyLogoDark = settings?.data?.company?.company_logo_dark;
   const subscription = useSelector((s: any) => s.subscription);
   const currentCompanyId = Number(me?.company_id || 0);
   const bypassSubscriptionEnforcement = SUBSCRIPTION_EXEMPT_COMPANY_IDS.has(currentCompanyId);
@@ -249,6 +250,7 @@ function App() {
         <FaviconUpdater
           companyName={companyName || settings?.data?.company?.name}
           companyLogo={companyLogo}
+          companyLogoDark={companyLogoDark}
         />
         <Routes>
           {/* Customer Section */}

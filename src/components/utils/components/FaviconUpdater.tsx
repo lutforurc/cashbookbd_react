@@ -1,13 +1,29 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 import { resolveAssetUrl } from '../../services/resolveAssetUrl';
 
 interface Props {
   companyName?: string;
   companyLogo?: string;
+  companyLogoDark?: string;
 }
 
-const FaviconUpdater = ({ companyName, companyLogo }: Props) => {
+const FaviconUpdater = ({ companyName, companyLogo, companyLogoDark }: Props) => {
+  const environment = useSelector((state: any) => state.settings?.data?.env);
+  const [prefersDarkScheme, setPrefersDarkScheme] = useState(
+    () => window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+    if (!media?.addEventListener) return;
+
+    const onChange = (event: MediaQueryListEvent) => setPrefersDarkScheme(event.matches);
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, []);
+
   useEffect(() => {
     const slugify = (text: string) => {
       return text
@@ -17,7 +33,13 @@ const FaviconUpdater = ({ companyName, companyLogo }: Props) => {
         .replace(/\s+/g, '-');
     };
 
-    const logoFaviconUrl = resolveAssetUrl(companyLogo);
+    // The tab strip follows the OS/browser theme, not the app theme, so the
+    // favicon variant is chosen by prefers-color-scheme. Each variant falls
+    // back to the other when only one logo is uploaded.
+    const activeLogo = prefersDarkScheme
+      ? companyLogoDark || companyLogo
+      : companyLogo || companyLogoDark;
+    const logoFaviconUrl = resolveAssetUrl(activeLogo, environment);
     const api_remote_url =  API_REMOTE_URL  
 
     const dynamicFaviconUrl = companyName
@@ -64,7 +86,7 @@ const FaviconUpdater = ({ companyName, companyLogo }: Props) => {
       console.warn('⚠️ Failed to load dynamic favicon. Falling back.');
       updateFavicon(fallbackFaviconUrl);
     };
-  }, [companyName, companyLogo]);
+  }, [companyName, companyLogo, companyLogoDark, environment, prefersDarkScheme]);
 
   return null; // This component doesn't render anything
 };

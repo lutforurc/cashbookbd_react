@@ -266,9 +266,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
     'CashbookBD';
   // Empty when the company has not uploaded one. Falling back to the bundled
   // logo.svg would brand every such tenant "TailAdmin", so show the company
-  // name as text instead.
+  // name as text instead. Each theme variant falls back to the other, so a
+  // tenant with a single logo still sees it in both modes.
+  const lightLogoPath =
+    settings?.data?.company?.company_logo || currentBranch?.company?.company_logo;
+  const darkLogoPath =
+    settings?.data?.company?.company_logo_dark || currentBranch?.company?.company_logo_dark;
   const companyLogo = resolveAssetUrl(
-    settings?.data?.company?.company_logo || currentBranch?.company?.company_logo,
+    lightLogoPath || darkLogoPath,
+    settings?.data?.env,
+  );
+  const companyLogoDark = resolveAssetUrl(
+    darkLogoPath || lightLogoPath,
+    settings?.data?.env,
   );
   const [logoFailed, setLogoFailed] = useState(false);
   const showCompanyName = !companyLogo || logoFailed;
@@ -436,13 +446,28 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
                   {companyInitials}
                 </span>
-              ) : (
+              ) : companyLogo === companyLogoDark ? (
                 <img
                   src={companyLogo}
                   alt=""
                   className="block h-9 w-9 shrink-0 rounded-lg object-contain"
                   onError={() => setLogoFailed(true)}
                 />
+              ) : (
+                <>
+                  <img
+                    src={companyLogo}
+                    alt=""
+                    className="block h-9 w-9 shrink-0 rounded-lg object-contain dark:hidden"
+                    onError={() => setLogoFailed(true)}
+                  />
+                  <img
+                    src={companyLogoDark}
+                    alt=""
+                    className="hidden h-9 w-9 shrink-0 rounded-lg object-contain dark:block"
+                    onError={() => setLogoFailed(true)}
+                  />
+                </>
               )}
               <span className="block truncate text-lg font-bold leading-tight text-black dark:text-white">
                 {companyName}

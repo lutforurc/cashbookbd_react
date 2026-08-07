@@ -10,17 +10,21 @@ import { resolveAssetUrl } from '../../services/resolveAssetUrl';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { editCompany, updateCompany } from './companySlice';
 
-const buildCompanyFormData = (data: any, logoFile: File | null) => {
+const buildCompanyFormData = (data: any, logoFile: File | null, logoDarkFile: File | null) => {
   const payload = new FormData();
 
   Object.entries(data).forEach(([key, value]) => {
     if (value === undefined || value === null) return;
-    if (key === 'company_logo') return;
+    if (key === 'company_logo' || key === 'company_logo_dark') return;
     payload.append(key, String(value));
   });
 
   if (logoFile) {
     payload.append('company_logo', logoFile);
+  }
+
+  if (logoDarkFile) {
+    payload.append('company_logo_dark', logoDarkFile);
   }
 
   return payload;
@@ -29,6 +33,7 @@ const buildCompanyFormData = (data: any, logoFile: File | null) => {
 const EditCompany = () => {
   const { id } = useParams();
   const company = useSelector((state: any) => state.company);
+  const environment = useSelector((state: any) => state.settings?.data?.env);
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
@@ -41,9 +46,12 @@ const EditCompany = () => {
     address: '',
     notes: '',
     company_logo: '',
+    company_logo_dark: '',
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState('');
+  const [logoDarkFile, setLogoDarkFile] = useState<File | null>(null);
+  const [logoDarkPreview, setLogoDarkPreview] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -64,10 +72,13 @@ const EditCompany = () => {
       address: editData.address || '',
       notes: editData.notes || '',
       company_logo: editData.company_logo || '',
+      company_logo_dark: editData.company_logo_dark || '',
     });
     setLogoFile(null);
-    setLogoPreview(resolveAssetUrl(editData.company_logo || ''));
-  }, [company?.editData]);
+    setLogoPreview(resolveAssetUrl(editData.company_logo || '', environment));
+    setLogoDarkFile(null);
+    setLogoDarkPreview(resolveAssetUrl(editData.company_logo_dark || '', environment));
+  }, [company?.editData, environment]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -79,7 +90,13 @@ const EditCompany = () => {
   const handleLogoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
     setLogoFile(file);
-    setLogoPreview(file ? URL.createObjectURL(file) : resolveAssetUrl(formData.company_logo));
+    setLogoPreview(file ? URL.createObjectURL(file) : resolveAssetUrl(formData.company_logo, environment));
+  };
+
+  const handleLogoDarkChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null;
+    setLogoDarkFile(file);
+    setLogoDarkPreview(file ? URL.createObjectURL(file) : resolveAssetUrl(formData.company_logo_dark, environment));
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -94,7 +111,7 @@ const EditCompany = () => {
       ...formData,
       company_id: formData.id,
       mobile: formData.phone,
-    }, logoFile);
+    }, logoFile, logoDarkFile);
     const response = await dispatch(updateCompany(payload));
 
     if (updateCompany.fulfilled.match(response)) {
@@ -205,7 +222,7 @@ const EditCompany = () => {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Company Logo
+              Company Logo (Light Mode)
             </label>
             <div className="flex flex-wrap items-center gap-4">
               <input
@@ -214,14 +231,42 @@ const EditCompany = () => {
                 onChange={handleLogoChange}
                 className="block w-full max-w-md rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 file:mr-3 file:rounded file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:file:bg-gray-700 dark:file:text-white"
               />
+              {/* Previewed on a white chip regardless of theme, since this
+                  logo is shown against light backgrounds. */}
               {logoPreview ? (
                 <img
                   src={logoPreview}
                   alt="Company logo"
-                  className="h-16 w-28 rounded border border-slate-200 object-contain p-1 dark:border-gray-700"
+                  className="h-16 w-28 rounded border border-slate-200 bg-white object-contain p-1 dark:border-gray-700"
                 />
               ) : null}
             </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+              Company Logo (Dark Mode)
+            </label>
+            <div className="flex flex-wrap items-center gap-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoDarkChange}
+                className="block w-full max-w-md rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 file:mr-3 file:rounded file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:file:bg-gray-700 dark:file:text-white"
+              />
+              {/* Previewed on a dark chip regardless of theme, since this
+                  logo is shown against dark backgrounds. */}
+              {logoDarkPreview ? (
+                <img
+                  src={logoDarkPreview}
+                  alt="Company logo (dark mode)"
+                  className="h-16 w-28 rounded border border-slate-200 bg-slate-800 object-contain p-1 dark:border-gray-700"
+                />
+              ) : null}
+            </div>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Optional. Shown when the app is in dark mode; leave empty to use the light-mode logo everywhere.
+            </p>
           </div>
 
           <div className="flex justify-end">

@@ -14,6 +14,7 @@ import { getCompanies } from './companySlice';
 
 const CompanyList = () => {
   const company = useSelector((state: any) => state.company);
+  const environment = useSelector((state: any) => state.settings?.data?.env);
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
@@ -86,16 +87,32 @@ const CompanyList = () => {
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => {
-        const logoUrl = resolveAssetUrl(row?.company_logo);
+        const logoUrl = resolveAssetUrl(row?.company_logo, environment);
+        const logoDarkUrl = resolveAssetUrl(row?.company_logo_dark, environment);
 
-        return logoUrl ? (
-          <img
-            src={logoUrl}
-            alt={row?.name || 'Company logo'}
-            className="mx-auto h-10 w-16 rounded border border-slate-200 object-contain p-1 dark:border-gray-700"
-          />
-        ) : (
-          '-'
+        if (!logoUrl && !logoDarkUrl) return '-';
+
+        // Each variant sits on the background it is designed for, so both
+        // stay visible whatever theme the list itself is in.
+        return (
+          <div className="flex items-center justify-center gap-1.5">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={row?.name || 'Company logo'}
+                title="Light mode logo"
+                className="h-10 w-16 rounded border border-slate-200 bg-white object-contain p-1 dark:border-gray-700"
+              />
+            ) : null}
+            {logoDarkUrl ? (
+              <img
+                src={logoDarkUrl}
+                alt={row?.name ? `${row.name} (dark mode)` : 'Company logo (dark mode)'}
+                title="Dark mode logo"
+                className="h-10 w-16 rounded border border-slate-200 bg-slate-800 object-contain p-1 dark:border-gray-600"
+              />
+            ) : null}
+          </div>
         );
       },
     },

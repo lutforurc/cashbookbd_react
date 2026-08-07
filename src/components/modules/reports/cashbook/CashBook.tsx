@@ -122,11 +122,7 @@ const CashBook = (user: any) => {
     label: string;
     additionalDetails: string;
   }
-
-  console.log('====================================');
-  console.log("settings", settings?.branch?.decimal_places);
-  console.log('====================================');
-
+ 
 
   const runCashBook = () => {
     const startD = dayjs(startDate).format('YYYY-MM-DD');
