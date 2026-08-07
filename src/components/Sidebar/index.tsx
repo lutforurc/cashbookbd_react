@@ -1,12 +1,228 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
+import {
+  dividerLabel,
+  isDivider,
+  useSidebarCustomization,
+  useSidebarSubCustomization,
+} from './sidebarCustomization';
+
+/**
+ * Every menu that can be moved, in the order the code declares them.
+ *
+ * The ids are what a user's saved arrangement refers to, so they must not be
+ * renamed once a release has shipped -- an id that changes reads as a menu that
+ * was removed and a different one added, and the user's position for it is lost.
+ * The titles are what the arrange panel shows.
+ */
+/**
+ * The entries inside each menu, in the order the code declares them.
+ *
+ * Generated from the markup below, so the arrange panel always lists exactly
+ * what the sidebar renders. The ids are the route each entry points at -- the
+ * one thing about an entry that is unique and does not change when a label is
+ * reworded, and what a saved arrangement refers to.
+ */
+export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> = {
+  'dashboard': [
+    { id: 'dashboard', title: "Dashboard" },
+  ],
+  'transaction': [
+    { id: 'cash_receive', title: "Cash Received" },
+    { id: 'accounts/cash/payment', title: "Cash Payment" },
+    { id: 'accounts/bank/receive', title: "Bank Received" },
+    { id: 'accounts/bank/payment', title: "Bank Payment" },
+    { id: 'installment_list', title: "Installments" },
+    { id: 'employee_loan', title: "Employee Loan" },
+    { id: 'accounts/journal', title: "Journal" },
+  ],
+  'invoice': [
+    { id: 'invoice/purchase', title: "Purchase" },
+    { id: 'inv_purchase_import', title: "Purchase Import" },
+    { id: 'invoice/sales', title: "Sales" },
+    { id: 'inv_sales_import', title: "Sales Import" },
+    { id: 'inv_purchase_return', title: "Purchase Return" },
+    { id: 'inv_sales_return', title: "Sales Return" },
+    { id: 'invoice/labour-invoice', title: "Labour Invoice" },
+    { id: 'inv_trading_combined', title: "Combined Invoice" },
+  ],
+  'branch-transfer': [
+    { id: 'branch_transfer', title: "Branch Issue" },
+    { id: 'branch_received', title: "Branch Receive" },
+    { id: 'material_issue', title: "Material Issue" },
+    { id: 'report_branch_transfer', title: "Branch Transfer Report" },
+    { id: 'report_branch_receive', title: "Branch Receive Report" },
+    { id: 'report_branch_stock', title: "Branch Stock" },
+  ],
+  'reports': [
+    { id: 'reports/cashbook', title: "Cash Book" },
+    { id: 'report_bankbook', title: "Bank Book" },
+    { id: 'cash_bank_received_payment', title: "Cash &amp; Bank Summary" },
+    { id: 'profit_loss', title: "Profit Loss" },
+    { id: 'product_profit_loss', title: "Product Profit Loss" },
+    { id: 'bank_information', title: "Bank Information" },
+    { id: 'connected_member', title: "Connected Member" },
+    { id: 'balance_sheet', title: "Balance Sheet" },
+    { id: 'trial_balance_level3', title: "Trial Balance Group" },
+    { id: 'trial_balance_level4', title: "Trial Balance Details" },
+    { id: 'expense_report', title: "Expense Report" },
+    { id: 'reports/due-installments', title: "Due Installments" },
+    { id: 'reports/employee-installment', title: "Employee Installments" },
+    { id: 'reports/ledger', title: "Ledger" },
+    { id: 'customer_supplier_statement', title: "Ledger Details" },
+    { id: 'product_ledger_data', title: "Product In Out" },
+    { id: 'report_date_wise_in_out', title: "Date-wise In\/Out" },
+    { id: 'reports/labour/ledger', title: "Labour Ledger" },
+    { id: 'reports/due-list', title: "Due List" },
+    { id: 'somity_collection_sheet', title: "Collection Sheet" },
+    { id: 'somity_monthly_report', title: "Monthly Report" },
+    { id: 'reports/date-wise-total-data', title: "Datewise Cash Total" },
+    { id: 'reports/product/stock', title: "Product Stock" },
+    { id: 'somity_stock_details', title: "Stock Details" },
+    { id: 'report_imei_stock', title: "IMEI Stock" },
+    { id: 'reports/cat-wise/in-out', title: "Cat-wise In\/Out" },
+    { id: 'reports/purchase-ledger', title: "Purchase Ledger" },
+    { id: 'reports/sales-ledger', title: "Sales Ledger" },
+    { id: 'reports/group-report', title: "Group Report" },
+    { id: 'reports/mitch-match', title: "Mismatch" },
+  ],
+  'product_tracking': [
+    { id: 'product_tracking_settings', title: "Product Tracking" },
+    { id: 'product_financial_statement', title: "Product Statement" },
+    { id: 'product_tracking_summary', title: "Product Receivable \/ Payable" },
+  ],
+  'requisition': [
+    { id: 'requisition', title: "Requisitions" },
+    { id: 'requisition_create', title: "Create" },
+    { id: 'requisition_comparison', title: "Comparison" },
+  ],
+  'real-estate': [
+    { id: 'admin/check-register', title: "Check Register" },
+    { id: 'real-estate/area-list', title: "Location" },
+    { id: 'real_estate_project_list', title: "Projects" },
+    { id: 'real_estate_buildings_list', title: "Buildings" },
+    { id: 'real_estate_floor_list', title: "Floor List" },
+    { id: 'real_estate_floor_unit_list', title: "Unit List" },
+    { id: 'real_estate_unit_types_list', title: "Chareges" },
+    { id: 'real-estate/flat-layout', title: "Layout" },
+    { id: 'real-estate/unit-sales', title: "Unit Sales" },
+    { id: 'real_estate_sold_units', title: "Sold Units" },
+    { id: 'real_estate_installment_create', title: "Installment Create" },
+  ],
+  'products': [
+    { id: 'brand/brand-list', title: "Brand List" },
+    { id: 'category/category-list', title: "Category List" },
+    { id: 'product/product-list', title: "Product List" },
+    { id: 'product_low_stock', title: "Low Stock" },
+    { id: 'product_negative_stock', title: "Negative Stock" },
+    { id: 'product_slow_moving', title: "Slow Moving" },
+    { id: 'product_warehouse_difference', title: "Warehouse Difference" },
+    { id: 'product_unit_list', title: "Product Unit" },
+  ],
+  'admin': [
+    { id: 'company_list', title: "Company List" },
+    { id: 'branch/branch-list', title: "Branch List" },
+    { id: 'software_info', title: "Software Information" },
+    { id: 'menu_arrangement', title: "Arrange Menu" },
+    { id: 'user_list', title: "User List" },
+    { id: 'online_users', title: "Online Users" },
+    { id: 'user_login_log', title: "Login History" },
+    { id: 'company_user_list', title: "Company User" },
+    { id: 'reseller_admin', title: "Resellers" },
+    { id: 'admin_notifications', title: "Admin Notifications" },
+    { id: 'admin_in_app_messages', title: "In-App Messages" },
+    { id: 'inventory_systems', title: "Inventory Systems" },
+    { id: 'highlight_rules', title: "Highlight Rules" },
+    { id: 'roles', title: "Roles" },
+    { id: 'add_role', title: "Add Roles" },
+    { id: 'add_permission', title: "Add Permission" },
+    { id: 'admin/dayclose', title: "Day Close" },
+    { id: 'group_report_setup', title: "Add Group Report" },
+    { id: 'order/order-list', title: "Orders" },
+    { id: 'order_with_transaction', title: "Order With Transaction" },
+    { id: 'orders/avg-price', title: "Average Price" },
+    { id: 'approval_center', title: "Approval Center" },
+    { id: 'admin/voucher-approval', title: "Voucher Approval" },
+    { id: 'admin/remove-approval', title: "Approval Remove" },
+    { id: 'admin/voucher/type-change', title: "Change Voucher Type" },
+    { id: 'admin/image-upload', title: "Voucher Upload" },
+    { id: 'admin/bulk-upload', title: "Bulk Upload" },
+    { id: 'sms_send', title: "SMS Logs" },
+    { id: 'sms_template_list', title: "SMS Templates" },
+  ],
+  'vr_settings': [
+    { id: 'vr-settings/voucher-delete', title: "Voucher Delete" },
+    { id: 'vr-settings/installment-delete', title: "Installment Delete" },
+    { id: 'admin_change_date', title: "Voucher Date Change" },
+    { id: 'recyclebin', title: "Recycle Bin" },
+    { id: 'voucher_history', title: "History" },
+    { id: 'voucher_activity', title: "Log Changes" },
+  ],
+  'hrm': [
+    { id: 'hrms/employees', title: "Employees" },
+    { id: 'hrms_designation_level_list', title: "Designation Levels" },
+    { id: 'hrms_designation_list', title: "Designations" },
+    { id: 'hrms_attendance_entries', title: "Manual Attendance" },
+    { id: 'hrms_attendance_report', title: "Attendance Report" },
+    { id: 'hrms_attendance_audit_history', title: "Audit History" },
+    { id: 'hrms_overtime_report', title: "Overtime Report" },
+    { id: 'hrms_attendance_monthly_report', title: "Monthly Attendance" },
+    { id: 'hrms_attendance_exception_reports', title: "Attendance Alerts" },
+    { id: 'hrms_employee_attendance_report', title: "Employee Attendance" },
+    { id: 'hrms_branch_attendance_summary', title: "Branch Attendance" },
+    { id: 'hrms_holiday_calendar_report', title: "Holiday Calendar" },
+    { id: 'hrms_leave_applications', title: "Leave Applications" },
+    { id: 'hrms_attendance_setup', title: "Attendance Setup" },
+    { id: 'hrms/salary/salary-generate', title: "Salary Generate" },
+    { id: 'hrms_festival_bonus_generate', title: "Bonus Generate" },
+    { id: 'employee_loan_balance', title: "Loan Balance" },
+    { id: 'employee_loan_ledger', title: "Loan Ledger" },
+    { id: 'hrms/salary-sheet', title: "Salary Reports" },
+    { id: 'hrm_mismatch_payment', title: "Salary Mismatch" },
+    { id: 'hrms_festival_bonus_list', title: "Bonus Reports" },
+  ],
+  'customer-supplier': [
+    { id: 'customer-supplier/list', title: "Customers" },
+    { id: 'coal1/coal1-list', title: "CoA L1" },
+    { id: 'coal2/coal2-list', title: "CoA L2" },
+    { id: 'coal3/coal3-list', title: "CoA L3" },
+    { id: 'coal4/coal4-list', title: "CoA L4" },
+  ],
+  'al-charts': [
+    { id: 'item/item-chart', title: "Comparison" },
+  ],
+};
+
+export const SIDEBAR_MENUS = [
+  { id: 'dashboard', title: 'Dashboard' },
+  { id: 'reseller', title: 'Reseller Dashboard' },
+  { id: 'transaction', title: 'Transaction' },
+  { id: 'invoice', title: 'Invoice' },
+  { id: 'branch-transfer', title: 'Branch Transfer' },
+  { id: 'reports', title: 'Reports' },
+  { id: 'product_tracking', title: 'Product Tracking' },
+  { id: 'requisition', title: 'Requisition' },
+  { id: 'real-estate', title: 'Real Estate' },
+  { id: 'products', title: 'Products' },
+  { id: 'admin', title: 'Admin' },
+  { id: 'vr_settings', title: 'VR Settings' },
+  { id: 'hrm', title: 'HRM' },
+  { id: 'customer-supplier', title: 'Customer & Supplier' },
+  { id: 'al-charts', title: 'Analytics' },
+  { id: 'customer_dashboard', title: 'Customer Dashboard' },
+];
 import {
   FiActivity,
   FiBarChart2,
   FiBook,
+  FiChevronDown,
   FiChevronLeft,
   FiChevronRight,
+  FiChevronUp,
+  FiEye,
+  FiEyeOff,
+  FiMenu,
   FiClipboard,
   FiGrid,
   FiHome,
@@ -14,6 +230,7 @@ import {
   FiMapPin,
   FiPieChart,
   FiServer,
+  FiSettings,
   FiShoppingCart,
   FiTag,
   FiTrendingUp,
@@ -88,6 +305,59 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   // Handler to toggle menu
   const handleMenuClick = (menuId: string) => {
     setOpenMenu(openMenu === menuId ? null : menuId); // Toggle the clicked menu, close others
+  };
+
+  /**
+   * The menus in the order the code declares them. The user's own order is laid
+   * over this, and anything they have not moved stays where it is here -- so a
+   * menu added in a later release appears in its natural place rather than
+   * being lost or jumping to the top.
+   */
+  // Only what is needed to draw the arrangement. Changing it belongs to the
+  // Arrange Menu page; this reads the result. Both hooks re-read when that page
+  // saves, so the sidebar follows along while it is open beside it.
+  const { ordered: orderedMenus, isHidden: isMenuHidden } = useSidebarCustomization(
+    'sidebar-menu-order',
+    SIDEBAR_MENUS,
+  );
+
+  const { slot: subSlot, idsOf: subIdsOf } = useSidebarSubCustomization('sidebar-sub-order');
+
+  /**
+   * Where a menu sits, as a flex `order`, plus its hidden state.
+   *
+   * Ordering this way means the JSX below never moves: each menu keeps the
+   * place it was written in and simply renders in the user's position, which is
+   * what kept a rearrangeable sidebar from becoming a rewrite of this file.
+   */
+  const menuSlot = (id: string): CSSProperties => {
+    const position = orderedMenus.findIndex((menu) => menu.id === id);
+
+    return {
+      order: position < 0 ? 999 : position,
+      display: isMenuHidden(id) ? 'none' : undefined,
+    };
+  };
+
+  /**
+   * The dividers the user has put inside one menu, each with the position it
+   * should take among that menu's entries.
+   *
+   * Declared entries get their position from subSlot the same way, so a divider
+   * and the entries around it are ordered by the same numbers and land where
+   * the arrange page showed them.
+   */
+  const subDividers = (menuId: string) => {
+    const declared = (SIDEBAR_SUBMENUS[menuId] ?? []).map((entry) => entry.id);
+
+    return subIdsOf(menuId, declared)
+      .map((id, index) => ({ id, index }))
+      .filter((entry) => isDivider(entry.id))
+      .map((entry) => ({
+        id: entry.id,
+        title: dividerLabel(entry.id),
+        style: { order: entry.index } as CSSProperties,
+      }));
   };
   useEffect(() => {
     setPermissions(settings.data.permissions ?? []);
@@ -237,7 +507,39 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
           }}
         >
           <div className={isTopbar ? 'flex flex-wrap items-start gap-3' : ''}>
+            {/* The controls live on their own page now. A column this narrow
+                could not show sixteen menus and the entries beneath them at
+                once, and the panel pushed the very menus being arranged out of
+                sight. The sidebar still renders whatever was arranged there --
+                it just no longer hosts the arranging. */}
             <ul className={isTopbar ? 'flex min-w-0 flex-1 flex-wrap items-stretch gap-1.5 pb-1' : 'flex flex-col gap-1.5'}>
+              {/* The user's own dividers. They can be written here, in one place
+                  and out of the way, because the list is ordered by flex `order`
+                  rather than by where things sit in the markup -- so a divider
+                  declared last can still render third. Not shown across the top,
+                  where the menus wrap and a heading would land mid-row. */}
+              {!isTopbar
+                ? orderedMenus.map((entry, index) =>
+                    isDivider(entry.id) ? (
+                      <li
+                        key={entry.id}
+                        style={{ order: index }}
+                        className="mt-3 flex items-center gap-2 px-4 first:mt-0"
+                      >
+                        {/* A divider with no name is a plain rule. The heading
+                            and the line share one row, so the line simply takes
+                            the whole width when there is no heading beside it. */}
+                        {entry.title ? (
+                          <span className="shrink-0 text-[0.65rem] font-semibold uppercase tracking-wider text-bodydark2">
+                            {entry.title}
+                          </span>
+                        ) : null}
+                        <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                      </li>
+                    ) : null,
+                  )
+                : null}
+
               {/* Dashboard */}
               {!isTopbar ? (
                 <SidebarLinkGroup
@@ -245,6 +547,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/dashboard' || pathname.includes('dashboard')
                   }
                   menuId="dashboard"
+                  style={menuSlot('dashboard')}
                   open={openMenu === 'dashboard'}
                   handleClick={() => handleMenuClick('dashboard')}
                 >
@@ -268,7 +571,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }`}
                     >
                       <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                        <li>
+                          {subDividers('dashboard').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
+                        <li style={subSlot('dashboard', 'dashboard')}>
                           <NavLink
                             to="/dashboard"
                             className={({ isActive }) =>
@@ -286,7 +603,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 </SidebarLinkGroup>
               ) : null}
               {hasMenuPermission(permissions, 'reseller') && (
-                <li>
+                <li style={menuSlot('reseller')}>
                   <NavLink
                     to={routes.reseller_dashboard}
                     className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${pathname === routes.reseller_dashboard &&
@@ -314,6 +631,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes('forms')
                   }
                   menuId="transaction"
+                  style={menuSlot('transaction')}
                   open={openMenu === 'transaction'}
                   handleClick={() => handleMenuClick('transaction')}
                 >
@@ -346,8 +664,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('transaction').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'cash.received.create') && (
-                            <li>
+                            <li style={subSlot('transaction', 'cash_receive')}>
                               <NavLink
                                 to={routes.cash_receive}
                                 className={({ isActive }) =>
@@ -362,7 +694,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           
 
                           {hasPermission(permissions, 'cash.payment.create') && (
-                            <li>
+                            <li style={subSlot('transaction', 'accounts/cash/payment')}>
                               <NavLink
                                 to="/accounts/cash/payment"
                                 className={({ isActive }) =>
@@ -375,7 +707,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'bank.received.create') && (
-                            <li>
+                            <li style={subSlot('transaction', 'accounts/bank/receive')}>
                               <NavLink
                                 to="/accounts/bank/receive"
                                 className={({ isActive }) =>
@@ -388,7 +720,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'bank.payment.create') && (
-                            <li>
+                            <li style={subSlot('transaction', 'accounts/bank/payment')}>
                               <NavLink
                                 to="/accounts/bank/payment"
                                 className={({ isActive }) =>
@@ -402,7 +734,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           
                           {hasPermission(permissions, 'installment.create') && (
-                            <li>
+                            <li style={subSlot('transaction', 'installment_list')}>
                               <NavLink
                                 to={routes.installment_list}
                                 className={({ isActive }) =>
@@ -415,7 +747,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'hrm.loan.create') && (
-                            <li>
+                            <li style={subSlot('transaction', 'employee_loan')}>
                               <NavLink
                                 to={routes.employee_loan}
                                 className={({ isActive }) =>
@@ -429,7 +761,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'journal.create') && (
-                            <li>
+                            <li style={subSlot('transaction', 'accounts/journal')}>
                               <NavLink
                                 to="/accounts/journal"
                                 className={({ isActive }) =>
@@ -459,6 +791,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes('forms')
                   }
                   menuId="invoice"
+                  style={menuSlot('invoice')}
                   open={openMenu === 'invoice'}
                   handleClick={() => handleMenuClick('invoice')}
                 >
@@ -491,8 +824,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('invoice').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'purchase.create') && (
-                            <li>
+                            <li style={subSlot('invoice', 'invoice/purchase')}>
                               <NavLink
                                 to="/invoice/purchase"
                                 className={({ isActive }) =>
@@ -505,7 +852,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'purchase.import') && (
-                            <li>
+                            <li style={subSlot('invoice', 'inv_purchase_import')}>
                               <NavLink
                                 to={routes.inv_purchase_import}
                                 className={({ isActive }) =>
@@ -519,7 +866,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'sales.create') && (
-                            <li>
+                            <li style={subSlot('invoice', 'invoice/sales')}>
                               <NavLink
                                 to="/invoice/sales"
                                 className={({ isActive }) =>
@@ -532,7 +879,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'sales.import') && (
-                            <li>
+                            <li style={subSlot('invoice', 'inv_sales_import')}>
                               <NavLink
                                 to={routes.inv_sales_import}
                                 className={({ isActive }) =>
@@ -545,7 +892,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'purchase.return.view') && (
-                            <li>
+                            <li style={subSlot('invoice', 'inv_purchase_return')}>
                               <NavLink
                                 to={routes.inv_purchase_return}
                                 className={({ isActive }) =>
@@ -558,7 +905,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'sales.return') && (
-                            <li>
+                            <li style={subSlot('invoice', 'inv_sales_return')}>
                               <NavLink
                                 to={routes.inv_sales_return}
                                 className={({ isActive }) =>
@@ -573,7 +920,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
 
                           {hasPermission(permissions, 'labour.invoice.create') && (
-                            <li>
+                            <li style={subSlot('invoice', 'invoice/labour-invoice')}>
                               <NavLink
                                 to="/invoice/labour-invoice"
                                 className={({ isActive }) =>
@@ -589,7 +936,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {currentBranch?.business_type_id === 8 &&
                             hasPermission(permissions, 'purchase.create') &&
                             hasPermission(permissions, 'sales.create') && (
-                              <li>
+                              <li style={subSlot('invoice', 'inv_trading_combined')}>
                                 <NavLink
                                   to={routes.inv_trading_combined}
                                   className={({ isActive }) =>
@@ -629,6 +976,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes(routes.report_branch_stock)
                   }
                   menuId="branch-transfer"
+                  style={menuSlot('branch-transfer')}
                   open={openMenu === 'branch-transfer'}
                   handleClick={() => handleMenuClick('branch-transfer')}
                 >
@@ -662,10 +1010,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('branch-transfer').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {/* Issue first, then receive, then what each looks
                               like afterwards -- the order a consignment moves. */}
                           {hasPermission(permissions, 'branch.issue.create') && (
-                            <li>
+                            <li style={subSlot('branch-transfer', 'branch_transfer')}>
                               <NavLink
                                 to={routes.branch_transfer}
                                 className={({ isActive }) =>
@@ -680,7 +1042,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'branch.received.create') ||
                             hasPermission(permissions, 'inventory.received.create') ||
                             hasPermission(permissions, 'product.received.create')) && (
-                              <li>
+                              <li style={subSlot('branch-transfer', 'branch_received')}>
                                 <NavLink
                                   to={routes.branch_received}
                                   className={({ isActive }) =>
@@ -693,7 +1055,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </li>
                             )}
                           {hasPermission(permissions, 'material.issue.create') && (
-                            <li>
+                            <li style={subSlot('branch-transfer', 'material_issue')}>
                               <NavLink
                                 to={routes.material_issue}
                                 className={({ isActive }) =>
@@ -706,7 +1068,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'branch.transfer.create') && (
-                            <li>
+                            <li style={subSlot('branch-transfer', 'report_branch_transfer')}>
                               <NavLink
                                 to={routes.report_branch_transfer}
                                 className={({ isActive }) =>
@@ -719,7 +1081,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'branch.received.create') && (
-                            <li>
+                            <li style={subSlot('branch-transfer', 'report_branch_receive')}>
                               <NavLink
                                 to={routes.report_branch_receive}
                                 className={({ isActive }) =>
@@ -732,7 +1094,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.stock.view') && (
-                            <li>
+                            <li style={subSlot('branch-transfer', 'report_branch_stock')}>
                               <NavLink
                                 to={routes.report_branch_stock}
                                 className={({ isActive }) =>
@@ -785,6 +1147,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes('forms')
                   }
                   menuId="reports"
+                  style={menuSlot('reports')}
                   open={openMenu === 'reports'}
                   handleClick={() => handleMenuClick('reports')}
                 >
@@ -838,8 +1201,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('reports').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'cashbook.view') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/cashbook')}>
                               <NavLink
                                 to="/reports/cashbook"
                                 className={({ isActive }) =>
@@ -853,7 +1230,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'bank.book') && (
-                            <li>
+                            <li style={subSlot('reports', 'report_bankbook')}>
                               <NavLink
                                 to={routes.report_bankbook}
                                 className={({ isActive }) =>
@@ -867,7 +1244,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'cash.bank.summery') && (
-                            <li>
+                            <li style={subSlot('reports', 'cash_bank_received_payment')}>
                               <NavLink
                                 to={routes.cash_bank_received_payment}
                                 className={({ isActive }) =>
@@ -882,7 +1259,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
 
                           {hasPermission(permissions, 'profit.loss') && (
-                            <li>
+                            <li style={subSlot('reports', 'profit_loss')}>
                               <NavLink
                                 to={routes.profit_loss} //"/reports/profit-loss"
                                 className={({ isActive }) =>
@@ -896,7 +1273,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'productwise.profit') && (
-                            <li>
+                            <li style={subSlot('reports', 'product_profit_loss')}>
                               <NavLink
                                 to={routes.product_profit_loss}
                                 className={({ isActive }) =>
@@ -910,7 +1287,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'bank.information') && (
-                            <li>
+                            <li style={subSlot('reports', 'bank_information')}>
                               <NavLink
                                 to={routes.bank_information}
                                 className={({ isActive }) =>
@@ -924,7 +1301,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'connected.member.view') && (
-                            <li>
+                            <li style={subSlot('reports', 'connected_member')}>
                               <NavLink
                                 to={routes.connected_member}
                                 className={({ isActive }) =>
@@ -938,7 +1315,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'balancesheet.view') && (
-                            <li>
+                            <li style={subSlot('reports', 'balance_sheet')}>
                               <NavLink
                                 to={routes.balance_sheet}
                                 className={({ isActive }) =>
@@ -952,7 +1329,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'trial.balance.l3') && (
-                            <li>
+                            <li style={subSlot('reports', 'trial_balance_level3')}>
                               <NavLink
                                 to={routes.trial_balance_level3}
                                 className={({ isActive }) =>
@@ -965,7 +1342,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'trial.balance.l4') && (
-                            <li>
+                            <li style={subSlot('reports', 'trial_balance_level4')}>
                               <NavLink
                                 to={routes.trial_balance_level4}
                                 className={({ isActive }) =>
@@ -978,7 +1355,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'expense.report') && (
-                            <li>
+                            <li style={subSlot('reports', 'expense_report')}>
                               <NavLink
                                 to={routes.expense_report}
                                 className={({ isActive }) =>
@@ -991,7 +1368,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'installment.create') && currentBranch?.business_type_id == 4 && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/due-installments')}>
                               <NavLink
                                 to="/reports/due-installments"
                                 className={({ isActive }) =>
@@ -1004,7 +1381,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'installment.create') && currentBranch?.business_type_id == 4 && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/employee-installment')}>
                               <NavLink
                                 to="/reports/employee-installment"
                                 className={({ isActive }) =>
@@ -1018,7 +1395,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           {(hasPermission(permissions, 'ledger.view') ||
                             hasPermission(permissions, 'ledger.customer')) && (
-                              <li>
+                              <li style={subSlot('reports', 'reports/ledger')}>
                                 <NavLink
                                   to="/reports/ledger"
                                   className={({ isActive }) =>
@@ -1034,7 +1411,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               moved out to the Product Tracking menu, next to the
                               settings screen that decides what they report on. */}
                           {hasPermission(permissions, 'ledger.details') && (
-                            <li>
+                            <li style={subSlot('reports', 'customer_supplier_statement')}>
                               <NavLink
                                 to={routes.customer_supplier_statement}
                                 className={({ isActive }) =>
@@ -1047,7 +1424,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.in.out') && (
-                            <li>
+                            <li style={subSlot('reports', 'product_ledger_data')}>
                               <NavLink
                                 to={routes.product_ledger_data}
                                 className={({ isActive }) =>
@@ -1060,7 +1437,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.in.out') && (
-                            <li>
+                            <li style={subSlot('reports', 'report_date_wise_in_out')}>
                               <NavLink
                                 to={routes.report_date_wise_in_out}
                                 className={({ isActive }) =>
@@ -1074,7 +1451,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'ledger.labour') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/labour/ledger')}>
                               <NavLink
                                 to="/reports/labour/ledger"
                                 className={({ isActive }) =>
@@ -1087,7 +1464,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'due.list') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/due-list')}>
                               <NavLink
                                 to="/reports/due-list"
                                 className={({ isActive }) =>
@@ -1100,7 +1477,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'collection.sheet')) && (
-                            <li>
+                            <li style={subSlot('reports', 'somity_collection_sheet')}>
                               <NavLink
                                 to={routes.somity_collection_sheet}
                                 className={({ isActive }) =>
@@ -1113,7 +1490,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'monthly.report') && (
-                            <li>
+                            <li style={subSlot('reports', 'somity_monthly_report')}>
                               <NavLink
                                 to={routes.somity_monthly_report}
                                 className={({ isActive }) =>
@@ -1126,7 +1503,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'date.wise.total') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/date-wise-total-data')}>
                               <NavLink
                                 to="/reports/date-wise-total-data"
                                 className={({ isActive }) =>
@@ -1139,7 +1516,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.stock.view') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/product/stock')}>
                               <NavLink
                                 to="/reports/product/stock"
                                 className={({ isActive }) =>
@@ -1152,7 +1529,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.stock.details') && (
-                            <li>
+                            <li style={subSlot('reports', 'somity_stock_details')}>
                               <NavLink
                                 to={routes.somity_stock_details}
                                 className={({ isActive }) =>
@@ -1167,7 +1544,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {/* The two branch transfer reports moved to the
                               Branch Transfer menu, beside the forms they read. */}
                           {hasPermission(permissions, 'imei.stock') && (
-                            <li>
+                            <li style={subSlot('reports', 'report_imei_stock')}>
                               <NavLink
                                 to={routes.report_imei_stock}
                                 className={({ isActive }) =>
@@ -1181,7 +1558,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           {/* product.in.out */}
                           {hasPermission(permissions, 'product.in.out') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/cat-wise/in-out')}>
                               <NavLink
                                 to="/reports/cat-wise/in-out"
                                 className={({ isActive }) =>
@@ -1194,7 +1571,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'purchase.ledger') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/purchase-ledger')}>
                               <NavLink
                                 to="/reports/purchase-ledger"
                                 className={({ isActive }) =>
@@ -1207,7 +1584,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'sales.ledger') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/sales-ledger')}>
                               <NavLink
                                 to="/reports/sales-ledger"
                                 className={({ isActive }) =>
@@ -1220,7 +1597,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'group.report') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/group-report')}>
                               <NavLink
                                 to="/reports/group-report"
                                 end
@@ -1235,7 +1612,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'mitch.match') && (
-                            <li>
+                            <li style={subSlot('reports', 'reports/mitch-match')}>
                               <NavLink
                                 to="/reports/mitch-match"
                                 className={({ isActive }) =>
@@ -1269,6 +1646,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === routes.product_tracking_summary
                   }
                   menuId="product_tracking"
+                  style={menuSlot('product_tracking')}
                   open={openMenu === 'product_tracking'}
                   handleClick={() => handleMenuClick('product_tracking')}
                 >
@@ -1297,8 +1675,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('product_tracking').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'product.tracking.settings.view') && (
-                            <li>
+                            <li style={subSlot('product_tracking', 'product_tracking_settings')}>
                               <NavLink
                                 to={routes.product_tracking_settings}
                                 className={({ isActive }) =>
@@ -1311,7 +1703,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.tracking.report.view') && (
-                            <li>
+                            <li style={subSlot('product_tracking', 'product_financial_statement')}>
                               <NavLink
                                 to={routes.product_financial_statement}
                                 className={({ isActive }) =>
@@ -1324,7 +1716,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.tracking.report.view') && (
-                            <li>
+                            <li style={subSlot('product_tracking', 'product_tracking_summary')}>
                               <NavLink
                                 to={routes.product_tracking_summary}
                                 className={({ isActive }) =>
@@ -1351,6 +1743,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes('forms')
                   }
                   menuId="requisition"
+                  style={menuSlot('requisition')}
                   open={openMenu === 'requisition'}
                   handleClick={() => handleMenuClick('requisition')}
                 >
@@ -1381,8 +1774,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('requisition').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'requisition.view') && (
-                            <li>
+                            <li style={subSlot('requisition', 'requisition')}>
                               <NavLink
                                 to={routes.requisition}
                                 className={({ isActive }) =>
@@ -1395,7 +1802,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'requisition.create') && (
-                            <li>
+                            <li style={subSlot('requisition', 'requisition_create')}>
                               <NavLink
                                 to={routes.requisition_create}
                                 className={({ isActive }) =>
@@ -1408,7 +1815,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'requisition.comparison') && (
-                            <li>
+                            <li style={subSlot('requisition', 'requisition_comparison')}>
                               <NavLink
                                 to={routes.requisition_comparison}
                                 className={({ isActive }) =>
@@ -1443,6 +1850,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname.includes('forms')
                     }
                     menuId="real-estate"
+                  style={menuSlot('real-estate')}
                     open={openMenu === 'real-estate'}
                     handleClick={() => handleMenuClick('real-estate')}
                   >
@@ -1487,9 +1895,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             }`}
                         >
                           <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('real-estate').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
 
                             {hasPermission(permissions, 'check.register.view') && (
-                              <li>
+                              <li style={subSlot('real-estate', 'admin/check-register')}>
                                 <NavLink
                                   // to="/admin/check-register"
                                   to={routes.unit_payment_list}
@@ -1503,7 +1925,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </li>
                             )}
 
-                            <li>
+                            <li style={subSlot('real-estate', 'real-estate/area-list')}>
                               <NavLink
                                 to="/real-estate/area-list"
                                 className={({ isActive }) =>
@@ -1514,7 +1936,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Location
                               </NavLink>
                             </li>
-                            <li>
+                            <li style={subSlot('real-estate', 'real_estate_project_list')}>
                               <NavLink
                                 to={routes.real_estate_project_list}
                                 className={({ isActive }) =>
@@ -1525,7 +1947,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Projects
                               </NavLink>
                             </li>
-                            <li>
+                            <li style={subSlot('real-estate', 'real_estate_buildings_list')}>
                               <NavLink
                                 to={routes.real_estate_buildings_list}
                                 className={({ isActive }) =>
@@ -1537,7 +1959,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
 
-                            <li>
+                            <li style={subSlot('real-estate', 'real_estate_floor_list')}>
                               <NavLink
                                 to={routes.real_estate_floor_list}
                                 className={({ isActive }) =>
@@ -1548,7 +1970,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Floor List
                               </NavLink>
                             </li>
-                            <li>
+                            <li style={subSlot('real-estate', 'real_estate_floor_unit_list')}>
                               <NavLink
                                 to={routes.real_estate_floor_unit_list}
                                 className={({ isActive }) =>
@@ -1559,7 +1981,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Unit List
                               </NavLink>
                             </li>
-                            <li>
+                            <li style={subSlot('real-estate', 'real_estate_unit_types_list')}>
                               <NavLink
                                 to={routes.real_estate_unit_types_list}
                                 className={({ isActive }) =>
@@ -1571,7 +1993,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
 
-                            <li>
+                            <li style={subSlot('real-estate', 'real-estate/flat-layout')}>
                               <NavLink
                                 to="/real-estate/flat-layout"
                                 className={({ isActive }) =>
@@ -1583,7 +2005,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
 
-                            <li>
+                            <li style={subSlot('real-estate', 'real-estate/unit-sales')}>
                               <NavLink
                                 to="/real-estate/unit-sales"
                                 className={({ isActive }) =>
@@ -1594,7 +2016,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Unit Sales
                               </NavLink>
                             </li>
-                            <li>
+                            <li style={subSlot('real-estate', 'real_estate_sold_units')}>
                               <NavLink
                                 to={routes.real_estate_sold_units}
                                 className={({ isActive }) =>
@@ -1605,7 +2027,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Sold Units
                               </NavLink>
                             </li>
-                            <li>
+                            <li style={subSlot('real-estate', 'real_estate_installment_create')}>
                               <NavLink
                                 to={routes.real_estate_installment_create}
                                 className={({ isActive }) =>
@@ -1644,6 +2066,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes('forms')
                   }
                   menuId="products"
+                  style={menuSlot('products')}
                   open={openMenu === 'products'}
                   handleClick={() => handleMenuClick('products')}
                 >
@@ -1680,8 +2103,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('products').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'brand.list') && (
-                            <li>
+                            <li style={subSlot('products', 'brand/brand-list')}>
                               <NavLink
                                 to="/brand/brand-list"
                                 className={({ isActive }) =>
@@ -1695,7 +2132,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'category.view') && (
-                            <li>
+                            <li style={subSlot('products', 'category/category-list')}>
                               <NavLink
                                 to="/category/category-list"
                                 className={({ isActive }) =>
@@ -1708,7 +2145,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'products.view') && (
-                            <li>
+                            <li style={subSlot('products', 'product/product-list')}>
                               <NavLink
                                 to="/product/product-list"
                                 className={({ isActive }) =>
@@ -1721,7 +2158,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'low.stock') && (
-                            <li>
+                            <li style={subSlot('products', 'product_low_stock')}>
                               <NavLink
                                 to={routes.product_low_stock}
                                 className={({ isActive }) =>
@@ -1734,7 +2171,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'negative.stock') && (
-                            <li>
+                            <li style={subSlot('products', 'product_negative_stock')}>
                               <NavLink
                                 to={routes.product_negative_stock}
                                 className={({ isActive }) =>
@@ -1747,7 +2184,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'slow.moving') && (
-                            <li>
+                            <li style={subSlot('products', 'product_slow_moving')}>
                               <NavLink
                                 to={routes.product_slow_moving}
                                 className={({ isActive }) =>
@@ -1760,7 +2197,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'warehouse.difference') && (
-                            <li>
+                            <li style={subSlot('products', 'product_warehouse_difference')}>
                               <NavLink
                                 to={routes.product_warehouse_difference}
                                 className={({ isActive }) =>
@@ -1773,7 +2210,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'product.unit') && (
-                            <li>
+                            <li style={subSlot('products', 'product_unit_list')}>
                               <NavLink
                                 to={routes.product_unit_list}
                                 className={({ isActive }) =>
@@ -1814,6 +2251,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes('forms')
                   }
                   menuId="admin"
+                  style={menuSlot('admin')}
                   open={openMenu === 'admin'}
                   handleClick={() => handleMenuClick('admin')}
                 >
@@ -1865,9 +2303,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('admin').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
 
                           {hasPermission(permissions, 'company.view') && (
-                            <li>
+                            <li style={subSlot('admin', 'company_list')}>
                               <NavLink
                                 to={routes.company_list}
                                 className={({ isActive }) =>
@@ -1881,7 +2333,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'branch.view') && (
-                            <li>
+                            <li style={subSlot('admin', 'branch/branch-list')}>
                               <NavLink
                                 to="/branch/branch-list"
                                 className={({ isActive }) =>
@@ -1896,7 +2348,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {/* Product Tracking moved out to its own menu, with the
                               two reports that read what is configured here. */}
                           {hasPermission(permissions, 'software.information') && (
-                            <li>
+                            <li style={subSlot('admin', 'software_info')}>
                               <NavLink
                                 to={routes.software_info}
                                 className={({ isActive }) =>
@@ -1908,9 +2360,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {/* No permission check. Arranging one's own sidebar
+                              changes nothing anyone else can see, so every user
+                              gets it -- the same reasoning as Profile. */}
+                          <li style={subSlot('admin', 'menu_arrangement')}>
+                            <NavLink
+                              to={routes.menu_arrangement}
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                (isActive && 'text-gray-900 font-bold dark:text-white')
+                              }
+                            >
+                              Arrange Menu
+                            </NavLink>
+                          </li>
 
                           {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
-                            <li>
+                            <li style={subSlot('admin', 'user_list')}>
                               <NavLink
                                 to={routes.user_list}
                                 className={({ isActive }) =>
@@ -1923,7 +2389,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'online.users') || hasPermission(permissions, 'user.view')) && (
-                            <li>
+                            <li style={subSlot('admin', 'online_users')}>
                               <NavLink
                                 to={routes.online_users}
                                 className={({ isActive }) =>
@@ -1936,7 +2402,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'user.login.log') && (
-                            <li>
+                            <li style={subSlot('admin', 'user_login_log')}>
                               <NavLink
                                 to={routes.user_login_log}
                                 className={({ isActive }) =>
@@ -1949,7 +2415,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'company.user') || hasPermission(permissions, 'user.view')) && (
-                            <li>
+                            <li style={subSlot('admin', 'company_user_list')}>
                               <NavLink
                                 to={routes.company_user_list}
                                 className={({ isActive }) =>
@@ -1964,7 +2430,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'reseller.view') ||
                             hasPermission(permissions, 'subscription.view') ||
                             hasPermission(permissions, 'all.user.view')) && (
-                              <li>
+                              <li style={subSlot('admin', 'reseller_admin')}>
                                 <NavLink
                                   to={routes.reseller_admin}
                                   className={({ isActive }) =>
@@ -1979,7 +2445,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'reseller.view') ||
                             hasPermission(permissions, 'subscription.view') ||
                             hasPermission(permissions, 'all.user.view')) && (
-                              <li>
+                              <li style={subSlot('admin', 'admin_notifications')}>
                                 <NavLink
                                   to={routes.admin_notifications}
                                   className={({ isActive }) =>
@@ -1994,7 +2460,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'reseller.view') ||
                             hasPermission(permissions, 'subscription.view') ||
                             hasPermission(permissions, 'all.user.view')) && (
-                              <li>
+                              <li style={subSlot('admin', 'admin_in_app_messages')}>
                                 <NavLink
                                   to={routes.admin_in_app_messages}
                                   className={({ isActive }) =>
@@ -2009,7 +2475,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'reseller.view') ||
                             hasPermission(permissions, 'subscription.view') ||
                             hasPermission(permissions, 'all.user.view')) && (
-                              <li>
+                              <li style={subSlot('admin', 'inventory_systems')}>
                                 <NavLink
                                   to={routes.inventory_systems}
                                   className={({ isActive }) =>
@@ -2022,7 +2488,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </li>
                             )}
                           {hasPermission(permissions, 'highlight.rules') && (
-                            <li>
+                            <li style={subSlot('admin', 'highlight_rules')}>
                               <NavLink
                                 to={routes.highlight_rules}
                                 className={({ isActive }) =>
@@ -2035,7 +2501,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'roles.view') && (
-                            <li>
+                            <li style={subSlot('admin', 'roles')}>
                               <NavLink
                                 to={routes.roles}
                                 className={({ isActive }) =>
@@ -2048,7 +2514,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'roles.create') && (
-                            <li>
+                            <li style={subSlot('admin', 'add_role')}>
                               <NavLink
                                 to={routes.add_role}
                                 className={({ isActive }) =>
@@ -2061,7 +2527,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'roles.create') && (
-                            <li>
+                            <li style={subSlot('admin', 'add_permission')}>
                               <NavLink
                                 to={routes.add_permission}
                                 className={({ isActive }) =>
@@ -2074,7 +2540,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'dayclose.create') && (
-                            <li>
+                            <li style={subSlot('admin', 'admin/dayclose')}>
                               <NavLink
                                 to="/admin/dayclose"
                                 className={({ isActive }) =>
@@ -2087,7 +2553,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'group.report') && (
-                            <li>
+                            <li style={subSlot('admin', 'group_report_setup')}>
                               <NavLink
                                 to={routes.group_report_setup}
                                 className={({ isActive }) =>
@@ -2100,7 +2566,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'order.view') && (
-                            <li>
+                            <li style={subSlot('admin', 'order/order-list')}>
                               <NavLink
                                 to="/order/order-list"
                                 className={({ isActive }) =>
@@ -2113,7 +2579,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'order.view') && (
-                            <li>
+                            <li style={subSlot('admin', 'order_with_transaction')}>
                               <NavLink
                                 to={routes.order_with_transaction}
                                 className={({ isActive }) =>
@@ -2127,7 +2593,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           {/* order.avg.price */}
                           {hasPermission(permissions, 'order.avg.price') && (
-                            <li>
+                            <li style={subSlot('admin', 'orders/avg-price')}>
                               <NavLink
                                 to="/orders/avg-price"
                                 className={({ isActive }) =>
@@ -2141,7 +2607,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           {/* voucher.approval */}
                           {(hasPermission(permissions, 'approval.center')) && (
-                            <li>
+                            <li style={subSlot('admin', 'approval_center')}>
                               <NavLink
                                 to={routes.approval_center}
                                 className={({ isActive }) =>
@@ -2154,7 +2620,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'voucher.approval') && (
-                            <li>
+                            <li style={subSlot('admin', 'admin/voucher-approval')}>
                               <NavLink
                                 to="/admin/voucher-approval"
                                 className={({ isActive }) =>
@@ -2168,7 +2634,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           {/* remove.approval */}
                           {hasPermission(permissions, 'remove.approval') && (
-                            <li>
+                            <li style={subSlot('admin', 'admin/remove-approval')}>
                               <NavLink
                                 to="/admin/remove-approval"
                                 className={({ isActive }) =>
@@ -2182,7 +2648,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'change.vourcher.type') && (
-                            <li>
+                            <li style={subSlot('admin', 'admin/voucher/type-change')}>
                               <NavLink
                                 to="/admin/voucher/type-change"
                                 className={({ isActive }) =>
@@ -2197,7 +2663,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
                           {/* voucher.photo.upload */}
                           {hasPermission(permissions, 'voucher.photo.upload') && (
-                            <li>
+                            <li style={subSlot('admin', 'admin/image-upload')}>
                               <NavLink
                                 to="/admin/image-upload"
                                 className={({ isActive }) =>
@@ -2211,7 +2677,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
                           {/* bulk.photo.upload */}
                           {hasPermission(permissions, 'bulk.photo.upload') && (
-                            <li>
+                            <li style={subSlot('admin', 'admin/bulk-upload')}>
                               <NavLink
                                 to="/admin/bulk-upload"
                                 className={({ isActive }) =>
@@ -2225,7 +2691,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'sms.logs') && (
-                            <li>
+                            <li style={subSlot('admin', 'sms_send')}>
                               <NavLink
                                 to={routes.sms_send}
                                 className={({ isActive }) =>
@@ -2239,7 +2705,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'sms.templates') && (
-                            <li>
+                            <li style={subSlot('admin', 'sms_template_list')}>
                               <NavLink
                                 to={routes.sms_template_list}
                                 className={({ isActive }) =>
@@ -2269,6 +2735,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes('forms')
                   }
                   menuId="vr_settings"
+                  style={menuSlot('vr_settings')}
                   open={openMenu === 'vr_settings'}
                   handleClick={() => handleMenuClick('vr_settings')}
                 >
@@ -2303,8 +2770,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('vr_settings').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'voucher.delete') && (
-                            <li>
+                            <li style={subSlot('vr_settings', 'vr-settings/voucher-delete')}>
                               <NavLink
                                 to="/vr-settings/voucher-delete"
                                 className={({ isActive }) =>
@@ -2317,7 +2798,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'installment.delete') && (
-                            <li>
+                            <li style={subSlot('vr_settings', 'vr-settings/installment-delete')}>
                               <NavLink
                                 to="/vr-settings/installment-delete"
                                 className={({ isActive }) =>
@@ -2331,7 +2812,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'voucher.date.change') && (
-                            <li>
+                            <li style={subSlot('vr_settings', 'admin_change_date')}>
                               <NavLink
                                 to={routes.admin_change_date}
                                 className={({ isActive }) =>
@@ -2345,7 +2826,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'voucher.recycle') && (
-                            <li>
+                            <li style={subSlot('vr_settings', 'recyclebin')}>
                               <NavLink
                                 to={routes.recyclebin}
                                 className={({ isActive }) =>
@@ -2359,7 +2840,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {hasPermission(permissions, 'voucher.history') && (
-                            <li>
+                            <li style={subSlot('vr_settings', 'voucher_history')}>
                               <NavLink
                                 to={routes.voucher_history}
                                 className={({ isActive }) =>
@@ -2372,7 +2853,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'log.changes') && (
-                            <li>
+                            <li style={subSlot('vr_settings', 'voucher_activity')}>
                               <NavLink
                                 to={routes.voucher_activity}
                                 className={({ isActive }) =>
@@ -2406,6 +2887,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname.includes('/hrms/festival-bonus')
                   }
                   menuId="hrm"
+                  style={menuSlot('hrm')}
                   open={openMenu === 'hrm'}
                   handleClick={() => handleMenuClick('hrm')}
                 >
@@ -2440,8 +2922,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('hrm').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'employee.view') && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms/employees')}>
                               <NavLink
                                 to="/hrms/employees"
                                 className={({ isActive }) =>
@@ -2454,7 +2950,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'employee.view') && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_designation_level_list')}>
                               <NavLink
                                 to={routes.hrms_designation_level_list}
                                 className={({ isActive }) =>
@@ -2467,7 +2963,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'employee.view') && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_designation_list')}>
                               <NavLink
                                 to={routes.hrms_designation_list}
                                 className={({ isActive }) =>
@@ -2480,7 +2976,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_attendance_entries')}>
                               <NavLink
                                 to={routes.hrms_attendance_entries}
                                 className={({ isActive }) =>
@@ -2493,7 +2989,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_attendance_report')}>
                               <NavLink
                                 to={routes.hrms_attendance_report}
                                 className={({ isActive }) =>
@@ -2506,7 +3002,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_attendance_audit_history')}>
                               <NavLink
                                 to={routes.hrms_attendance_audit_history}
                                 className={({ isActive }) =>
@@ -2519,7 +3015,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_overtime_report')}>
                               <NavLink
                                 to={routes.hrms_overtime_report}
                                 className={({ isActive }) =>
@@ -2532,7 +3028,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_attendance_monthly_report')}>
                               <NavLink
                                 to={routes.hrms_attendance_monthly_report}
                                 className={({ isActive }) =>
@@ -2545,7 +3041,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_attendance_exception_reports')}>
                               <NavLink
                                 to={routes.hrms_attendance_exception_reports}
                                 className={() =>
@@ -2563,7 +3059,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_employee_attendance_report')}>
                               <NavLink
                                 to={routes.hrms_employee_attendance_report}
                                 className={({ isActive }) =>
@@ -2576,7 +3072,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_branch_attendance_summary')}>
                               <NavLink
                                 to={routes.hrms_branch_attendance_summary}
                                 className={({ isActive }) =>
@@ -2589,7 +3085,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_holiday_calendar_report')}>
                               <NavLink
                                 to={routes.hrms_holiday_calendar_report}
                                 className={({ isActive }) =>
@@ -2602,7 +3098,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'leave.view') || hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_leave_applications')}>
                               <NavLink
                                 to={routes.hrms_leave_applications}
                                 className={({ isActive }) =>
@@ -2615,7 +3111,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_attendance_setup')}>
                               <NavLink
                                 to={routes.hrms_attendance_setup}
                                 className={({ isActive }) =>
@@ -2628,7 +3124,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'salary.generate') && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms/salary/salary-generate')}>
                               <NavLink
                                 to="/hrms/salary/salary-generate"
                                 className={({ isActive }) =>
@@ -2641,7 +3137,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'salary.generate') && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_festival_bonus_generate')}>
                               <NavLink
                                 to={routes.hrms_festival_bonus_generate}
                                 className={({ isActive }) =>
@@ -2654,7 +3150,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'hrm.loan.create') && (
-                            <li>
+                            <li style={subSlot('hrm', 'employee_loan_balance')}>
                               <NavLink
                                 to={routes.employee_loan_balance}
                                 className={({ isActive }) =>
@@ -2667,7 +3163,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'employee.loan.ledger.view') && (
-                            <li>
+                            <li style={subSlot('hrm', 'employee_loan_ledger')}>
                               <NavLink
                                 to={routes.employee_loan_ledger}
                                 className={({ isActive }) =>
@@ -2680,7 +3176,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'salary.sheet.view') && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms/salary-sheet')}>
                               <NavLink
                                 to="/hrms/salary-sheet"
                                 className={({ isActive }) =>
@@ -2693,7 +3189,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'salary.sheet.view') && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrm_mismatch_payment')}>
                               <NavLink
                                 to={routes.hrm_mismatch_payment}
                                 className={({ isActive }) =>
@@ -2706,7 +3202,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {hasPermission(permissions, 'salary.sheet.view') && (
-                            <li>
+                            <li style={subSlot('hrm', 'hrms_festival_bonus_list')}>
                               <NavLink
                                 to={routes.hrms_festival_bonus_list}
                                 className={({ isActive }) =>
@@ -2738,6 +3234,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname.includes('forms')
                     }
                     menuId="customer-supplier"
+                  style={menuSlot('customer-supplier')}
                     open={openMenu === 'customer-supplier'}
                     handleClick={() => handleMenuClick('customer-supplier')}
                   >
@@ -2769,7 +3266,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             }`}
                         >
                           <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
-                            <li>
+                          {subDividers('customer-supplier').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
+                            <li style={subSlot('customer-supplier', 'customer-supplier/list')}>
                               <NavLink
                                 to="/customer-supplier/list"
                                 className={({ isActive }) =>
@@ -2781,7 +3292,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                             {hasPermission(permissions, 'coa.l1.view') && (
-                              <li>
+                              <li style={subSlot('customer-supplier', 'coal1/coal1-list')}>
                                 <NavLink
                                   to="/coal1/coal1-list"
                                   className={({ isActive }) =>
@@ -2794,7 +3305,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </li>
                             )}
                             {hasPermission(permissions, 'coa.l2.view') && (
-                              <li>
+                              <li style={subSlot('customer-supplier', 'coal2/coal2-list')}>
                                 <NavLink
                                   to="/coal2/coal2-list"
                                   className={({ isActive }) =>
@@ -2807,7 +3318,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </li>
                             )}
                             {hasPermission(permissions, 'coa.l3.view') && (
-                              <li>
+                              <li style={subSlot('customer-supplier', 'coal3/coal3-list')}>
                                 <NavLink
                                   to="/coal3/coal3-list"
                                   className={({ isActive }) =>
@@ -2820,7 +3331,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </li>
                             )}
                             {hasPermission(permissions, 'coa.l4.view') && (
-                              <li>
+                              <li style={subSlot('customer-supplier', 'coal4/coal4-list')}>
                                 <NavLink
                                   to="/coal4/coal4-list"
                                   className={({ isActive }) =>
@@ -2848,6 +3359,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     pathname === '/item/item-chart' || pathname.includes('forms')
                   }
                   menuId="al-charts"
+                  style={menuSlot('al-charts')}
                   open={openMenu === 'al-charts'}
                   handleClick={() => handleMenuClick('al-charts')}
                 >
@@ -2876,8 +3388,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }`}
                       >
                         <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('al-charts').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
                           {hasPermission(permissions, 'analytics.comparison') && (
-                            <li>
+                            <li style={subSlot('al-charts', 'item/item-chart')}>
                               <NavLink
                                 to="/item/item-chart"
                                 className={({ isActive }) =>
@@ -2899,7 +3425,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
 
               {hasPermission(permissions, 'customer.dashboard') && (
-                <li>
+                <li style={menuSlot('customer_dashboard')}>
                   <NavLink
                     to="/customer-dashboard"
                     className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${pathname === '/customer-dashboard' &&

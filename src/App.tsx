@@ -23,6 +23,7 @@ import CompanyUsers from './components/modules/user/CompanyUsers';
 import CompanyList from './components/modules/company/CompanyList';
 import EditCompany from './components/modules/company/EditCompany';
 import SoftwareInfo from './components/modules/settings/SoftwareInfo';
+import MenuArrangement from './components/modules/settings/MenuArrangement';
 import ProductTrackingSettings from './components/modules/product-tracking/ProductTrackingSettings';
 import ProductFinancialStatement from './components/modules/product-tracking/ProductFinancialStatement';
 import ProductTrackingSummary from './components/modules/product-tracking/ProductTrackingSummary';
@@ -280,6 +281,10 @@ function App() {
               <Route path={routes.dashboard} element={<DashboardIndex />} />
               <Route path={routes.profile} element={<Profile />} />
               <Route path={routes.my_devices} element={<MyDevices />} />
+              {/* Arranging one's own sidebar is a personal setting, like the
+                  profile above it -- there is nothing here another user could
+                  see or change, so it carries no permission. */}
+              <Route path={routes.menu_arrangement} element={<MenuArrangement />} />
               {/* Platform operator (company 1) admin tools — gated to match sidebar/dropdown menus */}
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['subscription.history']} loading={permissionsLoading} />}>
                 <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />

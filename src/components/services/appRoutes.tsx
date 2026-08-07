@@ -42,6 +42,7 @@ const ROUTES = {
   dashboard_two: '/dashboard-two',
   calendar: '/calendar',
   profile: '/profile',
+  menu_arrangement: '/settings/menu-arrangement',
   my_devices: '/my-devices',
   formElements: '/forms/form-elements',
   formLayout: '/forms/form-layout',
