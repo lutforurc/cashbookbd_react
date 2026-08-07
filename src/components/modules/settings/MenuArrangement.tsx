@@ -96,64 +96,58 @@ const MenuArrangement = () => {
     <div className="p-2">
       <HelmetTitle title="Arrange Menu" />
 
-      <div className="mb-4 rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-black dark:text-white">Arrange Menu</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Drag a menu where you want it, or use the arrows. Hide anything you
-              never open. This is yours alone and follows you to any computer you
-              log in from -- nobody else's menu changes.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Named if you type a name, a plain rule if you do not. The button
-                says which it will be rather than refusing the click, so an
-                unnamed line is a choice and not a thing that failed. */}
-            <input
-              value={newDivider}
-              maxLength={DIVIDER_LABEL_MAX}
-              placeholder="Divider name (optional)"
-              onChange={(e) => setNewDivider(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key !== 'Enter') return;
-                addDivider(newDivider);
-                setNewDivider('');
-              }}
-              className="h-9 w-56 rounded-sm border border-stroke px-2 text-sm outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
-            />
-            <ButtonLoading
-              onClick={() => {
-                addDivider(newDivider);
-                setNewDivider('');
-              }}
-              buttonLoading={false}
-              label={newDivider.trim() ? 'Add divider' : 'Add line'}
-              className="h-9 whitespace-nowrap"
-              icon={<FiPlus />}
-            />
-
-            <ButtonLoading
-              onClick={() => {
-                resetMenus();
-                resetSub();
-              }}
-              buttonLoading={false}
-              label="Reset everything"
-              className="h-9 whitespace-nowrap"
-              icon={<FiRotateCcw />}
-            />
-          </div>
-        </div>
-      </div>
-
+      {/* The controls sit in the panel they act on, not in a banner above both.
+          A header that only explains and holds buttons costs a whole band of
+          screen and pushes the lists -- the thing being arranged -- down out of
+          reach on a laptop. */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* ---------------- main menus ---------------- */}
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Main menu
-          </h3>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Main menu
+            </h3>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Named if you type a name, a plain rule if you do not. The button
+                  says which it will be rather than refusing the click, so an
+                  unnamed line is a choice and not a thing that failed. */}
+              <input
+                value={newDivider}
+                maxLength={DIVIDER_LABEL_MAX}
+                placeholder="Divider name"
+                onChange={(e) => setNewDivider(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter') return;
+                  addDivider(newDivider);
+                  setNewDivider('');
+                }}
+                className="h-8 w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
+              />
+              <ButtonLoading
+                onClick={() => {
+                  addDivider(newDivider);
+                  setNewDivider('');
+                }}
+                buttonLoading={false}
+                label={newDivider.trim() ? 'Divider' : 'Line'}
+                size="sm"
+                className="h-8 whitespace-nowrap"
+                icon={<FiPlus />}
+              />
+              <ButtonLoading
+                onClick={() => {
+                  resetMenus();
+                  resetSub();
+                }}
+                buttonLoading={false}
+                label="Reset"
+                size="sm"
+                className="h-8 whitespace-nowrap"
+                icon={<FiRotateCcw />}
+              />
+            </div>
+          </div>
 
           <ul className="flex flex-col gap-1.5">
             {orderedMenus.map((menu, index) => {
@@ -297,6 +291,16 @@ const MenuArrangement = () => {
               );
             })}
           </ul>
+
+          {/* Kept, but under the list rather than over it. It answers the two
+              questions the page actually raises -- how do I move something, and
+              does this affect anyone else -- and is worth a line for a screen
+              most people meet once. */}
+          <p className="mt-3 border-t border-stroke pt-3 text-xs leading-snug text-slate-500 dark:border-strokedark dark:text-slate-400">
+            Drag a menu where you want it, or use the arrows. Hide anything you
+            never open. This is yours alone and follows you to any computer you
+            log in from -- nobody else's menu changes.
+          </p>
         </div>
 
         {/* ---------------- the chosen menu's entries ---------------- */}
