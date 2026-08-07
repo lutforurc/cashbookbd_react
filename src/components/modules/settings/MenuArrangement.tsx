@@ -10,6 +10,7 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { SIDEBAR_MENUS, SIDEBAR_SUBMENUS } from '../../Sidebar';
 import {
   DIVIDER_LABEL_MAX,
@@ -122,29 +123,27 @@ const MenuArrangement = () => {
               }}
               className="h-9 w-56 rounded-sm border border-stroke px-2 text-sm outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
             />
-            <button
-              type="button"
+            <ButtonLoading
               onClick={() => {
                 addDivider(newDivider);
                 setNewDivider('');
               }}
-              className="flex h-9 items-center gap-2 rounded-sm bg-primary px-3 text-sm text-white"
-            >
-              <FiPlus />
-              {newDivider.trim() ? 'Add divider' : 'Add line'}
-            </button>
+              buttonLoading={false}
+              label={newDivider.trim() ? 'Add divider' : 'Add line'}
+              className="h-9 whitespace-nowrap"
+              icon={<FiPlus />}
+            />
 
-            <button
-              type="button"
+            <ButtonLoading
               onClick={() => {
                 resetMenus();
                 resetSub();
               }}
-              className="flex h-9 items-center gap-2 rounded-sm border border-stroke px-3 text-sm text-slate-600 hover:text-black dark:border-strokedark dark:text-slate-300 dark:hover:text-white"
-            >
-              <FiRotateCcw />
-              Reset everything
-            </button>
+              buttonLoading={false}
+              label="Reset everything"
+              className="h-9 whitespace-nowrap"
+              icon={<FiRotateCcw />}
+            />
           </div>
         </div>
       </div>
@@ -325,17 +324,17 @@ const MenuArrangement = () => {
                   }}
                   className="h-8 w-40 rounded-sm border border-stroke px-2 text-xs outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
                 />
-                <button
-                  type="button"
+                <ButtonLoading
                   onClick={() => {
                     addSubDivider(selectedMenu, declared, newSubDivider);
                     setNewSubDivider('');
                   }}
-                  className="flex h-8 items-center gap-1 rounded-sm bg-primary px-2 text-xs text-white"
-                >
-                  <FiPlus />
-                  {newSubDivider.trim() ? 'Divider' : 'Line'}
-                </button>
+                  buttonLoading={false}
+                  label={newSubDivider.trim() ? 'Divider' : 'Line'}
+                  size="sm"
+                  className="h-8 whitespace-nowrap"
+                  icon={<FiPlus />}
+                />
               </div>
             ) : null}
           </div>
