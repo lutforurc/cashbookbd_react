@@ -134,11 +134,20 @@ const PaymentSubmit: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Worked out from the plan and the billing months, so a zero means the plan
+   * costs nothing -- there is no payment to report and nothing for an admin to
+   * approve. Submit stays off until a plan with a price is chosen.
+   */
+  const payableAmount = Number(form.amount || 0);
+  const canSubmit = payableAmount > 0;
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!form.plan_id) return toast.error('Please select a plan.');
     if (!form.amount.trim()) return toast.error('Please enter the payment amount.');
+    if (!canSubmit) return toast.error('Please select a paid plan. The amount cannot be zero.');
     if (!form.paid_at.trim()) return toast.error('Please enter the payment date.');
     if (!form.transaction_id.trim()) return toast.error('Please enter transaction id.');
     if (!form.sender_number.trim()) return toast.error('Please enter sender number.');
@@ -158,8 +167,16 @@ const PaymentSubmit: React.FC = () => {
     );
   };
 
-  const fieldClassName =
-    'w-full border border-stroke bg-transparent px-4 py-2 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white';
+  const fieldBaseClassName =
+    'w-full border border-stroke bg-transparent px-4 text-black outline-none focus:border-blue-400 dark:border-form-strokedark dark:bg-form-input dark:text-white';
+  /**
+   * The height is fixed rather than left to the padding: a select and an input
+   * given the same padding do not come out the same height, and the date picker
+   * sets its own h-10. Stating it once keeps the row level. The note is left out
+   * -- it is sized by its rows.
+   */
+  const fieldClassName = `h-10 ${fieldBaseClassName}`;
+  const textareaClassName = `py-2 ${fieldBaseClassName}`;
   const labelClassName = 'mb-2 block text-sm font-medium text-black dark:text-white';
 
   return (
@@ -247,6 +264,15 @@ const PaymentSubmit: React.FC = () => {
               readOnly
               className={fieldClassName}
             />
+            {/* Submit is off while this is zero, and a dead button with no
+                reason beside it is the thing people ring up about. */}
+            {canSubmit ? null : (
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {Number(form.plan_id) > 0
+                  ? 'This plan is free, so there is no payment to submit.'
+                  : 'Select a plan to see the amount.'}
+              </p>
+            )}
           </div>
 
           <div>
@@ -356,7 +382,7 @@ const PaymentSubmit: React.FC = () => {
             value={form.customer_note}
             onChange={handleChange}
             placeholder="Any note for admin verification"
-            className={fieldClassName}
+            className={textareaClassName}
           />
         </div>
 
@@ -364,8 +390,10 @@ const PaymentSubmit: React.FC = () => {
           <ButtonLoading
             type="submit"
             buttonLoading={submittingPayment}
+            disabled={!canSubmit || submittingPayment}
+            title={canSubmit ? undefined : 'Select a paid plan to submit a payment'}
             label="Submit"
-            className="w-full whitespace-nowrap p-2 text-center"
+            className="w-full whitespace-nowrap p-2 text-center disabled:cursor-not-allowed disabled:opacity-50"
             icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
           />
           <ButtonLoading
