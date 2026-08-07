@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import Loader from '../../../common/Loader';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import InputElement from '../../utils/fields/InputElement';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import httpService from '../../services/httpService';
 import {
@@ -85,99 +86,88 @@ const SoftwareInfo = () => {
     }
   };
 
+  const optionalLabel = (text: string) => (
+    <>
+      {text} <span className="text-gray-400">(optional)</span>
+    </>
+  );
+
   return (
     <div>
+      {/* The heading is HelmetTitle's alone -- a second one below it said the
+          same words twice. What is worth keeping is the line explaining where
+          these details end up. */}
       <HelmetTitle title="Software Information" />
+      <p className="mb-3 text-center text-sm text-gray-500 dark:text-gray-400">
+        This name and mobile number appear in the footer of all reports.
+      </p>
 
-      <div className="mb-3">
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
-          Software Information
-        </h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          This name and mobile number appear in the footer of all reports.
-        </p>
-      </div>
+      {loading ? <Loader /> : null}
 
-      <div className="relative max-w-3xl">
-        {loading ? <Loader /> : null}
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputElement
+            id="name"
+            name="name"
+            label="Software Company Name"
+            placeholder="e.g. ABC Software Ltd."
+            value={formData.name}
+            className=""
+            onChange={(event) => handleChange('name', event.target.value)}
+          />
+          <InputElement
+            id="mobile"
+            name="mobile"
+            label="Mobile Number"
+            placeholder="e.g. 01700000000"
+            value={formData.mobile}
+            className=""
+            onChange={(event) => handleChange('mobile', event.target.value)}
+          />
+          <InputElement
+            id="email"
+            name="email"
+            label={optionalLabel('Email')}
+            placeholder="Enter email"
+            value={formData.email}
+            className=""
+            onChange={(event) => handleChange('email', event.target.value)}
+          />
+          <InputElement
+            id="website"
+            name="website"
+            label={optionalLabel('Website')}
+            placeholder="Enter website"
+            value={formData.website}
+            className=""
+            onChange={(event) => handleChange('website', event.target.value)}
+          />
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 rounded-sm border border-slate-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-        >
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Software Company Name
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(event) => handleChange('name', event.target.value)}
-              placeholder="e.g. ABC Software Ltd."
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Mobile Number
-            </label>
-            <input
-              type="text"
-              value={formData.mobile}
-              onChange={(event) => handleChange('mobile', event.target.value)}
-              placeholder="e.g. 01700000000"
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Email <span className="text-slate-400">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={formData.email}
-              onChange={(event) => handleChange('email', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Website <span className="text-slate-400">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={formData.website}
-              onChange={(event) => handleChange('website', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Address <span className="text-slate-400">(optional)</span>
-            </label>
-            <input
-              type="text"
+          {/* Runs the width of the row: an address is the longest of these and
+              would otherwise sit half-width with empty space beside it. */}
+          <div className="md:col-span-2">
+            <InputElement
+              id="address"
+              name="address"
+              label={optionalLabel('Address')}
+              placeholder="Enter address"
               value={formData.address}
+              className=""
               onChange={(event) => handleChange('address', event.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
             />
           </div>
+        </div>
 
-          <div className="flex justify-end">
-            <ButtonLoading
-              buttonLoading={saving}
-              label="Update"
-              icon={<FiSave />}
-              type="submit"
-              className="h-9"
-            />
-          </div>
-        </form>
-      </div>
+        <div className="flex mt-4 justify-center items-center">
+          <ButtonLoading
+            buttonLoading={saving}
+            label="Update"
+            icon={<FiSave className="text-white text-lg ml-2 mr-2" />}
+            type="submit"
+            className="whitespace-nowrap py-1.5"
+          />
+        </div>
+      </form>
     </div>
   );
 };
