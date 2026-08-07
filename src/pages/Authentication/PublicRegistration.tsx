@@ -196,7 +196,7 @@ const PublicRegistration: React.FC = () => {
               
               <HelmetTitle title="Registration your company" />
               <a
-                href="https://youtu.be/qqxJ1EiyGjs"
+                href="https://www.youtube.com/watch?v=aedE-I79XHM&list=PLZcNDKJT-3gc&index=2&t=17s"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Watch registration video"

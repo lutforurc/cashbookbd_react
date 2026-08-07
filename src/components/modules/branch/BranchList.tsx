@@ -144,7 +144,7 @@ const BranchList = () => {
             "Need Demo Tutorial?" switch was supposed to decide. */}
         {String(settings?.data?.branch?.need_demo_tutorial) === '1' ? (
           <a
-            href="https://youtu.be/mWvu7T-spJg"
+            href="https://www.youtube.com/watch?v=WMebDncBOrY&list=PLZcNDKJT-3gc"
             target="_blank"
             rel="noreferrer"
             aria-label="Watch registration video"
