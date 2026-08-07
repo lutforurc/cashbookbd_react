@@ -429,7 +429,15 @@ const UserList = () => {
     {
       key: 'email',
       header: 'Email/Phone',
-      render: (row: any) => row?.email || row?.phone || '-',
+      render: (row: any) => {
+        if (!row?.email && !row?.phone) return '-';
+        return (
+          <div className="flex flex-col">
+            {row?.email && <span>{row.email}</span>}
+            {row?.phone && <span>{row.phone}</span>}
+          </div>
+        );
+      },
     },
     {
       key: 'role',
