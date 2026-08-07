@@ -45,7 +45,9 @@ const FaviconUpdater = ({ companyName, companyLogo, companyLogoDark }: Props) =>
     const dynamicFaviconUrl = companyName
       ? `${api_remote_url}/public/backend/${slugify(companyName)}.png`
       : '';
-    const fallbackFaviconUrl = `${api_remote_url}/public/backend/nibir-nirman.png`;
+    // Before login there is no company to brand the tab with, so the bundled
+    // CashBookBD icon stays — never another tenant's logo.
+    const fallbackFaviconUrl = '/favicon.ico';
 
     const updateFavicon = (url: string) => {
       const timestamp = new Date().getTime(); // prevent caching
