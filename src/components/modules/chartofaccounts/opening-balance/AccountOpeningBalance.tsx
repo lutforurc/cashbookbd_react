@@ -10,7 +10,7 @@ import InputElement from "../../../utils/fields/InputElement";
 import Table from "../../../utils/others/Table";
 import ConfirmModal from "../../../utils/components/ConfirmModalProps";
 import Loader from "../../../../common/Loader";
-import { ButtonLoading } from "../../../../pages/UiElements/CustomButtons";
+import { ButtonLoading, ROW_ACTION_BUTTON_CLASS } from "../../../../pages/UiElements/CustomButtons";
 import { hasPermission } from "../../../utils/permissionChecker";
 import routes from "../../../services/appRoutes";
 import {
@@ -32,15 +32,6 @@ import {
  * back off its own journal voucher, so what the screen shows is what the ledger
  * holds rather than a copy that can drift away from it.
  */
-/**
- * One shape for all three row buttons.
- *
- * The height is stated rather than left to the padding so Save, Cancel and
- * Delete cannot come out a pixel apart; the width comes from the equal grid
- * tracks they sit in.
- */
-const ACTION_BUTTON_CLASS = 'h-7 w-full';
-
 const AccountOpeningBalance = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -276,7 +267,7 @@ const AccountOpeningBalance = () => {
               resize under the clerk's hand. */}
           <div className="grid grid-cols-3 items-center gap-1.5">
             <ButtonLoading
-              className={ACTION_BUTTON_CLASS}
+              className={ROW_ACTION_BUTTON_CLASS}
               size="sm"
               label="Save"
               type="button"
@@ -287,7 +278,7 @@ const AccountOpeningBalance = () => {
             />
             <ButtonLoading
               icon={<FiX size={14} />}
-              className={ACTION_BUTTON_CLASS}
+              className={ROW_ACTION_BUTTON_CLASS}
               size="sm"
               label="Cancel"
               type="button"
@@ -302,7 +293,7 @@ const AccountOpeningBalance = () => {
               {row.opening_vr_no && canDeleteVoucher ? (
                 <ButtonLoading
                   icon={<FiTrash2 size={14} />}
-                  className={`${ACTION_BUTTON_CLASS} bg-red-600 hover:bg-red-700`}
+                  className={`${ROW_ACTION_BUTTON_CLASS} bg-red-600 hover:bg-red-700`}
                   size="sm"
                   label="Delete"
                   type="button"

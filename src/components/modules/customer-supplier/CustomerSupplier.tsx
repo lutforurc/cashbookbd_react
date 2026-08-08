@@ -5,7 +5,7 @@ import { FaYoutube } from "react-icons/fa";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
-import { ButtonLoading } from "../../../pages/UiElements/CustomButtons";
+import { ButtonLoading, ROW_ACTION_BUTTON_CLASS } from "../../../pages/UiElements/CustomButtons";
 import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
 import Table from "../../utils/others/Table";
@@ -366,24 +366,31 @@ const CustomerSupplier = () => {
       key: 'opening_action',
       header: '',
       headerClass: 'text-center',
-      cellClass: 'text-center',
-      width: '210px',
+      // The table lays out fixed and honours no `width` of its own, so a column
+      // left without one takes an equal share of the page. Held to what the
+      // three buttons need, the rest goes back to the columns that carry text.
+      cellClass: 'text-center w-72',
       render: (row: any) => {
         const dirty = isRowDirty(row);
 
         return (
-          <div className="flex items-center justify-center gap-2">
+          // Three slots of equal width, always three. Delete comes and goes as
+          // opening balances are saved and removed; were its slot to go with
+          // it, the other two would slide sideways row by row.
+          <div className="grid grid-cols-3 items-center gap-1.5">
             <ButtonLoading
-              className="py-1 px-2"
+              className={ROW_ACTION_BUTTON_CLASS}
+              size="sm"
               label="Save"
               type="button"
               disabled={!dirty}
               onClick={() => handleSaveRow(row)}
-              icon={<FiCheckSquare size={15} />}
+              icon={<FiCheckSquare size={14} />}
             />
             <ButtonLoading
-              icon={<FiX />}
-              className="py-1 px-2"
+              icon={<FiX size={14} />}
+              className={ROW_ACTION_BUTTON_CLASS}
+              size="sm"
               label="Cancel"
               type="button"
               disabled={!editedRows[row.id]}
@@ -393,17 +400,20 @@ const CustomerSupplier = () => {
             {/* Only where there is a voucher to delete. A row that never had an
                 opening balance has nothing to offer here, and saying so by
                 leaving the button out reads faster than grey-ing it. */}
-            {row.opening_vr_no && canDeleteVoucher && (
-              <ButtonLoading
-                icon={<FiTrash2 size={15} />}
-                className="py-1 px-2 bg-red-600 hover:bg-red-700"
-                label="Delete"
-                type="button"
-                buttonLoading={deletingOpeningId === row.id}
-                disabled={deletingOpeningId === row.id}
-                onClick={() => setOpeningDeleteRow(row)}
-              />
-            )}
+            <div>
+              {row.opening_vr_no && canDeleteVoucher ? (
+                <ButtonLoading
+                  icon={<FiTrash2 size={14} />}
+                  className={`${ROW_ACTION_BUTTON_CLASS} bg-red-600 hover:bg-red-700`}
+                  size="sm"
+                  label="Delete"
+                  type="button"
+                  buttonLoading={deletingOpeningId === row.id}
+                  disabled={deletingOpeningId === row.id}
+                  onClick={() => setOpeningDeleteRow(row)}
+                />
+              ) : null}
+            </div>
           </div>
         );
       },

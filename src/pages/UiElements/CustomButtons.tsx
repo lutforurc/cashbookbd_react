@@ -28,6 +28,17 @@ interface ButtonProps {
   /** Tooltip. Falls back to the label when the label itself is hidden. */
   title?: string;
 }
+/**
+ * One shape for a row of Save / Cancel / Delete buttons inside a table.
+ *
+ * The height is stated rather than left to the padding, so buttons carrying
+ * different labels and icons cannot come out a pixel apart. The width is left
+ * to the equal grid tracks they sit in -- pair this with `grid grid-cols-3`,
+ * and keep a slot standing where a button is conditional, or the row shifts
+ * sideways as that button comes and goes.
+ */
+export const ROW_ACTION_BUTTON_CLASS = 'h-7 w-full';
+
 // Button component definition
 
 export const ButtonLoading: React.FC<ButtonProps> = ({
