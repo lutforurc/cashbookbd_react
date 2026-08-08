@@ -154,6 +154,8 @@ export const API_NOTIFICATION_DISMISS_URL = `${API_BASE_URL}/notifications/dismi
 // Customer
 export const API_CUSTOMER_BASE_URL = `${API_BASE_URL}/customer`;
 export const API_CUSTOMER_FROM_UI_URL = `${API_BASE_URL}/contact/customer/update/ui/`;
+// Drops the opening balance and sends its journal voucher to the trash.
+export const API_CUSTOMER_OPENING_DELETE_URL = `${API_BASE_URL}/contact/customer/opening-balance/delete/`;
 
 // Settings url
 export const API_APP_SETTING_URL = `${API_BASE_URL}/settings/get-settings`;
@@ -411,6 +413,8 @@ export const API_PRODUCT_EDIT_URL = `${API_BASE_URL}/product/product-edit/`;
 export const API_PRODUCT_UPDATE_URL = `${API_BASE_URL}/product/update`;
 export const API_PRODUCT_CHECK = `${API_BASE_URL}/product/product-check`;
 export const API_PRODUCT_UPDATE_BY_RATE_URL = `${API_BASE_URL}/product/update-qty-rate`;
+// Drops the opening stock and sends its voucher to the trash.
+export const API_PRODUCT_OPENING_DELETE_URL = `${API_BASE_URL}/product/opening/delete`;
 export const API_PRODUCT_DELETE_URL = `${API_BASE_URL}/product/delete`;
 
 

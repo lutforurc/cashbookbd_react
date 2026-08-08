@@ -6,6 +6,7 @@ import {
   API_CONTACT_EDIT_URL,
   API_CONTACT_UPDATE_URL,
   API_CUSTOMER_FROM_UI_URL,
+  API_CUSTOMER_OPENING_DELETE_URL,
   API_CUSTOMER_SET_PASSWORD_URL,
   API_STORE_CUSTOMER_URL,
 } from '../../services/apiRoutes';
@@ -154,6 +155,33 @@ export const updateCustomerFromUI = createAsyncThunk<{ message: string }, { id: 
         error.response?.data?.message ||
         error.message ||
         "Failed to update employee"
+      );
+    }
+  }
+);
+
+/* ---------- Remove an opening balance and the voucher behind it ----------
+   The customer stays; only the figure and its journal voucher go. */
+export const deleteCustomerOpening = createAsyncThunk<any, number, { rejectValue: string }>(
+  "customer/deleteOpeningBalance",
+  async (id, thunkAPI) => {
+    try {
+      const response = await httpService.post(`${API_CUSTOMER_OPENING_DELETE_URL}${id}`);
+
+      // notFound() answers with a 2xx and success:false, so the refusal reason
+      // -- an approved voucher, another branch -- has to be read off the body.
+      if (response.data?.success === false) {
+        return thunkAPI.rejectWithValue(
+          response.data?.message || "Opening balance could not be deleted"
+        );
+      }
+
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Opening balance could not be deleted"
       );
     }
   }

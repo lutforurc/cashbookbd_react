@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteProduct, getProduct, updateProductQtyRate } from './productSlice';
+import { deleteProduct, deleteProductOpening, getProduct, updateProductQtyRate } from './productSlice';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import InputElement from '../../utils/fields/InputElement';
 import { toast } from 'react-toastify';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
+import { hasPermission } from '../../utils/permissionChecker';
 import { getCategoryDdl } from '../category/categorySlice';
 import { fetchBrandDdl } from './brand/brandSlice';
 import ProductPrint from './ProductPrint';
@@ -96,6 +97,12 @@ const Product = (user: any) => {
   const didInitRef = useRef(false);
   const [deleteRow, setDeleteRow] = useState<any>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [openingDeleteRow, setOpeningDeleteRow] = useState<any>(null);
+  const [openingDeleteLoading, setOpeningDeleteLoading] = useState(false);
+
+  // Removing opening stock removes a voucher, so it answers to the voucher
+  // permission -- the same one the API checks.
+  const canDeleteVoucher = hasPermission(settings?.data?.permissions, 'voucher.delete');
 
   const [fontSize, setFontSize] = useState<number>(12);
   const [rowsPerPage, setRowsPerPage] = useState<number>(25);
@@ -226,6 +233,11 @@ const Product = (user: any) => {
       if (result?.success && result?.message) {
         toast.success(result.message);
 
+        // foundData() nests the payload one level down; the voucher it carries
+        // is what puts the number and the Delete button on the row without a
+        // round trip to the list.
+        const saved = result?.data?.data ?? {};
+
         setTableData((prev) =>
           prev.map((item) => {
             if (isGroupRow(item) || item.product_id !== row.product_id) return item;
@@ -237,6 +249,8 @@ const Product = (user: any) => {
               rate: payload.rate,
               purchase: payload.rate,
               serial_no: payload.serial_no,
+              main_trx_id: saved.main_trx_id ?? item.main_trx_id,
+              opening_vr_no: saved.opening_vr_no ?? item.opening_vr_no,
             };
           })
         );
@@ -269,6 +283,51 @@ const Product = (user: any) => {
   const handleProductEdit = (row: any) => {
     if (isGroupRow(row)) return;
     navigate(`/product/edit/${row.product_id}`);
+  };
+
+  const handleOpeningDeleteConfirm = async () => {
+    if (!openingDeleteRow?.product_id) return;
+
+    setOpeningDeleteLoading(true);
+
+    try {
+      const res: any = await dispatch(
+        deleteProductOpening(openingDeleteRow.product_id) as any,
+      );
+
+      if (res?.success) {
+        toast.success(res?.message || 'Opening stock deleted.');
+
+        setTableData((prev) =>
+          prev.map((item) => {
+            if (isGroupRow(item) || item.product_id !== openingDeleteRow.product_id) {
+              return item;
+            }
+
+            return {
+              ...item,
+              qty: 0,
+              openingbalance: 0,
+              serial_no: '',
+              main_trx_id: null,
+              opening_vr_no: null,
+            };
+          }),
+        );
+
+        // A draft left in the boxes would read as though the stock survived.
+        setEditedRows((prev) => {
+          const copy = { ...prev };
+          delete copy[openingDeleteRow.product_id];
+          return copy;
+        });
+      } else {
+        toast.error(res?.message || 'Opening stock could not be deleted.');
+      }
+    } finally {
+      setOpeningDeleteLoading(false);
+      setOpeningDeleteRow(null);
+    }
   };
 
   const handleDeleteConfirm = () => {
@@ -374,13 +433,40 @@ const Product = (user: any) => {
         const dirty = isRowDirty(row);
 
         return (
-          <div className="flex justify-center gap-2">
-            <ButtonLoading icon={<FiCheckSquare className="" />} className='py-1 px-2' label='Save' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
-            <ButtonLoading icon={
-              <> 
-              <FiCheckSquare className="" />
-              </>
-            } className='py-1 px-2' label='Cancel' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex justify-center gap-2">
+              <ButtonLoading icon={<FiCheckSquare className="" />} className='py-1 px-2' label='Save' type="button" disabled={!dirty} onClick={() => handleSaveRow(row)} />
+              <ButtonLoading icon={
+                <>
+                <FiCheckSquare className="" />
+                </>
+              } className='py-1 px-2' label='Cancel' type="button" disabled={!editedRows[row.product_id]} onClick={() => handleCancelRow(row)} />
+
+              {/* Only where there is a voucher to delete. A product with no
+                  opening stock has nothing to offer here. */}
+              {row.opening_vr_no && canDeleteVoucher && (
+                <ButtonLoading
+                  icon={<FiTrash2 />}
+                  className="py-1 px-2 bg-red-600 hover:bg-red-700"
+                  label="Delete"
+                  type="button"
+                  buttonLoading={openingDeleteLoading && openingDeleteRow?.product_id === row.product_id}
+                  disabled={openingDeleteLoading}
+                  onClick={() => setOpeningDeleteRow(row)}
+                />
+              )}
+            </div>
+
+            {/* The voucher the opening stock came in on. Without it the figure
+                is a quantity nobody can trace back. */}
+            {row.opening_vr_no && (
+              <span
+                title={`Opening stock voucher ${row.opening_vr_no}`}
+                className="font-mono text-[10px] leading-tight text-slate-500 dark:text-slate-400"
+              >
+                {row.opening_vr_no}
+              </span>
+            )}
           </div>
         );
       },
@@ -466,7 +552,7 @@ const Product = (user: any) => {
         },
       },
     ];
-  }, [settings, editedRows]);
+  }, [settings, editedRows, openingDeleteRow, openingDeleteLoading, canDeleteVoucher]);
 
   /* ================= RENDER ================= */
   const optionsWithAll = [
@@ -604,6 +690,60 @@ const Product = (user: any) => {
           />
         </div>
       </div>
+
+      {/* Naming the voucher and the quantity, not just "are you sure": this
+          takes stock back out of the ledger, and this is the last place to
+          check it is the right product. */}
+      {openingDeleteRow && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark">
+            <div className="flex items-center gap-3 border-b border-stroke px-5 py-3 dark:border-strokedark">
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-red-500/10 text-red-500">
+                <FiTrash2 />
+              </span>
+              <h3 className="text-base font-semibold text-black dark:text-white">Delete Opening Stock</h3>
+            </div>
+
+            <div className="px-5 py-4 text-sm text-slate-600 dark:text-bodydark">
+              Delete the opening stock of
+              <span className="font-semibold text-black dark:text-white"> {openingDeleteRow.name}</span>?
+              <div className="mt-2">
+                Quantity{' '}
+                <span className="font-semibold text-black dark:text-white">
+                  {openingDeleteRow.qty ?? openingDeleteRow.openingbalance ?? 0}
+                </span>
+                {' · '}Voucher{' '}
+                <span className="font-mono font-semibold text-black dark:text-white">
+                  {openingDeleteRow.opening_vr_no}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-slate-400">
+                The voucher goes to the trash, not away for good. The product is
+                not deleted. Stock already sold on cannot be removed this way.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-stroke px-5 py-3 dark:border-strokedark">
+              <button
+                type="button"
+                onClick={() => setOpeningDeleteRow(null)}
+                className="h-9 border border-stroke px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4"
+              >
+                Cancel
+              </button>
+              <ButtonLoading
+                type="button"
+                onClick={handleOpeningDeleteConfirm}
+                buttonLoading={openingDeleteLoading}
+                disabled={openingDeleteLoading}
+                label="Delete"
+                icon={<FiTrash2 className="mr-2" />}
+                className="h-9 bg-red-600 px-6 hover:bg-red-700"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteRow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

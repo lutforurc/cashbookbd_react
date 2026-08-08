@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FiBook, FiCheckSquare, FiEdit2, FiPlus, FiPlusSquare, FiPrinter, FiRefreshCcw, FiSearch, FiSquare, FiTrash2, FiUsers, FiX } from "react-icons/fi";
+import { FaYoutube } from "react-icons/fa";
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import SelectOption from "../../utils/utils-functions/SelectOption";
 import SearchInput from "../../utils/fields/SearchInput";
@@ -9,7 +10,7 @@ import Loader from "../../../common/Loader";
 import Pagination from "../../utils/utils-functions/Pagination";
 import Table from "../../utils/others/Table";
 import Link from "../../utils/others/Link";
-import { deleteCustomer, getCustomer, updateCustomerFromUI } from "./customerSlice";
+import { deleteCustomer, deleteCustomerOpening, getCustomer, updateCustomerFromUI } from "./customerSlice";
 import InputElement from "../../utils/fields/InputElement";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -17,6 +18,7 @@ import ConfirmModal from "../../utils/components/ConfirmModalProps";
 import { hasPermission } from "../../utils/permissionChecker";
 import httpService from "../../services/httpService";
 import { API_CUSTOMER_PROFILE_PDF_URL } from "../../services/apiRoutes";
+import routes from "../../services/appRoutes";
 
 const CustomerSupplier = () => {
   const customers = useSelector((state) => state.customers);
@@ -34,6 +36,8 @@ const CustomerSupplier = () => {
   const [selectedNominees, setSelectedNominees] = useState<any[]>([]);
   const [deletingCustomerId, setDeletingCustomerId] = useState<number | null>(null);
   const [deleteConfirmRow, setDeleteConfirmRow] = useState<any | null>(null);
+  const [openingDeleteRow, setOpeningDeleteRow] = useState<any | null>(null);
+  const [deletingOpeningId, setDeletingOpeningId] = useState<number | null>(null);
   const [printingCustomerId, setPrintingCustomerId] = useState<number | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,6 +48,10 @@ const CustomerSupplier = () => {
 		  const isOpeningEnabled = settings?.data?.branch?.is_opening == 1;
   const canEditCustomer = hasPermission(settings?.data?.permissions, 'cs.edit');
   const canDeleteCustomer = hasPermission(settings?.data?.permissions, 'cs.delete');
+  // Deleting an opening balance deletes a voucher, so it answers to the voucher
+  // permission -- the same one the API checks. Gating it on cs.delete instead
+  // would offer a button that comes back 403.
+  const canDeleteVoucher = hasPermission(settings?.data?.permissions, 'voucher.delete');
 
   useEffect(() => {
     const state = location.state as any;
@@ -191,6 +199,48 @@ const CustomerSupplier = () => {
     setDeleteConfirmRow(row);
   };
 
+  const handleOpeningDeleteConfirmed = () => {
+    if (!openingDeleteRow) return;
+
+    setDeletingOpeningId(openingDeleteRow.id);
+    dispatch(deleteCustomerOpening(openingDeleteRow.id))
+      .unwrap()
+      .then((res) => {
+        toast.success(res?.message || 'Opening balance deleted');
+        setOpeningDeleteRow(null);
+        // The typed-but-unsaved figure would otherwise sit in the box looking
+        // like the balance survived.
+        handleCancelRow(openingDeleteRow);
+        dispatch(getCustomer({ page, per_page: perPage, search }));
+      })
+      .catch((err) => {
+        toast.error(err || 'Opening balance could not be deleted');
+        setOpeningDeleteRow(null);
+      })
+      .finally(() => {
+        setDeletingOpeningId(null);
+      });
+  };
+
+  /**
+   * The voucher number is the thread back to the ledger. Rather than only
+   * printing it, clicking it opens the customer's ledger already pointed at
+   * their account, which is where an opening balance gets checked against
+   * everything that came after it.
+   */
+  const handleOpenLedger = (row: any) => {
+    if (!row?.coa4_id) return;
+
+    navigate(routes.report_ledger, {
+      state: {
+        ledgerAccount: {
+          ledgerId: row.coa4_id,
+          label: row.name,
+        },
+      },
+    });
+  };
+
   /**
    * The PDF is fetched with the auth header rather than linked to, so it comes
    * back as a blob. The tab is opened on the click itself — opening it after the
@@ -283,15 +333,30 @@ const CustomerSupplier = () => {
       headerClass: 'text-left',
       cellClass: 'text-center',
       render: (row: any) => (
-        <InputElement
-          type="number"   // 🔥 FIX HERE
-          placeholder="Opening"
-          value={editedRows[row.id]?.openingbalance ?? row.openingbalance ?? ""}
-          className="text-right w-20"
-          onChange={(e) =>
-            handleInputChange(row.id, "openingbalance", e.target.value)
-          }
-        />
+        <div className="flex flex-col items-end gap-0.5">
+          <InputElement
+            type="number"   // 🔥 FIX HERE
+            placeholder="Opening"
+            value={editedRows[row.id]?.openingbalance ?? row.openingbalance ?? ""}
+            className="text-right w-20"
+            onChange={(e) =>
+              handleInputChange(row.id, "openingbalance", e.target.value)
+            }
+          />
+
+          {/* The voucher this figure sits on. Without it the balance is a
+              number nobody can trace; with it the ledger is one click away. */}
+          {row.opening_vr_no && (
+            <button
+              type="button"
+              title={`Journal voucher ${row.opening_vr_no} — open ledger`}
+              onClick={() => handleOpenLedger(row)}
+              className="font-mono text-[10px] leading-tight text-blue-600 hover:underline dark:text-blue-400"
+            >
+              {row.opening_vr_no}
+            </button>
+          )}
+        </div>
       ),
     },
     {
@@ -302,7 +367,7 @@ const CustomerSupplier = () => {
       header: '',
       headerClass: 'text-center',
       cellClass: 'text-center',
-      width: '150px',
+      width: '210px',
       render: (row: any) => {
         const dirty = isRowDirty(row);
 
@@ -324,6 +389,21 @@ const CustomerSupplier = () => {
               disabled={!editedRows[row.id]}
               onClick={() => handleCancelRow(row)}
             />
+
+            {/* Only where there is a voucher to delete. A row that never had an
+                opening balance has nothing to offer here, and saying so by
+                leaving the button out reads faster than grey-ing it. */}
+            {row.opening_vr_no && canDeleteVoucher && (
+              <ButtonLoading
+                icon={<FiTrash2 size={15} />}
+                className="py-1 px-2 bg-red-600 hover:bg-red-700"
+                label="Delete"
+                type="button"
+                buttonLoading={deletingOpeningId === row.id}
+                disabled={deletingOpeningId === row.id}
+                onClick={() => setOpeningDeleteRow(row)}
+              />
+            )}
           </div>
         );
       },
@@ -472,7 +552,23 @@ const CustomerSupplier = () => {
 
   return (
     <div>
-      <HelmetTitle title="List Customers" />
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="List Customers" />
+        {/* Shown only where the branch asked for walkthroughs, the same as
+            every other video link. */}
+        {String(settings?.data?.branch?.need_demo_tutorial) === '1' ? (
+          <a
+            href="https://www.youtube.com/watch?v=YW7R8KeWC2Y&feature=youtu.be"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Watch customer list video"
+            title="Watch customer list video"
+            className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition dark:text-red-400"
+          >
+            <FaYoutube className="text-base" />
+          </a>
+        ) : null}
+      </div>
 
       {/* Top Search Panel */}
       <div className="flex overflow-x-auto justify-between mb-1">
@@ -535,6 +631,42 @@ const CustomerSupplier = () => {
         loading={deletingCustomerId === deleteConfirmRow?.id}
         onCancel={() => setDeleteConfirmRow(null)}
         onConfirm={handleDeleteConfirmed}
+      />
+
+      {/* Naming the voucher and the amount, not just "are you sure": the clerk
+          is about to remove a ledger entry, and this is the last place they can
+          check it is the right one. */}
+      <ConfirmModal
+        show={Boolean(openingDeleteRow)}
+        title="Delete Opening Balance"
+        message={
+          <div className="text-base leading-7 text-slate-700 dark:text-slate-200">
+            <div>Delete the opening balance of</div>
+            <div className="font-bold text-slate-800 dark:text-white">
+              {openingDeleteRow?.name}
+            </div>
+            <div className="mt-2 text-sm">
+              Amount{' '}
+              <span className="font-semibold text-slate-800 dark:text-white">
+                {openingDeleteRow?.openingbalance}
+              </span>
+              {' · '}Voucher{' '}
+              <span className="font-mono font-semibold text-slate-800 dark:text-white">
+                {openingDeleteRow?.opening_vr_no}
+              </span>
+            </div>
+            <div className="mt-2 text-xs text-slate-400">
+              The voucher goes to the trash, not away for good. The customer is
+              not deleted.
+            </div>
+          </div>
+        }
+        cancelLabel="Cancel"
+        confirmLabel="Delete"
+        className="bg-red-600 hover:bg-red-700 min-w-[128px]"
+        loading={deletingOpeningId === openingDeleteRow?.id}
+        onCancel={() => setOpeningDeleteRow(null)}
+        onConfirm={handleOpeningDeleteConfirmed}
       />
 
       {showGuarantorModal && (

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
@@ -82,6 +82,7 @@ const Ledger = (user: any) => {
   const dispatch = useDispatch();
   const highlightRules = useHighlightRules();
   const navigate = useNavigate();
+  const location = useLocation();
   const branchDdlData = useSelector((state) => state.branchDdl);
   const ledgerData = useSelector((state) => state.ledger);
   const coal4 = useSelector((state) => state.coal4);
@@ -102,6 +103,9 @@ const Ledger = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
   const voucherRegistryRef = useRef<any>(null);
   const restoredFilterRef = useRef(false);
+  // Set when this page was opened with an account already chosen for it, and
+  // cleared once that search has been run.
+  const autoSearchRef = useRef(false);
   const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } = useRemoveVoucherApproval();
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
@@ -170,6 +174,40 @@ const Ledger = (user: any) => {
     setStartDate(parseStoredDate(savedFilters.startDate));
     setEndDate(parseStoredDate(savedFilters.endDate));
   }, []);
+
+  /**
+   * Arrived from somewhere that already knows which account to look at -- the
+   * voucher number beside a customer's opening balance, for one. It wins over
+   * the restored filters above, which is why it runs after them; the dates are
+   * left to default to the current month so the effect below still fills them.
+   */
+  useEffect(() => {
+    const account = (location.state as any)?.ledgerAccount;
+    const ledgerAccountId = toNullableNumber(account?.ledgerId);
+
+    if (!ledgerAccountId) return;
+
+    setLedgerAccount(ledgerAccountId);
+    setSelectedLedgerOption({ value: ledgerAccountId, label: account.label ?? '' });
+    autoSearchRef.current = true;
+
+    // Cleared so a later reload of this page does not silently jump back to
+    // the same account.
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
+
+  /**
+   * Runs the search the deep link came for, once the dates the branch lookup
+   * fills in have arrived. Landing on an empty report with the account already
+   * chosen would leave the last click to the reader for no reason.
+   */
+  useEffect(() => {
+    if (!autoSearchRef.current) return;
+    if (!ledgerId || !startDate || !endDate) return;
+
+    autoSearchRef.current = false;
+    handleActionButtonClick();
+  }, [ledgerId, startDate, endDate]);
 
 
 

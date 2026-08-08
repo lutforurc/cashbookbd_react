@@ -25,6 +25,7 @@ import {
   API_PRODUCT_EDIT_URL,
   API_PRODUCT_LIST_URL,
   API_PRODUCT_STORE_URL,
+  API_PRODUCT_OPENING_DELETE_URL,
   API_PRODUCT_UPDATE_BY_RATE_URL,
   API_PRODUCT_UPDATE_URL,
 } from '../../services/apiRoutes';
@@ -109,6 +110,27 @@ export const updateProductQtyRate = (
   }
 };
 
+
+/* Removes the opening stock and sends its voucher to the trash. The product
+   itself stays; deleteProduct() is the one that removes that. */
+export const deleteProductOpening =
+  (productId: string) => async () => {
+    try {
+      const res = await httpService.post(API_PRODUCT_OPENING_DELETE_URL, {
+        product_id: productId,
+      });
+
+      return res.data;
+    } catch (error: any) {
+      // notFound() answers with a 2xx, so a real throw here is a network or
+      // server error; keep whatever the API said when it said anything.
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message || 'Opening stock could not be deleted.',
+      };
+    }
+  };
 
 export const getDdlProduct =
   (search = '') =>
