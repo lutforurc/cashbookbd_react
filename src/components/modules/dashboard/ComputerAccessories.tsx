@@ -164,7 +164,7 @@ const ComputerAccessories = () => {
                   <Sparkline
                     values={summaryData?.kpis?.received?.spark ?? []}
                     stroke="#10b981"
-                    className="h-12 min-w-0 flex-1"
+                    className="h-16 min-w-0 flex-1"
                     ariaLabel="Received over the last 14 days"
                   />
                 </div>
@@ -187,7 +187,7 @@ const ComputerAccessories = () => {
                   <Sparkline
                     values={summaryData?.kpis?.payment?.spark ?? []}
                     stroke="#f43f5e"
-                    className="h-12 min-w-0 flex-1"
+                    className="h-16 min-w-0 flex-1"
                     ariaLabel="Payment over the last 14 days"
                   />
                 </div>
@@ -213,7 +213,7 @@ const ComputerAccessories = () => {
                   <Sparkline
                     values={summaryData?.kpis?.balance?.spark ?? []}
                     stroke="#6366f1"
-                    className="h-12 min-w-0 flex-1"
+                    className="h-16 min-w-0 flex-1"
                     ariaLabel="Balance over the last 14 days"
                   />
                 </div>
