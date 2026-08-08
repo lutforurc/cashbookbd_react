@@ -11,6 +11,6 @@ const SIGN_IN_TITLES: Record<string, string> = {
 };
 
 export const getSignInTitleByHost = (hostname: string): string => {
-  return SIGN_IN_TITLES[hostname] ?? "Sign In to Cashbook";
+  return SIGN_IN_TITLES[hostname] ?? "Sign In to CashBookBD";
 };
 
