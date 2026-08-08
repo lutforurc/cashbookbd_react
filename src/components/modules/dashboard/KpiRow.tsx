@@ -13,7 +13,21 @@ interface KpiRowProps {
   kpis?: Record<string, KpiValue>;
   isLoading?: boolean;
   trxDate?: string;
+  /**
+   * Gutter class from the dashboard's density setting. It has to be the same
+   * value the widget grid below uses — see GRID_COLUMNS.
+   */
+  gapClass?: string;
 }
+
+/**
+ * Deliberately identical to the widget grid in ComputerAccessories.
+ *
+ * The two grids sit directly on top of each other, so any difference in column
+ * count or gutter leaves the tiles straddling the card edges below them. They
+ * have to be changed together.
+ */
+const GRID_COLUMNS = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
 /**
  * Fixed order, fixed hue per tile.
@@ -118,10 +132,15 @@ const KpiTile: React.FC<{
   );
 };
 
-const KpiRow: React.FC<KpiRowProps> = ({ kpis, isLoading, trxDate }) => {
+const KpiRow: React.FC<KpiRowProps> = ({
+  kpis,
+  isLoading,
+  trxDate,
+  gapClass = 'gap-4',
+}) => {
   if (isLoading && !kpis) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={`${GRID_COLUMNS} ${gapClass}`}>
         {TILES.map((tile) => (
           <div
             key={tile.key}
@@ -150,7 +169,7 @@ const KpiRow: React.FC<KpiRowProps> = ({ kpis, isLoading, trxDate }) => {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={`${GRID_COLUMNS} ${gapClass}`}>
         {TILES.map((tile) => (
           <KpiTile
             key={tile.key}

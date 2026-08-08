@@ -74,7 +74,8 @@ const ComputerAccessories = () => {
   const isCompact = density === 'compact';
   const cardRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
   const listRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
-  const dashboardGapClass = isCompact ? 'gap-4' : 'gap-10';
+  // Feeds both the KPI row and the widget grid, so the two stay aligned.
+  const dashboardGapClass = isCompact ? 'gap-3' : 'gap-4';
 
   const summary = useSelector((s: any) => s.dashboard?.summary);
   const summaryData = summary?.data;
@@ -110,11 +111,15 @@ const ComputerAccessories = () => {
             kpis={summaryData?.kpis}
             isLoading={summary?.isLoading}
             trxDate={summaryData?.trxDate}
+            gapClass={dashboardGapClass}
           />
         </div>
       )}
 
-      <div className={`grid grid-cols-1 items-start ${dashboardGapClass} md:grid-cols-2 md:text-xs lg:grid-cols-3 xl:grid-cols-4`}>
+      {/* items-stretch, not items-start: every card in a row ends at the same
+          line. Each card is a flex column with its footer on mt-auto, so the
+          extra height goes to the body and the footers stay aligned too. */}
+      <div className={`grid grid-cols-1 items-stretch ${dashboardGapClass} md:grid-cols-2 md:text-xs lg:grid-cols-3 xl:grid-cols-4`}>
         {dashboard.isLoading == false &&
           visibleWidgets.map((widget) => {
             if (widget.id === 'summary') {
@@ -251,9 +256,9 @@ const ComputerAccessories = () => {
 
             if (widget.id === 'top-sales' && topProductsSales?.length > 0) {
               return (
-              <div key={widget.id} className="relative flex flex-col overflow-hidden border border-slate-200 bg-white text-black shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+              <div key={widget.id} className="relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-600">
+                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-700">
                   <span className="truncate text-sm font-bold">
                     Top Sales Products
                   </span>
@@ -264,7 +269,7 @@ const ComputerAccessories = () => {
                 {/* Body */}
                 <div className="hover-scrollbar max-h-72 overflow-y-auto">
                   {topProductsSales?.length > 0 ? (
-                    <ul className="divide-y divide-slate-200 dark:divide-gray-600">
+                    <ul className="divide-y divide-slate-100 dark:divide-gray-700">
                       {topProductsSales.map(
                         (item, index) => {
                           const nameLength = item.name?.length || 0;
@@ -277,7 +282,7 @@ const ComputerAccessories = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-gray-600/45`}
+                              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-gray-700/50`}
                             >
                               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                                 {String(index + 1).padStart(2, '0')}
@@ -294,12 +299,6 @@ const ComputerAccessories = () => {
                           );
                         },
                       )}
-                      <li className={`flex items-center justify-between bg-slate-50 ${listRowClass} font-bold dark:bg-gray-800/35`}>
-                        <span className="text-[12px]">Total</span>
-                        <span className="text-[12px] tabular-nums text-sky-600 dark:text-sky-300">
-                          {thousandSeparator(topProductsSalesTotal)}
-                        </span>
-                      </li>
                     </ul>
                   ) : (
                     <p className="text-sm italic text-gray-500 dark:text-gray-300">
@@ -307,15 +306,25 @@ const ComputerAccessories = () => {
                     </p>
                   )}
                 </div>
+
+                {/* Total sits on the card floor, not directly under the last
+                    row. The cards stretch to a common height, so a total left
+                    mid-card leaves an empty stretch below it. */}
+                <div className={`mt-auto flex items-center justify-between border-t border-slate-200 bg-slate-50 ${listRowClass} font-bold dark:border-gray-700 dark:bg-gray-700/50`}>
+                  <span className="text-[12px]">Total</span>
+                  <span className="text-[12px] tabular-nums text-sky-600 dark:text-sky-300">
+                    {thousandSeparator(topProductsSalesTotal)}
+                  </span>
+                </div>
               </div>
               );
             }
 
             if (widget.id === 'top-purchase' && topProductsPurchase?.length > 0) {
               return (
-              <div key={widget.id} className="relative flex flex-col overflow-hidden border border-slate-200 bg-white text-black shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+              <div key={widget.id} className="relative flex flex-col overflow-hidden bg-white text-black shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-600">
+                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-gray-700">
                   <span className="truncate text-sm font-bold">
                     Top Purchase Products
                   </span>
@@ -326,7 +335,7 @@ const ComputerAccessories = () => {
                 {/* Body */}
                 <div className="hover-scrollbar max-h-72 overflow-y-auto">
                   {topProductsPurchase?.length > 0 ? (
-                    <ul className="divide-y divide-slate-200 dark:divide-gray-600">
+                    <ul className="divide-y divide-slate-100 dark:divide-gray-700">
                       {topProductsPurchase.map(
                         (item, index) => {
                           const nameLength = item.name?.length || 0;
@@ -339,7 +348,7 @@ const ComputerAccessories = () => {
                           return (
                             <li
                               key={item.product_id}
-                              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-gray-600/45`}
+                              className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 ${listRowClass} transition hover:bg-slate-50 dark:hover:bg-gray-700/50`}
                             >
                               <span className="text-[11px] font-bold tabular-nums text-slate-400 dark:text-slate-300">
                                 {String(index + 1).padStart(2, '0')}
@@ -356,18 +365,19 @@ const ComputerAccessories = () => {
                           );
                         },
                       )}
-                      <li className={`flex items-center justify-between bg-slate-50 ${listRowClass} font-bold dark:bg-gray-800/35`}>
-                        <span className="text-[12px]">Total</span>
-                        <span className="text-[12px] tabular-nums text-amber-600 dark:text-amber-300">
-                          {thousandSeparator(topProductsPurchaseTotal)}
-                        </span>
-                      </li>
                     </ul>
                   ) : (
                     <p className="text-sm italic text-gray-500 dark:text-gray-300">
-                      No sales found
+                      No purchase found
                     </p>
                   )}
+                </div>
+
+                <div className={`mt-auto flex items-center justify-between border-t border-slate-200 bg-slate-50 ${listRowClass} font-bold dark:border-gray-700 dark:bg-gray-700/50`}>
+                  <span className="text-[12px]">Total</span>
+                  <span className="text-[12px] tabular-nums text-amber-600 dark:text-amber-300">
+                    {thousandSeparator(topProductsPurchaseTotal)}
+                  </span>
                 </div>
               </div>
               );
