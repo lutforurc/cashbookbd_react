@@ -29,9 +29,9 @@ const TILES: Array<{
   colour: string;
   money?: boolean;
 }> = [
-  { key: 'received', label: 'Today Received', colour: '#6366f1', money: true },
-  { key: 'payment', label: 'Today Payment', colour: '#0ea5e9', money: true },
-  { key: 'balance', label: 'Balance', colour: '#8b5cf6', money: true },
+  // Received, payment and balance are not here on purpose: the branch summary
+  // card already carries all three, now with their own sparklines. Repeating
+  // them would be the same number twice on one screen.
   { key: 'sales', label: 'Today Sales', colour: '#14b8a6', money: true },
   { key: 'purchase', label: 'Today Purchase', colour: '#f59e0b', money: true },
   { key: 'newCustomers', label: 'New Customers', colour: '#06b6d4' },
@@ -121,7 +121,7 @@ const KpiTile: React.FC<{
 const KpiRow: React.FC<KpiRowProps> = ({ kpis, isLoading, trxDate }) => {
   if (isLoading && !kpis) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TILES.map((tile) => (
           <div
             key={tile.key}
@@ -150,7 +150,7 @@ const KpiRow: React.FC<KpiRowProps> = ({ kpis, isLoading, trxDate }) => {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TILES.map((tile) => (
           <KpiTile
             key={tile.key}

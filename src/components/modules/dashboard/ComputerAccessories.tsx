@@ -6,6 +6,7 @@ import { getDashboard, getDashboardSummary } from './dashboardSlice';
 import KpiRow from './KpiRow';
 import DueAgingCard from './DueAgingCard';
 import LowStockCard from './LowStockCard';
+import Sparkline from './Sparkline';
 import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
 import DailyPurchaseSalesChart from './DailyPurchaseChart';
 import DailyPurchaseChart from './DailyPurchaseChart';
@@ -158,6 +159,14 @@ const ComputerAccessories = () => {
                         : 0}
                     </p>
                   </div>
+                  {/* Trend sits beside the figure rather than in its own tile,
+                      so the card answers "how much" and "which way" together. */}
+                  <Sparkline
+                    values={summaryData?.kpis?.received?.spark ?? []}
+                    stroke="#10b981"
+                    className="h-12 min-w-0 flex-1"
+                    ariaLabel="Received over the last 14 days"
+                  />
                 </div>
 
                 <div className={`flex items-center gap-3 ${cardRowClass}`}>
@@ -175,6 +184,12 @@ const ComputerAccessories = () => {
                         : 0}
                     </p>
                   </div>
+                  <Sparkline
+                    values={summaryData?.kpis?.payment?.spark ?? []}
+                    stroke="#f43f5e"
+                    className="h-12 min-w-0 flex-1"
+                    ariaLabel="Payment over the last 14 days"
+                  />
                 </div>
 
                 <div className={`flex items-center gap-3 ${cardRowClass}`}>
@@ -195,6 +210,12 @@ const ComputerAccessories = () => {
                               0))}
                     </p>
                   </div>
+                  <Sparkline
+                    values={summaryData?.kpis?.balance?.spark ?? []}
+                    stroke="#6366f1"
+                    className="h-12 min-w-0 flex-1"
+                    ariaLabel="Balance over the last 14 days"
+                  />
                 </div>
               </div>
 
