@@ -32,6 +32,15 @@ import {
  * back off its own journal voucher, so what the screen shows is what the ledger
  * holds rather than a copy that can drift away from it.
  */
+/**
+ * One shape for all three row buttons.
+ *
+ * The height is stated rather than left to the padding so Save, Cancel and
+ * Delete cannot come out a pixel apart; the width comes from the equal grid
+ * tracks they sit in.
+ */
+const ACTION_BUTTON_CLASS = 'h-7 w-full';
+
 const AccountOpeningBalance = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -58,6 +67,16 @@ const AccountOpeningBalance = () => {
   }, [dispatch, submittedSearch, isOpeningEnabled]);
 
   const refresh = () => dispatch(getAccountOpenings({ search: submittedSearch }) as any);
+
+  /**
+   * The spinner replaces the list only when there is no list to replace. A
+   * reload after Save leaves the rows where they are and dims them instead:
+   * swapping thirty rows for a spinner and back moves everything under the
+   * pointer, which reads as the page jumping.
+   */
+  const hasRows = Array.isArray(accounts) && accounts.length > 0;
+  const isFirstLoad = loading && !hasRows;
+  const isReloading = loading && hasRows;
 
   /**
    * One section per Level 3 group, in the order the API sent them. A page
@@ -129,8 +148,11 @@ const AccountOpeningBalance = () => {
       .unwrap()
       .then((res: any) => {
         clearDraft(row.id);
-        refresh();
         toast.success(res?.message || "Opening balance updated");
+
+        // Returned, not fired and forgotten, so the row keeps its spinner until
+        // the figure on screen is the one the server just wrote.
+        return refresh();
       })
       .catch((err: any) => {
         toast.error(err || "Opening balance could not be saved");
@@ -150,7 +172,8 @@ const AccountOpeningBalance = () => {
         // like the balance survived.
         clearDraft(deleteRow.id);
         setDeleteRow(null);
-        refresh();
+
+        return refresh();
       })
       .catch((err: any) => {
         toast.error(err || "Opening balance could not be deleted");
@@ -235,47 +258,61 @@ const AccountOpeningBalance = () => {
       ),
     },
     {
-      // Beside the field they act on, as on the customer list: at the far right
-      // of the row the clerk would have to cross every other column to save the
-      // figure just typed.
+      // Hard against the right edge of the table, where every other list on
+      // this system keeps its actions.
       key: 'action',
       header: '',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
+      headerClass: 'text-right',
+      // The table lays out fixed, so a column left without a width takes an
+      // equal share of what is going -- which left the buttons stranded in the
+      // middle of a quarter-page column. Held to what the three buttons need,
+      // the account names get the rest.
+      cellClass: 'text-right w-72',
       render: (row: OpeningAccount) => (
-        <div className="flex items-center justify-center gap-2">
-          <ButtonLoading
-            className="py-1 px-2"
-            label="Save"
-            type="button"
-            icon={<FiCheckSquare size={15} />}
-            buttonLoading={savingId === row.id}
-            disabled={!canEdit || !row.is_active || !isRowDirty(row) || savingId === row.id}
-            onClick={() => handleSaveRow(row)}
-          />
-          <ButtonLoading
-            icon={<FiX />}
-            className="py-1 px-2"
-            label="Cancel"
-            type="button"
-            disabled={editedRows[row.id] === undefined}
-            onClick={() => clearDraft(row.id)}
-          />
-
-          {/* Only where there is a voucher to delete. An account that never
-              opened with anything has nothing to offer here, and saying so by
-              leaving the button out reads faster than grey-ing it. */}
-          {row.opening_vr_no && canDeleteVoucher && (
+        <div className="flex justify-end">
+          {/* Three slots of equal width, always three. Delete comes and goes as
+              vouchers are saved and removed; were its slot to go with it, every
+              other button in the row would slide sideways and the column would
+              resize under the clerk's hand. */}
+          <div className="grid grid-cols-3 items-center gap-1.5">
             <ButtonLoading
-              icon={<FiTrash2 size={15} />}
-              className="py-1 px-2 bg-red-600 hover:bg-red-700"
-              label="Delete"
+              className={ACTION_BUTTON_CLASS}
+              size="sm"
+              label="Save"
               type="button"
-              buttonLoading={deletingId === row.id}
-              disabled={deletingId === row.id}
-              onClick={() => setDeleteRow(row)}
+              icon={<FiCheckSquare size={14} />}
+              buttonLoading={savingId === row.id}
+              disabled={!canEdit || !row.is_active || !isRowDirty(row) || savingId === row.id}
+              onClick={() => handleSaveRow(row)}
             />
-          )}
+            <ButtonLoading
+              icon={<FiX size={14} />}
+              className={ACTION_BUTTON_CLASS}
+              size="sm"
+              label="Cancel"
+              type="button"
+              disabled={editedRows[row.id] === undefined}
+              onClick={() => clearDraft(row.id)}
+            />
+
+            {/* Only where there is a voucher to delete. An account that never
+                opened with anything has nothing to offer here, and saying so by
+                leaving the button out reads faster than grey-ing it. */}
+            <div>
+              {row.opening_vr_no && canDeleteVoucher ? (
+                <ButtonLoading
+                  icon={<FiTrash2 size={14} />}
+                  className={`${ACTION_BUTTON_CLASS} bg-red-600 hover:bg-red-700`}
+                  size="sm"
+                  label="Delete"
+                  type="button"
+                  buttonLoading={deletingId === row.id}
+                  disabled={deletingId === row.id}
+                  onClick={() => setDeleteRow(row)}
+                />
+              ) : null}
+            </div>
+          </div>
         </div>
       ),
     },
@@ -332,7 +369,7 @@ const AccountOpeningBalance = () => {
           </div>
         </div>
 
-        {loading ? (
+        {isFirstLoad ? (
           <Loader />
         ) : error ? (
           <div className="px-4 py-8 text-center text-red-600 dark:text-red-400">{error}</div>
@@ -342,7 +379,11 @@ const AccountOpeningBalance = () => {
             once they are active in the Chart of Accounts.
           </div>
         ) : (
-          <div className="p-4">
+          <div
+            className={`p-4 transition-opacity duration-200 ${
+              isReloading ? 'pointer-events-none opacity-60' : 'opacity-100'
+            }`}
+          >
             {groups.map((group) => (
               <div key={group.id} className="mb-6 last:mb-0">
                 <div className="mb-2 flex items-baseline justify-between">
