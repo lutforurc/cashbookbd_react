@@ -57,6 +57,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'CoA L2', path: routes.coal2_list, group: 'Chart of Accounts', permissions: ['coa.l2.view'], keywords: ['chart accounts level 2'] },
   { title: 'CoA L3', path: routes.coal3_list, group: 'Chart of Accounts', permissions: ['coa.l3.view'], keywords: ['chart accounts level 3'] },
   { title: 'CoA L4', path: routes.coal4_list, group: 'Chart of Accounts', permissions: ['coa.l4.view'], keywords: ['chart accounts level 4'] },
+  { title: 'Account Opening Balance', path: routes.account_opening_balance, group: 'Chart of Accounts', permissions: ['coa.l4.view'], keywords: ['bank opening balance', 'cash opening', 'mobile banking opening'] },
 
   { title: 'Date Wise Total', path: routes.report_date_wise_total, group: 'Reports', permissions: ['date.wise.total'] },
   { title: 'Cashbook', path: routes.report_cashbook, group: 'Reports', permissions: ['cashbook.view'] },

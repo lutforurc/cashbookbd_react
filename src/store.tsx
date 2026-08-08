@@ -18,6 +18,7 @@ import coal3Reducer from './components/modules/chartofaccounts/levelthree/coal3S
 import coal2Reducer from './components/modules/chartofaccounts/leveltwo/coal2Sliders';
 import coal1Reducer from './components/modules/chartofaccounts/levelone/coal1Sliders';
 import coal4DdlSlicer from './components/modules/chartofaccounts/levelfour/coal4DdlSlicer';
+import accountOpeningReducer from './components/modules/chartofaccounts/opening-balance/accountOpeningSlice';
 import dueListReducer from './components/modules/reports/duelist/dueListSlice';
 import productStockReducer from './components/modules/reports/productstock/productStockSlice';
 import catWiseInOutReducer from './components/modules/reports/catwiseinout/catWiseInOutSlice';
@@ -116,6 +117,7 @@ const store = configureStore({
     coal3: coal3Reducer,
     coal4: coal4Reducer,
     coal4ddl: coal4DdlSlicer,
+    accountOpening: accountOpeningReducer,
     dueList: dueListReducer,
     stock: productStockReducer,
     catWiseInOut: catWiseInOutReducer,

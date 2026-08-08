@@ -44,6 +44,7 @@ import CashBankReceivedPayment from './components/modules/reports/cash-bank-rece
 import Ledger from './components/modules/reports/ledger/Ledger';
 import CoaL4 from './components/modules/chartofaccounts/levelfour/CoaL4';
 import AddCoaL4 from './components/modules/chartofaccounts/levelfour/AddCoaL4';
+import AccountOpeningBalance from './components/modules/chartofaccounts/opening-balance/AccountOpeningBalance';
 import CoaL3 from './components/modules/chartofaccounts/levelthree/CoaL3';
 import AddCoaL3 from './components/modules/chartofaccounts/levelthree/AddCoaL3';
 import CoaL2 from './components/modules/chartofaccounts/leveltwo/CoaL2';
@@ -334,6 +335,9 @@ function App() {
                 <Route path={routes.coal4_list} element={<CoaL4 />} />
                 <Route path={routes.coal4_add} element={<AddCoaL4 />} />
                 <Route path={routes.coal4_edit} element={<AddCoaL4 />} />
+                {/* Kept out of the COA L4 list itself: most of that chart is
+                    expense and sales heads, which open at nothing. */}
+                <Route path={routes.account_opening_balance} element={<AccountOpeningBalance />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.customer} loading={permissionsLoading} />}>
                 <Route path={routes.supplier_customer_list} element={<CustomerSupplier />} />

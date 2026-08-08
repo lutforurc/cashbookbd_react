@@ -345,6 +345,13 @@ export const API_CHART_OF_ACCOUNTS_L4_UPDATE_URL = `${API_BASE_URL}/coal4/update
 export const API_CHART_OF_ACCOUNTS_DDL_L4_URL = `${API_BASE_URL}/chart_of_accounts/ddl/l4-list`;
 export const API_CHART_OF_ACCOUNTS_BY_ID_L4_URL = `${API_BASE_URL}/coal4/`;
 
+// Opening balances for the money accounts -- cash, banks, mobile banking.
+// Deliberately not part of the COA L4 screen: most of the chart is expense and
+// sales heads, which open at nothing.
+export const API_ACCOUNT_OPENING_LIST_URL = `${API_BASE_URL}/account/opening-balance/list`;
+export const API_ACCOUNT_OPENING_UPDATE_URL = `${API_BASE_URL}/account/opening-balance/update/`;
+export const API_ACCOUNT_OPENING_DELETE_URL = `${API_BASE_URL}/account/opening-balance/delete/`;
+
 
 // Cash Received url
 export const API_CASH_RECEIVED_URL = `${API_BASE_URL}/trading/cash/received`;

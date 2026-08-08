@@ -188,6 +188,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'coal2/coal2-list', title: "CoA L2" },
     { id: 'coal3/coal3-list', title: "CoA L3" },
     { id: 'coal4/coal4-list', title: "CoA L4" },
+    { id: 'coal4/opening-balance', title: "Opening Balance" },
   ],
   'al-charts': [
     { id: 'item/item-chart', title: "Comparison" },
@@ -3256,6 +3257,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname === '/coal2/coal2-list' ||
                       pathname === '/coal3/coal3-list' ||
                       pathname === '/coal4/coal4-list' ||
+                      pathname === '/coal4/opening-balance' ||
                       pathname.includes('forms')
                     }
                     menuId="customer-supplier"
@@ -3273,6 +3275,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             pathname === '/coal2/coal2-list' ||
                             pathname === '/coal3/coal3-list' ||
                             pathname === '/coal4/coal4-list' ||
+                            pathname === '/coal4/opening-balance' ||
                             pathname.includes('/coal4/coal4-list')) &&
                             'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-l-4 border-blue-500'
                             }`}
@@ -3365,6 +3368,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   }
                                 >
                                   CoA L4
+                                </NavLink>
+                              </li>
+                            )}
+                            {/* Opening balances for cash, the banks and mobile
+                                banking. Kept off the CoA L4 list itself, where
+                                most rows are expense and sales heads that open
+                                at nothing. */}
+                            {hasPermission(permissions, 'coa.l4.view') && (
+                              <li style={subSlot('customer-supplier', 'coal4/opening-balance')}>
+                                <NavLink
+                                  to="/coal4/opening-balance"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                    (isActive && 'text-gray-900 font-bold dark:text-white')
+                                  }
+                                >
+                                  Opening Balance
                                 </NavLink>
                               </li>
                             )}

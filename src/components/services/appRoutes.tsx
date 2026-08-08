@@ -117,6 +117,10 @@ const ROUTES = {
   coal4_add: '/coal4/add-coal4',
   coal4_edit: '/coal4/edit-coal4/:id',
 
+  // Opening balances for cash, the banks and mobile banking. A screen of its
+  // own rather than a column on the COA L4 list.
+  account_opening_balance: '/coal4/opening-balance',
+
   report_ledger: '/reports/ledger',
   report_cashbook: '/reports/cashbook',
   report_bankbook: '/reports/bankbook',
