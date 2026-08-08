@@ -1652,7 +1652,7 @@ const AddBranch = () => {
                       <div className="flex items-center">
                         <ButtonLoading
                           type="button"
-                          label="Transaction Clear"
+                          label="Clear Transactions"
                           title="Withdraw every voucher in this branch from the books"
                           icon={<FiRefreshCcw size={15} />}
                           buttonLoading={clearingTransactions}
@@ -1943,7 +1943,7 @@ const AddBranch = () => {
                 </span>
               </>
             }
-            confirmLabel="Transaction Clear"
+            confirmLabel="Clear Transactions"
             className="bg-danger hover:bg-opacity-90"
             loading={clearingTransactions}
             onCancel={() => setConfirmClearTransactions(false)}
