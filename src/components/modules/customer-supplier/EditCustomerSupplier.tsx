@@ -102,6 +102,18 @@ const EditCustomerSupplier = () => {
   // than a meta, so it arrives as a number and not as the string '1'.
   const usesBangla = String(branchSettings?.use_bangla) === '1';
   const needArea = String(branchSettings?.need_customer_area) === '1';
+  // The same switch the Add page and the customer list read.
+  const isOpeningEnabled = String(branchSettings?.is_opening) === '1';
+
+  /**
+   * An opening balance is a one-time entry: the API posts a journal voucher
+   * when it is first set and refuses any later change, because the voucher is
+   * already in the books. So the field is only editable while it is still
+   * zero, and is shown read-only afterwards — hiding it would leave no way to
+   * see what the opening actually is.
+   */
+  const currentOpening = Number(editCustomer?.openingbalance ?? 0);
+  const openingLocked = currentOpening !== 0;
 
   // Guarantor and nominee share one panel when both are on — stacked, the form
   // ran too long to see either of them whole.
@@ -222,6 +234,12 @@ const EditCustomerSupplier = () => {
         permanent_address: Yup.string().nullable(),
         mobile: Yup.string().required("Mobile number is required"),
         ledger_page: Yup.string().nullable(),
+        openingbalance: Yup.number()
+          .typeError("Opening must be a number")
+          .nullable()
+          .transform((value, original) =>
+            String(original ?? "").trim() === "" ? null : value
+          ),
         idfr_code: Yup.string().nullable(),
         party_type_id: Yup.string().required("Customer or Supplier type is required"),
         area_id: Yup.string().nullable(),
@@ -295,6 +313,12 @@ const EditCustomerSupplier = () => {
       permanent_address: editCustomer?.permanent_address ?? "",
       mobile: editCustomer?.mobile ?? "",
       ledger_page: editCustomer?.ledger_page ?? "",
+      openingbalance:
+        editCustomer?.openingbalance === null ||
+        editCustomer?.openingbalance === undefined ||
+        Number(editCustomer?.openingbalance) === 0
+          ? ""
+          : String(editCustomer?.openingbalance),
       idfr_code: editCustomer?.idfr_code ?? "",
       national_id: editCustomer?.national_id ?? "",
       party_type_id: (editCustomer?.party_type_id ?? "").toString(),
@@ -309,10 +333,22 @@ const EditCustomerSupplier = () => {
     validationSchema,
     onSubmit: async (values) => {
       try {
+        /**
+         * The opening is left out of the payload unless it is genuinely being
+         * set now. The API treats the field's mere presence as an attempt to
+         * change it and rejects the whole update once an opening exists, so
+         * sending the unchanged value back would make every other edit on such
+         * a customer fail. An empty string is dropped for the same reason —
+         * the API reads it as a non-numeric opening rather than as "no value".
+         */
+        const { openingbalance, ...rest } = values as any;
+        const sendsOpening =
+          isOpeningEnabled && !openingLocked && String(openingbalance ?? "").trim() !== "";
+
         const res = await dispatch(
           updateCustomerFromEdit({
             id: Number(id),
-            data: values,
+            data: sendsOpening ? { ...rest, openingbalance } : rest,
           })
         ).unwrap();
 
@@ -462,23 +498,6 @@ const EditCustomerSupplier = () => {
                 />
               </div>
             )}
-            <div className="text-left flex flex-col">
-              <InputElement
-                id="manual_address"
-                name="manual_address"
-                placeholder="Enter Address"
-                label="Address"
-                value={formik.values.manual_address}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.manual_address && formik.errors.manual_address && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.manual_address as any}
-                </div>
-              )}
-            </div>
-
             {settings?.data?.branch?.need_relation_info === '1' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <>
@@ -567,28 +586,6 @@ const EditCustomerSupplier = () => {
               />
             )}
 
-            {needPermanentAddress && (
-              <InputElement
-                id="permanent_address"
-                name="permanent_address"
-                placeholder="Enter Permanent Address"
-                label="Permanent Address"
-                value={formik.values.permanent_address}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-            )}
-
-            {needPhoto && (
-              <PhotoInput
-                id="photo"
-                name="photo"
-                label="Photo"
-                value={formik.values.photo}
-                onChange={(photo) => formik.setFieldValue('photo', photo)}
-              />
-            )}
-
             {settings?.data?.branch?.need_customer_contact_person === '1' && (
               <>
               <div className="text-left flex flex-col">
@@ -623,6 +620,15 @@ const EditCustomerSupplier = () => {
               </>
             )}
 
+            <InputElement
+              id="national_id"
+              name="national_id"
+              value={formik.values.national_id}
+              placeholder="Enter National ID"
+              label="National ID"
+              onChange={formik.handleChange}
+            />
+
             <div className="text-left flex flex-col">
               <InputElement
                 id="mobile"
@@ -640,6 +646,35 @@ const EditCustomerSupplier = () => {
               )}
             </div>
 
+            <div className="text-left flex flex-col">
+              <InputElement
+                id="manual_address"
+                name="manual_address"
+                placeholder="Enter Present Address"
+                label="Present Address"
+                value={formik.values.manual_address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.manual_address && formik.errors.manual_address && (
+                <div className="text-red-500 text-sm">
+                  {formik.errors.manual_address as any}
+                </div>
+              )}
+            </div>
+
+            {needPermanentAddress && (
+              <InputElement
+                id="permanent_address"
+                name="permanent_address"
+                placeholder="Enter Permanent Address"
+                label="Permanent Address"
+                value={formik.values.permanent_address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+            )}
+
             <InputElement
               id="ledger_page"
               name="ledger_page"
@@ -649,14 +684,35 @@ const EditCustomerSupplier = () => {
               onChange={formik.handleChange}
             />
 
-            <InputElement
-              id="national_id"
-              name="national_id"
-              value={formik.values.national_id}
-              placeholder="Enter National ID"
-              label="National ID"
-              onChange={formik.handleChange}
-            />
+            {/* Same branch switch as the Add page, so a branch either takes
+                openings in both places or in neither. */}
+            {isOpeningEnabled && (
+              <div>
+                <InputElement
+                  id="openingbalance"
+                  name="openingbalance"
+                  type="number"
+                  step="0.01"
+                  value={formik.values.openingbalance}
+                  placeholder={openingLocked ? "" : "Enter Opening"}
+                  label="Opening Balance (Optional)"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  disabled={openingLocked}
+                />
+                {formik.touched.openingbalance && formik.errors.openingbalance ? (
+                  <div className="mt-1 text-sm text-danger">
+                    {formik.errors.openingbalance as string}
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {openingLocked
+                      ? "Already entered. It can only be changed by clearing the branch's opening."
+                      : "Entered once. Afterwards it can only be changed by clearing the branch's opening."}
+                  </p>
+                )}
+              </div>
+            )}
 
             {settings?.data?.branch?.have_customer_sl === 1 && (
               <InputElement
@@ -709,6 +765,16 @@ const EditCustomerSupplier = () => {
                 mobile number and this password. Leave blank and it stays unchanged.
               </p>
               </>
+            )}
+
+            {needPhoto && (
+              <PhotoInput
+                id="photo"
+                name="photo"
+                label="Photo"
+                value={formik.values.photo}
+                onChange={(photo) => formik.setFieldValue('photo', photo)}
+              />
             )}
           </div>
 
