@@ -55,7 +55,7 @@ const AccountOpeningBalance = () => {
   const [deleteRow, setDeleteRow] = useState<OpeningAccount | null>(null);
 
   const isOpeningEnabled = settings?.data?.branch?.is_opening == 1;
-  const canEdit = hasPermission(settings?.data?.permissions, 'coa.l4.edit');
+  const canEdit = hasPermission(settings?.data?.permissions, 'bank.opening.edit');
   // Deleting an opening balance deletes a voucher, so it answers to the voucher
   // permission -- the same one the API checks. Gating it on coa.l4.edit alone
   // would offer a button that comes back 403.

@@ -335,8 +335,13 @@ function App() {
                 <Route path={routes.coal4_list} element={<CoaL4 />} />
                 <Route path={routes.coal4_add} element={<AddCoaL4 />} />
                 <Route path={routes.coal4_edit} element={<AddCoaL4 />} />
-                {/* Kept out of the COA L4 list itself: most of that chart is
-                    expense and sales heads, which open at nothing. */}
+              </Route>
+              {/* Kept out of the COA L4 list itself: most of that chart is
+                  expense and sales heads, which open at nothing. Its own
+                  permission too -- reading the chart and opening a bank account
+                  with a figure are not the same trust, and the second one writes
+                  a journal voucher. */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.opening.view']} loading={permissionsLoading} />}>
                 <Route path={routes.account_opening_balance} element={<AccountOpeningBalance />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={MENU_PERMISSIONS.customer} loading={permissionsLoading} />}>

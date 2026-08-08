@@ -3374,8 +3374,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             {/* Opening balances for cash, the banks and mobile
                                 banking. Kept off the CoA L4 list itself, where
                                 most rows are expense and sales heads that open
-                                at nothing. */}
-                            {hasPermission(permissions, 'coa.l4.view') && (
+                                at nothing -- and behind its own permission,
+                                since opening an account with a figure writes a
+                                journal voucher while reading the chart does not. */}
+                            {hasPermission(permissions, 'bank.opening.view') && (
                               <li style={subSlot('customer-supplier', 'coal4/opening-balance')}>
                                 <NavLink
                                   to="/coal4/opening-balance"
