@@ -478,11 +478,16 @@ const AddBranch = () => {
 
       toast.success(response?.data?.message || options.successFallback);
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          options.errorFallback,
-      );
+      // A refusal the server explains -- no permission, expired session, no
+      // network -- has already been said once by the http interceptor, and
+      // saying it again only stacks the same words twice on screen.
+      if (!error?.toastReported) {
+        toast.error(
+          error?.response?.data?.message ||
+            error?.message ||
+            options.errorFallback,
+        );
+      }
     } finally {
       if (clearProgressTick.current) {
         clearInterval(clearProgressTick.current);

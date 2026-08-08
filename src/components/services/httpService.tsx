@@ -42,6 +42,15 @@ const clearSession = () => {
 // Guard so a burst of concurrent 401s triggers only one redirect.
 let sessionExpiredHandled = false;
 
+// Marks an error the interceptor has already put on screen, so a caller with a
+// catch of its own can stay quiet instead of repeating the same words.
+const markReported = (error: any) => {
+    if (error && typeof error === 'object') {
+        error.toastReported = true;
+    }
+    return error;
+};
+
 httpService.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -52,6 +61,7 @@ httpService.interceptors.response.use(
                 toast.error('Network error — please check your connection and try again.', {
                     toastId: 'network-error',
                 });
+                return Promise.reject(markReported(error));
             }
             return Promise.reject(error);
         }
@@ -73,7 +83,7 @@ httpService.interceptors.response.use(
                     window.location.href = '/login';
                 }, 600);
             }
-            return Promise.reject(error);
+            return Promise.reject(markReported(error));
         }
 
         // The device-limit 403 is a normal outcome of logging in, not a
@@ -83,10 +93,16 @@ httpService.interceptors.response.use(
 
         // Authenticated but not allowed — components rarely handle 403 distinctly.
         if (status === 403 && !isDeviceLimit) {
-            toast.error(error.response?.data?.message || 'You do not have permission to perform this action.', {
-                toastId: 'forbidden',
-            });
-            return Promise.reject(error);
+            const message = error.response?.data?.message || 'You do not have permission to perform this action.';
+            // Some refusals are not faults — the server simply says no, and the
+            // user is being told who to ask. Those come marked as a notice, and
+            // red would overstate them.
+            if (error.response?.data?.severity === 'info') {
+                toast.info(message, { toastId: 'forbidden' });
+            } else {
+                toast.error(message, { toastId: 'forbidden' });
+            }
+            return Promise.reject(markReported(error));
         }
 
         // 4xx (validation, not-found) and 5xx stay with the caller, which shows
