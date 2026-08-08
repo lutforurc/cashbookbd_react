@@ -188,7 +188,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'coal2/coal2-list', title: "CoA L2" },
     { id: 'coal3/coal3-list', title: "CoA L3" },
     { id: 'coal4/coal4-list', title: "CoA L4" },
-    { id: 'coal4/opening-balance', title: "Opening Balance" },
+    { id: 'coal4/opening-balance', title: "Bank Opening" },
   ],
   'al-charts': [
     { id: 'item/item-chart', title: "Comparison" },
@@ -3384,7 +3384,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                     (isActive && 'text-gray-900 font-bold dark:text-white')
                                   }
                                 >
-                                  Opening Balance
+                                  Bank Opening
                                 </NavLink>
                               </li>
                             )}
