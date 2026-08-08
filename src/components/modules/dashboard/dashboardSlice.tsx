@@ -4,12 +4,19 @@ import {
   DASHBOARD_DATA_ERROR,
   DASHBOARD_DATA_PENDING,
   DASHBOARD_DATA_SUCCESS,
+  DASHBOARD_SUMMARY_ERROR,
+  DASHBOARD_SUMMARY_PENDING,
+  DASHBOARD_SUMMARY_SUCCESS,
   RECEIVED_REMITTANCE_DATA_ERROR,
   RECEIVED_REMITTANCE_DATA_PENDING,
   RECEIVED_REMITTANCE_DATA_SUCCESS,
 } from '../../constant/constant/constant';
 import httpService from '../../services/httpService';
-import { API_DASHBOARD_URL, API_RECEIVED_REMITTANCE_URL } from '../../services/apiRoutes';
+import {
+  API_DASHBOARD_SUMMARY_URL,
+  API_DASHBOARD_URL,
+  API_RECEIVED_REMITTANCE_URL,
+} from '../../services/apiRoutes';
 
 export const getDashboard = () => (dispatch: any) => {
   dispatch({ type: DASHBOARD_DATA_PENDING });
@@ -39,6 +46,37 @@ export const getDashboard = () => (dispatch: any) => {
 };
 
 
+
+/**
+ * KPI tiles, receivable ageing and low stock. One request rather than one per
+ * tile — the server assembles and caches them together.
+ */
+export const getDashboardSummary = () => (dispatch: any) => {
+  dispatch({ type: DASHBOARD_SUMMARY_PENDING });
+
+  httpService
+    .get(API_DASHBOARD_SUMMARY_URL)
+    .then((res) => {
+      const _data = res.data;
+      if (_data.success) {
+        dispatch({
+          type: DASHBOARD_SUMMARY_SUCCESS,
+          payload: _data.data.data,
+        });
+      } else {
+        dispatch({
+          type: DASHBOARD_SUMMARY_ERROR,
+          payload: _data.error.message,
+        });
+      }
+    })
+    .catch(() => {
+      dispatch({
+        type: DASHBOARD_SUMMARY_ERROR,
+        payload: 'Dashboard summary could not be loaded. Please try again.',
+      });
+    });
+};
 
 export const dispatchRemittance = (data: any, callback: any) => async (dispatch: any) => {
   dispatch({ type: RECEIVED_REMITTANCE_DATA_PENDING });
@@ -93,10 +131,32 @@ const dashboardData = {
   isLoading: false,
   errors: null,
   data: [],
+  // Kept beside the main payload rather than in its own store slice so the
+  // summary can fail without blanking the cards that already work.
+  summary: {
+    isLoading: false,
+    errors: null,
+    data: null,
+  },
 };
 
 const dashboardReducer = (state = dashboardData, action: any) => {
   switch (action.type) {
+    case DASHBOARD_SUMMARY_PENDING:
+      return {
+        ...state,
+        summary: { ...state.summary, isLoading: true, errors: null },
+      };
+    case DASHBOARD_SUMMARY_SUCCESS:
+      return {
+        ...state,
+        summary: { isLoading: false, errors: null, data: action.payload },
+      };
+    case DASHBOARD_SUMMARY_ERROR:
+      return {
+        ...state,
+        summary: { ...state.summary, isLoading: false, errors: action.payload },
+      };
     case DASHBOARD_DATA_PENDING:
       return {
         ...state,

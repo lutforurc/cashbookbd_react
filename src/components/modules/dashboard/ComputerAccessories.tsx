@@ -2,7 +2,10 @@ import React, { useEffect } from 'react';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { useDispatch, useSelector } from 'react-redux';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { getDashboard } from './dashboardSlice';
+import { getDashboard, getDashboardSummary } from './dashboardSlice';
+import KpiRow from './KpiRow';
+import DueAgingCard from './DueAgingCard';
+import LowStockCard from './LowStockCard';
 import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
 import DailyPurchaseSalesChart from './DailyPurchaseChart';
 import DailyPurchaseChart from './DailyPurchaseChart';
@@ -21,7 +24,10 @@ import DashboardCustomizeButton, {
 } from './dashboardCustomization';
 
 const NORMAL_DASHBOARD_WIDGETS: DashboardWidget[] = [
+  { id: 'kpi-row', title: 'Today at a Glance' },
   { id: 'summary', title: 'Balance Summary' },
+  { id: 'due-aging', title: 'Receivable Ageing' },
+  { id: 'low-stock', title: 'Low Stock' },
   { id: 'top-sales', title: 'Top Sales Products' },
   { id: 'top-purchase', title: 'Top Purchase Products' },
   { id: 'daily-sales', title: 'Daily Sales Chart' },
@@ -69,9 +75,13 @@ const ComputerAccessories = () => {
   const listRowClass = isCompact ? 'px-4 py-2' : 'px-4 py-2.5';
   const dashboardGapClass = isCompact ? 'gap-4' : 'gap-10';
 
+  const summary = useSelector((s: any) => s.dashboard?.summary);
+  const summaryData = summary?.data;
+
   useEffect(() => {
     dispatch(getDashboard());
     dispatch(getMonthlyPurchaseSales());
+    dispatch(getDashboardSummary());
   }, []);
  
 
@@ -89,6 +99,20 @@ const ComputerAccessories = () => {
           onReset={reset}
         />
       </div>
+
+      {/* Rendered above the grid rather than as one of its cards: it is a
+          summary band, and a saved widget order from before it existed would
+          otherwise push it to the bottom of the page for existing users. */}
+      {isWidgetVisible('kpi-row') && (
+        <div className="mb-4">
+          <KpiRow
+            kpis={summaryData?.kpis}
+            isLoading={summary?.isLoading}
+            trxDate={summaryData?.trxDate}
+          />
+        </div>
+      )}
+
       <div className={`grid grid-cols-1 items-start ${dashboardGapClass} md:grid-cols-2 md:text-xs lg:grid-cols-3 xl:grid-cols-4`}>
         {dashboard.isLoading == false &&
           visibleWidgets.map((widget) => {
@@ -181,6 +205,26 @@ const ComputerAccessories = () => {
                 </span>
               </div>
             </div>
+              );
+            }
+
+            if (widget.id === 'due-aging') {
+              return (
+                <DueAgingCard
+                  key={widget.id}
+                  aging={summaryData?.dueAging}
+                  isLoading={summary?.isLoading}
+                />
+              );
+            }
+
+            if (widget.id === 'low-stock') {
+              return (
+                <LowStockCard
+                  key={widget.id}
+                  lowStock={summaryData?.lowStock}
+                  isLoading={summary?.isLoading}
+                />
               );
             }
 

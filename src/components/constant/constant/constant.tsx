@@ -27,6 +27,9 @@ export const USER_STORE_ERROR = 'USER/store/error';
 export const DASHBOARD_DATA_PENDING = 'DASHBOARD/data/pending';
 export const DASHBOARD_DATA_SUCCESS = 'DASHBOARD/data/success';
 export const DASHBOARD_DATA_ERROR = 'DASHBOARD/data/error';
+export const DASHBOARD_SUMMARY_PENDING = 'DASHBOARD/summary/pending';
+export const DASHBOARD_SUMMARY_SUCCESS = 'DASHBOARD/summary/success';
+export const DASHBOARD_SUMMARY_ERROR = 'DASHBOARD/summary/error';
 
 // Received Remittance
 export const RECEIVED_REMITTANCE_DATA_PENDING = 'RECEIVED/REMITTANCE/data/pending';

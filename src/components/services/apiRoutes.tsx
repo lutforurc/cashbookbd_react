@@ -165,6 +165,7 @@ export const API_SOFTWARE_INFO_UPDATE_URL = `${API_BASE_URL}/settings/software-i
 
 // dashboard Routes
 export const API_DASHBOARD_URL = `${API_BASE_URL}/dashboard/data`;
+export const API_DASHBOARD_SUMMARY_URL = `${API_BASE_URL}/dashboard/summary`;
 export const API_BRANCH_TRANSACTION_CHART_URL = `${API_BASE_URL}/dashboard/branch/transaction-chart-data`;
 export const API_BRANCH_PURCHASE_SALES_CHART_URL = `${API_BASE_URL}/dashboard/branch/monthly-purchase-sales`;
 export const API_HEAD_OFFICE_PAYMENT_CHART_URL = `${API_BASE_URL}/dashboard/head-office/payment/transaction-chart-data`;
