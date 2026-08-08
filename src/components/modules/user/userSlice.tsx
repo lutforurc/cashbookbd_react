@@ -18,6 +18,7 @@ import {
   API_USER_LIST_URL,
   API_USER_STORE_URL,
   API_USER_TEMPORARY_PASSWORD_URL,
+  API_USER_TOGGLE_STATUS_URL,
   API_USER_UPDATE_URL,
 
   // ✅ ADD these in apiRoutes
@@ -156,6 +157,26 @@ export const updateUser = (data: any, callback: any) => (dispatch: any) => {
           },
         });
       }
+    });
+};
+
+/**
+ * Enable or disable a staff account.
+ *
+ * Resolves to the server's response either way; the caller decides what to
+ * show and when to refresh the list, because the row has to snap back if the
+ * server refused (disabling your own account, for one).
+ */
+export const toggleUserStatus = (id: string, status: boolean) => () => {
+  return httpService
+    .post(API_USER_TOGGLE_STATUS_URL, { usr_id: id, status: status ? 1 : 0 })
+    .then((res) => res.data)
+    .catch((err) => {
+      const message = extractApiErrorMessage(
+        err?.response?.data,
+        'Failed to change the user status.',
+      );
+      return { success: false, message, error: { message } };
     });
 };
 

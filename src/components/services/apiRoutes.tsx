@@ -190,6 +190,7 @@ export const API_USER_EDIT_URL = `${API_BASE_URL}/user/user-edit/`;
 export const API_USER_TEMPORARY_PASSWORD_URL = `${API_BASE_URL}/user/temporary-password/`;
 export const API_USER_DASHBOARD_PREFERENCES_URL = `${API_BASE_URL}/user/dashboard-preferences`;
 export const API_USER_UPDATE_URL = `${API_BASE_URL}/user/user-update`;
+export const API_USER_TOGGLE_STATUS_URL = `${API_BASE_URL}/user/toggle-status`;
 export const API_USER_CHECK = `${API_BASE_URL}/user/user-check`;
 export const API_PROFILE_PHOTO_URL = `${API_BASE_URL}/user/profile-photo`;
 export const API_PROFILE_COVER_URL = `${API_BASE_URL}/user/profile-cover`;

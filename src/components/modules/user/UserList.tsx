@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { useDispatch, useSelector } from 'react-redux';
-import { generateUserTemporaryPassword, getUser } from './userSlice';
+import { generateUserTemporaryPassword, getUser, toggleUserStatus } from './userSlice';
 import Loader from '../../../common/Loader';
 import { FaYoutube } from 'react-icons/fa';
 import { FiCheckSquare, FiEdit2, FiKey, FiPlus } from 'react-icons/fi';
@@ -14,6 +14,7 @@ import { toast } from 'react-toastify';
 import SearchInput from '../../utils/fields/SearchInput';
 import routes from '../../services/appRoutes';
 import { hasPermission } from '../../utils/permissionChecker';
+import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 
 const UserList = () => {
   const userList = useSelector((state) => state.users);
@@ -37,6 +38,8 @@ const UserList = () => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [temporaryPasswordLoadingId, setTemporaryPasswordLoadingId] = useState<string | null>(null);
+  const [statusBusyId, setStatusBusyId] = useState<string | null>(null);
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, number>>({});
   const maxUsers = subscription?.current?.max_users;
   const currentUsers = Number(userList?.data?.total || 0);
   const userLimitReached = typeof maxUsers === 'number' && maxUsers > 0 && currentUsers >= maxUsers;
@@ -125,6 +128,47 @@ const UserList = () => {
     }
   };
 
+
+  /**
+   * A row the user just switched reads from the local override; every other row
+   * reads from the server. Anything other than an explicit 0 counts as enabled,
+   * so a row from an older API build that omits `status` stays usable.
+   */
+  const isUserEnabled = (row: any) => {
+    const override = statusOverrides[row?.user_id];
+    if (override !== undefined) return override === 1;
+    return Number(row?.status ?? 1) !== 0;
+  };
+
+  /**
+   * The switch waits for the server before it moves. An optimistic flip would
+   * have to be undone on the refusals that actually happen here — disabling
+   * your own account, or a user outside your company — and a switch that
+   * snaps back is worse than one that takes a moment.
+   */
+  const handleToggleStatus = async (row: any) => {
+    const userId = row?.user_id;
+    if (!userId) {
+      toast.error('Something is wrong');
+      return;
+    }
+
+    const nextEnabled = !isUserEnabled(row);
+
+    setStatusBusyId(userId);
+    const response = await dispatch(toggleUserStatus(userId, nextEnabled) as any);
+    setStatusBusyId(null);
+
+    if (!response?.success) {
+      toast.error(
+        response?.error?.message || response?.message || 'Failed to change the user status.',
+      );
+      return;
+    }
+
+    setStatusOverrides((current) => ({ ...current, [userId]: nextEnabled ? 1 : 0 }));
+    toast.success(nextEnabled ? 'User enabled. They can sign in.' : 'User disabled. They cannot sign in.');
+  };
 
   const handleAddUser = () => {
     if (!canCreateUser) {
@@ -234,12 +278,38 @@ const UserList = () => {
       headerClass: "text-center",
       cellClass: "text-center",
       render: (row: any) => {
+        const enabled = isUserEnabled(row);
+        const isSelf = Number(row?.id) === Number(settings?.data?.user?.id);
+        const busy = statusBusyId === row.user_id;
+
         return (
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-3">
+            {/* The app's own switch, so it matches every other toggle in the
+                product. Disabled on your own row: the server refuses it anyway,
+                and an account that can lock itself out is a trap — but the
+                colour is kept so an enabled account still reads as enabled. */}
+            <span
+              title={
+                isSelf
+                  ? 'You cannot disable your own account'
+                  : enabled
+                    ? 'Enabled — click to block sign-in'
+                    : 'Disabled — click to allow sign-in'
+              }
+            >
+              <ToggleSwitch
+                checked={enabled}
+                onChange={() => handleToggleStatus(row)}
+                disabled={busy || isSelf}
+                preserveCheckedColorWhenDisabled
+                ariaLabel={enabled ? 'Disable sign-in' : 'Enable sign-in'}
+              />
+            </span>
+
             <button
               type="button"
               onClick={() => handleEditUser(row.user_id)}
-              className="text-blue-500 ml-2"
+              className="text-blue-500"
               title="Edit user"
             >
               <FiEdit2 className="cursor-pointer w-5 h-5" />
