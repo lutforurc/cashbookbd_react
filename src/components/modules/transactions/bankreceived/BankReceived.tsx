@@ -495,14 +495,17 @@ const BankReceived = () => {
         {isLoading && <Loader />}
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
-            <div className="w-full">
+            {/* space-y-2 so these three sit the same distance apart as the
+                fields below them, which the grid spaces. They used to carry
+                their own mb-4 / mt-6 and drifted out of step with the form. */}
+            <div className="w-full space-y-2">
               <div className="relative w-full flex items-center">
                 {hasPermission(
                   settings.data.permissions,
                   'cash.received.edit',
                 ) && (
                     <>
-                      <div className="w-full mb-4">
+                      <div className="w-full">
                         <label htmlFor="search">
                           Search Bank Received Voucher
                         </label>
@@ -539,11 +542,12 @@ const BankReceived = () => {
                   value={selectedReceiver}
                 />
               </div>
-              <div className="mt-6">
+              <div>
                 <label htmlFor="">Select Transaction Account</label>
                 <DdlMultiline
                   id="account"
                   name="account"
+                  className="h-9.5"
                   placeholder="Select Transaction Account"
                   onSelect={transactionAccountHandler} // âœ… à¦ªà§à¦°à§‹à¦¨à§‹ handler à¦¬à¦¾à¦¦
                   value={

@@ -370,13 +370,13 @@ const GeneralCashReceived = () => {
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
             <div className="w-full">
-              <div className="relative w-full flex items-center">
+              <div className="flex w-full items-end">
                 {hasPermission(
                   settings.data.permissions,
                   'cash.received.edit',
                 ) && (
                     <>
-                      <div className="w-full">
+                      <div className="min-w-0 flex-1">
                         <label htmlFor="search">Search Received</label>
                         <InputOnly
                           id="search"
@@ -384,20 +384,22 @@ const GeneralCashReceived = () => {
                           name="search"
                           placeholder="Search Received"
                           label=""
-                          className="py-1 w-full" // Add padding-right to account for the button
+                          // h-8.5 everywhere on this form -- the search button
+                          // beside it is already h-8.5, and the fields below
+                          // are only 34px by accident of their padding.
+                          className="h-8.5 w-full py-1"
                           onChange={(e) => setSearch(e.target.value)}
                         />
                       </div>
-                      <div>
-                        <label htmlFor=""> </label>
-                        <ButtonLoading
-                          onClick={searchTransaction}
-                          buttonLoading={buttonLoading}
-                          label=" "
-                          className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
-                          icon={<FiSearch className="text-white text-lg ml-2" />}
-                        />
-                      </div>
+                      {/* Same flush pairing as Cash Payment -- no gap, and the
+                          two borders share one line. */}
+                      <ButtonLoading
+                        onClick={searchTransaction}
+                        buttonLoading={buttonLoading}
+                        label=" "
+                        className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                        icon={<FiSearch className="text-white text-lg ml-2" />}
+                      />
                     </>
                   )}
               </div>
@@ -408,6 +410,7 @@ const GeneralCashReceived = () => {
               <DdlMultiline
                 id="account"
                 name="account"
+                className="h-9.5"
                 placeholder="Select cash received account"
                 onSelect={selectedLedgerOptionHandler}
                 value={
@@ -432,7 +435,7 @@ const GeneralCashReceived = () => {
               name="remarks"
               placeholder={'Enter Remarks'}
               label={'Enter Remarks'}
-              className={''}
+              className="h-8.5"
               list="general-cash-received-remark-suggestions"
               autoComplete="off"
               onChange={handleOnChange}
@@ -450,6 +453,7 @@ const GeneralCashReceived = () => {
               type="number"
               placeholder="Enter Received Amount"
               label="Amount (Tk.)"
+              className="h-8.5"
               onChange={handleOnChange}
               onKeyDown={(e) => handleInputKeyDown(e, 'add_new_button')} //
             />
