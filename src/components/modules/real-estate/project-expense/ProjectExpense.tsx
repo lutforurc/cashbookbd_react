@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiHome, FiPlus, FiSave, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
@@ -55,6 +55,9 @@ const payloadOf = (response: any) => response?.data?.data?.data;
 const refusedWith = (response: any) =>
   response?.data?.success ? null : response?.data?.message || 'The server refused that.';
 
+/** Cash is an account like any other in this chart; 17 is the one. */
+const CASH_COA4_ID = 17;
+
 const SELECT_CLASS =
   'w-full form-input px-3 py-1 text-gray-700 outline-none border rounded-xs bg-white ' +
   'dark:bg-boxdark dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500 ' +
@@ -75,6 +78,7 @@ const SELECT_CLASS =
  */
 const ProjectExpense = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [projects, setProjects] = useState<Option[]>([]);
   const [buildings, setBuildings] = useState<Option[]>([]);
@@ -89,6 +93,16 @@ const ProjectExpense = () => {
 
   // Set once a voucher has been pulled up for editing; cleared on save.
   const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
+  // What the voucher was paid out of. A voucher raised here is always cash,
+  // but one opened from the untagged-expense report may have come from a bank,
+  // and saving must not quietly turn it into a cash payment.
+  const [paidFrom, setPaidFrom] = useState<{ id: number | null; name: string }>({
+    id: null,
+    name: '',
+  });
+  // Which line of the table is currently open in the form, if any. Distinct
+  // from `editing` above, which is about the whole voucher.
+  const [editingRowKey, setEditingRowKey] = useState<string | null>(null);
   const [note, setNote] = useState('');
 
   const total = useMemo(
@@ -142,6 +156,53 @@ const ProjectExpense = () => {
     loadBuildings(form.projectId);
   }, [form.projectId, loadBuildings]);
 
+  /**
+   * Opened from the untagged-expense report with a voucher to fix.
+   *
+   * Waits for the project list, because the rows are labelled from it and a
+   * voucher loaded before it arrives shows blank project names. Guarded by a
+   * ref so re-renders do not fetch the voucher again and throw away whatever
+   * has been typed since.
+   */
+  const autoLoadedRef = useRef(false);
+
+  useEffect(() => {
+    const requested = searchParams.get('vr_no');
+
+    if (!requested || autoLoadedRef.current || projects.length === 0) {
+      return;
+    }
+
+    autoLoadedRef.current = true;
+    setSearch(requested);
+    handleSearch(requested);
+  }, [searchParams, projects.length]);
+
+  /**
+   * Building id -> name, for the projects named. Asked once per project rather
+   * than once per line, since a voucher's lines nearly always share one.
+   */
+  const buildingNamesFor = async (projectIds: number[]) => {
+    const names: Record<number, string> = {};
+
+    for (const projectId of Array.from(new Set(projectIds.filter(Boolean)))) {
+      try {
+        const response = await httpService.get(API_PROJECT_EXPENSE_BUILDINGS_DDL_URL, {
+          params: { project_id: projectId },
+        });
+
+        for (const option of payloadOf(response) || []) {
+          names[Number(option.value)] = option.label;
+        }
+      } catch {
+        // A name that cannot be fetched is left blank rather than blocking the
+        // voucher from opening; the id is still what gets saved.
+      }
+    }
+
+    return names;
+  };
+
   const handleProjectChange = (value: string) => {
     const id = value ? Number(value) : '';
     const project = projects.find((p) => Number(p.value) === Number(value));
@@ -193,10 +254,20 @@ const ProjectExpense = () => {
       return;
     }
 
-    setRows((prev) => [
-      ...prev,
-      { ...form, key: `${Date.now()}-${prev.length}`, projectId: form.projectId },
-    ]);
+    if (editingRowKey) {
+      // Put it back where it was rather than on the end. A voucher is read in
+      // the order it was entered, and a corrected line jumping to the bottom
+      // makes the reader hunt for what changed.
+      setRows((prev) =>
+        prev.map((row) => (row.key === editingRowKey ? { ...form, key: row.key } : row)),
+      );
+      setEditingRowKey(null);
+    } else {
+      setRows((prev) => [
+        ...prev,
+        { ...form, key: `${Date.now()}-${prev.length}`, projectId: form.projectId },
+      ]);
+    }
 
     // Project and building stay put. Most lines of one voucher belong to the
     // same place, and re-picking them for every line is the surest way to have
@@ -212,19 +283,59 @@ const ProjectExpense = () => {
     document.getElementById('account')?.focus();
   };
 
+  /**
+   * Take a line back into the form to be corrected.
+   *
+   * The row stays in the table while it is being edited, greyed, so the voucher
+   * on screen still shows every line and its total. Removing it and adding it
+   * back would lose its place and make the total jump about mid-correction.
+   */
+  const handleEditRow = (key: string) => {
+    const row = rows.find((r) => r.key === key);
+
+    if (!row) {
+      return;
+    }
+
+    const { key: _ignored, ...values } = row;
+
+    setForm(values);
+    setEditingRowKey(key);
+    document.getElementById('account')?.focus();
+  };
+
+  const handleCancelRowEdit = () => {
+    setEditingRowKey(null);
+    setForm((prev) => ({
+      ...prev,
+      account: '',
+      accountName: '',
+      remarks: '',
+      amount: '',
+    }));
+  };
+
   const handleRemove = (key: string) => {
     setRows((prev) => prev.filter((row) => row.key !== key));
+
+    if (editingRowKey === key) {
+      handleCancelRowEdit();
+    }
   };
 
   const resetVoucher = () => {
     setRows([]);
     setEditing(null);
+    setEditingRowKey(null);
     setNote('');
+    setPaidFrom({ id: null, name: '' });
     setForm(emptyRow());
   };
 
   const payload = () => ({
     note,
+    // Sent back exactly as it came, so a bank payment stays a bank payment.
+    paid_from: paidFrom.id,
     rows: rows.map((row) => ({
       account: row.account,
       remarks: row.remarks,
@@ -237,6 +348,13 @@ const ProjectExpense = () => {
   const handleSave = async () => {
     if (rows.length === 0) {
       toast.error('Add at least one line before saving.');
+      return;
+    }
+
+    // What is in the form has not been written back to its row yet. Saving now
+    // would quietly discard the correction being made.
+    if (editingRowKey) {
+      toast.error('Finish the line you are editing first — Save Line, or Cancel.');
       return;
     }
 
@@ -268,8 +386,8 @@ const ProjectExpense = () => {
     }
   };
 
-  const handleSearch = async () => {
-    const vrNo = search.trim();
+  const handleSearch = async (voucherNumber?: string) => {
+    const vrNo = (voucherNumber ?? search).trim();
 
     if (!vrNo) {
       toast.error('Enter a voucher number to look up.');
@@ -288,9 +406,20 @@ const ProjectExpense = () => {
       }
 
       const data = payloadOf(response);
+      const loaded = data?.rows || [];
+
+      // The voucher comes back with building ids, not names. Without looking
+      // them up every tagged line would read "Whole project" in the table --
+      // which is a different thing entirely, and the wrong thing to hand
+      // somebody who is about to correct the line.
+      const names = await buildingNamesFor(
+        loaded
+          .filter((row: any) => row.building_id)
+          .map((row: any) => Number(row.project_id)),
+      );
 
       setRows(
-        (data?.rows || []).map((row: any, index: number) => ({
+        loaded.map((row: any, index: number) => ({
           key: `${row.id}-${index}`,
           account: row.account,
           accountName: row.account_name,
@@ -299,11 +428,13 @@ const ProjectExpense = () => {
           projectId: row.project_id ?? '',
           projectName: projects.find((p) => Number(p.value) === Number(row.project_id))?.label || '',
           buildingId: row.building_id ?? '',
-          buildingName: '',
+          buildingName: row.building_id ? names[Number(row.building_id)] || '' : '',
         })),
       );
 
+      setEditingRowKey(null);
       setNote(data?.note || '');
+      setPaidFrom({ id: data?.paid_from ?? null, name: data?.paid_from_name || '' });
       setEditing({ mtmId: data?.mtm_id, vrNo: data?.vr_no });
       toast.info(`Voucher ${data?.vr_no} loaded`);
     } catch (error: any) {
@@ -319,9 +450,17 @@ const ProjectExpense = () => {
     <>
       <HelmetTitle title="Project Expense" />
 
-      <h2 className="mb-3 text-center text-lg font-semibold text-black dark:text-white">
+      <h2 className="mb-1 text-center text-lg font-semibold text-black dark:text-white">
         Project Expense {editing ? `— editing ${editing.vrNo}` : ''}
       </h2>
+
+      {/* Worth saying out loud, because the form has no field for it and the
+          voucher would otherwise look like a cash payment on screen. */}
+      {editing && paidFrom.id && paidFrom.id !== CASH_COA4_ID ? (
+        <p className="mb-3 text-center text-sm text-amber-600 dark:text-amber-400">
+          Paid from {paidFrom.name} — not cash. Saving keeps it that way.
+        </p>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-2">
         <div className="col-span-1">
@@ -343,7 +482,7 @@ const ProjectExpense = () => {
                 <div>
                   <label htmlFor=" "> </label>
                   <ButtonLoading
-                    onClick={handleSearch}
+                    onClick={() => handleSearch()}
                     buttonLoading={searching}
                     label=" "
                     className="h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
@@ -451,22 +590,39 @@ const ProjectExpense = () => {
             />
 
             <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
+              {/* One button, two jobs — it has to say which it is about to do,
+                  or a correction silently becomes a duplicate line. */}
               <ButtonLoading
                 id="add_new_button"
                 name="add_new_button"
                 onClick={handleAdd}
-                label="Add New"
+                label={editingRowKey ? 'Save Line' : 'Add New'}
                 className="mr-0 whitespace-nowrap text-center"
-                icon={<FiPlus className="ml-2 mr-2 h-5 text-lg text-white" />}
+                icon={
+                  editingRowKey ? (
+                    <FiEdit2 className="ml-2 mr-2 h-5 text-lg text-white" />
+                  ) : (
+                    <FiPlus className="ml-2 mr-2 h-5 text-lg text-white" />
+                  )
+                }
               />
-              <ButtonLoading
-                disabled={saving}
-                onClick={handleSave}
-                buttonLoading={saving}
-                label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
-                className="mr-0 whitespace-nowrap text-center"
-                icon={<FiSave className="ml-2 mr-2 text-lg text-white" />}
-              />
+              {editingRowKey ? (
+                <ButtonLoading
+                  onClick={handleCancelRowEdit}
+                  label="Cancel"
+                  className="mr-0 whitespace-nowrap text-center"
+                  icon={<FiX className="ml-2 mr-2 text-lg text-white" />}
+                />
+              ) : (
+                <ButtonLoading
+                  disabled={saving}
+                  onClick={handleSave}
+                  buttonLoading={saving}
+                  label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
+                  className="mr-0 whitespace-nowrap text-center"
+                  icon={<FiSave className="ml-2 mr-2 text-lg text-white" />}
+                />
+              )}
               <ButtonLoading
                 onClick={() => navigate('/dashboard')}
                 label="Home"
@@ -492,7 +648,14 @@ const ProjectExpense = () => {
               {rows.map((row) => (
                 <tr
                   key={row.key}
-                  className="border-b bg-white dark:border-gray-700 dark:bg-gray-800"
+                  // The line being corrected stays in place and is marked, so
+                  // the voucher on screen is still the whole voucher.
+                  className={
+                    'border-b dark:border-gray-700 ' +
+                    (editingRowKey === row.key
+                      ? 'bg-blue-50 dark:bg-blue-950'
+                      : 'bg-white dark:bg-gray-800')
+                  }
                 >
                   <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
                     {row.accountName}
@@ -509,15 +672,27 @@ const ProjectExpense = () => {
                   <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
                     {thousandSeparator(Number(row.amount))}
                   </td>
-                  <td className="px-2 py-2 text-center">
-                    <button
-                      type="button"
-                      aria-label="Remove line"
-                      onClick={() => handleRemove(row.key)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <FiTrash2 />
-                    </button>
+                  <td className="px-2 py-2">
+                    <div className="flex items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        aria-label="Edit line"
+                        title="Edit this line"
+                        onClick={() => handleEditRow(row.key)}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <FiEdit2 />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Remove line"
+                        title="Remove this line"
+                        onClick={() => handleRemove(row.key)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

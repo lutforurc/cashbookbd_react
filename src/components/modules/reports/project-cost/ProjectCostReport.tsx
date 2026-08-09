@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { useReactToPrint } from 'react-to-print';
-import { FiAlertTriangle, FiCheckSquare, FiRotateCcw } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { FiAlertTriangle, FiCheckSquare, FiEdit2, FiRotateCcw } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
@@ -22,6 +23,7 @@ import {
   API_REPORT_PROJECT_SUMMARY_URL,
   API_REPORT_PROJECT_UNTAGGED_URL,
 } from '../../../services/apiRoutes';
+import routes from '../../../services/appRoutes';
 import ProjectCostReportPrint from './ProjectCostReportPrint';
 
 type Section = 'summary' | 'building' | 'untagged';
@@ -67,6 +69,7 @@ const amount = (value: any) => (Number(value) === 0 ? '0.00' : thousandSeparator
  */
 const ProjectCostReport = ({ user }: any) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
@@ -347,6 +350,39 @@ const ProjectCostReport = ({ user }: any) => {
       cellClass: 'text-right w-36',
       render: (row: any) => <div>{amount(row.amount)}</div>,
     },
+    {
+      key: 'action',
+      header: 'Action',
+      headerClass: 'text-center',
+      cellClass: 'text-center w-20',
+      // The point of this report is to empty it, so the row carries the way to
+      // do that: open the voucher on the expense screen and give it a project.
+      // An approved voucher cannot be opened at all, and saying so here is
+      // better than a button that leads to a refusal.
+      render: (row: any) =>
+        Number(row.is_approved) === 1 ? (
+          <span
+            title="Approved vouchers cannot be edited. Remove the approval first, then tag it."
+            className="cursor-help text-xs text-gray-400"
+          >
+            approved
+          </span>
+        ) : (
+          <button
+            type="button"
+            aria-label={`Tag voucher ${row.vr_no}`}
+            title="Open this voucher and give it a project"
+            onClick={() =>
+              navigate(
+                `${routes.real_estate_project_expense}?vr_no=${encodeURIComponent(row.vr_no)}`,
+              )
+            }
+            className="text-blue-600 hover:text-blue-700"
+          >
+            <FiEdit2 className="mx-auto" />
+          </button>
+        ),
+    },
   ];
 
   const columns =
@@ -368,6 +404,9 @@ const ProjectCostReport = ({ user }: any) => {
             [
               { label: 'Total', colSpan: 4, className: 'text-left font-semibold' },
               { label: amount(totals.total), className: 'text-right font-semibold' },
+              // The action column takes no total, but the row still has to
+              // reach the end of the table.
+              { label: '', className: '' },
             ],
           ]
         : undefined;
