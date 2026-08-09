@@ -450,9 +450,7 @@ const ProjectExpense = () => {
     <>
       <HelmetTitle title="Project Expense" />
 
-      <h2 className="mb-1 text-center text-lg font-semibold text-black dark:text-white">
-        Project Expense {editing ? `— editing ${editing.vrNo}` : ''}
-      </h2>
+
 
       {/* Worth saying out loud, because the form has no field for it and the
           voucher would otherwise look like a cash payment on screen. */}
@@ -527,10 +525,7 @@ const ProjectExpense = () => {
                   </option>
                 ))}
               </select>
-              <p className="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                Leave it on "whole project" for land, boundary wall, approvals — costs no
-                single building carries.
-              </p>
+               
             </div>
 
             <div>
@@ -600,9 +595,9 @@ const ProjectExpense = () => {
                 className="mr-0 whitespace-nowrap text-center"
                 icon={
                   editingRowKey ? (
-                    <FiEdit2 className="ml-2 mr-2 h-5 text-lg text-white" />
+                    <FiEdit2 className="ml-2 mr-2 h-6 text-lg text-white" />
                   ) : (
-                    <FiPlus className="ml-2 mr-2 h-5 text-lg text-white" />
+                    <FiPlus className="ml-2 mr-2 h-6 text-lg text-white" />
                   )
                 }
               />
@@ -611,7 +606,7 @@ const ProjectExpense = () => {
                   onClick={handleCancelRowEdit}
                   label="Cancel"
                   className="mr-0 whitespace-nowrap text-center"
-                  icon={<FiX className="ml-2 mr-2 text-lg text-white" />}
+                  icon={<FiX className="ml-2 mr-2 h-6 text-lg text-white" />}
                 />
               ) : (
                 <ButtonLoading
@@ -620,14 +615,14 @@ const ProjectExpense = () => {
                   buttonLoading={saving}
                   label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
                   className="mr-0 whitespace-nowrap text-center"
-                  icon={<FiSave className="ml-2 mr-2 text-lg text-white" />}
+                  icon={<FiSave className="ml-2 mr-2 h-6 text-lg text-white" />}
                 />
               )}
               <ButtonLoading
                 onClick={() => navigate('/dashboard')}
                 label="Home"
                 className="mr-0 whitespace-nowrap p-2 text-center"
-                icon={<FiHome className="ml-2 mr-2 text-lg text-white" />}
+                icon={<FiHome className="ml-2 mr-2 text-lg text-white h-6" />}
               />
             </div>
           </div>

@@ -421,9 +421,7 @@ const ProjectPurchase = () => {
     <>
       <HelmetTitle title="Project Purchase" />
 
-      <h2 className="mb-3 text-center text-lg font-semibold text-black dark:text-white">
-        Project Purchase {editing ? `— editing ${editing.vrNo}` : ''}
-      </h2>
+
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* ---------------------------------------------------- the invoice */}
@@ -630,7 +628,7 @@ const ProjectPurchase = () => {
             }}
           />
 
-          <div className="grid grid-cols-2 gap-1 sm:col-span-2 sm:grid-cols-4">
+          <div className="grid grid-cols-1 gap-1 sm:col-span-2 sm:grid-cols-4">
             {/* One button, two jobs — it has to say which it is about to do,
                 or a correction silently becomes a duplicate line. */}
             <ButtonLoading
@@ -639,9 +637,9 @@ const ProjectPurchase = () => {
               className="mr-0 whitespace-nowrap text-center"
               icon={
                 editingRowKey ? (
-                  <FiEdit2 className="ml-2 mr-2 text-lg text-white" />
+                  <FiEdit2 className="ml-2 mr-2 h-6 text-lg text-white" />
                 ) : (
-                  <FiPlus className="ml-2 mr-2 text-lg text-white" />
+                  <FiPlus className="ml-2 mr-2 h-6 text-lg text-white" />
                 )
               }
             />
@@ -650,7 +648,7 @@ const ProjectPurchase = () => {
                 onClick={handleCancelRowEdit}
                 label="Cancel"
                 className="mr-0 whitespace-nowrap text-center"
-                icon={<FiX className="ml-2 mr-2 text-lg text-white" />}
+                icon={<FiX className="ml-2 mr-2 h-6 text-lg text-white" />}
               />
             ) : (
               <ButtonLoading
@@ -659,20 +657,20 @@ const ProjectPurchase = () => {
                 buttonLoading={saving}
                 label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
                 className="mr-0 whitespace-nowrap text-center"
-                icon={<FiSave className="ml-2 mr-2 text-lg text-white" />}
+                icon={<FiSave className="ml-2 mr-2 h-6 text-lg text-white" />}
               />
             )}
             <ButtonLoading
               onClick={resetAll}
               label="Reset"
-              className="mr-0 whitespace-nowrap text-center"
-              icon={<FiRefreshCw className="ml-2 mr-2 text-lg text-white" />}
+              className="mr-0 whitespace-nowrap p-2 text-center"
+              icon={<FiRefreshCw className="ml-2 mr-2 h-6 text-lg text-white" />}
             />
             <ButtonLoading
               onClick={() => navigate('/dashboard')}
               label="Home"
-              className="mr-0 whitespace-nowrap text-center"
-              icon={<FiHome className="ml-2 mr-2 text-lg text-white" />}
+              className="mr-0 whitespace-nowrap p-2 text-center"
+              icon={<FiHome className="ml-2 mr-2 h-6 text-lg text-white" />}
             />
           </div>
         </div>

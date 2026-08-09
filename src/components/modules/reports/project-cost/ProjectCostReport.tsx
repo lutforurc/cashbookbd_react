@@ -569,7 +569,7 @@ const ProjectCostReport = ({ user }: any) => {
         ) : null}
 
         {!loading && hasData ? (
-          <div className="space-y-3 p-5" style={{ fontSize: `${fontSize}px` }}>
+          <div className="space-y-3 px-1 py-2" style={{ fontSize: `${fontSize}px` }}>
             <Table
               columns={columns}
               data={current}
