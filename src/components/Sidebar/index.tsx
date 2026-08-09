@@ -109,6 +109,8 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'real-estate/unit-sales', title: "Unit Sales" },
     { id: 'real_estate_sold_units', title: "Sold Units" },
     { id: 'real_estate_installment_create', title: "Installment Create" },
+    { id: 'real_estate_project_expense', title: "Project Expense" },
+    { id: 'real_estate_project_purchase', title: "Project Purchase" },
   ],
   'products': [
     { id: 'brand/brand-list', title: "Brand List" },
@@ -1873,6 +1875,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname === '/real-estate/unit-sales' ||
                       pathname === routes.real_estate_sold_units ||
                       pathname === routes.real_estate_installment_create ||
+                      pathname === routes.real_estate_project_expense ||
+                      pathname === routes.real_estate_project_purchase ||
                       pathname.includes('forms')
                     }
                     menuId="real-estate"
@@ -1895,6 +1899,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               pathname === '/real-estate/unit-sales' ||
                               pathname === routes.real_estate_sold_units ||
                               pathname === routes.real_estate_installment_create ||
+                              pathname === routes.real_estate_project_expense ||
+                              pathname === routes.real_estate_project_purchase ||
+                      pathname === routes.real_estate_project_purchase ||
                               pathname === routes.real_estate_unit_types_create ||
                               pathname === routes.real_estate_buildings_list ||
                               pathname === routes.real_estate_floor_list ||
@@ -2062,6 +2069,28 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Installment Create
+                              </NavLink>
+                            </li>
+                            <li style={subSlot('real-estate', 'real_estate_project_expense')}>
+                              <NavLink
+                                to={routes.real_estate_project_expense}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Project Expense
+                              </NavLink>
+                            </li>
+                            <li style={subSlot('real-estate', 'real_estate_project_purchase')}>
+                              <NavLink
+                                to={routes.real_estate_project_purchase}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Project Purchase
                               </NavLink>
                             </li>
 
