@@ -715,6 +715,13 @@ export const API_PROJECT_PURCHASE_STORE_URL = `${API_BASE_URL}/real-estate/proje
 export const API_PROJECT_PURCHASE_EDIT_URL = `${API_BASE_URL}/real-estate/project-purchase/edit`;
 export const API_PROJECT_PURCHASE_UPDATE_URL = `${API_BASE_URL}/real-estate/project-purchase/update`;
 
+// What each project and each building has cost. Under the real-estate prefix
+// rather than with the other reports, because they read the real-estate
+// dimension tables and mean nothing to a branch that has none.
+export const API_REPORT_PROJECT_SUMMARY_URL = `${API_BASE_URL}/real-estate/reports/project-summary`;
+export const API_REPORT_PROJECT_BUILDING_DETAIL_URL = `${API_BASE_URL}/real-estate/reports/building-detail`;
+export const API_REPORT_PROJECT_UNTAGGED_URL = `${API_BASE_URL}/real-estate/reports/untagged-expense`;
+
 // Real Estate Flat url
 export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;
 export const API_FLAT_EDIT_URL = `${API_BASE_URL}/real-estate/flats/edit`;
