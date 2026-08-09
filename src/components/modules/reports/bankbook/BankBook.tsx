@@ -476,6 +476,7 @@ const BankBook = (user: any) => {
             canShowApproveAction={canShowApproveAction}
             canShowRemoveApprovalAction={canShowRemoveApprovalAction}
             canShowEditAction={canEditVoucher && !isApproved}
+            canEditVoucher={canEditVoucher}
             confirmInline
             onApprove={handleApproveClick}
             onRemoveApproval={handleRemoveApprovalClick}

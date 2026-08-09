@@ -742,6 +742,7 @@ const SalesLedger = (user: any) => {
             canShowRemoveApprovalAction={canShowRemoveApprovalAction}
             canShowPrintAction={canEditVoucher}
             canShowEditAction={canEditVoucher && !isApproved}
+            canEditVoucher={canEditVoucher}
             stopPropagation
             printTitle="Print Invoice"
             editTitle="Edit Invoice"

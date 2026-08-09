@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { useReactToPrint } from 'react-to-print';
 import { useNavigate } from 'react-router-dom';
-import { FiAlertTriangle, FiCheckSquare, FiEdit2, FiRotateCcw } from 'react-icons/fi';
+import { FiAlertTriangle, FiCheckSquare, FiEdit2, FiLock, FiRotateCcw } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
@@ -357,15 +357,16 @@ const ProjectCostReport = ({ user }: any) => {
       cellClass: 'text-center w-20',
       // The point of this report is to empty it, so the row carries the way to
       // do that: open the voucher on the expense screen and give it a project.
-      // An approved voucher cannot be opened at all, and saying so here is
-      // better than a button that leads to a refusal.
+      // An approved voucher cannot be opened at all, so it gets a lock instead
+      // of a button that would only lead to a refusal.
       render: (row: any) =>
         Number(row.is_approved) === 1 ? (
           <span
             title="Approved vouchers cannot be edited. Remove the approval first, then tag it."
-            className="cursor-help text-xs text-gray-400"
+            className="cursor-help text-amber-600 dark:text-amber-400"
           >
-            approved
+            <FiLock className="mx-auto" />
+            <span className="sr-only">Approved — locked for editing</span>
           </span>
         ) : (
           <button

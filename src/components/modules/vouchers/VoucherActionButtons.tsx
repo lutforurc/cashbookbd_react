@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   FiCheckCircle,
   FiEdit,
+  FiLock,
   FiLogIn,
   FiPrinter,
   FiXCircle,
@@ -17,6 +18,13 @@ interface VoucherActionButtonsProps {
   canShowRemoveApprovalAction?: boolean;
   canShowEditAction?: boolean;
   canShowPrintAction?: boolean;
+  /**
+   * Whether this user may edit vouchers at all. Callers hide the edit button on
+   * approved rows, which leaves an empty cell that reads like "nothing to do
+   * here". With this on, such a row shows a lock instead: editing is blocked by
+   * the approval, not missing. Someone with no edit rights sees nothing extra.
+   */
+  canEditVoucher?: boolean;
   onApprove?: (row: any) => void;
   onRemoveApproval?: (row: any) => void;
   onEdit?: (row: any) => void;
@@ -38,6 +46,7 @@ const VoucherActionButtons = ({
   canShowRemoveApprovalAction = false,
   canShowEditAction = false,
   canShowPrintAction = false,
+  canEditVoucher = false,
   onApprove,
   onRemoveApproval,
   onEdit,
@@ -115,9 +124,13 @@ const VoucherActionButtons = ({
     '',
   ).trim();
 
+  // The lock already says "approved", so the approve button's green tick would
+  // be a second badge for the same fact. Drop it and keep the row to two icons.
+  const showApprovedLock = canEditVoucher && isApproved && !canShowEditAction;
+
   return (
-    <>
-      {canShowApproveAction ? (
+    <div className="flex items-center justify-center gap-2">
+      {canShowApproveAction && !showApprovedLock ? (
         <button
           type="button"
           onClick={
@@ -151,7 +164,7 @@ const VoucherActionButtons = ({
               ? openConfirm('remove')
               : withEventGuard(onRemoveApproval, () => removingApprovalId !== voucherId)
           }
-          className="ml-2 text-amber-600"
+          className="text-amber-600"
           title="Remove approval"
           disabled={removingApprovalId === voucherId}
         >
@@ -163,7 +176,7 @@ const VoucherActionButtons = ({
         <button
           type="button"
           onClick={withEventGuard(onPrint)}
-          className="ml-2 text-blue-500"
+          className="text-blue-500"
           title={printTitle}
         >
           <FiPrinter className="cursor-pointer" width="30" height="30" />
@@ -174,11 +187,25 @@ const VoucherActionButtons = ({
         <button
           type="button"
           onClick={withEventGuard(onEdit)}
-          className="ml-2 text-blue-500"
+          className="text-blue-500"
           title={editTitle}
         >
           <FiEdit className="cursor-pointer" />
         </button>
+      ) : null}
+
+      {showApprovedLock ? (
+        <span
+          className="inline-flex cursor-help text-amber-600 dark:text-amber-400"
+          title={
+            canShowRemoveApprovalAction
+              ? 'Approved, so editing is locked. Remove the approval to edit it.'
+              : `Approved${approvedByName ? ` by ${approvedByName}` : ''}, so editing is locked.`
+          }
+        >
+          <FiLock />
+          <span className="sr-only">Approved — locked for editing</span>
+        </span>
       ) : null}
 
       {/* Confirm — box popover right below the clicked button */}
@@ -225,7 +252,7 @@ const VoucherActionButtons = ({
           </div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 };
 

@@ -717,6 +717,7 @@ const PurchaseLedger = (user: any) => {
             canShowRemoveApprovalAction={canShowRemoveApprovalAction}
             canShowPrintAction={canEditVoucher}
             canShowEditAction={canEditVoucher && !isApproved}
+            canEditVoucher={canEditVoucher}
             stopPropagation
             printTitle="Print Invoice"
             confirmInline
