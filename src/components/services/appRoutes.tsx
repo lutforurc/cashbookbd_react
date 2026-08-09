@@ -282,7 +282,10 @@ const ROUTES = {
   real_estate_unit_types_list: '/real-estate/unit-types/list',
   real_estate_unit_sales: '/real-estate/unit-sales',
   real_estate_sold_units: '/real-estate/sold-units',
-  real_estate_installment_create: '/real-estate/installment-create',  
+  real_estate_installment_create: '/real-estate/installment-create',
+  real_estate_project_expense: '/real-estate/project-expense',
+  real_estate_project_purchase: '/real-estate/project-purchase',
+  real_estate_project_cost_report: '/real-estate/project-cost-report',
   
   // HRM
   hrms_employee_list: '/hrms/employees',

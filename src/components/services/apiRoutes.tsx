@@ -699,6 +699,29 @@ export const API_BUILDING_DELETE_URL = `${API_BASE_URL}/real-estate/buildings/de
 export const API_BUILDING_LIST_URL = `${API_BASE_URL}/real-estate/buildings/list`;
 export const API_BUILDING_DDL_LIST_URL = `${API_BASE_URL}/real-estate/buildings/ddl`;
 
+// Project expense — a cash payment that says which project and which building
+// the money went to. Its own endpoints; the ordinary payment screens are
+// untouched by it.
+export const API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL = `${API_BASE_URL}/real-estate/project-expense/accounts/ddl`;
+export const API_PROJECT_EXPENSE_PROJECTS_DDL_URL = `${API_BASE_URL}/real-estate/project-expense/projects/ddl`;
+export const API_PROJECT_EXPENSE_BUILDINGS_DDL_URL = `${API_BASE_URL}/real-estate/project-expense/buildings/ddl`;
+export const API_PROJECT_EXPENSE_STORE_URL = `${API_BASE_URL}/real-estate/project-expense/store`;
+export const API_PROJECT_EXPENSE_EDIT_URL = `${API_BASE_URL}/real-estate/project-expense/edit`;
+export const API_PROJECT_EXPENSE_UPDATE_URL = `${API_BASE_URL}/real-estate/project-expense/update`;
+
+// Project purchase — material bought for a project and its buildings. One
+// Purchase ledger line per building, so a building can be asked what it cost.
+export const API_PROJECT_PURCHASE_STORE_URL = `${API_BASE_URL}/real-estate/project-purchase/store`;
+export const API_PROJECT_PURCHASE_EDIT_URL = `${API_BASE_URL}/real-estate/project-purchase/edit`;
+export const API_PROJECT_PURCHASE_UPDATE_URL = `${API_BASE_URL}/real-estate/project-purchase/update`;
+
+// What each project and each building has cost. Under the real-estate prefix
+// rather than with the other reports, because they read the real-estate
+// dimension tables and mean nothing to a branch that has none.
+export const API_REPORT_PROJECT_SUMMARY_URL = `${API_BASE_URL}/real-estate/reports/project-summary`;
+export const API_REPORT_PROJECT_BUILDING_DETAIL_URL = `${API_BASE_URL}/real-estate/reports/building-detail`;
+export const API_REPORT_PROJECT_UNTAGGED_URL = `${API_BASE_URL}/real-estate/reports/untagged-expense`;
+
 // Real Estate Flat url
 export const API_FLAT_STORE_URL = `${API_BASE_URL}/real-estate/flats`;
 export const API_FLAT_EDIT_URL = `${API_BASE_URL}/real-estate/flats/edit`;

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FaYoutube } from 'react-icons/fa';
 import { FiCheck, FiEdit2, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiUsers, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
@@ -200,6 +201,7 @@ const AttendanceEntries = ({ user }: any) => {
   const location = useLocation();
   const attendance = useSelector((state: any) => state.attendance);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
+  const settings = useSelector((state: any) => state.settings);
   const branches = branchDdlData?.protectedData?.data || [];
   const shifts = Array.isArray(attendance.shifts) ? attendance.shifts : [];
   const entries = Array.isArray(attendance.entries) ? attendance.entries : [];
@@ -803,7 +805,24 @@ const AttendanceEntries = ({ user }: any) => {
 
   return (
     <div>
-      <HelmetTitle title="Manual Attendance" />
+      {/* The walkthrough sits beside the heading, as it does on every other
+          screen that has one, and only where the branch asked for them. */}
+      <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
+        <HelmetTitle title="Manual Attendance" />
+        {String(settings?.data?.branch?.need_demo_tutorial) === '1' ? (
+          <a
+            href="https://www.youtube.com/watch?v=g9IxoBTyRgE"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Watch the manual attendance video"
+            title="Watch the manual attendance video"
+            className="inline-flex h-8 w-8 items-center justify-center text-red-600 transition dark:text-red-400"
+          >
+            <FaYoutube className="text-base" />
+          </a>
+        ) : null}
+      </div>
+
       {attendance.loading && <Loader />}
 
       <div className="mb-3 border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">

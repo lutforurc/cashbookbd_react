@@ -742,6 +742,7 @@ const SalesLedger = (user: any) => {
             canShowRemoveApprovalAction={canShowRemoveApprovalAction}
             canShowPrintAction={canEditVoucher}
             canShowEditAction={canEditVoucher && !isApproved}
+            canEditVoucher={canEditVoucher}
             stopPropagation
             printTitle="Print Invoice"
             editTitle="Edit Invoice"
@@ -980,10 +981,13 @@ const SalesLedger = (user: any) => {
                           type="text"
                           className="font-medium text-sm h-9 !w-14 text-center"
                         />
+                        {/* Icon only, for want of room beside Apply and Reset --
+                            hence the tooltip, which is all the name it has. */}
                         <PrintButton
                           onClick={handlePrint}
                           label=""
-                          className="h-9 !w-9 !px-0"
+                          title="Print"
+                          className="h-9 px-2"
                           disabled={!Array.isArray(tableData) || tableData.length === 0}
                         />
                       </>
