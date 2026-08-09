@@ -27,8 +27,9 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
 const pad = (value: number) => String(value).padStart(2, '0');
 const toDateString = (year: number, monthIndex: number, day: number) => `${year}-${pad(monthIndex + 1)}-${pad(day)}`;
 
+/** Kept in step with the screen: holidays are marked but not totalled. */
 const statusTotalValue = (code?: string) => {
-  if (code === '✓' || code === '!' || code === '○' || code === 'L') return 1;
+  if (code === '✓' || code === '!' || code === 'L') return 1;
   if (code === '½') return 0.5;
   return 0;
 };
@@ -63,6 +64,9 @@ const statusClassName = (code?: string) => {
       return 'status-cell status-late';
     case '✕':
       return 'status-cell status-absent';
+    case 'W':
+      return 'status-cell status-weekly';
+    case 'H':
     case '○':
       return 'status-cell status-holiday';
     case 'L':
@@ -113,9 +117,14 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
             box-shadow: inset 0 0 0 1px #ef4444;
           }
 
+          .attendance-monthly-print .status-weekly {
+            background: #f1f5f9;
+            color: #475569;
+          }
+
           .attendance-monthly-print .status-holiday {
-            background: #eef4ff;
-            color: #1d4ed8;
+            background: #ede9fe;
+            color: #6d28d9;
           }
 
           .attendance-monthly-print .status-leave {
@@ -248,8 +257,13 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
               box-shadow: inset 0 0 0 1px #000000 !important;
             }
 
+            .attendance-monthly-print .status-weekly {
+              background: #eef2f6 !important;
+              color: #000000 !important;
+            }
+
             .attendance-monthly-print .status-holiday {
-              background: #e8eef8 !important;
+              background: #e9e2fb !important;
               color: #000000 !important;
             }
 
@@ -371,7 +385,8 @@ const AttendanceMonthlyMatrixPrint = React.forwardRef<HTMLDivElement, Attendance
         <div className="print-legend mt-2 text-xs text-slate-600">
           <span className="legend-chip"><span className="legend-mark status-present">✓</span> Present</span>
           <span className="legend-chip"><span className="legend-mark status-late">!</span> Late</span>
-          <span className="legend-chip"><span className="legend-mark status-holiday">○</span> Holiday</span>
+          <span className="legend-chip"><span className="legend-mark status-weekly">W</span> Weekly holiday</span>
+          <span className="legend-chip"><span className="legend-mark status-holiday">H</span> Holiday</span>
           <span className="legend-chip"><span className="legend-mark status-absent">✕</span> Absent</span>
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
           <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>

@@ -64,8 +64,9 @@ const statusCode = (status?: string, approvalStatus?: string) => {
     case 'leave':
       return 'L';
     case 'holiday':
+      return 'H';
     case 'weekly_holiday':
-      return '○';
+      return 'W';
     case 'half_day':
       return '½';
     case 'pending':
@@ -94,15 +95,37 @@ const attendanceStatusCode = (row: any) => {
   return statusCode(row?.status, row?.approval_status);
 };
 
+/**
+ * What a cell adds to the day and month totals.
+ *
+ * A holiday counts nothing. It used to count one, but only ever appeared when
+ * somebody had recorded attendance on a holiday, which nobody does -- so in
+ * practice holidays were never in these totals. Now that every holiday in the
+ * month is marked, counting them would move a number the reader has been
+ * reading for months. The totals stay what they have always been: days worked
+ * and days on leave.
+ */
 const statusTotalValue = (code?: string) => {
-  if (code === '✓' || code === '!' || code === '○' || code === 'L') return 1;
+  if (code === '✓' || code === '!' || code === 'L') return 1;
   if (code === '½') return 0.5;
   return 0;
 };
 
 const formatTotal = (value: number) => (Number.isInteger(value) ? String(value) : value.toFixed(1));
+/**
+ * A dash where there is nothing.
+ *
+ * Most of this table is zeros -- nobody late, nobody absent, no deduction --
+ * and a wall of them buries the two or three figures that actually say
+ * something. A dash reads as "nothing here" and lets the eye find what does.
+ */
 const summaryNumber = (value: any) => {
   const numericValue = Number(value || 0);
+
+  if (!numericValue) {
+    return '-';
+  }
+
   return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(1);
 };
 
@@ -114,6 +137,9 @@ const statusClassName = (code?: string) => {
       return 'status-cell status-late';
     case '✕':
       return 'status-cell status-absent';
+    case 'W':
+      return 'status-cell status-weekly';
+    case 'H':
     case '○':
       return 'status-cell status-holiday';
     case 'L':
@@ -159,6 +185,9 @@ const cellTintClass = (code?: string) => {
       return 'cell-tint cell-tint-late';
     case '✕':
       return 'cell-tint cell-tint-absent';
+    case 'W':
+      return 'cell-tint cell-tint-weekly';
+    case 'H':
     case '○':
       return 'cell-tint cell-tint-holiday';
     case 'L':
@@ -179,8 +208,32 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
   const branches = branchDdlData?.protectedData?.data || [];
   const rows = Array.isArray(attendance.report?.rows) ? attendance.report.rows : [];
   const summaryRows = Array.isArray(attendance.monthlySummary?.rows) ? attendance.monthlySummary.rows : [];
+
+  // The payable days the server worked out, keyed by employee, so the Total
+  // column can report it rather than guess at it from the cells.
+  const payableDaysByEmployee = useMemo(() => {
+    const map: Record<string, number> = {};
+
+    summaryRows.forEach((row: any) => {
+      if (row?.employee_id !== undefined && row?.employee_id !== null) {
+        map[String(row.employee_id)] = Number(row.payable_days || 0);
+      }
+    });
+
+    return map;
+  }, [summaryRows]);
   const summaryTotals = attendance.monthlySummary?.totals || {};
   const leaveApplications = Array.isArray(attendance.leaveApplications) ? attendance.leaveApplications : [];
+
+  // Which days of the month are holidays. Nobody records attendance on one, so
+  // without this the cell is blank and reads as a day somebody forgot.
+  const holidayDates = attendance.report?.holidays?.dates || {};
+  const weeklyHolidayWeekdays = useMemo(
+    () => (Array.isArray(attendance.report?.holidays?.weekly_days)
+      ? attendance.report.holidays.weekly_days.map(Number)
+      : []),
+    [attendance.report?.holidays?.weekly_days],
+  );
   const userBranchId = user?.branch_id ? String(user.branch_id) : '';
 
   const now = new Date();
@@ -218,6 +271,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           employee_name: row.employee_name,
           dates: {},
           dateRows: {},
+          holidayNames: {},
         });
       }
 
@@ -239,6 +293,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
           employee_name: leave.employee_name,
           dates: {},
           dateRows: {},
+          holidayNames: {},
         });
       }
 
@@ -255,13 +310,32 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       }
     });
 
+    // Holidays last, and only where nothing else was recorded. A day somebody
+    // actually worked, or took leave on, keeps what it was; the rest of the
+    // holiday is marked rather than left looking like a day nobody entered.
+    employeeMap.forEach((employee) => {
+      for (let day = 1; day <= daysInMonth; day += 1) {
+        const dateKey = toDateString(year, monthIndex, day);
+
+        if (employee.dates[dateKey]) continue;
+
+        if (holidayDates[dateKey]) {
+          employee.dates[dateKey] = 'H';
+          employee.holidayNames[dateKey] = holidayDates[dateKey];
+        } else if (weeklyHolidayWeekdays.includes(new Date(year, monthIndex, day).getDay())) {
+          employee.dates[dateKey] = 'W';
+          employee.holidayNames[dateKey] = 'Weekly holiday';
+        }
+      }
+    });
+
     return Array.from(employeeMap.values()).sort((a, b) => {
       const serialA = Number(a.employee_serial);
       const serialB = Number(b.employee_serial);
       if (!Number.isNaN(serialA) && !Number.isNaN(serialB)) return serialA - serialB;
       return String(a.employee_name || '').localeCompare(String(b.employee_name || ''));
     });
-  }, [daysInMonth, leaveApplications, monthIndex, rows, year]);
+  }, [daysInMonth, holidayDates, leaveApplications, monthIndex, rows, weeklyHolidayWeekdays, year]);
 
   const dayTotals = useMemo(
     () =>
@@ -272,9 +346,23 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
     [days, monthIndex, reportRows, year],
   );
 
+  // The corner figure has to be the sum of the column above it, so it comes
+  // from the same server numbers the Total column shows rather than from the
+  // per-day counts, which are a different question: how many people worked
+  // that day.
   const grandTotal = useMemo(
-    () => dayTotals.reduce((total, dayTotal) => total + dayTotal, 0),
-    [dayTotals],
+    () => reportRows.reduce((total, employee) => {
+      const payable = payableDaysByEmployee[String(employee.employee_id)];
+
+      if (payable !== undefined) {
+        return total + Number(payable);
+      }
+
+      return total + days.reduce((sum, day) => (
+        sum + statusTotalValue(employee.dates[toDateString(year, monthIndex, day)])
+      ), 0);
+    }, 0),
+    [days, monthIndex, payableDaysByEmployee, reportRows, year],
   );
 
   const summaryColumns: Column[] = useMemo(() => [
@@ -288,7 +376,25 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
     { key: 'early_out_count', header: 'Early Out', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center', render: (row) => summaryNumber(row.early_out_count) },
     { key: 'half_days', header: 'Half Day', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center', render: (row) => summaryNumber(row.half_days) },
     { key: 'payable_days', header: 'Payable', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center font-semibold', render: (row) => summaryNumber(row.payable_days) },
-    { key: 'deduction_days', header: 'Deduction', headerClass: 'w-24 text-center', cellClass: 'w-24 text-center font-semibold text-red-700 dark:text-red-400', render: (row) => summaryNumber(row.deduction_days) },
+    // Red is for a deduction that exists. Painting the dash red too would make
+    // a column of nothing look like a column of trouble.
+    {
+      key: 'deduction_days',
+      header: 'Deduction',
+      headerClass: 'w-24 text-center',
+      cellClass: 'w-24 text-center',
+      render: (row) => (
+        <span
+          className={
+            Number(row.deduction_days || 0)
+              ? 'font-bold text-red-700 dark:text-red-400'
+              : ''
+          }
+        >
+          {summaryNumber(row.deduction_days)}
+        </span>
+      ),
+    },
   ], []);
 
   const summaryFooterRows: TableFooterCell[][] = useMemo(() => (
@@ -303,7 +409,10 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         { label: summaryNumber(summaryTotals.early_out_count), className: 'text-center' },
         { label: summaryNumber(summaryTotals.half_days), className: 'text-center' },
         { label: summaryNumber(summaryTotals.payable_days), className: 'text-center' },
-        { label: summaryNumber(summaryTotals.deduction_days), className: 'text-center text-red-700 dark:text-red-400' },
+        {
+          label: summaryNumber(summaryTotals.deduction_days),
+          className: `text-center${Number(summaryTotals.deduction_days || 0) ? ' font-bold text-red-700 dark:text-red-400' : ''}`,
+        },
       ]]
       : []
   ), [summaryRows.length, summaryTotals]);
@@ -325,11 +434,18 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         // branch pays for it — so it is flagged rather than hidden.
         const elsewhere = elsewhereBranchName(entry);
 
+        // A holiday nobody worked has no attendance behind it, so there is
+        // nothing to open -- the mark is there to be read, not clicked.
+        const isMarkedHoliday = !entry && (code === 'W' || code === 'H');
+        const holidayName = employee.holidayNames?.[dateKey];
+
         return (
           <button
             type="button"
             title={
-              elsewhere
+              isMarkedHoliday
+                ? holidayName || 'Holiday'
+                : elsewhere
                 ? `Attendance given at ${elsewhere}`
                 : entry?.approval_status === 'approved'
                 ? 'Approved attendance cannot be changed'
@@ -338,7 +454,7 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
                 : ''
             }
             onClick={() => openManualAttendance(employee, dateKey, code)}
-            disabled={!code}
+            disabled={!code || isMarkedHoliday}
             className={`group flex min-h-9 w-full items-center justify-center px-1 py-1 text-center ${code ? cellTintClass(code) : ''} ${isEditable ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-125' : 'cursor-default'}`}
           >
             {code ? (
@@ -357,12 +473,28 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
       header: 'Total',
       headerClass: 'w-16 text-center',
       cellClass: 'w-16 text-center font-semibold text-slate-800 dark:text-slate-100',
-      render: (employee) => formatTotal(days.reduce((total, day) => {
-        const dateKey = toDateString(year, monthIndex, day);
-        return total + statusTotalValue(employee.dates[dateKey]);
-      }, 0)),
+      // The server's own figure, not a sum of what happens to be on screen.
+      // It is the same number the salary sheet pays on: days worked, days on
+      // paid leave, and the holidays inside the part of the month that has
+      // been entered -- so a Friday already passed counts, one still to come
+      // does not, and a Friday somebody was absent either side of does not
+      // either. Adding the cells up here could never have known any of that.
+      render: (employee) => {
+        const payable = payableDaysByEmployee[String(employee.employee_id)];
+
+        if (payable !== undefined) {
+          return formatTotal(Number(payable));
+        }
+
+        // Nobody the summary knows about -- an inactive employee, say. Fall
+        // back to counting the cells rather than showing nothing.
+        return formatTotal(days.reduce((total, day) => {
+          const dateKey = toDateString(year, monthIndex, day);
+          return total + statusTotalValue(employee.dates[dateKey]);
+        }, 0));
+      },
     },
-  ], [days, monthIndex, year]);
+  ], [days, monthIndex, payableDaysByEmployee, year]);
 
   const matrixFooterRows: TableFooterCell[][] = useMemo(() => (
     reportRows.length > 0
@@ -565,7 +697,12 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             .attendance-monthly-screen .status-present { background: #16a34a; color: #ffffff; }
             .attendance-monthly-screen .status-late { background: #d97706; color: #ffffff; }
             .attendance-monthly-screen .status-absent { background: #dc2626; color: #ffffff; }
-            .attendance-monthly-screen .status-holiday { background: #2563eb; color: #ffffff; }
+            /* A weekly day off is routine, so it reads as quiet grey; a
+               calendar holiday is an event, so it gets a colour of its own.
+               Neither may borrow green, red or amber -- those already mean
+               worked, absent and on leave. */
+            .attendance-monthly-screen .status-weekly { background: #64748b; color: #ffffff; }
+            .attendance-monthly-screen .status-holiday { background: #7c3aed; color: #ffffff; }
             .attendance-monthly-screen .status-leave { background: #ca8a04; color: #ffffff; }
             .attendance-monthly-screen .status-half-day { background: #7c3aed; color: #ffffff; }
 
@@ -582,7 +719,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             .dark .attendance-monthly-screen .status-present { background: #22c55e; }
             .dark .attendance-monthly-screen .status-late { background: #f59e0b; }
             .dark .attendance-monthly-screen .status-absent { background: #ef4444; }
-            .dark .attendance-monthly-screen .status-holiday { background: #3b82f6; }
+            .dark .attendance-monthly-screen .status-weekly { background: #94a3b8; color: #0f172a; }
+            .dark .attendance-monthly-screen .status-holiday { background: #a78bfa; color: #1e1b4b; }
             .dark .attendance-monthly-screen .status-leave { background: #eab308; }
             .dark .attendance-monthly-screen .status-half-day { background: #8b5cf6; }
 
@@ -592,14 +730,16 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
             .attendance-monthly-screen .cell-tint-present { background: #dcfce7; }
             .attendance-monthly-screen .cell-tint-late { background: #fef3c7; }
             .attendance-monthly-screen .cell-tint-absent { background: #fee2e2; }
-            .attendance-monthly-screen .cell-tint-holiday { background: #dbeafe; }
+            .attendance-monthly-screen .cell-tint-weekly { background: #f1f5f9; }
+            .attendance-monthly-screen .cell-tint-holiday { background: #ede9fe; }
             .attendance-monthly-screen .cell-tint-leave { background: #fef9c3; }
             .attendance-monthly-screen .cell-tint-half { background: #f3e8ff; }
 
             .dark .attendance-monthly-screen .cell-tint-present { background: rgba(34, 197, 94, 0.20); }
             .dark .attendance-monthly-screen .cell-tint-late { background: rgba(245, 158, 11, 0.20); }
             .dark .attendance-monthly-screen .cell-tint-absent { background: rgba(239, 68, 68, 0.22); }
-            .dark .attendance-monthly-screen .cell-tint-holiday { background: rgba(59, 130, 246, 0.20); }
+            .dark .attendance-monthly-screen .cell-tint-weekly { background: rgba(148, 163, 184, 0.16); }
+            .dark .attendance-monthly-screen .cell-tint-holiday { background: rgba(167, 139, 250, 0.20); }
             .dark .attendance-monthly-screen .cell-tint-leave { background: rgba(234, 179, 8, 0.20); }
             .dark .attendance-monthly-screen .cell-tint-half { background: rgba(139, 92, 246, 0.22); }
 
@@ -776,7 +916,8 @@ const AttendanceMonthlyMatrixReport = ({ user }: any) => {
         <div className="print-legend flex flex-wrap items-center border-t border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
           <span className="legend-chip"><span className="legend-mark status-present">{statusGlyph('✓')}</span> Present</span>
           <span className="legend-chip"><span className="legend-mark status-late">{statusGlyph('!')}</span> Late</span>
-          <span className="legend-chip"><span className="legend-mark status-holiday">{statusGlyph('○')}</span> Holiday</span>
+          <span className="legend-chip"><span className="legend-mark status-weekly">W</span> Weekly holiday</span>
+          <span className="legend-chip"><span className="legend-mark status-holiday">H</span> Holiday</span>
           <span className="legend-chip"><span className="legend-mark status-absent">{statusGlyph('✕')}</span> Absent</span>
           <span className="legend-chip"><span className="legend-mark status-leave">L</span> Leave</span>
           <span className="legend-chip"><span className="legend-mark status-half-day">½</span> Half Day</span>
