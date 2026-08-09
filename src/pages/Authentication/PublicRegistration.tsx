@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff, FiSave } from 'react-icons/fi';
 import { FaYoutube } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -43,6 +43,16 @@ const REGISTRATION_PAYLOAD_KEY = 'public_register_payload';
 
 const PublicRegistration: React.FC = () => {
   const navigate = useNavigate();
+  const { search } = useLocation();
+
+  // Set by the marketing site's pricing cards, which link here as
+  // /register?plan_id=N so the company is created on the plan that was picked
+  // rather than on whichever plan sorts first.
+  const selectedPlanId = React.useMemo(() => {
+    const raw = Number(new URLSearchParams(search).get('plan_id'));
+    return Number.isInteger(raw) && raw > 0 ? raw : null;
+  }, [search]);
+
   const [formData, setFormData] = useState<RegistrationForm>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -155,7 +165,10 @@ const PublicRegistration: React.FC = () => {
       await httpService.get(API_CSRF_COOKIES);
       const response = await httpService.post(
         API_REGISTER_REQUEST_OTP_URL,
-        formData
+        // The plan rides along only when the pricing card sent one. The API
+        // re-checks that it is active before it provisions anything, and falls
+        // back to the default plan when it is absent or unusable.
+        selectedPlanId ? { ...formData, plan_id: selectedPlanId } : formData
         // ,
         // {
         //   xsrfHeaderName: 'X-XSRF-TOKEN',
