@@ -10,6 +10,24 @@ interface coal4Param {
     searchName: string | null;
 }
 
+export type AccountTypeFilter = string | number | Array<string | number>;
+
+const buildDdlQuery = (inputValue: string, acType: AccountTypeFilter = '') => {
+    const params = new URLSearchParams({ searchName: inputValue });
+
+    if (Array.isArray(acType)) {
+        acType.forEach((type) => {
+            if (type !== '') {
+                params.append('acType[]', String(type));
+            }
+        });
+    } else if (acType !== '') {
+        params.set('acType', String(acType));
+    }
+
+    return params.toString();
+};
+
 
 
 export const getCoal4Ddl = (searchName: '', acType = '') => async (dispatch: any) => {
@@ -82,11 +100,11 @@ const coal4DdlSlicer = (state = initialState, action: any) => {
 export default coal4DdlSlicer;
 
 
-export const getCoal4DdlNext = (inputValue: string, acType: string) => async (dispatch: any) => {
+export const getCoal4DdlNext = (inputValue: string, acType: AccountTypeFilter = '') => async (dispatch: any) => {
     try {
         const token = getToken();
         const response = await fetch(
-            API_CHART_OF_ACCOUNTS_DDL_L4_URL + `?searchName=${inputValue}&acType=${acType}`,
+            `${API_CHART_OF_ACCOUNTS_DDL_L4_URL}?${buildDdlQuery(inputValue, acType)}`,
             {
                 method: 'GET',
                 headers: {
@@ -103,11 +121,11 @@ export const getCoal4DdlNext = (inputValue: string, acType: string) => async (di
     }
 };
 
-export const getCoal3DdlNext = (inputValue: string, acType: string) => async (dispatch: any) => {
+export const getCoal3DdlNext = (inputValue: string, acType: AccountTypeFilter = '') => async (dispatch: any) => {
     try {
         const token = getToken();
         const response = await fetch(
-            API_CHART_OF_ACCOUNTS_DDL_L3_URL + `?searchName=${inputValue}&acType=${acType}`,
+            `${API_CHART_OF_ACCOUNTS_DDL_L3_URL}?${buildDdlQuery(inputValue, acType)}`,
             {
                 method: 'GET',
                 headers: {

@@ -533,7 +533,7 @@ const ProjectExpense = () => {
                 name="account"
                 className={FIELD_HEIGHT}
                 placeholder="Select an account"
-                acType=""
+                acType={[1, 2, 3]}
                 value={
                   form.account
                     ? { value: String(form.account), label: form.accountName }

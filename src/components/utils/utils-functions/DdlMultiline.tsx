@@ -2,6 +2,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import AsyncSelect from 'react-select/async';
 import { getCoal4DdlNext } from '../../modules/chartofaccounts/levelfour/coal4DdlSlicer';
+import type { AccountTypeFilter } from '../../modules/chartofaccounts/levelfour/coal4DdlSlicer';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
 
@@ -19,7 +20,7 @@ interface DropdownProps {
   id?: string;
   name?: string;
   onSelect?: (selected: OptionType | null) => void;
-  acType?: string;
+  acType?: AccountTypeFilter;
   defaultValue?: { value: any; label: any } | null;
   value?: { value: any; label: any } | null;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
