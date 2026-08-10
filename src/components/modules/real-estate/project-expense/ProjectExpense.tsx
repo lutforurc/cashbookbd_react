@@ -6,6 +6,7 @@ import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2, FiX } from 'react-
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
 import InputOnly from '../../../utils/fields/InputOnly';
+import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
@@ -61,7 +62,10 @@ const CASH_COA4_ID = 17;
 const SELECT_CLASS =
   'w-full form-input px-3 py-1 text-gray-700 outline-none border rounded-xs bg-white ' +
   'dark:bg-boxdark dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500 ' +
-  'dark:focus:border-blue-400 h-8.5';
+  'dark:focus:border-blue-400 h-9.5';
+
+/** The same 38px, for the text boxes that sit between the dropdowns. */
+const FIELD_HEIGHT = 'h-9.5';
 
 /**
  * Cash paid out against a project, and against a building within it.
@@ -82,7 +86,11 @@ const ProjectExpense = () => {
 
   const [projects, setProjects] = useState<Option[]>([]);
   const [buildings, setBuildings] = useState<Option[]>([]);
-  const [accounts, setAccounts] = useState<Option[]>([]);
+  // Not state: nothing on screen changes when it arrives, and the dropdown
+  // asks for it rather than being handed it.
+  const expenseAccounts = useRef<{ value: string; label: string; label_2?: string }[] | null>(
+    null,
+  );
 
   const [form, setForm] = useState(emptyRow());
   const [rows, setRows] = useState<ExpenseRow[]>([]);
@@ -114,15 +122,11 @@ const ProjectExpense = () => {
     let cancelled = false;
 
     const load = async () => {
-      const [projectRes, accountRes] = await Promise.all([
-        httpService.get(API_PROJECT_EXPENSE_PROJECTS_DDL_URL),
-        httpService.get(API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL),
-      ]);
+      const projectRes = await httpService.get(API_PROJECT_EXPENSE_PROJECTS_DDL_URL);
 
       if (cancelled) return;
 
       setProjects(payloadOf(projectRes) || []);
-      setAccounts(payloadOf(accountRes) || []);
     };
 
     load().catch(() => {
@@ -228,13 +232,36 @@ const ProjectExpense = () => {
     }));
   };
 
-  const handleAccountChange = (value: string) => {
-    const account = accounts.find((a) => Number(a.value) === Number(value));
+  /**
+   * The accounts this screen may spend against -- expense accounts only, and
+   * that rule stays on the endpoint that knows it rather than being reasoned
+   * out here. Fetched whole on first use and filtered from memory after, which
+   * is what the plain dropdown this replaced did, so typing costs no requests.
+   */
+  const loadExpenseAccounts = useCallback(async (search: string) => {
+    if (!expenseAccounts.current) {
+      const response = await httpService.get(API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL);
 
+      expenseAccounts.current = (payloadOf(response) || []).map((account: any) => ({
+        value: String(account.value),
+        label: account.label,
+        label_2: account.label_2,
+      }));
+    }
+
+    const all = expenseAccounts.current ?? [];
+    const needle = search.trim().toLowerCase();
+
+    return needle
+      ? all.filter((account) => account.label.toLowerCase().includes(needle))
+      : all;
+  }, []);
+
+  const handleAccountSelect = (selected: { value: string | number; label: string } | null) => {
     setForm((prev) => ({
       ...prev,
-      account: value ? Number(value) : '',
-      accountName: account?.label || '',
+      account: selected ? Number(selected.value) : '',
+      accountName: selected?.label || '',
     }));
   };
 
@@ -462,9 +489,9 @@ const ProjectExpense = () => {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-2">
         <div className="col-span-1">
-          <div className="grid grid-cols-1 gap-y-2">
+          <div className="grid grid-cols-1 gap-y-1">
             <div className="w-full">
-              <div className="flex w-full items-end gap-2">
+              <div className="flex w-full items-end">
                 <div className="min-w-0 flex-1">
                   <label htmlFor="search">Search Voucher</label>
                   <InputOnly
@@ -473,20 +500,19 @@ const ProjectExpense = () => {
                     value={search}
                     placeholder="Voucher number"
                     label=""
-                    className="py-1 w-full"
+                    className={`w-full py-1 ${FIELD_HEIGHT}`}
                     onChange={(e: any) => setSearch(e.target.value)}
                   />
                 </div>
-                <div>
-                  <label htmlFor=" "> </label>
-                  <ButtonLoading
-                    onClick={() => handleSearch()}
-                    buttonLoading={searching}
-                    label=" "
-                    className="h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                    icon={<FiSearch className="ml-2 text-lg text-white" />}
-                  />
-                </div>
+                {/* No gap, and -ml-px so the two borders sit on one line --
+                    the box and the button it belongs to read as one control. */}
+                <ButtonLoading
+                  onClick={() => handleSearch()}
+                  buttonLoading={searching}
+                  label=" "
+                  className={`-ml-px w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20 ${FIELD_HEIGHT}`}
+                  icon={<FiSearch className="ml-2 text-lg text-white" />}
+                />
               </div>
             </div>
 
@@ -525,25 +551,32 @@ const ProjectExpense = () => {
                   </option>
                 ))}
               </select>
-               
             </div>
 
             <div>
               <label htmlFor="account">Select Account</label>
-              <select
+              {/* Searchable, like the one on Cash Payment -- but reading from
+                  this screen's own endpoint, which returns expense accounts
+                  and nothing else. */}
+              <DdlMultiline
                 id="account"
                 name="account"
-                className={SELECT_CLASS}
-                value={form.account}
-                onChange={(e) => handleAccountChange(e.target.value)}
-              >
-                <option value="">Select an expense account</option>
-                {accounts.map((account) => (
-                  <option key={account.value} value={account.value}>
-                    {account.label}
-                  </option>
-                ))}
-              </select>
+                className={FIELD_HEIGHT}
+                placeholder="Select an expense account"
+                defaultOptions
+                fetchOptions={loadExpenseAccounts}
+                value={
+                  form.account
+                    ? { value: String(form.account), label: form.accountName }
+                    : null
+                }
+                onSelect={handleAccountSelect}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    document.getElementById('remarks')?.focus();
+                  }
+                }}
+              />
             </div>
 
             <InputElement
@@ -551,7 +584,7 @@ const ProjectExpense = () => {
               name="remarks"
               label="Enter Remarks"
               placeholder="Enter Remarks"
-              className=""
+              className={FIELD_HEIGHT}
               autoComplete="off"
               value={form.remarks}
               onChange={(e) => setForm((prev) => ({ ...prev, remarks: e.target.value }))}
@@ -563,7 +596,7 @@ const ProjectExpense = () => {
               type="number"
               label="Amount (Tk.)"
               placeholder="Enter Amount"
-              className=""
+              className={FIELD_HEIGHT}
               value={form.amount}
               onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
               onKeyDown={(e) => {
@@ -579,7 +612,7 @@ const ProjectExpense = () => {
               name="note"
               label="Voucher Note"
               placeholder="Optional note for the whole voucher"
-              className=""
+              className={FIELD_HEIGHT}
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />

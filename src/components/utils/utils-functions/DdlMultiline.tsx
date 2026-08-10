@@ -27,6 +27,17 @@ interface DropdownProps {
   placeholder?: string;
   actionOptionLabel?: string;
   onActionSelect?: (inputValue: string) => void;
+  /**
+   * Where the options come from, for a screen that may not offer the whole
+   * chart. Project Expense, for one, may only spend against expense accounts,
+   * and that narrowing belongs to the endpoint that knows the rule -- not to
+   * this dropdown. Left unset, the chart-wide search below is used.
+   */
+  fetchOptions?: (inputValue: string) => Promise<OptionType[]>;
+  /** Characters before a search is made. Defaults to 3, or 0 with fetchOptions. */
+  minChars?: number;
+  /** Fill the menu before anything is typed. Only worth it on a short list. */
+  defaultOptions?: boolean;
 }
 
 const ACTION_OPTION_VALUE = '__ddl_multiline_action__';
@@ -59,6 +70,9 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   placeholder,
   actionOptionLabel,
   onActionSelect,
+  fetchOptions,
+  minChars,
+  defaultOptions,
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
   const [isControlFocused, setIsControlFocused] = React.useState(false);
@@ -76,11 +90,33 @@ const DdlMultiline: React.FC<DropdownProps> = ({
     setInternalSelectedOption(value ?? defaultValue ?? null);
   }, [value, defaultValue]);
 
+  const minimumChars = minChars ?? (fetchOptions ? 0 : 3);
+
+  const withActionOption = (options: OptionType[]) =>
+    actionOptionLabel
+      ? [...options, { value: ACTION_OPTION_VALUE, label: actionOptionLabel, isAction: true }]
+      : options;
+
   // Load Options (Asynchronous)
   const loadOptions = async (
     inputValue: string,
     callback: (options: OptionType[]) => void,
   ) => {
+    if (inputValue.length < minimumChars) {
+      callback([]);
+      return;
+    }
+
+    if (fetchOptions) {
+      try {
+        callback(withActionOption(await fetchOptions(inputValue)));
+      } catch (error) {
+        console.error('Error loading options:', error);
+        callback([]);
+      }
+      return;
+    }
+
     if (inputValue.length >= 3) {
       try {
         const response: any = await dispatch(getCoal4DdlNext(inputValue, acType),
@@ -240,6 +276,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
           control: () => className || '',
         }}
         loadOptions={loadOptions}
+        defaultOptions={defaultOptions}
         onChange={(selected) => {
           if (selected?.isAction) {
             onActionSelect?.(inputValue.trim());
