@@ -570,6 +570,7 @@ const ProjectExpense = () => {
                     ? { value: String(form.account), label: form.accountName }
                     : null
                 }
+                // acType = "2"
                 onSelect={handleAccountSelect}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
