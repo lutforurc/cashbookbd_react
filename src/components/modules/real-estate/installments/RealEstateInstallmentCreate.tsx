@@ -764,7 +764,7 @@ export default function RealEstateInstallmentCreate() {
                   is what a switch says and a tick box does not. */}
               <div className="flex items-center pt-6">
                 <ToggleSwitch
-                  label="Early Payment"
+                  label="Early Payment Discount?"
                   checked={earlyPayment}
                   disabled={scheduleLocked}
                   onChange={setEarlyPayment}
