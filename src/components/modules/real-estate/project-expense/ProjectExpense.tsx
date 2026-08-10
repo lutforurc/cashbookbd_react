@@ -11,7 +11,6 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
 import {
-  API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL,
   API_PROJECT_EXPENSE_BUILDINGS_DDL_URL,
   API_PROJECT_EXPENSE_EDIT_URL,
   API_PROJECT_EXPENSE_PROJECTS_DDL_URL,
@@ -22,13 +21,6 @@ import {
 interface Option {
   value: number | string;
   label: string;
-}
-
-/** What the searchable account dropdown wants: id, name, and the group above it. */
-interface AccountOption {
-  value: string;
-  label: string;
-  label_2?: string;
 }
 
 interface ExpenseRow {
@@ -93,12 +85,6 @@ const ProjectExpense = () => {
 
   const [projects, setProjects] = useState<Option[]>([]);
   const [buildings, setBuildings] = useState<Option[]>([]);
-  // The account search in flight, so a superseded keystroke can be dropped
-  // rather than raising a request of its own.
-  const accountSearch = useRef<{
-    timer: ReturnType<typeof setTimeout> | null;
-    abandon: ((options: AccountOption[]) => void) | null;
-  }>({ timer: null, abandon: null });
 
   const [form, setForm] = useState(emptyRow());
   const [rows, setRows] = useState<ExpenseRow[]>([]);
@@ -239,63 +225,6 @@ const ProjectExpense = () => {
       buildingName: building?.label || '',
     }));
   };
-
-  /**
-   * The accounts this screen may spend against.
-   *
-   * Every search goes to the database, the way the account box on Cash Payment
-   * does -- so a chart too long to hand over whole still searches whole, and a
-   * newly opened account is found the moment it exists. Expense-only is the
-   * endpoint's rule, not one reasoned out here.
-   *
-   * The dropdown asks on every keystroke, so a search waits for a pause in the
-   * typing and a superseded one is dropped: one request per word, not one per
-   * letter.
-   */
-  const loadExpenseAccounts = useCallback(
-    (search: string) =>
-      new Promise<AccountOption[]>((resolve) => {
-        if (accountSearch.current.timer) {
-          clearTimeout(accountSearch.current.timer);
-        }
-        // react-select ignores an answer it no longer wants, but the promise
-        // still has to settle or the dropdown waits on it forever.
-        accountSearch.current.abandon?.([]);
-        accountSearch.current.abandon = resolve;
-
-        accountSearch.current.timer = setTimeout(async () => {
-          accountSearch.current.abandon = null;
-
-          try {
-            const response = await httpService.get(API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL, {
-              params: { search: search.trim() },
-            });
-
-            resolve(
-              (payloadOf(response) || []).map((account: any) => ({
-                value: String(account.value),
-                label: account.label,
-                label_2: account.label_2,
-              })),
-            );
-          } catch {
-            // The interceptor has already said what went wrong; an empty menu
-            // is better than a dropdown that never stops loading.
-            resolve([]);
-          }
-        }, 300);
-      }),
-    [],
-  );
-
-  useEffect(
-    () => () => {
-      if (accountSearch.current.timer) {
-        clearTimeout(accountSearch.current.timer);
-      }
-    },
-    [],
-  );
 
   const handleAccountSelect = (selected: { value: string | number; label: string } | null) => {
     setForm((prev) => ({
@@ -595,22 +524,21 @@ const ProjectExpense = () => {
 
             <div>
               <label htmlFor="account">Select Account</label>
-              {/* Searches the database as you type, like the one on Cash
-                  Payment -- but through this screen's own endpoint, which
-                  returns expense accounts and nothing else. */}
+              {/* The same account search Cash Payment uses -- the whole chart,
+                  three characters in. Which of those accounts a project expense
+                  may actually be booked to is settled on save, by the API, and
+                  not by narrowing what this box will show. */}
               <DdlMultiline
                 id="account"
                 name="account"
                 className={FIELD_HEIGHT}
-                placeholder="Select an expense account"
-                defaultOptions
-                fetchOptions={loadExpenseAccounts}
+                placeholder="Select an account"
+                acType=""
                 value={
                   form.account
                     ? { value: String(form.account), label: form.accountName }
                     : null
                 }
-                // acType = "2"
                 onSelect={handleAccountSelect}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
