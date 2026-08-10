@@ -523,7 +523,7 @@ const HeadOfficeCashPayment = () => {
         <div className="col-span-1">
           <div className="grid grid-cols-1 gap-y-2">
             <div className="w-full">
-              <div className="flex w-full items-end gap-2">
+              <div className="flex w-full items-end">
                 <div className="min-w-0 flex-1">
                   <label htmlFor="search">Search Payment</label>
                   <InputOnly
@@ -536,16 +536,15 @@ const HeadOfficeCashPayment = () => {
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-                <div>
-                  <label htmlFor=""> </label>
-                  <ButtonLoading
-                    onClick={searchTransaction}
-                    buttonLoading={buttonLoading}
-                    label=" "
-                    className="h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                    icon={<FiSearch className="text-white text-lg ml-2" />}
-                  />
-                </div>
+                {/* No gap, and -ml-px so the two borders sit on one line --
+                    the box and its button read as one control. */}
+                <ButtonLoading
+                  onClick={searchTransaction}
+                  buttonLoading={buttonLoading}
+                  label=" "
+                  className="-ml-px h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                  icon={<FiSearch className="text-white text-lg ml-2" />}
+                />
               </div>
             </div>
 

@@ -662,7 +662,10 @@ const ProjectExpense = () => {
           </div>
         </div>
 
-        <div className="col-span-2 overflow-x-auto lg:mt-6">
+        {/* The two columns only exist from lg up. Spanning two of them below
+            that makes the grid invent a second column, and the table comes out
+            wider than the form it belongs to. */}
+        <div className="overflow-x-auto lg:col-span-2 lg:mt-6">
           <table className="min-w-[680px] w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
             <thead className="bg-gray-300 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
               <tr>

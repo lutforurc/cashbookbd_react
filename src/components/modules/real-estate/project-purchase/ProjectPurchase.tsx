@@ -559,7 +559,7 @@ const ProjectPurchase = () => {
             <label htmlFor="search" className="sr-only">
               Search Invoice
             </label>
-            <div className="flex items-end gap-2">
+            <div className="flex items-end">
               <div className="min-w-0 flex-1">
                 <InputOnly
                   id="search"
@@ -571,12 +571,14 @@ const ProjectPurchase = () => {
                   onChange={(e: any) => setSearch(e.target.value)}
                 />
               </div>
+              {/* No gap, and -ml-px so the two borders sit on one line -- the
+                  box and the button it belongs to read as one control. */}
               <ButtonLoading
                 onClick={handleSearch}
                 buttonLoading={searching}
                 label=" "
                 title="Search invoice"
-                className="h-9.5 w-12 shrink-0 border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                className="-ml-px h-9.5 w-12 shrink-0 border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
                 icon={<FiSearch className="ml-2 text-lg text-white" />}
               />
             </div>

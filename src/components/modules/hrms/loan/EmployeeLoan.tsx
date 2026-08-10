@@ -202,10 +202,10 @@ const EmployeeLoan = () => {
           <div className="">
             <div className="">
               <div className="w-full">
-                <div className="relative w-full flex items-center">
+                <div className="flex w-full items-end">
                   {hasPermission(settings?.data?.permissions, 'cash.received.edit') && (
                     <>
-                      <div className="w-full mb-4">
+                      <div className="min-w-0 flex-1 mb-4">
                         <label htmlFor="search" className="text-black dark:text-white">
                           Search Employee Loan (Vr. No.)
                         </label>
@@ -226,15 +226,15 @@ const EmployeeLoan = () => {
                         />
                       </div>
 
-                      <div>
-                        <ButtonLoading
-                          onClick={searchTransaction}
-                          buttonLoading={searchLoading}
-                          label=" "
-                          className="whitespace-nowrap text-center h-8.5 w-20 border-[1px] border-gray-600 hover:border-blue-500 right-0 top-6 absolute"
-                          icon={<FiSearch className="text-white text-lg ml-2" />}
-                        />
-                      </div>
+                      {/* No gap, and -ml-px so the two borders sit on one line
+                          -- the box and its button read as one control. */}
+                      <ButtonLoading
+                        onClick={searchTransaction}
+                        buttonLoading={searchLoading}
+                        label=" "
+                        className="-ml-px mb-4 h-8.5 w-12 shrink-0 whitespace-nowrap border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
+                        icon={<FiSearch className="text-white text-lg ml-2" />}
+                      />
                     </>
                   )}
                 </div>
