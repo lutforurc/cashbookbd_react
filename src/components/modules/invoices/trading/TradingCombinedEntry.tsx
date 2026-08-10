@@ -38,6 +38,8 @@ import {
   handleInputKeyDown,
 } from '../../../utils/utils-functions/handleKeyDown';
 import useCtrlS from '../../../utils/hooks/useCtrlS';
+import TrackedProductField from '../../product-tracking/TrackedProductField';
+import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
@@ -125,6 +127,7 @@ const initialFormData = {
   vehicleNumber: '',
   notes: '',
   notesApplyTo: 'both' as NotesApplyTo,
+  trackedProductId: null as number | null,
   products: [] as CombinedProduct[],
 };
 
@@ -222,6 +225,7 @@ const TradingCombinedEntry = () => {
           vehicleNumber: editData.vehicleNumber || '',
           notes: editData.notes || '',
           notesApplyTo: editData.notesApplyTo || editData.notes_apply_to || 'both',
+          trackedProductId: editData.trackedProductId ? Number(editData.trackedProductId) : null,
           products: Array.isArray(editData.products) ? editData.products : [],
         });
         resetProductEditor();
@@ -268,6 +272,35 @@ const TradingCombinedEntry = () => {
       window.clearTimeout(notesTimer);
     };
   }, [formData.vehicleNumber, formData.notes]);
+
+  // One entry, two parties, and tracking is configured per party -- so the
+  // dropdown offers both sides' products and the server decides which leg each
+  // one belongs to. A product set up for the supplier tags the Purchase
+  // voucher, one set up for the customer tags the Sales voucher, one set up for
+  // both tags both. Offering only one side's list would hide the other's
+  // products for no reason the clerk could see.
+  const { products: supplierProducts } = useTrackedProducts(
+    'purchase',
+    undefined,
+    false,
+    formData.supplierAccount,
+  );
+  const { products: customerProducts } = useTrackedProducts(
+    'sales',
+    undefined,
+    false,
+    formData.customerAccount,
+  );
+
+  const trackedProducts = useMemo(() => {
+    const seen = new Set<number>();
+
+    return [...supplierProducts, ...customerProducts].filter((product) => {
+      if (seen.has(product.id)) return false;
+      seen.add(product.id);
+      return true;
+    });
+  }, [supplierProducts, customerProducts]);
 
   const purchaseTotal = useMemo(
     () =>
@@ -819,6 +852,7 @@ const TradingCombinedEntry = () => {
         vehicleNumber: formData.vehicleNumber || null,
         notes: formData.notes || null,
         notesApplyTo: showCombinedInvoiceNote ? formData.notesApplyTo || 'both' : 'both',
+        trackedProductId: formData.trackedProductId,
         products: formData.products,
         ...(editingCombinedNumber ? { combined_number: editingCombinedNumber } : {}),
       };
@@ -1078,6 +1112,22 @@ const TradingCombinedEntry = () => {
                   {profitAmount > 0 ? 'Profit Tk.' : profitAmount < 0 ? 'Loss Tk.' : ''} {thousandSeparator(Math.abs(profitAmount))}
                 </p>
               </div>
+            </div>
+
+            {/* Below the totals rather than among the fields above, as on the
+                Purchase Invoice it borrows this from: it is not part of
+                entering the invoice, it says what the invoice should be
+                counted against afterwards. */}
+            <div className="mt-3">
+              <TrackedProductField
+                id="trackedProductId"
+                value={formData.trackedProductId}
+                products={trackedProducts}
+                helpText="Which product this entry is against. It tags whichever side the product is set up for — supplier, customer, or both."
+                onChange={(productId) =>
+                  setFormData((prev) => ({ ...prev, trackedProductId: productId }))
+                }
+              />
             </div>
           </div>
         </div>
