@@ -524,10 +524,8 @@ const ProjectExpense = () => {
 
             <div>
               <label htmlFor="account">Select Account</label>
-              {/* The same account search Cash Payment uses -- the whole chart,
-                  three characters in. Which of those accounts a project expense
-                  may actually be booked to is settled on save, by the API, and
-                  not by narrowing what this box will show. */}
+              {/* Search after three characters and exclude non-expense account
+                  types through the shared account dropdown API. */}
               <DdlMultiline
                 id="account"
                 name="account"
