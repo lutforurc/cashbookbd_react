@@ -7,10 +7,12 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
 import InputOnly from '../../../utils/fields/InputOnly';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
+import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
 import {
+  API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL,
   API_PROJECT_EXPENSE_BUILDINGS_DDL_URL,
   API_PROJECT_EXPENSE_EDIT_URL,
   API_PROJECT_EXPENSE_PROJECTS_DDL_URL,
@@ -23,6 +25,11 @@ interface Option {
   label: string;
 }
 
+interface AccountOption extends Option {
+  label_2?: string;
+  is_expense?: boolean | number;
+}
+
 interface ExpenseRow {
   key: string;
   account: number | '';
@@ -33,6 +40,7 @@ interface ExpenseRow {
   projectName: string;
   buildingId: number | '';
   buildingName: string;
+  isExpense: boolean;
 }
 
 const emptyRow = (): Omit<ExpenseRow, 'key'> => ({
@@ -44,6 +52,7 @@ const emptyRow = (): Omit<ExpenseRow, 'key'> => ({
   projectName: '',
   buildingId: '',
   buildingName: '',
+  isExpense: false,
 });
 
 /**
@@ -66,13 +75,16 @@ const SELECT_CLASS =
 /** The same 38px, for the text boxes that sit between the dropdowns. */
 const FIELD_HEIGHT = 'h-9.5';
 
+const focusField = (id: string) => {
+  window.setTimeout(() => document.getElementById(id)?.focus(), 0);
+};
+
 /**
- * Cash paid out against a project, and against a building within it.
+ * The cash-payment screen used by real-estate branches.
  *
- * The ordinary Cash Payment screen cannot say where the money went, and it may
- * not be changed, so this is a screen of its own writing through its own
- * endpoints. What it saves is an ordinary cash voucher -- same series, same
- * cash book -- carrying the project and building alongside each line.
+ * Every row is an ordinary cash-payment line. Expense rows may additionally
+ * carry a project and building; without a project they remain branch expenses,
+ * while non-expense rows are saved without project tracking.
  *
  * Building is deliberately optional. A cost the whole project carries -- land,
  * the boundary wall, approval fees -- belongs to no single building, and the
@@ -106,6 +118,7 @@ const ProjectExpense = () => {
   // from `editing` above, which is about the whole voucher.
   const [editingRowKey, setEditingRowKey] = useState<string | null>(null);
   const [note, setNote] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<Option | null>(null);
 
   const total = useMemo(
     () => rows.reduce((sum, row) => sum + Number(row.amount || 0), 0),
@@ -201,6 +214,14 @@ const ProjectExpense = () => {
     return names;
   };
 
+  const loadAccountOptions = async (inputValue: string): Promise<AccountOption[]> => {
+    const response = await httpService.get(API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL, {
+      params: { search: inputValue },
+    });
+
+    return payloadOf(response) || [];
+  };
+
   const handleProjectChange = (value: string) => {
     const id = value ? Number(value) : '';
     const project = projects.find((p) => Number(p.value) === Number(value));
@@ -226,20 +247,34 @@ const ProjectExpense = () => {
     }));
   };
 
-  const handleAccountSelect = (selected: { value: string | number; label: string } | null) => {
+  const handleAccountSelect = (selected: AccountOption | null) => {
+    const isExpense = Boolean(Number(selected?.is_expense || 0));
+
     setForm((prev) => ({
       ...prev,
       account: selected ? Number(selected.value) : '',
       accountName: selected?.label || '',
+      isExpense,
+      projectId: isExpense ? prev.projectId : '',
+      projectName: isExpense ? prev.projectName : '',
+      buildingId: isExpense ? prev.buildingId : '',
+      buildingName: isExpense ? prev.buildingName : '',
     }));
+
+    if (selected) {
+      focusField(isExpense ? 'project_id' : 'remarks');
+    }
+  };
+
+  const handleOrderSelect = (selected: Option | null) => {
+    setSelectedOrder(selected);
+
+    if (selected) {
+      focusField('account');
+    }
   };
 
   const handleAdd = () => {
-    if (!form.projectId) {
-      toast.error('Choose the project this money belongs to.');
-      return;
-    }
-
     if (!form.account) {
       toast.error('Choose an account.');
       return;
@@ -272,6 +307,7 @@ const ProjectExpense = () => {
       ...prev,
       account: '',
       accountName: '',
+      isExpense: false,
       remarks: '',
       amount: '',
     }));
@@ -306,6 +342,7 @@ const ProjectExpense = () => {
       ...prev,
       account: '',
       accountName: '',
+      isExpense: false,
       remarks: '',
       amount: '',
     }));
@@ -324,12 +361,14 @@ const ProjectExpense = () => {
     setEditing(null);
     setEditingRowKey(null);
     setNote('');
+    setSelectedOrder(null);
     setPaidFrom({ id: null, name: '' });
     setForm(emptyRow());
   };
 
   const payload = () => ({
     note,
+    purchaseOrderNumber: selectedOrder?.value || null,
     // Sent back exactly as it came, so a bank payment stays a bank payment.
     paid_from: paidFrom.id,
     rows: rows.map((row) => ({
@@ -425,11 +464,20 @@ const ProjectExpense = () => {
           projectName: projects.find((p) => Number(p.value) === Number(row.project_id))?.label || '',
           buildingId: row.building_id ?? '',
           buildingName: row.building_id ? names[Number(row.building_id)] || '' : '',
+          isExpense: Boolean(row.is_expense),
         })),
       );
 
       setEditingRowKey(null);
       setNote(data?.note || '');
+      setSelectedOrder(
+        data?.purchase_order_number
+          ? {
+              value: data.purchase_order_number,
+              label: data.purchase_order_text || String(data.purchase_order_number),
+            }
+          : null,
+      );
       setPaidFrom({ id: data?.paid_from ?? null, name: data?.paid_from_name || '' });
       setEditing({ mtmId: data?.mtm_id, vrNo: data?.vr_no });
       toast.info(`Voucher ${data?.vr_no} loaded`);
@@ -444,7 +492,7 @@ const ProjectExpense = () => {
 
   return (
     <>
-      <HelmetTitle title="Project Expense" />
+      <HelmetTitle title="Cash Payment" />
 
 
 
@@ -469,8 +517,14 @@ const ProjectExpense = () => {
                     value={search}
                     placeholder="Voucher number"
                     label=""
-                    className={`w-full py-1 ${FIELD_HEIGHT}`}
-                    onChange={(e: any) => setSearch(e.target.value)}
+                  className={`w-full py-1 ${FIELD_HEIGHT}`}
+                  onChange={(e: any) => setSearch(e.target.value)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      search.trim() ? handleSearch() : focusField('purchaseOrderNumber');
+                    }
+                  }}
                   />
                 </div>
                 {/* No gap, and -ml-px so the two borders sit on one line --
@@ -486,15 +540,57 @@ const ProjectExpense = () => {
             </div>
 
             <div>
-              <label htmlFor="project_id">Select Project</label>
+              <label htmlFor="purchaseOrderNumber">Select Order (Optional)</label>
+              <OrderDropdown
+                id="purchaseOrderNumber"
+                name="purchaseOrderNumber"
+                onSelect={handleOrderSelect}
+                value={selectedOrder}
+                defaultValue={selectedOrder}
+                heightPx="38px"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    focusField('account');
+                  }
+                }}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="account">Select Account</label>
+              <DdlMultiline
+                id="account"
+                name="account"
+                className={FIELD_HEIGHT}
+                placeholder="Select an account"
+                fetchOptions={loadAccountOptions}
+                minChars={3}
+                value={
+                  form.account
+                    ? { value: String(form.account), label: form.accountName }
+                    : null
+                }
+                onSelect={handleAccountSelect}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="project_id">Select Project (Optional)</label>
               <select
                 id="project_id"
                 name="project_id"
                 className={SELECT_CLASS}
                 value={form.projectId}
+                disabled={!form.isExpense}
                 onChange={(e) => handleProjectChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    focusField(form.projectId ? 'building_id' : 'remarks');
+                  }
+                }}
               >
-                <option value="">Select project</option>
+                <option value="">Branch expense (no project)</option>
                 {projects.map((project) => (
                   <option key={project.value} value={project.value}>
                     {project.label}
@@ -510,8 +606,14 @@ const ProjectExpense = () => {
                 name="building_id"
                 className={SELECT_CLASS}
                 value={form.buildingId}
-                disabled={!form.projectId}
+                disabled={!form.isExpense || !form.projectId}
                 onChange={(e) => handleBuildingChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    focusField('remarks');
+                  }
+                }}
               >
                 <option value="">Whole project (no single building)</option>
                 {buildings.map((building) => (
@@ -520,30 +622,6 @@ const ProjectExpense = () => {
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label htmlFor="account">Select Account</label>
-              {/* Search after three characters and exclude non-expense account
-                  types through the shared account dropdown API. */}
-              <DdlMultiline
-                id="account"
-                name="account"
-                className={FIELD_HEIGHT}
-                placeholder="Select an account"
-                acType={[1, 2, 3]}
-                value={
-                  form.account
-                    ? { value: String(form.account), label: form.accountName }
-                    : null
-                }
-                onSelect={handleAccountSelect}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    document.getElementById('remarks')?.focus();
-                  }
-                }}
-              />
             </div>
 
             <InputElement
@@ -555,6 +633,12 @@ const ProjectExpense = () => {
               autoComplete="off"
               value={form.remarks}
               onChange={(e) => setForm((prev) => ({ ...prev, remarks: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  focusField('amount');
+                }
+              }}
             />
 
             <InputElement
@@ -662,9 +746,11 @@ const ProjectExpense = () => {
                     {row.remarks}
                   </td>
                   <td className="px-2 py-2 font-medium text-gray-900 dark:text-white">
-                    {row.projectName || '—'}
+                    {row.isExpense ? row.projectName || 'Branch expense' : 'Not tracked'}
                     <span className="block text-xs text-gray-500 dark:text-gray-400">
-                      {row.buildingName || 'Whole project'}
+                      {row.isExpense && row.projectId
+                        ? row.buildingName || 'Whole project'
+                        : ''}
                     </span>
                   </td>
                   <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">

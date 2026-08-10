@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import TradingCashPayment from './TradingCashPayment';
 import GeneralCashPayment from './GeneralCashPayment';
 import HeadOfficeCashPayment from './HeadOfficeCashPayment';
+import ProjectExpense from '../../real-estate/project-expense/ProjectExpense';
 import { userCurrentBranch } from '../../branch/branchSlice';
 import Loader from '../../../../common/Loader';
 
@@ -27,6 +28,10 @@ const CashPaymentIndex = () => {
   // business_type_id check and wins over the inventory-system mapping below.
   if (Number(currentBranch?.branch_types_id) === 1) {
     return <HeadOfficeCashPayment />;
+  }
+
+  if (Number(currentBranch?.business_type_id) === 9) {
+    return <ProjectExpense />;
   }
 
   // Every other branch picks its screen from its inventory system (see the
