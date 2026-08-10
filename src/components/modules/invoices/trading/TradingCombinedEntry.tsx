@@ -1123,7 +1123,7 @@ const TradingCombinedEntry = () => {
                 id="trackedProductId"
                 value={formData.trackedProductId}
                 products={trackedProducts}
-                helpText="Which product this entry is against. It tags whichever side the product is set up for — supplier, customer, or both."
+                helpText=""
                 onChange={(productId) =>
                   setFormData((prev) => ({ ...prev, trackedProductId: productId }))
                 }
