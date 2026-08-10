@@ -24,6 +24,13 @@ interface Option {
   label: string;
 }
 
+/** What the searchable account dropdown wants: id, name, and the group above it. */
+interface AccountOption {
+  value: string;
+  label: string;
+  label_2?: string;
+}
+
 interface ExpenseRow {
   key: string;
   account: number | '';
@@ -86,11 +93,12 @@ const ProjectExpense = () => {
 
   const [projects, setProjects] = useState<Option[]>([]);
   const [buildings, setBuildings] = useState<Option[]>([]);
-  // Not state: nothing on screen changes when it arrives, and the dropdown
-  // asks for it rather than being handed it.
-  const expenseAccounts = useRef<{ value: string; label: string; label_2?: string }[] | null>(
-    null,
-  );
+  // The account search in flight, so a superseded keystroke can be dropped
+  // rather than raising a request of its own.
+  const accountSearch = useRef<{
+    timer: ReturnType<typeof setTimeout> | null;
+    abandon: ((options: AccountOption[]) => void) | null;
+  }>({ timer: null, abandon: null });
 
   const [form, setForm] = useState(emptyRow());
   const [rows, setRows] = useState<ExpenseRow[]>([]);
@@ -233,29 +241,61 @@ const ProjectExpense = () => {
   };
 
   /**
-   * The accounts this screen may spend against -- expense accounts only, and
-   * that rule stays on the endpoint that knows it rather than being reasoned
-   * out here. Fetched whole on first use and filtered from memory after, which
-   * is what the plain dropdown this replaced did, so typing costs no requests.
+   * The accounts this screen may spend against.
+   *
+   * Every search goes to the database, the way the account box on Cash Payment
+   * does -- so a chart too long to hand over whole still searches whole, and a
+   * newly opened account is found the moment it exists. Expense-only is the
+   * endpoint's rule, not one reasoned out here.
+   *
+   * The dropdown asks on every keystroke, so a search waits for a pause in the
+   * typing and a superseded one is dropped: one request per word, not one per
+   * letter.
    */
-  const loadExpenseAccounts = useCallback(async (search: string) => {
-    if (!expenseAccounts.current) {
-      const response = await httpService.get(API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL);
+  const loadExpenseAccounts = useCallback(
+    (search: string) =>
+      new Promise<AccountOption[]>((resolve) => {
+        if (accountSearch.current.timer) {
+          clearTimeout(accountSearch.current.timer);
+        }
+        // react-select ignores an answer it no longer wants, but the promise
+        // still has to settle or the dropdown waits on it forever.
+        accountSearch.current.abandon?.([]);
+        accountSearch.current.abandon = resolve;
 
-      expenseAccounts.current = (payloadOf(response) || []).map((account: any) => ({
-        value: String(account.value),
-        label: account.label,
-        label_2: account.label_2,
-      }));
-    }
+        accountSearch.current.timer = setTimeout(async () => {
+          accountSearch.current.abandon = null;
 
-    const all = expenseAccounts.current ?? [];
-    const needle = search.trim().toLowerCase();
+          try {
+            const response = await httpService.get(API_PROJECT_EXPENSE_ACCOUNTS_DDL_URL, {
+              params: { search: search.trim() },
+            });
 
-    return needle
-      ? all.filter((account) => account.label.toLowerCase().includes(needle))
-      : all;
-  }, []);
+            resolve(
+              (payloadOf(response) || []).map((account: any) => ({
+                value: String(account.value),
+                label: account.label,
+                label_2: account.label_2,
+              })),
+            );
+          } catch {
+            // The interceptor has already said what went wrong; an empty menu
+            // is better than a dropdown that never stops loading.
+            resolve([]);
+          }
+        }, 300);
+      }),
+    [],
+  );
+
+  useEffect(
+    () => () => {
+      if (accountSearch.current.timer) {
+        clearTimeout(accountSearch.current.timer);
+      }
+    },
+    [],
+  );
 
   const handleAccountSelect = (selected: { value: string | number; label: string } | null) => {
     setForm((prev) => ({
@@ -555,9 +595,9 @@ const ProjectExpense = () => {
 
             <div>
               <label htmlFor="account">Select Account</label>
-              {/* Searchable, like the one on Cash Payment -- but reading from
-                  this screen's own endpoint, which returns expense accounts
-                  and nothing else. */}
+              {/* Searches the database as you type, like the one on Cash
+                  Payment -- but through this screen's own endpoint, which
+                  returns expense accounts and nothing else. */}
               <DdlMultiline
                 id="account"
                 name="account"
