@@ -9,6 +9,7 @@ import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
+import ToggleSwitch from '../../../utils/utils-functions/ToggleSwitch';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
 import {
@@ -758,34 +759,45 @@ export default function RealEstateInstallmentCreate() {
             </div>
 
             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-              <label className="flex items-center gap-2 pt-6 text-sm">
-                <input
-                  type="checkbox"
+              {/* The same switch the branch settings use, rather than a bare
+                  checkbox -- this turns a feature on for the schedule, which
+                  is what a switch says and a tick box does not. */}
+              <div className="flex items-center pt-6">
+                <ToggleSwitch
+                  label="Early Payment"
                   checked={earlyPayment}
                   disabled={scheduleLocked}
-                  onChange={(e) => setEarlyPayment(e.target.checked)}
-                  className="h-4 w-4"
+                  onChange={setEarlyPayment}
                 />
-                Early Payment
-              </label>
-              <InputElement
-                id="early_discount"
-                name="early_discount"
-                label="Early Discount"
-                type="number"
-                className="h-8.5"
-                disabled={!earlyPayment || scheduleLocked}
-                value={earlyDiscount}
-                onChange={(e: any) => setEarlyDiscount(e.target.value)}
-              />
-              <div>
+              </div>
+              {/* Out of sight while the switch is off, but still holding their
+                  place: the two only mean anything to an early payment, yet
+                  taking their height away with them moved the Create button up
+                  and down every time the switch was touched.
+
+                  `invisible` is visibility:hidden, so the row keeps its height
+                  and the boxes leave the tab order -- which display:none and a
+                  disabled box each get half right. */}
+              <div className={earlyPayment ? '' : 'invisible'} aria-hidden={!earlyPayment}>
+                <InputElement
+                  id="early_discount"
+                  name="early_discount"
+                  label="Early Discount"
+                  type="number"
+                  className="h-8.5"
+                  disabled={scheduleLocked}
+                  value={earlyDiscount}
+                  onChange={(e: any) => setEarlyDiscount(e.target.value)}
+                />
+              </div>
+              <div className={earlyPayment ? '' : 'invisible'} aria-hidden={!earlyPayment}>
                 <label className="mb-1 block text-sm text-gray-900 dark:text-white">Early Payment Date</label>
                 <InputDatePicker
                   selectedDate={earlyPaymentDate}
                   setSelectedDate={setEarlyPaymentDate}
                   setCurrentDate={setEarlyPaymentDate}
                   className="font-medium text-sm w-full h-8.5"
-                  disabled={scheduleLocked || !earlyPayment}
+                  disabled={scheduleLocked}
                 />
               </div>
             </div>
