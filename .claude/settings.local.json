@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /f/All_Database/www/cashbook_api && find . -maxdepth 2 -type f -name \"*.php\" | head -20)",
+      "Read(//f/All_Database/www/cashbook_api/**)",
+      "Bash(xargs grep -l \"employee_loan\\\\|EmployeeLoan\")",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Read(//f/All_Database/www/**)",
+      "Bash(xargs grep -l \"hrm_loan\")",
+      "Bash(php -l \"F:/All_Database/www/cashbook_api/app/Http/Controllers/Hrms/Payrolls/LoanController.php\")",
+      "Bash(php -l \"F:/All_Database/www/cashbook_api/routes/api.php\")",
+      "Bash(php -l \"F:/All_Database/www/cashbook_api/app/Http/Controllers/Hrms/EmployeeController.php\")",
+      "Bash(where.exe mysql *)",
+      "Bash(where.exe php *)",
+      "Read(//c//**)",
+      "Read(//f//**)",
+      "Bash(npx tsc *)"
+    ],
+    "additionalDirectories": [
+      "F:\\All_Database\\www\\cashbook_api\\config",
+      "F:\\All_Database\\www\\cashbook_api\\app\\Http\\Middleware"
+    ]
+  }
+}
