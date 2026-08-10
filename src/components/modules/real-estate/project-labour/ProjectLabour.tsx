@@ -530,16 +530,29 @@ const ProjectLabour = () => {
             <span className="py-1 text-lg font-semibold text-black dark:text-white">
               {thousandSeparator(total)}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              Due {thousandSeparator(due)}
+          </div>
+
+          {/* Its own column beside the total rather than a line beneath it, so
+              the two figures read side by side and the row keeps the height of
+              the fields next to it. */}
+          <div className="flex flex-col justify-end">
+            <span className="text-black dark:text-white">Due Tk.</span>
+            <span className="py-1 text-lg font-semibold text-black dark:text-white">
+              {thousandSeparator(due)}
             </span>
           </div>
-        </div>
 
-        {/* -------------------------------------------------- the labour row */}
-        <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-2">
+          {/* Looking an old bill up belongs with the bill, not with the line
+              being typed opposite.
+
+              The label is carried for screen readers only. On show it would
+              add its own line, and this row sits across from the buttons,
+              which have none -- the two columns would stop level no longer.
+              The placeholder and the magnifier say the same thing to the eye. */}
           <div className="sm:col-span-2">
-            <label htmlFor="search">Search Invoice</label>
+            <label htmlFor="search" className="sr-only">
+              Search Invoice
+            </label>
             <div className="flex items-end gap-2">
               <div className="min-w-0 flex-1">
                 <InputOnly
@@ -556,12 +569,16 @@ const ProjectLabour = () => {
                 onClick={handleSearch}
                 buttonLoading={searching}
                 label=" "
+                title="Search invoice"
                 className="h-9.5 w-12 shrink-0 border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
                 icon={<FiSearch className="ml-2 text-lg text-white" />}
               />
             </div>
           </div>
+        </div>
 
+        {/* -------------------------------------------------- the labour row */}
+        <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-2">
           <div>
             <label htmlFor="project_id">Select Project</label>
             <select
