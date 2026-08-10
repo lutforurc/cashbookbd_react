@@ -111,6 +111,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'real_estate_installment_create', title: "Installment Create" },
     { id: 'real_estate_project_expense', title: "Project Expense" },
     { id: 'real_estate_project_purchase', title: "Project Purchase" },
+    { id: 'real_estate_project_labour', title: "Project Labour" },
     { id: 'real_estate_project_cost_report', title: "Project Cost Report" },
   ],
   'products': [
@@ -1878,6 +1879,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       pathname === routes.real_estate_installment_create ||
                       pathname === routes.real_estate_project_expense ||
                       pathname === routes.real_estate_project_purchase ||
+                      pathname === routes.real_estate_project_labour ||
                       pathname === routes.real_estate_project_cost_report ||
                       pathname.includes('forms')
                     }
@@ -1903,6 +1905,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               pathname === routes.real_estate_installment_create ||
                               pathname === routes.real_estate_project_expense ||
                               pathname === routes.real_estate_project_purchase ||
+                              pathname === routes.real_estate_project_labour ||
                               pathname === routes.real_estate_project_cost_report ||
                       pathname === routes.real_estate_project_cost_report ||
                       pathname === routes.real_estate_project_purchase ||
@@ -2096,6 +2099,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 }
                               >
                                 Project Purchase
+                              </NavLink>
+                            </li>
+                            <li style={subSlot('real-estate', 'real_estate_project_labour')}>
+                              <NavLink
+                                to={routes.real_estate_project_labour}
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
+                                  (isActive && 'text-gray-900 font-bold dark:text-white')
+                                }
+                              >
+                                Project Labour
                               </NavLink>
                             </li>
                             <li style={subSlot('real-estate', 'real_estate_project_cost_report')}>

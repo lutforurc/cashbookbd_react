@@ -8,16 +8,16 @@ import InputElement from '../../../utils/fields/InputElement';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputOnly from '../../../utils/fields/InputOnly';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
-import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
+import LabourDropdown from '../../../utils/utils-functions/LabourDropdown';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
 import {
   API_PROJECT_EXPENSE_BUILDINGS_DDL_URL,
   API_PROJECT_EXPENSE_PROJECTS_DDL_URL,
-  API_PROJECT_PURCHASE_EDIT_URL,
-  API_PROJECT_PURCHASE_STORE_URL,
-  API_PROJECT_PURCHASE_UPDATE_URL,
+  API_PROJECT_LABOUR_EDIT_URL,
+  API_PROJECT_LABOUR_STORE_URL,
+  API_PROJECT_LABOUR_UPDATE_URL,
 } from '../../../services/apiRoutes';
 
 interface Option {
@@ -25,10 +25,11 @@ interface Option {
   label: string;
 }
 
-interface ProductRow {
+interface LabourRow {
   key: string;
   product: number | '';
   productName: string;
+  unit: string;
   qty: string;
   price: string;
   projectId: number | '';
@@ -50,22 +51,19 @@ const SELECT_CLASS =
   'dark:focus:border-blue-400 h-9.5';
 
 /**
- * Material bought for a project, and for the buildings within it.
+ * Labour worked for a project, and for the buildings within it.
  *
- * Laid out like the Construction Purchase Invoice it is modelled on, with two
- * differences that matter.
+ * The Project Purchase screen with material swapped for labour, and laid out
+ * the same on purpose: a clerk who books both should not have to learn two
+ * forms. What is said there holds here.
  *
- * Building replaces Warehouse. This branch keeps no warehouses -- the existing
- * screen shows "Not Applicable" and means it -- and a second location dropdown
- * beside the first would only be something to get wrong.
- *
- * Building is chosen PER PRODUCT ROW, not once for the invoice, because a
- * delivery can serve more than one. The header choice is a default that each
- * new row inherits, so an invoice for a single building still takes one pick.
- * The ledger then carries one Purchase line per building, which is what lets a
- * building be asked what it has cost.
+ * Building is chosen PER LINE, not once for the invoice, because a gang's bill
+ * covers more than one. The header choice is a default each new line inherits,
+ * so a bill for a single building still takes one pick. The ledger then carries
+ * one Labour Expense debit per building, which is what lets a building be asked
+ * what it has cost.
  */
-const ProjectPurchase = () => {
+const ProjectLabour = () => {
   const navigate = useNavigate();
 
   const [projects, setProjects] = useState<Option[]>([]);
@@ -79,15 +77,15 @@ const ProjectPurchase = () => {
   // every keystroke, and the two are only ever set together.
   const [invoiceDate, setInvoiceDate] = useState('');
   const [invoiceDateOn, setInvoiceDateOn] = useState<Date | null>(null);
-  const [vehicleNo, setVehicleNo] = useState('');
   const [notes, setNotes] = useState('');
   const [discount, setDiscount] = useState('0');
   const [paid, setPaid] = useState('0');
 
-  // The row being typed, and the rows already added.
-  const [draft, setDraft] = useState<Omit<ProductRow, 'key'>>({
+  // The line being typed, and the lines already added.
+  const [draft, setDraft] = useState<Omit<LabourRow, 'key'>>({
     product: '',
     productName: '',
+    unit: '',
     qty: '',
     price: '',
     projectId: '',
@@ -95,13 +93,13 @@ const ProjectPurchase = () => {
     buildingId: '',
     buildingName: '',
   });
-  const [rows, setRows] = useState<ProductRow[]>([]);
+  const [rows, setRows] = useState<LabourRow[]>([]);
 
   const [search, setSearch] = useState('');
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
-  // Which product line is open in the form, if any. Distinct from `editing`
+  // Which labour line is open in the form, if any. Distinct from `editing`
   // above, which is about the whole invoice.
   const [editingRowKey, setEditingRowKey] = useState<string | null>(null);
 
@@ -217,12 +215,12 @@ const ProjectPurchase = () => {
 
   const handleAdd = () => {
     if (!draft.projectId) {
-      toast.error('Choose the project this material is for.');
+      toast.error('Choose the project this work is for.');
       return;
     }
 
     if (!draft.product) {
-      toast.error('Choose a product.');
+      toast.error('Choose a labour item.');
       return;
     }
 
@@ -233,7 +231,7 @@ const ProjectPurchase = () => {
 
     if (editingRowKey) {
       // Back into its own place in the invoice, not onto the end. The lines are
-      // read in the order the goods were listed on the supplier's bill.
+      // read in the order the work was listed on the bill.
       setRows((prev) =>
         prev.map((row) => (row.key === editingRowKey ? { ...draft, key: row.key } : row)),
       );
@@ -242,19 +240,20 @@ const ProjectPurchase = () => {
       setRows((prev) => [...prev, { ...draft, key: `${Date.now()}-${prev.length}` }]);
     }
 
-    // Project and building stay; the product line does not. Most of an
-    // invoice goes to one place, and re-picking it every row is how a form
-    // teaches people to stop bothering.
+    // Project and building stay; the labour line does not. Most of an invoice
+    // goes to one place, and re-picking it every line is how a form teaches
+    // people to stop bothering.
     setDraft((prev) => ({
       ...prev,
       product: '',
       productName: '',
+      unit: '',
       qty: '',
       price: '',
     }));
   };
 
-  /** Take a product line back into the form to be corrected. */
+  /** Take a labour line back into the form to be corrected. */
   const handleEditRow = (key: string) => {
     const row = rows.find((r) => r.key === key);
 
@@ -274,6 +273,7 @@ const ProjectPurchase = () => {
       ...prev,
       product: '',
       productName: '',
+      unit: '',
       qty: '',
       price: '',
     }));
@@ -292,7 +292,6 @@ const ProjectPurchase = () => {
     setInvoiceNo('');
     setInvoiceDate('');
     setInvoiceDateOn(null);
-    setVehicleNo('');
     setNotes('');
     setDiscount('0');
     setPaid('0');
@@ -302,6 +301,7 @@ const ProjectPurchase = () => {
     setDraft({
       product: '',
       productName: '',
+      unit: '',
       qty: '',
       price: '',
       projectId: '',
@@ -315,7 +315,6 @@ const ProjectPurchase = () => {
     supplier: supplier.id,
     invoice_no: invoiceNo || null,
     invoice_date: invoiceDate || null,
-    vehicle_no: vehicleNo || null,
     notes: notes || null,
     discount: Number(discount || 0),
     paid: Number(paid || 0),
@@ -335,7 +334,7 @@ const ProjectPurchase = () => {
     }
 
     if (rows.length === 0) {
-      toast.error('Add at least one product before saving.');
+      toast.error('Add at least one labour item before saving.');
       return;
     }
 
@@ -350,11 +349,11 @@ const ProjectPurchase = () => {
 
     try {
       const response = editing
-        ? await httpService.post(API_PROJECT_PURCHASE_UPDATE_URL, {
+        ? await httpService.post(API_PROJECT_LABOUR_UPDATE_URL, {
             ...payload(),
             mtm_id: editing.mtmId,
           })
-        : await httpService.post(API_PROJECT_PURCHASE_STORE_URL, payload());
+        : await httpService.post(API_PROJECT_LABOUR_STORE_URL, payload());
 
       const refusal = refusedWith(response);
 
@@ -385,7 +384,7 @@ const ProjectPurchase = () => {
     setSearching(true);
 
     try {
-      const response = await httpService.post(API_PROJECT_PURCHASE_EDIT_URL, { vr_no: vrNo });
+      const response = await httpService.post(API_PROJECT_LABOUR_EDIT_URL, { vr_no: vrNo });
       const refusal = refusedWith(response);
 
       if (refusal) {
@@ -399,7 +398,6 @@ const ProjectPurchase = () => {
       setInvoiceNo(data.invoice_no || '');
       setInvoiceDate(data.invoice_date || '');
       setInvoiceDateOn(data.invoice_date ? new Date(data.invoice_date) : null);
-      setVehicleNo(data.vehicle_no || '');
       setNotes(data.notes || '');
       setDiscount(String(data.discount ?? 0));
       setPaid(String(data.paid ?? 0));
@@ -419,6 +417,9 @@ const ProjectPurchase = () => {
           key: `${row.product}-${index}`,
           product: row.product,
           productName: row.product_name,
+          // The unit is the dropdown's to tell, and nothing was picked from it
+          // here; the quantity reads plainly until the line is opened again.
+          unit: '',
           qty: String(row.qty),
           price: String(row.price),
           projectId: row.project_id ?? '',
@@ -443,16 +444,12 @@ const ProjectPurchase = () => {
 
   return (
     <>
-      <HelmetTitle title="Project Purchase" />
-
-
+      <HelmetTitle title="Project Labour" />
 
       {/* content-start on both columns: the two sides hold a different number
           of rows, and the shorter one is stretched to the taller one's height.
           Left to spread, its rows share out that spare height and open gaps
-          between the fields. Starting the content keeps the rows their own
-          size and leaves the slack at the foot of the column, where it shows
-          as nothing at all. */}
+          between the fields. */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* ---------------------------------------------------- the invoice */}
         <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-3">
@@ -473,8 +470,8 @@ const ProjectPurchase = () => {
           <InputElement
             id="invoice_no"
             name="invoice_no"
-            label="Invoice Number"
-            placeholder="Invoice Number"
+            label="Bill Number"
+            placeholder="Bill Number"
             className="h-9.5"
             value={invoiceNo}
             onChange={(e) => setInvoiceNo(e.target.value)}
@@ -482,7 +479,7 @@ const ProjectPurchase = () => {
 
           <div className="text-left flex flex-col">
             <label htmlFor="invoice_date" className="text-black dark:text-white">
-              Invoice Date
+              Bill Date
             </label>
             <InputDatePicker
               id="invoice_date"
@@ -493,16 +490,6 @@ const ProjectPurchase = () => {
               setCurrentDate={handleInvoiceDate}
             />
           </div>
-
-          <InputElement
-            id="vehicle_no"
-            name="vehicle_no"
-            label="Vehicle Number"
-            placeholder="Vehicle Number"
-            className="h-9.5"
-            value={vehicleNo}
-            onChange={(e) => setVehicleNo(e.target.value)}
-          />
 
           <InputElement
             id="notes"
@@ -535,7 +522,7 @@ const ProjectPurchase = () => {
             disabled={isCashSupplier}
             value={paid}
             onChange={(e) => setPaid(e.target.value)}
-            description={isCashSupplier ? 'A cash purchase is paid in full.' : undefined}
+            description={isCashSupplier ? 'A cash bill is paid in full.' : undefined}
           />
 
           <div className="flex flex-col justify-end">
@@ -549,7 +536,7 @@ const ProjectPurchase = () => {
           </div>
         </div>
 
-        {/* ------------------------------------------------- the product row */}
+        {/* -------------------------------------------------- the labour row */}
         <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label htmlFor="search">Search Invoice</label>
@@ -613,8 +600,8 @@ const ProjectPurchase = () => {
           </div>
 
           <div className="sm:col-span-2">
-            <label htmlFor="product">Select Product</label>
-            <ProductDropdown
+            <label htmlFor="product">Select Labour Item</label>
+            <LabourDropdown
               id="product"
               name="product"
               className="h-9.5"
@@ -624,31 +611,40 @@ const ProjectPurchase = () => {
                   ...prev,
                   product: Number(option?.value) || '',
                   productName: option?.label || '',
-                  // The dropdown carries the last known rate in label_3; it is
+                  unit: option?.label_3 || '',
+                  // The dropdown carries the item's unit rate in label_4; it is
                   // a starting point, not a decision -- the clerk can type over
                   // it, and what is typed is what is booked.
-                  price: option?.label_3 ? String(option.label_3) : prev.price,
+                  price: option?.label_4 ? String(option.label_4) : prev.price,
                 }))
               }
             />
           </div>
 
-          <InputElement
-            id="qty"
-            name="qty"
-            type="number"
-            label="Quantity"
-            placeholder="Enter Quantity"
-            className="h-9.5"
-            value={draft.qty}
-            onChange={(e) => setDraft((prev) => ({ ...prev, qty: e.target.value }))}
-          />
+          <div className="relative">
+            <InputElement
+              id="qty"
+              name="qty"
+              type="number"
+              label="Quantity"
+              placeholder="Enter Quantity"
+              className="h-9.5"
+              value={draft.qty}
+              onChange={(e) => setDraft((prev) => ({ ...prev, qty: e.target.value }))}
+            />
+            {/* Anchored to the foot of the field rather than a fixed distance
+                from its top, so it stays centred in the box whatever the row
+                height settles at. */}
+            <span className="pointer-events-none absolute bottom-2 right-3 text-sm text-gray-500 dark:text-gray-400">
+              {draft.unit}
+            </span>
+          </div>
 
           <InputElement
             id="price"
             name="price"
             type="number"
-            label="Price"
+            label="Rate"
             placeholder="0"
             className="h-9.5"
             value={draft.price}
@@ -715,7 +711,7 @@ const ProjectPurchase = () => {
           <thead className="bg-gray-300 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-200">
             <tr>
               <th scope="col" className="w-16 px-2 py-2">SL No.</th>
-              <th scope="col" className="px-2 py-2">Product Name</th>
+              <th scope="col" className="px-2 py-2">Item Name</th>
               <th scope="col" className="px-2 py-2">Project / Building</th>
               <th scope="col" className="px-2 py-2 text-right">Quantity</th>
               <th scope="col" className="px-2 py-2 text-right">Rate</th>
@@ -744,7 +740,9 @@ const ProjectPurchase = () => {
                     {row.buildingName || 'Whole project'}
                   </span>
                 </td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">{row.qty}</td>
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-white">
+                  {row.qty} {row.unit}
+                </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-white">{row.price}</td>
                 <td className="px-2 py-2 text-right font-medium text-gray-900 dark:text-white">
                   {thousandSeparator(Number(row.qty || 0) * Number(row.price || 0))}
@@ -789,4 +787,4 @@ const ProjectPurchase = () => {
   );
 };
 
-export default ProjectPurchase;
+export default ProjectLabour;

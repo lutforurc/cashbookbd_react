@@ -156,6 +156,7 @@ import EditCustomerSupplier from './components/modules/customer-supplier/EditCus
 import UnitSalePage from './components/modules/real-estate/sales/UnitSalePage';
 import ProjectExpense from './components/modules/real-estate/project-expense/ProjectExpense';
 import ProjectPurchase from './components/modules/real-estate/project-purchase/ProjectPurchase';
+import ProjectLabour from './components/modules/real-estate/project-labour/ProjectLabour';
 import ProjectCostReport from './components/modules/reports/project-cost/ProjectCostReport';
 import SoldUnitList from './components/modules/real-estate/sales/SoldUnitList';
 import RequirePermission from "./components/auth/RequirePermission";
@@ -769,6 +770,7 @@ function App() {
               <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
               <Route path={routes.real_estate_project_expense} element={<ProjectExpense />} />
               <Route path={routes.real_estate_project_purchase} element={<ProjectPurchase />} />
+              <Route path={routes.real_estate_project_labour} element={<ProjectLabour />} />
               <Route path={routes.real_estate_project_cost_report} element={<ProjectCostReport user={me} />} />
             </Route>
 
