@@ -470,6 +470,19 @@ const ProjectPurchase = () => {
             />
           </div>
 
+          {/* Notes finishes the supplier's row, as on Project Labour. The
+              invoice's own number and date then start the next one together,
+              which is the order they are read off the supplier's bill in. */}
+          <InputElement
+            id="notes"
+            name="notes"
+            label="Notes"
+            placeholder="Notes"
+            className="h-9.5"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+
           <InputElement
             id="invoice_no"
             name="invoice_no"
@@ -505,16 +518,6 @@ const ProjectPurchase = () => {
           />
 
           <InputElement
-            id="notes"
-            name="notes"
-            label="Notes"
-            placeholder="Notes"
-            className="h-9.5"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-
-          <InputElement
             id="discount"
             name="discount"
             type="number"
@@ -543,16 +546,19 @@ const ProjectPurchase = () => {
             <span className="py-1 text-lg font-semibold text-black dark:text-white">
               {thousandSeparator(total)}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              Due {thousandSeparator(due)}
-            </span>
           </div>
-        </div>
 
-        {/* ------------------------------------------------- the product row */}
-        <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-2">
+          {/* Looking an old invoice up belongs with the invoice, not with the
+              line being typed opposite.
+
+              The label is carried for screen readers only. On show it would
+              add its own line, and this row sits across from the buttons,
+              which have none -- the two columns would stop level no longer.
+              The placeholder and the magnifier say the same thing to the eye. */}
           <div className="sm:col-span-2">
-            <label htmlFor="search">Search Invoice</label>
+            <label htmlFor="search" className="sr-only">
+              Search Invoice
+            </label>
             <div className="flex items-end gap-2">
               <div className="min-w-0 flex-1">
                 <InputOnly
@@ -569,12 +575,32 @@ const ProjectPurchase = () => {
                 onClick={handleSearch}
                 buttonLoading={searching}
                 label=" "
+                title="Search invoice"
                 className="h-9.5 w-12 shrink-0 border-[1px] border-gray-600 text-center hover:border-blue-500 sm:w-20"
                 icon={<FiSearch className="ml-2 text-lg text-white" />}
               />
             </div>
           </div>
 
+          {/* A figure of its own rather than small print under the total. It
+              follows the search box so that it lands in the same column as the
+              total, directly beneath it -- this form carries one field more
+              than Project Labour, so the two cannot sit side by side without
+              pushing the column past the buttons opposite.
+
+              Label and figure share one line here, unlike the total above:
+              this is the last row of the column, so every line it saves is a
+              line the form does not grow by. */}
+          <div className="flex items-baseline justify-start gap-2">
+            <span className="text-black dark:text-white">Due Tk.</span>
+            <span className="text-lg font-semibold text-black dark:text-white">
+              {thousandSeparator(due)}
+            </span>
+          </div>
+        </div>
+
+        {/* ------------------------------------------------- the product row */}
+        <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-2">
           <div>
             <label htmlFor="project_id">Select Project</label>
             <select

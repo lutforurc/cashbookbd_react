@@ -467,6 +467,19 @@ const ProjectLabour = () => {
             />
           </div>
 
+          {/* Notes finishes the supplier's row; the bill's own number and date
+              then start the next one together, which is the order they are
+              read off the paper bill in. */}
+          <InputElement
+            id="notes"
+            name="notes"
+            label="Notes"
+            placeholder="Notes"
+            className="h-9.5"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+
           <InputElement
             id="invoice_no"
             name="invoice_no"
@@ -490,16 +503,6 @@ const ProjectLabour = () => {
               setCurrentDate={handleInvoiceDate}
             />
           </div>
-
-          <InputElement
-            id="notes"
-            name="notes"
-            label="Notes"
-            placeholder="Notes"
-            className="h-9.5"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
 
           <InputElement
             id="discount"
